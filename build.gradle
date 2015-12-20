@@ -246,7 +246,7 @@ run {
 docker {
     url = 'unix:///var/run/docker.sock'
     javaApplication {
-        baseImage = 'jeanblanchard/java:8'
+        baseImage = 'java:8'
         port = 7080
     }
 }
