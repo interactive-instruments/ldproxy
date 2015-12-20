@@ -141,7 +141,7 @@ dependencies {
     bundlesRuntime group: 'de.interactive-instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.0-SNAPSHOT'
 
     bundles group: 'de.interactive-instruments', name: 'xtraplatform-bundles-devel', version: '1.0.0-SNAPSHOT'
-    bundles group: 'de.interactive-instruments', name: 'xtraplatform-sdi', version: '0.1.0-SNAPSHOT'
+    bundles group: 'de.interactive-instruments', name: 'xtraplatform-sdi-tools', version: '0.1.0-SNAPSHOT'
 
     // TODO: is not compiled on installDist
     subprojects.each {
