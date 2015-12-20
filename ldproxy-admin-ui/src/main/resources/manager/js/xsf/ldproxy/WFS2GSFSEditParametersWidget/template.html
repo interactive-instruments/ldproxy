@@ -1,0 +1,34 @@
+<form data-dojo-attach-point='containerNode'>
+        <ul data-dojo-attach-point='formElementList'>
+<li class="empty"></li>
+<li>
+    <label for='maxRecordCount'>${messages.maxfeatures}:</label>
+    <input name='maxRecordCount' type='text' value="${config.maxRecordCount}" data-dojo-type='dijit/form/ValidationTextBox' data-dojo-props='required:true'/>
+</li>
+<li class="empty"></li>
+<li>
+    <label for='flipDefaultSRSAxisOrder'>${messages.reversedaxisorder}:</label>
+    <input name="flipDefaultSRSAxisOrder" type="checkbox" data-dojo-type="dijit/form/CheckBox" value="${config.flipDefaultSRSAxisOrder}" data-dojo-attach-point="flipDefaultSRSAxisOrder" />
+</li>
+<li class="empty"></li>
+<li>
+    <label for='flipRequestSRSAxisOrder'>${messages.reversedrequestaxisorder}:</label>
+    <input name="flipRequestSRSAxisOrder" type="checkbox" data-dojo-type="dijit/form/CheckBox" value="${config.flipRequestSRSAxisOrder}" data-dojo-attach-point="flipRequestSRSAxisOrder" />
+</li>
+<li class="empty"></li>
+<li>
+    <label for='supportsMaxAllowableOffset'>${messages.supportmaxAllowableOffset}:</label>
+    <input name="supportsMaxAllowableOffset" type="checkbox" data-dojo-type="dijit/form/CheckBox" value="${config.supportsMaxAllowableOffset}" data-dojo-attach-point="supportsMaxAllowableOffset" />
+</li>
+<li class="empty"></li>
+<li>
+    <label for='cacheExpiry'>${messages.etagcacheexpiry}:</label>
+    <input name="cacheExpiry" type="text" data-dojo-type="dijit/form/ValidationTextBox" value="${config.cacheExpiry}" data-dojo-props='required:true' data-dojo-attach-point="cacheExpiry" />
+</li>
+<li class="empty"></li>
+<li>
+    <label for='gmlIdRegex'>${messages.gmlIdRegex}:</label>
+    <input name="gmlIdRegex" type="text" data-dojo-type="dijit/form/ValidationTextBox" value="${config.gmlIdRegex}" data-dojo-props='required:true' data-dojo-attach-point="gmlIdRegex" />
+</li>
+</ul>
+</form>

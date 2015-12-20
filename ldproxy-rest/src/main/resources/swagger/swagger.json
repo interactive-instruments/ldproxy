@@ -1,0 +1,388 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "INSPIRE Adressen themalaag, gevuld met relevante objecten uit de Basisregistratie Adressen en Gebouwen (BAG), beheerd door het Kadaster.",
+        "version": "2006",
+        "title": "INSPIRE Adressen WFS",
+        "termsOfService": "Fees: NONE. Access constraints: otherRestrictions; Geen beperkingen",
+        "contact": {
+            "name": "KlantContactCenter PDOK",
+            "url": "http://example.com",
+            "email": "xxx@example.com"
+        }
+    },
+    "host": "localhost:7080",
+    "basePath": "/rest/services/bag",
+    "schemes": ["http"],
+    "produces": ["application/xml", "application/vnd.geo+json", "text/html", "application/ld+json"],
+    "paths": {
+        "/": {
+            "get": {
+                "tags": ["Adressen"],
+                "summary": "The landing page for this dataset.",
+                "description": "The landing page ... list of feature types ...\n",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "The landing page ...\n",
+                        "schema": {
+                            "$ref": "#/definitions/Dataset"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inspireadressen": {
+            "get": {
+                "tags": ["Adressen"],
+                "summary": "inspireadressen",
+                "description": "\"INSPIRE Adressen afkomstig uit de basisregistratie Adressen, beschikbaar voor heel Nederland\" # ows:Abstract\n",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "...",
+                        "schema": {
+                            "$ref": "#/definitions/DatasetWithLinks"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inspireadressen/all": {
+            "get": {
+                "tags": ["Adressen"],
+                "summary": "all inspireadressen in the dataset",
+                "description": "\"INSPIRE Adressen afkomstig uit de basisregistratie Adressen, beschikbaar voor heel Nederland\" # ows:Abstract\n",
+                "parameters": [{
+                    "name": "page",
+                    "in": "query",
+                    "description": "Page number (used for cases where there are more than 25 inspireadressen features), the default value is the first page (\"1\")",
+                    "required": false,
+                    "type": "integer",
+                    "format": "int32"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "...",
+                        "schema": {
+                            "$ref": "#/definitions/DatasetWithLinks"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inspireadressen/all/{id}": {
+            "get": {
+                "tags": ["Adressen"],
+                "summary": "An address",
+                "description": "\"..:\" # from configuration\n",
+                "parameters": [{
+                    "name": "id",
+                    "in": "path",
+                    "description": "identifier of the adressen feature",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "...",
+                        "schema": {
+                            "$ref": "#/definitions/Place"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inspireadressen/postcode": {
+            "get": {
+                "tags": ["Adressen"],
+                "summary": "grouping of addresses in a postcode",
+                "description": "\"..:\" # from configuration\n",
+                "parameters": [{
+                    "name": "page",
+                    "in": "query",
+                    "description": "Page number (used for cases where there are more than 25 postcodes), the default value is the first page (\"1\")",
+                    "required": false,
+                    "type": "integer",
+                    "format": "int32"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "...",
+                        "schema": {
+                            "$ref": "#/definitions/DatasetWithLinks"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inspireadressen/postcode/{code}": {
+            "get": {
+                "tags": ["Adressen"],
+                "summary": "addresses in a postcode",
+                "description": "\"..:\" # from configuration\n",
+                "parameters": [{
+                    "name": "code",
+                    "in": "path",
+                    "description": "The postcode",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "page",
+                    "in": "query",
+                    "description": "Page number (used for cases where there are more than 25 features in the postcode), the default value is the first page (\"1\")",
+                    "required": false,
+                    "type": "integer",
+                    "format": "int32"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "...",
+                        "schema": {
+                            "$ref": "#/definitions/DatasetWithLinks"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inspireadressen/postcode/{code}/{id}": {
+            "get": {
+                "tags": ["Adressen"],
+                "summary": "An address",
+                "description": "\"..:\" # from configuration\n",
+                "parameters": [{
+                    "name": "code",
+                    "in": "path",
+                    "description": "The postcode",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "id",
+                    "in": "path",
+                    "description": "identifier of the adressen feature",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "...",
+                        "schema": {
+                            "$ref": "#/definitions/Place"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inspireadressen/woonplaats": {
+            "get": {
+                "tags": ["Adressen"],
+                "summary": "grouping of addresses in a municipality (woonplaats)",
+                "description": "\"..:\" # from configuration\n",
+                "parameters": [{
+                    "name": "page",
+                    "in": "query",
+                    "description": "Page number (used for cases where there are more than 25 woonplaats), the default value is the first page (\"1\")",
+                    "required": false,
+                    "type": "integer",
+                    "format": "int32"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "...",
+                        "schema": {
+                            "$ref": "#/definitions/DatasetWithLinks"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inspireadressen/woonplaats/{name}": {
+            "get": {
+                "tags": ["Adressen"],
+                "summary": "addresses in a municipality (woonplaats)",
+                "description": "\"..:\" # from configuration\n",
+                "parameters": [{
+                    "name": "name",
+                    "in": "path",
+                    "description": "Name of the woonplaats",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "page",
+                    "in": "query",
+                    "description": "Page number (used for cases where there are more than 25 features in the woonplaats), the default value is the first page (\"1\")",
+                    "required": false,
+                    "type": "integer",
+                    "format": "int32"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "...",
+                        "schema": {
+                            "$ref": "#/definitions/DatasetWithLinks"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inspireadressen/woonplaats/{name}/{id}": {
+            "get": {
+                "tags": ["Adressen"],
+                "summary": "An address",
+                "description": "\"..:\" # from configuration\n",
+                "parameters": [{
+                    "name": "name",
+                    "in": "path",
+                    "description": "Name of the woonplaats",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "id",
+                    "in": "path",
+                    "description": "identifier of the adressen feature",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "...",
+                        "schema": {
+                            "$ref": "#/definitions/Place"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Dataset": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "dummy"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "dummy"
+                },
+                "hasPart": {
+                    "type": "array",
+                    "description": "dummy",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "isPartOf": {
+                    "type": "array",
+                    "description": "dummy",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "dummy": {
+                    "type": "string",
+                    "description": "dummy"
+                }
+            },
+            "description": "based on https://schema.org/Dataset"
+        },
+        "DatasetWithLinks": {
+            "allOf": [{
+                "$ref": "#/definitions/Dataset"
+            }, {
+                "type": "object",
+                "properties": {
+                    "dummy": {
+                        "type": "string",
+                        "description": "dummy"
+                    }
+                }
+            }]
+        },
+        "Place": {
+            "type": "object",
+            "properties": {
+                "dummy": {
+                    "type": "string",
+                    "description": "dummy"
+                }
+            }
+        },
+        "Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,11 @@
+
+
+dependencies {    
+     compile group: 'com.sun.xsom', name: 'xsom', version: '20140925'
+    compile group: 'com.fasterxml', name: 'aalto-xml', version: '0.9.11'
+    // go back to woodstox if aalto has issues
+    //compile group: 'com.fasterxml.woodstox', name: 'woodstox-core', version: '5.0.1'
+    compile group: 'com.fasterxml.staxmate', name: 'staxmate', version: '2.2.1'
+   
+}
+ 

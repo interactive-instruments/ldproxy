@@ -1,0 +1,55 @@
+{
+    "useFormattedJsonOutput": true,
+    "allowServiceReAdding": true,
+    "server": {
+        "applicationConnectors": [
+            {
+                "type": "http",
+                "port": "7080"
+            }
+        ],
+        "adminConnectors": [
+            {
+                "type": "http",
+                "port": "7081"
+            }
+        ],
+        "gzip": {
+            "enabled": false
+        },
+        "requestLog": {
+            "timeZone": "Europe/Berlin",
+            "appenders": [
+                {
+                    "type": "file",
+                    "currentLogFilename": "./target/log/requests.log",
+                    "archive": false,
+                    "timeZone": "Europe/Berlin"
+                }
+            ]
+        },
+        "shutdownGracePeriod": "5s"
+    },
+    "httpClient": {
+        "timeout": "100000ms",
+        "connectionTimeout": "100000ms"
+    },
+    "logging": {
+        "level": "ERROR",
+        "appenders": [
+            {
+                "type": "console",
+                "timeZone": "Europe/Berlin"
+            },
+            {
+                "type": "file",
+                "currentLogFilename": "./target/log/xsf.log",
+                "archive": false,
+                "timeZone": "Europe/Berlin"
+            }
+        ],
+        "loggers" : {
+            "de.ii": "DEBUG"
+        }
+    }
+}

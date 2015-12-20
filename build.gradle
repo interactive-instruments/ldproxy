@@ -1,0 +1,205 @@
+buildscript {  
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            url "http://nyx/artifactory/plugins-release"
+        }
+    } 
+    dependencies { 
+        classpath group: 'de.interactive-instruments', name: 'gradle-plugin-forgerock-i18n', version: '1.0.6'
+        classpath group: 'de.interactive-instruments', name: 'gradle-plugin-osgi-ipojo', version: '1.12.1.26'
+        classpath group: 'com.bmuschko', name: 'gradle-docker-plugin', version: '2.6.1'
+        
+    } 
+}
+
+ext {
+    cfgFileName = 'xsf.json'
+    devel = [
+        cfgDir: new File(buildDir, 'cfg'),
+        logDir:  new File(buildDir, 'log'),
+        bundlesDir: new File(buildDir, 'bundles'),
+        felixCacheDir: new File(new File(buildDir, 'cfg'), 'felix-cache'),
+        cfgFile: file('cfg/xsf.development.json')
+    ]
+}
+
+allprojects {
+    apply plugin: 'java'
+
+    sourceCompatibility = 1.7
+    
+    version = '0.1.0'
+    version += '-SNAPSHOT'
+    group = 'de.interactive-instruments'
+
+    repositories {    
+        mavenLocal() 
+        mavenCentral()
+        /*maven {
+            url "http://nyx/artifactory/libs-snapshot"
+        }*/
+        maven {
+            url "http://maven.forgerock.org/repo/repo"
+        }
+        maven {
+            url "http://nyx/artifactory/libs-release"
+        }
+    }
+}
+
+subprojects {
+    apply plugin: 'forgerock-i18n'
+    apply plugin: 'osgi-ipojo'
+    apply plugin: 'maven-publish'
+
+    jar {
+        manifest {
+            attributes("Implementation-Title": project.name, "Implementation-Version": project.version)
+        }
+    }
+
+    configurations {
+        embedded
+        provided
+        compile.extendsFrom embedded
+        compile.extendsFrom provided
+    }
+
+    dependencies {
+        
+        // TODO
+        provided 'com.google.guava:guava:17.0'
+
+        // TODO: retrieve from bundles-runtime
+        provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
+        provided group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.3'
+        provided group: 'ch.qos.logback', name: 'logback-core', version: '1.1.3'
+
+        provided group: 'org.osgi', name: 'org.osgi.compendium', version: '4.2.0'
+        provided group: 'org.apache.felix', name: 'org.apache.felix.framework', version: '4.4.1'
+        provided group: 'org.apache.felix', name: 'org.apache.felix.ipojo', version: '1.12.1'
+
+        provided group: 'de.interactive-instruments', name: 'xtraplatform-bundles-core', version: '1.0.0-SNAPSHOT'
+        provided group: 'de.interactive-instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.0-SNAPSHOT'
+
+        provided group: 'de.interactive-instruments', name: 'xtraplatform-api', version: '1.0.0-SNAPSHOT'
+        provided group: 'de.interactive-instruments', name: 'xtraplatform-dropwizard', version: '1.0.0-SNAPSHOT'
+
+        provided group: 'de.interactive-instruments', name: 'xtraplatform-sdi', version: '0.1.0-SNAPSHOT'
+    }
+    
+    jar {
+        manifest { 
+            instruction '-removeheaders', 'Bnd-LastModified'
+            instructionReplace "Bundle-SymbolicName",project.name.replaceAll('-', '.')
+        }
+    }
+
+    jar {
+        manifest { 
+         instruction 'Import-Package', 'com.fasterxml.jackson.module.afterburner.ser'   
+         instruction 'Import-Package', '*'  
+         instruction 'Private-Package', 'de.ii.empty'   
+        }
+    }
+
+    task deploy(type: Copy) {
+        from jar
+        into new File(devel.bundlesDir, 'platform')
+    }
+    
+    jar.finalizedBy deploy
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.java
+            }
+        }
+    }
+}
+
+
+configurations {
+    bundles
+    bundlesRuntime
+}
+dependencies {
+    compile group: 'de.interactive-instruments', name: 'xtraplatform-runtime', version: '1.0.0-SNAPSHOT'
+    bundles(group: 'de.interactive-instruments', name: 'xtraplatform-bundles-core', version: '1.0.0-SNAPSHOT') {
+        exclude module: 'xtraplatform-kvstore-inmemory'
+    }
+    bundlesRuntime group: 'de.interactive-instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.0-SNAPSHOT'
+
+    bundles group: 'de.interactive-instruments', name: 'xtraplatform-bundles-devel', version: '1.0.0-SNAPSHOT'
+    bundles group: 'de.interactive-instruments', name: 'xtraplatform-sdi', version: '0.1.0-SNAPSHOT'
+
+    subprojects.each {
+        bundles(it) {
+            transitive = false
+        }
+    }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds'
+}
+
+apply plugin: 'application'
+apply plugin: 'com.bmuschko.docker-java-application'
+
+//startScripts.mainClassName = 'de.ii.xsf.runtime.FelixRuntime'
+mainClassName = "de.ii.xsf.runtime.FelixRuntime"
+
+/*task devBundles(type: Sync) {
+    from configurations.bundles.resolvedConfiguration.resolvedArtifacts.findAll({
+        it.moduleVersion.id in configurations.bundles.incoming.resolutionResult.root.dependencies.collect({it.selected.dependencies}).collectNested({it.selected.moduleVersion}).flatten()
+    }).collect({it.file})
+    into "$buildDir/bundles/runtime"
+}*/
+
+task devBundlesRuntime(type: Sync) {
+    from configurations.bundlesRuntime
+    into "$buildDir/bundles/runtime"
+}
+
+task devBundles(type: Sync) {
+    dependsOn tasks.devBundlesRuntime
+    from configurations.bundles
+    into "$buildDir/bundles/platform"
+}
+
+task devEnv {
+    inputs.file devel.cfgFile
+    //outputs.dir devel.cfgDir
+    dependsOn tasks.devBundles
+    doLast {
+        if (!new File(devel.cfgDir, cfgFileName).exists()) {
+            copy {
+                from devel.cfgFile
+                into devel.cfgDir
+                rename { cfgFileName }
+            }
+        }
+        if (!devel.logDir.exists())
+        devel.logDir.mkdirs()
+        if (devel.felixCacheDir.exists())
+        devel.felixCacheDir.deleteDir()
+    }
+}
+
+run {
+    dependsOn devEnv
+    workingDir = buildDir
+    //args = ["server", "cfg/xsf.json"]
+}
+
+docker {
+    javaApplication {
+        baseImage = 'jeanblanchard/java:8'
+        port = 7080
+    }
+}

@@ -1,0 +1,8 @@
+*.sw*
+*~
+*.sublime-project
+*.sublime-workspace
+*.iml
+build/
+.idea/
+.gradle/

@@ -1,0 +1,42 @@
+{{> header}}
+
+<div itemscope itemtype="http://schema.org/Dataset">
+    <h3 itemprop="name">{{directory.name}}</h3>
+    <p>
+        <b>Description:</b>&nbsp;
+        <span itemprop="description">{{directory.description}}</span>
+    </p>
+    <br/>
+    <p>
+        <b>WFS:</b>&nbsp;
+        <link itemprop="url" href="{{prefix}}{{token}}"/>
+        <a itemprop="sameAs" href="{{directory.url}}" target="_blank">{{directory.url}}</a>
+    </p>
+    <p>
+        <b>Keywords:</b>&nbsp;
+        <span itemprop="keywords">{{directory.keywords}}</span>
+    </p>
+    <p>
+        <b>License:</b>&nbsp;
+        <span itemprop="license">{{directory.license}}</span>
+    </p>
+    <p itemprop="spatial" itemscope itemtype="http://schema.org/Place">
+        <b>Bounding Box:</b>&nbsp;
+        <span itemprop="geo" itemscope itemtype="http://schema.org/GeoShape">
+            <span itemprop="box">{{directory.bbox}}</span>
+        </span>
+    </p>
+    <p><b>Feature Types:</b></p>
+    <ul>
+        {{#directory.featureTypes}}
+        <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
+            <a itemprop="url" href="{{prefix}}{{.}}/{{token}}">{{.}}</a>
+        </li>
+        {{/directory.featureTypes}}
+        {{^directory.featureTypes}}
+        <i>None</i>
+        {{/directory.featureTypes}}
+    </ul>
+</div>
+
+{{> footer}}

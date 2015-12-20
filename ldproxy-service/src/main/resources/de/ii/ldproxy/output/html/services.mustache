@@ -1,0 +1,14 @@
+{{> header}}
+
+<h3>Folder: /</h3>
+<h4>Services:</h4>
+<ul>
+{{#directory}}
+<li><a href="{{prefix}}{{id}}/FeatureServer/">{{id}}</a>&nbsp;({{type}})</li>
+{{/directory}}
+{{^directory}}
+<i>None</i>
+{{/directory}}
+</ul>
+
+{{> footer}}
