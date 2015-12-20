@@ -23,6 +23,13 @@ ext {
         felixCacheDir: new File(new File(buildDir, 'cfg'), 'felix-cache'),
         cfgFile: file('cfg/xsf.development.json')
     ]
+    testing = [
+            dir: new File(buildDir, 'testing'),
+            cfgDir: new File(buildDir, 'testing/cfg'),
+            logDir:  new File(buildDir, 'testing/log'),
+            bundlesDir: new File(buildDir, 'testing/bundles'),
+            cfgFile: file('cfg/xsf.development.json')
+    ]
 }
 
 allprojects {
@@ -136,8 +143,9 @@ dependencies {
     bundles group: 'de.interactive-instruments', name: 'xtraplatform-bundles-devel', version: '1.0.0-SNAPSHOT'
     bundles group: 'de.interactive-instruments', name: 'xtraplatform-sdi', version: '0.1.0-SNAPSHOT'
 
+    // TODO: is not compiled on installDist
     subprojects.each {
-        bundles(it) {
+        bundles(project(":${it.name}")) {
             transitive = false
         }
     }
@@ -151,7 +159,7 @@ configurations.all {
 apply plugin: 'application'
 apply plugin: 'com.bmuschko.docker-java-application'
 
-//startScripts.mainClassName = 'de.ii.xsf.runtime.FelixRuntime'
+startScripts.mainClassName = 'de.ii.xsf.runtime.FelixRuntime'
 mainClassName = "de.ii.xsf.runtime.FelixRuntime"
 
 /*task devBundles(type: Sync) {
@@ -191,6 +199,44 @@ task devEnv {
     }
 }
 
+task testingEnv {
+    inputs.file testing.cfgFile
+    outputs.dir testing.dir
+
+    doLast {
+        copy {
+            from testing.cfgFile
+            into testing.cfgDir
+            rename { cfgFileName }
+        }
+        if (!testing.logDir.exists())
+            testing.logDir.mkdirs()
+        if (!testing.bundlesDir.exists()) {
+            testing.bundlesDir.mkdirs()
+        }
+        copy {
+            from configurations.bundles
+            into new File(testing.bundlesDir, 'platform')
+        }
+        copy {
+            from configurations.bundlesRuntime
+            into new File(testing.bundlesDir, 'runtime')
+        }
+    }
+}
+// TODO
+/*distributions {
+    main {
+        contents {
+            from(createDocs) {
+                into "docs"
+            }
+        }
+    }
+}*/
+
+applicationDistribution.from(testingEnv)
+
 run {
     dependsOn devEnv
     workingDir = buildDir
@@ -198,6 +244,7 @@ run {
 }
 
 docker {
+    url = 'unix:///var/run/docker.sock'
     javaApplication {
         baseImage = 'jeanblanchard/java:8'
         port = 7080
