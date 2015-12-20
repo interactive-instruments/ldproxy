@@ -1,3 +1,5 @@
+rootProject.name = 'ldproxy'
+
 rootDir.listFiles().each { file ->
     if (file.isDirectory() && (file.name.startsWith('ldproxy-') || file.name.startsWith('xtraplatform-'))) {
     	include file.name
