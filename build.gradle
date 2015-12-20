@@ -94,7 +94,7 @@ subprojects {
         provided group: 'de.interactive-instruments', name: 'xtraplatform-api', version: '1.0.0-SNAPSHOT'
         provided group: 'de.interactive-instruments', name: 'xtraplatform-dropwizard', version: '1.0.0-SNAPSHOT'
 
-        provided group: 'de.interactive-instruments', name: 'xtraplatform-sdi', version: '0.1.0-SNAPSHOT'
+        provided group: 'de.interactive-instruments', name: 'xtraplatform-sdi-tools', version: '0.1.0-SNAPSHOT'
     }
     
     jar {
