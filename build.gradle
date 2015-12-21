@@ -243,6 +243,18 @@ run {
     //args = ["server", "cfg/xsf.json"]
 }
 
+task(debug, type: JavaExec) {
+    main = "de.ii.xsf.runtime.FelixRuntime"
+    dependsOn classes
+    dependsOn devEnv
+    //dependsOn configurations.bundles
+    classpath sourceSets.main.runtimeClasspath
+    //classpath configurations.bundles
+    workingDir = buildDir
+    //args = ["server", "cfg/xsf.json"]
+    debug = true
+}
+
 docker {
     url = 'unix:///var/run/docker.sock'
     javaApplication {

@@ -209,7 +209,8 @@ public class LdProxyServiceResource implements ServiceResource {
         if (fields != null && fields.equals("woonplaats")) {
             WfsProxyFeatureType featureType2 = new WfsProxyFeatureType();
             featureType2.setName("member");
-            featureType2.setNamespace(service.getWfsAdapter().getNsStore().getNamespaceURI("wfs"));
+            // TODO
+            featureType2.setNamespace(service.getWfsAdapter().getNsStore().getNamespaceURI("ns0"));
             featureType2.setMappings(featureType.getMappings());
             return getHtmlResponse(getWfsPropertiesPaged(layerid, range, fields), featureType2, true, groupings, true, query);
         } else if (uriInfo.getQueryParameters().containsKey("woonplaats")) {
