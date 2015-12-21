@@ -22,7 +22,7 @@
             "appenders": [
                 {
                     "type": "file",
-                    "currentLogFilename": "./target/log/requests.log",
+                    "currentLogFilename": "./log/requests.log",
                     "archive": false,
                     "timeZone": "Europe/Berlin"
                 }
@@ -43,7 +43,7 @@
             },
             {
                 "type": "file",
-                "currentLogFilename": "./target/log/xsf.log",
+                "currentLogFilename": "./log/xsf.log",
                 "archive": false,
                 "timeZone": "Europe/Berlin"
             }

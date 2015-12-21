@@ -134,6 +134,7 @@ configurations {
     bundlesRuntime
 }
 dependencies {
+    // TODO: are all the jars in lib dependencies of this?
     compile group: 'de.interactive-instruments', name: 'xtraplatform-runtime', version: '1.0.0-SNAPSHOT'
     bundles(group: 'de.interactive-instruments', name: 'xtraplatform-bundles-core', version: '1.0.0-SNAPSHOT') {
         exclude module: 'xtraplatform-kvstore-inmemory'
@@ -143,9 +144,8 @@ dependencies {
     bundles group: 'de.interactive-instruments', name: 'xtraplatform-bundles-devel', version: '1.0.0-SNAPSHOT'
     bundles group: 'de.interactive-instruments', name: 'xtraplatform-sdi-tools', version: '0.1.0-SNAPSHOT'
 
-    // TODO: is not compiled on installDist
     subprojects.each {
-        bundles(project(":${it.name}")) {
+        bundles(it) {
             transitive = false
         }
     }
@@ -200,42 +200,36 @@ task devEnv {
 }
 
 task testingEnv {
-    inputs.file testing.cfgFile
     outputs.dir testing.dir
 
     doLast {
-        copy {
-            from testing.cfgFile
-            into testing.cfgDir
-            rename { cfgFileName }
-        }
         if (!testing.logDir.exists())
             testing.logDir.mkdirs()
-        if (!testing.bundlesDir.exists()) {
-            testing.bundlesDir.mkdirs()
-        }
-        copy {
-            from configurations.bundles
-            into new File(testing.bundlesDir, 'platform')
-        }
-        copy {
-            from configurations.bundlesRuntime
-            into new File(testing.bundlesDir, 'runtime')
-        }
     }
 }
 // TODO
-/*distributions {
+distributions {
     main {
+        //baseName = "bla"
         contents {
-            from(createDocs) {
-                into "docs"
+            includeEmptyDirs = true
+            from(testing.cfgFile) {
+                into "cfg"
+                rename { cfgFileName }
+            }
+            // TODO: empty log dir
+            from(testing.dir)
+            from(configurations.bundles) {
+                into "bundles/platform"
+            }
+            from(configurations.bundlesRuntime) {
+                into "bundles/runtime"
             }
         }
     }
-}*/
+}
 
-applicationDistribution.from(testingEnv)
+distTar.dependsOn testingEnv
 
 run {
     dependsOn devEnv
@@ -255,10 +249,58 @@ task(debug, type: JavaExec) {
     debug = true
 }
 
+import com.bmuschko.gradle.docker.tasks.container.*
+import com.bmuschko.gradle.docker.tasks.image.*
+
 docker {
     url = 'unix:///var/run/docker.sock'
     javaApplication {
         baseImage = 'java:8'
         port = 7080
+        tag = "ldproxy:latest"
     }
+}
+
+task stopContainer(type: DockerStopContainer) {
+    targetContainerId {
+        def f = file("/tmp/docker_id_ldproxy_demo")
+        f.exists() ? f.text : ""
+    }
+}
+
+task removeContainer(type: DockerRemoveContainer) {
+    targetContainerId {
+        def f = file("/tmp/docker_id_ldproxy_demo")
+        f.exists() ? f.text : ""
+    }
+}
+
+dockerBuildImage.finalizedBy stopContainer
+stopContainer.finalizedBy removeContainer
+
+task createContainer(type: DockerCreateContainer) {
+    dependsOn dockerBuildImage
+    targetImageId { dockerBuildImage.getImageId() }
+    portBindings = ['7080:7080']
+    workingDir = "/${project.name}-${project.version}"
+    containerName = "ldproxy_demo"
+    binds = [
+            "/opt/ldproxy_demo/cfg": "/${project.name}-${project.version}/cfg",
+            "/opt/ldproxy_demo/log": "/${project.name}-${project.version}/log"
+    ]
+}
+
+task saveContainerId << {
+    if (!createContainer.getContainerId().isEmpty())
+        file("/tmp/docker_id_ldproxy_demo").text = createContainer.getContainerId()
+}
+createContainer.finalizedBy saveContainerId
+
+task startContainer(type: DockerStartContainer) {
+    dependsOn createContainer
+    targetContainerId { createContainer.getContainerId() }
+}
+
+task upgradeContainer {
+    dependsOn startContainer
 }
