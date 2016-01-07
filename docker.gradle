@@ -1,0 +1,73 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath group: 'com.bmuschko', name: 'gradle-docker-plugin', version: '2.6.1'
+    }
+}
+
+
+apply plugin: com.bmuschko.gradle.docker.DockerJavaApplicationPlugin
+
+import com.bmuschko.gradle.docker.tasks.container.*
+import com.bmuschko.gradle.docker.tasks.image.*
+
+ext {
+    containerSuffix = System.getProperty('docker.container') ?: "demo"
+    hostPort = System.getProperty('docker.port') ?: 7080
+
+    containerName = "${project.name}_${containerSuffix}"
+    containerIdFile = file("/tmp/docker_id_${containerName}")
+    applicationDir = "/${project.name}-${project.version}"
+}
+
+docker {
+    url = 'unix:///var/run/docker.sock'
+    javaApplication {
+        baseImage = 'java:8'
+        port = 7080
+        tag = "${project.name}:latest"
+    }
+}
+
+task stopContainer(type: DockerStopContainer) {
+    targetContainerId {
+        containerIdFile.exists() ? containerIdFile.text : ""
+    }
+}
+dockerBuildImage.finalizedBy stopContainer
+
+task removeContainer(type: DockerRemoveContainer) {
+    targetContainerId {
+        containerIdFile.exists() ? containerIdFile.text : ""
+    }
+}
+stopContainer.finalizedBy removeContainer
+
+task createContainer(type: DockerCreateContainer) {
+    dependsOn dockerBuildImage
+    targetImageId { dockerBuildImage.getImageId() }
+    portBindings = ["${hostPort}:${docker.javaApplication.port}"]
+    workingDir = applicationDir
+    containerName = project.containerName
+    binds = [
+            "${project.containerName}_data": "${applicationDir}/data"
+    ]
+}
+
+task saveContainerId << {
+    if (!createContainer.getContainerId().isEmpty())
+        containerIdFile.text = createContainer.getContainerId()
+}
+createContainer.finalizedBy saveContainerId
+
+task startContainer(type: DockerStartContainer) {
+    dependsOn createContainer
+    targetContainerId { createContainer.getContainerId() }
+}
+
+task upgradeContainer {
+    dependsOn startContainer
+}

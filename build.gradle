@@ -9,7 +9,6 @@ buildscript {
     dependencies { 
         classpath group: 'de.interactive-instruments', name: 'gradle-plugin-forgerock-i18n', version: '1.0.6'
         classpath group: 'de.interactive-instruments', name: 'gradle-plugin-osgi-ipojo', version: '1.12.1.26'
-        classpath group: 'com.bmuschko', name: 'gradle-docker-plugin', version: '2.6.1'
         
     } 
 }
@@ -17,10 +16,10 @@ buildscript {
 ext {
     cfgFileName = 'xsf.json'
     devel = [
-        cfgDir: new File(buildDir, 'cfg'),
-        logDir:  new File(buildDir, 'log'),
+        dataDir: new File(buildDir, 'data'),
+        logDir:  new File(buildDir, 'data/log'),
         bundlesDir: new File(buildDir, 'bundles'),
-        felixCacheDir: new File(new File(buildDir, 'cfg'), 'felix-cache'),
+        felixCacheDir: new File(new File(buildDir, 'data'), 'felix-cache'),
         cfgFile: file('cfg/xsf.development.json')
     ]
     testing = [
@@ -157,10 +156,9 @@ configurations.all {
 }
 
 apply plugin: 'application'
-apply plugin: 'com.bmuschko.docker-java-application'
 
-startScripts.mainClassName = 'de.ii.xsf.runtime.FelixRuntime'
-mainClassName = "de.ii.xsf.runtime.FelixRuntime"
+//startScripts.mainClassName = 'de.ii.xsf.runtime.FelixRuntime'
+mainClassName = "de.ii.xtraplatform.runtime.FelixRuntime"
 
 /*task devBundles(type: Sync) {
     from configurations.bundles.resolvedConfiguration.resolvedArtifacts.findAll({
@@ -181,19 +179,13 @@ task devBundles(type: Sync) {
 }
 
 task devEnv {
-    inputs.file devel.cfgFile
     //outputs.dir devel.cfgDir
     dependsOn tasks.devBundles
     doLast {
-        if (!new File(devel.cfgDir, cfgFileName).exists()) {
-            copy {
-                from devel.cfgFile
-                into devel.cfgDir
-                rename { cfgFileName }
-            }
-        }
+        if (!devel.dataDir.exists())
+        devel.dataDir.mkdirs()
         if (!devel.logDir.exists())
-        devel.logDir.mkdirs()
+            devel.logDir.mkdirs()
         if (devel.felixCacheDir.exists())
         devel.felixCacheDir.deleteDir()
     }
@@ -212,13 +204,13 @@ distributions {
     main {
         //baseName = "bla"
         contents {
-            includeEmptyDirs = true
+            /*includeEmptyDirs = true
             from(testing.cfgFile) {
                 into "cfg"
                 rename { cfgFileName }
             }
             // TODO: empty log dir
-            from(testing.dir)
+            from(testing.dir)*/
             from(configurations.bundles) {
                 into "bundles/platform"
             }
@@ -238,7 +230,7 @@ run {
 }
 
 task(debug, type: JavaExec) {
-    main = "de.ii.xsf.runtime.FelixRuntime"
+    main = "de.ii.xtraplatform.runtime.FelixRuntime"
     dependsOn classes
     dependsOn devEnv
     //dependsOn configurations.bundles
@@ -249,58 +241,4 @@ task(debug, type: JavaExec) {
     debug = true
 }
 
-import com.bmuschko.gradle.docker.tasks.container.*
-import com.bmuschko.gradle.docker.tasks.image.*
-
-docker {
-    url = 'unix:///var/run/docker.sock'
-    javaApplication {
-        baseImage = 'java:8'
-        port = 7080
-        tag = "ldproxy:latest"
-    }
-}
-
-task stopContainer(type: DockerStopContainer) {
-    targetContainerId {
-        def f = file("/tmp/docker_id_ldproxy_demo")
-        f.exists() ? f.text : ""
-    }
-}
-
-task removeContainer(type: DockerRemoveContainer) {
-    targetContainerId {
-        def f = file("/tmp/docker_id_ldproxy_demo")
-        f.exists() ? f.text : ""
-    }
-}
-
-dockerBuildImage.finalizedBy stopContainer
-stopContainer.finalizedBy removeContainer
-
-task createContainer(type: DockerCreateContainer) {
-    dependsOn dockerBuildImage
-    targetImageId { dockerBuildImage.getImageId() }
-    portBindings = ['7080:7080']
-    workingDir = "/${project.name}-${project.version}"
-    containerName = "ldproxy_demo"
-    binds = [
-            "/opt/ldproxy_demo/cfg": "/${project.name}-${project.version}/cfg",
-            "/opt/ldproxy_demo/log": "/${project.name}-${project.version}/log"
-    ]
-}
-
-task saveContainerId << {
-    if (!createContainer.getContainerId().isEmpty())
-        file("/tmp/docker_id_ldproxy_demo").text = createContainer.getContainerId()
-}
-createContainer.finalizedBy saveContainerId
-
-task startContainer(type: DockerStartContainer) {
-    dependsOn createContainer
-    targetContainerId { createContainer.getContainerId() }
-}
-
-task upgradeContainer {
-    dependsOn startContainer
-}
+apply from: 'docker.gradle'
