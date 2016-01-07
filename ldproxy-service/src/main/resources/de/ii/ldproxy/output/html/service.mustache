@@ -1,42 +1,111 @@
 {{> header}}
 
-<div itemscope itemtype="http://schema.org/Dataset">
-    <h3 itemprop="name">{{directory.name}}</h3>
-    <p>
-        <b>Description:</b>&nbsp;
-        <span itemprop="description">{{directory.description}}</span>
-    </p>
+<div class="container" itemscope itemtype="http://schema.org/Dataset">
+    <h1 itemprop="name">{{directory.name}}</h1>
+    <span itemprop="description">{{directory.description}}</span>
     <br/>
-    <p>
-        <b>WFS:</b>&nbsp;
-        <link itemprop="url" href="{{prefix}}{{token}}"/>
-        <a itemprop="sameAs" href="{{directory.url}}" target="_blank">{{directory.url}}</a>
-    </p>
-    <p>
-        <b>Keywords:</b>&nbsp;
-        <span itemprop="keywords">{{directory.keywords}}</span>
-    </p>
-    <p>
-        <b>License:</b>&nbsp;
-        <span itemprop="license">{{directory.license}}</span>
-    </p>
-    <p itemprop="spatial" itemscope itemtype="http://schema.org/Place">
-        <b>Bounding Box:</b>&nbsp;
-        <span itemprop="geo" itemscope itemtype="http://schema.org/GeoShape">
-            <span itemprop="box">{{directory.bbox}}</span>
-        </span>
-    </p>
-    <p><b>Feature Types:</b></p>
-    <ul>
-        {{#directory.featureTypes}}
-        <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
-            <a itemprop="url" href="{{prefix}}{{.}}/{{token}}">{{.}}</a>
-        </li>
-        {{/directory.featureTypes}}
-        {{^directory.featureTypes}}
-        <i>None</i>
-        {{/directory.featureTypes}}
-    </ul>
+    <br/>
+    <br/>
+    <dl class="dl-horizontal">
+        <dt>Feature Types</dt>
+        <dd>
+            <ul class="list-unstyled">
+                {{#directory.featureTypes}}
+                    <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
+                        <a itemprop="url" href="{{prefix}}{{.}}/{{token}}">{{.}}</a>
+                    </li>
+                {{/directory.featureTypes}}
+                {{^directory.featureTypes}}
+                    <i>None</i>
+                {{/directory.featureTypes}}
+            </ul>
+        </dd>
+        <dt>Keywords</dt>
+        <dd>
+            <span itemprop="keywords">
+                <ul class="list-comma-separated">
+                    {{#directory.keywords}}
+                        <li>{{.}}</li>
+                    {{/directory.keywords}}
+                </ul>
+            </span>
+        </dd>
+        <dt>License</dt>
+        <dd>
+            <span itemprop="license">{{directory.license}}</span>
+        </dd>
+        <dt>Extent</dt>
+        <dd>
+            <span itemprop="spatial" itemscope itemtype="http://schema.org/Place">
+                <span itemprop="geo" itemscope itemtype="http://schema.org/GeoShape">
+                    <span itemprop="box">{{directory.bbox}}</span>
+                </span>
+            </span>
+        </dd>
+        <dt>WFS</dt>
+        <dd>
+            <link itemprop="url" href="{{prefix}}{{token}}"/>
+            <a itemprop="sameAs" href="{{directory.url}}" target="_blank">{{directory.url}}</a>
+        </dd>
+        <dt>Provider</dt>
+        <dd>
+            <ul class="list-unstyled" itemprop="provider" itemscope itemtype="http://schema.org/Organization">
+                <li itemprop="name">{{directory.providerName}}</li>
+                {{#directory.providerUrl}}
+                    <li itemprop="url">{{.}}</li>
+                {{/directory.providerUrl}}
+                {{^directory.providerUrl}}
+                    <li class="hidden" itemprop="url">http://www.example.com/todo</li>
+                {{/directory.providerUrl}}
+                <li itemprop="contactPoint" itemscope itemtype="http://schema.org/ContactPoint">
+                    <span class="hidden" itemprop="contactType">technical support</span>
+                    <ul class="list-unstyled">
+                        {{#directory.contactName}}
+                            <li itemprop="name">{{.}}</li>
+                        {{/directory.contactName}}
+                        {{#directory.contactEmail}}
+                            <li itemprop="email">{{.}}</li>
+                        {{/directory.contactEmail}}
+                        {{#directory.contactTelephone}}
+                            <li itemprop="telephone">{{.}}</li>
+                        {{/directory.contactTelephone}}
+                        {{#directory.contactFaxNumber}}
+                            <li itemprop="faxNumber">{{.}}</li>
+                        {{/directory.contactFaxNumber}}
+                        {{#directory.contactHoursOfService}}
+                            <li itemprop="hoursAvailable">{{.}}</li>
+                        {{/directory.contactHoursOfService}}
+                        {{#directory.contactUrl}}
+                            <li itemprop="url">{{.}}</li>
+                        {{/directory.contactUrl}}
+                        {{^directory.contactUrl}}
+                            <li class="hidden" itemprop="url">http://www.example.com/todo</li>
+                        {{/directory.contactUrl}}
+                    </ul>
+                </li>
+                <li itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+                    <ul class="list-unstyled">
+                        {{#directory.contactStreetAddress}}
+                            <li itemprop="streetAddress">{{.}}</li>
+                        {{/directory.contactStreetAddress}}
+                        {{#directory.contactLocality}}
+                            <li itemprop="addressLocality">{{.}}</li>
+                        {{/directory.contactLocality}}
+                        {{#directory.contactPostalCode}}
+                            <li itemprop="postalCode">{{.}}</li>
+                        {{/directory.contactPostalCode}}
+                        {{#directory.contactRegion}}
+                            <li itemprop="addressRegion">{{.}}</li>
+                        {{/directory.contactRegion}}
+                        {{#directory.contactCountry}}
+                            <li itemprop="addressCountry">{{.}}</li>
+                        {{/directory.contactCountry}}
+                    </ul>
+                </li>
+            </ul>
+        </dd>
+    </dl>
+
 </div>
 
 {{> footer}}

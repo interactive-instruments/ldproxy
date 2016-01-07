@@ -1,17 +1,61 @@
+<!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
 	<title>ldproxy REST Browser</title>
-	<style lang="text/css">
-		body {
-			font-family: sans-serif;
-			font-size: 0.9em;
-		}
-		a {
-			text-decoration: none;
-		}
-	</style>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <style lang="text/css">
+        .dl-horizontal dt{
+            text-align: left;
+        }
+
+        .dl-horizontal dd{
+            margin-bottom: 1em;
+        }
+        .list-comma-separated
+        {
+        padding: 0;
+        margin: 0;
+        }
+        .list-comma-separated li
+        {
+        display: inline;
+        }
+        .list-comma-separated li:not(:last-of-type)::after
+        {
+        content: ", ";
+        }
+    </style>
 </head>
 <body>
-	<h4>ldproxy</h4>
-	<hr/>
-	<a href="{{jsonQuery}}" target="_blank" style="font-size: 0.8em;">JSON</a>&nbsp;|&nbsp;<a href="{{xmlQuery}}" target="_blank" style="font-size: 0.8em;">XML</a>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">ldproxy</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="{{jsonQuery}}" target="_blank" style="font-size: 0.8em;">JSON</a></li>
+                    <li><a href="{{xmlQuery}}" target="_blank" style="font-size: 0.8em;">XML</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
+

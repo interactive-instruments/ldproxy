@@ -87,7 +87,7 @@ public class LdProxyServiceResource implements ServiceResource {
     @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
     public View getDatasetAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @QueryParam("token") String token) {
-        DatasetDAO dataset = new DatasetDAO();
+        DatasetDTO dataset = new DatasetDTO();
         //dataset.name = "Agrarisch Areaal Nederland WFS";
         dataset.featureTypes = new HashSet<>();
         for (WfsProxyFeatureType ft: service.getFeatureTypes().values()) {

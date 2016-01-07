@@ -1,5 +1,6 @@
 package de.ii.ldproxy.output.html;
 
+import com.google.common.base.Strings;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.wfs.parser.AbstractWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
@@ -8,33 +9,102 @@ import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
  * @author zahnen
  */
 public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer {
-    private DatasetDAO dataset;
+    private DatasetDTO dataset;
 
-    public GetCapabilities2Dataset(DatasetDAO dataset) {
+    public GetCapabilities2Dataset(DatasetDTO dataset) {
         this.dataset = dataset;
     }
 
     @Override
-    public void analyzeTitle(String s) {
-        // TODO : fix parser, remove aggregation
-        if (dataset.name == null) {
-            dataset.name = s;
+    public void analyzeTitle(String title) {
+        dataset.name = title;
+    }
+
+    @Override
+    public void analyzeAbstract(String abstrct) {
+        dataset.description = abstrct.trim();
+    }
+
+    @Override
+    public void analyzeKeywords(String... keywords) {
+        for (String keyword: keywords) {
+            dataset.keywords.add(keyword);
         }
     }
 
     @Override
-    public void analyzeAccessConstraints(String s) {
-        dataset.license = s;
+    public void analyzeAccessConstraints(String accessConstraints) {
+        dataset.license = accessConstraints;
     }
 
     @Override
-    public void analyzeVersion(String s) {
+    public void analyzeVersion(String version) {
 
     }
 
     @Override
-    public void analyzeFeatureType(String s) {
+    public void analyzeProviderName(String providerName) {
+        dataset.providerName = providerName;
+    }
 
+    @Override
+    public void analyzeProviderSite(String providerSite) {
+        dataset.providerUrl = providerSite;
+    }
+
+    @Override
+    public void analyzeServiceContactIndividualName(String individualName) {
+        dataset.contactName = individualName;
+    }
+
+    @Override
+    public void analyzeServiceContactPhone(String phone) {
+        dataset.contactTelephone = phone;
+    }
+
+    @Override
+    public void analyzeServiceContactFacsimile(String facsimile) {
+        dataset.contactFaxNumber = facsimile;
+    }
+
+    @Override
+    public void analyzeServiceContactEmail(String email) {
+        dataset.contactEmail = email;
+    }
+
+    @Override
+    public void analyzeServiceContactHoursOfService(String hoursOfService) {
+        dataset.contactHoursOfService = hoursOfService;
+    }
+
+    @Override
+    public void analyzeServiceContactOnlineResource(String onlineResource) {
+        dataset.contactUrl = onlineResource;
+    }
+
+    @Override
+    public void analyzeServiceContactDeliveryPoint(String deliveryPoint) {
+        dataset.contactStreetAddress = deliveryPoint;
+    }
+
+    @Override
+    public void analyzeServiceContactCity(String city) {
+        dataset.contactLocality = city;
+    }
+
+    @Override
+    public void analyzeServiceContactAdministrativeArea(String administrativeArea) {
+        dataset.contactRegion = administrativeArea;
+    }
+
+    @Override
+    public void analyzeServiceContactPostalCode(String postalCode) {
+        dataset.contactPostalCode = postalCode;
+    }
+
+    @Override
+    public void analyzeServiceContactCountry(String country) {
+        dataset.contactCountry = country;
     }
 
     @Override
@@ -43,9 +113,9 @@ public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer imp
     }
 
     @Override
-    public void analyzeOperationGetUrl(WFS.OPERATION operation, String s) {
+    public void analyzeOperationGetUrl(WFS.OPERATION operation, String url) {
         if (operation == WFS.OPERATION.GET_CAPABILITES) {
-            dataset.url = s;
+            dataset.url = url;
         }
     }
 }
