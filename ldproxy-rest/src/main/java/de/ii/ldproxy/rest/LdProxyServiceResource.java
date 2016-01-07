@@ -1,10 +1,7 @@
 package de.ii.ldproxy.rest;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multiset;
 import de.ii.ldproxy.gml2json.GeoJsonFeatureWriter;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
 import de.ii.ldproxy.output.html.*;
@@ -12,7 +9,6 @@ import de.ii.ldproxy.service.GetFeatureById;
 import de.ii.ldproxy.service.GetFeaturePaging;
 import de.ii.ldproxy.service.GetPropertyValuePaging;
 import de.ii.ldproxy.service.LdProxyService;
-import de.ii.ogc.wfs.proxy.WfsProxyCapabilitiesAnalyzer;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
 import de.ii.xsf.core.api.MediaTypeCharset;
 import de.ii.xsf.core.api.Service;
@@ -29,17 +25,14 @@ import de.ii.xtraplatform.ogc.api.wfs.client.DescribeFeatureType;
 import de.ii.xtraplatform.ogc.api.wfs.client.GetCapabilities;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSOperation;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSRequest;
+import de.ii.xtraplatform.ogc.api.wfs.parser.LoggingWfsCapabilitiesAnalyzer;
+import de.ii.xtraplatform.ogc.api.wfs.parser.MultiWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesParser;
-import de.ii.xtraplatform.util.json.JSONPOutputStream;
-import de.ii.xtraplatform.util.json.JSONPStreamingOutput;
 import io.dropwizard.views.View;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpRequest;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
-import org.slf4j.MDC;
 
-import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -103,7 +96,11 @@ public class LdProxyServiceResource implements ServiceResource {
 
         WFSOperation operation = new GetCapabilities();
 
-        WFSCapabilitiesAnalyzer analyzer = new GetCapabilities2Dataset(dataset);
+        WFSCapabilitiesAnalyzer analyzer = new MultiWfsCapabilitiesAnalyzer(
+                new GetCapabilities2Dataset(dataset),
+                new LoggingWfsCapabilitiesAnalyzer()
+        );
+
         WFSCapabilitiesParser wfsParser = new WFSCapabilitiesParser(analyzer, service.staxFactory);
 
         wfsParser.parse(service.getWfsAdapter().request(operation));
@@ -394,7 +391,7 @@ public class LdProxyServiceResource implements ServiceResource {
 
     private String[] parseLayerId(String layerId) {
         String[] ft = layerId.split(":");
-        LOGGER.getLogger().debug("LAYER {}", (String[])ft);
+        LOGGER.getLogger().debug("LAYER {}", (Object)ft);
         if (ft.length == 1) {
             String[] ft2 = {ft[0], ft[0]};
             return ft2;

@@ -69,7 +69,7 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
             outputStreamWriter.write("\t<li><a href=\"?" + query + "&f=xml\" target=\"_blank\" style=\"font-size: 0.8em;\">XML</a></li>\n");
             outputStreamWriter.write("\t</ul>\n");
 
-            if (!isGrouped && (query.isEmpty() || !query.startsWith(groupings.get(0)))) {
+            if (!isGrouped && (query.isEmpty() || groupings.isEmpty() || !query.startsWith(groupings.get(0)))) {
                 if (!groupings.isEmpty()) {
                     outputStreamWriter.write("<h4>Browse by:</h4><ul>");
                     for (String group : groupings) {

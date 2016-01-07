@@ -1,22 +1,21 @@
 package de.ii.ogc.wfs.proxy;
 
 import de.ii.xsf.logging.XSFLogger;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import javax.xml.stream.XMLStreamReader;
-
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.i18n.FrameworkMessages;
+import de.ii.xtraplatform.ogc.api.wfs.parser.AbstractWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  *
  * @author zahnen
  */
-public class WfsProxyCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer {
+public class WfsProxyCapabilitiesAnalyzer extends AbstractWfsCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer  {
 
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(WfsProxyCapabilitiesAnalyzer.class);
     private WfsProxyService wfsProxy;
@@ -39,25 +38,18 @@ public class WfsProxyCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer {
     }
 
     @Override
-    public void analyzeCopyright(String copyright) {
-        //gsfs.setCopyright(copyright);
+    public void analyzeNamespace(String prefix, String uri) {
+        wfsProxy.getWfsAdapter().addNamespace(prefix, uri);
     }
 
     @Override
-    public void analyzeNamespaces(XMLStreamReader xml) {
-        for (int i = 0; i < xml.getNamespaceCount(); i++) {
-            wfsProxy.getWfsAdapter().addNamespace(xml.getNamespacePrefix(i), xml.getNamespaceURI(i));
-        }
-    }
+    public void analyzeFeatureType(String featureTypeName) {
 
-    @Override
-    public void analyzeFeatureType(String name) {
+        if (!featureTypeName.equals("gml:AbstractFeature")) {
+            String uri = wfsProxy.getWfsAdapter().getNsStore().getNamespaceURI(wfsProxy.getWfsAdapter().getNsStore().extractPrefix(featureTypeName));
+            String localName = wfsProxy.getWfsAdapter().getNsStore().getLocalName(featureTypeName);
 
-        if (!name.equals("gml:AbstractFeature")) {
-            String uri = wfsProxy.getWfsAdapter().getNsStore().getNamespaceURI(wfsProxy.getWfsAdapter().getNsStore().extractPrefix(name));
-            String localName = wfsProxy.getWfsAdapter().getNsStore().getLocalName(name);
-
-            LOGGER.debug(FrameworkMessages.WFS_FEATURETYPE_NAME, name);
+            LOGGER.debug(FrameworkMessages.WFS_FEATURETYPE_NAME, featureTypeName);
 
             String displayName = wfsProxy.getWfsAdapter().getNsStore().getShortNamespacePrefix(uri); //getNamespacePrefix(uri);
             if (displayName.length() > 0) {
@@ -73,20 +65,7 @@ public class WfsProxyCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer {
     }
 
     @Override
-    public void analyzeBoundingBox(String bblower, String bbupper) {
-
-        if (bblower != null && bbupper != null) {
-            double xmin = Double.parseDouble(bblower.substring(0, bblower.indexOf(" ")));
-            double ymin = Double.parseDouble(bblower.substring(bblower.indexOf(" ")));
-            double xmax = Double.parseDouble(bbupper.substring(0, bbupper.indexOf(" ")));
-            double ymax = Double.parseDouble(bbupper.substring(bbupper.indexOf(" ")));
-
-            analyzeBoundingBox(xmin, ymin, xmax, ymax);
-        }
-    }
-
-    @Override
-    public void analyzeBoundingBox(String xmin, String ymin, String xmax, String ymax) {
+    public void analyzeFeatureTypeBoundingBox(String featureTypeName, String xmin, String ymin, String xmax, String ymax) {
 
         double dxmin = Double.parseDouble(xmin);
         double dymin = Double.parseDouble(ymin);
@@ -133,15 +112,15 @@ public class WfsProxyCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer {
     }
 
     @Override
-    public void analyzeDefaultSRS(String name) {
+    public void analyzeFeatureTypeDefaultCrs(String featureTypeName, String crs) {
 
         //LOGGER.info("analyzing default SRS: {}", name);
         // TODO: workaround
-        if (name.equals("urn:ogc:def:crs:OGC:1.3:CRS84")) {
-            name = "EPSG:4326";
+        if (crs.equals("urn:ogc:def:crs:OGC:1.3:CRS84")) {
+            crs = "EPSG:4326";
         }
 
-        EpsgCrs sr = new EpsgCrs(name);
+        EpsgCrs sr = new EpsgCrs(crs);
         //if (!gsfs.getSrsTransformations().isAvailable() || gsfs.getSrsTransformations().isSrsSupported(sr)) {
             wfsProxy.getWfsAdapter().setDefaultCrs(sr);
         /*} else {
@@ -151,33 +130,35 @@ public class WfsProxyCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer {
     }
 
     @Override
-    public void analyzeOtherSRS(String name) {
-        EpsgCrs sr = new EpsgCrs(name);
+    public void analyzeFeatureTypeOtherCrs(String featureTypeName, String crs) {
+        EpsgCrs sr = new EpsgCrs(crs);
         //if (!gsfs.getSrsTransformations().isAvailable() || gsfs.getSrsTransformations().isSrsSupported(sr)) {
             wfsProxy.getWfsAdapter().addOtherCrs(sr);
         //}
     }
 
     @Override
-    public void analyzeDCPPOST(WFS.OPERATION op, String url) {
+    public void analyzeOperationPostUrl(WFS.OPERATION op, String url) {
         try {
             wfsProxy.getWfsAdapter().addUrl(new URI(url.trim()), op, WFS.METHOD.POST);
         } catch (URISyntaxException ex) {
-            java.util.logging.Logger.getLogger(WfsProxyCapabilitiesAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+            // TODO
         }
     }
 
     @Override
-    public void analyzeDCPGET(WFS.OPERATION op, String url) {
+    public void analyzeOperationGetUrl(WFS.OPERATION op, String url) {
         try {
             wfsProxy.getWfsAdapter().addUrl(new URI(url.trim()), op, WFS.METHOD.GET);
         } catch (URISyntaxException ex) {
-            java.util.logging.Logger.getLogger(WfsProxyCapabilitiesAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+            // TODO
         }
     }
 
     @Override
-    public void analyzeGMLOutputFormat(String outputformat) {
-        wfsProxy.getWfsAdapter().setGmlVersionFromOutputFormat(outputformat);
+    public void analyzeOperationParameter(WFS.OPERATION operation, WFS.VOCABULARY parameterName, String value) {
+        if (parameterName == WFS.VOCABULARY.OUTPUT_FORMAT) {
+            wfsProxy.getWfsAdapter().setGmlVersionFromOutputFormat(value);
+        }
     }
 }
