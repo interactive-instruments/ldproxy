@@ -298,6 +298,8 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
                     if (!multiContext) {
                         this.writeGeometryHeader(type);
+                        // TODO
+                        json.writeStartArray();
                         json.writeStartArray();
                         multiContext = true;
                     }
@@ -348,6 +350,8 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
             }
 
             if (multiContext) {
+                // TODO
+                json.writeEndArray();
                 json.writeEndArray();
             }
 

@@ -7,11 +7,11 @@
 
 	<title>ldproxy REST Browser</title>
 
-    <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
-    <!-- Optional theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
 
     <style lang="text/css">
         .dl-horizontal dt{
@@ -34,48 +34,65 @@
         {
         content: ", ";
         }
+        #map { height: 480px; }
+        .breadcrumb > li + li:before {
+        content: "\00BB";
+        color: #aaa;
+        }
+        .breadcrumb {
+        padding: 0;
+        margin: 15px 0;
+        background-color: transparent;
+        border-radius: 0;
+        -moz-border-radius: 0;
+        -webkit-border-radius: 0;
+        -o-border-radius: 0;
+        }
     </style>
 </head>
 <body>
 
     <!-- Fixed navbar -->
     <nav class="navbar navbar-default navbar-static-top">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">ldproxy</a>
+        </div>
         <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">ldproxy</a>
-            </div>
             <div id="navbar" class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li><a href="{{jsonQuery}}" target="_blank">JSON</a></li>
+                <ol class="breadcrumb navbar-text">
+                    {{#directory.breadCrumbs}}
+                        {{#url}}
+                            <li><a href="{{.}}">{{label}}</a></li>
+                        {{/url}}
+                        {{^url}}
+                            <li class="active">{{label}}</li>
+                        {{/url}}
+                    {{/directory.breadCrumbs}}
+                    {{#breadCrumbs}}
+                        {{#url}}
+                            <li><a href="{{.}}">{{label}}</a></li>
+                        {{/url}}
+                        {{^url}}
+                            <li class="active">{{label}}</li>
+                        {{/url}}
+                    {{/breadCrumbs}}
+                </ol>
+                <div class="navbar-right">
+                <p class="navbar-text">View as:</p>
+                <ul class="nav navbar-nav list-comma-separated">
+                    <li><a href="{{jsonQuery}}" target="_blank" class="navbar-link">JSON</a></li>
                     <li><a href="{{xmlQuery}}" target="_blank">XML</a></li>
                 </ul>
+                </div>
             </div><!--/.nav-collapse -->
         </div>
     </nav>
 
     <div class="container">
 
-        <ol class="breadcrumb">
-            {{#directory.breadCrumbs}}
-                {{#url}}
-                    <li><a href="{{.}}">{{label}}</a></li>
-                {{/url}}
-                {{^url}}
-                    <li class="active">{{label}}</li>
-                {{/url}}
-            {{/directory.breadCrumbs}}
-            {{#breadCrumbs}}
-                {{#url}}
-                    <li><a href="{{.}}">{{label}}</a></li>
-                {{/url}}
-                {{^url}}
-                    <li class="active">{{label}}</li>
-                {{/url}}
-            {{/breadCrumbs}}
-        </ol>
