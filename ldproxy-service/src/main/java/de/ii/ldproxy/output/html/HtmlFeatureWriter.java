@@ -11,6 +11,8 @@ import com.google.common.io.Resources;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
 import de.ii.xsf.logging.XSFLogger;
+import de.ii.xtraplatform.crs.api.CoordinateTuple;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import org.codehaus.staxmate.in.SMInputCursor;
@@ -45,6 +47,7 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
     protected String query;
     protected MustacheFactory mustacheFactory;
     protected int page;
+    protected CrsTransformer crsTransformer;
 
     public String jsonQuery;
     public String xmlQuery;
@@ -53,7 +56,7 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
     public List<NavigationDTO> pagination;
     public DatasetDTO dataset;
 
-    public HtmlFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, List<NavigationDTO> breadCrumbs, int[] range, DatasetDTO featureTypeDataset) {
+    public HtmlFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, List<NavigationDTO> breadCrumbs, int[] range, DatasetDTO featureTypeDataset, CrsTransformer crsTransformer) {
         this.outputStreamWriter = outputStreamWriter;
         this.currentPath = new XMLPathTracker();
         this.featureTypeMapping = featureTypeMapping;
@@ -85,6 +88,7 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
         if (range != null && range.length > 2) {
             this.page = range[2];
         }
+        this.crsTransformer = crsTransformer;
 
         this.jsonQuery = "?" + this.query + "&f=json";
         this.xmlQuery = "?" + this.query + "&f=xml";
@@ -346,8 +350,12 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
         } else if(isAddress && mapping.getName().equals("geom")) {
             currentFeature.geo = true;
             String[] coords = value.split(" ");
-            currentFeature.lat = coords[0];
-            currentFeature.lon = coords[1];
+            CoordinateTuple point = new CoordinateTuple(coords[0], coords[1]);
+            if (crsTransformer != null) {
+                point = crsTransformer.transform(point);
+            }
+            currentFeature.lon = point.getXasString();
+            currentFeature.lat = point.getYasString();
         } else {
             currentFeature.fields.add(new ImmutableMap.Builder<String,String>().put("name", mapping.getName()).put("value", value).build());
         }

@@ -12,6 +12,7 @@ import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
 import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.ogc.api.exceptions.GMLAnalyzeFailed;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
@@ -49,6 +50,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
     protected Map<String, Integer> fieldCounter;
     protected boolean isFeatureCollection;
     protected double maxAllowableOffset;
+    protected CrsTransformer crsTransformer;
 
     protected String outputFormat; // as constant somewhere
     protected WfsProxyFeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
@@ -58,7 +60,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
     // geometry
 
 
-    public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/) {
+    public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/, CrsTransformer crsTransformer) {
         this.jsonOut = jsonOut;
         this.json = jsonOut;
         this.jsonMapper = jsonMapper;
@@ -80,6 +82,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         this.geometryWithSR = false;
         this.maxAllowableOffset = layerQueryParams.getMaxAllowableOffset();
         */
+        this.crsTransformer = crsTransformer;
     }
 
     @Override
@@ -247,6 +250,10 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
             int srsDimension = 2;
 
             CoordinatesWriterType.Builder cwBuilder = CoordinatesWriterType.builder(json);
+
+            if (crsTransformer != null) {
+                cwBuilder.transformer(crsTransformer);
+            }
             /*CrsTransformer transformer = null;
             if (!layer.supportsSrs(outSRS)) {
                 // TODO
@@ -323,9 +330,9 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
                         CoordinateTuple point = new CoordinateTuple(korda[0], korda[1]);
 
-                        /*if (transformer != null) {
-                            point = transformer.transform(point);
-                        } else if (layer.getSrsTransformations().mustReverseOutputAxisOrder(outSRS)) {
+                        if (crsTransformer != null) {
+                            point = crsTransformer.transform(point);
+                        } /*else if (layer.getSrsTransformations().mustReverseOutputAxisOrder(outSRS)) {
                             point = new CoordinateTuple(point.getY(), point.getX());
                         }*/
 

@@ -383,7 +383,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
                 try {
 
-                    GMLAnalyzer jsonWriter = new GeoJsonFeatureWriter(service.createJsonGenerator(output), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2GeoJsonMapper.MIME_TYPE);
+                    GMLAnalyzer jsonWriter = new GeoJsonFeatureWriter(service.createJsonGenerator(output), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2GeoJsonMapper.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer());
                     GMLParser gmlParser = new GMLParser(jsonWriter, service.staxFactory);
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 
@@ -405,7 +405,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
                 try {
 
-                    GMLAnalyzer htmlWriter = new HtmlFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2HtmlMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs, range, featureTypeDataset);
+                    GMLAnalyzer htmlWriter = new HtmlFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2HtmlMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs, range, featureTypeDataset, service.getCrsTransformations().getDefaultTransformer());
                     GMLParser gmlParser = new GMLParser(htmlWriter, service.staxFactory);
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 

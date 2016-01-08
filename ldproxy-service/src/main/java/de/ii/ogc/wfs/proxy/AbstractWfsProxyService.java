@@ -10,6 +10,8 @@ import de.ii.ldproxy.output.html.Gml2HtmlMapper;
 import de.ii.xsf.core.api.AbstractService;
 import de.ii.xsf.core.api.Resource;
 import de.ii.xsf.logging.XSFLogger;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.exceptions.ParseError;
 import de.ii.xtraplatform.ogc.api.exceptions.WFSException;
@@ -62,10 +64,9 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
         this.featureTypes = new HashMap<>();
     }
 
-    public AbstractWfsProxyService(String id, String type, File configDirectory, WFSAdapter wfsAdapter, WfsProxyCrsTransformations crsTransformations) {
+    public AbstractWfsProxyService(String id, String type, File configDirectory, WFSAdapter wfsAdapter) {
         super(id, type, configDirectory);
         this.wfsAdapter = wfsAdapter;
-        this.crsTransformations = crsTransformations;
         this.featureTypes = new HashMap<>();
     }
 
@@ -96,7 +97,11 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
         this.featureTypes.putAll(featureTypes);
     }
 
-    public final void initialize(String[] path, HttpClient httpClient, HttpClient sslHttpClient, SMInputFactory staxFactory, ObjectMapper jsonMapper) {
+    public WfsProxyCrsTransformations getCrsTransformations() {
+        return crsTransformations;
+    }
+
+    public final void initialize(String[] path, HttpClient httpClient, HttpClient sslHttpClient, SMInputFactory staxFactory, ObjectMapper jsonMapper, CrsTransformation crsTransformation) {
         // TODO
         //this.useFormattedJsonOutput = true;//module.getConfiguration().useFormattedJsonOutput;
         this.httpClient = httpClient;
@@ -113,6 +118,8 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
         if (this.wfsAdapter != null) {
             this.wfsAdapter.initialize(this.httpClient, this.sslHttpClient);
         }
+
+        this.crsTransformations = new WfsProxyCrsTransformations(crsTransformation, wfsAdapter.getDefaultCrs(), new EpsgCrs(4326, true));
 
         /*for (WFS2GSFSLayer l : fullLayers) {
             l.initialize(this);

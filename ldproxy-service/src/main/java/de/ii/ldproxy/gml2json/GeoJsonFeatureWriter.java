@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.util.TokenBuffer;
 import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
 import de.ii.xsf.logging.XSFLogger;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
 import org.codehaus.staxmate.in.SMInputCursor;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
@@ -23,8 +24,8 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
 
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(GeoJsonFeatureWriter.class);
            
-    public GeoJsonFeatureWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat) {
-        super(jsonOut, jsonMapper, isFeatureCollection);
+    public GeoJsonFeatureWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer) {
+        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer);
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
     }

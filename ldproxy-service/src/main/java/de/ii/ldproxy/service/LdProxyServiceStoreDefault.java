@@ -10,6 +10,7 @@ import de.ii.xsf.core.api.Service;
 import de.ii.xsf.dropwizard.api.HttpClients;
 import de.ii.xsf.dropwizard.api.Jackson;
 import de.ii.xsf.logging.XSFLogger;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -39,19 +40,19 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
     private HttpClient sslHttpClient;
     private SMInputFactory staxFactory;
     private ObjectMapper jsonMapper;
+    private CrsTransformation crsTransformation;
 
-    public LdProxyServiceStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires HttpClients httpClients) {
+    public LdProxyServiceStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires HttpClients httpClients, @Requires CrsTransformation crsTransformation) {
         super(rootConfigStore, SERVICE_STORE_ID, jackson.getDefaultObjectMapper(), true);
 
         jsonMapper = jackson.getDefaultObjectMapper();
 
-        // woodstox - more mature
-        //staxFactory = new SMInputFactory(new WstxInputFactory());
-        // aalto - faster
         staxFactory = new SMInputFactory(new InputFactoryImpl());
 
         httpClient = httpClients.getDefaultHttpClient();
         sslHttpClient = httpClients.getUntrustedSslHttpClient("wfsssl");
+
+        this.crsTransformation = crsTransformation;
 
         // TODO: orgs layertemplates
         //this.layerTemplateStore = new WFS2GSFSLayerTemplateStore(configStores.getConfigStore(LAYER_TEMPLATES_STORE_ID), jsonMapper);
@@ -69,7 +70,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
     @Override
     protected LdProxyService readResource(String[] path, String id, LdProxyService resource) throws IOException, KeyNotFoundException {
         LdProxyService service = super.readResource(path, id, resource);
-        service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper);
+        service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);
 
         if (service.getTargetStatus() == Service.STATUS.STARTED) {
             service.start();
@@ -101,7 +102,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
 
         switch (operation) {
             case ADD:
-                service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper);
+                service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);
             case UPDATE:
             case UPDATE_OVERRIDE:
                 if (service.getTargetStatus() == Service.STATUS.STARTED) {
@@ -127,7 +128,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
         //}
 
         LdProxyService service = new LdProxyService(id, wfsUrl);
-        service.initialize(null, httpClient, sslHttpClient, staxFactory, jsonMapper);
+        service.initialize(null, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);
 
         service.analyzeWFS();
 

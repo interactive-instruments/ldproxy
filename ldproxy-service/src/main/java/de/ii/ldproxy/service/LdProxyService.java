@@ -18,7 +18,7 @@ public class LdProxyService extends AbstractWfsProxyService {
     }
 
     public LdProxyService(String id, String wfsUrl) {
-        super(id, SERVICE_TYPE, null, new WFSAdapter(wfsUrl.trim()), null);
+        super(id, SERVICE_TYPE, null, new WFSAdapter(wfsUrl.trim()));
 
         //this.description = "";
         //String[] path = {orgid};
