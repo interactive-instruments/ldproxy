@@ -1,0 +1,23 @@
+<div itemscope itemtype="http://schema.org/Place">
+    {{#details}}
+        <h1>{{displayName}}</h1>
+    {{/details}}
+    {{^details}}
+        <h4><a itemprop="url" href="{{displayName}}">{{displayName}}</a></h4>
+    {{/details}}
+    <dl class="dl-horizontal">
+        {{#fields}}
+            <dt>{{name}}</dt>
+            <dd>
+                <span>{{value}}</span>
+            </dd>
+        {{/fields}}
+        {{#geo}}
+            <dt>geometry</dt>
+            <dd itemprop="geo" itemscope itemtype="http://schema.org/GeoCoordinates">
+                <span itemprop="latitude">{{lat}}</span>
+                <span itemprop="longitude">{{lon}}</span>
+            </dd>
+        {{/geo}}
+    </dl>
+</div>

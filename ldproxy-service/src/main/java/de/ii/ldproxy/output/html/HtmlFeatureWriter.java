@@ -1,5 +1,12 @@
 package de.ii.ldproxy.output.html;
 
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheException;
+import com.github.mustachejava.MustacheFactory;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Resources;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
 import de.ii.xsf.logging.XSFLogger;
@@ -9,9 +16,11 @@ import org.codehaus.staxmate.in.SMInputCursor;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
@@ -23,6 +32,7 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
 
     private OutputStreamWriter outputStreamWriter;
     protected XMLPathTracker currentPath;
+    protected FeatureDTO currentFeature;
     protected String outputFormat; // as constant somewhere
     protected WfsProxyFeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
     protected boolean isFeatureCollection;
@@ -30,6 +40,11 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
     protected List<String> groupings;
     protected boolean isGrouped;
     protected String query;
+    protected MustacheFactory mustacheFactory;
+
+    public String jsonQuery;
+    public String xmlQuery;
+    public List<FeatureDTO> features;
 
     public HtmlFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query) {
         this.outputStreamWriter = outputStreamWriter;
@@ -41,12 +56,29 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
         this.groupings = groupings;
         this.isGrouped = isGrouped;
         this.query = (query == null ? "" : query);
+        this.mustacheFactory = new DefaultMustacheFactory(){
+            @Override
+            public Reader getReader(String resourceName) {
+                final InputStream is = getClass().getResourceAsStream(resourceName);
+                if (is == null) {
+                    throw new MustacheException("Template " + resourceName + " not found");
+                }
+                return new BufferedReader(new InputStreamReader(is, Charsets.UTF_8));
+            }
+        };
+
+        this.jsonQuery = "?" + this.query + "&f=json";
+        this.xmlQuery = "?" + this.query + "&f=xml";
+        this.features = new ArrayList<>();
     }
 
     @Override
     public void analyzeStart(Future<SMInputCursor> future) {
+
+
+
         LOGGER.getLogger().debug("START");
-        try {
+        /*try {
             outputStreamWriter.write("<html>\n" +
                     "<head>\n" +
                     "\t<title>ldproxy REST Browser</title>\n" +
@@ -101,12 +133,12 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
             }
         } catch (IOException e) {
             analyzeFailed(e);
-        }
+        }*/
     }
 
     @Override
     public void analyzeEnd() {
-        try {
+        /*try {
             if (isFeatureCollection || isGrouped) {
                 outputStreamWriter.write("</ul>");
             }
@@ -115,6 +147,18 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
             outputStreamWriter.close();
         } catch (IOException e) {
             analyzeFailed(e);
+        }*/
+
+        try {
+            Mustache mustache;
+            if (isFeatureCollection) {
+                mustache = mustacheFactory.compile("featureCollection.mustache");
+            } else {
+                mustache = mustacheFactory.compile("featureDetails.mustache");
+            }
+            mustache.execute(outputStreamWriter, this).flush();
+        } catch (Exception e) {
+            analyzeFailed(e);
         }
     }
 
@@ -122,7 +166,7 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
     public void analyzeFeatureStart(String id, String nsuri, String localName) {
         currentPath.clear();
 
-        try {
+        /*try {
             if (isFeatureCollection || isGrouped) {
                 outputStreamWriter.write("<li>");
             }
@@ -136,12 +180,17 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
 
         } catch (IOException e) {
             analyzeFailed(e);
+        }*/
+
+        currentFeature = new FeatureDTO();
+        if (!isFeatureCollection) {
+            currentFeature.details = true;
         }
     }
 
     @Override
     public void analyzeFeatureEnd() {
-        try {
+        /*try {
             if (!isGrouped) {
                 outputStreamWriter.write("</ul>");
                 outputStreamWriter.write("</div>");
@@ -152,7 +201,9 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
 
         } catch (IOException e) {
             analyzeFailed(e);
-        }
+        }*/
+        features.add(currentFeature);
+        currentFeature = null;
     }
 
     @Override
@@ -221,7 +272,18 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
             value = "";
         }
 
-        try {
+        if (isId) {
+            currentFeature.displayName = value;
+        } else if(isAddress && mapping.getName().equals("geom")) {
+            currentFeature.geo = true;
+            String[] coords = value.split(" ");
+            currentFeature.lat = coords[0];
+            currentFeature.lon = coords[1];
+        } else {
+            currentFeature.fields.add(new ImmutableMap.Builder<String,String>().put("name", mapping.getName()).put("value", value).build());
+        }
+
+        /*try {
             if (!isGrouped) {
                 if (isAddress && mapping.getName().equals("geom")) {
                     outputStreamWriter.write("<li style=\"display: table-row;\" itemprop=\"geo\" itemscope itemtype=\"http://schema.org/GeoCoordinates\">");
@@ -265,7 +327,7 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
             }
         } catch (IOException e) {
             analyzeFailed(e);
-        }
+        }*/
 
     }
 }
