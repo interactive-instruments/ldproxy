@@ -1,0 +1,17 @@
+<nav>
+    <ul class="pagination">
+        {{#pagination}}
+            {{#url}}
+                <li><a href="{{.}}">{{label}}</a></li>
+            {{/url}}
+            {{^url}}
+                {{#active}}
+                    <li class="active"><a href="">{{label}}</a></li>
+                {{/active}}
+                {{^active}}
+                    <li class="disabled"><a href="">{{label}}</a></li>
+                {{/active}}
+            {{/url}}
+        {{/pagination}}
+    </ul>
+</nav>

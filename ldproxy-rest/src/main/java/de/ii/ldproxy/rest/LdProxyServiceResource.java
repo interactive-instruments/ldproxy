@@ -218,12 +218,12 @@ public class LdProxyServiceResource implements ServiceResource {
             // TODO
             featureType2.setNamespace(service.getWfsAdapter().getNsStore().getNamespaceURI("ns0"));
             featureType2.setMappings(featureType.getMappings());
-            return getHtmlResponse(getWfsPropertiesPaged(layerid, range, fields), featureType2, true, groupings, true, query, null);
+            return getHtmlResponse(getWfsPropertiesPaged(layerid, range, fields), featureType2, true, groupings, true, query, null, null);
         } else if (uriInfo.getQueryParameters().containsKey("woonplaats")) {
-            return getHtmlResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")), featureType, true, groupings, false, query, null);
+            return getHtmlResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")), featureType, true, groupings, false, query, null, null);
         }
         //if (indexId.toLowerCase().equals("all")) {
-            return getHtmlResponse(getWfsFeaturesPaged(layerid, range), featureType, true, groupings, false, query, breadCrumbs);
+            return getHtmlResponse(getWfsFeaturesPaged(layerid, range), featureType, true, groupings, false, query, breadCrumbs, parseRange(range));
         //} else {
         //    return getWfsPropertiesPaged(layerid, range, indexId);
         //}
@@ -282,7 +282,7 @@ public class LdProxyServiceResource implements ServiceResource {
         WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
 
         //if (indexId.toLowerCase().equals("all")) {
-            return getHtmlResponse(getWfsFeatureById(layerid, featureid), featureType, false, new ArrayList<String>(), false, "", breadCrumbs);
+            return getHtmlResponse(getWfsFeatureById(layerid, featureid), featureType, false, new ArrayList<String>(), false, "", breadCrumbs, null);
         //} else {
         //    return getWfsFeaturesPaged(layerid, range, indexId, featureid);
         //}
@@ -382,7 +382,7 @@ public class LdProxyServiceResource implements ServiceResource {
         return Response.ok().entity(stream).build();
     }
 
-    private Response getHtmlResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final List<String> groupings, final boolean group, final String query, final List<NavigationDTO> breadCrumbs) {
+    private Response getHtmlResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final List<String> groupings, final boolean group, final String query, final List<NavigationDTO> breadCrumbs, final int[] range) {
         StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(OutputStream output) throws IOException, WebApplicationException {
@@ -391,7 +391,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
                 try {
 
-                    GMLAnalyzer htmlWriter = new HtmlFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2HtmlMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs);
+                    GMLAnalyzer htmlWriter = new HtmlFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2HtmlMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs, range);
                     GMLParser gmlParser = new GMLParser(htmlWriter, service.staxFactory);
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 
@@ -420,16 +420,18 @@ public class LdProxyServiceResource implements ServiceResource {
         int PAGE_SIZE = 25;
         int from = 0;
         int to = PAGE_SIZE;
+        int page = 1;
         if (range != null) {
             try {
                 String[] ranges = range.split("=")[1].split("-");
                 from = Integer.parseInt(ranges[0]);
                 to = Integer.parseInt(ranges[1]);
+                page = to / PAGE_SIZE;
             } catch (NumberFormatException ex) {
                 //ignore
             }
         }
-        int[] countFrom = {to-from, from};
+        int[] countFrom = {to-from, from, page};
 
         return countFrom;
 

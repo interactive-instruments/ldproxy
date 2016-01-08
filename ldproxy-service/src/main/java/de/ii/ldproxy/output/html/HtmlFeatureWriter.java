@@ -5,6 +5,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import de.ii.ogc.wfs.proxy.TargetMapping;
@@ -21,7 +22,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author zahnen
@@ -41,13 +44,15 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
     protected boolean isGrouped;
     protected String query;
     protected MustacheFactory mustacheFactory;
+    protected int page;
 
     public String jsonQuery;
     public String xmlQuery;
     public List<FeatureDTO> features;
     public List<NavigationDTO> breadCrumbs;
+    public List<NavigationDTO> pagination;
 
-    public HtmlFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, List<NavigationDTO> breadCrumbs) {
+    public HtmlFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, List<NavigationDTO> breadCrumbs, int[] range) {
         this.outputStreamWriter = outputStreamWriter;
         this.currentPath = new XMLPathTracker();
         this.featureTypeMapping = featureTypeMapping;
@@ -66,7 +71,19 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
                 }
                 return new BufferedReader(new InputStreamReader(is, Charsets.UTF_8));
             }
+
+            @Override
+            public void encode(String value, Writer writer) {
+                try {
+                    writer.write(value);
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
         };
+        if (range != null && range.length > 2) {
+            this.page = range[2];
+        }
 
         this.jsonQuery = "?" + this.query + "&f=json";
         this.xmlQuery = "?" + this.query + "&f=xml";
@@ -80,6 +97,54 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
 
 
         LOGGER.getLogger().debug("START");
+
+        try {
+            SMInputCursor cursor = future.get();
+
+            int numberMatched = Integer.parseInt(cursor.getAttrValue("numberMatched"));
+            int numberReturned = Integer.parseInt(cursor.getAttrValue("numberReturned"));
+            int pages = Math.max(page, numberMatched/numberReturned + (numberMatched%numberReturned > 0 ? 1 : 0));
+
+            LOGGER.getLogger().debug("numberMatched {}", numberMatched);
+            LOGGER.getLogger().debug("numberReturned {}", numberReturned);
+            LOGGER.getLogger().debug("page {}", page);
+            LOGGER.getLogger().debug("pages {}", pages);
+
+            ImmutableList.Builder<NavigationDTO> pagination = new ImmutableList.Builder<>();
+            if (page > 1) {
+                pagination
+                        .add(new NavigationDTO("&laquo;", "?page=1"))
+                        .add(new NavigationDTO("&lsaquo;", "?page=" + String.valueOf(page-1)));
+            } else {
+                pagination
+                        .add(new NavigationDTO("&laquo;"))
+                        .add(new NavigationDTO("&lsaquo;"));
+            }
+
+            for (int i = Math.max(1, page-5); i <= Math.min(pages, page+5); i++) {
+                if (i == page) {
+                    pagination.add(new NavigationDTO(String.valueOf(i), true));
+                } else {
+                    pagination.add(new NavigationDTO(String.valueOf(i), "?page=" + String.valueOf(i)));
+                }
+            }
+
+            if (page < pages) {
+                pagination
+                        .add(new NavigationDTO("&rsaquo;", "?page=" + String.valueOf(page+1)))
+                        .add(new NavigationDTO("&raquo;", "?page=" + String.valueOf(pages)));
+            } else {
+                pagination
+                        .add(new NavigationDTO("&rsaquo;"))
+                        .add(new NavigationDTO("&raquo;"));
+            }
+
+            this.pagination = pagination.build();
+
+        } catch (InterruptedException | ExecutionException | XMLStreamException |NumberFormatException ex) {
+            analyzeFailed(ex);
+        }
+
         /*try {
             outputStreamWriter.write("<html>\n" +
                     "<head>\n" +
