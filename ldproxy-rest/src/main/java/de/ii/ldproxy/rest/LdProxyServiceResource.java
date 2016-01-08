@@ -92,10 +92,8 @@ public class LdProxyServiceResource implements ServiceResource {
                 .add(new NavigationDTO(service.getId()))
                 .build();
 
-        //dataset.name = "Agrarisch Areaal Nederland WFS";
-        dataset.featureTypes = new HashSet<>();
         for (WfsProxyFeatureType ft: service.getFeatureTypes().values()) {
-            dataset.featureTypes.add(ft.getName());
+            dataset.featureTypes.add(new DatasetDTO(ft.getName()));
         }
 
         WFSOperation operation = new GetCapabilities();
@@ -195,6 +193,22 @@ public class LdProxyServiceResource implements ServiceResource {
                 .add(new NavigationDTO(service.getId(), "/rest/services/" + service.getBrowseUrl()))
                 .add(new NavigationDTO(layerid))
                 .build();
+
+        DatasetDTO dataset = new DatasetDTO();
+        DatasetDTO featureTypeDataset = new DatasetDTO(layerid);
+        dataset.featureTypes.add(featureTypeDataset);
+
+        WFSOperation operation = new GetCapabilities();
+
+        WFSCapabilitiesAnalyzer analyzer = new MultiWfsCapabilitiesAnalyzer(
+                new GetCapabilities2Dataset(dataset),
+                new LoggingWfsCapabilitiesAnalyzer()
+        );
+
+        WFSCapabilitiesParser wfsParser = new WFSCapabilitiesParser(analyzer, service.staxFactory);
+
+        wfsParser.parse(service.getWfsAdapter().request(operation));
+
         // TODO
         String[] ft = parseLayerId(layerid);
         String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
@@ -218,12 +232,12 @@ public class LdProxyServiceResource implements ServiceResource {
             // TODO
             featureType2.setNamespace(service.getWfsAdapter().getNsStore().getNamespaceURI("ns0"));
             featureType2.setMappings(featureType.getMappings());
-            return getHtmlResponse(getWfsPropertiesPaged(layerid, range, fields), featureType2, true, groupings, true, query, null, null);
+            return getHtmlResponse(getWfsPropertiesPaged(layerid, range, fields), featureType2, true, groupings, true, query, null, null, null);
         } else if (uriInfo.getQueryParameters().containsKey("woonplaats")) {
-            return getHtmlResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")), featureType, true, groupings, false, query, null, null);
+            return getHtmlResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")), featureType, true, groupings, false, query, null, null, null);
         }
         //if (indexId.toLowerCase().equals("all")) {
-            return getHtmlResponse(getWfsFeaturesPaged(layerid, range), featureType, true, groupings, false, query, breadCrumbs, parseRange(range));
+            return getHtmlResponse(getWfsFeaturesPaged(layerid, range), featureType, true, groupings, false, query, breadCrumbs, parseRange(range), featureTypeDataset);
         //} else {
         //    return getWfsPropertiesPaged(layerid, range, indexId);
         //}
@@ -282,7 +296,7 @@ public class LdProxyServiceResource implements ServiceResource {
         WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
 
         //if (indexId.toLowerCase().equals("all")) {
-            return getHtmlResponse(getWfsFeatureById(layerid, featureid), featureType, false, new ArrayList<String>(), false, "", breadCrumbs, null);
+            return getHtmlResponse(getWfsFeatureById(layerid, featureid), featureType, false, new ArrayList<String>(), false, "", breadCrumbs, null, null);
         //} else {
         //    return getWfsFeaturesPaged(layerid, range, indexId, featureid);
         //}
@@ -382,7 +396,7 @@ public class LdProxyServiceResource implements ServiceResource {
         return Response.ok().entity(stream).build();
     }
 
-    private Response getHtmlResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final List<String> groupings, final boolean group, final String query, final List<NavigationDTO> breadCrumbs, final int[] range) {
+    private Response getHtmlResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final List<String> groupings, final boolean group, final String query, final List<NavigationDTO> breadCrumbs, final int[] range, final DatasetDTO featureTypeDataset) {
         StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(OutputStream output) throws IOException, WebApplicationException {
@@ -391,7 +405,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
                 try {
 
-                    GMLAnalyzer htmlWriter = new HtmlFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2HtmlMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs, range);
+                    GMLAnalyzer htmlWriter = new HtmlFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2HtmlMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs, range, featureTypeDataset);
                     GMLParser gmlParser = new GMLParser(htmlWriter, service.staxFactory);
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 

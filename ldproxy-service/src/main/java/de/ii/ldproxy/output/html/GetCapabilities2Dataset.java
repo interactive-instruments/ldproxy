@@ -108,8 +108,45 @@ public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer imp
     }
 
     @Override
+    public void analyzeFeatureTypeTitle(String featureTypeName, String title) {
+
+    }
+
+    @Override
+    public void analyzeFeatureTypeAbstract(String featureTypeName, String abstrct) {
+        for (DatasetDTO ft: dataset.featureTypes) {
+            if (featureTypeName.endsWith(ft.name)) {
+                ft.description = abstrct;
+            }
+        }
+    }
+
+    @Override
+    public void analyzeFeatureTypeKeywords(String featureTypeName, String... keywords) {
+        for (DatasetDTO ft: dataset.featureTypes) {
+            if (featureTypeName.endsWith(ft.name)) {
+                for (String keyword: keywords) {
+                    ft.keywords.add(keyword);
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public void analyzeFeatureTypeDefaultCrs(String featureTypeName, String crs) {
+
+    }
+
+    @Override
     public void analyzeFeatureTypeBoundingBox(String featureTypeName, String xmin, String ymin, String xmax, String ymax) {
         dataset.bbox = xmin + "," + ymin + " " + xmax + "," + ymax;
+
+        for (DatasetDTO ft: dataset.featureTypes) {
+            if (featureTypeName.endsWith(ft.name)) {
+                ft.bbox = dataset.bbox;
+            }
+        }
     }
 
     @Override

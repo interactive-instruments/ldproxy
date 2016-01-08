@@ -15,7 +15,7 @@ public class DatasetDTO {
     public String license;
     public String bbox;
     public String url;
-    public Set<String> featureTypes;
+    public List<DatasetDTO> featureTypes;
     public String providerName;
     public String providerUrl;
     public String contactName;
@@ -33,5 +33,11 @@ public class DatasetDTO {
 
     public DatasetDTO() {
         this.keywords = new ArrayList<>();
+        this.featureTypes = new ArrayList<>();
+    }
+
+    public DatasetDTO(String name) {
+        this();
+        this.name = name;
     }
 }

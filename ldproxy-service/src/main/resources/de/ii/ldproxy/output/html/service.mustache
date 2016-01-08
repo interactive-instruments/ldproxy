@@ -12,7 +12,7 @@
             <ul class="list-unstyled">
                 {{#directory.featureTypes}}
                     <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
-                        <a itemprop="url" href="{{prefix}}{{.}}/{{token}}">{{.}}</a>
+                        <a itemprop="url" href="{{prefix}}{{name}}/{{token}}">{{name}}</a>
                     </li>
                 {{/directory.featureTypes}}
                 {{^directory.featureTypes}}

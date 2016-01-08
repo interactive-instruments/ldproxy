@@ -1,5 +1,33 @@
 {{> header}}
 
+<div itemscope itemtype="http://schema.org/Dataset">
+    <h1 itemprop="name">{{dataset.name}}</h1>
+    <span itemprop="description">{{dataset.description}}</span>
+    <br/>
+    <br/>
+    <dl class="dl-horizontal dl-horizontal-space">
+        <dt>Keywords</dt>
+        <dd>
+            <span itemprop="keywords">
+                <ul class="list-comma-separated">
+                    {{#dataset.keywords}}
+                        <li>{{.}}</li>
+                    {{/dataset.keywords}}
+                </ul>
+            </span>
+        </dd>
+        <dt>Extent</dt>
+        <dd>
+            <span itemprop="spatial" itemscope itemtype="http://schema.org/Place">
+                <span itemprop="geo" itemscope itemtype="http://schema.org/GeoShape">
+                    <span itemprop="box">{{dataset.bbox}}</span>
+                </span>
+            </span>
+        </dd>
+    </dl>
+
+</div>
+
 {{> pagination}}
 
 <ul class="list-unstyled">
