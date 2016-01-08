@@ -45,8 +45,9 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
     public String jsonQuery;
     public String xmlQuery;
     public List<FeatureDTO> features;
+    public List<NavigationDTO> breadCrumbs;
 
-    public HtmlFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query) {
+    public HtmlFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, List<NavigationDTO> breadCrumbs) {
         this.outputStreamWriter = outputStreamWriter;
         this.currentPath = new XMLPathTracker();
         this.featureTypeMapping = featureTypeMapping;
@@ -70,6 +71,7 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
         this.jsonQuery = "?" + this.query + "&f=json";
         this.xmlQuery = "?" + this.query + "&f=xml";
         this.features = new ArrayList<>();
+        this.breadCrumbs = breadCrumbs;
     }
 
     @Override

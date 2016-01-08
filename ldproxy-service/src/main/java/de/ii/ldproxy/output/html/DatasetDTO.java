@@ -29,6 +29,7 @@ public class DatasetDTO {
     public String contactRegion;
     public String contactPostalCode;
     public String contactCountry;
+    public List<NavigationDTO> breadCrumbs;
 
     public DatasetDTO() {
         this.keywords = new ArrayList<>();

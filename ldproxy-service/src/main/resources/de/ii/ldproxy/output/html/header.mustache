@@ -59,3 +59,23 @@
         </div>
     </nav>
 
+    <div class="container">
+
+        <ol class="breadcrumb">
+            {{#directory.breadCrumbs}}
+                {{#url}}
+                    <li><a href="{{.}}">{{label}}</a></li>
+                {{/url}}
+                {{^url}}
+                    <li class="active">{{label}}</li>
+                {{/url}}
+            {{/directory.breadCrumbs}}
+            {{#breadCrumbs}}
+                {{#url}}
+                    <li><a href="{{.}}">{{label}}</a></li>
+                {{/url}}
+                {{^url}}
+                    <li class="active">{{label}}</li>
+                {{/url}}
+            {{/breadCrumbs}}
+        </ol>

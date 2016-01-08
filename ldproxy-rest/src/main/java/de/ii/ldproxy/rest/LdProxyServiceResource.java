@@ -1,5 +1,7 @@
 package de.ii.ldproxy.rest;
 
+import com.github.mustachejava.util.DecoratedCollection;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import de.ii.ldproxy.gml2json.GeoJsonFeatureWriter;
@@ -42,10 +44,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -88,6 +87,11 @@ public class LdProxyServiceResource implements ServiceResource {
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
     public View getDatasetAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @QueryParam("token") String token) {
         DatasetDTO dataset = new DatasetDTO();
+        dataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
+                .add(new NavigationDTO("Services", "/rest/services/"))
+                .add(new NavigationDTO(service.getId()))
+                .build();
+
         //dataset.name = "Agrarisch Areaal Nederland WFS";
         dataset.featureTypes = new HashSet<>();
         for (WfsProxyFeatureType ft: service.getFeatureTypes().values()) {
@@ -186,6 +190,11 @@ public class LdProxyServiceResource implements ServiceResource {
     @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
     public Response getFeaturesAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @QueryParam("fields") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
+                .add(new NavigationDTO("Services", "/rest/services/"))
+                .add(new NavigationDTO(service.getId(), "/rest/services/" + service.getBrowseUrl()))
+                .add(new NavigationDTO(layerid))
+                .build();
         // TODO
         String[] ft = parseLayerId(layerid);
         String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
@@ -209,12 +218,12 @@ public class LdProxyServiceResource implements ServiceResource {
             // TODO
             featureType2.setNamespace(service.getWfsAdapter().getNsStore().getNamespaceURI("ns0"));
             featureType2.setMappings(featureType.getMappings());
-            return getHtmlResponse(getWfsPropertiesPaged(layerid, range, fields), featureType2, true, groupings, true, query);
+            return getHtmlResponse(getWfsPropertiesPaged(layerid, range, fields), featureType2, true, groupings, true, query, null);
         } else if (uriInfo.getQueryParameters().containsKey("woonplaats")) {
-            return getHtmlResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")), featureType, true, groupings, false, query);
+            return getHtmlResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")), featureType, true, groupings, false, query, null);
         }
         //if (indexId.toLowerCase().equals("all")) {
-            return getHtmlResponse(getWfsFeaturesPaged(layerid, range), featureType, true, groupings, false, query);
+            return getHtmlResponse(getWfsFeaturesPaged(layerid, range), featureType, true, groupings, false, query, breadCrumbs);
         //} else {
         //    return getWfsPropertiesPaged(layerid, range, indexId);
         //}
@@ -256,6 +265,12 @@ public class LdProxyServiceResource implements ServiceResource {
     @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
     public Response getFeatureByIdAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
+                .add(new NavigationDTO("Services", "/rest/services/"))
+                .add(new NavigationDTO(service.getId(), "/rest/services/" + service.getBrowseUrl()))
+                .add(new NavigationDTO(layerid, "/rest/services/" + service.getBrowseUrl() + layerid + "/"))
+                .add(new NavigationDTO(featureid))
+                .build();
         // TODO
         String[] ft = parseLayerId(layerid);
         String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
@@ -267,7 +282,7 @@ public class LdProxyServiceResource implements ServiceResource {
         WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
 
         //if (indexId.toLowerCase().equals("all")) {
-            return getHtmlResponse(getWfsFeatureById(layerid, featureid), featureType, false, new ArrayList<String>(), false, "");
+            return getHtmlResponse(getWfsFeatureById(layerid, featureid), featureType, false, new ArrayList<String>(), false, "", breadCrumbs);
         //} else {
         //    return getWfsFeaturesPaged(layerid, range, indexId, featureid);
         //}
@@ -367,7 +382,7 @@ public class LdProxyServiceResource implements ServiceResource {
         return Response.ok().entity(stream).build();
     }
 
-    private Response getHtmlResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final List<String> groupings, final boolean group, final String query) {
+    private Response getHtmlResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final List<String> groupings, final boolean group, final String query, final List<NavigationDTO> breadCrumbs) {
         StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(OutputStream output) throws IOException, WebApplicationException {
@@ -376,7 +391,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
                 try {
 
-                    GMLAnalyzer htmlWriter = new HtmlFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2HtmlMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query);
+                    GMLAnalyzer htmlWriter = new HtmlFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2HtmlMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs);
                     GMLParser gmlParser = new GMLParser(htmlWriter, service.staxFactory);
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 
