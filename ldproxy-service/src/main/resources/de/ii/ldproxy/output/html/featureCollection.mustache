@@ -28,16 +28,61 @@
 
 </div>
 
-{{> pagination}}
+<div class="row">
+    <div class="col-md-6">
 
-<ul class="list-unstyled">
-    {{#features}}
-        <li>
-            {{> feature}}
-        </li>
-    {{/features}}
-</ul>
+        {{> pagination}}
 
-{{> pagination}}
+        <ul class="list-unstyled">
+            {{#features}}
+                <li>
+                    {{> feature}}
+                </li>
+            {{/features}}
+        </ul>
+
+        {{> pagination}}
+
+    </div>
+    <div class="col-md-6">
+        <div id="map"></div>
+        <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script type="text/javascript">
+            var osmTiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            });
+            var geoJsonUrl = '?f=json&';
+            if (window.location.href.indexOf('?') > 0) {
+                geoJsonUrl += window.location.href.slice(window.location.href.indexOf('?') + 1);
+            }
+            var map = L.map('map');
+
+            $.getJSON(geoJsonUrl, function(data) {
+                var geoJson = L.geoJson(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.geometry.type != 'Point') {
+                            layer.bindPopup(feature.id);
+                            L.marker(layer.getBounds().getCenter(), {title: feature.id}).addTo(map);
+                        }
+                    },
+                    pointToLayer: function (feature, latlng) {
+                        return L.marker(latlng, {title: feature.id}).addTo(map);
+                    }
+                });
+                map.fitBounds(geoJson.getBounds(), {
+                    padding: [50, 50],
+                    maxZoom: 16
+                });
+                osmTiles.addTo(map);
+                geoJson.addTo(map);
+            });
+
+
+
+
+        </script>
+    </div>
+</div>
 
 {{> footer}}

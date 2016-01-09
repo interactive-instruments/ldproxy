@@ -44,19 +44,18 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
     protected boolean isAddress;
     protected List<String> groupings;
     protected boolean isGrouped;
-    protected String query;
+    //protected String query;
     protected MustacheFactory mustacheFactory;
     protected int page;
     protected CrsTransformer crsTransformer;
 
-    public String jsonQuery;
-    public String xmlQuery;
     public List<FeatureDTO> features;
     public List<NavigationDTO> breadCrumbs;
     public List<NavigationDTO> pagination;
+    public List<NavigationDTO> formats;
     public DatasetDTO dataset;
 
-    public HtmlFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, List<NavigationDTO> breadCrumbs, int[] range, DatasetDTO featureTypeDataset, CrsTransformer crsTransformer) {
+    public HtmlFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, List<NavigationDTO> breadCrumbs, List<NavigationDTO> formats, int[] range, DatasetDTO featureTypeDataset, CrsTransformer crsTransformer) {
         this.outputStreamWriter = outputStreamWriter;
         this.currentPath = new XMLPathTracker();
         this.featureTypeMapping = featureTypeMapping;
@@ -65,7 +64,7 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
         this.isAddress = isAddress;
         this.groupings = groupings;
         this.isGrouped = isGrouped;
-        this.query = (query == null ? "" : query);
+        //this.query = query;
         this.mustacheFactory = new DefaultMustacheFactory(){
             @Override
             public Reader getReader(String resourceName) {
@@ -90,10 +89,9 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
         }
         this.crsTransformer = crsTransformer;
 
-        this.jsonQuery = "?" + this.query + "&f=json";
-        this.xmlQuery = "?" + this.query + "&f=xml";
         this.features = new ArrayList<>();
         this.breadCrumbs = breadCrumbs;
+        this.formats = formats;
         this.dataset = featureTypeDataset;
     }
 
@@ -127,7 +125,12 @@ public class HtmlFeatureWriter implements GMLAnalyzer {
                         .add(new NavigationDTO("&lsaquo;"));
             }
 
-            for (int i = Math.max(1, page-5); i <= Math.min(pages, page+5); i++) {
+            int from = Math.max(1, page-2);
+            int to = Math.min(pages, from+4);
+            if (to == pages) {
+                from = Math.max(1, to-4);
+            }
+            for (int i = from; i <= to; i++) {
                 if (i == page) {
                     pagination.add(new NavigationDTO(String.valueOf(i), true));
                 } else {

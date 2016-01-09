@@ -5,21 +5,23 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<title>ldproxy REST Browser</title>
+    <title>ldproxy REST Browser</title>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css"
+          integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
 
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css"/>
 
     <style lang="text/css">
         .dl-horizontal dt{
-            text-align: left;
+        text-align: left;
         }
 
         .dl-horizontal-space dd{
-            margin-bottom: 1em;
+        margin-bottom: 1em;
         }
         .list-comma-separated
         {
@@ -48,51 +50,67 @@
         -webkit-border-radius: 0;
         -o-border-radius: 0;
         }
+        .nav-formats span:first-of-type::before
+        {
+        content: "View as:\a0\a0\a0";
+        }
+        .nav-formats span:not(:last-of-type)::after
+        {
+        content: "\a0|\a0";
+        }
+        .nav-formats span:not(:last-of-type)
+        {
+        margin-right: 0;
+        }
+        .nav-formats span
+        {
+        margin-left: 0;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Fixed navbar -->
-    <nav class="navbar navbar-default navbar-static-top">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="#">ldproxy</a>
-        </div>
-        <div class="container">
-            <div id="navbar" class="navbar-collapse collapse">
-                <ol class="breadcrumb navbar-text">
-                    {{#directory.breadCrumbs}}
-                        {{#url}}
-                            <li><a href="{{.}}">{{label}}</a></li>
-                        {{/url}}
-                        {{^url}}
-                            <li class="active">{{label}}</li>
-                        {{/url}}
-                    {{/directory.breadCrumbs}}
-                    {{#breadCrumbs}}
-                        {{#url}}
-                            <li><a href="{{.}}">{{label}}</a></li>
-                        {{/url}}
-                        {{^url}}
-                            <li class="active">{{label}}</li>
-                        {{/url}}
-                    {{/breadCrumbs}}
-                </ol>
-                <div class="navbar-right">
-                <p class="navbar-text">View as:</p>
-                <ul class="nav navbar-nav list-comma-separated">
-                    <li><a href="{{jsonQuery}}" target="_blank" class="navbar-link">JSON</a></li>
-                    <li><a href="{{xmlQuery}}" target="_blank">XML</a></li>
-                </ul>
-                </div>
-            </div><!--/.nav-collapse -->
-        </div>
-    </nav>
-
+<!-- Fixed navbar -->
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">ldproxy</a>
+    </div>
     <div class="container">
+        <div id="navbar" class="navbar-collapse collapse">
+            <ol class="breadcrumb navbar-text">
+                {{#directory.breadCrumbs}}
+                    {{#url}}
+                        <li><a href="{{.}}">{{label}}</a></li>
+                    {{/url}}
+                    {{^url}}
+                        <li class="active">{{label}}</li>
+                    {{/url}}
+                {{/directory.breadCrumbs}}
+                {{#breadCrumbs}}
+                    {{#url}}
+                        <li><a href="{{.}}">{{label}}</a></li>
+                    {{/url}}
+                    {{^url}}
+                        <li class="active">{{label}}</li>
+                    {{/url}}
+                {{/breadCrumbs}}
+            </ol>
+            <div class="navbar-right nav-formats">
+                <!--p class="navbar-text">View as:</p-->
+                {{#formats}}
+                    <span class="navbar-text"><a href="{{url}}" target="_blank">{{label}}</a></span>
+                {{/formats}}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
 
