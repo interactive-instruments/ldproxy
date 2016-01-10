@@ -87,7 +87,7 @@ public class LdProxyServiceResource implements ServiceResource {
     public View getDatasetAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @QueryParam("token") String token) {
         DatasetDTO dataset = new DatasetDTO();
         dataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Services", "/rest/services/"))
+                .add(new NavigationDTO("Services", "../"))
                 .add(new NavigationDTO(service.getId()))
                 .build();
 
@@ -194,8 +194,8 @@ public class LdProxyServiceResource implements ServiceResource {
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
     public Response getFeaturesAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @QueryParam("properties") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
         List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Services", "/rest/services/"))
-                .add(new NavigationDTO(service.getId(), "/rest/services/" + service.getBrowseUrl()))
+                .add(new NavigationDTO("Services", "../../"))
+                .add(new NavigationDTO(service.getId(), "../../" + service.getBrowseUrl()))
                 .add(new NavigationDTO(layerid))
                 .build();
 
@@ -290,9 +290,9 @@ public class LdProxyServiceResource implements ServiceResource {
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
     public Response getFeatureByIdAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
         List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Services", "/rest/services/"))
-                .add(new NavigationDTO(service.getId(), "/rest/services/" + service.getBrowseUrl()))
-                .add(new NavigationDTO(layerid, "/rest/services/" + service.getBrowseUrl() + layerid + "/"))
+                .add(new NavigationDTO("Services", "../../"))
+                .add(new NavigationDTO(service.getId(), "../../" + service.getBrowseUrl()))
+                .add(new NavigationDTO(layerid, "../../" + service.getBrowseUrl() + layerid + "/"))
                 .add(new NavigationDTO(featureid))
                 .build();
 
