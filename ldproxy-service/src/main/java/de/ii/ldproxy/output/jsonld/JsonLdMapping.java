@@ -7,6 +7,11 @@ import de.ii.ogc.wfs.proxy.TargetMapping;
  */
 public class JsonLdMapping implements TargetMapping {
     @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
     public boolean isEnabled() {
         return false;
     }

@@ -1,0 +1,34 @@
+{{#index}}
+    {{#value.children}}
+        {{#first}}
+            <span {{value.parent.microdata}}>
+        {{/first}}
+        {{> propertySub}}
+        {{#last}}
+            </span>
+        {{/last}}
+    {{/value.children}}
+    {{^value.children}}
+        <dl class="dl-horizontal dl-horizontal-no-space">
+            <dt>{{value.name}}</dt>
+            <dd {{value.microdata}}>{{value.value}}</dd>
+        </dl>
+    {{/value.children}}
+{{/index}}
+{{^index}}
+    {{#children}}
+        {{#first}}
+            <span {{value.parent.microdata}}>
+        {{/first}}
+        {{> propertySub}}
+        {{#last}}
+            </span>
+        {{/last}}
+    {{/children}}
+    {{^children}}
+        <dl class="dl-horizontal dl-horizontal-no-space">
+            <dt>{{name}}</dt>
+            <dd {{microdata}}>{{value}}</dd>
+        </dl>
+    {{/children}}
+{{/index}}

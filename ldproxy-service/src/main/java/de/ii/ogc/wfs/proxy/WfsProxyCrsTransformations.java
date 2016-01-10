@@ -14,9 +14,9 @@ public class WfsProxyCrsTransformations {
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(WfsProxyCrsTransformations.class);
 
     private final CrsTransformation crsTransformation;
-    private final EpsgCrs wfsDefaultCrs;
+    private EpsgCrs wfsDefaultCrs;
     private final EpsgCrs proxyDefaultCrs;
-    private final CrsTransformer defaultTransformer;
+    private CrsTransformer defaultTransformer;
     private boolean reverseOutputAxisOrder;
     private boolean reverseInputAxisOrder;
 
@@ -24,11 +24,13 @@ public class WfsProxyCrsTransformations {
         this.crsTransformation = crsTransformation;
         this.wfsDefaultCrs = wfsDefaultCrs;
         this.proxyDefaultCrs = proxyDefaultCrs;
+        initDefaultTransformer();
+    }
+
+    private void initDefaultTransformer() {
         // TODO: handle transformation not available
-        if (isAvailable() && !wfsDefaultCrs.equals(proxyDefaultCrs)) {
+        if (isAvailable() && wfsDefaultCrs != null && !wfsDefaultCrs.equals(proxyDefaultCrs)) {
             this.defaultTransformer = crsTransformation.getTransformer(wfsDefaultCrs, proxyDefaultCrs);
-        } else {
-            this.defaultTransformer = null;
         }
     }
 
@@ -40,4 +42,8 @@ public class WfsProxyCrsTransformations {
         return defaultTransformer;
     }
 
+    public void setWfsDefaultCrs(EpsgCrs wfsDefaultCrs) {
+        this.wfsDefaultCrs = wfsDefaultCrs;
+        initDefaultTransformer();
+    }
 }

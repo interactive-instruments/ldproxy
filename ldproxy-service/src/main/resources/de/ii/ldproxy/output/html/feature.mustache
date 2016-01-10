@@ -1,23 +1,15 @@
-<div itemscope itemtype="http://schema.org/Place">
-    {{#details}}
-        <h1>{{displayName}}</h1>
-    {{/details}}
-    {{^details}}
-        <h4><a itemprop="url" href="{{displayName}}">{{displayName}}</a></h4>
-    {{/details}}
-    <dl class="dl-horizontal">
-        {{#fields}}
-            <dt>{{name}}</dt>
-            <dd>
-                <span>{{value}}</span>
-            </dd>
-        {{/fields}}
+<div {{microdata}}>
+    {{#idAsUrl}}
+        <h1>{{id.value}}</h1>
+        <link href="" {{id.microdata}}/>
+    {{/idAsUrl}}
+    {{^idAsUrl}}
+        <h4><a href="{{id.value}}" {{id.microdata}}>{{id.value}}</a></h4>
+    {{/idAsUrl}}
+        {{#children}}
+            {{> property}}
+        {{/children}}
         {{#geo}}
-            <dt>geometry</dt>
-            <dd itemprop="geo" itemscope itemtype="http://schema.org/GeoCoordinates">
-                <span itemprop="latitude">{{lat}}</span>
-                <span itemprop="longitude">{{lon}}</span>
-            </dd>
+            {{> property}}
         {{/geo}}
-    </dl>
 </div>

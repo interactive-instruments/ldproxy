@@ -1,10 +1,9 @@
 package de.ii.ldproxy.rest;
 
-import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import de.ii.ldproxy.gml2json.GeoJsonFeatureWriter;
+import de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
 import de.ii.ldproxy.output.html.*;
 import de.ii.ldproxy.service.GetFeatureById;
@@ -92,6 +91,12 @@ public class LdProxyServiceResource implements ServiceResource {
                 .add(new NavigationDTO(service.getId()))
                 .build();
 
+        // TODO
+        /*List<NavigationDTO> formats = new ImmutableList.Builder<NavigationDTO>()
+                .add(new NavigationDTO("GeoJson", "?" + query + "&f=json"))
+                .add(new NavigationDTO("GML", "?" + query + "&f=xml"))
+                .build();*/
+
         for (WfsProxyFeatureType ft: service.getFeatureTypes().values()) {
             dataset.featureTypes.add(new DatasetDTO(ft.getName()));
         }
@@ -130,7 +135,7 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/{layerid}")
     @GET
     @Produces("application/xml;charset=utf-8")
-    public Response getFeaturesAsXml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @QueryParam("fields") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeaturesAsXml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @QueryParam("properties") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
         // TODO
         String[] ft = parseLayerId(layerid);
         String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
@@ -187,7 +192,7 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/{layerid}")
     @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
-    public Response getFeaturesAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @QueryParam("fields") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeaturesAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @QueryParam("properties") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
         List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("Services", "/rest/services/"))
                 .add(new NavigationDTO(service.getId(), "/rest/services/" + service.getBrowseUrl()))
@@ -416,7 +421,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
                 try {
 
-                    GMLAnalyzer htmlWriter = new HtmlFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2HtmlMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs, formats, range, featureTypeDataset, service.getCrsTransformations().getDefaultTransformer());
+                    GMLAnalyzer htmlWriter = new MicrodataFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2MicrodataMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs, formats, range, featureTypeDataset, service.getCrsTransformations().getDefaultTransformer());
                     GMLParser gmlParser = new GMLParser(htmlWriter, service.staxFactory);
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 

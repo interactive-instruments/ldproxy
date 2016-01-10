@@ -14,10 +14,6 @@ import java.util.Set;
  */
 public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAnalyzer {
 
-    /*public interface TypeMapping {
-        public TYPE_MAPPING fromString(String type);
-    }*/
-
     public enum GML_TYPE {
         ID("ID"),
         STRING("string"),
@@ -32,7 +28,7 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
 
         private String stringRepresentation;
 
-        private GML_TYPE(String stringRepresentation) {
+        GML_TYPE(String stringRepresentation) {
             this.stringRepresentation = stringRepresentation;
         }
 
@@ -47,12 +43,6 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
                     return v;
                 }
             }
-            // TODO
-            /*for (GEOMETRY_TYPE_MAPPING v : GEOMETRY_TYPE_MAPPING.values()) {
-                if (v.toString().equals(type) && v != GEOMETRY_TYPE_MAPPING.NONE) {
-                    return GEOMETRY;
-                }
-            }*/
 
             return NONE;
         }
@@ -90,7 +80,7 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
 
         private String stringRepresentation;
 
-        private GML_GEOMETRY_TYPE(String stringRepresentation) {
+        GML_GEOMETRY_TYPE(String stringRepresentation) {
             this.stringRepresentation = stringRepresentation;
         }
 
@@ -167,6 +157,13 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
         this.geometryCounter = -1;
 
         proxyService.getWfsAdapter().addNamespace(nsuri);
+
+
+        TargetMapping targetMapping = getTargetMappingForFeatureType(nsuri, localName);
+
+        if (targetMapping != null) {
+            currentFeatureType.getMappings().addMapping(fullName, getTargetType(), targetMapping);
+        }
     }
 
     @Override
@@ -193,6 +190,7 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
     }
 
     abstract protected String getTargetType();
+    abstract protected TargetMapping getTargetMappingForFeatureType(String nsuri, String localName);
     abstract protected TargetMapping getTargetMappingForAttribute(String nsuri, String localName, String type, boolean required);
     abstract protected TargetMapping getTargetMappingForProperty(String path, String nsuri, String localName, String type, long minOccurs, long maxOccurs, int depth, boolean isParentMultiple, boolean isComplex, boolean isObject);
 
@@ -228,7 +226,7 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
 
         //LOGGER.info("localName {} TYPE {}", localName, type);
 
-        /*GEO_JSON_TYPE dataType = GEO_JSON_TYPE.forGmlType(GML_TYPE.fromString(type));
+        /*MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(GML_TYPE.fromString(type));
 
         if (dataType.isValid()) {
             String path = currentPath.toString();
@@ -259,23 +257,23 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
                         fieldName = "internalId";
                     }
                     for (WFS2GSFSLayer currentLayer : currentLayers) {
-                        List<Integer> fields = new ArrayList();
+                        List<Integer> properties = new ArrayList();
                         if (isParentMultiple) {
                             for (int i = 1; i < 4; i++) {
                                 String stri = String.valueOf(i);
                                 int f = currentLayer.addField(fieldName + "." + stri, fieldName + "." + stri, dataType.toEsri());
-                                fields.add(f);
+                                properties.add(f);
 
                                 LOGGER.debug(FrameworkMessages.MAPPED_MULTIPLE_PROPERTY_TYPE_TO_FIELD_OF_TYPE,
                                         dataType.toString(), fieldName, dataType.toEsri().toString());
                             }
                         } else {
                             int f = currentLayer.addField(fieldName, fieldName, dataType.toEsri());
-                            fields.add(f);
+                            properties.add(f);
                             LOGGER.debug(FrameworkMessages.MAPPED_PROPERTY_OF_TYPETO_FIELD_OF_TYPE,
                                     dataType.toString(), fieldName, dataType.toEsri().toString());
                         }
-                        currentLayer.addMapping(path, fields, isParentMultiple, minOccurs > 0);
+                        currentLayer.addMapping(path, properties, isParentMultiple, minOccurs > 0);
                     }
                 }
             }

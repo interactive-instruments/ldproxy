@@ -14,11 +14,12 @@ import java.util.Map;
 @Component
 @Provides
 @Instantiate
-public class HtmlMappingSubTypeIds implements JacksonSubTypeIds {
+public class MicrodataMappingSubTypeIds implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(HtmlMapping.class, "HTML_PROPERTY")
+                .put(MicrodataPropertyMapping.class, "MICRODATA_PROPERTY")
+                .put(MicrodataGeometryMapping.class, "MICRODATA_GEOMETRY")
                 .build();
     }
 }

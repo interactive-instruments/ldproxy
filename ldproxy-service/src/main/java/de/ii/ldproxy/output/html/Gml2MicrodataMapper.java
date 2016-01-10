@@ -1,8 +1,8 @@
-package de.ii.ldproxy.output.geojson;
+package de.ii.ldproxy.output.html;
 
 
-import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
-import de.ii.ldproxy.output.geojson.GeoJsonMapping.GEO_JSON_TYPE;
+import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
+import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyService;
@@ -12,12 +12,12 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
 /**
  * @author zahnen
  */
-public class Gml2GeoJsonMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
+public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(Gml2GeoJsonMapper.class);
-    public static final String MIME_TYPE = "application/vnd.geo+json";
+    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(Gml2MicrodataMapper.class);
+    public static final String MIME_TYPE = "text/html";
 
-    public Gml2GeoJsonMapper(WfsProxyService proxyService) {
+    public Gml2MicrodataMapper(WfsProxyService proxyService) {
         super(proxyService);
     }
 
@@ -28,7 +28,13 @@ public class Gml2GeoJsonMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
 
     @Override
     protected TargetMapping getTargetMappingForFeatureType(String nsuri, String localName) {
-        return null;
+        LOGGER.getLogger().debug("FEATURETYPE {} {}", nsuri, localName);
+
+        MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
+        targetMapping.setEnabled(true);
+        targetMapping.setItemType("http://schema.org/Place");
+
+        return targetMapping;
     }
 
     @Override
@@ -38,11 +44,12 @@ public class Gml2GeoJsonMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
 
             LOGGER.getLogger().debug("ID {} {} {}", nsuri, localName, type);
 
-            GEO_JSON_TYPE dataType = GEO_JSON_TYPE.forGmlType(GML_TYPE.fromString(type));
+            MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(GML_TYPE.fromString(type));
 
             if (dataType.isValid()) {
-                GeoJsonPropertyMapping targetMapping = new GeoJsonPropertyMapping();
+                MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
                 targetMapping.setEnabled(true);
+                targetMapping.setShowInCollection(true);
                 targetMapping.setName("id");
                 targetMapping.setType(dataType);
 
@@ -56,27 +63,30 @@ public class Gml2GeoJsonMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
     @Override
     protected TargetMapping getTargetMappingForProperty(String jsonPath, String nsuri, String localName, String type, long minOccurs, long maxOccurs, int depth, boolean isParentMultiple, boolean isComplex, boolean isObject) {
 
-        GEO_JSON_TYPE dataType = GEO_JSON_TYPE.forGmlType(GML_TYPE.fromString(type));
+        MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(GML_TYPE.fromString(type));
 
         if (dataType.isValid()) {
             LOGGER.getLogger().debug("PROPERTY {} {}", jsonPath, dataType);
 
-            GeoJsonPropertyMapping targetMapping = new GeoJsonPropertyMapping();
+            MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
             targetMapping.setEnabled(true);
+            targetMapping.setShowInCollection(true);
             targetMapping.setName(jsonPath);
             targetMapping.setType(dataType);
 
             return targetMapping;
         }
 
-        GEO_JSON_GEOMETRY_TYPE geoType = GEO_JSON_GEOMETRY_TYPE.forGmlType(GML_GEOMETRY_TYPE.fromString(type));
+        MICRODATA_GEOMETRY_TYPE geoType = MICRODATA_GEOMETRY_TYPE.forGmlType(GML_GEOMETRY_TYPE.fromString(type));
 
         if (geoType.isValid()) {
             LOGGER.getLogger().debug("GEOMETRY {} {}", jsonPath, geoType);
 
-            GeoJsonGeometryMapping targetMapping = new GeoJsonGeometryMapping();
+            MicrodataGeometryMapping targetMapping = new MicrodataGeometryMapping();
             targetMapping.setEnabled(true);
-            targetMapping.setType(GEO_JSON_TYPE.GEOMETRY);
+            targetMapping.setShowInCollection(false);
+            targetMapping.setName(jsonPath);
+            targetMapping.setType(MICRODATA_TYPE.GEOMETRY);
             targetMapping.setGeometryType(geoType);
 
             return targetMapping;

@@ -1,42 +1,9 @@
 package de.ii.ldproxy.output.geojson;
 
-import static de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE;
-
 /**
  * @author zahnen
  */
 public class GeoJsonPropertyMapping implements GeoJsonMapping {
-
-    public enum GEO_JSON_TYPE {
-
-        ID(GML_TYPE.ID),
-        STRING(GML_TYPE.STRING, GML_TYPE.DATE, GML_TYPE.DATE_TIME),
-        NUMBER(GML_TYPE.INT, GML_TYPE.INTEGER, GML_TYPE.DECIMAL, GML_TYPE.DOUBLE),
-        GEOMETRY(),
-        NONE(GML_TYPE.NONE);
-
-        private GML_TYPE[] gmlTypes;
-
-        GEO_JSON_TYPE(GML_TYPE... gmlType) {
-            this.gmlTypes = gmlType;
-        }
-
-        public static GEO_JSON_TYPE forGmlType(GML_TYPE gmlType) {
-            for (GEO_JSON_TYPE geoJsonType : GEO_JSON_TYPE.values()) {
-                for (GML_TYPE v2: geoJsonType.gmlTypes) {
-                    if (v2 == gmlType) {
-                        return geoJsonType;
-                    }
-                }
-            }
-
-            return NONE;
-        }
-
-        public boolean isValid() {
-            return this != NONE;
-        }
-    }
 
     private boolean enabled;
     private String name;

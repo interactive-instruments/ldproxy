@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.output.geojson.GeoJsonPropertyMapping;
-import static de.ii.ldproxy.output.geojson.GeoJsonPropertyMapping.GEO_JSON_TYPE;
+import static de.ii.ldproxy.output.geojson.GeoJsonMapping.GEO_JSON_TYPE;
 import static de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import static de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
@@ -20,7 +20,6 @@ import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import org.codehaus.staxmate.in.SMEvent;
 import org.codehaus.staxmate.in.SMInputCursor;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
-import org.joda.time.DateTime;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;

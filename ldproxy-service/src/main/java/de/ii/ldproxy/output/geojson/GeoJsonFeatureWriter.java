@@ -1,9 +1,8 @@
-package de.ii.ldproxy.gml2json;
+package de.ii.ldproxy.output.geojson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.TokenBuffer;
-import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping;
+import de.ii.ldproxy.gml2json.AbstractFeatureWriter;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
 import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CrsTransformer;

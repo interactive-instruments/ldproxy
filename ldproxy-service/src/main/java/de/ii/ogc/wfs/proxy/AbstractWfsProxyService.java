@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.TokenBuffer;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
-import de.ii.ldproxy.output.html.Gml2HtmlMapper;
+import de.ii.ldproxy.output.html.Gml2MicrodataMapper;
 import de.ii.xsf.core.api.AbstractService;
 import de.ii.xsf.core.api.Resource;
 import de.ii.xsf.logging.XSFLogger;
@@ -97,6 +96,7 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
         this.featureTypes.putAll(featureTypes);
     }
 
+    @JsonIgnore
     public WfsProxyCrsTransformations getCrsTransformations() {
         return crsTransformations;
     }
@@ -119,7 +119,7 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
             this.wfsAdapter.initialize(this.httpClient, this.sslHttpClient);
         }
 
-        this.crsTransformations = new WfsProxyCrsTransformations(crsTransformation, wfsAdapter.getDefaultCrs(), new EpsgCrs(4326, true));
+        this.crsTransformations = new WfsProxyCrsTransformations(crsTransformation, wfsAdapter != null ? wfsAdapter.getDefaultCrs() : null, new EpsgCrs(4326, true));
 
         /*for (WFS2GSFSLayer l : fullLayers) {
             l.initialize(this);
@@ -206,7 +206,7 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
 
         // TODO: dynamic
         analyzers.add(new Gml2GeoJsonMapper(this));
-        analyzers.add(new Gml2HtmlMapper(this));
+        analyzers.add(new Gml2MicrodataMapper(this));
 
         if (!featureTypes.isEmpty()) {
             // create mappings
@@ -238,6 +238,8 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
             ParseError pe = new ParseError(FrameworkMessages.NO_VALID_SRS_FOUND_IN_GETCAPABILITIES_RESPONSE);
             throw pe;
         }
+
+        crsTransformations.setWfsDefaultCrs(wfsAdapter.getDefaultCrs());
 
         wfsAdapter.checkHttpMethodSupport();
 
