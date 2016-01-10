@@ -43,9 +43,9 @@ allprojects {
     repositories {    
         mavenLocal() 
         mavenCentral()
-        /*maven {
+        maven {
             url "http://nyx/artifactory/libs-snapshot"
-        }*/
+        }
         maven {
             url "http://maven.forgerock.org/repo/repo"
         }
