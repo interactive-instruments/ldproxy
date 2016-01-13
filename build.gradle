@@ -5,11 +5,15 @@ buildscript {
         maven {
             url "http://nyx/artifactory/plugins-release"
         }
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+
     } 
     dependencies { 
         classpath group: 'de.interactive-instruments', name: 'gradle-plugin-forgerock-i18n', version: '1.0.6'
         classpath group: 'de.interactive-instruments', name: 'gradle-plugin-osgi-ipojo', version: '1.12.1.26'
-        
+        classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.12.1"
     } 
 }
 
@@ -39,6 +43,20 @@ allprojects {
     version = '0.1.0'
     version += '-SNAPSHOT'
     group = 'de.interactive-instruments'
+
+    if (project.name != "xtraplatform-swagger-ui") {
+        apply plugin: 'license'
+        license {
+            header rootProject.file('gradle/license-header')
+            strictCheck true
+            excludes([
+                    "**/*.mustache",
+                    "**/*.png",
+                    "**/*.ico",
+                    "**/*.xcf",
+                    "**/*.json"])
+        }
+    }
 
     repositories {    
         mavenLocal() 
