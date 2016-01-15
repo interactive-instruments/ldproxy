@@ -63,6 +63,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     protected int page;
     protected CrsTransformer crsTransformer;
 
+    public String title;
     public List<FeatureDTO> features;
     public List<NavigationDTO> breadCrumbs;
     public List<NavigationDTO> pagination;
@@ -107,6 +108,9 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         this.breadCrumbs = breadCrumbs;
         this.formats = formats;
         this.dataset = featureTypeDataset;
+        if (dataset != null) {
+            this.title = dataset.title;
+        }
     }
 
     @Override
@@ -295,6 +299,9 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             currentFeature.id = new FeaturePropertyDTO();
             currentFeature.id.value = value;
             currentFeature.id.itemProp = "url";
+            if (!isFeatureCollection) {
+                this.title = value;
+            }
         } else {
             // TODO: better way to de/serialize
 

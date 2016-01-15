@@ -24,6 +24,7 @@ import java.util.Set;
  */
 public class DatasetDTO {
     public String name;
+    public String title;
     public String description;
     public List<String> keywords;
     public String version;
@@ -55,5 +56,6 @@ public class DatasetDTO {
     public DatasetDTO(String name) {
         this();
         this.name = name;
+        this.title = name;
     }
 }

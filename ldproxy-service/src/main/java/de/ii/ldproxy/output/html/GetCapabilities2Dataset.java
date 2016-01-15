@@ -33,6 +33,7 @@ public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer imp
     @Override
     public void analyzeTitle(String title) {
         dataset.name = title;
+        dataset.title = title;
     }
 
     @Override

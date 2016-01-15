@@ -11,10 +11,12 @@ import java.util.List;
  */
 public class HtmlServicesView extends GenericView {
 
+    public String title;
     public List<NavigationDTO> breadCrumbs;
 
     public HtmlServicesView(URI uri, Object data) {
         super("services", uri, data);
+        this.title = "ldproxy Service Overview";
         this.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("Services", true))
                 .build();

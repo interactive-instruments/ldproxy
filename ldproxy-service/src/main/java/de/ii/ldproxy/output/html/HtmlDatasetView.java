@@ -25,7 +25,10 @@ import java.net.URI;
  */
 public class HtmlDatasetView extends GenericView {
 
+    public String title;
+
     public HtmlDatasetView(URI uri, Object data) {
         super("service", uri, data);
+        this.title = ((DatasetDTO)data).title;
     }
 }
