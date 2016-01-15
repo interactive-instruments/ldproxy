@@ -2,6 +2,10 @@
     {{#idAsUrl}}
         <h1 itemprop="name">{{id.value}}</h1>
         <link href="" {{id.microdata}}/>
+        <link href="" itemprop="hasMap"/>
+        {{#requestUrl}}
+        <link href="{{.}}" itemprop="sameAs"/>
+        {{/requestUrl}}
     {{/idAsUrl}}
     {{^idAsUrl}}
         <h4><a href="{{id.value}}" {{id.microdata}}>{{id.value}}</a></h4>

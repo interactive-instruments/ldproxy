@@ -436,7 +436,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
                 try {
 
-                    GMLAnalyzer htmlWriter = new MicrodataFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2MicrodataMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs, formats, range, featureTypeDataset, service.getCrsTransformations().getDefaultTransformer());
+                    GMLAnalyzer htmlWriter = new MicrodataFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2MicrodataMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, breadCrumbs, formats, range, featureTypeDataset, service.getCrsTransformations().getDefaultTransformer(), request.getAsUrl());
                     GMLParser gmlParser = new GMLParser(htmlWriter, service.staxFactory);
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 

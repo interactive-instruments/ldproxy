@@ -69,8 +69,9 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     public List<NavigationDTO> pagination;
     public List<NavigationDTO> formats;
     public DatasetDTO dataset;
+    public String requestUrl;
 
-    public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, List<NavigationDTO> breadCrumbs, List<NavigationDTO> formats, int[] range, DatasetDTO featureTypeDataset, CrsTransformer crsTransformer) {
+    public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, List<NavigationDTO> breadCrumbs, List<NavigationDTO> formats, int[] range, DatasetDTO featureTypeDataset, CrsTransformer crsTransformer, String requestUrl) {
         this.outputStreamWriter = outputStreamWriter;
         this.currentPath = new XMLPathTracker();
         this.featureTypeMapping = featureTypeMapping;
@@ -110,6 +111,9 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         this.dataset = featureTypeDataset;
         if (dataset != null) {
             this.title = dataset.title;
+        }
+        if (!isFeatureCollection) {
+            this.requestUrl = requestUrl;
         }
     }
 
