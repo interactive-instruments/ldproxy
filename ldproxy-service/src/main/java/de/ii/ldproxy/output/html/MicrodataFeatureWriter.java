@@ -21,6 +21,7 @@ import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
@@ -371,6 +372,11 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
     private void writeGeometry(MICRODATA_GEOMETRY_TYPE type, SMInputCursor feature) {
         GML_GEOMETRY_TYPE gmlType = GML_GEOMETRY_TYPE.NONE;
+        int partCount = 0;
+
+        FeaturePropertyDTO part = null;
+        Writer output = new StringWriter();
+        Writer coordinatesWriter = new HtmlTransformingCoordinatesWriter(output, 2, crsTransformer);
 
         try {
             SMInputCursor geo = feature.descendantElementCursor().advance();
@@ -387,6 +393,26 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                         && (geo.hasLocalName("exterior") || geo.hasLocalName("interior")
                         || geo.hasLocalName("outerBoundaryIs") || geo.hasLocalName("innerBoundaryIs")
                         || geo.hasLocalName("LineString"))) {
+
+                    partCount++;
+                    if (partCount == 1) {
+                        currentFeature.geo = new FeaturePropertyDTO();
+                        currentFeature.geo.itemType = "http://schema.org/GeoShape";
+                        currentFeature.geo.itemProp = "geo";
+                        currentFeature.geo.name = "geometry";
+
+                        part = new FeaturePropertyDTO();
+                        currentFeature.geo.addChild(part);
+
+                        switch (type) {
+                            case LINE_STRING:
+                                part.itemProp = "line";
+                                break;
+                            case POLYGON:
+                                part.itemProp = "polygon";
+                                break;
+                        }
+                    }
 
                 } else if (geo.getCurrEvent().equals(SMEvent.END_ELEMENT)
                         && (geo.hasLocalName("exterior") || geo.hasLocalName("interior")
@@ -423,6 +449,14 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                             break;
                         case LINE_STRING:
                         case POLYGON:
+                            if (partCount == 1) {
+                                try {
+                                    geo.processDescendantText(coordinatesWriter, false);
+                                    coordinatesWriter.close();
+                                } catch (IOException ex) {
+                                    // ignore
+                                }
+                            }
                             break;
                     }
 
@@ -431,6 +465,10 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             }
         } catch (XMLStreamException e) {
             analyzeFailed(e);
+        }
+
+        if (part != null) {
+            part.value = output.toString();
         }
     }
 }
