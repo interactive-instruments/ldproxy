@@ -1,6 +1,6 @@
 <div {{microdata}}>
     {{#idAsUrl}}
-        <h1 itemprop="name">{{id.value}}</h1>
+        <h1 itemprop="name">{{name}}</h1>
         <link href="" {{id.microdata}}/>
         <link href="" itemprop="hasMap"/>
         {{#requestUrl}}
@@ -8,7 +8,7 @@
         {{/requestUrl}}
     {{/idAsUrl}}
     {{^idAsUrl}}
-        <h4><a href="{{id.value}}" {{id.microdata}}>{{id.value}}</a></h4>
+        <h4><a href="{{id.value}}" {{id.microdata}}><span itemprop="name">{{name}}</span></a></h4>
     {{/idAsUrl}}
         {{#children}}
             {{> property}}

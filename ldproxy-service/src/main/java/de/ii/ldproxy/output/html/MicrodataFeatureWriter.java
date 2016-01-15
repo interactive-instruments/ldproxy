@@ -230,6 +230,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         } catch (IOException e) {
             analyzeFailed(e);
         }*/
+        currentFeature.name = currentFeature.name.replaceAll("\\{\\{[^}]*\\}\\}", "");
         features.add(currentFeature);
         currentFeature = null;
     }
@@ -307,6 +308,17 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             if (!isFeatureCollection) {
                 this.title = value;
             }
+            if (currentFeature.name == null || currentFeature.name.isEmpty()) {
+                currentFeature.name = value;
+            }
+
+            if (!isFeatureCollection) {
+                FeaturePropertyDTO property = new FeaturePropertyDTO();
+                property.name = "id";
+                property.value = value;
+
+                currentFeature.addChild(property);
+            }
         } else {
             // TODO: better way to de/serialize
 
@@ -318,30 +330,47 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 for (int i = 0; i < path.length; i++) {
                     String itemProp = path[i];
                     String itemType = mapping.getItemType();
+                    String prefix = "";
 
                     if (itemProp.contains("[")) {
                         String[] p = itemProp.split("\\[");
                         itemProp = p[0];
-                        itemType = p[1].split("=")[1];
-                        itemType = itemType.substring(0, itemType.indexOf(']'));
+                        String[] props = p[1].split("=");
+                        if (props[0].equals("itemType")) {
+                            itemType = p[1].split("=")[1];
+                            itemType = itemType.substring(0, itemType.indexOf(']'));
+                        } else if (props[0].equals("prefix")) {
+                            prefix = props[1].substring(0, props[1].length()-1);
+                        }
                     }//"itemProp": "address[itemType=http://schema.org/PostalAddress]::streetAddress"
 
                     FeaturePropertyDTO currentProperty = null;
+                    boolean knownProperty = false;
 
                     if (i == 0) {
                         for (FeaturePropertyDTO p : currentFeature.childList) {
-                            if (p.itemProp.equals(itemProp)) {
+                            if (p != null && p.itemProp != null &&  (p.itemProp.equals(itemProp) || p.name.equals(mapping.getName()))) {
                                 currentProperty = p;
+                                knownProperty = true;
+                                break;
+                            }
+                        }
+                    } else if (lastProperty != null) {
+                        for (FeaturePropertyDTO p : lastProperty.childList) {
+                            if (p != null &&  (p.itemProp.equals(itemProp) || p.name.equals(mapping.getName()))) {
+                                currentProperty = p;
+                                knownProperty = true;
                                 break;
                             }
                         }
                     }
+
                     if (currentProperty == null) {
                         currentProperty = new FeaturePropertyDTO();
                         currentProperty.itemProp = itemProp;
                         currentProperty.itemType = itemType;
 
-                        if (i == 0) {
+                        if (i == 0 && !knownProperty) {
                             currentFeature.addChild(currentProperty);
                         }
                     }
@@ -349,10 +378,19 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
                     if (i == path.length - 1) {
                         currentProperty.name = mapping.getName();
-                        currentProperty.value = value;
+                        if (currentProperty.value != null) {
+                            currentProperty.value += prefix + value;
+                        } else {
+                            currentProperty.value = value;
+                        }
+
+                        int pos = currentFeature.name.indexOf("{{" + currentProperty.name + "}}");
+                        if (pos > -1) {
+                            currentFeature.name = currentFeature.name.substring(0, pos) + prefix + value + currentFeature.name.substring(pos);
+                        }
                     }
 
-                    if (lastProperty != null) {
+                    if (lastProperty != null && !knownProperty) {
                         lastProperty.addChild(currentProperty);
                     }
 
