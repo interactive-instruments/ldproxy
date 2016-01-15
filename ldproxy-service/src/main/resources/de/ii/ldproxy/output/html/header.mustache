@@ -69,6 +69,9 @@
         {
         margin-left: 0;
         }
+        .space-after li {
+        margin-bottom: 5em;
+        }
     </style>
 </head>
 <body>
@@ -83,19 +86,19 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">ldproxy</a>
+        <a class="navbar-brand" href="https://github.com/interactive-instruments/ldproxy" target="_blank">ldproxy</a>
     </div>
     <div class="container">
         <div id="navbar" class="navbar-collapse collapse">
             <ol class="breadcrumb navbar-text">
-                {{#directory.breadCrumbs}}
+                {{#data.breadCrumbs}}
                     {{#url}}
                         <li><a href="{{.}}">{{label}}</a></li>
                     {{/url}}
                     {{^url}}
                         <li class="active">{{label}}</li>
                     {{/url}}
-                {{/directory.breadCrumbs}}
+                {{/data.breadCrumbs}}
                 {{#breadCrumbs}}
                     {{#url}}
                         <li><a href="{{.}}">{{label}}</a></li>
@@ -107,6 +110,9 @@
             </ol>
             <div class="navbar-right nav-formats">
                 <!--p class="navbar-text">View as:</p-->
+                {{#data.formats}}
+                    <span class="navbar-text"><a href="{{url}}" target="_blank">{{label}}</a></span>
+                {{/data.formats}}
                 {{#formats}}
                     <span class="navbar-text"><a href="{{url}}" target="_blank">{{label}}</a></span>
                 {{/formats}}

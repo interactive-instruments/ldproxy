@@ -15,19 +15,17 @@
  */
 package de.ii.ldproxy.output.html;
 
-import de.ii.xsf.core.views.DirectoryView;
+import de.ii.xsf.core.views.GenericView;
+
+import java.net.URI;
 
 /**
  *
  * @author zahnen
  */
-public class HtmlDatasetView extends DirectoryView {
+public class HtmlDatasetView extends GenericView {
 
-    public HtmlDatasetView(Object directory, String template, String uri, String token) {
-        super(directory, template, uri, token);
-    }
-
-    public String getXmlQuery() {
-        return getToken().isEmpty()?"?f=xml":getToken() + "&f=xml";
+    public HtmlDatasetView(URI uri, Object data) {
+        super("service", uri, data);
     }
 }

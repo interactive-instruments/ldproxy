@@ -1,14 +1,19 @@
 {{> header}}
 
-<h3>Folder: /</h3>
-<h4>Services:</h4>
-<ul>
-{{#directory}}
-<li><a href="{{prefix}}{{id}}/FeatureServer/">{{id}}</a>&nbsp;({{type}})</li>
-{{/directory}}
-{{^directory}}
-<i>None</i>
-{{/directory}}
+<ul class="list-unstyled space-after">
+    {{#data}}
+    <li itemscope itemtype="http://schema.org/Dataset">
+        <h1>
+            <a itemprop="url" href="{{path}}{{browseUrl}}">
+                <span itemprop="name">{{name}}</span>
+            </a>
+        </h1>
+        <span itemprop="description">{{description}}</span>
+    </li>
+    {{/data}}
+    {{^data}}
+    <li>None</li>
+    {{/data}}
 </ul>
 
 {{> footer}}

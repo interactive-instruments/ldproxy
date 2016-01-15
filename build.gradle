@@ -54,6 +54,7 @@ allprojects {
                     "**/*.png",
                     "**/*.ico",
                     "**/*.xcf",
+                    "**/template.html",
                     "**/*.json"])
         }
     }

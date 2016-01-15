@@ -46,10 +46,12 @@ public class WfsProxyCapabilitiesAnalyzer extends AbstractWfsCapabilitiesAnalyze
 
     @Override
     public void analyzeTitle(String title) {
-        /*if (gsfs.getName().equals("default") && !title.isEmpty()) {
-            gsfs.setName(title);
-        }
-        gsfs.setDescription(gsfs.getDescription() + title);*/
+        wfsProxy.setName(title);
+    }
+
+    @Override
+    public void analyzeAbstract(String abstrct) {
+        wfsProxy.setDescription(abstrct);
     }
 
     @Override

@@ -1,8 +1,8 @@
 {{> header}}
 
 <div itemscope itemtype="http://schema.org/Dataset">
-    <h1 itemprop="name">{{directory.name}}</h1>
-    <span itemprop="description">{{directory.description}}</span>
+    <h1 itemprop="name">{{data.name}}</h1>
+    <span itemprop="description">{{data.description}}</span>
     <br/>
     <br/>
     <br/>
@@ -10,96 +10,96 @@
         <dt>Feature Types</dt>
         <dd>
             <ul class="list-unstyled">
-                {{#directory.featureTypes}}
+                {{#data.featureTypes}}
                     <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
-                        <a itemprop="url" href="{{prefix}}{{name}}/{{token}}">{{name}}</a>
+                        <a itemprop="url" href="{{path}}{{name}}/{{query}}">{{name}}</a>
                     </li>
-                {{/directory.featureTypes}}
-                {{^directory.featureTypes}}
+                {{/data.featureTypes}}
+                {{^data.featureTypes}}
                     <i>None</i>
-                {{/directory.featureTypes}}
+                {{/data.featureTypes}}
             </ul>
         </dd>
         <dt>Keywords</dt>
         <dd>
             <span itemprop="keywords">
                 <ul class="list-comma-separated">
-                    {{#directory.keywords}}
+                    {{#data.keywords}}
                         <li>{{.}}</li>
-                    {{/directory.keywords}}
+                    {{/data.keywords}}
                 </ul>
             </span>
         </dd>
         <dt>License</dt>
         <dd>
-            <span itemprop="license">{{directory.license}}</span>
+            <span itemprop="license">{{data.license}}</span>
         </dd>
         <dt>Extent</dt>
         <dd>
             <span itemprop="spatial" itemscope itemtype="http://schema.org/Place">
                 <span itemprop="geo" itemscope itemtype="http://schema.org/GeoShape">
-                    <span itemprop="box">{{directory.bbox}}</span>
+                    <span itemprop="box">{{data.bbox}}</span>
                 </span>
             </span>
         </dd>
         <dt>WFS</dt>
         <dd>
-            <link itemprop="url" href="{{prefix}}{{token}}"/>
-            <a itemprop="sameAs" href="{{directory.url}}" target="_blank">{{directory.url}}</a>
+            <link itemprop="url" href="{{path}}{{query}}"/>
+            <a itemprop="sameAs" href="{{data.url}}" target="_blank">{{data.url}}</a>
         </dd>
         <dt>Provider</dt>
         <dd>
             <ul class="list-unstyled" itemprop="provider" itemscope itemtype="http://schema.org/Organization">
-                <li itemprop="name">{{directory.providerName}}</li>
-                {{#directory.providerUrl}}
+                <li itemprop="name">{{data.providerName}}</li>
+                {{#data.providerUrl}}
                     <li itemprop="url">{{.}}</li>
-                {{/directory.providerUrl}}
-                {{^directory.providerUrl}}
+                {{/data.providerUrl}}
+                {{^data.providerUrl}}
                     <li class="hidden" itemprop="url">http://www.example.com/todo</li>
-                {{/directory.providerUrl}}
+                {{/data.providerUrl}}
                 <li itemprop="contactPoint" itemscope itemtype="http://schema.org/ContactPoint">
                     <span class="hidden" itemprop="contactType">technical support</span>
                     <ul class="list-unstyled">
-                        {{#directory.contactName}}
+                        {{#data.contactName}}
                             <li itemprop="name">{{.}}</li>
-                        {{/directory.contactName}}
-                        {{#directory.contactEmail}}
+                        {{/data.contactName}}
+                        {{#data.contactEmail}}
                             <li itemprop="email">{{.}}</li>
-                        {{/directory.contactEmail}}
-                        {{#directory.contactTelephone}}
+                        {{/data.contactEmail}}
+                        {{#data.contactTelephone}}
                             <li itemprop="telephone">{{.}}</li>
-                        {{/directory.contactTelephone}}
-                        {{#directory.contactFaxNumber}}
+                        {{/data.contactTelephone}}
+                        {{#data.contactFaxNumber}}
                             <li itemprop="faxNumber">{{.}}</li>
-                        {{/directory.contactFaxNumber}}
-                        {{#directory.contactHoursOfService}}
+                        {{/data.contactFaxNumber}}
+                        {{#data.contactHoursOfService}}
                             <li itemprop="hoursAvailable">{{.}}</li>
-                        {{/directory.contactHoursOfService}}
-                        {{#directory.contactUrl}}
+                        {{/data.contactHoursOfService}}
+                        {{#data.contactUrl}}
                             <li itemprop="url">{{.}}</li>
-                        {{/directory.contactUrl}}
-                        {{^directory.contactUrl}}
+                        {{/data.contactUrl}}
+                        {{^data.contactUrl}}
                             <li class="hidden" itemprop="url">http://www.example.com/todo</li>
-                        {{/directory.contactUrl}}
+                        {{/data.contactUrl}}
                     </ul>
                 </li>
                 <li itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
                     <ul class="list-unstyled">
-                        {{#directory.contactStreetAddress}}
+                        {{#data.contactStreetAddress}}
                             <li itemprop="streetAddress">{{.}}</li>
-                        {{/directory.contactStreetAddress}}
-                        {{#directory.contactLocality}}
+                        {{/data.contactStreetAddress}}
+                        {{#data.contactLocality}}
                             <li itemprop="addressLocality">{{.}}</li>
-                        {{/directory.contactLocality}}
-                        {{#directory.contactPostalCode}}
+                        {{/data.contactLocality}}
+                        {{#data.contactPostalCode}}
                             <li itemprop="postalCode">{{.}}</li>
-                        {{/directory.contactPostalCode}}
-                        {{#directory.contactRegion}}
+                        {{/data.contactPostalCode}}
+                        {{#data.contactRegion}}
                             <li itemprop="addressRegion">{{.}}</li>
-                        {{/directory.contactRegion}}
-                        {{#directory.contactCountry}}
+                        {{/data.contactRegion}}
+                        {{#data.contactCountry}}
                             <li itemprop="addressCountry">{{.}}</li>
-                        {{/directory.contactCountry}}
+                        {{/data.contactCountry}}
                     </ul>
                 </li>
             </ul>

@@ -45,6 +45,7 @@ public class DatasetDTO {
     public String contactPostalCode;
     public String contactCountry;
     public List<NavigationDTO> breadCrumbs;
+    public List<NavigationDTO> formats;
 
     public DatasetDTO() {
         this.keywords = new ArrayList<>();

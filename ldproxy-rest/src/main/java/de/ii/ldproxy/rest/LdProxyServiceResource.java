@@ -107,10 +107,10 @@ public class LdProxyServiceResource implements ServiceResource {
                 .build();
 
         // TODO
-        /*List<NavigationDTO> formats = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("GeoJson", "?" + query + "&f=json"))
-                .add(new NavigationDTO("GML", "?" + query + "&f=xml"))
-                .build();*/
+        String query = request.getQueryString() == null ? "" : request.getQueryString();
+        dataset.formats = new ImmutableList.Builder<NavigationDTO>()
+                .add(new NavigationDTO("XML", "?" + query + "&f=xml"))
+                .build();
 
         for (WfsProxyFeatureType ft: service.getFeatureTypes().values()) {
             dataset.featureTypes.add(new DatasetDTO(ft.getName()));
@@ -133,7 +133,7 @@ public class LdProxyServiceResource implements ServiceResource {
             dataset.url += p.getKey() + "=" + p.getValue() + "&";
         }
 
-        return new HtmlDatasetView(dataset, "service", uriInfo.getPath(), token);
+        return new HtmlDatasetView(uriInfo.getRequestUri(), dataset);
     }
 
 
