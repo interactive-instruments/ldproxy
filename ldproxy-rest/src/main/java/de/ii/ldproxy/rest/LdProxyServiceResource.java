@@ -103,7 +103,7 @@ public class LdProxyServiceResource implements ServiceResource {
         DatasetDTO dataset = new DatasetDTO();
         dataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("Services", "../"))
-                .add(new NavigationDTO(service.getId()))
+                .add(new NavigationDTO(service.getName()))
                 .build();
 
         // TODO
@@ -113,7 +113,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 .build();
 
         for (WfsProxyFeatureType ft: service.getFeatureTypes().values()) {
-            dataset.featureTypes.add(new DatasetDTO(ft.getName()));
+            dataset.featureTypes.add(new DatasetDTO(ft.getName(), ft.getDisplayName()));
         }
 
         WFSOperation operation = new GetCapabilities();
@@ -208,14 +208,23 @@ public class LdProxyServiceResource implements ServiceResource {
     @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
     public Response getFeaturesAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @QueryParam("properties") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        // TODO
+        String[] ft = parseLayerId(layerid);
+        String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
+        LOGGER.getLogger().debug("GET HTML FOR {}", featureTypeName);
+        if (!service.getFeatureTypes().containsKey(featureTypeName)) {
+            throw new ResourceNotFound();
+        }
+        WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
+
         List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("Services", "../../"))
-                .add(new NavigationDTO(service.getId(), "../../" + service.getBrowseUrl()))
-                .add(new NavigationDTO(layerid))
+                .add(new NavigationDTO(service.getName(), "../../" + service.getBrowseUrl()))
+                .add(new NavigationDTO(featureType.getDisplayName()))
                 .build();
 
         DatasetDTO dataset = new DatasetDTO();
-        DatasetDTO featureTypeDataset = new DatasetDTO(layerid);
+        DatasetDTO featureTypeDataset = new DatasetDTO(featureType.getName(), featureType.getDisplayName());
         dataset.featureTypes.add(featureTypeDataset);
 
         WFSOperation operation = new GetCapabilities();
@@ -229,14 +238,6 @@ public class LdProxyServiceResource implements ServiceResource {
 
         wfsParser.parse(service.getWfsAdapter().request(operation));
 
-        // TODO
-        String[] ft = parseLayerId(layerid);
-        String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
-        LOGGER.getLogger().debug("GET HTML FOR {}", featureTypeName);
-        if (!service.getFeatureTypes().containsKey(featureTypeName)) {
-            throw new ResourceNotFound();
-        }
-        WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
 
 
         List<String> groupings = new ArrayList<>();
@@ -304,18 +305,6 @@ public class LdProxyServiceResource implements ServiceResource {
     @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
     public Response getFeatureByIdAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
-        List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Services", "../../"))
-                .add(new NavigationDTO(service.getId(), "../../" + service.getBrowseUrl()))
-                .add(new NavigationDTO(layerid, "../../" + service.getBrowseUrl() + layerid + "/"))
-                .add(new NavigationDTO(featureid))
-                .build();
-
-        List<NavigationDTO> formats = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("GeoJson", "?f=json"))
-                .add(new NavigationDTO("GML", "?f=xml"))
-                .build();
-
         // TODO
         String[] ft = parseLayerId(layerid);
         String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
@@ -325,6 +314,20 @@ public class LdProxyServiceResource implements ServiceResource {
         }
 
         WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
+
+        List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
+                .add(new NavigationDTO("Services", "../../"))
+                .add(new NavigationDTO(service.getName(), "../../" + service.getBrowseUrl()))
+                .add(new NavigationDTO(featureType.getDisplayName(), "../../" + service.getBrowseUrl() + layerid + "/"))
+                .add(new NavigationDTO(featureid))
+                .build();
+
+        List<NavigationDTO> formats = new ImmutableList.Builder<NavigationDTO>()
+                .add(new NavigationDTO("GeoJson", "?f=json"))
+                .add(new NavigationDTO("GML", "?f=xml"))
+                .build();
+
+
 
         //if (indexId.toLowerCase().equals("all")) {
             return getHtmlResponse(getWfsFeatureById(layerid, featureid), featureType, false, new ArrayList<String>(), false, "", breadCrumbs, formats, null, null);

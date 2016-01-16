@@ -231,6 +231,10 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             analyzeFailed(e);
         }*/
         currentFeature.name = currentFeature.name.replaceAll("\\{\\{[^}]*\\}\\}", "");
+        if (!isFeatureCollection) {
+            this.title = currentFeature.name;
+            this.breadCrumbs.get(breadCrumbs.size()-1).label = currentFeature.name;
+        }
         features.add(currentFeature);
         currentFeature = null;
     }
@@ -404,6 +408,11 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 property.itemProp = mapping.getItemProp();
 
                 currentFeature.addChild(property);
+
+                int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
+                if (pos > -1) {
+                    currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
+                }
             }
         }
     }

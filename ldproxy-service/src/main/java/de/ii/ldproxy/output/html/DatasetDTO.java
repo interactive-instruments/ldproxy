@@ -54,8 +54,12 @@ public class DatasetDTO {
     }
 
     public DatasetDTO(String name) {
+        this(name, name);
+    }
+
+    public DatasetDTO(String name, String title) {
         this();
         this.name = name;
-        this.title = name;
+        this.title = title;
     }
 }

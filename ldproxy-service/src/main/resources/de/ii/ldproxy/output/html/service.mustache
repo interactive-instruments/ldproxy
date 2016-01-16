@@ -12,11 +12,11 @@
             <ul class="list-unstyled">
                 {{#data.featureTypes}}
                     <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
-                        <a itemprop="url" href="{{path}}{{name}}/{{query}}">{{name}}</a>
+                        <a itemprop="url" href="{{path}}{{name}}/{{query}}">{{title}}</a>
                     </li>
                 {{/data.featureTypes}}
                 {{^data.featureTypes}}
-                    <i>None</i>
+                    <li>None</li>
                 {{/data.featureTypes}}
             </ul>
         </dd>

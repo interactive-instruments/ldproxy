@@ -20,8 +20,8 @@
                 }
                 var map = L.map('map');
 
-                $.getJSON("?f=json", function(data) {
-                    var geojson = L.geoJson(data, {
+                $.getJSON(geoJsonUrl, function(data) {
+                    var geoJson = L.geoJson(data, {
                         onEachFeature: function (feature, layer) {
                             if (feature.geometry.type != 'Point') {
                                 layer.bindPopup(feature.id);
@@ -31,12 +31,12 @@
                             return L.marker(latlng, {title: feature.id}).addTo(map);
                         }
                     });
-                    map.fitBounds(geojson.getBounds(), {
+                    map.fitBounds(geoJson.getBounds(), {
                         padding: [50, 50],
                         maxZoom: 16
                     });
                     osmTiles.addTo(map);
-                    geojson.addTo(map);
+                    geoJson.addTo(map);
                 });
 
 
