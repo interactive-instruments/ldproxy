@@ -91,13 +91,6 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     @GET
-    //@JsonView(JsonViews.GSFSView.class)
-    @Produces("application/xml;charset=utf-8")
-    public Response getDatasetAsXml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @QueryParam("callback") String callback) {
-        return getWfsCapabilities();
-    }
-
-    @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
     public View getDatasetAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @QueryParam("token") String token) {
         DatasetView dataset = new DatasetView("service", uriInfo.getRequestUri());
@@ -136,6 +129,13 @@ public class LdProxyServiceResource implements ServiceResource {
         return dataset;
     }
 
+    @GET
+    //@JsonView(JsonViews.GSFSView.class)
+    @Produces("application/xml;charset=utf-8")
+    public Response getDatasetAsXml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @QueryParam("callback") String callback) {
+        return getWfsCapabilities();
+    }
+
 
 
     /*@Path("/{layerid}/")
@@ -146,63 +146,6 @@ public class LdProxyServiceResource implements ServiceResource {
 
         return getWfsDescribeFeatureType(layerid);
     }*/
-
-    @Path("/{layerid}")
-    @GET
-    @Produces("application/xml;charset=utf-8")
-    public Response getFeaturesAsXml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @QueryParam("properties") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
-        // TODO
-        String[] ft = parseLayerId(layerid);
-        String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
-        LOGGER.getLogger().debug("GET JSON FOR {}", featureTypeName);
-        if (!service.getFeatureTypes().containsKey(featureTypeName)) {
-            throw new ResourceNotFound();
-        }
-        WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
-
-
-        List<String> groupings = new ArrayList<>();
-        if (layerid.equals("inspireadressen")) {
-            groupings.add("woonplaats");
-        }
-
-        if (fields != null && fields.equals("woonplaats")) {
-            return getWfsResponse(getWfsPropertiesPaged(layerid, range, fields));
-        }
-
-        if (uriInfo.getQueryParameters().containsKey("woonplaats")) {
-            return getWfsResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")));
-        }
-
-        //if (indexId.toLowerCase().equals("all")) {
-            return getWfsResponse(getWfsFeaturesPaged(layerid, range));
-        //} else {
-        //    return getWfsPropertiesPaged(layerid, range, indexId);
-        //}
-    }
-
-    @Path("/{layerid}")
-    @GET
-    public Response getFeaturesAsJson(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
-        // TODO
-        String[] ft = parseLayerId(layerid);
-        String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
-        LOGGER.getLogger().debug("GET JSON FOR {}", featureTypeName);
-        if (!service.getFeatureTypes().containsKey(featureTypeName)) {
-            throw new ResourceNotFound();
-        }
-        WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
-
-        if (uriInfo.getQueryParameters().containsKey("woonplaats")) {
-            return getJsonResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")), featureType, true);
-        }
-
-        //if (indexId.toLowerCase().equals("all")) {
-            return getJsonResponse(getWfsFeaturesPaged(layerid, range), featureType, true);
-        //} else {
-        //    return getWfsPropertiesPaged(layerid, range, indexId);
-        //}
-    }
 
     @Path("/{layerid}")
     @GET
@@ -264,21 +207,66 @@ public class LdProxyServiceResource implements ServiceResource {
             return getHtmlResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")), featureType, true, groupings, false, query, null, null);
         }
         //if (indexId.toLowerCase().equals("all")) {
-            return getHtmlResponse(getWfsFeaturesPaged(layerid, range), featureType, true, groupings, false, query, parseRange(range), featureTypeDataset);
+        return getHtmlResponse(getWfsFeaturesPaged(layerid, range), featureType, true, groupings, false, query, parseRange(range), featureTypeDataset);
         //} else {
         //    return getWfsPropertiesPaged(layerid, range, indexId);
         //}
     }
 
-    @Path("/{layerid}/{featureid}")
+    @Path("/{layerid}")
     @GET
-    @Produces("application/xml;charset=utf-8")
-    public Response getFeatureByIdAsXml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeaturesAsJson(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        // TODO
+        String[] ft = parseLayerId(layerid);
+        String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
+        LOGGER.getLogger().debug("GET JSON FOR {}", featureTypeName);
+        if (!service.getFeatureTypes().containsKey(featureTypeName)) {
+            throw new ResourceNotFound();
+        }
+        WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
+
+        if (uriInfo.getQueryParameters().containsKey("woonplaats")) {
+            return getJsonResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")), featureType, true);
+        }
 
         //if (indexId.toLowerCase().equals("all")) {
-        return getWfsResponse(getWfsFeatureById(layerid, featureid));
+            return getJsonResponse(getWfsFeaturesPaged(layerid, range), featureType, true);
         //} else {
-        //    return getWfsFeaturesPaged(layerid, range, indexId, featureid);
+        //    return getWfsPropertiesPaged(layerid, range, indexId);
+        //}
+    }
+
+    @Path("/{layerid}")
+    @GET
+    @Produces("application/xml;charset=utf-8")
+    public Response getFeaturesAsXml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @QueryParam("properties") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        // TODO
+        String[] ft = parseLayerId(layerid);
+        String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
+        LOGGER.getLogger().debug("GET JSON FOR {}", featureTypeName);
+        if (!service.getFeatureTypes().containsKey(featureTypeName)) {
+            throw new ResourceNotFound();
+        }
+        WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
+
+
+        List<String> groupings = new ArrayList<>();
+        if (layerid.equals("inspireadressen")) {
+            groupings.add("woonplaats");
+        }
+
+        if (fields != null && fields.equals("woonplaats")) {
+            return getWfsResponse(getWfsPropertiesPaged(layerid, range, fields));
+        }
+
+        if (uriInfo.getQueryParameters().containsKey("woonplaats")) {
+            return getWfsResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")));
+        }
+
+        //if (indexId.toLowerCase().equals("all")) {
+        return getWfsResponse(getWfsFeaturesPaged(layerid, range));
+        //} else {
+        //    return getWfsPropertiesPaged(layerid, range, indexId);
         //}
     }
 
@@ -296,7 +284,19 @@ public class LdProxyServiceResource implements ServiceResource {
         WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
 
         //if (indexId.toLowerCase().equals("all")) {
-            return getJsonResponse(getWfsFeatureById(layerid, featureid), featureType, false);
+        return getJsonResponse(getWfsFeatureById(layerid, featureid), featureType, false);
+        //} else {
+        //    return getWfsFeaturesPaged(layerid, range, indexId, featureid);
+        //}
+    }
+
+    @Path("/{layerid}/{featureid}")
+    @GET
+    @Produces("application/xml;charset=utf-8")
+    public Response getFeatureByIdAsAXml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+
+        //if (indexId.toLowerCase().equals("all")) {
+        return getWfsResponse(getWfsFeatureById(layerid, featureid));
         //} else {
         //    return getWfsFeaturesPaged(layerid, range, indexId, featureid);
         //}
@@ -333,7 +333,7 @@ public class LdProxyServiceResource implements ServiceResource {
 
 
         //if (indexId.toLowerCase().equals("all")) {
-            return getHtmlResponse(getWfsFeatureById(layerid, featureid), featureType, false, new ArrayList<String>(), false, "", null, featureTypeDataset);
+        return getHtmlResponse(getWfsFeatureById(layerid, featureid), featureType, false, new ArrayList<String>(), false, "", null, featureTypeDataset);
         //} else {
         //    return getWfsFeaturesPaged(layerid, range, indexId, featureid);
         //}
