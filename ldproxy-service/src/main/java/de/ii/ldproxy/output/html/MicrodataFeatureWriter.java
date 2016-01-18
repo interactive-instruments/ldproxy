@@ -64,15 +64,15 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     protected int page;
     protected CrsTransformer crsTransformer;
 
-    public String title;
-    public List<FeatureDTO> features;
-    public List<NavigationDTO> breadCrumbs;
-    public List<NavigationDTO> pagination;
-    public List<NavigationDTO> formats;
-    public DatasetDTO dataset;
-    public String requestUrl;
+    //public String title;
+    //public List<FeatureDTO> features;
+    //public List<NavigationDTO> breadCrumbs;
+    //public List<NavigationDTO> pagination;
+    //public List<NavigationDTO> formats;
+    public FeatureCollectionView dataset;
+    //public String requestUrl;
 
-    public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, List<NavigationDTO> breadCrumbs, List<NavigationDTO> formats, int[] range, DatasetDTO featureTypeDataset, CrsTransformer crsTransformer, String requestUrl) {
+    public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, int[] range, FeatureCollectionView featureTypeDataset, CrsTransformer crsTransformer) {
         this.outputStreamWriter = outputStreamWriter;
         this.currentPath = new XMLPathTracker();
         this.featureTypeMapping = featureTypeMapping;
@@ -106,16 +106,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         }
         this.crsTransformer = crsTransformer;
 
-        this.features = new ArrayList<>();
-        this.breadCrumbs = breadCrumbs;
-        this.formats = formats;
         this.dataset = featureTypeDataset;
-        if (dataset != null) {
-            this.title = dataset.title;
-        }
-        if (!isFeatureCollection) {
-            this.requestUrl = requestUrl;
-        }
     }
 
     @Override
@@ -124,56 +115,64 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
         LOGGER.getLogger().debug("START");
 
-        try {
-            SMInputCursor cursor = future.get();
+        if (isFeatureCollection) {
+            try {
+                SMInputCursor cursor = future.get();
 
-            int numberMatched = Integer.parseInt(cursor.getAttrValue("numberMatched"));
-            int numberReturned = Integer.parseInt(cursor.getAttrValue("numberReturned"));
-            int pages = Math.max(page, numberMatched / numberReturned + (numberMatched % numberReturned > 0 ? 1 : 0));
+                int numberMatched = Integer.parseInt(cursor.getAttrValue("numberMatched"));
+                int numberReturned = Integer.parseInt(cursor.getAttrValue("numberReturned"));
+                int pages = Math.max(page, numberMatched / numberReturned + (numberMatched % numberReturned > 0 ? 1 : 0));
 
-            LOGGER.getLogger().debug("numberMatched {}", numberMatched);
-            LOGGER.getLogger().debug("numberReturned {}", numberReturned);
-            LOGGER.getLogger().debug("page {}", page);
-            LOGGER.getLogger().debug("pages {}", pages);
+                LOGGER.getLogger().debug("numberMatched {}", numberMatched);
+                LOGGER.getLogger().debug("numberReturned {}", numberReturned);
+                LOGGER.getLogger().debug("page {}", page);
+                LOGGER.getLogger().debug("pages {}", pages);
 
-            ImmutableList.Builder<NavigationDTO> pagination = new ImmutableList.Builder<>();
-            if (page > 1) {
-                pagination
-                        .add(new NavigationDTO("&laquo;", "?page=1"))
-                        .add(new NavigationDTO("&lsaquo;", "?page=" + String.valueOf(page - 1)));
-            } else {
-                pagination
-                        .add(new NavigationDTO("&laquo;"))
-                        .add(new NavigationDTO("&lsaquo;"));
-            }
-
-            int from = Math.max(1, page - 2);
-            int to = Math.min(pages, from + 4);
-            if (to == pages) {
-                from = Math.max(1, to - 4);
-            }
-            for (int i = from; i <= to; i++) {
-                if (i == page) {
-                    pagination.add(new NavigationDTO(String.valueOf(i), true));
+                ImmutableList.Builder<NavigationDTO> pagination = new ImmutableList.Builder<>();
+                ImmutableList.Builder<NavigationDTO> metaPagination = new ImmutableList.Builder<>();
+                if (page > 1) {
+                    pagination
+                            .add(new NavigationDTO("&laquo;", "page=1"))
+                            .add(new NavigationDTO("&lsaquo;", "page=" + String.valueOf(page - 1)));
+                    metaPagination
+                            .add(new NavigationDTO("prev", "page=" + String.valueOf(page - 1)));
                 } else {
-                    pagination.add(new NavigationDTO(String.valueOf(i), "?page=" + String.valueOf(i)));
+                    pagination
+                            .add(new NavigationDTO("&laquo;"))
+                            .add(new NavigationDTO("&lsaquo;"));
                 }
+
+                int from = Math.max(1, page - 2);
+                int to = Math.min(pages, from + 4);
+                if (to == pages) {
+                    from = Math.max(1, to - 4);
+                }
+                for (int i = from; i <= to; i++) {
+                    if (i == page) {
+                        pagination.add(new NavigationDTO(String.valueOf(i), true));
+                    } else {
+                        pagination.add(new NavigationDTO(String.valueOf(i), "page=" + String.valueOf(i)));
+                    }
+                }
+
+                if (page < pages) {
+                    pagination
+                            .add(new NavigationDTO("&rsaquo;", "page=" + String.valueOf(page + 1)))
+                            .add(new NavigationDTO("&raquo;", "page=" + String.valueOf(pages)));
+                    metaPagination
+                            .add(new NavigationDTO("next", "page=" + String.valueOf(page + 1)));
+                } else {
+                    pagination
+                            .add(new NavigationDTO("&rsaquo;"))
+                            .add(new NavigationDTO("&raquo;"));
+                }
+
+                this.dataset.pagination = pagination.build();
+                this.dataset.metaPagination = metaPagination.build();
+
+            } catch (InterruptedException | ExecutionException | XMLStreamException | NumberFormatException ex) {
+                analyzeFailed(ex);
             }
-
-            if (page < pages) {
-                pagination
-                        .add(new NavigationDTO("&rsaquo;", "?page=" + String.valueOf(page + 1)))
-                        .add(new NavigationDTO("&raquo;", "?page=" + String.valueOf(pages)));
-            } else {
-                pagination
-                        .add(new NavigationDTO("&rsaquo;"))
-                        .add(new NavigationDTO("&raquo;"));
-            }
-
-            this.pagination = pagination.build();
-
-        } catch (InterruptedException | ExecutionException | XMLStreamException | NumberFormatException ex) {
-            analyzeFailed(ex);
         }
     }
 
@@ -187,7 +186,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             } else {
                 mustache = mustacheFactory.compile("featureDetails.mustache");
             }
-            mustache.execute(outputStreamWriter, this).flush();
+            mustache.execute(outputStreamWriter, dataset).flush();
         } catch (Exception e) {
             analyzeFailed(e);
         } catch (Throwable e) {
@@ -232,10 +231,10 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         }*/
         currentFeature.name = currentFeature.name.replaceAll("\\{\\{[^}]*\\}\\}", "");
         if (!isFeatureCollection) {
-            this.title = currentFeature.name;
-            this.breadCrumbs.get(breadCrumbs.size()-1).label = currentFeature.name;
+            this.dataset.title = currentFeature.name;
+            this.dataset.breadCrumbs.get(dataset.breadCrumbs.size()-1).label = currentFeature.name;
         }
-        features.add(currentFeature);
+        dataset.features.add(currentFeature);
         currentFeature = null;
     }
 
@@ -310,7 +309,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             currentFeature.id.value = value;
             currentFeature.id.itemProp = "url";
             if (!isFeatureCollection) {
-                this.title = value;
+                this.dataset.title = value;
             }
             if (currentFeature.name == null || currentFeature.name.isEmpty()) {
                 currentFeature.name = value;

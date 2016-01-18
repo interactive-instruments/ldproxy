@@ -8,4 +8,11 @@ dependencies {
     compile group: 'com.fasterxml.staxmate', name: 'staxmate', version: '2.2.1'
    
 }
- 
+
+jar {
+    manifest {
+        instruction 'X-Web-Resource-Version', '1.1'
+        instruction 'X-Web-Resource', '/app/js;/js'
+        instruction 'X-Web-Resource', '/app/css;/css'
+    }
+}

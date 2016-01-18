@@ -15,7 +15,7 @@
  */
 package de.ii.ldproxy.rest;
 
-import de.ii.ldproxy.output.html.HtmlServicesView;
+import de.ii.ldproxy.output.html.ServiceOverviewView;
 import de.ii.ldproxy.service.LdProxyService;
 import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.api.rest.ServiceResource;
@@ -48,7 +48,7 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory {
 
     @Override
     public View getServicesView(Collection<Service> collection, URI uri) {
-        return new HtmlServicesView(uri, collection);
+        return new ServiceOverviewView(uri, collection);
     }
 
 }

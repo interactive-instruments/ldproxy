@@ -1,0 +1,56 @@
+.dl-horizontal dt{
+text-align: left;
+}
+
+.dl-horizontal-space dd{
+margin-bottom: 1em;
+}
+.dl-horizontal-no-space {
+margin-bottom: 0;
+}
+.list-comma-separated
+{
+padding: 0;
+margin: 0;
+}
+.list-comma-separated li
+{
+display: inline;
+}
+.list-comma-separated li:not(:last-of-type)::after
+{
+content: ", ";
+}
+#map { height: 480px; }
+.breadcrumb > li + li:before {
+content: "\00BB";
+color: #aaa;
+}
+.breadcrumb {
+padding: 0;
+margin: 15px 0;
+background-color: transparent;
+border-radius: 0;
+-moz-border-radius: 0;
+-webkit-border-radius: 0;
+-o-border-radius: 0;
+}
+.nav-formats span:first-of-type::before
+{
+content: "View as:\a0\a0\a0";
+}
+.nav-formats span:not(:last-of-type)::after
+{
+content: "\a0|\a0";
+}
+.nav-formats span:not(:last-of-type)
+{
+margin-right: 0;
+}
+.nav-formats span
+{
+margin-left: 0;
+}
+.space-after li {
+margin-bottom: 5em;
+}

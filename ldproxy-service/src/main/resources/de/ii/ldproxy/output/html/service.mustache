@@ -1,8 +1,8 @@
 {{> header}}
 
 <div itemscope itemtype="http://schema.org/Dataset">
-    <h1 itemprop="name">{{data.name}}</h1>
-    <span itemprop="description">{{data.description}}</span>
+    <h1 itemprop="name">{{title}}</h1>
+    <span itemprop="description">{{description}}</span>
     <br/>
     <br/>
     <br/>
@@ -10,96 +10,96 @@
         <dt>Feature Types</dt>
         <dd>
             <ul class="list-unstyled">
-                {{#data.featureTypes}}
+                {{#featureTypes}}
                     <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
                         <a itemprop="url" href="{{path}}{{name}}/{{query}}">{{title}}</a>
                     </li>
-                {{/data.featureTypes}}
-                {{^data.featureTypes}}
+                {{/featureTypes}}
+                {{^featureTypes}}
                     <li>None</li>
-                {{/data.featureTypes}}
+                {{/featureTypes}}
             </ul>
         </dd>
         <dt>Keywords</dt>
         <dd>
             <span itemprop="keywords">
                 <ul class="list-comma-separated">
-                    {{#data.keywords}}
+                    {{#keywords}}
                         <li>{{.}}</li>
-                    {{/data.keywords}}
+                    {{/keywords}}
                 </ul>
             </span>
         </dd>
         <dt>License</dt>
         <dd>
-            <span itemprop="license">{{data.license}}</span>
+            <span itemprop="license">{{license}}</span>
         </dd>
         <dt>Extent</dt>
         <dd>
             <span itemprop="spatial" itemscope itemtype="http://schema.org/Place">
                 <span itemprop="geo" itemscope itemtype="http://schema.org/GeoShape">
-                    <span itemprop="box">{{data.bbox}}</span>
+                    <span itemprop="box">{{bbox}}</span>
                 </span>
             </span>
         </dd>
         <dt>WFS</dt>
         <dd>
             <link itemprop="url" href="{{path}}{{query}}"/>
-            <a itemprop="sameAs" href="{{data.url}}" target="_blank">{{data.url}}</a>
+            <a itemprop="sameAs" href="{{url}}" target="_blank">{{url}}</a>
         </dd>
         <dt>Provider</dt>
         <dd>
             <ul class="list-unstyled" itemprop="provider" itemscope itemtype="http://schema.org/Organization">
-                <li itemprop="name">{{data.providerName}}</li>
-                {{#data.providerUrl}}
+                <li itemprop="name">{{providerName}}</li>
+                {{#providerUrl}}
                     <li itemprop="url">{{.}}</li>
-                {{/data.providerUrl}}
-                {{^data.providerUrl}}
+                {{/providerUrl}}
+                {{^providerUrl}}
                     <li class="hidden" itemprop="url">http://www.example.com/todo</li>
-                {{/data.providerUrl}}
+                {{/providerUrl}}
                 <li itemprop="contactPoint" itemscope itemtype="http://schema.org/ContactPoint">
                     <span class="hidden" itemprop="contactType">technical support</span>
                     <ul class="list-unstyled">
-                        {{#data.contactName}}
+                        {{#contactName}}
                             <li itemprop="name">{{.}}</li>
-                        {{/data.contactName}}
-                        {{#data.contactEmail}}
+                        {{/contactName}}
+                        {{#contactEmail}}
                             <li itemprop="email">{{.}}</li>
-                        {{/data.contactEmail}}
-                        {{#data.contactTelephone}}
+                        {{/contactEmail}}
+                        {{#contactTelephone}}
                             <li itemprop="telephone">{{.}}</li>
-                        {{/data.contactTelephone}}
-                        {{#data.contactFaxNumber}}
+                        {{/contactTelephone}}
+                        {{#contactFaxNumber}}
                             <li itemprop="faxNumber">{{.}}</li>
-                        {{/data.contactFaxNumber}}
-                        {{#data.contactHoursOfService}}
+                        {{/contactFaxNumber}}
+                        {{#contactHoursOfService}}
                             <li itemprop="hoursAvailable">{{.}}</li>
-                        {{/data.contactHoursOfService}}
-                        {{#data.contactUrl}}
+                        {{/contactHoursOfService}}
+                        {{#contactUrl}}
                             <li itemprop="url">{{.}}</li>
-                        {{/data.contactUrl}}
-                        {{^data.contactUrl}}
+                        {{/contactUrl}}
+                        {{^contactUrl}}
                             <li class="hidden" itemprop="url">http://www.example.com/todo</li>
-                        {{/data.contactUrl}}
+                        {{/contactUrl}}
                     </ul>
                 </li>
                 <li itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
                     <ul class="list-unstyled">
-                        {{#data.contactStreetAddress}}
+                        {{#contactStreetAddress}}
                             <li itemprop="streetAddress">{{.}}</li>
-                        {{/data.contactStreetAddress}}
-                        {{#data.contactLocality}}
+                        {{/contactStreetAddress}}
+                        {{#contactLocality}}
                             <li itemprop="addressLocality">{{.}}</li>
-                        {{/data.contactLocality}}
-                        {{#data.contactPostalCode}}
+                        {{/contactLocality}}
+                        {{#contactPostalCode}}
                             <li itemprop="postalCode">{{.}}</li>
-                        {{/data.contactPostalCode}}
-                        {{#data.contactRegion}}
+                        {{/contactPostalCode}}
+                        {{#contactRegion}}
                             <li itemprop="addressRegion">{{.}}</li>
-                        {{/data.contactRegion}}
-                        {{#data.contactCountry}}
+                        {{/contactRegion}}
+                        {{#contactCountry}}
                             <li itemprop="addressCountry">{{.}}</li>
-                        {{/data.contactCountry}}
+                        {{/contactCountry}}
                     </ul>
                 </li>
             </ul>

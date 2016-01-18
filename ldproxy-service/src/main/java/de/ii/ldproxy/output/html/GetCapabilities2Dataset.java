@@ -24,9 +24,9 @@ import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
  * @author zahnen
  */
 public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer {
-    private DatasetDTO dataset;
+    private DatasetView dataset;
 
-    public GetCapabilities2Dataset(DatasetDTO dataset) {
+    public GetCapabilities2Dataset(DatasetView dataset) {
         this.dataset = dataset;
     }
 
@@ -130,7 +130,7 @@ public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer imp
 
     @Override
     public void analyzeFeatureTypeAbstract(String featureTypeName, String abstrct) {
-        for (DatasetDTO ft: dataset.featureTypes) {
+        for (DatasetView ft: dataset.featureTypes) {
             if (featureTypeName.endsWith(ft.name)) {
                 ft.description = abstrct;
             }
@@ -139,7 +139,7 @@ public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer imp
 
     @Override
     public void analyzeFeatureTypeKeywords(String featureTypeName, String... keywords) {
-        for (DatasetDTO ft: dataset.featureTypes) {
+        for (DatasetView ft: dataset.featureTypes) {
             if (featureTypeName.endsWith(ft.name)) {
                 for (String keyword: keywords) {
                     ft.keywords.add(keyword);
@@ -158,7 +158,7 @@ public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer imp
     public void analyzeFeatureTypeBoundingBox(String featureTypeName, String xmin, String ymin, String xmax, String ymax) {
         dataset.bbox = xmin + "," + ymin + " " + xmax + "," + ymax;
 
-        for (DatasetDTO ft: dataset.featureTypes) {
+        for (DatasetView ft: dataset.featureTypes) {
             if (featureTypeName.endsWith(ft.name)) {
                 ft.bbox = dataset.bbox;
             }

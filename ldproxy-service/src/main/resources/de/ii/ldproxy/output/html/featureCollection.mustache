@@ -1,8 +1,8 @@
 {{> header}}
 
 <div itemscope itemtype="http://schema.org/Dataset">
-    <h1 itemprop="name">{{dataset.title}}</h1>
-    <span itemprop="description">{{dataset.description}}</span>
+    <h1 itemprop="name">{{title}}</h1>
+    <span itemprop="description">{{description}}</span>
     <link itemprop="url" href=""/>
     <span itemprop="isPartOf" itemscope itemtype="http://schema.org/Dataset">
         <link itemprop="url" href="../"/>
@@ -14,9 +14,9 @@
         <dd>
             <span itemprop="keywords">
                 <ul class="list-comma-separated">
-                    {{#dataset.keywords}}
+                    {{#keywords}}
                         <li>{{.}}</li>
-                    {{/dataset.keywords}}
+                    {{/keywords}}
                 </ul>
             </span>
         </dd>
@@ -24,7 +24,7 @@
         <dd>
             <span itemprop="spatial" itemscope itemtype="http://schema.org/Place">
                 <span itemprop="geo" itemscope itemtype="http://schema.org/GeoShape">
-                    <span itemprop="box">{{dataset.bbox}}</span>
+                    <span itemprop="box">{{bbox}}</span>
                 </span>
             </span>
         </dd>
@@ -50,42 +50,8 @@
     </div>
     <div class="col-md-6">
         <div id="map"></div>
-        <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-        <script type="text/javascript">
-            var osmTiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-            });
-            var geoJsonUrl = '?f=json&';
-            if (window.location.href.indexOf('?') > 0) {
-                geoJsonUrl += window.location.href.slice(window.location.href.indexOf('?') + 1);
-            }
-            var map = L.map('map');
-
-            $.getJSON(geoJsonUrl, function(data) {
-                var geoJson = L.geoJson(data, {
-                    onEachFeature: function (feature, layer) {
-                        if (feature.geometry.type != 'Point') {
-                            layer.bindPopup(feature.id);
-                            L.marker(layer.getBounds().getCenter(), {title: feature.id}).addTo(map);
-                        }
-                    },
-                    pointToLayer: function (feature, latlng) {
-                        return L.marker(latlng, {title: feature.id}).addTo(map);
-                    }
-                });
-                map.fitBounds(geoJson.getBounds(), {
-                    padding: [50, 50],
-                    maxZoom: 16
-                });
-                osmTiles.addTo(map);
-                geoJson.addTo(map);
-            });
-
-
-
-
-        </script>
+        <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js" defer></script>
+        <script src="/app/js/featureCollection.js" defer></script>
     </div>
 </div>
 
