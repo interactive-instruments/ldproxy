@@ -31,11 +31,11 @@ public class RestRootFilter implements ContainerResponseFilter {
     @Override
     public ContainerResponse filter(ContainerRequest request, ContainerResponse response) {
 
-        if (request.getPath().endsWith("services/app.css")) {
+        if (request.getPath().endsWith("services/app/css/app.css")) {
             writeContent(response, "/css/app.css", "text/css; charset=utf-8");
-        } else if (request.getPath().endsWith("services/featureCollection.js")) {
+        } else if (request.getPath().endsWith("services/app/js/featureCollection.js")) {
             writeContent(response, "/js/featureCollection.js", "application/javascript");
-        } else if (request.getPath().endsWith("services/featureDetails.js")) {
+        } else if (request.getPath().endsWith("services/app/js/featureDetails.js")) {
             writeContent(response, "/js/featureDetails.js", "application/javascript");
         }
 
