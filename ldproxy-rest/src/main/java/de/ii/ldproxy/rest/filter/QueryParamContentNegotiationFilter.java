@@ -48,7 +48,7 @@ public class QueryParamContentNegotiationFilter implements ContainerRequestFilte
         // Quick check for a 'f' parameter
         if (!request.getQueryParameters().containsKey(CONTENT_TYPE_PARAMETER)) {
             // overwrite wildcard
-            if (request.getRequestHeader(ACCEPT_HEADER).size() == 1 && request.getRequestHeader(ACCEPT_HEADER).get(0).trim().equals("*/*")) {
+            if (request.getRequestHeader(ACCEPT_HEADER).size() == 0 ||(request.getRequestHeader(ACCEPT_HEADER).size() == 1 && request.getRequestHeader(ACCEPT_HEADER).get(0).trim().equals("*/*"))) {
                 request.getRequestHeaders().putSingle(ACCEPT_HEADER, "text/html;q=1.0,application/xml;q=0.9,*/*;q=0.8");
             }
 
