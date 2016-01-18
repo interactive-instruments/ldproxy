@@ -1,8 +1,8 @@
 <div {{microdata}}>
     {{#idAsUrl}}
         <h1 itemprop="name">{{name}}</h1>
-        <link href="" {{id.microdata}}/>
-        <link href="" itemprop="hasMap"/>
+        <link href="{{path}}./" {{id.microdata}}/>
+        <link href="{{path}}./?f=html" itemprop="hasMap"/>
         {{#requestUrl}}
         <link href="{{.}}" itemprop="sameAs"/>
         {{/requestUrl}}
