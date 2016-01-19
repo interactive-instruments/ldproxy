@@ -317,6 +317,7 @@ public class LdProxyServiceResource implements ServiceResource {
         WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
 
         FeatureCollectionView featureTypeDataset = new FeatureCollectionView("", uriInfo.getRequestUri(), featureType.getName(), featureType.getDisplayName());
+        featureTypeDataset.description = featureType.getDisplayName();
 
         featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("Services", "../../../"))

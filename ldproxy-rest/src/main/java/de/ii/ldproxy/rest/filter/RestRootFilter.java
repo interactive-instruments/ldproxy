@@ -37,6 +37,8 @@ public class RestRootFilter implements ContainerResponseFilter {
             writeContent(response, "/js/featureCollection.js", "application/javascript");
         } else if (request.getPath().endsWith("services/app/js/featureDetails.js")) {
             writeContent(response, "/js/featureDetails.js", "application/javascript");
+        } else if (request.getPath().endsWith("services/favicon.ico")) {
+            writeContent(response, "/img/favicon.ico", "image/x-icon");
         }
 
         return response;
