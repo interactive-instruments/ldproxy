@@ -15,6 +15,7 @@
  */
 package de.ii.ogc.wfs.proxy;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import de.ii.xtraplatform.jackson.dynamic.DynamicTypeIdResolver;
@@ -27,4 +28,6 @@ import de.ii.xtraplatform.jackson.dynamic.DynamicTypeIdResolver;
 public interface TargetMapping {
     String getName();
     boolean isEnabled();
+    @JsonIgnore
+    boolean isGeometry();
 }

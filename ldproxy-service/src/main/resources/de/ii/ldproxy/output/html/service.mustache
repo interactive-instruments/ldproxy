@@ -104,6 +104,14 @@
                 </li>
             </ul>
         </dd>
+        {{#metadataUrl}}
+            <dt>Metadata</dt>
+            <dd>
+            <span itemprop="isPartOf" itemscope itemtype="http://schema.org/DataCatalog">
+                <a itemprop="url" href="{{metadataUrl}}" target="_blank">{{metadataUrl}}</a>
+            </span>
+            </dd>
+        {{/metadataUrl}}
     </dl>
 
 </div>

@@ -24,6 +24,9 @@ import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
  * @author zahnen
  */
 public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer {
+
+    public static final String CSW_PROXY_URL = "http://opendatacat.net/geonetwork-geo4web/doc/dataset/";
+
     private DatasetView dataset;
 
     public GetCapabilities2Dataset(DatasetView dataset) {
@@ -124,6 +127,15 @@ public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer imp
     }
 
     @Override
+    public void analyzeInspireMetadataUrl(String metadataUrl) {
+        int eq = metadataUrl.lastIndexOf('=');
+        if (eq > -1) {
+            String uuid = metadataUrl.substring(eq + 1);
+            dataset.metadataUrl = CSW_PROXY_URL + uuid;
+        }
+    }
+
+    @Override
     public void analyzeFeatureTypeTitle(String featureTypeName, String title) {
 
     }
@@ -161,6 +173,20 @@ public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer imp
         for (DatasetView ft: dataset.featureTypes) {
             if (featureTypeName.endsWith(ft.name)) {
                 ft.bbox = dataset.bbox;
+            }
+        }
+    }
+
+    @Override
+    public void analyzeFeatureTypeMetadataUrl(String featureTypeName, String url) {
+        int eq = url.lastIndexOf('=');
+        if (eq > -1) {
+            String uuid = url.substring(eq + 1);
+
+            for (DatasetView ft : dataset.featureTypes) {
+                if (featureTypeName.endsWith(ft.name)) {
+                    ft.metadataUrl = CSW_PROXY_URL + uuid;
+                }
             }
         }
     }

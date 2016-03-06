@@ -38,6 +38,7 @@ public class QueryParamContentNegotiationFilter implements ContainerRequestFilte
     private static final String ACCEPT_HEADER = "Accept";
     private static final Map<String, MediaType> MIME_TYPES = new ImmutableMap.Builder<String, MediaType>()
             .put("json", MediaType.APPLICATION_JSON_TYPE)
+            .put("jsonld", new MediaType("application","ld+json"))
             .put("geojson", new MediaType("application","vnd.geo+json"))
             .put("html", MediaType.TEXT_HTML_TYPE)
             .put("xml", MediaType.APPLICATION_XML_TYPE)

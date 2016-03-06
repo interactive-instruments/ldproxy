@@ -23,6 +23,7 @@ import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE
 public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
 
     private MICRODATA_GEOMETRY_TYPE geometryType;
+    private static final String PROPERTY_NAME = "geo";
 
     public MICRODATA_GEOMETRY_TYPE getGeometryType() {
         return geometryType;
@@ -32,6 +33,14 @@ public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
         this.geometryType = geometryType;
     }
 
+    @Override
+    public String getName() {
+        return PROPERTY_NAME;
+    }
+
+    @Override
+    public void setName(String name) {
+    }
 
     public enum MICRODATA_GEOMETRY_TYPE {
 

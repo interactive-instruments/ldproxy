@@ -50,4 +50,9 @@ public class GeoJsonPropertyMapping implements GeoJsonMapping {
     public void setType(GEO_JSON_TYPE type) {
         this.type = type;
     }
+
+    @Override
+    public boolean isGeometry() {
+        return getType() == GEO_JSON_TYPE.GEOMETRY;
+    }
 }

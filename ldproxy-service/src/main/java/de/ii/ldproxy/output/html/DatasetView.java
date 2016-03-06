@@ -36,6 +36,7 @@ public class DatasetView extends GenericView {
     public String license;
     public String bbox;
     public String url;
+    public String metadataUrl;
     public List<DatasetView> featureTypes;
     public String providerName;
     public String providerUrl;

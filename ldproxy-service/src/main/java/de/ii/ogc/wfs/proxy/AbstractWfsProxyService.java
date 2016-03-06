@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
 import de.ii.ldproxy.output.html.Gml2MicrodataMapper;
+import de.ii.ldproxy.output.jsonld.Gml2JsonLdMapper;
 import de.ii.xsf.core.api.AbstractService;
 import de.ii.xsf.core.api.Resource;
 import de.ii.xsf.logging.XSFLogger;
@@ -222,6 +223,7 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
         // TODO: dynamic
         analyzers.add(new Gml2GeoJsonMapper(this));
         analyzers.add(new Gml2MicrodataMapper(this));
+        analyzers.add(new Gml2JsonLdMapper(this));
 
         if (!featureTypes.isEmpty()) {
             // create mappings

@@ -15,6 +15,8 @@
  */
 package de.ii.ldproxy.output.html;
 
+import de.ii.ldproxy.output.geojson.GeoJsonMapping;
+
 /**
  * @author zahnen
  */
@@ -79,5 +81,10 @@ public class MicrodataPropertyMapping implements MicrodataMapping {
 
     public void setItemProp(String itemProp) {
         this.itemProp = itemProp;
+    }
+
+    @Override
+    public boolean isGeometry() {
+        return getType() == MICRODATA_TYPE.GEOMETRY;
     }
 }

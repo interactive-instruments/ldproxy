@@ -21,6 +21,8 @@ import com.google.common.collect.Lists;
 import de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
 import de.ii.ldproxy.output.html.*;
+import de.ii.ldproxy.output.jsonld.Gml2JsonLdMapper;
+import de.ii.ldproxy.output.jsonld.JsonLdOutputWriter;
 import de.ii.ldproxy.service.GetFeatureById;
 import de.ii.ldproxy.service.GetFeaturePaging;
 import de.ii.ldproxy.service.GetPropertyValuePaging;
@@ -90,6 +92,7 @@ public class LdProxyServiceResource implements ServiceResource {
 
     }
 
+    // TODO: as JSON-LD
     @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
     public View getDatasetAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @QueryParam("token") String token) {
@@ -192,6 +195,7 @@ public class LdProxyServiceResource implements ServiceResource {
         String query = request.getQueryString() == null ? "" : request.getQueryString();
 
         featureTypeDataset.formats = new ImmutableList.Builder<NavigationDTO>()
+                .add(new NavigationDTO("JSON-LD", "f=jsonld"))
                 .add(new NavigationDTO("GeoJson", "f=json"))
                 .add(new NavigationDTO("GML", "f=xml"))
                 .build();
@@ -231,6 +235,44 @@ public class LdProxyServiceResource implements ServiceResource {
 
         //if (indexId.toLowerCase().equals("all")) {
             return getJsonResponse(getWfsFeaturesPaged(layerid, range), featureType, true);
+        //} else {
+        //    return getWfsPropertiesPaged(layerid, range, indexId);
+        //}
+    }
+
+    @Path("/{layerid}")
+    @GET
+    @Produces("application/ld+json;charset=utf-8")
+    public Response getFeaturesAsJsonLd(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        // TODO
+        String[] ft = parseLayerId(layerid);
+        String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
+        LOGGER.getLogger().debug("GET JSON-LD FOR {}", featureTypeName);
+        if (!service.getFeatureTypes().containsKey(featureTypeName)) {
+            throw new ResourceNotFound();
+        }
+        WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
+
+        DatasetView dataset = new DatasetView("", uriInfo.getRequestUri());
+
+        WFSOperation operation = new GetCapabilities();
+
+        WFSCapabilitiesAnalyzer analyzer = new MultiWfsCapabilitiesAnalyzer(
+                new GetCapabilities2Dataset(dataset),
+                new LoggingWfsCapabilitiesAnalyzer()
+        );
+
+        WFSCapabilitiesParser wfsParser = new WFSCapabilitiesParser(analyzer, service.staxFactory);
+
+        wfsParser.parse(service.getWfsAdapter().request(operation));
+
+
+        if (uriInfo.getQueryParameters().containsKey("woonplaats")) {
+            return getJsonResponse(getWfsFeaturesPaged(layerid, range, "woonplaats", uriInfo.getQueryParameters().getFirst("woonplaats")), featureType, true);
+        }
+
+        //if (indexId.toLowerCase().equals("all")) {
+        return getJsonLdResponse(getWfsFeaturesPaged(layerid, range), featureType, true, dataset);
         //} else {
         //    return getWfsPropertiesPaged(layerid, range, indexId);
         //}
@@ -292,6 +334,27 @@ public class LdProxyServiceResource implements ServiceResource {
 
     @Path("/{layerid}/{featureid}")
     @GET
+    @Produces("application/ld+json;charset=utf-8")
+    public Response getFeatureByIdAsJsonLd(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        // TODO
+        String[] ft = parseLayerId(layerid);
+        String featureTypeName = service.getWfsAdapter().getNsStore().getNamespaceURI(ft[0]) + ":" + ft[1];
+        LOGGER.getLogger().debug("GET JSON-LD FOR {}", featureTypeName);
+        if (!service.getFeatureTypes().containsKey(featureTypeName)) {
+            throw new ResourceNotFound();
+        }
+
+        WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
+
+        //if (indexId.toLowerCase().equals("all")) {
+        return getJsonLdResponse(getWfsFeatureById(layerid, featureid), featureType, false, null);
+        //} else {
+        //    return getWfsFeaturesPaged(layerid, range, indexId, featureid);
+        //}
+    }
+
+    @Path("/{layerid}/{featureid}")
+    @GET
     @Produces("application/xml;charset=utf-8")
     public Response getFeatureByIdAsAXml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
 
@@ -327,6 +390,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 .build();
 
         featureTypeDataset.formats = new ImmutableList.Builder<NavigationDTO>()
+                .add(new NavigationDTO("JSON-LD", "f=jsonld"))
                 .add(new NavigationDTO("GeoJson", "f=json"))
                 .add(new NavigationDTO("GML", "f=xml"))
                 .build();
@@ -422,6 +486,28 @@ public class LdProxyServiceResource implements ServiceResource {
                 try {
 
                     GMLAnalyzer jsonWriter = new GeoJsonFeatureWriter(service.createJsonGenerator(output), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2GeoJsonMapper.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer());
+                    GMLParser gmlParser = new GMLParser(jsonWriter, service.staxFactory);
+                    gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
+
+                } catch (ExecutionException ex) {
+
+                }
+            }
+        };
+
+        return Response.ok().entity(stream).build();
+    }
+
+    private Response getJsonLdResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final DatasetView dataset) {
+        StreamingOutput stream = new StreamingOutput() {
+            @Override
+            public void write(OutputStream output) throws IOException, WebApplicationException {
+                //HttpEntity res = ((LdProxyService)service).getWfsAdapter().request(operation);
+                //res.writeTo(output);
+                WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
+                try {
+
+                    GMLAnalyzer jsonWriter = new JsonLdOutputWriter(service.createJsonGenerator(output), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2JsonLdMapper.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer(), uriInfo.getRequestUri(), dataset);
                     GMLParser gmlParser = new GMLParser(jsonWriter, service.staxFactory);
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 

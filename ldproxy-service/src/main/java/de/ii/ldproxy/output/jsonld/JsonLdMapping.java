@@ -15,19 +15,10 @@
  */
 package de.ii.ldproxy.output.jsonld;
 
-import de.ii.ogc.wfs.proxy.TargetMapping;
+import de.ii.ldproxy.output.html.MicrodataMapping;
 
 /**
  * @author zahnen
  */
-public class JsonLdMapping implements TargetMapping {
-    @Override
-    public String getName() {
-        return null;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return false;
-    }
+public interface JsonLdMapping extends MicrodataMapping {
 }

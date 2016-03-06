@@ -65,7 +65,7 @@ public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
                 MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
                 targetMapping.setEnabled(true);
                 targetMapping.setShowInCollection(true);
-                targetMapping.setName("id");
+                targetMapping.setName("@id");
                 targetMapping.setType(dataType);
 
                 return targetMapping;
