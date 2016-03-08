@@ -69,8 +69,8 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory {
                 for (Service service : services) {
                     URI serviceWfsUri = ((LdProxyService) service).getWfsAdapter().getUrls().get("default").get(WFS.METHOD.GET);
                     if (wfsUri.equals(serviceWfsUri)) {
-                        URI serviceUri = new URIBuilder().setPath(uriInfo.getRequestUri().toString().split("\\?")[0] + service.getId() + "/").build();
-                        return Response.temporaryRedirect(serviceUri).build();
+                        URI serviceUri = new URIBuilder().setPath(getPath(uriInfo) + service.getId() + "/").build();
+                        return Response.status(Response.Status.TEMPORARY_REDIRECT).header("Location", serviceUri.toString()).build();
                     }
                 }
             } catch (URISyntaxException e) {
@@ -81,4 +81,7 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory {
         return null;
     }
 
+    private String getPath(UriInfo uriInfo) {
+        return uriInfo.getPath().endsWith("/") ? "" : uriInfo.getPath().substring(uriInfo.getPath().lastIndexOf("/") + 1) + "/";
+    }
 }

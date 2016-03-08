@@ -21,6 +21,7 @@ public class IndexValueWriter implements GMLAnalyzer {
     private final String index;
     private final SortedSet<String> values;
     private int numberMatched;
+    private boolean failed;
 
     public IndexValueWriter(String index) {
         this.index = index;
@@ -84,6 +85,7 @@ public class IndexValueWriter implements GMLAnalyzer {
 
     @Override
     public void analyzeFailed(Exception e) {
+        this.failed = true;
         LOGGER.getLogger().debug("", e);
     }
 
@@ -93,5 +95,9 @@ public class IndexValueWriter implements GMLAnalyzer {
 
     public int getNumberMatched() {
         return numberMatched;
+    }
+
+    public boolean hasFailed() {
+        return failed;
     }
 }

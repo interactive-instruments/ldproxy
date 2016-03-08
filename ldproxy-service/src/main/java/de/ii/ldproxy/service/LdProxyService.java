@@ -128,22 +128,32 @@ public class LdProxyService extends AbstractWfsProxyService {
         SortedSet<String> values = new TreeSet<>();
         int count = 15000;
         int startIndex = 0;
-        int numberMatched = count+1;
+        int numberMatched = 1;
+        int tries = 0;
 
         //WFSOperation operation = new GetPropertyValuePaging(getWfsAdapter().getNsStore().getNamespacePrefix(featureType.getNamespace()), featureType.getName(), propertyName, -1, 0);
-        // TODO: rm + count
-        while (numberMatched > 0 && (startIndex + count) < numberMatched) {
+        while (numberMatched > 0 && startIndex < numberMatched) {
             WFSOperation operation = new GetFeaturePaging(getWfsAdapter().getNsStore().getNamespacePrefix(featureType.getNamespace()), featureType.getName(), count, startIndex);
             WFSRequest request = new WFSRequest(getWfsAdapter(), operation);
 
             IndexValueWriter indexValueWriter = new IndexValueWriter(propertyName);
 
             GMLParser gmlParser = new GMLParser(indexValueWriter, staxFactory);
-            gmlParser.parse(request.getResponse(), WFS.getNS(WFS.VERSION._2_0_0), "member");
+            try {
+                gmlParser.parse(request.getResponse(), WFS.getNS(WFS.VERSION._2_0_0), "member");
+            } catch(Throwable e) {
+                // ignore
+            }
+            if(indexValueWriter.hasFailed() && tries < 3) {
+                tries++;
+                LOGGER.getLogger().debug("TRYING AGAIN {}", tries);
+                continue;
+            }
 
             values.addAll(indexValueWriter.getValues());
             numberMatched = indexValueWriter.getNumberMatched();
             startIndex += count;
+            tries = 0;
             LOGGER.getLogger().debug("{}/{}", startIndex, numberMatched);
         }
 
