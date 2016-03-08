@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
+import de.ii.ldproxy.service.SparqlAdapter;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
@@ -63,6 +64,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     protected MustacheFactory mustacheFactory;
     protected int page;
     protected CrsTransformer crsTransformer;
+    protected SparqlAdapter sparqlAdapter;
 
     //public String title;
     //public List<FeatureDTO> features;
@@ -72,7 +74,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     public FeatureCollectionView dataset;
     //public String requestUrl;
 
-    public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, int[] range, FeatureCollectionView featureTypeDataset, CrsTransformer crsTransformer) {
+    public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, int[] range, FeatureCollectionView featureTypeDataset, CrsTransformer crsTransformer, SparqlAdapter sparqlAdapter) {
         this.outputStreamWriter = outputStreamWriter;
         this.currentPath = new XMLPathTracker();
         this.featureTypeMapping = featureTypeMapping;
@@ -107,6 +109,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         this.crsTransformer = crsTransformer;
 
         this.dataset = featureTypeDataset;
+
+        this.sparqlAdapter = sparqlAdapter;
     }
 
     @Override
@@ -121,7 +125,10 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
                 int numberMatched = Integer.parseInt(cursor.getAttrValue("numberMatched"));
                 int numberReturned = Integer.parseInt(cursor.getAttrValue("numberReturned"));
-                int pages = Math.max(page, numberMatched / numberReturned + (numberMatched % numberReturned > 0 ? 1 : 0));
+                int pages = Math.max(page, 0);
+                if (numberReturned > 0) {
+                    pages = Math.max(pages, numberMatched / numberReturned + (numberMatched % numberReturned > 0 ? 1 : 0));
+                }
 
                 LOGGER.getLogger().debug("numberMatched {}", numberMatched);
                 LOGGER.getLogger().debug("numberReturned {}", numberReturned);
@@ -391,6 +398,18 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                         if (pos > -1) {
                             currentFeature.name = currentFeature.name.substring(0, pos) + prefix + value + currentFeature.name.substring(pos);
                         }
+
+                        if (currentProperty.name.equals("postcode") && !isFeatureCollection) {
+                            currentFeature.links = new FeaturePropertyDTO();
+                            currentFeature.links.name = "announcements";
+                            List<String> reports = sparqlAdapter.request(currentProperty.value, SparqlAdapter.QUERY.POSTAL_CODE_EXACT);
+                            for (String id: reports) {
+                                FeaturePropertyDTO link = new FeaturePropertyDTO();
+                                link.value = id;
+                                link.name = id.substring(id.lastIndexOf('/')+1);
+                                currentFeature.links.addChild(link);
+                            }
+                        }
                     }
 
                     if (lastProperty != null && !knownProperty) {
@@ -411,6 +430,19 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
                 if (pos > -1) {
                     currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
+                }
+
+
+                if (property.name.equals("postcode") && !isFeatureCollection) {
+                    currentFeature.links = new FeaturePropertyDTO();
+                    currentFeature.links.name = "announcements";
+                    List<String> reports = sparqlAdapter.request(property.value, SparqlAdapter.QUERY.POSTAL_CODE_EXACT);
+                    for (String id: reports) {
+                        FeaturePropertyDTO link = new FeaturePropertyDTO();
+                        link.value = id;
+                        link.name = id.substring(id.lastIndexOf('/')+1);
+                        currentFeature.links.addChild(link);
+                    }
                 }
             }
         }

@@ -25,7 +25,9 @@ public class FeatureDTO extends FeaturePropertyDTO {
     public FeaturePropertyDTO id;
     //public final List<FeaturePropertyDTO> properties;
     public FeaturePropertyDTO geo;
+    public FeaturePropertyDTO links;
     public boolean idAsUrl;
+    public boolean noUrlClosingSlash;
 
     /*public FeatureDTO() {
         this.properties = new ArrayList<>();

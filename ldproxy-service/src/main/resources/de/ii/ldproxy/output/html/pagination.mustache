@@ -2,7 +2,7 @@
     <ul class="pagination">
         {{#pagination}}
             {{#url}}
-                <li><a href="{{path}}?{{.}}">{{label}}</a></li>
+                <li><a href="{{path}}{{queryWithoutPage}}{{.}}">{{label}}</a></li>
             {{/url}}
             {{^url}}
                 {{#active}}

@@ -13,6 +13,12 @@ public class FeatureCollectionView extends DatasetView {
     public List<NavigationDTO> pagination;
     public List<NavigationDTO> metaPagination;
     public List<FeatureDTO> features;
+    public List<NavigationDTO> indices;
+    public String index;
+    public String indexValue;
+    public boolean hideMap;
+    public boolean hideMetadata;
+    public FeaturePropertyDTO links;
 
     public FeatureCollectionView(String template, URI uri) {
         super(template, uri);
@@ -27,5 +33,13 @@ public class FeatureCollectionView extends DatasetView {
     public FeatureCollectionView(String template, URI uri, String name, String title) {
         super(template, uri, name, title);
         this.features = new ArrayList<>();
+    }
+
+    public String getQueryWithoutPage() {
+        String query = getQuery();
+        if (!query.contains("page=")) {
+            return query;
+        }
+        return query.substring(0, query.lastIndexOf("page="));
     }
 }

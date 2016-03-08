@@ -26,10 +26,7 @@ import de.ii.xsf.dropwizard.api.HttpClients;
 import de.ii.xsf.dropwizard.api.Jackson;
 import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.*;
 import org.apache.http.client.HttpClient;
 import org.codehaus.staxmate.SMInputFactory;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
@@ -56,8 +53,10 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
     private SMInputFactory staxFactory;
     private ObjectMapper jsonMapper;
     private CrsTransformation crsTransformation;
+    private LdProxyIndexStore indexStore;
+    private SparqlAdapter sparqlAdapter;
 
-    public LdProxyServiceStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires HttpClients httpClients, @Requires CrsTransformation crsTransformation) {
+    public LdProxyServiceStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires HttpClients httpClients, @Requires CrsTransformation crsTransformation, @Requires LdProxyIndexStore indexStore/*, @Requires SparqlAdapter sparqlAdapter*/) {
         super(rootConfigStore, SERVICE_STORE_ID, jackson.getDefaultObjectMapper(), true);
 
         jsonMapper = jackson.getDefaultObjectMapper();
@@ -69,11 +68,20 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
 
         this.crsTransformation = crsTransformation;
 
+        this.indexStore = indexStore;
+        this.sparqlAdapter = new SparqlAdapter(jackson, httpClients);
+
         // TODO: orgs layertemplates
         //this.layerTemplateStore = new WFS2GSFSLayerTemplateStore(configStores.getConfigStore(LAYER_TEMPLATES_STORE_ID), jsonMapper);
         //this.layerTemplateStores = new HashMap<String, WFS2GSFSLayerTemplateStore>();
 
         //this.WFS2GSFSlayerTemplateStore = new WFS2GSFSLayerTemplateStore(this.jsonMapper, layerTemplateStore);
+    }
+
+    // TODO
+    @Validate
+    private void start() {
+        //fillCache();
     }
 
     @Override
@@ -86,6 +94,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
     protected LdProxyService readResource(String[] path, String id, LdProxyService resource) throws IOException, KeyNotFoundException {
         LdProxyService service = super.readResource(path, id, resource);
         service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);
+        service.initialize(indexStore, sparqlAdapter);
 
         if (service.getTargetStatus() == Service.STATUS.STARTED) {
             service.start();
@@ -118,6 +127,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
         switch (operation) {
             case ADD:
                 service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);
+                service.initialize(indexStore, sparqlAdapter);
             case UPDATE:
             case UPDATE_OVERRIDE:
                 if (service.getTargetStatus() == Service.STATUS.STARTED) {

@@ -242,7 +242,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                     case ID:
                         json.writeStringField(mapping.getName(), requestUrl + value);
                         // TODO: generate in mapping
-                        json.writeStringField("url", requestUrl + value);
+                        //json.writeStringField("url", requestUrl + value);
                         writeStartProperties();
                         break;
                     case NUMBER:

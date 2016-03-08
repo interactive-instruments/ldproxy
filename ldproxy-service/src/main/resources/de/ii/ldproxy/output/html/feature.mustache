@@ -8,7 +8,7 @@
         {{/requestUrl}}
     {{/idAsUrl}}
     {{^idAsUrl}}
-        <h4><a href="{{path}}{{id.value}}/" {{id.microdata}}><span itemprop="name">{{name}}</span></a></h4>
+        <h4><a href="{{path}}{{id.value}}{{^noUrlClosingSlash}}/{{/noUrlClosingSlash}}" {{id.microdata}}><span itemprop="name">{{name}}</span></a></h4>
     {{/idAsUrl}}
         {{#children}}
             {{> property}}
@@ -16,4 +16,14 @@
         {{#geo}}
             {{> property}}
         {{/geo}}
+        {{#links}}
+            <dl class="dl-horizontal dl-horizontal-no-space">
+                <dt>{{name}}</dt>
+            <dd>
+                {{#children}}
+                    <a href="{{value.value}}" target="_blank">{{value.name}}</a>{{^last}}, {{/last}}
+                {{/children}}
+            </dd>
+            </dl>
+        {{/links}}
 </div>

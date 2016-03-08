@@ -16,6 +16,7 @@
 package de.ii.ogc.wfs.proxy;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.service.IndexMapping;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,6 +49,18 @@ public class WfsProxyFeatureTypeMapping {
                return mappings.get(path).get(targetType);
         }
         return ImmutableList.<TargetMapping>of();
+    }
+
+    public Map<String, List<TargetMapping>> findMappings(String targetType) {
+        Map<String, List<TargetMapping>> mappings = new HashMap<>();
+
+        for (String path: getMappings().keySet()) {
+            if (getMappings().get(path).containsKey(targetType)) {
+                mappings.put(path, getMappings().get(path).get(targetType));
+            }
+        }
+
+        return mappings;
     }
 
     public Map<String, Map<String, List<TargetMapping>>> getMappings() {

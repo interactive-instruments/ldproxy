@@ -1,17 +1,18 @@
 {{> header}}
 
 <div itemscope itemtype="http://schema.org/Dataset">
-    <h1 itemprop="name">{{title}}</h1>
+    <h1 itemprop="name">{{title}}{{#indexValue}} in {{indexValue}}{{/indexValue}}</h1>
     <span itemprop="description">{{description}}</span>
-    <link itemprop="url" href="{{path}}./"/>
+    <link itemprop="url" href="{{path}}./{{#indexValue}}?{{index}}={{indexValue}}{{/indexValue}}"/>
     <span itemprop="isPartOf" itemscope itemtype="http://schema.org/Dataset">
-        <link itemprop="url" href="{{path}}../"/>
+        <link itemprop="url" href="{{path}}{{^indexValue}}.{{/indexValue}}./"/>
     </span>
     <br/>
     <br/>
     <dl class="dl-horizontal dl-horizontal-space">
-        <dt>Keywords</dt>
-        <dd>
+        {{^hideMetadata}}
+            <dt>Keywords</dt>
+            <dd>
             <span itemprop="keywords">
                 <ul class="list-comma-separated">
                     {{#keywords}}
@@ -19,23 +20,56 @@
                     {{/keywords}}
                 </ul>
             </span>
-        </dd>
-        <dt>Extent</dt>
-        <dd>
+            </dd>
+            <dt>Extent</dt>
+            <dd>
             <span itemprop="spatial" itemscope itemtype="http://schema.org/Place">
                 <span itemprop="geo" itemscope itemtype="http://schema.org/GeoShape">
                     <span itemprop="box">{{bbox}}</span>
                 </span>
             </span>
-        </dd>
-        {{#metadataUrl}}
-        <dt>Metadata</dt>
-        <dd>
+            </dd>
+            {{#metadataUrl}}
+                <dt>Metadata</dt>
+                <dd>
             <span itemprop="isPartOf" itemscope itemtype="http://schema.org/DataCatalog">
                 <a itemprop="url" href="{{metadataUrl}}" target="_blank">{{metadataUrl}}</a>
             </span>
+                </dd>
+            {{/metadataUrl}}
+        {{/hideMetadata}}
+        {{^indexValue}}
+        <dt>Browse By</dt>
+        <dd>
+            {{#index}}
+                <span>{{index}}</span>
+            {{/index}}
+            {{^index}}
+                <ul class="list-unstyled">
+                    {{#indices}}
+                        <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
+                            <a itemprop="url" href="{{path}}{{url}}">{{label}}</a>
+                        </li>
+                    {{/indices}}
+                    {{^indices}}
+                        <li>None</li>
+                    {{/indices}}
+                </ul>
+            {{/index}}
         </dd>
-        {{/metadataUrl}}
+        {{/indexValue}}
+        {{#indexValue}}
+            {{#links}}
+                <dt>{{name}}</dt>
+                <dd>
+                    {{#children}}
+                        <span itemprop="citation" itemscope itemtype="http://schema.org/Report">
+                            <a itemprop="url" href="{{value.value}}" target="_blank">{{value.name}}</a>{{^last}}, {{/last}}
+                        </span>
+                    {{/children}}
+                </dd>
+            {{/links}}
+        {{/indexValue}}
     </dl>
 
 </div>
@@ -56,11 +90,13 @@
         {{> pagination}}
 
     </div>
-    <div class="col-md-6">
-        <div id="map"></div>
-        <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js" defer></script>
-        <script src="/app/js/featureCollection.js" defer></script>
-    </div>
+    {{^hideMap}}
+        <div class="col-md-6">
+            <div id="map"></div>
+            <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js" defer></script>
+            <script src="/app/js/featureCollection.js" defer></script>
+        </div>
+    {{/hideMap}}
 </div>
 
 {{> footer}}

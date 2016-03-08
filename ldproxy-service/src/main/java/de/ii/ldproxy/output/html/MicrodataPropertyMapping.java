@@ -15,8 +15,6 @@
  */
 package de.ii.ldproxy.output.html;
 
-import de.ii.ldproxy.output.geojson.GeoJsonMapping;
-
 /**
  * @author zahnen
  */
@@ -28,6 +26,7 @@ public class MicrodataPropertyMapping implements MicrodataMapping {
     private boolean showInCollection;
     private String itemType;
     private String itemProp;
+    private String sparqlQuery;
 
     @Override
     public boolean isEnabled() {
@@ -79,8 +78,17 @@ public class MicrodataPropertyMapping implements MicrodataMapping {
         return itemProp;
     }
 
+    @Override
+    public String getSparqlQuery() {
+        return sparqlQuery;
+    }
+
     public void setItemProp(String itemProp) {
         this.itemProp = itemProp;
+    }
+
+    public void setSparqlQuery(String sparqlQuery) {
+        this.sparqlQuery = sparqlQuery;
     }
 
     @Override
