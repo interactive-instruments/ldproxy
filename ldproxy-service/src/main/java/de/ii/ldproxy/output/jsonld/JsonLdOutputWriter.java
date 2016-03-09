@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -41,12 +42,15 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
     private String requestUrl;
     private DatasetView dataset;
 
-    public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, URI requestUri, DatasetView dataset) {
+    public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, URI requestUri, DatasetView dataset, Map<String, String> rewrites) {
         super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer);
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
         this.objectDepth = 0;
         this.requestUrl = requestUri.toString().split("\\?")[0];
+        for (Map.Entry<String, String> rewrite: rewrites.entrySet()) {
+            this.requestUrl = requestUrl.replaceFirst(rewrite.getKey(), rewrite.getValue());
+        }
         if (!isFeatureCollection) {
             int sl = requestUrl.substring(0, requestUrl.length() - 2).lastIndexOf('/');
             this.requestUrl = requestUrl.substring(0, sl + 1);

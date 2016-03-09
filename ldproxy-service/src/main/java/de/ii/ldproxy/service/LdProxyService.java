@@ -43,18 +43,22 @@ public class LdProxyService extends AbstractWfsProxyService {
     public static final String SERVICE_TYPE = "ldproxy";
     private static final String INTERFACE_SPECIFICATION = "LinkedDataService";
 
-    private Map<String, List<String>> indices;
+    //private Map<String, List<String>> indices;
     private LdProxyIndexStore indexStore;
     private SparqlAdapter sparqlAdapter;
 
+    // TODO: we already have external url, can we use it here?
+    private Map<String, String> rewrites;
+
+
     public LdProxyService() {
-        this.indices = new HashMap<>();
+        this.rewrites = new HashMap<>();
     }
 
     public LdProxyService(String id, String wfsUrl) {
         super(id, SERVICE_TYPE, null, new WFSAdapter(wfsUrl.trim()));
 
-        this.indices = new HashMap<>();
+        this.rewrites = new HashMap<>();
                 //this.description = "";
         //String[] path = {orgid};
         //initialize(path, module);
@@ -73,12 +77,12 @@ public class LdProxyService extends AbstractWfsProxyService {
         return INTERFACE_SPECIFICATION;
     }
 
-    public Map<String, List<String>> getIndices() {
-        return indices;
+    public Map<String, String> getRewrites() {
+        return rewrites;
     }
 
-    public void setIndices(Map<String, List<String>> indices) {
-        this.indices = indices;
+    public void setRewrites(Map<String, String> rewrites) {
+        this.rewrites = rewrites;
     }
 
     public Map<String, String> findIndicesForFeatureType(WfsProxyFeatureType ft) {
