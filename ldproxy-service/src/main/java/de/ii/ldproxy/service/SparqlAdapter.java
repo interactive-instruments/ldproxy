@@ -20,9 +20,9 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author zahnen
@@ -36,20 +36,20 @@ public class SparqlAdapter {
 
     private static final String SPARQL_ENDPOINT = "http://demo.linkeddatafactory.nl:8890/sparql";
     private static final String POSTAL_QUERY_BEGIN = "prefix schema: <http://schema.org/> " +
-            "SELECT ?id " +
+            "SELECT ?id,?title " +
             "WHERE { GRAPH <http://data.linkeddatafactory.nl/bekendmakingen/> " +
             "{ ?id  schema:contentLocation [ schema:address [ schema:postalCode ?g ]]. FILTER regex(?g, \"";
-    private static final String POSTAL_QUERY_END = "\", \"i\") } }";
+    private static final String POSTAL_QUERY_END = "\", \"i\") . ?id  schema:headline ?title } }";
     private static final String POSTAL_EXACT_QUERY_BEGIN = "prefix schema: <http://schema.org/> " +
-            "SELECT ?id " +
+            "SELECT ?id,?title " +
             "WHERE { GRAPH <http://data.linkeddatafactory.nl/bekendmakingen/> " +
             "{ ?id  schema:contentLocation [ schema:address [ schema:postalCode \"";
-    private static final String POSTAL_EXACT_QUERY_END = "\" ]] } }";
+    private static final String POSTAL_EXACT_QUERY_END = "\" ]] . ?id  schema:headline ?title } }";
     private static final String LOCALITY_QUERY_BEGIN = "prefix schema: <http://schema.org/> " +
-            "SELECT ?id " +
+            "SELECT ?id,?title " +
             "WHERE { GRAPH <http://data.linkeddatafactory.nl/bekendmakingen/> " +
             "{ ?id  schema:contentLocation [ schema:address [ schema:addressLocality \"";
-    private static final String LOCALITY_QUERY_END = "\" ]] } }";
+    private static final String LOCALITY_QUERY_END = "\" ]] . ?id  schema:headline ?title } }";
 
     public enum QUERY {
         POSTAL_CODE,
@@ -65,8 +65,8 @@ public class SparqlAdapter {
         this.httpClient = httpClients.getDefaultHttpClient();
     }
 
-    public List<String> request(String value, QUERY type) {
-        List<String> ids = new ArrayList<>();
+    public Map<String, String> request(String value, QUERY type) {
+        Map<String,String> ids = new LinkedHashMap<>();
 
         HttpResponse httpResponse = null;
 
@@ -80,9 +80,11 @@ public class SparqlAdapter {
             while (elements.hasNext()) {
                 JsonNode node = elements.next();
 
-                ids.add(node.get("id").get("value").asText());
+                String id = node.get("id").get("value").asText();
+                String title = node.get("title").get("value").asText();
+                ids.put(id, title);
 
-                LOGGER.getLogger().debug("ID {}", ids.get(ids.size() - 1));
+                LOGGER.getLogger().debug("LINK {} {}", id, title);
             }
 
         } catch (IOException | URISyntaxException e) {
@@ -107,18 +109,24 @@ public class SparqlAdapter {
     }
 
     private String getQuery(String value, QUERY type) {
+        String query = "";
         switch (type) {
             case POSTAL_CODE:
-                String number = value.substring(0, 3);
+                String number = value.substring(0, 4);
                 String letters = value.substring(4);
                 String regex = number + "(" + letters + ")?$";
 
-                return POSTAL_QUERY_BEGIN + regex + POSTAL_QUERY_END;
+                query = POSTAL_QUERY_BEGIN + regex + POSTAL_QUERY_END;
+                break;
             case POSTAL_CODE_EXACT:
-                return POSTAL_EXACT_QUERY_BEGIN + value + POSTAL_EXACT_QUERY_END;
+                query = POSTAL_EXACT_QUERY_BEGIN + value + POSTAL_EXACT_QUERY_END;
+                break;
             case ADDRESS_LOCALITY:
             default:
-                return LOCALITY_QUERY_BEGIN + value + LOCALITY_QUERY_END;
+                query = LOCALITY_QUERY_BEGIN + value + LOCALITY_QUERY_END;
+                break;
         }
+        LOGGER.getLogger().debug("SPARQL QUERY: {}", query);
+        return query;
     }
 }

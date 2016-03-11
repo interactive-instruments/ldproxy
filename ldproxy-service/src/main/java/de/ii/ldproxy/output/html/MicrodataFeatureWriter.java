@@ -41,6 +41,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -399,14 +400,14 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                             currentFeature.name = currentFeature.name.substring(0, pos) + prefix + value + currentFeature.name.substring(pos);
                         }
 
-                        if (currentProperty.name.equals("postcode") && !isFeatureCollection) {
+                        if (currentProperty.name.equals("postalCode") && !isFeatureCollection) {
                             currentFeature.links = new FeaturePropertyDTO();
                             currentFeature.links.name = "announcements";
-                            List<String> reports = sparqlAdapter.request(currentProperty.value, SparqlAdapter.QUERY.POSTAL_CODE_EXACT);
-                            for (String id: reports) {
+                            Map<String,String> reports = sparqlAdapter.request(currentProperty.value, SparqlAdapter.QUERY.POSTAL_CODE_EXACT);
+                            for (Map.Entry<String,String> id: reports.entrySet()) {
                                 FeaturePropertyDTO link = new FeaturePropertyDTO();
-                                link.value = id;
-                                link.name = id.substring(id.lastIndexOf('/')+1);
+                                link.value = id.getKey();
+                                link.name = id.getValue() + " (" + id.getKey().substring(id.getKey().lastIndexOf('/')+1) + ")";
                                 currentFeature.links.addChild(link);
                             }
                         }
@@ -433,14 +434,14 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 }
 
 
-                if (property.name.equals("postcode") && !isFeatureCollection) {
+                if (property.name.equals("postalCode") && !isFeatureCollection) {
                     currentFeature.links = new FeaturePropertyDTO();
                     currentFeature.links.name = "announcements";
-                    List<String> reports = sparqlAdapter.request(property.value, SparqlAdapter.QUERY.POSTAL_CODE_EXACT);
-                    for (String id: reports) {
+                    Map<String,String> reports = sparqlAdapter.request(property.value, SparqlAdapter.QUERY.POSTAL_CODE_EXACT);
+                    for (Map.Entry<String,String> id: reports.entrySet()) {
                         FeaturePropertyDTO link = new FeaturePropertyDTO();
-                        link.value = id;
-                        link.name = id.substring(id.lastIndexOf('/')+1);
+                        link.value = id.getKey();
+                        link.name = id.getValue() + " (" + id.getKey().substring(id.getKey().lastIndexOf('/')+1) + ")";
                         currentFeature.links.addChild(link);
                     }
                 }

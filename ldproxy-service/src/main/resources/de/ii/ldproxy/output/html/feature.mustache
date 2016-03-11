@@ -20,9 +20,13 @@
             <dl class="dl-horizontal dl-horizontal-no-space">
                 <dt>{{name}}</dt>
             <dd>
+                <ul class="list-unstyled">
                 {{#children}}
-                    <a href="{{value.value}}" target="_blank">{{value.name}}</a>{{^last}}, {{/last}}
+                    <li>
+                        <a href="{{value.value}}" target="_blank">{{value.name}}</a>
+                    </li>
                 {{/children}}
+                    </ul>
             </dd>
             </dl>
         {{/links}}

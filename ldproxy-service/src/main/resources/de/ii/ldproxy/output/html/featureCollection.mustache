@@ -62,11 +62,27 @@
             {{#links}}
                 <dt>{{name}}</dt>
                 <dd>
+                    <ul class="list-unstyled">
                     {{#children}}
-                        <span itemprop="citation" itemscope itemtype="http://schema.org/Report">
-                            <a itemprop="url" href="{{value.value}}" target="_blank">{{value.name}}</a>{{^last}}, {{/last}}
-                        </span>
+                        <li itemprop="citation" itemscope itemtype="http://schema.org/Report">
+                            <a itemprop="url" href="{{value.value}}" target="_blank">{{value.name}}</a>
+                        </li>
+                        {{#tooMuch}}
+                            </ul>
+                            <ul class="list-unstyled collapse" id="collapsed_links">
+                        {{/tooMuch}}
                     {{/children}}
+                    </ul>
+                    {{#children.hasTooMuch}}
+                    <ul class="list-unstyled">
+                        <li>
+                            <a class="collapsed"data-toggle="collapse" data-target="#collapsed_links" href="#collapsed_links">
+                                <span class="if-collapsed">... show more</span>
+                                <span class="if-not-collapsed">show less</span>
+                            </a>
+                        </li>
+                    </ul>
+                    {{/children.hasTooMuch}}
                 </dd>
             {{/links}}
         {{/indexValue}}

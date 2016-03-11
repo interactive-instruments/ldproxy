@@ -86,12 +86,18 @@ public class LdProxyService extends AbstractWfsProxyService {
     }
 
     public Map<String, String> findIndicesForFeatureType(WfsProxyFeatureType ft) {
+        return  findIndicesForFeatureType(ft, true);
+    }
+
+    public Map<String, String> findIndicesForFeatureType(WfsProxyFeatureType ft, boolean onlyEnabled) {
         Map<String, String> indices = new HashMap<>();
 
         Map<String, List<TargetMapping>> mappings = ft.getMappings().findMappings(IndexMapping.MIME_TYPE);
         for(String path: mappings.keySet()) {
             for (TargetMapping mapping: mappings.get(path)) {
-                indices.put(mapping.getName(), path);
+                if (!onlyEnabled || mapping.isEnabled()) {
+                    indices.put(mapping.getName(), path);
+                }
             }
         }
 

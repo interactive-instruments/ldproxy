@@ -233,7 +233,7 @@ public class LdProxyServiceResource implements ServiceResource {
         }
 
         for (String filterKey: uriInfo.getQueryParameters().keySet()) {
-            if (service.findIndicesForFeatureType(featureType).containsKey(filterKey)) {
+            if (service.findIndicesForFeatureType(featureType, false).containsKey(filterKey)) {
 
                 // + TODO: same for postalCode
                 // + check template url + isPartOf TODO: schema.org mapping of aggregations and links
@@ -243,19 +243,29 @@ public class LdProxyServiceResource implements ServiceResource {
 
                 String filterValue = uriInfo.getQueryParameters().getFirst(filterKey);
 
-                featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                        .add(new NavigationDTO("Services", "../../"))
-                        .add(new NavigationDTO(service.getName(), "../../" + service.getBrowseUrl()))
-                        .add(new NavigationDTO(featureType.getDisplayName(), "./"))
-                        .add(new NavigationDTO(filterKey, "./?fields=" + filterKey + "&distinctValues=true"))
-                        .add(new NavigationDTO(filterValue))
-                        .build();
+                if (service.findIndicesForFeatureType(featureType).containsKey(filterKey)) {
+                    featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
+                            .add(new NavigationDTO("Services", "../../"))
+                            .add(new NavigationDTO(service.getName(), "../../" + service.getBrowseUrl()))
+                            .add(new NavigationDTO(featureType.getDisplayName(), "./"))
+                            .add(new NavigationDTO(filterKey, "./?fields=" + filterKey + "&distinctValues=true"))
+                            .add(new NavigationDTO(filterValue))
+                            .build();
+                } else {
+                    featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
+                            .add(new NavigationDTO("Services", "../../"))
+                            .add(new NavigationDTO(service.getName(), "../../" + service.getBrowseUrl()))
+                            .add(new NavigationDTO(featureType.getDisplayName(), "./"))
+                            .add(new NavigationDTO(filterKey))
+                            .add(new NavigationDTO(filterValue))
+                            .build();
+                }
 
                 featureTypeDataset.hideMetadata = true;
                 featureTypeDataset.index = filterKey;
                 featureTypeDataset.indexValue = filterValue;
 
-                List<String> announcements = null;
+                Map<String,String> announcements = null;
                 if (filterKey.equals("addressLocality")) {
                     announcements = service.getSparqlAdapter().request(filterValue, SparqlAdapter.QUERY.ADDRESS_LOCALITY);
                 } else if (filterKey.equals("postalCode")) {
@@ -265,15 +275,15 @@ public class LdProxyServiceResource implements ServiceResource {
                 if (announcements != null && !announcements.isEmpty()) {
                     featureTypeDataset.links = new FeaturePropertyDTO();
                     featureTypeDataset.links.name = "Announcements";
-                    for (String id : announcements) {
+                    for (Map.Entry<String,String> id: announcements.entrySet()) {
                         FeaturePropertyDTO link = new FeaturePropertyDTO();
-                        link.value = id;
-                        link.name = id.substring(id.lastIndexOf('/') + 1);
+                        link.value = id.getKey();
+                        link.name = makeDisplayName(id.getKey(), id.getValue());
                         featureTypeDataset.links.addChild(link);
                     }
                 }
 
-                return getHtmlResponse(getWfsFeaturesPaged(layerid, range, service.findIndicesForFeatureType(featureType).get(filterKey), filterValue), featureType, true, groupings, false, query, parseRange(range), featureTypeDataset);
+                return getHtmlResponse(getWfsFeaturesPaged(layerid, range, service.findIndicesForFeatureType(featureType, false).get(filterKey), filterValue), featureType, true, groupings, false, query, parseRange(range), featureTypeDataset);
             }
         }
         //if (indexId.toLowerCase().equals("all")) {
@@ -281,6 +291,13 @@ public class LdProxyServiceResource implements ServiceResource {
         //} else {
         //    return getWfsPropertiesPaged(layerid, range, indexId);
         //}
+    }
+
+    private String makeDisplayName(String id, String title) {
+        if (title.length() > 100) {
+            title = title.substring(0,99) + " ...";
+        }
+        return title + " (" + id.substring(id.lastIndexOf('/')+1) + ")";
     }
 
     @Path("/{layerid}")
@@ -296,9 +313,9 @@ public class LdProxyServiceResource implements ServiceResource {
         WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
 
         for (String filterKey: uriInfo.getQueryParameters().keySet()) {
-            if (service.findIndicesForFeatureType(featureType).containsKey(filterKey)) {
+            if (service.findIndicesForFeatureType(featureType, false).containsKey(filterKey)) {
                 String filterValue = uriInfo.getQueryParameters().getFirst(filterKey);
-                return getJsonResponse(getWfsFeaturesPaged(layerid, range, service.findIndicesForFeatureType(featureType).get(filterKey), filterValue), featureType, true);
+                return getJsonResponse(getWfsFeaturesPaged(layerid, range, service.findIndicesForFeatureType(featureType, false).get(filterKey), filterValue), featureType, true);
             }
         }
 
@@ -336,9 +353,9 @@ public class LdProxyServiceResource implements ServiceResource {
         wfsParser.parse(service.getWfsAdapter().request(operation));
 
         for (String filterKey: uriInfo.getQueryParameters().keySet()) {
-            if (service.findIndicesForFeatureType(featureType).containsKey(filterKey)) {
+            if (service.findIndicesForFeatureType(featureType, false).containsKey(filterKey)) {
                 String filterValue = uriInfo.getQueryParameters().getFirst(filterKey);
-                return getJsonLdResponse(getWfsFeaturesPaged(layerid, range, service.findIndicesForFeatureType(featureType).get(filterKey), filterValue), featureType, true, dataset);
+                return getJsonLdResponse(getWfsFeaturesPaged(layerid, range, service.findIndicesForFeatureType(featureType, false).get(filterKey), filterValue), featureType, true, dataset);
             }
         }
 
@@ -363,9 +380,9 @@ public class LdProxyServiceResource implements ServiceResource {
         WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
 
         for (String filterKey: uriInfo.getQueryParameters().keySet()) {
-            if (service.findIndicesForFeatureType(featureType).containsKey(filterKey)) {
+            if (service.findIndicesForFeatureType(featureType, false).containsKey(filterKey)) {
                 String filterValue = uriInfo.getQueryParameters().getFirst(filterKey);
-                return getWfsResponse(getWfsFeaturesPaged(layerid, range, service.findIndicesForFeatureType(featureType).get(filterKey), filterValue));
+                return getWfsResponse(getWfsFeaturesPaged(layerid, range, service.findIndicesForFeatureType(featureType, false).get(filterKey), filterValue));
             }
         }
 

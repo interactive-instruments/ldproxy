@@ -54,3 +54,10 @@ margin-left: 0;
 .space-after li {
 margin-bottom: 5em;
 }
+
+[data-toggle="collapse"].collapsed .if-not-collapsed {
+  display: none;
+}
+[data-toggle="collapse"]:not(.collapsed) .if-collapsed {
+  display: none;
+}

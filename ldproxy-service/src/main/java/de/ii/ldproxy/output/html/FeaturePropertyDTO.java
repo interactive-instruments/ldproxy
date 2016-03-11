@@ -48,8 +48,8 @@ public class FeaturePropertyDTO {
         return microdata;
     }
 
-    public DecoratedCollection<FeaturePropertyDTO> children() {
-        return childList.size() > 0 ? new DecoratedCollection<FeaturePropertyDTO>(childList) : null;
+    public SplitDecoratedCollection<FeaturePropertyDTO> children() {
+        return childList.size() > 0 ? new SplitDecoratedCollection<FeaturePropertyDTO>(childList) : null;
     }
 
     public void addChild(FeaturePropertyDTO child) {
