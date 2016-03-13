@@ -66,6 +66,7 @@
                     {{#children}}
                         <li itemprop="citation" itemscope itemtype="http://schema.org/Report">
                             <a itemprop="url" href="{{value.value}}" target="_blank">{{value.name}}</a>
+                            <span itemprop="headline" class="hidden">{{value.itemProp}}</span>
                         </li>
                         {{#tooMuch}}
                             </ul>

@@ -28,7 +28,7 @@ public class FeaturePropertyDTO {
     public String itemProp;
     public String name;
     public String value;
-    protected List<FeaturePropertyDTO> childList;
+    public List<FeaturePropertyDTO> childList;
     public FeaturePropertyDTO parent;
 
     public FeaturePropertyDTO() {

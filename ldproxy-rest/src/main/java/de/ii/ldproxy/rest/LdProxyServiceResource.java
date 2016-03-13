@@ -272,6 +272,7 @@ public class LdProxyServiceResource implements ServiceResource {
                     announcements = service.getSparqlAdapter().request(filterValue, SparqlAdapter.QUERY.POSTAL_CODE);
                 }
 
+                // TODO
                 if (announcements != null && !announcements.isEmpty()) {
                     featureTypeDataset.links = new FeaturePropertyDTO();
                     featureTypeDataset.links.name = "Announcements";
@@ -279,6 +280,7 @@ public class LdProxyServiceResource implements ServiceResource {
                         FeaturePropertyDTO link = new FeaturePropertyDTO();
                         link.value = id.getKey();
                         link.name = makeDisplayName(id.getKey(), id.getValue());
+                        link.itemProp = id.getValue();
                         featureTypeDataset.links.addChild(link);
                     }
                 }
@@ -340,6 +342,8 @@ public class LdProxyServiceResource implements ServiceResource {
         WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
 
         DatasetView dataset = new DatasetView("", uriInfo.getRequestUri());
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureCollection", uriInfo.getRequestUri(), featureType.getName(), featureType.getDisplayName());
+        dataset.featureTypes.add(featureTypeDataset);
 
         WFSOperation operation = new GetCapabilities();
 
@@ -355,12 +359,37 @@ public class LdProxyServiceResource implements ServiceResource {
         for (String filterKey: uriInfo.getQueryParameters().keySet()) {
             if (service.findIndicesForFeatureType(featureType, false).containsKey(filterKey)) {
                 String filterValue = uriInfo.getQueryParameters().getFirst(filterKey);
-                return getJsonLdResponse(getWfsFeaturesPaged(layerid, range, service.findIndicesForFeatureType(featureType, false).get(filterKey), filterValue), featureType, true, dataset);
+
+                featureTypeDataset.hideMetadata = true;
+                featureTypeDataset.index = filterKey;
+                featureTypeDataset.indexValue = filterValue;
+
+                Map<String,String> announcements = null;
+                if (filterKey.equals("addressLocality")) {
+                    announcements = service.getSparqlAdapter().request(filterValue, SparqlAdapter.QUERY.ADDRESS_LOCALITY);
+                } else if (filterKey.equals("postalCode")) {
+                    announcements = service.getSparqlAdapter().request(filterValue, SparqlAdapter.QUERY.POSTAL_CODE);
+                }
+
+                // TODO
+                if (announcements != null && !announcements.isEmpty()) {
+                    featureTypeDataset.links = new FeaturePropertyDTO();
+                    featureTypeDataset.links.name = "Announcements";
+                    for (Map.Entry<String,String> id: announcements.entrySet()) {
+                        FeaturePropertyDTO link = new FeaturePropertyDTO();
+                        link.value = id.getKey();
+                        link.name = makeDisplayName(id.getKey(), id.getValue());
+                        link.itemProp = id.getValue();
+                        featureTypeDataset.links.addChild(link);
+                    }
+                }
+
+                return getJsonLdResponse(getWfsFeaturesPaged(layerid, range, service.findIndicesForFeatureType(featureType, false).get(filterKey), filterValue), featureType, true, featureTypeDataset);
             }
         }
 
         //if (indexId.toLowerCase().equals("all")) {
-        return getJsonLdResponse(getWfsFeaturesPaged(layerid, range), featureType, true, dataset);
+        return getJsonLdResponse(getWfsFeaturesPaged(layerid, range), featureType, true, featureTypeDataset);
         //} else {
         //    return getWfsPropertiesPaged(layerid, range, indexId);
         //}
@@ -579,7 +608,7 @@ public class LdProxyServiceResource implements ServiceResource {
         return Response.ok().entity(stream).build();
     }
 
-    private Response getJsonLdResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final DatasetView dataset) {
+    private Response getJsonLdResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final FeatureCollectionView dataset) {
         StreamingOutput stream = new StreamingOutput() {
             @Override
             public void write(OutputStream output) throws IOException, WebApplicationException {

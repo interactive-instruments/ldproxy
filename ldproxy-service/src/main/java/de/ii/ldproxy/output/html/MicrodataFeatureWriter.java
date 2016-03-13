@@ -400,6 +400,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                             currentFeature.name = currentFeature.name.substring(0, pos) + prefix + value + currentFeature.name.substring(pos);
                         }
 
+                        // TODO
                         if (currentProperty.name.equals("postalCode") && !isFeatureCollection) {
                             currentFeature.links = new FeaturePropertyDTO();
                             currentFeature.links.name = "announcements";
@@ -433,7 +434,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                     currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
                 }
 
-
+                // TODO
                 if (property.name.equals("postalCode") && !isFeatureCollection) {
                     currentFeature.links = new FeaturePropertyDTO();
                     currentFeature.links.name = "announcements";

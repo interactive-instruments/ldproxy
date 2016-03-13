@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import de.ii.ldproxy.gml2json.AbstractFeatureWriter;
-import de.ii.ldproxy.output.html.DatasetView;
-import de.ii.ldproxy.output.html.HtmlTransformingCoordinatesWriter;
-import de.ii.ldproxy.output.html.MicrodataGeometryMapping;
-import de.ii.ldproxy.output.html.MicrodataPropertyMapping;
+import de.ii.ldproxy.output.html.*;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
@@ -23,6 +20,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -40,15 +38,15 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
     private String lastItemProp;
     private String lastValue;
     private String requestUrl;
-    private DatasetView dataset;
+    private FeatureCollectionView dataset;
 
-    public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, URI requestUri, DatasetView dataset, Map<String, String> rewrites) {
+    public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, URI requestUri, FeatureCollectionView dataset, Map<String, String> rewrites) {
         super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer);
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
         this.objectDepth = 0;
         this.requestUrl = requestUri.toString().split("\\?")[0];
-        for (Map.Entry<String, String> rewrite: rewrites.entrySet()) {
+        for (Map.Entry<String, String> rewrite : rewrites.entrySet()) {
             this.requestUrl = requestUrl.replaceFirst(rewrite.getKey(), rewrite.getValue());
         }
         if (!isFeatureCollection) {
@@ -104,36 +102,74 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
             json.writeStartObject();
             json.writeObjectFieldStart("@context");
             json.writeStringField("@vocab", "https://schema.org/");
-            json.writeObjectFieldStart("features");
-            json.writeStringField("@container", "@set");
-            json.writeEndObject();
+            //json.writeObjectFieldStart("features");
+            //json.writeStringField("@container", "@set");
+            //json.writeEndObject();
+            for (List<TargetMapping> mappings : featureTypeMapping.findMappings(outputFormat).values()) {
+                for (TargetMapping mapping : mappings) {
+                    if (((MicrodataPropertyMapping) mapping).getItemProp() == null && mapping.isEnabled() && mapping.getName() != null && !mapping.getName().startsWith("@") && ((MicrodataPropertyMapping) mapping).isShowInCollection() && !mapping.isGeometry()) {
+                        json.writeNullField(mapping.getName());
+                    }
+                }
+            }
             json.writeEndObject();
 
-            json.writeStringField("@type", "Dataset");
-            json.writeStringField("@id", requestUrl);
-            json.writeStringField("name", dataset.title);
-            json.writeStringField("description", dataset.description);
-            json.writeStringField("url", requestUrl);
-            json.writeObjectFieldStart("isPartOf");
-            json.writeStringField("@type", "Dataset");
-            json.writeStringField("url", requestUrl.substring(0, requestUrl.substring(0, requestUrl.length() - 2).lastIndexOf('/') + 1));
-            json.writeEndObject();
-            json.writeStringField("keywords", Joiner.on(',').join(dataset.keywords));
-            json.writeObjectFieldStart("spatial");
-            json.writeStringField("@type", "Place");
-            json.writeObjectFieldStart("geo");
-            json.writeStringField("@type", "GeoShape");
-            json.writeStringField("box", dataset.bbox);
-            json.writeEndObject();
-            json.writeEndObject();
-            if (dataset.metadataUrl != null) {
-                json.writeObjectFieldStart("isPartOf");
-                json.writeStringField("@type", "DataCatalog");
-                json.writeStringField("url", dataset.metadataUrl);
-                json.writeEndObject();
+            String name = dataset.title;
+            if (dataset.indexValue != null) {
+                name += " in " + dataset.indexValue;
+            }
+            String url = requestUrl;
+            if (dataset.indexValue != null) {
+                url += "?" + dataset.index + "=" + dataset.indexValue;
+            }
+            String parentUrl = requestUrl;
+            if (dataset.indexValue == null) {
+                parentUrl = requestUrl.substring(0, requestUrl.substring(0, requestUrl.length() - 2).lastIndexOf('/') + 1);
             }
 
-            json.writeFieldName("features");
+
+            json.writeStringField("@type", "Dataset");
+            json.writeStringField("@id", url);
+            json.writeStringField("name", name);
+            json.writeStringField("description", dataset.description);
+            json.writeStringField("url", url);
+            json.writeObjectFieldStart("isPartOf");
+            json.writeStringField("@type", "Dataset");
+            json.writeStringField("url", parentUrl);
+            json.writeEndObject();
+            if (!dataset.hideMetadata) {
+                json.writeStringField("keywords", Joiner.on(',').join(dataset.keywords));
+                json.writeObjectFieldStart("spatial");
+                json.writeStringField("@type", "Place");
+                json.writeObjectFieldStart("geo");
+                json.writeStringField("@type", "GeoShape");
+                json.writeStringField("box", dataset.bbox);
+                json.writeEndObject();
+                json.writeEndObject();
+                if (dataset.metadataUrl != null) {
+                    json.writeObjectFieldStart("isPartOf");
+                    json.writeStringField("@type", "DataCatalog");
+                    json.writeStringField("url", dataset.metadataUrl);
+                    json.writeEndObject();
+                }
+            }
+
+            // TODO: indices
+
+            // TODO: links
+            if (dataset.indexValue != null && dataset.links != null) {
+                json.writeArrayFieldStart("citation");
+                for (FeaturePropertyDTO link : dataset.links.childList) {
+                    json.writeStartObject();
+                    json.writeStringField("@type", "Report");
+                    json.writeStringField("url", link.value);
+                    json.writeEndObject();
+                }
+                json.writeEndArray();
+            }
+
+            // ???
+            json.writeFieldName("mentions");
             json.writeStartArray();
         }
 
@@ -157,7 +193,21 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
             String type = ((MicrodataPropertyMapping) mapping).getItemType();
             int sep = type.lastIndexOf('/');
             if (!isFeatureCollection) {
-                json.writeStringField("@context", type.substring(0, sep));
+                //json.writeStringField("@context", type.substring(0, sep));
+
+                json.writeObjectFieldStart("@context");
+                json.writeStringField("@vocab", type.substring(0, sep+1));
+                //json.writeObjectFieldStart("features");
+                //json.writeStringField("@container", "@set");
+                //json.writeEndObject();
+                for (List<TargetMapping> mappings : featureTypeMapping.findMappings(outputFormat).values()) {
+                    for (TargetMapping m : mappings) {
+                        if (((MicrodataPropertyMapping) m).getItemProp() == null && m.isEnabled() && m.getName() != null && !m.getName().startsWith("@") && !m.isGeometry()) {
+                            json.writeNullField(m.getName());
+                        }
+                    }
+                }
+                json.writeEndObject();
             }
             json.writeStringField("@type", type.substring(sep + 1));
         }
@@ -246,7 +296,9 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                     case ID:
                         json.writeStringField(mapping.getName(), requestUrl + value);
                         // TODO: generate in mapping
-                        //json.writeStringField("url", requestUrl + value);
+                        if (!isFeatureCollection) {
+                            json.writeStringField("url", requestUrl + value);
+                        }
                         writeStartProperties();
                         break;
                     case NUMBER:
