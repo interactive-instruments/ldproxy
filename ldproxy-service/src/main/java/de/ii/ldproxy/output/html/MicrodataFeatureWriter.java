@@ -402,14 +402,16 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
                         // TODO
                         if (currentProperty.name.equals("postalCode") && !isFeatureCollection) {
-                            currentFeature.links = new FeaturePropertyDTO();
-                            currentFeature.links.name = "announcements";
                             Map<String,String> reports = sparqlAdapter.request(currentProperty.value, SparqlAdapter.QUERY.POSTAL_CODE_EXACT);
-                            for (Map.Entry<String,String> id: reports.entrySet()) {
-                                FeaturePropertyDTO link = new FeaturePropertyDTO();
-                                link.value = id.getKey();
-                                link.name = id.getValue() + " (" + id.getKey().substring(id.getKey().lastIndexOf('/')+1) + ")";
-                                currentFeature.links.addChild(link);
+                            if (!reports.isEmpty()) {
+                                currentFeature.links = new FeaturePropertyDTO();
+                                currentFeature.links.name = "announcements";
+                                for (Map.Entry<String, String> id : reports.entrySet()) {
+                                    FeaturePropertyDTO link = new FeaturePropertyDTO();
+                                    link.value = id.getKey();
+                                    link.name = id.getValue() + " (" + id.getKey().substring(id.getKey().lastIndexOf('/') + 1) + ")";
+                                    currentFeature.links.addChild(link);
+                                }
                             }
                         }
                     }
@@ -436,14 +438,16 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
                 // TODO
                 if (property.name.equals("postalCode") && !isFeatureCollection) {
-                    currentFeature.links = new FeaturePropertyDTO();
-                    currentFeature.links.name = "announcements";
                     Map<String,String> reports = sparqlAdapter.request(property.value, SparqlAdapter.QUERY.POSTAL_CODE_EXACT);
-                    for (Map.Entry<String,String> id: reports.entrySet()) {
-                        FeaturePropertyDTO link = new FeaturePropertyDTO();
-                        link.value = id.getKey();
-                        link.name = id.getValue() + " (" + id.getKey().substring(id.getKey().lastIndexOf('/')+1) + ")";
-                        currentFeature.links.addChild(link);
+                    if (!reports.isEmpty()) {
+                        currentFeature.links = new FeaturePropertyDTO();
+                        currentFeature.links.name = "announcements";
+                        for (Map.Entry<String, String> id : reports.entrySet()) {
+                            FeaturePropertyDTO link = new FeaturePropertyDTO();
+                            link.value = id.getKey();
+                            link.name = id.getValue() + " (" + id.getKey().substring(id.getKey().lastIndexOf('/') + 1) + ")";
+                            currentFeature.links.addChild(link);
+                        }
                     }
                 }
             }
