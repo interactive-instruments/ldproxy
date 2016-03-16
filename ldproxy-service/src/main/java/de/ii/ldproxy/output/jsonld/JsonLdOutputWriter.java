@@ -101,7 +101,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
         if (isFeatureCollection) {
             json.writeStartObject();
             json.writeObjectFieldStart("@context");
-            json.writeStringField("@vocab", "https://schema.org/");
+            json.writeStringField("@vocab", "http://schema.org/");
             //json.writeObjectFieldStart("features");
             //json.writeStringField("@container", "@set");
             //json.writeEndObject();
