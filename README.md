@@ -19,7 +19,7 @@ docker run -d -p 7080:7080 -v ldproxy_data:/ldproxy/data -w /ldproxy iide/ldprox
 ```
 Change the host port and volume bind directory to your needs. To update ldproxy, just remove the container and create a new one with the command above. Your data is saved in a volume, not in the container, so your service configurations will still be there after the update.
 
-When your container is up and running, have a look at [Getting Started](https://github.com/interactive-instruments/ldproxy/docs/blob/master/00-getting-started.md)
+When your container is up and running, have a look at [Getting Started](https://github.com/interactive-instruments/ldproxy/blob/master/docs/00-getting-started.md)
 
 ## Development
 The only requirement is an installation of JDK 7 or 8.  
