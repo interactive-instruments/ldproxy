@@ -233,7 +233,7 @@ distributions {
         }
     }
 }
-
+distTar.version = ''
 distTar.dependsOn testingEnv
 
 run {
