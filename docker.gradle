@@ -28,8 +28,13 @@ docker {
     javaApplication {
         baseImage = 'java:8'
         port = 7080
-        tag = "${project.name}:latest"
+        tag = "iide/${project.name}:latest"
     }
+    /*registryCredentials {
+        url =
+        username =
+        password =
+    }*/
 }
 
 task stopContainer(type: DockerStopContainer) {
