@@ -101,10 +101,10 @@ subprojects {
         provided group: 'org.apache.felix', name: 'org.apache.felix.ipojo', version: '1.12.1'
 
         provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.1'
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.1'
+        provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.3'
 
         provided group: 'de.interactive_instruments', name: 'xtraplatform-api', version: '1.0.1'
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-dropwizard', version: '1.0.0'
+        provided group: 'de.interactive_instruments', name: 'xtraplatform-dropwizard', version: '1.0.2'
 
         provided group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.0.1'
     }
@@ -151,7 +151,7 @@ dependencies {
     bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.1') {
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
-    bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.1'
+    bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.3'
 
     //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.0.2'
     bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.0.1'
