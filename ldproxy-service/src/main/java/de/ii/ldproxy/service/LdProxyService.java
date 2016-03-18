@@ -18,6 +18,8 @@ package de.ii.ldproxy.service;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
+import de.ii.ldproxy.output.html.Gml2MicrodataMapper;
+import de.ii.ldproxy.output.jsonld.Gml2JsonLdMapper;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyService;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
@@ -62,6 +64,11 @@ public class LdProxyService extends AbstractWfsProxyService {
                 //this.description = "";
         //String[] path = {orgid};
         //initialize(path, module);
+
+        // TODO: dynamic
+        this.schemaAnalyzers.add(new Gml2GeoJsonMapper(this));
+        this.schemaAnalyzers.add(new Gml2MicrodataMapper(this));
+        this.schemaAnalyzers.add(new Gml2JsonLdMapper(this));
 
         // TODO
         //this.analyzeWFS();

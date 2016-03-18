@@ -1,12 +1,12 @@
 /**
  * Copyright 2016 interactive instruments GmbH
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,9 +19,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
-import de.ii.ldproxy.output.html.Gml2MicrodataMapper;
-import de.ii.ldproxy.output.jsonld.Gml2JsonLdMapper;
 import de.ii.xsf.core.api.AbstractService;
 import de.ii.xsf.core.api.Resource;
 import de.ii.xsf.logging.XSFLogger;
@@ -63,6 +60,7 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
     private WfsProxyCrsTransformations crsTransformations;
     private WFSProxyServiceProperties serviceProperties;
     private final Map<String, WfsProxyFeatureType> featureTypes;
+    protected final List<GMLSchemaAnalyzer> schemaAnalyzers;
 
     protected HttpClient httpClient;
     protected HttpClient sslHttpClient;
@@ -77,12 +75,14 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
     public AbstractWfsProxyService() {
         super();
         this.featureTypes = new HashMap<>();
+        this.schemaAnalyzers = new ArrayList<>();
     }
 
     public AbstractWfsProxyService(String id, String type, File configDirectory, WFSAdapter wfsAdapter) {
         super(id, type, configDirectory);
         this.wfsAdapter = wfsAdapter;
         this.featureTypes = new HashMap<>();
+        this.schemaAnalyzers = new ArrayList<>();
     }
 
     @Override
@@ -118,18 +118,11 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
     }
 
     public final void initialize(String[] path, HttpClient httpClient, HttpClient sslHttpClient, SMInputFactory staxFactory, ObjectMapper jsonMapper, CrsTransformation crsTransformation) {
-        // TODO
-        //this.useFormattedJsonOutput = true;//module.getConfiguration().useFormattedJsonOutput;
         this.httpClient = httpClient;
         this.sslHttpClient = sslHttpClient;
         this.staxFactory = staxFactory;
         this.jsonMapper = jsonMapper;
         this.jsonFactory = new JsonFactory();
-
-        /*this.path = path;
-        if (path != null && path.length == 2 && path[0] != null) {
-            this.orgid = path[0];
-        }*/
 
         if (this.wfsAdapter != null) {
             this.wfsAdapter.initialize(this.httpClient, this.sslHttpClient);
@@ -137,17 +130,14 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
 
         this.crsTransformations = new WfsProxyCrsTransformations(crsTransformation, wfsAdapter != null ? wfsAdapter.getDefaultCrs() : null, new EpsgCrs(4326, true));
 
-        /*for (WFS2GSFSLayer l : fullLayers) {
-            l.initialize(this);
-        }*/
     }
 
-    // TODO
+    // TODO: move somewhere else
     public JsonGenerator createJsonGenerator(OutputStream output) throws IOException {
         JsonGenerator json = jsonFactory.createGenerator(output);
         json.setCodec(jsonMapper);
         //if (useFormattedJsonOutput) {
-            json.useDefaultPrettyPrinter();
+        json.useDefaultPrettyPrinter();
         //}
         // Zum JSON debuggen hier einschalten.
         //JsonGenerator jsond = new JsonGeneratorDebug(json);
@@ -169,7 +159,7 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
 
             ParseError pe = new ParseError("Parsing of GetCapabilities response failed.");
             pe.addDetail(ex.getMsg());
-            for( String det : ex.getDetails()) {
+            for (String det : ex.getDetails()) {
                 pe.addDetail(det);
             }
             throw pe;
@@ -188,8 +178,8 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
             capabilities = wfsAdapter.request(new GetCapabilities(version));
         }
 
-        WFSCapabilitiesAnalyzer gsfsMapper = new WfsProxyCapabilitiesAnalyzer(this);
-        WFSCapabilitiesParser wfsParser = new WFSCapabilitiesParser(gsfsMapper, staxFactory);
+        WFSCapabilitiesAnalyzer analyzer = new WfsProxyCapabilitiesAnalyzer(this);
+        WFSCapabilitiesParser wfsParser = new WFSCapabilitiesParser(analyzer, staxFactory);
 
         wfsParser.parse(capabilities);
 
@@ -201,7 +191,7 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
     private Map<String, List<String>> retrieveSupportedFeatureTypesPerNamespace() {
         Map<String, List<String>> featureTypesPerNamespace = new HashMap<>();
 
-        for (WfsProxyFeatureType featureType: featureTypes.values()) {
+        for (WfsProxyFeatureType featureType : featureTypes.values()) {
             if (!featureTypesPerNamespace.containsKey(featureType.getNamespace())) {
                 featureTypesPerNamespace.put(featureType.getNamespace(), new ArrayList<String>());
             }
@@ -218,13 +208,6 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
 
         Map<String, List<String>> fts = retrieveSupportedFeatureTypesPerNamespace();
 
-        List<GMLSchemaAnalyzer> analyzers = new ArrayList<>();
-
-        // TODO: dynamic
-        analyzers.add(new Gml2GeoJsonMapper(this));
-        analyzers.add(new Gml2MicrodataMapper(this));
-        analyzers.add(new Gml2JsonLdMapper(this));
-
         if (!featureTypes.isEmpty()) {
             // create mappings
             GMLSchemaParser gmlSchemaParser;
@@ -232,16 +215,10 @@ public abstract class AbstractWfsProxyService extends AbstractService implements
             //if (wfs.usesBasicAuth()) {
             //    gmlParser = new GMLSchemaParser(analyzers, baseuri, new OGCEntityResolver(sslHttpClient, wfs.getUser(), wfs.getPassword()));
             //} else {
-            gmlSchemaParser = new GMLSchemaParser(analyzers, baseuri);
+            gmlSchemaParser = new GMLSchemaParser(schemaAnalyzers, baseuri);
             //}
             gmlSchemaParser.parse(dft, fts);
         }
-
-        // iterate through layers and analyze them
-        //for (WFS2GSFSLayer layer : fullLayers) {
-            // analyze the layer: gmlidmapping, has data, geometrytype ...
-        //    layer.analyze();
-        //}
 
         // only log warnings about timeouts in the analysis phase
         wfsAdapter.setIgnoreTimeouts(true);

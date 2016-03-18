@@ -1,12 +1,12 @@
 /**
  * Copyright 2016 interactive instruments GmbH
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -148,11 +148,16 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
         this.geometryCounter = -1;
     }
 
+    abstract protected String getTargetType();
+
+    abstract protected TargetMapping getTargetMappingForFeatureType(String nsuri, String localName);
+
+    abstract protected TargetMapping getTargetMappingForAttribute(String nsuri, String localName, String type, boolean required);
+
+    abstract protected TargetMapping getTargetMappingForProperty(String path, String nsuri, String localName, String type, long minOccurs, long maxOccurs, int depth, boolean isParentMultiple, boolean isComplex, boolean isObject);
+
     @Override
     public void analyzeFeatureType(String nsuri, String localName) {
-
-        //this.currentLayers = new ArrayList();
-
 
         if (nsuri.isEmpty()) {
             //LOGGER.error(FrameworkMessages.NSURI_IS_EMPTY);
@@ -161,9 +166,6 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
         String fullName = nsuri + ":" + localName;
         currentFeatureType = proxyService.getFeatureTypes().get(fullName);
 
-        //currentLayers.add(proxyService.findLayerForFeatureType(nsuri, localName));
-
-        //LOGGER.debug(FrameworkMessages.MAPPING_FEATURETYPE_TO_LAYER, localName, currentLayers.get(0).getId());
         mappedPaths.clear();
         currentPath.clear();
         currentPathWithoutObjects.clear();
@@ -183,11 +185,13 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
 
     @Override
     public void analyzeAttribute(String nsuri, String localName, String type, boolean required) {
+
         proxyService.getWfsAdapter().addNamespace(nsuri);
 
         currentPath.track(nsuri, "@" + localName);
 
         // only gml:id of the feature for now
+        // TODO: version
         if ((localName.equals("id") && nsuri.startsWith(GML_NS_URI)) || localName.equals("fid")) {
             String path = currentPath.toString();
 
@@ -204,14 +208,10 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
         }
     }
 
-    abstract protected String getTargetType();
-    abstract protected TargetMapping getTargetMappingForFeatureType(String nsuri, String localName);
-    abstract protected TargetMapping getTargetMappingForAttribute(String nsuri, String localName, String type, boolean required);
-    abstract protected TargetMapping getTargetMappingForProperty(String path, String nsuri, String localName, String type, long minOccurs, long maxOccurs, int depth, boolean isParentMultiple, boolean isComplex, boolean isObject);
-
     @Override
     public void analyzeProperty(String nsuri, String localName, String type, long minOccurs, long maxOccurs, int depth,
                                 boolean isParentMultiple, boolean isComplex, boolean isObject) {
+
         proxyService.getWfsAdapter().addNamespace(nsuri);
 
         currentPath.track(nsuri, localName, depth);
@@ -222,6 +222,7 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
 
         String path = currentPath.toString();
 
+        // TODO: version
         // skip first level gml properties
         if (path.startsWith(GML_NS_URI)) {
             return;
@@ -237,67 +238,11 @@ public abstract class AbstractWfsProxyFeatureTypeAnalyzer implements GMLSchemaAn
                 currentFeatureType.getMappings().addMapping(path, getTargetType(), targetMapping);
             }
         }
-
-
-        //LOGGER.info("localName {} TYPE {}", localName, type);
-
-        /*MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(GML_TYPE.fromString(type));
-
-        if (dataType.isValid()) {
-            String path = currentPath.toString();
-            if (!isPathMapped(path)) {
-                mappedPaths.add(path);
-
-                GEOMETRY_TYPE_MAPPING geoType = GEOMETRY_TYPE_MAPPING.fromString(type);
-                if (geoType.isValid()) {
-
-                    for (WFS2GSFSLayer currentLayer : currentLayers) {
-
-                        if (geometryCounter == -1) {
-                            currentLayer.setGeometryType(geoType.toEsri().toString());
-                            currentLayer.initDrawingInfo();
-                        }
-
-                        currentLayer.addMapping(path, geometryCounter, (maxOccurs > 1 || maxOccurs == -1), minOccurs > 0);
-                        LOGGER.debug(FrameworkMessages.MAPPED_GEOMETRY_PROPERTY_OF_TYPE_TO_GEOMETRY_FIELD_OF_TYPE, geoType.toString(), geoType.toEsri().toString());
-
-                        //geometryMapped = true;
-                        this.geometryCounter--;
-
-                    }
-                } else {
-                    String fieldName = currentPathWithoutObjects.toFieldName();
-
-                    if (fieldName.equals("id")) {
-                        fieldName = "internalId";
-                    }
-                    for (WFS2GSFSLayer currentLayer : currentLayers) {
-                        List<Integer> properties = new ArrayList();
-                        if (isParentMultiple) {
-                            for (int i = 1; i < 4; i++) {
-                                String stri = String.valueOf(i);
-                                int f = currentLayer.addField(fieldName + "." + stri, fieldName + "." + stri, dataType.toEsri());
-                                properties.add(f);
-
-                                LOGGER.debug(FrameworkMessages.MAPPED_MULTIPLE_PROPERTY_TYPE_TO_FIELD_OF_TYPE,
-                                        dataType.toString(), fieldName, dataType.toEsri().toString());
-                            }
-                        } else {
-                            int f = currentLayer.addField(fieldName, fieldName, dataType.toEsri());
-                            properties.add(f);
-                            LOGGER.debug(FrameworkMessages.MAPPED_PROPERTY_OF_TYPETO_FIELD_OF_TYPE,
-                                    dataType.toString(), fieldName, dataType.toEsri().toString());
-                        }
-                        currentLayer.addMapping(path, properties, isParentMultiple, minOccurs > 0);
-                    }
-                }
-            }
-        }*/
     }
 
     // this prevents that we descend further on a mapped path
     private boolean isPathMapped(String path) {
-        for (String mappedPath: mappedPaths) {
+        for (String mappedPath : mappedPaths) {
             if (path.startsWith(mappedPath + "/")) {
                 return true;
             }
