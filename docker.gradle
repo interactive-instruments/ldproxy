@@ -62,9 +62,12 @@ task createContainer(type: DockerCreateContainer) {
     ]
 }
 
-task saveContainerId << {
-    if (!createContainer.getContainerId().isEmpty())
-        containerIdFile.text = createContainer.getContainerId()
+task saveContainerId {
+    group = 'docker'
+    doLast {
+        if (!createContainer.getContainerId().isEmpty())
+            containerIdFile.text = createContainer.getContainerId()
+    }
 }
 createContainer.finalizedBy saveContainerId
 
@@ -74,5 +77,6 @@ task startContainer(type: DockerStartContainer) {
 }
 
 task upgradeContainer {
+    group = 'docker'
     dependsOn startContainer
 }

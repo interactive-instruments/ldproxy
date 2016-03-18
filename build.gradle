@@ -1,161 +1,52 @@
-buildscript {  
+buildscript {
     repositories {
         mavenCentral()
         jcenter()
         maven {
             url "https://plugins.gradle.org/m2/"
         }
-        maven {
-            url "https://dl.bintray.com/iide/maven"
-        }
-    } 
+    }
     dependencies {
         classpath group: 'de.interactive_instruments', name: 'gradle-plugin-osgi-ipojo', version: '1.12.1.26'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.12.1"
-    } 
-}
-
-ext {
-    cfgFileName = 'xsf.json'
-    devel = [
-        dataDir: new File(buildDir, 'data'),
-        logDir:  new File(buildDir, 'data/log'),
-        bundlesDir: new File(buildDir, 'bundles'),
-        felixCacheDir: new File(new File(buildDir, 'data'), 'felix-cache'),
-        cfgFile: file('cfg/xsf.development.json')
-    ]
-    testing = [
-            dir: new File(buildDir, 'testing'),
-            cfgDir: new File(buildDir, 'testing/cfg'),
-            logDir:  new File(buildDir, 'testing/log'),
-            bundlesDir: new File(buildDir, 'testing/bundles'),
-            cfgFile: file('cfg/xsf.development.json')
-    ]
-}
-
-allprojects {
-    apply plugin: 'java'
-
-    sourceCompatibility = 1.7
-    
-    version = '1.0.0'
-    //version += '-SNAPSHOT'
-    group = 'de.interactive_instruments'
-
-    if (project.name != "xtraplatform-swagger-ui") {
-        apply plugin: 'license'
-        license {
-            header rootProject.file('gradle/license-header')
-            strictCheck true
-            excludes([
-                    "**/*.mustache",
-                    "**/*.png",
-                    "**/*.ico",
-                    "**/*.xcf",
-                    "**/template.html",
-                    "**/*.json"])
-        }
-    }
-
-    repositories {    
-        mavenLocal() 
-        mavenCentral()
-        maven {
-            url "http://maven.forgerock.org/repo/repo"
-        }
-        maven {
-            url "https://dl.bintray.com/iide/maven"
-        }
     }
 }
 
-subprojects {
-    apply plugin: 'osgi-ipojo'
-    apply plugin: 'maven-publish'
+apply plugin: 'application'
 
-    jar {
-        manifest {
-            attributes("Implementation-Title": project.name, "Implementation-Version": project.version)
-        }
+version = '1.0.0'
+group = 'de.interactive_instruments'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "http://maven.forgerock.org/repo/repo"
     }
-
-    configurations {
-        embedded
-        provided
-        compile.extendsFrom embedded
-        compile.extendsFrom provided
-    }
-
-    dependencies {
-        
-        // TODO
-        provided 'com.google.guava:guava:17.0'
-
-        // TODO: retrieve from bundles-runtime
-        provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
-        provided group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.3'
-        provided group: 'ch.qos.logback', name: 'logback-core', version: '1.1.3'
-
-        provided group: 'org.osgi', name: 'org.osgi.compendium', version: '4.2.0'
-        provided group: 'org.apache.felix', name: 'org.apache.felix.framework', version: '4.4.1'
-        provided group: 'org.apache.felix', name: 'org.apache.felix.ipojo', version: '1.12.1'
-
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.1'
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.3'
-
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-api', version: '1.0.1'
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-dropwizard', version: '1.0.2'
-
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.0.1'
-    }
-    
-    jar {
-        manifest { 
-            instruction '-removeheaders', 'Bnd-LastModified'
-            instructionReplace "Bundle-SymbolicName",project.name.replaceAll('-', '.')
-        }
-    }
-
-    jar {
-        manifest { 
-         instruction 'Import-Package', 'com.fasterxml.jackson.module.afterburner.ser'   
-         instruction 'Import-Package', '*'  
-         instruction 'Private-Package', 'de.ii.empty'   
-        }
-    }
-
-    task deploy(type: Copy) {
-        from jar
-        into new File(devel.bundlesDir, 'platform')
-    }
-    
-    jar.finalizedBy deploy
-
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                from components.java
-            }
-        }
+    maven {
+        url "https://dl.bintray.com/iide/maven"
     }
 }
-
 
 configurations {
     bundles
     bundlesRuntime
 }
+
 dependencies {
     // TODO: are all the jars in lib dependencies of this?
     compile group: 'de.interactive_instruments', name: 'xtraplatform-runtime', version: '1.0.1'
-    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.1') {
-        exclude module: 'xtraplatform-kvstore-inmemory'
-    }
+
     bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.3'
 
+    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.1') {
+        // TODO
+        exclude module: 'xtraplatform-kvstore-inmemory'
+    }
     //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.0.2'
     bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.0.1'
 
+    // ???
     subprojects.each {
         bundles(it) {
             transitive = false
@@ -163,14 +54,12 @@ dependencies {
     }
 }
 
+// TODO env plugin
 configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
     resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds'
 }
 
-apply plugin: 'application'
-
-//startScripts.mainClassName = 'de.ii.xsf.runtime.FelixRuntime'
 mainClassName = "de.ii.xtraplatform.runtime.FelixRuntime"
 
 /*task devBundles(type: Sync) {
@@ -180,78 +69,43 @@ mainClassName = "de.ii.xtraplatform.runtime.FelixRuntime"
     into "$buildDir/bundles/runtime"
 }*/
 
-task devBundlesRuntime(type: Sync) {
-    from configurations.bundlesRuntime
-    into "$buildDir/bundles/runtime"
-}
-
-task devBundles(type: Sync) {
-    dependsOn tasks.devBundlesRuntime
-    from configurations.bundles
-    into "$buildDir/bundles/platform"
-}
-
-task devEnv {
-    //outputs.dir devel.cfgDir
-    dependsOn tasks.devBundles
-    doLast {
-        if (!devel.dataDir.exists())
-        devel.dataDir.mkdirs()
-        if (!devel.logDir.exists())
-            devel.logDir.mkdirs()
-        if (devel.felixCacheDir.exists())
-        devel.felixCacheDir.deleteDir()
-    }
-}
-
-task testingEnv {
-    outputs.dir testing.dir
-
-    doLast {
-        if (!testing.logDir.exists())
-            testing.logDir.mkdirs()
-    }
-}
-// TODO
 distributions {
     main {
-        //baseName = "bla"
         contents {
-            /*includeEmptyDirs = true
-            from(testing.cfgFile) {
-                into "cfg"
-                rename { cfgFileName }
-            }
-            // TODO: empty log dir
-            from(testing.dir)*/
             from(configurations.bundles) {
                 into "bundles/platform"
             }
             from(configurations.bundlesRuntime) {
                 into "bundles/runtime"
             }
+            into('') {
+                //create an empty 'data/log' directory in distribution root
+                def appDirBase = new File(buildDir, 'tmp/app-dummy-dir')
+                def logDir = new File(appDirBase, 'data/log')
+                logDir.mkdirs()
+
+                from {appDirBase}
+            }
         }
     }
 }
 distTar.version = ''
-distTar.dependsOn testingEnv
+
+
+task cleanFelixCache(type: Delete) {
+    delete new File(installDist.destinationDir, 'data/felix-cache')
+}
 
 run {
-    dependsOn devEnv
-    workingDir = buildDir
-    //args = ["server", "cfg/xsf.json"]
+    dependsOn installDist
+    dependsOn cleanFelixCache
+    workingDir = installDist.destinationDir
+    debug = project.hasProperty('debug')? project.debug : false
 }
 
-task(debug, type: JavaExec) {
-    main = "de.ii.xtraplatform.runtime.FelixRuntime"
-    dependsOn classes
-    dependsOn devEnv
-    //dependsOn configurations.bundles
-    classpath sourceSets.main.runtimeClasspath
-    //classpath configurations.bundles
-    workingDir = buildDir
-    //args = ["server", "cfg/xsf.json"]
-    debug = true
-}
+apply from: 'bundles.gradle'
 
 apply from: 'docker.gradle'
+
+
+
