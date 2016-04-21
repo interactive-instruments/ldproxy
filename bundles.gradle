@@ -23,7 +23,7 @@ subprojects {
     }
 
     repositories {
-        mavenLocal()
+        //mavenLocal()
         mavenCentral()
         maven {
             url "http://maven.forgerock.org/repo/repo"
@@ -44,12 +44,13 @@ subprojects {
         // TODO: get from root project, at least the versions
         provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.3'
         // TODO: shouldn't we only be allowed to use api bundles here?
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.1'
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.0.1'
+        provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.2'
+        provided group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.0.2'
 
         // TODO: this is in bundles-runtime, but with transitive=false
         // TODO: we need the transitive dependencies in provided
         provided group: 'de.interactive_instruments', name: 'xtraplatform-dropwizard', version: '1.0.2'
+        provided group: 'de.interactive_instruments', name: 'xtraplatform-logging-i18n', version: '1.0.0'
     }
 
     jar {

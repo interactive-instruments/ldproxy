@@ -658,6 +658,12 @@ public class LdProxyServiceResource implements ServiceResource {
         String[] ft = layerId.split(":");
         LOGGER.getLogger().debug("LAYER {}", (Object)ft);
         if (ft.length == 1) {
+            for (WfsProxyFeatureType featureType: service.getFeatureTypes().values()) {
+                if (ft[0].equals(featureType.getName())) {
+                    String[] ft2 = {service.getWfsAdapter().getNsStore().getNamespacePrefix(featureType.getNamespace()), ft[0]};
+                    return ft2;
+                }
+            }
             String[] ft2 = {ft[0], ft[0]};
             return ft2;
         }

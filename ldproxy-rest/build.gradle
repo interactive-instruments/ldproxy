@@ -1,4 +1,4 @@
-
+version = '1.0.1'
 
 dependencies {    
     compile project(':ldproxy-service')

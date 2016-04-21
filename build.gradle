@@ -14,11 +14,11 @@ buildscript {
 
 apply plugin: 'application'
 
-version = '1.0.0'
+version = '1.0.1'
 group = 'de.interactive_instruments'
 
 repositories {
-    mavenLocal()
+    //mavenLocal()
     mavenCentral()
     maven {
         url "http://maven.forgerock.org/repo/repo"
@@ -39,12 +39,12 @@ dependencies {
 
     bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.3'
 
-    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.1') {
+    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.2') {
         // TODO
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
-    //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.0.2'
-    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.0.1'
+    bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.0.2'
+    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.0.2'
 
     // ???
     subprojects.each {

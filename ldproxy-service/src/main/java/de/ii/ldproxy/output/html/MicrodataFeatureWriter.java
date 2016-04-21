@@ -179,7 +179,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 this.dataset.metaPagination = metaPagination.build();
 
             } catch (InterruptedException | ExecutionException | XMLStreamException | NumberFormatException ex) {
-                analyzeFailed(ex);
+                //analyzeFailed(ex);
+                LOGGER.getLogger().error("Pagination not supported by WFS");
             }
         }
     }
@@ -300,7 +301,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
     @Override
     public void analyzeFailed(Exception e) {
-        LOGGER.getLogger().error("Error writing HTML", e);
+        LOGGER.getLogger().error("Error writing HTML");
+        LOGGER.getLogger().debug("Error writing HTML", e);
     }
 
     protected void writeField(MicrodataPropertyMapping mapping, String value, boolean isId) {
