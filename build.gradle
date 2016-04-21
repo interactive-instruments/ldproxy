@@ -14,7 +14,7 @@ buildscript {
 
 apply plugin: 'application'
 
-version = '1.0.1'
+version = '1.0.2'
 group = 'de.interactive_instruments'
 
 repositories {
@@ -35,7 +35,7 @@ configurations {
 
 dependencies {
     // TODO: are all the jars in lib dependencies of this?
-    compile group: 'de.interactive_instruments', name: 'xtraplatform-runtime', version: '1.0.1'
+    compile group: 'de.interactive_instruments', name: 'xtraplatform-runtime', version: '1.0.3'
 
     bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.3'
 
