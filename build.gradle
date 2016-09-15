@@ -14,7 +14,7 @@ buildscript {
 
 apply plugin: 'application'
 
-version = '1.0.3'
+version = '1.0.4'
 group = 'de.interactive_instruments'
 
 repositories {
@@ -39,7 +39,7 @@ dependencies {
 
     bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.3'
 
-    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.2') {
+    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.3') {
         // TODO
         exclude module: 'xtraplatform-kvstore-inmemory'
     }

@@ -112,18 +112,22 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
         DateTime now = new DateTime();
 
         switch (operation) {
-            case UPDATE:
-            case UPDATE_OVERRIDE:
-                resource.setLastModified(now.getMillis());
             case DELETE:
                 service = getResource(path, resourceId);
                 service.stop();
+                break;
             case ADD:
                 resource.setDateCreated(now.getMillis());
-
-                super.writeResource(path, resourceId, operation, resource);
+            case UPDATE:
+            case UPDATE_OVERRIDE:
+                resource.setLastModified(now.getMillis());
+                break;
         }
 
+        super.writeResource(path, resourceId, operation, resource);
+        if (operation != ResourceTransaction.OPERATION.DELETE) {
+            service = getResource(path, resourceId);
+        }
         switch (operation) {
             case ADD:
                 service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);

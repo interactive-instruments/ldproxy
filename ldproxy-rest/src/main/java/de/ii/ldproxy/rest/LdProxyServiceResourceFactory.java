@@ -15,6 +15,8 @@
  */
 package de.ii.ldproxy.rest;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import de.ii.ldproxy.output.html.ServiceOverviewView;
 import de.ii.ldproxy.service.LdProxyService;
 import de.ii.xsf.core.api.Service;
@@ -36,6 +38,7 @@ import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
@@ -58,7 +61,13 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory {
 
     @Override
     public View getServicesView(Collection<Service> collection, URI uri) {
-        return new ServiceOverviewView(uri, collection);
+        Collection<Service> collection2 = Collections2.filter(collection, new Predicate<Service>() {
+            @Override
+            public boolean apply(Service s) {
+                return s.isStarted();
+            }
+        });
+        return new ServiceOverviewView(uri, collection2);
     }
 
     @Override

@@ -63,13 +63,15 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
     
     @GET
     //@JsonView(JsonViews.AdminView.class)
-    public Service getAdminService(@Auth AuthenticatedUser user) {
+    public String getAdminService(@Auth AuthenticatedUser user) {
+        String s = "";
         try {
-            LOGGER.getLogger().debug("GET SERVICE {}", jsonMapper.writeValueAsString(service));
+            s = jsonMapper.writerWithType(Service.class).writeValueAsString(service);
+            LOGGER.getLogger().debug("GET SERVICE {}", s);
         } catch (JsonProcessingException e) {
             LOGGER.getLogger().error("ERROR", e);
         }
-        return service;
+        return s;
     }
 
 
