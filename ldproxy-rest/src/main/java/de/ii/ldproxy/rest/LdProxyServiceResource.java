@@ -108,6 +108,12 @@ public class LdProxyServiceResource implements ServiceResource {
         for (WfsProxyFeatureType ft: service.getFeatureTypes().values()) {
             dataset.featureTypes.add(new DatasetView("service", uriInfo.getRequestUri(), ft.getName(), ft.getDisplayName()));
         }
+        Collections.sort(dataset.featureTypes, new Comparator<DatasetView>() {
+            @Override
+            public int compare(DatasetView datasetView, DatasetView t1) {
+                return datasetView.name.compareTo(t1.name);
+            }
+        });
 
         WFSOperation operation = new GetCapabilities();
 
@@ -617,7 +623,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
                 try {
 
-                    GMLAnalyzer jsonWriter = new JsonLdOutputWriter(service.createJsonGenerator(output), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2JsonLdMapper.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer(), uriInfo.getRequestUri(), dataset, service.getRewrites());
+                    GMLAnalyzer jsonWriter = new JsonLdOutputWriter(service.createJsonGenerator(output), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2JsonLdMapper.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer(), uriInfo.getRequestUri(), dataset, service.getRewrites(), service.getVocab());
                     GMLParser gmlParser = new GMLParser(jsonWriter, service.staxFactory);
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 
@@ -687,7 +693,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 //ignore
             }
         }
-        int[] countFrom = {to-from, from, page};
+        int[] countFrom = {to-from, from, page, PAGE_SIZE};
 
         return countFrom;
 

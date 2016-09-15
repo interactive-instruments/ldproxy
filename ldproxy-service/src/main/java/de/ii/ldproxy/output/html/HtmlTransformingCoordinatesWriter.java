@@ -71,7 +71,7 @@ public class HtmlTransformingCoordinatesWriter extends HtmlCoordinatesWriter {
 
     @Override
     protected void writeRawValue(String val) throws IOException {
-        //json.writeRawValue(buf);
+        //jsonOut.writeRawValue(buf);
         if (isXValue()) {
             coordinateBuffer.setX(val);
         }
@@ -82,13 +82,13 @@ public class HtmlTransformingCoordinatesWriter extends HtmlCoordinatesWriter {
 
     @Override
     protected void writeRawValue(char[] chars, int i, int j) throws IOException {
-        //json.writeRawValue(chars, i, j);
+        //jsonOut.writeRawValue(chars, i, j);
         writeRawValue(String.copyValueOf(chars, i, j));
     }
 
     @Override
     protected void writeRaw(char[] chars, int i, int j) throws IOException {
-        //json.writeRaw(chars, i, j);
+        //jsonOut.writeRaw(chars, i, j);
         if (isXValue()) {
             coordinateBuffer.appendX(String.copyValueOf(chars, i, j));
         }

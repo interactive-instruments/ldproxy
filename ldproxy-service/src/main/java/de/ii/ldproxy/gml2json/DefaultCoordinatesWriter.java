@@ -15,7 +15,6 @@
  */
 package de.ii.ldproxy.gml2json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import de.ii.xsf.logging.XSFLogger;
 import java.io.IOException;
 import java.io.Writer;
@@ -28,7 +27,7 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
 public class DefaultCoordinatesWriter extends Writer {
 
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(DefaultCoordinatesWriter.class);
-    protected JsonGenerator json;
+    protected CoordinateFormatter formatter;
     private boolean started;
     protected String chunkBoundaryBuffer;
     private int srsDimension;
@@ -39,11 +38,11 @@ public class DefaultCoordinatesWriter extends Writer {
 
     protected boolean skip = false;
 
-    public DefaultCoordinatesWriter(JsonGenerator json, int srsDimension) {
+    public DefaultCoordinatesWriter(CoordinateFormatter formatter, int srsDimension) {
         this.started = false;
         this.lastWhite = true;
         this.counter = 0;
-        this.json = json;
+        this.formatter = formatter;
         this.srsDimension = srsDimension;
     }
 
@@ -113,7 +112,7 @@ public class DefaultCoordinatesWriter extends Writer {
 
         writeEnd();
 
-        json.writeEndArray();
+        formatter.close();
     }
 
     private boolean isWhite(char chr) {
@@ -140,12 +139,11 @@ public class DefaultCoordinatesWriter extends Writer {
     }
 
     protected void writeStart() throws IOException {
-        json.writeStartArray();
+        formatter.open();
     }
 
     protected void writeSeparator() throws IOException {
-        json.writeEndArray();
-        json.writeStartArray();
+        formatter.separator();
     }
 
     protected void writeEnd() throws IOException {
@@ -161,7 +159,7 @@ public class DefaultCoordinatesWriter extends Writer {
     protected boolean flushChunkBoundaryBuffer() throws IOException {
         boolean flushed = false;
         if (chunkBoundaryBuffer != null && !chunkBoundaryBuffer.isEmpty()) {
-            jsonWriteRawValue(chunkBoundaryBuffer);
+            formatValue(chunkBoundaryBuffer);
             flushed = true;
         }
         chunkBoundaryBuffer = null;
@@ -179,27 +177,27 @@ public class DefaultCoordinatesWriter extends Writer {
     protected void writeValue(char[] chars, int start, int end) throws IOException {
         // if chunkBoundaryBuffer is not empty, we just started with a new input chunk and need to write chunkBoundaryBuffer first
         if (flushChunkBoundaryBuffer()) {
-            jsonWriteRaw(chars, start, end);
+            formatRaw(chars, start, end);
         } else {
-            jsonWriteRawValue(chars, start, end);
+            formatValue(chars, start, end);
         }
     }
 
-    protected void jsonWriteRawValue(String buf) throws IOException {
+    protected void formatValue(String buf) throws IOException {
         if (!skip) {
-            json.writeRawValue(buf);
+            formatter.value(buf);
         }
     }
 
-    protected void jsonWriteRawValue(char[] chars, int i, int j) throws IOException {
+    protected void formatValue(char[] chars, int i, int j) throws IOException {
         if (!skip) {
-            json.writeRawValue(chars, i, j);
+            formatter.value(chars, i, j);
         }
     }
 
-    protected void jsonWriteRaw(char[] chars, int i, int j) throws IOException {
+    protected void formatRaw(char[] chars, int i, int j) throws IOException {
         if (!skip) {
-            json.writeRaw(chars, i, j);
+            formatter.raw(chars, i, j);
         }
     }
 }

@@ -15,14 +15,13 @@
  */
 package de.ii.ldproxy.gml2json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import de.ii.xsf.logging.XSFLogger;
-import java.io.IOException;
-
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.LazyStringCoordinateTuple;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
+
+import java.io.IOException;
 
 /**
  *
@@ -34,8 +33,8 @@ public class TransformingCoordinatesWriter extends DefaultCoordinatesWriter {
     private LazyStringCoordinateTuple coordinateBuffer;
     private CrsTransformer transformer;
 
-    public TransformingCoordinatesWriter(JsonGenerator json, int srsDimension, CrsTransformer transformer) {
-        super(json, srsDimension);
+    public TransformingCoordinatesWriter(CoordinateFormatter formatter, int srsDimension, CrsTransformer transformer) {
+        super(formatter, srsDimension);
         this.transformer = transformer;
         this.coordinateBuffer = new LazyStringCoordinateTuple();
     }
@@ -58,17 +57,17 @@ public class TransformingCoordinatesWriter extends DefaultCoordinatesWriter {
         if (transformer != null) {
             CoordinateTuple c = transformer.transform(coordinateBuffer);
 
-            json.writeRawValue(c.getXasString());
-            json.writeRawValue(c.getYasString());
+            formatter.value(c.getXasString());
+            formatter.value(c.getYasString());
         } else {
-            json.writeRawValue(coordinateBuffer.getXasString());
-            json.writeRawValue(coordinateBuffer.getYasString());
+            formatter.value(coordinateBuffer.getXasString());
+            formatter.value(coordinateBuffer.getYasString());
         }
     }
 
     @Override
-    protected void jsonWriteRawValue(String val) throws IOException {
-        //json.writeRawValue(buf);
+    protected void formatValue(String val) throws IOException {
+        //jsonOut.writeRawValue(buf);
         if (isXValue()) {
             coordinateBuffer.setX(val);
         }
@@ -78,14 +77,14 @@ public class TransformingCoordinatesWriter extends DefaultCoordinatesWriter {
     }
 
     @Override
-    protected void jsonWriteRawValue(char[] chars, int i, int j) throws IOException {
-        //json.writeRawValue(chars, i, j);
-        jsonWriteRawValue(String.copyValueOf(chars, i, j));
+    protected void formatValue(char[] chars, int i, int j) throws IOException {
+        //jsonOut.writeRawValue(chars, i, j);
+        formatValue(String.copyValueOf(chars, i, j));
     }
 
     @Override
-    protected void jsonWriteRaw(char[] chars, int i, int j) throws IOException {
-        //json.writeRaw(chars, i, j);
+    protected void formatRaw(char[] chars, int i, int j) throws IOException {
+        //jsonOut.writeRaw(chars, i, j);
         if (isXValue()) {
             coordinateBuffer.appendX(String.copyValueOf(chars, i, j));
         }

@@ -28,7 +28,7 @@ import java.io.Writer;
 public class HtmlCoordinatesWriter extends Writer {
 
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(HtmlCoordinatesWriter.class);
-    //protected JsonGenerator json;
+    //protected JsonGenerator jsonOut;
     protected Writer output;
     private boolean started;
     protected String chunkBoundaryBuffer;
@@ -114,7 +114,7 @@ public class HtmlCoordinatesWriter extends Writer {
 
         writeEnd();
 
-        //json.writeEndArray();
+        //jsonOut.writeEndArray();
     }
 
     private boolean isWhite(char chr) {
@@ -141,12 +141,12 @@ public class HtmlCoordinatesWriter extends Writer {
     }
 
     protected void writeStart() throws IOException {
-        //json.writeStartArray();
+        //jsonOut.writeStartArray();
     }
 
     protected void writeSeparator() throws IOException {
-        //json.writeEndArray();
-        //json.writeStartArray();
+        //jsonOut.writeEndArray();
+        //jsonOut.writeStartArray();
         output.write(" ");
     }
 

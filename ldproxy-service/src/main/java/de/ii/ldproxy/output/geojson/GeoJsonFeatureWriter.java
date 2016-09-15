@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.ldproxy.gml2json.AbstractFeatureWriter;
 import de.ii.ldproxy.gml2json.CoordinatesWriterType;
+import de.ii.ldproxy.gml2json.JsonCoordinateFormatter;
 import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
@@ -106,7 +107,8 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
                     try {
                         json.writeNumberField(mapping.getName(), Long.parseLong(value));
                     } catch (NumberFormatException ex) {
-                        json.writeNumberField(mapping.getName(), Long.parseLong(value.split(".")[0]));
+                        json.writeNumberField(mapping.getName(), Double.parseDouble(value));
+                        //jsonOut.writeNumberField(mapping.getName(), Long.parseLong(value.split(".")[0]));
                     }
                     break;
             }
@@ -114,7 +116,7 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
             //LOGGER.error(FrameworkMessages.NUMBERFORMATEXCEPTION_WRITEMAPPEDFIELD, type.toString(), value);
             analyzeFailed(ex);
         } catch (IOException ex) {
-            //LOGGER.error(FrameworkMessages.ERROR_WRITING_RESPONSE_WRITEMAPPEDFIELD, ex.getMessage(), json.getOutputContext().getCurrentName(), value);
+            //LOGGER.error(FrameworkMessages.ERROR_WRITING_RESPONSE_WRITEMAPPEDFIELD, ex.getMessage(), jsonOut.getOutputContext().getCurrentName(), value);
             analyzeFailed(ex);
         }
     }
@@ -133,11 +135,14 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
             Boolean multiContext = false;
             int srsDimension = 2;
 
-            CoordinatesWriterType.Builder cwBuilder = CoordinatesWriterType.builder(json);
+            CoordinatesWriterType.Builder cwBuilder = CoordinatesWriterType.builder();
+            cwBuilder.format(new JsonCoordinateFormatter(json));
 
             if (crsTransformer != null) {
                 cwBuilder.transformer(crsTransformer);
             }
+
+            Writer coordinatesWriter = null;
             /*CrsTransformer transformer = null;
             if (!layer.supportsSrs(outSRS)) {
                 // TODO
@@ -168,6 +173,9 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
                     GML_GEOMETRY_TYPE nodeType = GML_GEOMETRY_TYPE.fromString(geo.getLocalName());
                     if (nodeType.isValid()) {
                         gmlType = nodeType;
+                        if (type == GEO_JSON_GEOMETRY_TYPE.GENERIC) {
+                            type = GEO_JSON_GEOMETRY_TYPE.forGmlType(gmlType);
+                        }
                         if (geo.getAttrValue("srsDimension") != null) {
                             srsDimension = Integer.valueOf(geo.getAttrValue("srsDimension"));
                             cwBuilder.dimension(srsDimension);
@@ -183,8 +191,12 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
                     if (!multiContext) {
                         this.writeGeometryHeader(type);
                         // TODO
-                        json.writeStartArray();
-                        json.writeStartArray();
+                        if (type == GEO_JSON_GEOMETRY_TYPE.POLYGON || type == GEO_JSON_GEOMETRY_TYPE.MULTI_POLYGON || type == GEO_JSON_GEOMETRY_TYPE.MULTI_LINE_STRING) {
+                            json.writeStartArray();
+                        }
+                        if (type == GEO_JSON_GEOMETRY_TYPE.MULTI_POLYGON) {
+                            json.writeStartArray();
+                        }
                         multiContext = true;
                     }
                     json.writeStartArray();
@@ -199,7 +211,10 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
                 } else if (geo.hasLocalName("posList") || geo.hasLocalName("pos") || geo.hasLocalName("coordinates")) {
                     if (type == GEO_JSON_GEOMETRY_TYPE.POLYGON || type == GEO_JSON_GEOMETRY_TYPE.LINE_STRING || type == GEO_JSON_GEOMETRY_TYPE.MULTI_LINE_STRING || type == GEO_JSON_GEOMETRY_TYPE.MULTI_POLYGON) {
 
-                        Writer coordinatesWriter = cwBuilder.build();
+                        //if (coordinatesWriter == null) {
+                            coordinatesWriter = cwBuilder.build();
+                        //}
+                        
                         try {
                             geo.processDescendantText(coordinatesWriter, false);
                             coordinatesWriter.close();
@@ -229,14 +244,15 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
                 geo = geo.advance();
 
             }
-            if (geometryWithSR) {
-                json.writeObjectField("spatialReference", outSRS);
-            }
 
             if (multiContext) {
                 // TODO
-                json.writeEndArray();
-                json.writeEndArray();
+                if (type == GEO_JSON_GEOMETRY_TYPE.POLYGON || type == GEO_JSON_GEOMETRY_TYPE.MULTI_POLYGON || type == GEO_JSON_GEOMETRY_TYPE.MULTI_LINE_STRING) {
+                    json.writeEndArray();
+                }
+                if (type == GEO_JSON_GEOMETRY_TYPE.MULTI_POLYGON) {
+                    json.writeEndArray();
+                }
             }
 
             json.writeEndObject();
@@ -297,7 +313,7 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
 
 
 
-        //json.writeObjectFieldStart("properties");
+        //jsonOut.writeObjectFieldStart("properties");
     }
 
     @Override

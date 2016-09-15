@@ -15,10 +15,10 @@
  */
 package de.ii.ldproxy.gml2json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import de.ii.xsf.logging.XSFLogger;
-import java.io.IOException;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
+
+import java.io.IOException;
 
 /**
  *
@@ -30,15 +30,15 @@ public class FastXYSwapCoordinatesWriter extends DefaultCoordinatesWriter {
     private int[] xPos;
     private String xBuffer;
 
-    public FastXYSwapCoordinatesWriter(JsonGenerator json, int srsDimension) {
-        super(json, srsDimension);
+    public FastXYSwapCoordinatesWriter(CoordinateFormatter formatter, int srsDimension) {
+        super(formatter, srsDimension);
         this.xPos = new int[2];
     }
 
     @Override
     protected void writeEnd() throws IOException {
         if (xBuffer != null && !xBuffer.isEmpty()) {
-            jsonWriteRawValue(xBuffer);
+            formatValue(xBuffer);
         }
     }
     
@@ -78,7 +78,7 @@ public class FastXYSwapCoordinatesWriter extends DefaultCoordinatesWriter {
     private boolean flushXBuffer() throws IOException {
         boolean flushed = false;
         if (xBuffer != null && !xBuffer.isEmpty()) {
-            jsonWriteRawValue(xBuffer);
+            formatValue(xBuffer);
             flushed = true;
         }
         xBuffer = null;
@@ -95,20 +95,20 @@ public class FastXYSwapCoordinatesWriter extends DefaultCoordinatesWriter {
             // if chunkBoundaryBuffer is not empty, we just started with a new input chunk and need to write chunkBoundaryBuffer and xBuffer first
             if (flushChunkBoundaryBuffer()) {
                 // write y
-                jsonWriteRaw(chars, start, end);
+                formatRaw(chars, start, end);
 
                 // write x
                 flushXBuffer();
                 
             } else {
                 // write y
-                jsonWriteRawValue(chars, start, end);
+                formatValue(chars, start, end);
 
                 // write x
                 if (flushXBuffer()) {
-                    jsonWriteRaw(chars, xPos[0], xPos[1]);
+                    formatRaw(chars, xPos[0], xPos[1]);
                 } else {
-                    jsonWriteRawValue(chars, xPos[0], xPos[1]);
+                    formatValue(chars, xPos[0], xPos[1]);
                 }
             }
         }

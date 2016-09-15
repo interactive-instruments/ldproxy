@@ -64,6 +64,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     //protected String query;
     protected MustacheFactory mustacheFactory;
     protected int page;
+    protected int pageSize;
     protected CrsTransformer crsTransformer;
     protected SparqlAdapter sparqlAdapter;
 
@@ -104,8 +105,9 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 }
             }
         };
-        if (range != null && range.length > 2) {
+        if (range != null && range.length > 3) {
             this.page = range[2];
+            this.pageSize = range[3];
         }
         this.crsTransformer = crsTransformer;
 
@@ -128,11 +130,12 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 int numberReturned = Integer.parseInt(cursor.getAttrValue("numberReturned"));
                 int pages = Math.max(page, 0);
                 if (numberReturned > 0) {
-                    pages = Math.max(pages, numberMatched / numberReturned + (numberMatched % numberReturned > 0 ? 1 : 0));
+                    pages = Math.max(pages, numberMatched / pageSize + (numberMatched % pageSize > 0 ? 1 : 0));
                 }
 
                 LOGGER.getLogger().debug("numberMatched {}", numberMatched);
                 LOGGER.getLogger().debug("numberReturned {}", numberReturned);
+                LOGGER.getLogger().debug("pageSize {}", pageSize);
                 LOGGER.getLogger().debug("page {}", page);
                 LOGGER.getLogger().debug("pages {}", pages);
 

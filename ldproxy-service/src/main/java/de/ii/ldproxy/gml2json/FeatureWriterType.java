@@ -25,22 +25,22 @@ public enum FeatureWriterType {
         @Override
         protected GMLAnalyzer create() {
             if (idsOnly) {
-                return new EsriJsonIdArrayWriter(layer, json);
+                return new EsriJsonIdArrayWriter(layer, jsonOut);
             } else {
-                return new EsriJsonFeatureWriter(layer, json, queryParams, singleFeature);
+                return new EsriJsonFeatureWriter(layer, jsonOut, queryParams, singleFeature);
             }
         }
     },
     GEO_JSON("geojson") {
         @Override
         protected GMLAnalyzer create() {
-            return new GeoJsonFeatureWriter(layer, json, queryParams, singleFeature);
+            return new GeoJsonFeatureWriter(layer, jsonOut, queryParams, singleFeature);
         }
     };
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(FeatureWriterType.class);
     protected String stringRepresentation;
     protected WFS2GSFSLayer layer;
-    protected JsonGenerator json;
+    protected JsonGenerator jsonOut;
     protected LayerQueryParameters queryParams;
     protected boolean singleFeature;
     protected boolean idsOnly;
@@ -68,7 +68,7 @@ public enum FeatureWriterType {
     private FeatureWriterType clean() {
         this.singleFeature = false;
         this.idsOnly = false;
-        this.json = null;
+        this.jsonOut = null;
         this.layer = null;
         this.queryParams = null;
         return this;
@@ -90,8 +90,8 @@ public enum FeatureWriterType {
         return this;
     }
 
-    public FeatureWriterType json(JsonGenerator json) {
-        this.json = json;
+    public FeatureWriterType jsonOut(JsonGenerator jsonOut) {
+        this.jsonOut = jsonOut;
         return this;
     }
 

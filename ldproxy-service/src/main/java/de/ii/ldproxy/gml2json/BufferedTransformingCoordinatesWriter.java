@@ -22,6 +22,7 @@ import de.ii.xtraplatform.crs.api.LazyStringCoordinateTuple;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,8 +44,8 @@ public class BufferedTransformingCoordinatesWriter extends DefaultCoordinatesWri
 
     private int zCounter = 0;
 
-    public BufferedTransformingCoordinatesWriter(JsonGenerator json, int srsDimension, CrsTransformer transformer, boolean swap, boolean reversepolygon) {
-        super(json, srsDimension);
+    public BufferedTransformingCoordinatesWriter(CoordinateFormatter formatter, int srsDimension, CrsTransformer transformer, boolean swap, boolean reversepolygon) {
+        super(formatter, srsDimension);
         this.transformer = transformer;
         //this.tupleBuffer = new LazyStringCoordinateTuple();
         this.coordinateBuffer = new double[BUFFER_SIZE];
@@ -91,8 +92,8 @@ public class BufferedTransformingCoordinatesWriter extends DefaultCoordinatesWri
                     if (reversePolygonBuffer.isEmpty()) {
 
                         for (int i = 0; i < c.length; i += 2) {
-                            json.writeRawValue(Double.toString(c[i]));
-                            json.writeRawValue(Double.toString(c[i + 1]));
+                            formatter.value(Double.toString(c[i]));
+                            formatter.value(Double.toString(c[i + 1]));
                             if (i < c.length - 2) {
                                 super.writeSeparator();
                             }
@@ -101,8 +102,8 @@ public class BufferedTransformingCoordinatesWriter extends DefaultCoordinatesWri
                         for (int i0 = reversePolygonBuffer.size() - 1; i0 >= 0; i0--) {
                             double[] c0 = reversePolygonBuffer.get(i0);
                             for (int i = 0; i < c0.length; i += 2) {
-                                json.writeRawValue(Double.toString(c0[i]));
-                                json.writeRawValue(Double.toString(c0[i + 1]));
+                                formatter.value(Double.toString(c0[i]));
+                                formatter.value(Double.toString(c0[i + 1]));
                                 if (i < c0.length - 2) {
                                     super.writeSeparator();
                                 }
@@ -120,8 +121,8 @@ public class BufferedTransformingCoordinatesWriter extends DefaultCoordinatesWri
                     numCoo = c.length;
                 }
                 for (int i = 0; i < numCoo; i += 2) {
-                    json.writeRawValue(Double.toString(c[i]));
-                    json.writeRawValue(Double.toString(c[i + 1]));
+                    formatter.value(Double.toString(c[i]));
+                    formatter.value(Double.toString(c[i + 1]));
                     if (i < numCoo - 2) {
                         super.writeSeparator();
                     }
@@ -168,7 +169,7 @@ public class BufferedTransformingCoordinatesWriter extends DefaultCoordinatesWri
     }
 
     @Override
-    protected void jsonWriteRawValue(String val) throws IOException {
+    protected void formatValue(String val) throws IOException {
         if (tupleBuffer == null) {
             tupleBuffer = new LazyStringCoordinateTuple();
         }
@@ -181,7 +182,7 @@ public class BufferedTransformingCoordinatesWriter extends DefaultCoordinatesWri
     }
 
     @Override
-    protected void jsonWriteRawValue(char[] chars, int i, int j) throws IOException {
+    protected void formatValue(char[] chars, int i, int j) throws IOException {
         if (isZValue()) {
             zCounter++;
         } else {
@@ -190,7 +191,7 @@ public class BufferedTransformingCoordinatesWriter extends DefaultCoordinatesWri
     }
 
     @Override
-    protected void jsonWriteRaw(char[] chars, int i, int j) throws IOException {
+    protected void formatRaw(char[] chars, int i, int j) throws IOException {
         if (isXValue()) {
             tupleBuffer.appendX(String.copyValueOf(chars, i, j));
         }

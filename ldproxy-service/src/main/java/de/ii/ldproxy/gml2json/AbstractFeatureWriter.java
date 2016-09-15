@@ -94,6 +94,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
     @Override
     public final void analyzeFailed(Exception ex) {
+        LOGGER.getLogger().error("AbstractFeatureWriter -> analyzeFailed", ex);
         throw new GMLAnalyzeFailed("AbstractFeatureWriter -> analyzeFailed");
     }
 

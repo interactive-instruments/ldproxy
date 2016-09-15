@@ -34,6 +34,7 @@ public interface MicrodataMapping extends TargetMapping {
         ID(GML_TYPE.ID),
         STRING(GML_TYPE.STRING, GML_TYPE.DATE, GML_TYPE.DATE_TIME),
         NUMBER(GML_TYPE.INT, GML_TYPE.INTEGER, GML_TYPE.DECIMAL, GML_TYPE.DOUBLE),
+        BOOLEAN(GML_TYPE.BOOLEAN),
         GEOMETRY(),
         NONE(GML_TYPE.NONE);
 

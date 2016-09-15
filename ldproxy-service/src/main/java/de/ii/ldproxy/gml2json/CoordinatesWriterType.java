@@ -15,7 +15,6 @@
  */
 package de.ii.ldproxy.gml2json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import de.ii.xsf.logging.XSFLogger;
 import java.io.Writer;
 
@@ -32,35 +31,35 @@ public enum CoordinatesWriterType {
         @Override
         Writer create(Builder builder) {
             //LOGGER.debug("creating GML2JsonCoordinatesWriter");
-            return new DefaultCoordinatesWriter(builder.json, builder.srsDimension);
+            return new DefaultCoordinatesWriter(builder.formatter, builder.srsDimension);
         }
     },
     SWAP {
         @Override
         Writer create(Builder builder) {
             //LOGGER.debug("creating GML2JsonFastXYSwapCoordinatesWriter");
-            return new FastXYSwapCoordinatesWriter(builder.json, builder.srsDimension);
+            return new FastXYSwapCoordinatesWriter(builder.formatter, builder.srsDimension);
         }
     },
     TRANSFORM {
         @Override
         Writer create(Builder builder) {
             //LOGGER.debug("creating GML2JsonTransCoordinatesWriter");
-            return new TransformingCoordinatesWriter(builder.json, builder.srsDimension, builder.transformer);
+            return new TransformingCoordinatesWriter(builder.formatter, builder.srsDimension, builder.transformer);
         }
     },
     BUFFER_TRANSFORM {
         @Override
         Writer create(Builder builder) {
             //LOGGER.debug("creating GML2JsonBufferedTransformingCoordinatesWriter");
-            return new BufferedTransformingCoordinatesWriter(builder.json, builder.srsDimension, builder.transformer, builder.swap, builder.reversepolygon);
+            return new BufferedTransformingCoordinatesWriter(builder.formatter, builder.srsDimension, builder.transformer, builder.swap, builder.reversepolygon);
         }
     }/*,
     SIMPLIFY_BUFFER_TRANSFORM {
         @Override
         Writer create(Builder builder) {
             //LOGGER.debug("creating GML2JsonSimplifiyingBufferedTransformingCoordinatesWriter");
-            return new SimplifiyingBufferedTransformingCoordinatesWriter(builder.json, builder.srsDimension, builder.transformer, builder.simplifier, builder.swap, builder.reversepolygon);
+            return new SimplifiyingBufferedTransformingCoordinatesWriter(builder.jsonOut, builder.srsDimension, builder.transformer, builder.simplifier, builder.swap, builder.reversepolygon);
         }
     }*/;
 
@@ -72,12 +71,12 @@ public enum CoordinatesWriterType {
         return new Builder();
     }
     
-    public static Builder builder(JsonGenerator json) {
-        return new Builder().json(json);
+    public static Builder builder(CoordinateFormatter formatter) {
+        return new Builder().format(formatter);
     }
     
     public static class Builder {
-        private JsonGenerator json;
+        private CoordinateFormatter formatter;
         private int srsDimension;
         private boolean swap;
         private boolean transform;
@@ -111,14 +110,14 @@ public enum CoordinatesWriterType {
         }
         
         public Writer build() {
-            if (json == null) {
+            if (formatter == null) {
                 return null;
             }
             return getType().create(this);
         }
         
-        public Builder json(JsonGenerator json) {
-            this.json = json;
+        public Builder format(CoordinateFormatter formatter) {
+            this.formatter = formatter;
             return this;
         }
         

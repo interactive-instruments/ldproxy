@@ -26,8 +26,8 @@ public class SimplifiyingBufferedTransformingCoordinatesWriter extends BufferedT
 
     //private DouglasPeuckerLineSimplifier simplifier;
 
-    public SimplifiyingBufferedTransformingCoordinatesWriter(JsonGenerator json, int srsDimension, CrsTransformer transformer, /*DouglasPeuckerLineSimplifier simplifier,*/ boolean swap, boolean reversepolygon) {
-        super(json, srsDimension, transformer, swap, reversepolygon);
+    public SimplifiyingBufferedTransformingCoordinatesWriter(CoordinateFormatter formatter, int srsDimension, CrsTransformer transformer, /*DouglasPeuckerLineSimplifier simplifier,*/ boolean swap, boolean reversepolygon) {
+        super(formatter, srsDimension, transformer, swap, reversepolygon);
         //this.simplifier = simplifier;
     }
 

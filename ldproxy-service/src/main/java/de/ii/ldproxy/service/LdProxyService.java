@@ -52,6 +52,8 @@ public class LdProxyService extends AbstractWfsProxyService {
     // TODO: we already have external url, can we use it here?
     private Map<String, String> rewrites;
 
+    private String vocab;
+
 
     public LdProxyService() {
         this.rewrites = new HashMap<>();
@@ -179,5 +181,13 @@ public class LdProxyService extends AbstractWfsProxyService {
 
     public SparqlAdapter getSparqlAdapter() {
         return sparqlAdapter;
+    }
+
+    public String getVocab() {
+        return vocab;
+    }
+
+    public void setVocab(String vocab) {
+        this.vocab = vocab;
     }
 }
