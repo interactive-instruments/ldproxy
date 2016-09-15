@@ -434,6 +434,15 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 property.itemType = mapping.getItemType();
                 property.itemProp = mapping.getItemProp();
 
+                // TODO
+                if (value.startsWith("http://") || value.startsWith("https://")) {
+                    if (value.endsWith(".png") || value.endsWith(".jpg") || value.endsWith(".gif")) {
+                        property.isImg = true;
+                    } else {
+                        property.isUrl = true;
+                    }
+                }
+
                 currentFeature.addChild(property);
 
                 int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
