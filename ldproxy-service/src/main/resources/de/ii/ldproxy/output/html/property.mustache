@@ -11,7 +11,7 @@
     {{^value.children}}
         <dl class="dl-horizontal dl-horizontal-no-space">
             <dt>{{value.name}}</dt>
-            <dd {{value.microdata}}>{{#value.isUrl}}<a target="_blank" href="{{value.value}}">{{value.value}}</a>{{/value.isUrl}}{{^value.isUrl}}{{#value.isImg}}<img src"{{value.value}}" style="max-width:300px"/>{{/value.isImg}}{{^value.isImg}}{{value.value}}{{/value.isImg}}{{/value.isUrl}}</dd>
+            <dd {{value.microdata}}>{{#value.isUrl}}<a target="_blank" href="{{value.value}}">{{value.value}}</a>{{/value.isUrl}}{{^value.isUrl}}{{#value.isImg}}<img src="{{value.value}}" style="max-width:300px"/>{{/value.isImg}}{{^value.isImg}}{{value.value}}{{/value.isImg}}{{/value.isUrl}}</dd>
         </dl>
     {{/value.children}}
 {{/index}}
@@ -28,7 +28,7 @@
     {{^children}}
         <dl class="dl-horizontal dl-horizontal-no-space">
             <dt>{{name}}</dt>
-            <dd {{microdata}}>{{#isUrl}}<a target="_blank" href="{{value}}">{{value}}</a>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src"{{value}}" style="max-width:300px"/>{{/isImg}}{{^isImg}}{{value}}{{/isImg}}{{/isUrl}}</dd>
+            <dd {{microdata}}>{{#isUrl}}<a target="_blank" href="{{value}}">{{value}}</a>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src="{{value}}" style="max-width:300px"/>{{/isImg}}{{^isImg}}{{value}}{{/isImg}}{{/isUrl}}</dd>
         </dl>
     {{/children}}
 {{/index}}
