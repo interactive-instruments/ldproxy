@@ -54,7 +54,7 @@ Your data is saved in a volume, not in the container, so your service configurat
 
 To add a service, start the ldproxy manager at http://localhost:7080/ (which redirects to http://localhost:7080/manager).
 
-[[manager1.png]]
+![ldproxy Manager](https://github.com/interactive-instruments/ldproxy/blob/master/docs/manager1.png)
 
 Press `New Service`.
 
@@ -65,13 +65,13 @@ On this page we will use a WFS from the Netherlands as an example: http://servic
 name: landschapsatlas
 url: http://services.rce.geovoorziening.nl/landschapsatlas/wfs?service=WFS&request=GetCapabilities
 
-[[newservice.png]]
+![New Service](https://github.com/interactive-instruments/ldproxy/blob/master/docs/newservice.png)
 
 Press `Add`.
 
 ldproxy now analyses the WFS and configures the proxy service. Once the service is configured, it will appear in the list of proxy services.
 
-[[serviceregistered.png]]
+![ldproxy Manager with Service](https://github.com/interactive-instruments/ldproxy/blob/master/docs/serviceregistered.png)
 
 If an issue is identified, a message should explain why a service cannot be created. A typical issue are invalid or missing schemas. The logs may also contain additional information.
 
