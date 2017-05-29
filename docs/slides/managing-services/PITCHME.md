@@ -2,5 +2,4 @@
 
 ## managing services
 
----?include=../../manual/01-managing-services.md
-
+---?include=docs/manual/01-managing-services.md
