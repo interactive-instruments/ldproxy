@@ -11,18 +11,18 @@ The implementation uses on-the-fly transformations, which means the generated HT
 Have a look at the demo at http://www.ldproxy.net.
 
 ## Installation
-ldproxy is available on [Docker Hub](https://hub.docker.com/r/iide/ldproxy/). If you are new to docker, read [this](https://docs.docker.com/linux/).  
+ldproxy is available on [Docker Hub](https://hub.docker.com/r/iide/ldproxy/). If you are new to Docker, have a look at the  [Docker Documentation](https://docs.docker.com/).  
 To install ldproxy, just run the following command.
 
 ```bash
-docker run -d -p 7080:7080 -v ldproxy_data:/ldproxy/data -w /ldproxy iide/ldproxy
+docker run -d -p 7080:7080 -v ldproxy_data:/ldproxy/data iide/ldproxy
 ```
-Change the host port and volume bind directory to your needs. To update ldproxy, just remove the container and create a new one with the command above. Your data is saved in a volume, not in the container, so your service configurations will still be there after the update.
+For more information, have a look at the [deployment guide](docs/manual/00-deployment.md).
 
-When your container is up and running, have a look at [Getting Started](https://github.com/interactive-instruments/ldproxy/blob/master/docs/00-getting-started.md)
+When your container is up and running, have a look at [managing services](docs/manual/01-managing-services.md).
 
 ## Development
-The only requirement is an installation of JDK 7 or 8.  
+The only requirement is an installation of JDK 8.  
 To set up a local development environment, follow these steps:
 
 ```bash
@@ -34,4 +34,4 @@ cd ldproxy
 
 That's it, a local server is running at port 7080.
 
-You can also create a distribution by running ```./gradlew distTar``` or ```./gradlew distZip```. The resulting archive can then be extracted on any machine with Java 7 or 8 and ldproxy can be started with one of the scripts under ```ldproxy/bin/```.
+You can also create a distribution by running ```./gradlew distTar``` or ```./gradlew distZip```. The resulting archive can then be extracted on any machine with Java 8 and ldproxy can be started with one of the scripts under ```ldproxy/bin/```.
