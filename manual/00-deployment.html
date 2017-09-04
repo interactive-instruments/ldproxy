@@ -1,0 +1,330 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Installation · ldproxy</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="../book/01-managing-services.html" />
+    
+    
+    <link rel="prev" href="../" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2" data-path="00-deployment.html">
+            
+                <a href="00-deployment.html">
+            
+                    
+                    Installation
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../book/01-managing-services.html">
+            
+                <a href="../book/01-managing-services.html">
+            
+                    
+                    Usage
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="../book/02-adding-services.html">
+            
+                <a href="../book/02-adding-services.html">
+            
+                    
+                    Adding services
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" data-path="../book/03-adding-from-catalog.html">
+            
+                <a href="../book/03-adding-from-catalog.html">
+            
+                    
+                    Adding services from the catalog
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.3" data-path="../book/04-editing-services.html">
+            
+                <a href="../book/04-editing-services.html">
+            
+                    
+                    Editing services
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >Installation</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="deploying-ldproxy">Deploying ldproxy</h1>
+<p>The recommended way to deploy ldproxy is using Docker, an open source container platform. Docker images for ldproxy are available on <a href="https://hub.docker.com/r/iide/ldproxy/" target="_blank">Docker Hub</a>. </p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>To deploy ldproxy, you will need an installation of Docker. Docker is available for Linux, Windows and Mac. You will find detailed installation guides for each platform <a href="https://docs.docker.com/" target="_blank">here</a>.</p>
+<h2 id="installing-and-starting-ldproxy">Installing and starting ldproxy</h2>
+<p>To install ldproxy, just run the following command on a machine with Docker installed:</p>
+<pre><code class="lang-bash">docker run <span class="hljs-_">-d</span> -p 7080:7080 -v ldproxy_data:/ldproxy/data iide/ldproxy:latest
+</code></pre>
+<p>This will download the latest stable ldproxy image, deploy it as a new container, make the web application available at port 7080 and save your application data in a Docker provided directory outside of the container.</p>
+<p>Instead of using a Docker provided directory where ldproxy will store its data (i.e. &quot;ldproxy_data) you may specify an absolute path, for example:</p>
+<pre><code class="lang-bash">docker run --name ldproxy <span class="hljs-_">-d</span> -p 7080:7080 -v ~/docker/ldproxy_data:/ldproxy/data iide/ldproxy:latest
+</code></pre>
+<p>We additionally added <code>--name ldproxy</code> to change the name of the docker container from a random name to &quot;ldproxy&quot;.</p>
+<p>You may also change the host port or other parameters to your needs by adjusting the commands shown on this page.</p>
+<p>To check that the docker process is running, use</p>
+<pre><code class="lang-bash">docker ps
+</code></pre>
+<p>which should return something similar to</p>
+<pre><code class="lang-bash">CONTAINER ID        IMAGE                 COMMAND                  CREATED             STATUS              PORTS                    NAMES
+62db022d9bee        iide/ldproxy:latest   <span class="hljs-string">&quot;/ldproxy/bin/ldproxy&quot;</span>   16 minutes ago      Up 16 minutes       0.0.0.0:7080-&gt;7080/tcp   ldproxy
+</code></pre>
+<p>Check that ldproxy is running by opening the URI <a href="http://localhost:7080/" target="_blank">http://localhost:7080/</a> in a web browser.</p>
+<p>If ldproxy is not responding, consult the log with <code>docker logs ldproxy</code>.</p>
+<h2 id="updating-ldproxy">Updating ldproxy</h2>
+<p>To update ldproxy, just remove the container and create a new one with the run command as above. For example:</p>
+<pre><code class="lang-bash">docker stop ldproxy
+docker rm ldproxy
+docker run --name ldproxy <span class="hljs-_">-d</span> -p 7080:7080 -v ~/docker/ldproxy_data:/ldproxy/data iide/ldproxy:latest
+</code></pre>
+<p>Your data is saved in a volume, not in the container, so your service configurations will still be there after the update.</p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="../" class="navigation navigation-prev " aria-label="Previous page: Introduction">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="../book/01-managing-services.html" class="navigation navigation-next " aria-label="Next page: Usage">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Installation","level":"1.2","depth":1,"next":{"title":"Usage","level":"1.3","depth":1,"path":"book/01-managing-services.md","ref":"book/01-managing-services.md","articles":[{"title":"Adding services","level":"1.3.1","depth":2,"path":"book/02-adding-services.md","ref":"book/02-adding-services.md","articles":[]},{"title":"Adding services from the catalog","level":"1.3.2","depth":2,"path":"book/03-adding-from-catalog.md","ref":"book/03-adding-from-catalog.md","articles":[]},{"title":"Editing services","level":"1.3.3","depth":2,"path":"book/04-editing-services.md","ref":"book/04-editing-services.md","articles":[]}]},"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"ldproxy","gitbook":"*"},"file":{"path":"manual/00-deployment.md","mtime":"2017-05-29T09:26:45.188Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2017-09-04T08:01:45.711Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
