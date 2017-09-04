@@ -17,7 +17,7 @@ To install ldproxy, just run the following command.
 ```bash
 docker run -d -p 7080:7080 -v ldproxy_data:/ldproxy/data iide/ldproxy
 ```
-For more information, have a look at the [deployment guide](docs/manual/00-deployment.md).
+For more information, have a look at the [deployment guide](http://interactive-instruments.github.io/ldproxy/manual/00-deployment.html).
 
 When your container is up and running, have a look at the [documentation](http://interactive-instruments.github.io/ldproxy/) (also available as [slides](https://gitpitch.com/interactive-instruments/ldproxy?p=docs/slides/managing-services)).
 
