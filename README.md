@@ -19,7 +19,7 @@ docker run -d -p 7080:7080 -v ldproxy_data:/ldproxy/data iide/ldproxy
 ```
 For more information, have a look at the [deployment guide](docs/manual/00-deployment.md).
 
-When your container is up and running, have a look at [managing services](docs/manual/01-managing-services.md) (also available as [slides](https://gitpitch.com/interactive-instruments/ldproxy?p=docs/slides/managing-services)).
+When your container is up and running, have a look at the [documentation](http://interactive-instruments.github.io/ldproxy/) (also available as [slides](https://gitpitch.com/interactive-instruments/ldproxy?p=docs/slides/managing-services)).
 
 ## Development
 The only requirement is an installation of JDK 8.  
