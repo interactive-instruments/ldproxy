@@ -26,9 +26,9 @@ ext {
 docker {
     url = 'unix:///var/run/docker.sock'
     javaApplication {
-        baseImage = 'java:8'
+        baseImage = 'openjdk:8-jre-alpine'
         port = 7080
-        tag = "iide/${project.name}:latest"
+        tag = "iide/${project.name}:unstable"
     }
     /*registryCredentials {
         url =
