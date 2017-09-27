@@ -30,7 +30,7 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
 public class Gml2GeoJsonMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
 
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(Gml2GeoJsonMapper.class);
-    public static final String MIME_TYPE = "application/vnd.geo+json";
+    public static final String MIME_TYPE = "application/geo+json";
 
     public Gml2GeoJsonMapper(WfsProxyService proxyService) {
         super(proxyService);

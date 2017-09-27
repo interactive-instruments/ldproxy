@@ -95,7 +95,7 @@ public class LdProxyServiceResource implements ServiceResource {
     public View getDatasetAsHtml(@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user, @QueryParam("token") String token) {
         DatasetView dataset = new DatasetView("service", uriInfo.getRequestUri());
         dataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Services", "../"))
+                .add(new NavigationDTO("Datasets", "../"))
                 .add(new NavigationDTO(service.getName()))
                 .build();
 
@@ -171,7 +171,7 @@ public class LdProxyServiceResource implements ServiceResource {
         dataset.featureTypes.add(featureTypeDataset);
 
         featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Services", "../../"))
+                .add(new NavigationDTO("Datasets", "../../"))
                 .add(new NavigationDTO(service.getName(), "../../" + service.getBrowseUrl()))
                 .add(new NavigationDTO(featureType.getDisplayName()))
                 .build();
@@ -213,7 +213,7 @@ public class LdProxyServiceResource implements ServiceResource {
         if (fields != null && service.findIndicesForFeatureType(featureType).containsKey(fields)) {
 
             featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                    .add(new NavigationDTO("Services", "../../"))
+                    .add(new NavigationDTO("Datasets", "../../"))
                     .add(new NavigationDTO(service.getName(), "../../" + service.getBrowseUrl()))
                     .add(new NavigationDTO(featureType.getDisplayName(), "./"))
                     .add(new NavigationDTO(fields))
@@ -251,7 +251,7 @@ public class LdProxyServiceResource implements ServiceResource {
 
                 if (service.findIndicesForFeatureType(featureType).containsKey(filterKey)) {
                     featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                            .add(new NavigationDTO("Services", "../../"))
+                            .add(new NavigationDTO("Datasets", "../../"))
                             .add(new NavigationDTO(service.getName(), "../../" + service.getBrowseUrl()))
                             .add(new NavigationDTO(featureType.getDisplayName(), "./"))
                             .add(new NavigationDTO(filterKey, "./?fields=" + filterKey + "&distinctValues=true"))
@@ -259,7 +259,7 @@ public class LdProxyServiceResource implements ServiceResource {
                             .build();
                 } else {
                     featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                            .add(new NavigationDTO("Services", "../../"))
+                            .add(new NavigationDTO("Datasets", "../../"))
                             .add(new NavigationDTO(service.getName(), "../../" + service.getBrowseUrl()))
                             .add(new NavigationDTO(featureType.getDisplayName(), "./"))
                             .add(new NavigationDTO(filterKey))
@@ -499,7 +499,7 @@ public class LdProxyServiceResource implements ServiceResource {
         featureTypeDataset.description = featureType.getDisplayName();
 
         featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Services", "../../../"))
+                .add(new NavigationDTO("Datasets", "../../../"))
                 .add(new NavigationDTO(service.getName(), "../../../" + service.getBrowseUrl()))
                 .add(new NavigationDTO(featureType.getDisplayName(), "../../../" + service.getBrowseUrl() + layerid + "/"))
                 .add(new NavigationDTO(featureid))

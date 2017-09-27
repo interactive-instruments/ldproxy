@@ -29,11 +29,11 @@ import java.util.List;
 public class ServiceOverviewView extends DatasetView {
     public ServiceOverviewView(URI uri, Object data) {
         super("services", uri, data);
-        this.title = "ldproxy Service Overview";
-        this.description = "ldproxy Service Overview";
-        this.keywords = new ImmutableList.Builder<String>().add("ldproxy", "service", "overview").build();
+        this.title = "ldproxy Dataset Overview";
+        this.description = "ldproxy Dataset Overview";
+        this.keywords = new ImmutableList.Builder<String>().add("ldproxy", "service", "dataset", "overview").build();
         this.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Services", true))
+                .add(new NavigationDTO("Datasets", true))
                 .build();
     }
 }
