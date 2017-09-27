@@ -103,6 +103,9 @@ run {
     debug = project.hasProperty('debug')? project.debug : false
 }
 
+tasks.startScripts.unixStartScriptGenerator.template = resources.text.fromFile('gradle/sh-start-script')
+
+
 apply from: 'bundles.gradle'
 
 apply from: 'docker.gradle'
