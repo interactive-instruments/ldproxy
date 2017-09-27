@@ -67,7 +67,7 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
         String s = "";
         try {
             s = jsonMapper.writerWithType(Service.class).writeValueAsString(service);
-            LOGGER.getLogger().debug("GET SERVICE {}", s);
+            //LOGGER.getLogger().debug("GET SERVICE {}", s);
         } catch (JsonProcessingException e) {
             LOGGER.getLogger().error("ERROR", e);
         }
@@ -88,7 +88,7 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
         String s = "";
         try {
             s = jsonMapper.writeValueAsString(service);
-            LOGGER.getLogger().debug("GET SERVICE CONFIG {}", s);
+            //LOGGER.getLogger().debug("GET SERVICE CONFIG {}", s);
         } catch (JsonProcessingException e) {
             LOGGER.getLogger().error("ERROR", e);
         }

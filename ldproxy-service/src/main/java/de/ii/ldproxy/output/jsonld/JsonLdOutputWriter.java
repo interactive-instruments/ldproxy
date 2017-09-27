@@ -21,7 +21,6 @@ import com.google.common.base.Joiner;
 import de.ii.ldproxy.gml2json.AbstractFeatureWriter;
 import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.gml2json.WktCoordinatesFormatter;
-import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.output.html.*;
 import de.ii.ldproxy.output.jsonld.WktGeometryMapping.WKT_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
@@ -61,7 +60,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
     private String vocab;
 
     public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, URI requestUri, FeatureCollectionView dataset, Map<String, String> rewrites, String vocab) {
-        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer);
+        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer, new JsonLdOnTheFlyMapping());
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
         this.objectDepth = 0;

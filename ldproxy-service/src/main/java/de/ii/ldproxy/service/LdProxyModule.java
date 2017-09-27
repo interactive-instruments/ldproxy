@@ -61,15 +61,16 @@ public class LdProxyModule implements ServiceModule {
     @Override
     public Service addService(AuthenticatedUser authenticatedUser, String id, Map<String, String> queryParams, File configDirectory) throws IOException {
         // TODO: can we remove queryParams?
-        if (queryParams.containsKey("wfsUrl")) {
+        if (queryParams.containsKey("url")) {
 
             //LOGGER.info(FrameworkMessages.ADDING_WFS2GSFS_SERVICE_WITH_ID_ID_WFSURL_URL, id, queryParams.get("wfsUrl"));
 
             String wfsUrl = null;
+            boolean disableMapping = Boolean.valueOf(queryParams.get("disableMapping"));
             //try {
                 // TODO: what does cleanWfsUrl do? move to wfs client?
                 //wfsUrl = cleanWfsUrl(queryParams.get("wfsUrl"));
-                wfsUrl = queryParams.get("wfsUrl");
+                wfsUrl = queryParams.get("url");
             //} catch (URISyntaxException ex) {
                 // TODO
                 //LOGGER.error(FrameworkMessages.FAILED_REQUESTING_URL, queryParams.get("wfsUrl"));
@@ -81,7 +82,7 @@ public class LdProxyModule implements ServiceModule {
             //srvc.setDateCreated(new DateTime().getMillis());
             //srvc.setLastModified(srvc.getDateCreated());
 
-            LdProxyService srvc = serviceStore.addService(id, wfsUrl);
+            LdProxyService srvc = serviceStore.addService(id, wfsUrl, disableMapping);
 
             // TODO
             //serviceAddedPublisher.sendData(srvc);
@@ -153,20 +154,20 @@ public class LdProxyModule implements ServiceModule {
     // TODO
     @Override
     public List<Service> getServiceList() throws Exception {
-        LOGGER.getLogger().debug("GET SERVICE LIST 2");
+        //LOGGER.getLogger().debug("GET SERVICE LIST 2");
         List<Service> services = new ArrayList<>();
         return services;
     }
 
     @Override
     public List<Service> getServiceList(AuthenticatedUser authenticatedUser) {
-        LOGGER.getLogger().debug("GET SERVICE LIST");
+        //LOGGER.getLogger().debug("GET SERVICE LIST");
         List<Service> srvs = new ArrayList<>();
         for (String id : serviceStore.getResourceIds()) {
-            LOGGER.getLogger().debug("GET SERVICE LIST {}", id);
+            //LOGGER.getLogger().debug("GET SERVICE LIST {}", id);
             srvs.add(serviceStore.getResource(id));
         }
-        LOGGER.getLogger().debug("GET SERVICE LIST {}", srvs);
+        //LOGGER.getLogger().debug("GET SERVICE LIST {}", srvs);
         return srvs;
     }
 

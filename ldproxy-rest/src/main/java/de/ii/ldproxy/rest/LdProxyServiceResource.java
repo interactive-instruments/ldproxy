@@ -603,6 +603,9 @@ public class LdProxyServiceResource implements ServiceResource {
 
                     GMLAnalyzer jsonWriter = new GeoJsonFeatureWriter(service.createJsonGenerator(output), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2GeoJsonMapper.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer());
                     GMLParser gmlParser = new GMLParser(jsonWriter, service.staxFactory);
+                    if (featureType.getMappings().getMappings().isEmpty()) {
+                        gmlParser.enableTextParsing();
+                    }
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 
                 } catch (ExecutionException ex) {
@@ -625,6 +628,9 @@ public class LdProxyServiceResource implements ServiceResource {
 
                     GMLAnalyzer jsonWriter = new JsonLdOutputWriter(service.createJsonGenerator(output), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2JsonLdMapper.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer(), uriInfo.getRequestUri(), dataset, service.getRewrites(), service.getVocab());
                     GMLParser gmlParser = new GMLParser(jsonWriter, service.staxFactory);
+                    if (featureType.getMappings().getMappings().isEmpty()) {
+                        gmlParser.enableTextParsing();
+                    }
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 
                 } catch (ExecutionException ex) {
@@ -649,6 +655,9 @@ public class LdProxyServiceResource implements ServiceResource {
                 try {
                     GMLAnalyzer htmlWriter = new MicrodataFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2MicrodataMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, range, featureTypeDataset, service.getCrsTransformations().getDefaultTransformer(), service.getSparqlAdapter());
                     GMLParser gmlParser = new GMLParser(htmlWriter, service.staxFactory);
+                    if (featureType.getMappings().getMappings().isEmpty()) {
+                        gmlParser.enableTextParsing();
+                    }
                     gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 
                 } catch (ExecutionException ex) {

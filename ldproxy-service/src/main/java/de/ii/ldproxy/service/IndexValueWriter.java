@@ -94,6 +94,11 @@ public class IndexValueWriter implements GMLAnalyzer {
     }
 
     @Override
+    public void analyzePropertyText(String nsuri, String localName, int depth, String text) {
+
+    }
+
+    @Override
     public void analyzePropertyEnd(String s, String s1, int i) {
 
     }

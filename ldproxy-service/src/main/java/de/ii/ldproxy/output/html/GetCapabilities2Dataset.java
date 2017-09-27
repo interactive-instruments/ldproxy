@@ -15,7 +15,7 @@
  */
 package de.ii.ldproxy.output.html;
 
-import com.google.common.base.Strings;
+import de.ii.xtraplatform.ogc.api.OWS;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.wfs.parser.AbstractWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
@@ -192,9 +192,9 @@ public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer imp
     }
 
     @Override
-    public void analyzeOperationGetUrl(WFS.OPERATION operation, String url) {
-        if (operation == WFS.OPERATION.GET_CAPABILITES) {
-            dataset.url = url;
+    public void analyzeOperationGetUrl(OWS.OPERATION operation, String url) {
+        if (operation == OWS.OPERATION.GET_CAPABILITES) {
+            dataset.url = WFS.cleanUrl(url);
         }
     }
 }

@@ -35,6 +35,7 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
+import java.util.concurrent.*;
 
 /**
  * @author zahnen
@@ -57,6 +58,8 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
     private CrsTransformation crsTransformation;
     private LdProxyIndexStore indexStore;
     private SparqlAdapter sparqlAdapter;
+    private ScheduledExecutorService analyzerQueue;
+
 
     public LdProxyServiceStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires HttpClients httpClients, @Requires CrsTransformation crsTransformation, @Requires LdProxyIndexStore indexStore/*, @Requires SparqlAdapter sparqlAdapter*/) {
         super(rootConfigStore, SERVICE_STORE_ID, true, new DeepUpdater<LdProxyService>(jackson.getDefaultObjectMapper()), new LdProxyServiceSerializer(jackson.getDefaultObjectMapper()));
@@ -72,6 +75,15 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
 
         this.indexStore = indexStore;
         this.sparqlAdapter = new SparqlAdapter(jackson, httpClients);
+
+        this.analyzerQueue = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r);
+                t.setDaemon(true);
+                return t;
+            }
+        });
 
         // TODO: orgs layertemplates
         //this.layerTemplateStore = new WFS2GSFSLayerTemplateStore(configStores.getConfigStore(LAYER_TEMPLATES_STORE_ID), jsonMapper);
@@ -129,6 +141,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
             case UPDATE:
             case UPDATE_OVERRIDE:
                 resource.setLastModified(now.getMillis());
+
             case DELETE:
                 // resource is not a complete instance, get the one from cache
                 service = this.getResource(path, resourceId);
@@ -138,7 +151,12 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
                 resource.setDateCreated(now.getMillis());
         }
 
-        super.writeResource(path, resourceId, operation, resource);
+        if (operation == ResourceTransaction.OPERATION.UPDATE_OVERRIDE && !resource.getServiceProperties().getMappingStatus().isEnabled()) {
+            resource.setServiceProperties(service.getServiceProperties());
+        }
+if (!(operation == ResourceTransaction.OPERATION.UPDATE_OVERRIDE && resource.getServiceProperties().getMappingStatus().isEnabled() && resource.getServiceProperties().getMappingStatus().isLoading())) {
+    super.writeResource(path, resourceId, operation, resource);
+}
 
         if (operation != ResourceTransaction.OPERATION.DELETE) {
             service = getResource(path, resourceId);
@@ -153,12 +171,24 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
                 if (service.getTargetStatus() == Service.STATUS.STARTED) {
                     service.start();
                 }
+                if (resource.getServiceProperties().getMappingStatus().isEnabled() && resource.getServiceProperties().getMappingStatus().isLoading() && operation != ResourceTransaction.OPERATION.ADD) {
+                    service.setServiceProperties(resource.getServiceProperties());
+                    service.analyzeFeatureTypes();
+                    //resource.setFeatureTypes(service.getFeatureTypes());
+                    //resource.setServiceProperties(service.getServiceProperties());
+                    //super.writeResource(path, resourceId, operation, resource);
+                    super.writeResource(path, resourceId, ResourceTransaction.OPERATION.UPDATE, service);
+                }
         }
     }
 
     @Override
     public LdProxyService addService(String id, String wfsUrl) throws IOException {
+        return addService(id, wfsUrl, true);
+    }
 
+    @Override
+    public LdProxyService addService(String id, String wfsUrl, boolean disableMapping) throws IOException {
         //LOGGER.info(FrameworkMessages.ADDING_WFS2GSFS_SERVICE_WITH_ID_ID_WFSURL_URL, id, queryParams.get("wfsUrl"));
 
         //String wfsUrl = null;
@@ -179,11 +209,37 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
 
         addResource(service);
 
+        if (!disableMapping) {
+            queueAnalyzeService(service);
+        }
         // TODO
         //serviceAddedPublisher.sendData(srvc);
 
         //LOGGER.info(FrameworkMessages.CREATED_WFS2GSFS_SERVICE_WITH_ID_ID_WFSURL_URL, id, queryParams.get("wfsUrl"));
 
         return service;
+    }
+
+    private void queueAnalyzeService(final LdProxyService service) {
+        analyzerQueue.schedule(new Runnable() {
+            @Override
+            public void run() {
+                //service.analyzeFeatureTypes();
+                //LdProxyService resource = createEmptyResource();
+                //resource.getServiceProperties().getMappingStatus().setEnabled(true);
+                //resource.getServiceProperties().getMappingStatus().setLoading(true);
+                service.getServiceProperties().getMappingStatus().setEnabled(true);
+                service.getServiceProperties().getMappingStatus().setLoading(true);
+
+                try {
+                    // TODO: update ignores some properties
+                    LdProxyServiceStoreDefault.this.updateResource(service);
+                    //LdProxyServiceStoreDefault.this.updateResourceOverrides(service.getResourceId(), resource);
+                } catch (IOException e) {
+                    // TODO
+                }
+
+            }
+        }, 1, TimeUnit.SECONDS);
     }
 }

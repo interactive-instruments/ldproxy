@@ -18,6 +18,7 @@ version = '1.1.0'
 group = 'de.interactive_instruments'
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         url "http://maven.forgerock.org/repo/repo"
@@ -25,7 +26,6 @@ repositories {
     maven {
         url "https://dl.bintray.com/iide/maven"
     }
-    mavenLocal()
 }
 
 configurations {
@@ -35,7 +35,7 @@ configurations {
 
 dependencies {
     // TODO: are all the jars in lib dependencies of this?
-    compile group: 'de.interactive_instruments', name: 'xtraplatform-runtime', version: '1.0.3'
+    compile group: 'de.interactive_instruments', name: 'xtraplatform-runtime', version: '1.0.4-SNAPSHOT'
 
     bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.3'
 

@@ -18,9 +18,9 @@ package de.ii.ldproxy.gml2json;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import de.ii.ldproxy.output.html.MicrodataPropertyMapping;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
+import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
 import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
@@ -66,8 +66,10 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
     // properties
     // geometry
 
+    protected WfsProxyOnTheFlyMapping onTheFlyMapping;
 
-    public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/, CrsTransformer crsTransformer) {
+
+    public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/, CrsTransformer crsTransformer, WfsProxyOnTheFlyMapping onTheFlyMapping) {
         this.jsonOut = jsonOut;
         this.json = jsonOut;
         this.jsonMapper = jsonMapper;
@@ -90,6 +92,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         this.maxAllowableOffset = layerQueryParams.getMaxAllowableOffset();
         */
         this.crsTransformer = crsTransformer;
+        this.onTheFlyMapping = onTheFlyMapping;
     }
 
     @Override
@@ -115,6 +118,10 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
         TargetMapping featureMapping = null;
 
+        if (featureTypeMapping.getMappings().isEmpty()) {
+            featureMapping = onTheFlyMapping.getTargetMappingForFeatureType(currentPath, nsuri, localName);
+        }
+
         for (TargetMapping mapping : featureTypeMapping.findMappings(nsuri + ":" + localName, outputFormat)) {
             if (!mapping.isEnabled()) {
                 continue;
@@ -137,6 +144,14 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         String path = currentPath.toString();
         //LOGGER.debug(" - attribute {}", path);
 
+        if (featureTypeMapping.getMappings().isEmpty()) {
+            TargetMapping mapping = onTheFlyMapping.getTargetMappingForAttribute(currentPath, nsuri, localName, value);
+            if (mapping != null) {
+                writeField(mapping, value);
+            }
+            return;
+        }
+
         for (TargetMapping mapping: featureTypeMapping.findMappings(path, outputFormat)) {
             if (!mapping.isEnabled()) {
                 continue;
@@ -151,6 +166,15 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         currentPath.track(nsuri, localName, depth);
         String path = currentPath.toString();
         String value = "";
+
+        if (featureTypeMapping.getMappings().isEmpty()) {
+            TargetMapping mapping = onTheFlyMapping.getTargetMappingForGeometry(currentPath, nsuri, localName);
+
+            if (mapping != null) {
+                writeGeometry(mapping, feature);
+            }
+            return;
+        }
 
         for (TargetMapping mapping: featureTypeMapping.findMappings(path, outputFormat)) {
             if (!mapping.isEnabled()) {
@@ -174,6 +198,16 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
             } else {
                 // TODO: write geometry
                 writeGeometry(mapping, feature);
+            }
+        }
+    }
+
+    @Override
+    public void analyzePropertyText(String nsuri, String localName, int depth, String text) {
+        if (featureTypeMapping.getMappings().isEmpty()) {
+            TargetMapping mapping = onTheFlyMapping.getTargetMappingForProperty(currentPath, nsuri, localName, text);
+            if (mapping != null) {
+                writeField(mapping, text);
             }
         }
     }

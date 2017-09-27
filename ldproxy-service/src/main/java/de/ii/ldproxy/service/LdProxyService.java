@@ -182,7 +182,8 @@ public class LdProxyService extends AbstractWfsProxyService {
         return values;
     }
 
-    @JsonView(JsonViews.FullView.class)
+    //@JsonView(JsonViews.FullView.class)
+    @JsonIgnore
     public SparqlAdapter getSparqlAdapter() {
         return sparqlAdapter;
     }

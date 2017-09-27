@@ -24,4 +24,5 @@ import java.io.IOException;
  */
 public interface LdProxyServiceStore extends ResourceStore<LdProxyService> {
     LdProxyService addService(String id, String wfsUrl) throws IOException;
+    LdProxyService addService(String id, String wfsUrl, boolean disableMapping) throws IOException;
 }

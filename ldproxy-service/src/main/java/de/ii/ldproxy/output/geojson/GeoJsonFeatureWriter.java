@@ -21,7 +21,6 @@ import de.ii.ldproxy.gml2json.AbstractFeatureWriter;
 import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.gml2json.JsonCoordinateFormatter;
 import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
-import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
@@ -49,7 +48,7 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(GeoJsonFeatureWriter.class);
            
     public GeoJsonFeatureWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer) {
-        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer);
+        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer, new GeoJsonOnTheFlyMapping());
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
     }
