@@ -24,11 +24,11 @@ public class IndexMapping implements TargetMapping {
     public static final String MIME_TYPE = "index";
 
 
-    private boolean enabled;
+    private Boolean enabled;
     private String name;
 
     @Override
-    public boolean isEnabled() {
+    public Boolean isEnabled() {
         return enabled;
     }
 

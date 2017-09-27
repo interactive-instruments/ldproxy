@@ -24,7 +24,7 @@ import static de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE;
  */
 public interface MicrodataMapping extends TargetMapping {
     MICRODATA_TYPE getType();
-    boolean isShowInCollection();
+    Boolean isShowInCollection();
     String getItemType();
     String getItemProp();
     String getSparqlQuery();

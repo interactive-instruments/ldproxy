@@ -20,12 +20,12 @@ package de.ii.ldproxy.output.geojson;
  */
 public class GeoJsonPropertyMapping implements GeoJsonMapping {
 
-    private boolean enabled;
+    private Boolean enabled;
     private String name;
     private GEO_JSON_TYPE type;
 
     @Override
-    public boolean isEnabled() {
+    public Boolean isEnabled() {
         return enabled;
     }
 

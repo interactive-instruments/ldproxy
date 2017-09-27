@@ -20,16 +20,16 @@ package de.ii.ldproxy.output.html;
  */
 public class MicrodataPropertyMapping implements MicrodataMapping {
 
-    private boolean enabled;
+    private Boolean enabled;
     private String name;
     private MICRODATA_TYPE type;
-    private boolean showInCollection;
+    private Boolean showInCollection;
     private String itemType;
     private String itemProp;
     private String sparqlQuery;
 
     @Override
-    public boolean isEnabled() {
+    public Boolean isEnabled() {
         return enabled;
     }
 
@@ -56,7 +56,7 @@ public class MicrodataPropertyMapping implements MicrodataMapping {
     }
 
     @Override
-    public boolean isShowInCollection() {
+    public Boolean isShowInCollection() {
         return showInCollection;
     }
 

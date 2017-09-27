@@ -104,6 +104,8 @@ public class LdProxyModule implements ServiceModule {
         } catch (IOException ex) {
 
             // TODO Logging
+            LOGGER.getLogger().error("Error updating service with id {}", id);
+            LOGGER.getLogger().debug("Exception: ", ex);
             throw new WriteError();
         }
 

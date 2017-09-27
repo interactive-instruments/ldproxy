@@ -20,8 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.xsf.configstore.api.KeyNotFoundException;
 import de.ii.xsf.configstore.api.KeyValueStore;
 import de.ii.xsf.configstore.api.rest.AbstractGenericResourceStore;
+import de.ii.xsf.configstore.api.rest.GenericResourceSerializer;
 import de.ii.xsf.configstore.api.rest.ResourceTransaction;
 import de.ii.xsf.core.api.Service;
+import de.ii.xsf.core.util.json.DeepUpdater;
 import de.ii.xsf.dropwizard.api.HttpClients;
 import de.ii.xsf.dropwizard.api.Jackson;
 import de.ii.xsf.logging.XSFLogger;
@@ -57,7 +59,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
     private SparqlAdapter sparqlAdapter;
 
     public LdProxyServiceStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires HttpClients httpClients, @Requires CrsTransformation crsTransformation, @Requires LdProxyIndexStore indexStore/*, @Requires SparqlAdapter sparqlAdapter*/) {
-        super(rootConfigStore, SERVICE_STORE_ID, jackson.getDefaultObjectMapper(), true);
+        super(rootConfigStore, SERVICE_STORE_ID, true, new DeepUpdater<LdProxyService>(jackson.getDefaultObjectMapper()), new LdProxyServiceSerializer(jackson.getDefaultObjectMapper()));
 
         jsonMapper = jackson.getDefaultObjectMapper();
 
@@ -111,7 +113,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
 
         DateTime now = new DateTime();
 
-        switch (operation) {
+        /*switch (operation) {
             case DELETE:
                 service = getResource(path, resourceId);
                 service.stop();
@@ -122,12 +124,26 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
             case UPDATE_OVERRIDE:
                 resource.setLastModified(now.getMillis());
                 break;
+        }*/
+        switch (operation) {
+            case UPDATE:
+            case UPDATE_OVERRIDE:
+                resource.setLastModified(now.getMillis());
+            case DELETE:
+                // resource is not a complete instance, get the one from cache
+                service = this.getResource(path, resourceId);
+                service.stop();
+                break;
+            case ADD:
+                resource.setDateCreated(now.getMillis());
         }
 
         super.writeResource(path, resourceId, operation, resource);
+
         if (operation != ResourceTransaction.OPERATION.DELETE) {
             service = getResource(path, resourceId);
         }
+
         switch (operation) {
             case ADD:
                 service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);

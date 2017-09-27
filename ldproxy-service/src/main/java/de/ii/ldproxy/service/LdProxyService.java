@@ -16,6 +16,7 @@
 package de.ii.ldproxy.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
 import de.ii.ldproxy.output.html.Gml2MicrodataMapper;
@@ -23,6 +24,7 @@ import de.ii.ldproxy.output.jsonld.Gml2JsonLdMapper;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyService;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
+import de.ii.xsf.core.api.JsonViews;
 import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
@@ -86,6 +88,7 @@ public class LdProxyService extends AbstractWfsProxyService {
         return INTERFACE_SPECIFICATION;
     }
 
+    @JsonView(JsonViews.FullView.class)
     public Map<String, String> getRewrites() {
         return rewrites;
     }
@@ -179,6 +182,7 @@ public class LdProxyService extends AbstractWfsProxyService {
         return values;
     }
 
+    @JsonView(JsonViews.FullView.class)
     public SparqlAdapter getSparqlAdapter() {
         return sparqlAdapter;
     }

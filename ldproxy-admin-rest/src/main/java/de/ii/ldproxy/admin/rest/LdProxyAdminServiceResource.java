@@ -78,12 +78,21 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
     @CacheControl(noCache = true, mustRevalidate = true)
     @Path("/config")
     @GET
-    @JsonView(JsonViews.ConfigurationView.class)
-    public Service getServiceConfiguration(@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user, @PathParam("id") String id) {
+    //@JsonView(JsonViews.ConfigurationView.class)
+    public String getServiceConfiguration(@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user, @PathParam("id") String id) {
         
         response.setHeader("Cache-Control", "no-cache");
         
-        return service;
+        //return service;
+
+        String s = "";
+        try {
+            s = jsonMapper.writeValueAsString(service);
+            LOGGER.getLogger().debug("GET SERVICE CONFIG {}", s);
+        } catch (JsonProcessingException e) {
+            LOGGER.getLogger().error("ERROR", e);
+        }
+        return s;
     }
     
     /*@CacheControl(noCache = true, mustRevalidate = true)
