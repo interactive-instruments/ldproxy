@@ -417,8 +417,13 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                 // TODO: does not work, GML_GEOMETRY_TYPE can only parse schema, not instance
                 if (!gmlType.isValid()) {
                     GML_GEOMETRY_TYPE nodeType = GML_GEOMETRY_TYPE.fromString(geo.getLocalName());
-                    if (nodeType.isValid() && type == MICRODATA_GEOMETRY_TYPE.forGmlType(nodeType)) {
-                        gmlType = nodeType;
+                    if (nodeType.isValid()) {
+                        if (type == MICRODATA_GEOMETRY_TYPE.GENERIC) {
+                            type = MICRODATA_GEOMETRY_TYPE.forGmlType(nodeType);
+                        }
+                        if (type == MICRODATA_GEOMETRY_TYPE.forGmlType(nodeType)) {
+                            gmlType = nodeType;
+                        }
                     }
                 }
 

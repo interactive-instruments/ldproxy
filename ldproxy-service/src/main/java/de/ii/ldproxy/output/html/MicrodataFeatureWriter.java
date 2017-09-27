@@ -482,8 +482,13 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             while (geo.readerAccessible()) {
                 if (!gmlType.isValid()) {
                     GML_GEOMETRY_TYPE nodeType = GML_GEOMETRY_TYPE.fromString(geo.getLocalName());
-                    if (nodeType.isValid() && type == MICRODATA_GEOMETRY_TYPE.forGmlType(nodeType)) {
-                        gmlType = nodeType;
+                    if (nodeType.isValid()) {
+                        if (type == MICRODATA_GEOMETRY_TYPE.GENERIC) {
+                            type = MICRODATA_GEOMETRY_TYPE.forGmlType(nodeType);
+                        }
+                        if (type == MICRODATA_GEOMETRY_TYPE.forGmlType(nodeType)) {
+                            gmlType = nodeType;
+                        }
                     }
                 }
 
