@@ -39,6 +39,13 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -440,6 +447,15 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                         property.isImg = true;
                     } else {
                         property.isUrl = true;
+                    }
+                } else if(mapping.getType() == MICRODATA_TYPE.DATE) {
+                    try {
+                        DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd['T'HH:mm:ss[X]]");
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(mapping.getFormat());
+                        TemporalAccessor ta = parser.parseBest(value, OffsetDateTime::from, LocalDateTime::from, LocalDate::from);
+                        property.value = formatter.format(ta);
+                    } catch (Exception e) {
+                        //ignore
                     }
                 }
 

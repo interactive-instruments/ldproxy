@@ -89,6 +89,10 @@ public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
             targetMapping.setName(jsonPath);
             targetMapping.setType(dataType);
 
+            if (dataType == MICRODATA_TYPE.DATE) {
+                targetMapping.setFormat("eeee, d MMMM yyyy[', 'HH:mm:ss[' 'z]]");
+            }
+
             return targetMapping;
         }
 

@@ -16,6 +16,7 @@
 package de.ii.ldproxy.output.geojson;
 
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer;
+import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 
 /**
@@ -26,21 +27,21 @@ public interface GeoJsonMapping extends TargetMapping {
 
     enum GEO_JSON_TYPE {
 
-        ID(AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE.ID),
-        STRING(AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE.STRING, AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE.DATE, AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE.DATE_TIME),
-        NUMBER(AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE.INT, AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE.INTEGER, AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE.DECIMAL, AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE.DOUBLE),
+        ID(GML_TYPE.ID),
+        STRING(GML_TYPE.STRING, GML_TYPE.DATE, GML_TYPE.DATE_TIME, GML_TYPE.URI),
+        NUMBER(GML_TYPE.INT, GML_TYPE.INTEGER, GML_TYPE.LONG, GML_TYPE.SHORT, GML_TYPE.DECIMAL, GML_TYPE.DOUBLE, GML_TYPE.FLOAT),
         GEOMETRY(),
-        NONE(AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE.NONE);
+        NONE(GML_TYPE.NONE);
 
-        private AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE[] gmlTypes;
+        private GML_TYPE[] gmlTypes;
 
-        GEO_JSON_TYPE(AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE... gmlType) {
+        GEO_JSON_TYPE(GML_TYPE... gmlType) {
             this.gmlTypes = gmlType;
         }
 
-        public static GEO_JSON_TYPE forGmlType(AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE gmlType) {
+        public static GEO_JSON_TYPE forGmlType(GML_TYPE gmlType) {
             for (GEO_JSON_TYPE geoJsonType : GEO_JSON_TYPE.values()) {
-                for (AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE v2: geoJsonType.gmlTypes) {
+                for (GML_TYPE v2: geoJsonType.gmlTypes) {
                     if (v2 == gmlType) {
                         return geoJsonType;
                     }

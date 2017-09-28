@@ -27,6 +27,7 @@ public class MicrodataPropertyMapping implements MicrodataMapping {
     private String itemType;
     private String itemProp;
     private String sparqlQuery;
+    private String format;
 
     @Override
     public Boolean isEnabled() {
@@ -94,5 +95,13 @@ public class MicrodataPropertyMapping implements MicrodataMapping {
     @Override
     public boolean isGeometry() {
         return getType() == MICRODATA_TYPE.GEOMETRY;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
     }
 }
