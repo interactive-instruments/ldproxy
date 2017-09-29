@@ -33,12 +33,14 @@ import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
+import org.apache.http.client.utils.URIBuilder;
 import org.codehaus.staxmate.in.SMEvent;
 import org.codehaus.staxmate.in.SMInputCursor;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -83,6 +85,9 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     public FeatureCollectionView dataset;
     //public String requestUrl;
 
+    private String wfsUrl;
+    private String wfsByIdUrl;
+
     public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, int[] range, FeatureCollectionView featureTypeDataset, CrsTransformer crsTransformer, SparqlAdapter sparqlAdapter) {
         this.outputStreamWriter = outputStreamWriter;
         this.currentPath = new XMLPathTracker();
@@ -119,6 +124,15 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         this.crsTransformer = crsTransformer;
 
         this.dataset = featureTypeDataset;
+
+        try {
+            URIBuilder urlBuilder = new URIBuilder(dataset.requestUrl);
+            urlBuilder.clearParameters();
+            this.wfsUrl = urlBuilder.build().toString();
+            this.wfsByIdUrl = urlBuilder.addParameter("SERVICE", "WFS").addParameter("VERSION", "2.0.0").addParameter("REQUEST", "GetFeature").addParameter("STOREDQUERY_ID", "urn:ogc:def:query:OGC-WFS::GetFeatureById").addParameter("ID", "").build().toString();
+        } catch (URISyntaxException e) {
+            //ignore
+        }
 
         this.sparqlAdapter = sparqlAdapter;
     }
@@ -441,14 +455,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 property.itemType = mapping.getItemType();
                 property.itemProp = mapping.getItemProp();
 
-                // TODO
-                if (value.startsWith("http://") || value.startsWith("https://")) {
-                    if (value.endsWith(".png") || value.endsWith(".jpg") || value.endsWith(".gif")) {
-                        property.isImg = true;
-                    } else {
-                        property.isUrl = true;
-                    }
-                } else if(mapping.getType() == MICRODATA_TYPE.DATE) {
+                if(mapping.getType() == MICRODATA_TYPE.DATE) {
                     try {
                         DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd['T'HH:mm:ss[X]]");
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(mapping.getFormat());
@@ -456,6 +463,20 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                         property.value = formatter.format(ta);
                     } catch (Exception e) {
                         //ignore
+                    }
+                } else if(mapping.getType() == MICRODATA_TYPE.STRING && mapping.getFormat() != null && !mapping.getFormat().isEmpty()) {
+                    try {
+                        property.value = mapping.getFormat().replace("{{value}}", value).replace("{{wfs}}", this.wfsUrl != null ? this.wfsUrl : "").replace("{{wfs-by-id}}", this.wfsByIdUrl != null ? this.wfsByIdUrl : "");
+                    } catch (Exception e) {
+                        //ignore
+                        LOGGER.getLogger().debug("err", e);
+                    }
+                }
+                if (property.value.startsWith("http://") || property.value.startsWith("https://")) {
+                    if (property.value.endsWith(".png") || property.value.endsWith(".jpg") || property.value.endsWith(".gif")) {
+                        property.isImg = true;
+                    } else {
+                        property.isUrl = true;
                     }
                 }
 
