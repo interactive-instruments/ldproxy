@@ -1,17 +1,9 @@
 /**
- * Copyright 2016 interactive instruments GmbH
+ * Copyright 2017 European Union, interactive instruments GmbH
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.output.html;
 
@@ -237,6 +229,12 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             currentFeature.idAsUrl = true;
         }
 
+        if (featureTypeMapping.getMappings().isEmpty()) {
+            currentFeature.name = localName;
+            currentFeature.itemType = "http://schema.org/Place";
+            return;
+        }
+
         for (TargetMapping mapping : featureTypeMapping.findMappings(nsuri + ":" + localName, outputFormat)) {
             if (!mapping.isEnabled()) {
                 continue;
@@ -262,7 +260,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         } catch (IOException e) {
             analyzeFailed(e);
         }*/
-        currentFeature.name = currentFeature.name.replaceAll("\\{\\{[^}]*\\}\\}", "");
+        if (currentFeature.name != null)
+            currentFeature.name = currentFeature.name.replaceAll("\\{\\{[^}]*\\}\\}", "");
         if (!isFeatureCollection) {
             this.dataset.title = currentFeature.name;
             this.dataset.breadCrumbs.get(dataset.breadCrumbs.size()-1).label = currentFeature.name;
@@ -275,7 +274,21 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     public void analyzeAttribute(String nsuri, String localName, String value) {
         currentPath.track(nsuri, "@" + localName);
         String path = currentPath.toString();
-        //LOGGER.debug(" - attribute {}", path);
+        //LOGGER.getLogger().debug(" - attribute {}", path);
+
+        // on-the-fly mapping
+        if (featureTypeMapping.getMappings().isEmpty() && localName.equals("id") && !currentPath.toFieldName().contains(".")) {
+
+            currentFeature.name = value;
+
+            MicrodataPropertyMapping mapping = new MicrodataPropertyMapping();
+            mapping.setName("@id");
+            mapping.setType(MICRODATA_TYPE.ID);
+
+            writeField(mapping, value, true);
+
+            return;
+        }
 
         for (TargetMapping mapping : featureTypeMapping.findMappings(path, outputFormat)) {
             if (!mapping.isEnabled()) {
@@ -289,6 +302,16 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     @Override
     public void analyzePropertyStart(String nsuri, String localName, int depth, SMInputCursor feature, boolean nil) {
         currentPath.track(nsuri, localName, depth);
+
+        if (featureTypeMapping.getMappings().isEmpty() && !isFeatureCollection) {
+            // TODO: detect geometries
+            if (GML_GEOMETRY_TYPE.fromString(localName) != GML_GEOMETRY_TYPE.NONE) {
+
+                writeGeometry(MICRODATA_GEOMETRY_TYPE.forGmlType(GML_GEOMETRY_TYPE.fromString(localName)), feature);
+            }
+            return;
+        }
+
         String path = currentPath.toString();
         String value = "";
 
@@ -319,7 +342,28 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     }
 
     @Override
-    public void analyzePropertyEnd(String s, String s1, int i) {
+    public void analyzePropertyText(String nsuri, String localName, int depth, String text) {
+        if (featureTypeMapping.getMappings().isEmpty() && !isGeometry(currentPath)) {
+            LOGGER.getLogger().debug("TEXT {} {}", currentPath.toFieldName(), text);
+            MicrodataPropertyMapping mapping = new MicrodataPropertyMapping();
+            mapping.setName(currentPath.toFieldNameGml());
+            mapping.setType(MICRODATA_TYPE.STRING);
+
+            writeField(mapping, text, false);
+        }
+    }
+
+    private boolean isGeometry(XMLPathTracker path) {
+        for (String elem: path.toFieldName().split("\\.")) {
+            if (GML_GEOMETRY_TYPE.fromString(elem) != GML_GEOMETRY_TYPE.NONE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void analyzePropertyEnd(String nsuri, String localName, int depth) {
 
     }
 

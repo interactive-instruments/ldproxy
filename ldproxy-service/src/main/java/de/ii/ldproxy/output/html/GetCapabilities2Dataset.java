@@ -1,21 +1,13 @@
 /**
- * Copyright 2016 interactive instruments GmbH
+ * Copyright 2017 European Union, interactive instruments GmbH
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.output.html;
 
-import com.google.common.base.Strings;
+import de.ii.xtraplatform.ogc.api.OWS;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.wfs.parser.AbstractWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
@@ -192,9 +184,9 @@ public class GetCapabilities2Dataset extends AbstractWfsCapabilitiesAnalyzer imp
     }
 
     @Override
-    public void analyzeOperationGetUrl(WFS.OPERATION operation, String url) {
-        if (operation == WFS.OPERATION.GET_CAPABILITES) {
-            dataset.url = url;
+    public void analyzeOperationGetUrl(OWS.OPERATION operation, String url) {
+        if (operation == OWS.OPERATION.GET_CAPABILITES) {
+            dataset.url = WFS.cleanUrl(url);
         }
     }
 }

@@ -1,17 +1,9 @@
 /**
- * Copyright 2016 interactive instruments GmbH
+ * Copyright 2017 European Union, interactive instruments GmbH
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.output.jsonld;
 
@@ -21,7 +13,6 @@ import com.google.common.base.Joiner;
 import de.ii.ldproxy.gml2json.AbstractFeatureWriter;
 import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.gml2json.WktCoordinatesFormatter;
-import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.output.html.*;
 import de.ii.ldproxy.output.jsonld.WktGeometryMapping.WKT_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
@@ -61,7 +52,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
     private String vocab;
 
     public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, URI requestUri, FeatureCollectionView dataset, Map<String, String> rewrites, String vocab) {
-        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer);
+        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer, new JsonLdOnTheFlyMapping());
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
         this.objectDepth = 0;

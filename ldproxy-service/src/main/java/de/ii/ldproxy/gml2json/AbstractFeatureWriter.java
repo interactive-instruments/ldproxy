@@ -1,26 +1,18 @@
 /**
- * Copyright 2016 interactive instruments GmbH
+ * Copyright 2017 European Union, interactive instruments GmbH
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.gml2json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import de.ii.ldproxy.output.html.MicrodataPropertyMapping;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
+import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
 import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
@@ -66,8 +58,10 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
     // properties
     // geometry
 
+    protected WfsProxyOnTheFlyMapping onTheFlyMapping;
 
-    public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/, CrsTransformer crsTransformer) {
+
+    public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/, CrsTransformer crsTransformer, WfsProxyOnTheFlyMapping onTheFlyMapping) {
         this.jsonOut = jsonOut;
         this.json = jsonOut;
         this.jsonMapper = jsonMapper;
@@ -90,6 +84,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         this.maxAllowableOffset = layerQueryParams.getMaxAllowableOffset();
         */
         this.crsTransformer = crsTransformer;
+        this.onTheFlyMapping = onTheFlyMapping;
     }
 
     @Override
@@ -115,6 +110,10 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
         TargetMapping featureMapping = null;
 
+        if (featureTypeMapping.getMappings().isEmpty()) {
+            featureMapping = onTheFlyMapping.getTargetMappingForFeatureType(currentPath, nsuri, localName);
+        }
+
         for (TargetMapping mapping : featureTypeMapping.findMappings(nsuri + ":" + localName, outputFormat)) {
             if (!mapping.isEnabled()) {
                 continue;
@@ -137,6 +136,14 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         String path = currentPath.toString();
         //LOGGER.debug(" - attribute {}", path);
 
+        if (featureTypeMapping.getMappings().isEmpty()) {
+            TargetMapping mapping = onTheFlyMapping.getTargetMappingForAttribute(currentPath, nsuri, localName, value);
+            if (mapping != null) {
+                writeField(mapping, value);
+            }
+            return;
+        }
+
         for (TargetMapping mapping: featureTypeMapping.findMappings(path, outputFormat)) {
             if (!mapping.isEnabled()) {
                 continue;
@@ -151,6 +158,15 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         currentPath.track(nsuri, localName, depth);
         String path = currentPath.toString();
         String value = "";
+
+        if (featureTypeMapping.getMappings().isEmpty()) {
+            TargetMapping mapping = onTheFlyMapping.getTargetMappingForGeometry(currentPath, nsuri, localName);
+
+            if (mapping != null) {
+                writeGeometry(mapping, feature);
+            }
+            return;
+        }
 
         for (TargetMapping mapping: featureTypeMapping.findMappings(path, outputFormat)) {
             if (!mapping.isEnabled()) {
@@ -174,6 +190,16 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
             } else {
                 // TODO: write geometry
                 writeGeometry(mapping, feature);
+            }
+        }
+    }
+
+    @Override
+    public void analyzePropertyText(String nsuri, String localName, int depth, String text) {
+        if (featureTypeMapping.getMappings().isEmpty()) {
+            TargetMapping mapping = onTheFlyMapping.getTargetMappingForProperty(currentPath, nsuri, localName, text);
+            if (mapping != null) {
+                writeField(mapping, text);
             }
         }
     }

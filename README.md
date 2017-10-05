@@ -1,6 +1,6 @@
 # ldproxy
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![License](https://img.shields.io/badge/license-MPL%202.0-blue.svg)](http://mozilla.org/MPL/2.0/)
 
 Publish WFS services as Linked Data and as Web Sites using on-the-fly transformations
 
@@ -11,18 +11,18 @@ The implementation uses on-the-fly transformations, which means the generated HT
 Have a look at the demo at http://www.ldproxy.net.
 
 ## Installation
-ldproxy is available on [Docker Hub](https://hub.docker.com/r/iide/ldproxy/). If you are new to docker, read [this](https://docs.docker.com/linux/).  
+ldproxy is available on [Docker Hub](https://hub.docker.com/r/iide/ldproxy/). If you are new to Docker, have a look at the  [Docker Documentation](https://docs.docker.com/).  
 To install ldproxy, just run the following command.
 
 ```bash
-docker run -d -p 7080:7080 -v ldproxy_data:/ldproxy/data -w /ldproxy iide/ldproxy
+docker run -d -p 7080:7080 -v ldproxy_data:/ldproxy/data iide/ldproxy
 ```
-Change the host port and volume bind directory to your needs. To update ldproxy, just remove the container and create a new one with the command above. Your data is saved in a volume, not in the container, so your service configurations will still be there after the update.
+For more information, have a look at the [deployment guide](http://interactive-instruments.github.io/ldproxy/manual/00-deployment.html).
 
-When your container is up and running, have a look at [Getting Started](https://github.com/interactive-instruments/ldproxy/blob/master/docs/00-getting-started.md)
+When your container is up and running, have a look at the [documentation](http://interactive-instruments.github.io/ldproxy/) (also available as [slides](https://gitpitch.com/interactive-instruments/ldproxy?p=docs/slides/managing-services)).
 
 ## Development
-The only requirement is an installation of JDK 7 or 8.  
+The only requirement is an installation of JDK 8.  
 To set up a local development environment, follow these steps:
 
 ```bash
@@ -34,4 +34,4 @@ cd ldproxy
 
 That's it, a local server is running at port 7080.
 
-You can also create a distribution by running ```./gradlew distTar``` or ```./gradlew distZip```. The resulting archive can then be extracted on any machine with Java 7 or 8 and ldproxy can be started with one of the scripts under ```ldproxy/bin/```.
+You can also create a distribution by running ```./gradlew distTar``` or ```./gradlew distZip```. The resulting archive can then be extracted on any machine with Java 8 and ldproxy can be started with one of the scripts under ```ldproxy/bin/```.
