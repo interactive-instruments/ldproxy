@@ -1,6 +1,6 @@
 # ldproxy
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![License](https://img.shields.io/badge/license-MPL%202.0-blue.svg)](http://mozilla.org/MPL/2.0/)
 
 Publish WFS services as Linked Data and as Web Sites using on-the-fly transformations
 
