@@ -1,8 +1,0 @@
- 
-jar {
-    manifest { 
-        instruction 'X-Web-Resource-Version', '1.1'
-        instruction 'X-Web-Resource', '/manager/js/xsf/ldproxy;/manager/js/xsf/ldproxy'
-    }
-}
-
