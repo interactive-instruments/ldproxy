@@ -91,16 +91,26 @@ distributions {
 }
 distTar.version = ''
 
+ext {
+    dataDir = new File(buildDir, 'data')
+}
+
+task initData {
+    doLast {
+        dataDir.mkdirs()
+    }
+}
 
 task cleanFelixCache(type: Delete) {
-    delete new File(installDist.destinationDir, 'data/felix-cache')
+    delete new File(dataDir, 'felix-cache')
 }
 
 run {
     dependsOn installDist
+    dependsOn initData
     dependsOn cleanFelixCache
     workingDir = installDist.destinationDir
-    debug = project.hasProperty('debug')? project.debug : false
+    args dataDir.absolutePath
 }
 
 tasks.startScripts.unixStartScriptGenerator.template = resources.text.fromFile('gradle/sh-start-script')
