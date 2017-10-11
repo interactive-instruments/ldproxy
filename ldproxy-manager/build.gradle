@@ -1,0 +1,68 @@
+plugins {
+    id "com.moowork.node" version "1.1.1"
+}
+
+node {
+    download = false
+}
+
+version='1.0.0-SNAPSHOT'
+
+sourceSets {
+  main {
+      resources {
+        srcDir 'src/main/javascript'
+        exclude 'node_modules/**'
+      }
+  }
+}
+
+jar {
+    manifest {
+        instruction 'X-Web-Resource-Version', '1.1'
+        instruction 'X-Web-Resource', '/manager;/manager'
+        instruction 'X-Web-Resource-Default-Page', 'index.html'
+    }
+}
+
+configurations {
+        manager {
+          transitive = false
+        }
+    }
+
+    dependencies {
+        // TODO: get from root project, at least the versions
+        manager group: 'de.interactive_instruments', name: 'xtraplatform-manager', version: '1.0.0-SNAPSHOT', classifier: 'sources'
+    }
+
+task extractApi(type: Sync) {
+    dependsOn configurations.manager
+
+    from { // use of closure defers evaluation until execution time
+        configurations.manager.collect { zipTree(it) }
+    }
+    into "$buildDir/xtraplatform-manager/"
+}
+
+npm_install {
+  execOverrides {
+    it.workingDir = 'src/main/javascript'
+  }
+}
+
+task npm_build(type: NpmTask) {
+  execOverrides {
+    it.workingDir = 'src/main/javascript'
+  }
+  args = ['run', 'build']
+}
+
+npm_install.dependsOn extractApi
+npm_build.dependsOn npm_install
+
+npm_start {
+  execOverrides {
+    it.workingDir = 'src/main/javascript'
+  }
+}

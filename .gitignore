@@ -7,3 +7,5 @@ build/
 .idea/
 .gradle/
 docs/_book/
+node_modules/
+ldproxy-manager/src/main/resources/manager/

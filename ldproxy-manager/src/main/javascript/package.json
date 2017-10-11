@@ -1,0 +1,18 @@
+{
+  "name": "ldproxy-manager",
+  "version": "1.1.0",
+  "description": "",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server",
+    "build": "webpack -p --env production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "interactive instruments GmbH",
+  "license": "MPL-2.0",
+  "devDependencies": {},
+  "dependencies": {
+    "xtraplatform-manager-wfs-proxy": "github:interactive-instruments/XtraPlatform-Manager-WFS-Proxy"
+  }
+}
