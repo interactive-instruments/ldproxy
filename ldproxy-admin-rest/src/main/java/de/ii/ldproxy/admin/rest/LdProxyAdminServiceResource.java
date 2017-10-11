@@ -13,6 +13,7 @@ import de.ii.ldproxy.service.LdProxyService;
 import de.ii.xsf.core.api.JsonViews;
 import de.ii.xsf.core.api.MediaTypeCharset;
 import de.ii.xsf.core.api.Service;
+import de.ii.xsf.core.api.exceptions.BadRequest;
 import de.ii.xsf.core.api.exceptions.XtraserverFrameworkException;
 import de.ii.xsf.core.api.permission.Auth;
 import de.ii.xsf.core.api.permission.AuthenticatedUser;
@@ -160,10 +161,8 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
         try {
             o = jsonMapper.readValue(request, LdProxyService.class);
         } catch (IOException ex1) {
-            XtraserverFrameworkException ex = new XtraserverFrameworkException();
-            ex.setCode(Response.Status.BAD_REQUEST);
-            ex.setHtmlCode(Response.Status.BAD_REQUEST);
-            throw ex; 
+            LOGGER.getLogger().debug("BAD REQUEST", ex1);
+            throw new BadRequest();
         }
                 
         serviceRegistry.updateService(authUser, id, o);

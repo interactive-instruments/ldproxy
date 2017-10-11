@@ -7,32 +7,14 @@
  */
 package de.ii.ldproxy.output.html;
 
+import de.ii.ldproxy.output.generic.GenericMapping;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
+import de.ii.ogc.wfs.proxy.TargetMapping;
 
 /**
  * @author zahnen
  */
 public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
-
-    private MICRODATA_GEOMETRY_TYPE geometryType;
-    private static final String PROPERTY_NAME = "geo";
-
-    public MICRODATA_GEOMETRY_TYPE getGeometryType() {
-        return geometryType;
-    }
-
-    public void setGeometryType(MICRODATA_GEOMETRY_TYPE geometryType) {
-        this.geometryType = geometryType;
-    }
-
-    @Override
-    public String getName() {
-        return PROPERTY_NAME;
-    }
-
-    @Override
-    public void setName(String name) {
-    }
 
     public enum MICRODATA_GEOMETRY_TYPE {
 
@@ -63,6 +45,49 @@ public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
         public boolean isValid() {
             return this != NONE;
         }
+    }
+
+    private MICRODATA_GEOMETRY_TYPE geometryType;
+    private static final String PROPERTY_NAME = "geo";
+
+    public MicrodataGeometryMapping() {
+    }
+
+    public MicrodataGeometryMapping(MicrodataGeometryMapping mapping) {
+        super(mapping);
+        this.geometryType = mapping.geometryType;
+    }
+
+    public MICRODATA_GEOMETRY_TYPE getGeometryType() {
+        return geometryType;
+    }
+
+    public void setGeometryType(MICRODATA_GEOMETRY_TYPE geometryType) {
+        this.geometryType = geometryType;
+    }
+
+    @Override
+    public String getName() {
+        return PROPERTY_NAME;
+    }
+
+    @Override
+    public void setName(String name) {
+    }
+
+    @Override
+    public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        MicrodataGeometryMapping copy = new MicrodataGeometryMapping(this);
+        GenericMapping baseMapping = (GenericMapping) targetMapping;
+
+        if (!baseMapping.isEnabled()) {
+            copy.enabled = baseMapping.isEnabled();
+        }
+        if (copy.name == null && baseMapping.getName() != null) {
+            copy.name = baseMapping.getName();
+        }
+
+        return copy;
     }
 
 }

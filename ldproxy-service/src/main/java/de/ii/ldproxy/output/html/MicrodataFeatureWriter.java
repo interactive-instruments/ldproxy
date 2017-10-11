@@ -13,6 +13,7 @@ import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
@@ -68,6 +69,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     protected int pageSize;
     protected CrsTransformer crsTransformer;
     protected SparqlAdapter sparqlAdapter;
+    protected CodelistStore codelistStore;
 
     //public String title;
     //public List<FeatureDTO> features;
@@ -80,7 +82,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     private String wfsUrl;
     private String wfsByIdUrl;
 
-    public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, int[] range, FeatureCollectionView featureTypeDataset, CrsTransformer crsTransformer, SparqlAdapter sparqlAdapter) {
+    public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, int[] range, FeatureCollectionView featureTypeDataset, CrsTransformer crsTransformer, SparqlAdapter sparqlAdapter, CodelistStore codelistStore) {
         this.outputStreamWriter = outputStreamWriter;
         this.currentPath = new XMLPathTracker();
         this.featureTypeMapping = featureTypeMapping;
@@ -127,6 +129,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         }
 
         this.sparqlAdapter = sparqlAdapter;
+        this.codelistStore = codelistStore;
     }
 
     @Override
@@ -522,6 +525,15 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                     } else {
                         property.isUrl = true;
                     }
+                }
+                if (mapping.getCodelist() != null) {
+                    String resolvedValue = null;
+                    try {
+                        resolvedValue = codelistStore.getResource(mapping.getCodelist()).getEntries().get(property.value);
+                    } catch (Exception e) {
+                        //ignore
+                    }
+                    property.value = resolvedValue != null ? resolvedValue : property.value;
                 }
 
                 currentFeature.addChild(property);

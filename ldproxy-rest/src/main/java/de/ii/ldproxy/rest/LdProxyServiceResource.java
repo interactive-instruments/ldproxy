@@ -16,6 +16,7 @@ import de.ii.ldproxy.output.html.*;
 import de.ii.ldproxy.output.jsonld.Gml2JsonLdMapper;
 import de.ii.ldproxy.output.jsonld.JsonLdOutputWriter;
 import de.ii.ldproxy.service.*;
+import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
 import de.ii.xsf.core.api.MediaTypeCharset;
 import de.ii.xsf.core.api.Service;
@@ -98,7 +99,9 @@ public class LdProxyServiceResource implements ServiceResource {
                 .build();
 
         for (WfsProxyFeatureType ft: service.getFeatureTypes().values()) {
-            dataset.featureTypes.add(new DatasetView("service", uriInfo.getRequestUri(), ft.getName(), ft.getDisplayName()));
+            if (ft.getMappings().findMappings(ft.getNamespace() + ":" + ft.getName(), TargetMapping.BASE_TYPE).get(0).isEnabled()) {
+                dataset.featureTypes.add(new DatasetView("service", uriInfo.getRequestUri(), ft.getName(), ft.getDisplayName()));
+            }
         }
         Collections.sort(dataset.featureTypes, new Comparator<DatasetView>() {
             @Override
@@ -157,6 +160,9 @@ public class LdProxyServiceResource implements ServiceResource {
             throw new ResourceNotFound();
         }
         WfsProxyFeatureType featureType = service.getFeatureTypes().get(featureTypeName);
+        if (!featureType.getMappings().findMappings(featureType.getNamespace() + ":" + featureType.getName(), TargetMapping.BASE_TYPE).get(0).isEnabled()) {
+            throw new ResourceNotFound();
+        }
 
         DatasetView dataset = new DatasetView("", uriInfo.getRequestUri());
         FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureCollection", uriInfo.getRequestUri(), featureType.getName(), featureType.getDisplayName());
@@ -645,7 +651,7 @@ public class LdProxyServiceResource implements ServiceResource {
                     featureTypeDataset.requestUrl = request.getAsUrl();
                 }
                 try {
-                    GMLAnalyzer htmlWriter = new MicrodataFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2MicrodataMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, range, featureTypeDataset, service.getCrsTransformations().getDefaultTransformer(), service.getSparqlAdapter());
+                    GMLAnalyzer htmlWriter = new MicrodataFeatureWriter(new OutputStreamWriter(output), featureType.getMappings(), Gml2MicrodataMapper.MIME_TYPE, isFeatureCollection, featureType.getName().equals("inspireadressen"), groupings, group, query, range, featureTypeDataset, service.getCrsTransformations().getDefaultTransformer(), service.getSparqlAdapter(), service.getCodelistStore());
                     GMLParser gmlParser = new GMLParser(htmlWriter, service.staxFactory);
                     if (featureType.getMappings().getMappings().isEmpty()) {
                         gmlParser.enableTextParsing();

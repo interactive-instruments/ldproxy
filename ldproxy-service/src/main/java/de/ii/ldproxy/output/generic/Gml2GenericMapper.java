@@ -5,11 +5,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.output.html;
+package de.ii.ldproxy.output.generic;
 
-
-import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
-import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyService;
@@ -19,12 +16,12 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
 /**
  * @author zahnen
  */
-public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
+public class Gml2GenericMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(Gml2MicrodataMapper.class);
-    public static final String MIME_TYPE = "text/html";
+    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(Gml2GenericMapper.class);
+    public static final String MIME_TYPE = TargetMapping.BASE_TYPE;
 
-    public Gml2MicrodataMapper(WfsProxyService proxyService) {
+    public Gml2GenericMapper(WfsProxyService proxyService) {
         super(proxyService);
     }
 
@@ -35,11 +32,8 @@ public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
 
     @Override
     protected TargetMapping getTargetMappingForFeatureType(String nsuri, String localName) {
-        LOGGER.getLogger().debug("FEATURETYPE {} {}", nsuri, localName);
-
-        MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
+        GenericMapping targetMapping = new GenericMapping();
         targetMapping.setEnabled(true);
-        targetMapping.setItemType("http://schema.org/Place");
 
         return targetMapping;
     }
@@ -51,14 +45,12 @@ public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
 
             LOGGER.getLogger().debug("ID {} {} {}", nsuri, localName, type);
 
-            MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(GML_TYPE.fromString(type));
+            GML_TYPE dataType = GML_TYPE.fromString(type);
 
             if (dataType.isValid()) {
-                MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
+                GenericMapping targetMapping = new GenericMapping();
                 targetMapping.setEnabled(true);
-                targetMapping.setShowInCollection(true);
-                //targetMapping.setName("@id");
-                targetMapping.setType(dataType);
+                targetMapping.setName("id");
 
                 return targetMapping;
             }
@@ -70,35 +62,26 @@ public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
     @Override
     protected TargetMapping getTargetMappingForProperty(String jsonPath, String nsuri, String localName, String type, long minOccurs, long maxOccurs, int depth, boolean isParentMultiple, boolean isComplex, boolean isObject) {
 
-        MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(GML_TYPE.fromString(type));
+        GML_TYPE dataType = GML_TYPE.fromString(type);
 
         if (dataType.isValid()) {
             LOGGER.getLogger().debug("PROPERTY {} {}", jsonPath, dataType);
 
-            MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
+            GenericMapping targetMapping = new GenericMapping();
             targetMapping.setEnabled(true);
-            targetMapping.setShowInCollection(true);
-            //targetMapping.setName(jsonPath);
-            targetMapping.setType(dataType);
-
-            if (dataType == MICRODATA_TYPE.DATE && getTargetType() == MIME_TYPE) {
-                targetMapping.setFormat("eeee, d MMMM yyyy[', 'HH:mm:ss[' 'z]]");
-            }
+            targetMapping.setName(jsonPath);
 
             return targetMapping;
         }
 
-        MICRODATA_GEOMETRY_TYPE geoType = MICRODATA_GEOMETRY_TYPE.forGmlType(GML_GEOMETRY_TYPE.fromString(type));
+        GML_GEOMETRY_TYPE geoType = GML_GEOMETRY_TYPE.fromString(type);
 
         if (geoType.isValid()) {
             LOGGER.getLogger().debug("GEOMETRY {} {}", jsonPath, geoType);
 
-            MicrodataGeometryMapping targetMapping = new MicrodataGeometryMapping();
+            GenericMapping targetMapping = new GenericMapping();
             targetMapping.setEnabled(true);
-            targetMapping.setShowInCollection(false);
-            //targetMapping.setName(jsonPath);
-            targetMapping.setType(MICRODATA_TYPE.GEOMETRY);
-            targetMapping.setGeometryType(geoType);
+            targetMapping.setGeometry(true);
 
             return targetMapping;
         }

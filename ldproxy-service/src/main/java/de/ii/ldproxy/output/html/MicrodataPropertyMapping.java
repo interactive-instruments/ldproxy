@@ -7,36 +7,33 @@
  */
 package de.ii.ldproxy.output.html;
 
+import de.ii.ldproxy.output.generic.GenericMapping;
+import de.ii.ogc.wfs.proxy.TargetMapping;
+
 /**
  * @author zahnen
  */
-public class MicrodataPropertyMapping implements MicrodataMapping {
+public class MicrodataPropertyMapping extends GenericMapping implements MicrodataMapping {
 
-    private Boolean enabled;
-    private String name;
     private MICRODATA_TYPE type;
     private Boolean showInCollection;
     private String itemType;
     private String itemProp;
     private String sparqlQuery;
-    private String format;
 
-    @Override
-    public Boolean isEnabled() {
-        return enabled;
+    public MicrodataPropertyMapping() {
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public MicrodataPropertyMapping(MicrodataPropertyMapping mapping) {
+        this.enabled = mapping.enabled;
+        this.name = mapping.name;
+        this.type = mapping.type;
+        this.showInCollection = mapping.showInCollection;
+        this.itemType = mapping.itemType;
+        this.itemProp = mapping.itemProp;
+        this.sparqlQuery = mapping.sparqlQuery;
+        this.format = mapping.format;
+        this.codelist = mapping.codelist;
     }
 
     @Override
@@ -89,11 +86,22 @@ public class MicrodataPropertyMapping implements MicrodataMapping {
         return getType() == MICRODATA_TYPE.GEOMETRY;
     }
 
-    public String getFormat() {
-        return format;
-    }
+    @Override
+    public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        MicrodataPropertyMapping copy = new MicrodataPropertyMapping(this);
+        GenericMapping baseMapping = (GenericMapping) targetMapping;
 
-    public void setFormat(String format) {
-        this.format = format;
+        if (!baseMapping.isEnabled()) {
+            copy.enabled = baseMapping.isEnabled();
+        }
+        if ((copy.name == null || copy.name.isEmpty()) && baseMapping.getName() != null) {
+            copy.name = baseMapping.getName();
+        }
+        if ((copy.format == null || copy.format.isEmpty()) && baseMapping.getFormat() != null) {
+            copy.format = baseMapping.getFormat();
+        }
+        copy.codelist = baseMapping.getCodelist();
+
+        return copy;
     }
 }

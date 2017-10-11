@@ -9,6 +9,9 @@ package de.ii.ldproxy.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import de.ii.ldproxy.codelists.Codelist;
+import de.ii.ldproxy.codelists.CodelistStore;
+import de.ii.ldproxy.output.generic.Gml2GenericMapper;
 import de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
 import de.ii.ldproxy.output.html.Gml2MicrodataMapper;
@@ -42,6 +45,7 @@ public class LdProxyService extends AbstractWfsProxyService {
     //private Map<String, List<String>> indices;
     private LdProxyIndexStore indexStore;
     private SparqlAdapter sparqlAdapter;
+    private CodelistStore codelistStore;
 
     // TODO: we already have external url, can we use it here?
     private Map<String, String> rewrites;
@@ -62,17 +66,19 @@ public class LdProxyService extends AbstractWfsProxyService {
         //initialize(path, module);
 
         // TODO: dynamic
-        this.schemaAnalyzers.add(new Gml2GeoJsonMapper(this));
+        this.schemaAnalyzers.add(new Gml2GenericMapper(this));
         this.schemaAnalyzers.add(new Gml2MicrodataMapper(this));
+        this.schemaAnalyzers.add(new Gml2GeoJsonMapper(this));
         this.schemaAnalyzers.add(new Gml2JsonLdMapper(this));
 
         // TODO
         //this.analyzeWFS();
     }
 
-    public final void initialize(LdProxyIndexStore indexStore, SparqlAdapter sparqlAdapter) {
+    public final void initialize(LdProxyIndexStore indexStore, SparqlAdapter sparqlAdapter, CodelistStore codelistStore) {
         this.indexStore = indexStore;
         this.sparqlAdapter = sparqlAdapter;
+        this.codelistStore = codelistStore;
     }
 
     @Override
@@ -178,6 +184,11 @@ public class LdProxyService extends AbstractWfsProxyService {
     @JsonIgnore
     public SparqlAdapter getSparqlAdapter() {
         return sparqlAdapter;
+    }
+
+    @JsonIgnore
+    public CodelistStore getCodelistStore() {
+        return codelistStore;
     }
 
     public String getVocab() {
