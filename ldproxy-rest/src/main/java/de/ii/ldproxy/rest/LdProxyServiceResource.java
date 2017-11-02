@@ -59,7 +59,7 @@ import static de.ii.ldproxy.rest.util.RangeHeader.parseRange;
 /**
  * @author zahnen
  */
-@Produces(MediaTypeCharset.APPLICATION_JSON_UTF8)
+@Produces({MediaTypeCharset.APPLICATION_JSON_UTF8, "application/geo+json"})
 public class LdProxyServiceResource implements ServiceResource {
 
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(LdProxyServiceResource.class);
@@ -118,13 +118,17 @@ public class LdProxyServiceResource implements ServiceResource {
                 .add(new NavigationDTO("JSON", "f=json"))
                 .add(new NavigationDTO("XML", "f=xml"))
                 .build();
-
-        service.getFeatureTypes().values().stream().sorted(Comparator.comparing(WfsProxyFeatureType::getName)).forEach(ft -> {
-            if (ft.getMappings().findMappings(ft.getNamespace() + ":" + ft.getName(), TargetMapping.BASE_TYPE).get(0).isEnabled()) {
-                dataset.featureTypes.add(new DatasetView("service", uriInfo.getRequestUri(), ft.getName(), ft.getDisplayName()));
-            }
-        });
-
+        try {
+            service.getFeatureTypes().values().stream().sorted(Comparator.comparing(WfsProxyFeatureType::getName)).forEach(ft -> {
+                List<TargetMapping> mappings = ft.getMappings().findMappings(ft.getNamespace() + ":" + ft.getName(), TargetMapping.BASE_TYPE);
+                LOGGER.getLogger().debug("mapping for {}:{}: {}", ft.getNamespace(), ft.getName(), mappings.size());
+                if (!mappings.isEmpty() && mappings.get(0).isEnabled()) {
+                    dataset.featureTypes.add(new DatasetView("service", uriInfo.getRequestUri(), ft.getName(), ft.getDisplayName()));
+                }
+            });
+        } catch (Exception e) {
+            LOGGER.getLogger().debug("Unexpected exception", e);
+        }
 
         WFSOperation operation = new GetCapabilities();
 
@@ -728,7 +732,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 //if (range != null) {
                 //    analyzer = new MultiGMLAnalyzer(gmlAnalyzer.with(output), new RangeHeader.RangeWriter(response, range));
                 //} else {
-                    analyzer = gmlAnalyzer.with(output);
+                analyzer = gmlAnalyzer.with(output);
                 //}
 
                 GMLParser gmlParser = new GMLParser(analyzer, service.staxFactory);
