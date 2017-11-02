@@ -14,23 +14,17 @@ import de.ii.ldproxy.service.LdProxyService;
 import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.api.rest.ServiceResource;
 import de.ii.xsf.core.api.rest.ServiceResourceFactory;
-import de.ii.xsf.core.api.rest.Subresource;
-import de.ii.xsf.core.api.rest.SubresourceFactory;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSAdapter;
 import io.dropwizard.views.View;
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.http.client.utils.URIBuilder;
 
-import javax.ws.rs.Path;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  *
@@ -42,7 +36,7 @@ import java.util.Collections;
 })
 @Instantiate
 //@Subresource
-public class LdProxyServiceResourceFactory implements ServiceResourceFactory, SubresourceFactory {
+public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, SubresourceFactory*/ {
 
     public static final String PARAM_WFS_URL = "wfsUrl";
 
@@ -54,10 +48,10 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory, Su
         return LdProxyServiceResource.class;
     }
 
-    @Override
+    /*@Override
     public Class getSubresourceClass() {
         return LdProxyServiceResource.class;
-    }
+    }*/
 
     @Override
     public ServiceResource getServiceResource() {

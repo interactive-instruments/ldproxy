@@ -44,7 +44,7 @@ dependencies {
         // TODO
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
-    bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.0'
+    //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.0'
     bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.1.0'
 
     // ???
