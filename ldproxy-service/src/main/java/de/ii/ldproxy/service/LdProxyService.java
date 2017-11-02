@@ -9,8 +9,11 @@ package de.ii.ldproxy.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.CodelistStore;
+import de.ii.ldproxy.output.generic.GenericMapping;
 import de.ii.ldproxy.output.generic.Gml2GenericMapper;
 import de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
@@ -32,6 +35,7 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -112,6 +116,33 @@ public class LdProxyService extends AbstractWfsProxyService {
         }
 
         return indices;
+    }
+
+    public Map<String, String> getFilterableFieldsForFeatureType(WfsProxyFeatureType featureType) {
+        //return featureType.getMappings().findMappings(TargetMapping.BASE_TYPE).values().stream().filter(mapping -> mapping.get(0).isEnabled()).map(mapping -> mapping.get(0).getName().toLowerCase().replaceAll(" ", "%20")).collect(Collectors.toList());
+
+        return featureType.getMappings().findMappings(TargetMapping.BASE_TYPE).entrySet().stream()
+                .filter(mapping -> ((GenericMapping)mapping.getValue().get(0)).isFilterable() && mapping.getValue().get(0).getName() != null && mapping.getValue().get(0).isEnabled())
+                .collect(Collectors.toMap(mapping -> mapping.getValue().get(0).getName().toLowerCase(), Map.Entry::getKey));
+    }
+
+    public Map<String, String> getHtmlNamesForFeatureType(WfsProxyFeatureType featureType) {
+
+        return featureType.getMappings().findMappings(Gml2MicrodataMapper.MIME_TYPE).entrySet().stream()
+                .filter(mapping -> mapping.getValue().get(0).getName() != null && mapping.getValue().get(0).isEnabled())
+                .collect(Collectors.toMap(Map.Entry::getKey, mapping -> mapping.getValue().get(0).getName()));
+    }
+
+    public String getGeometryPathForFeatureType(WfsProxyFeatureType featureType) {
+        //return featureType.getMappings().findMappings(TargetMapping.BASE_TYPE).values().stream().filter(mapping -> mapping.get(0).isEnabled()).map(mapping -> mapping.get(0).getName().toLowerCase().replaceAll(" ", "%20")).collect(Collectors.toList());
+
+        // TODO: provide isGeometry on TargetMapping.BASE_TYPE
+        // TODO: does mapping.getValue().get(0).isEnabled() take into account general mapping?
+        List<Map.Entry<String,List<TargetMapping>>> geometries = featureType.getMappings().findMappings("application/geo+json").entrySet().stream()
+                .filter(mapping -> mapping.getValue().get(0).isGeometry() && mapping.getValue().get(0).isEnabled())
+                .collect(Collectors.toList());
+
+        return !geometries.isEmpty() ? geometries.get(0).getKey() : null;
     }
 
     @JsonIgnore
