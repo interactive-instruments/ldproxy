@@ -5,6 +5,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+ html {
+   position: relative;
+   min-height: 100%;
+ }
+
+ body {
+   /* Margin bottom by footer height */
+   margin-bottom: 288px;
+ }
+ .footer {
+   position: absolute;
+   bottom: 0;
+   width: 100%;
+   /* Set the fixed height of the footer here */
+   height: 288px;
+ }
+
+
 .list-comma-separated
 {
 padding: 0;
@@ -19,29 +37,22 @@ display: inline;
 content: ", ";
 }
 
-.list-separated li
+.list-separated
 {
-display: inline;
-}
-.list-separated li a
-{
-padding-left: 4px;
-}
-.list-separated li:not(:last-of-type) a
-{
-padding-right: 4px;
+display: flex;
+flex-wrap: wrap;
+list-style: none;
 }
 .list-separated li:not(:last-of-type)::after
 {
+display: inline-block;
+padding-left: .5rem;
+padding-right: .5rem;
 content: "|";
 }
 
 #map { height: 480px; }
 
-.nav-formats span:not(:last-of-type)
-{
-border-right: 1px solid #e7e7e7;
-}
 .space-after li {
 margin-bottom: 5em;
 }

@@ -6,9 +6,9 @@
     <br/>
     <br/>
     <br/>
-    <dl class="dl-horizontal dl-horizontal-space">
-        <dt>Feature Types</dt>
-        <dd>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Feature Types</div>
+        <div class="col-md-10">
             <ul class="list-unstyled">
                 {{#featureTypes}}
                     <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
@@ -19,9 +19,17 @@
                     <li>None</li>
                 {{/featureTypes}}
             </ul>
-        </dd>
-        <dt>Keywords</dt>
-        <dd>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">API</div>
+        <div class="col-md-10">
+            <a href="api/">OpenAPI 3.0</a>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Keywords</div>
+        <div class="col-md-10">
             <span itemprop="keywords">
                 <ul class="list-comma-separated">
                     {{#keywords}}
@@ -29,33 +37,43 @@
                     {{/keywords}}
                 </ul>
             </span>
-        </dd>
-        <dt>License</dt>
-        <dd>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">License</div>
+        <div class="col-md-10">
             <span itemprop="license">{{license}}</span>
-        </dd>
-        <dt>Extent</dt>
-        <dd>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Extent</div>
+        <div class="col-md-10">
             <span itemprop="spatial" itemscope itemtype="http://schema.org/Place">
                 <span itemprop="geo" itemscope itemtype="http://schema.org/GeoShape">
                     <span itemprop="box">{{bbox}}</span>
                 </span>
             </span>
-        </dd>
-        <dt>WFS</dt>
-        <dd>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">WFS</div>
+        <div class="col-md-10">
             <link itemprop="url" href="{{path}}./"/>
             <a itemprop="sameAs" href="{{url}}" target="_blank">{{url}}</a>
-        </dd>
-        <dt>Provider</dt>
-        <dd>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Provider</div>
+        <div class="col-md-10">
             <ul class="list-unstyled" itemprop="provider" itemscope itemtype="http://schema.org/Organization">
                 <li itemprop="name">{{providerName}}</li>
                 {{#providerUrl}}
-                    <li itemprop="url">{{.}}</li>
+                    <li itemprop="url"><a href="{{.}}" target="_blank">{{.}}</a></li>
                 {{/providerUrl}}
                 {{^providerUrl}}
-                    <li class="hidden" itemprop="url">http://www.example.com/todo</li>
+                        {{#contactUrl}}
+                            <li itemprop="url"><a href="{{.}}" target="_blank">{{.}}</a></li>
+                        {{/contactUrl}}
                 {{/providerUrl}}
                 <li itemprop="contactPoint" itemscope itemtype="http://schema.org/ContactPoint">
                     <span class="hidden" itemprop="contactType">technical support</span>
@@ -75,12 +93,11 @@
                         {{#contactHoursOfService}}
                             <li itemprop="hoursAvailable">{{.}}</li>
                         {{/contactHoursOfService}}
-                        {{#contactUrl}}
-                            <li itemprop="url">{{.}}</li>
-                        {{/contactUrl}}
-                        {{^contactUrl}}
-                            <li class="hidden" itemprop="url">http://www.example.com/todo</li>
-                        {{/contactUrl}}
+                        {{#providerUrl}}
+                            {{#contactUrl}}
+                                <li itemprop="url"><a href="{{.}}" target="_blank">{{.}}</a></li>
+                            {{/contactUrl}}
+                        {{/providerUrl}}
                     </ul>
                 </li>
                 <li itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
@@ -103,16 +120,8 @@
                     </ul>
                 </li>
             </ul>
-        </dd>
-        {{#metadataUrl}}
-            <dt>Metadata</dt>
-            <dd>
-            <span itemprop="isPartOf" itemscope itemtype="http://schema.org/DataCatalog">
-                <a itemprop="url" href="{{metadataUrl}}" target="_blank">{{metadataUrl}}</a>
-            </span>
-            </dd>
-        {{/metadataUrl}}
-    </dl>
+        </div>
+    </div>
 
 </div>
 
