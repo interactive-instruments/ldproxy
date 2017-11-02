@@ -1,0 +1,30 @@
+sudo: required
+services:
+- docker
+language:
+- java
+before_cache:
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+install:
+- "./gradlew assemble"
+script:
+- "./gradlew check"
+after_success:
+- "./gradlew dockerDistTar"
+- cd build/docker
+- export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH;
+  fi`
+- docker build -t $REPO:$TAG .
+- docker login -u $DOCKER_USER -p $DOCKER_PASS
+- if [[ -n "$TRAVIS_TAG" ]]; then docker tag $REPO:$TAG $REPO:$TRAVIS_TAG; fi
+- docker push $REPO
+env:
+  global:
+  - REPO=iide/ldproxy
+  - secure: VtIPErCteCfBpMHHjYZ5OsLGRoMMGfRMRA/qCh4Qus0IuwbipKsb4abAxxD4WTTG6DDPmubBz6bMreSW5uPJFSEqjYefBT70eJzVwMmrhrKd+uPSwhyH7NNUpgccnskouyFCf7H7fhGh8yIs7qnd976aFj7xF6wMHBNSXBquB/O7H/pPapClZ9VoKP9FAEldaUbskCL+a5qvjV5Lgs6rQDRJck5FxQMpeGIJpJ/Kmtrzv1CZsBTIx//wO6SrwrdbxNDsOe9363UebYvjUjZrtMGsA1GdU9EwRl0hS8crDTaVQLsXpVCctkPdtSGhGtiqskb3+GRjew3Yo/QmpV3MwhlMPyS3Cfmsg7UxjUmY2AMTsTApNlO+ZgechN/urY5pYVT+Gn/YoF5ffkDhynF0bUjqQU5kmt0DXxpT2P5jswT2hZ3tgUVCR0XKfCoqTJRW9MI7jJq9wPXjwI9ojcXyQ+5E9wUHxbr7qMZecZkMMbtLksSkmiw+72TrP/n7nkRI5xpXX1rRIuf1s5Ss5c4U1pvl9XETgRg354a6ZJEfGjcD5UHikVOZrZwbihmF9S4Y/U2qvrN+EzrNJab5dkWuqfYRo1owYuSOa14H6GdvPTK0LU3zrwt/AAiC3F2qu9l9vzLiyWy+eT+k/PkZHE6lYen6jnoZxWuZ61DmQ8rKXGs=
+  - secure: mXzyNiDh10Hdclc8w+HAl+WNOOSO03kkKiyuNeNCRKhos+gwNdanfvXk20Tc4ED3oL7OGNX39OnNlgdvnSKko9d8HOcy4ZXvsyaPQtSLAEdMZark40Qpg6RyzjnAgXHd3EaBHoHtaqFnd5T1zoB7ZqMIArL5Ku78kWL9+BX1cv+PO7X6i8Hhw8Ii2XOmqmSoC1pdXgFyIyBbVziN5DeMAv0W53lVv8jOSXTFr4DgFFftDMxnhiKUuG+qQvZ+BjBNKl8st6iJID2jktgLu5hDHEHX1Pxt1816KCx8FFI81X80iBSAdKJGIs2bBa5PWNmHSKZ5rP3ZwytvDHowDV2bofkCaHNr3TTRNk7JpK/YpLR9BR595ywsVcXbdadCvQ4aO63qApA5tZSdOEu4oTYmpEyZbHZYrr1Uxi+S++NczzumNriMIjLv5iM0j67yD+8i1FlI4pCigh/ZO/XnA+RKHxlpKh9jkfMtE+eaMV/Lgto41py0AcEXv50Lz/U5LfSsxcz2m4FgfCkmyKxqsqBN7Pcu6mUuEznp6g3x/2BgNzwzETEG2TTfaIXdCmPXTYLzYQmUgJSYouUnMRTW3YvbBmSj/uLgZKl051ManFmBvOFRb9fqgQmOk4B8wtj8rK5q/AfMtLsMjuowGcN2yZSNvGGXefgMvR7WckeOdjq555w=
