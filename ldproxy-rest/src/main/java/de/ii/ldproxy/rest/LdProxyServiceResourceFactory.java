@@ -14,15 +14,15 @@ import de.ii.ldproxy.service.LdProxyService;
 import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.api.rest.ServiceResource;
 import de.ii.xsf.core.api.rest.ServiceResourceFactory;
+import de.ii.xsf.core.api.rest.Subresource;
+import de.ii.xsf.core.api.rest.SubresourceFactory;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSAdapter;
 import io.dropwizard.views.View;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.StaticServiceProperty;
+import org.apache.felix.ipojo.annotations.*;
 import org.apache.http.client.utils.URIBuilder;
 
+import javax.ws.rs.Path;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -41,14 +41,30 @@ import java.util.Collections;
         @StaticServiceProperty(name = ServiceResource.SERVICE_TYPE_KEY, type = "java.lang.String", value = LdProxyService.SERVICE_TYPE)
 })
 @Instantiate
-
-public class LdProxyServiceResourceFactory implements ServiceResourceFactory {
+//@Subresource
+public class LdProxyServiceResourceFactory implements ServiceResourceFactory, SubresourceFactory {
 
     public static final String PARAM_WFS_URL = "wfsUrl";
+
+    @Requires
+    private OpenApiResource openApiResource;
 
     @Override
     public Class getServiceResourceClass() {
         return LdProxyServiceResource.class;
+    }
+
+    @Override
+    public Class getSubresourceClass() {
+        return LdProxyServiceResource.class;
+    }
+
+    @Override
+    public ServiceResource getServiceResource() {
+        LdProxyServiceResource serviceResource = new LdProxyServiceResource();
+        serviceResource.setOpenApiResource(openApiResource);
+
+        return serviceResource;
     }
 
     @Override

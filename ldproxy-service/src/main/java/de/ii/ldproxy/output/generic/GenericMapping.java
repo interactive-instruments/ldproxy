@@ -19,6 +19,7 @@ public class GenericMapping implements TargetMapping {
     protected boolean isGeometry;
     protected String format;
     protected String codelist;
+    protected boolean filterable;
 
     @Override
     public String getName() {
@@ -66,5 +67,13 @@ public class GenericMapping implements TargetMapping {
 
     public void setCodelist(String codelist) {
         this.codelist = codelist;
+    }
+
+    public boolean isFilterable() {
+        return filterable;
+    }
+
+    public void setFilterable(boolean filterable) {
+        this.filterable = filterable;
     }
 }

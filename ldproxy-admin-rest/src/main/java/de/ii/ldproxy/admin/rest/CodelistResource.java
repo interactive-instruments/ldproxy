@@ -1,6 +1,5 @@
 package de.ii.ldproxy.admin.rest;
 
-import com.sun.jersey.api.core.ResourceContext;
 import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.xsf.core.api.MediaTypeCharset;
@@ -16,11 +15,8 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.List;
 
@@ -35,32 +31,26 @@ import java.util.List;
 public class CodelistResource {
 
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(CodelistResource.class);
-    @Context
-    ResourceContext rc;
-    @Context
-    UriInfo uriInfo;
-    @Context
-    HttpServletRequest request;
     @Requires
-    CodelistStore codelistStore;
+    private CodelistStore codelistStore;
     @Requires
-    Jackson jackson;
+    private Jackson jackson;
 
 
     @GET
-    public List<String> getCodelists(@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user) {
+    public List<String> getCodelists(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user*/) {
         return codelistStore.getResourceIds();
     }
 
     @GET
     @Path("/{id}")
-    public Codelist getCodelist(@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user, @PathParam("id") String id) {
+    public Codelist getCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ @PathParam("id") String id) {
         return codelistStore.getResource(id);
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Codelist addCodelist(@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user, String request) {
+    public Codelist addCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ String request) {
         LOGGER.getLogger().debug("CODELIST {}", request);
 
         Codelist codelist = null;
@@ -78,7 +68,7 @@ public class CodelistResource {
 
     @DELETE
     @Path("/{id}")
-    public void deleteCodelist(@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user, @PathParam("id") String id) throws IOException {
+    public void deleteCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ @PathParam("id") String id) throws IOException {
         codelistStore.deleteResource(id);
     }
 

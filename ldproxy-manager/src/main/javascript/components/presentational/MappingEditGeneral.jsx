@@ -35,7 +35,8 @@ import MappingEdit from 'xtraplatform-manager-wfs-proxy/src/components/presentat
 
 const initState = {
     format: (props) => props.mapping.format || '',
-    codelist: (props) => props.mapping.codelist || ''
+    codelist: (props) => props.mapping.codelist || '',
+    filterable: (props) => props.mapping.filterable || false
 }
 
 @ui({
@@ -85,6 +86,13 @@ class MappingEditGeneral extends Component {
                                     </FormField> }
                 { !isFeatureType && <FormField label="Format">
                                         <TextInputUi name="format" value={ ui.format } onChange={ updateUI } />
+                                    </FormField> }
+                { !isFeatureType && <FormField label="Use in filters">
+                                        <CheckboxUi name="filterable"
+                                            checked={ ui.filterable }
+                                            toggle={ false }
+                                            reverse={ false }
+                                            onChange={ updateUI } />
                                     </FormField> }
             </MappingEdit>
         );

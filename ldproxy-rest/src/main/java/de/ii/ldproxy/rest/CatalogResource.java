@@ -24,7 +24,6 @@
 package de.ii.ldproxy.rest;
 
 import com.fasterxml.aalto.stax.InputFactoryImpl;
-import com.sun.jersey.api.core.ResourceContext;
 import de.ii.xsf.core.api.MediaTypeCharset;
 import de.ii.xsf.core.api.permission.Auth;
 import de.ii.xsf.core.api.permission.AuthenticatedUser;
@@ -37,10 +36,10 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.staxmate.SMInputFactory;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import java.util.Collection;
 
 /**
@@ -55,13 +54,6 @@ import java.util.Collection;
 public class CatalogResource {
 
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(CatalogResource.class);
-    @Context
-    ResourceContext rc;
-    @Context
-    UriInfo uriInfo;
-    @Context
-    HttpServletRequest request;
-
 
 
     @GET

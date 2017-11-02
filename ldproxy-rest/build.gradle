@@ -1,6 +1,7 @@
-version = '1.0.1'
+version = '1.2.0'
 
 dependencies {    
     compile project(':ldproxy-service')
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi', version: '1.1.0'
 }
  

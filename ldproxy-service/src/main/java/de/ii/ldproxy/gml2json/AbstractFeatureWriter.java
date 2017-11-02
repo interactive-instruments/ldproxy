@@ -276,7 +276,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
     // TODO
     public TokenBuffer createJsonBuffer() throws IOException {
-        TokenBuffer json = new TokenBuffer(jsonMapper);
+        TokenBuffer json = new TokenBuffer(jsonMapper, false);
 
         //if (useFormattedJsonOutput) {
         json.useDefaultPrettyPrinter();

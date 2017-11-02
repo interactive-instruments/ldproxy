@@ -6,7 +6,7 @@ node {
     download = false
 }
 
-version='1.0.0-SNAPSHOT'
+version='1.2.0'
 
 sourceSets {
   main {
@@ -33,7 +33,7 @@ configurations {
 
     dependencies {
         // TODO: get from root project, at least the versions
-        manager group: 'de.interactive_instruments', name: 'xtraplatform-manager', version: '1.0.0-SNAPSHOT', classifier: 'sources'
+        //manager group: 'de.interactive_instruments', name: 'xtraplatform-manager', version: '1.0.0-SNAPSHOT', classifier: 'sources'
     }
 
 task extractApi(type: Sync) {
@@ -58,7 +58,7 @@ task npm_build(type: NpmTask) {
   args = ['run', 'build']
 }
 
-npm_install.dependsOn extractApi
+//npm_install.dependsOn extractApi
 npm_build.dependsOn npm_install
 
 npm_start {

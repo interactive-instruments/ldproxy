@@ -7,11 +7,13 @@
  */
 package de.ii.ldproxy.rest.filter;
 
-import com.sun.jersey.spi.container.ContainerRequest;
-import com.sun.jersey.spi.container.ContainerRequestFilter;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import java.io.IOException;
 
 /**
  *
@@ -25,27 +27,49 @@ public class QueryParamPagingFilter implements ContainerRequestFilter {
     private static final String RANGE_HEADER = "Range";
     private static final String RANGE_UNIT = "items";
     private static final String PAGE_PARAMETER = "page";
+    private static final String COUNT_PARAMETER = "count";
+    private static final String START_INDEX_PARAMETER = "startIndex";
     // TODO: get from config
-    private static final int PAGE_SIZE = 25;
+    private static final int PAGE_SIZE = 10;
 
     @Override
-    public ContainerRequest filter(ContainerRequest request) {
+    public void filter(ContainerRequestContext requestContext) throws IOException {
         int page = 0;
+        int pageSize = PAGE_SIZE;
+        int from = page * pageSize;
+        int to = from + pageSize;
 
-        if (request.getQueryParameters().containsKey(PAGE_PARAMETER)) {
+
+        if (requestContext.getUriInfo().getQueryParameters().containsKey(PAGE_PARAMETER)) {
             try {
-                page = Integer.parseInt(request.getQueryParameters().getFirst(PAGE_PARAMETER)) - 1;
+                page = Integer.parseInt(requestContext.getUriInfo().getQueryParameters().getFirst(PAGE_PARAMETER)) - 1;
+                from = page * pageSize;
+                to = from + pageSize;
             } catch (NumberFormatException ex) {
                 // ignore
             }
         }
 
-        int from = page * PAGE_SIZE;
-        int to = from + PAGE_SIZE;
+        if (requestContext.getUriInfo().getQueryParameters().containsKey(COUNT_PARAMETER)) {
+            try {
+                pageSize = Integer.parseInt(requestContext.getUriInfo().getQueryParameters().getFirst(COUNT_PARAMETER));
+                from = page * pageSize;
+                to = from + pageSize;
+            } catch (NumberFormatException ex) {
+                // ignore
+            }
+        }
 
-        request.getRequestHeaders().putSingle(RANGE_HEADER, getRange(from, to));
+        if (requestContext.getUriInfo().getQueryParameters().containsKey(START_INDEX_PARAMETER)) {
+            try {
+                from = Integer.parseInt(requestContext.getUriInfo().getQueryParameters().getFirst(START_INDEX_PARAMETER));
+                to = from + pageSize;
+            } catch (NumberFormatException ex) {
+                // ignore
+            }
+        }
 
-        return request;
+        requestContext.getHeaders().putSingle(RANGE_HEADER, getRange(from, to));
     }
 
     private static String getRange(int from, int to) {

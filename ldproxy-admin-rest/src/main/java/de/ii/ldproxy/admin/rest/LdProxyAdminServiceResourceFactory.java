@@ -8,6 +8,7 @@
 package de.ii.ldproxy.admin.rest;
 
 import de.ii.ldproxy.service.LdProxyService;
+import de.ii.xsf.core.api.rest.AdminServiceResource;
 import de.ii.xsf.core.api.rest.AdminServiceResourceFactory;
 import de.ii.xsf.core.api.rest.ServiceResource;
 import org.apache.felix.ipojo.annotations.Component;
@@ -31,5 +32,10 @@ public class LdProxyAdminServiceResourceFactory implements AdminServiceResourceF
     public Class getAdminServiceResourceClass() {
         return LdProxyAdminServiceResource.class;
     }
-    
+
+    @Override
+    public AdminServiceResource getAdminServiceResource() {
+        return new LdProxyAdminServiceResource();
+    }
+
 }
