@@ -157,7 +157,8 @@ public class LdProxyServiceResource implements ServiceResource {
 
         service.getFeatureTypes().values().stream().sorted(Comparator.comparing(WfsProxyFeatureType::getName)).forEach(ft -> {
             String qn = service.getWfsAdapter().getNsStore().getNamespacePrefix(ft.getNamespace()) + ":" + ft.getName();
-            if (ft.getMappings().findMappings(ft.getNamespace() + ":" + ft.getName(), TargetMapping.BASE_TYPE).get(0).isEnabled()) {
+            List<TargetMapping> mappings = ft.getMappings().findMappings(ft.getNamespace() + ":" + ft.getName(), TargetMapping.BASE_TYPE);
+            if (!mappings.isEmpty() && mappings.get(0).isEnabled()) {
                 if (!collections.containsKey(qn)) {
                     collections.put(qn, new Wfs3Collections.Wfs3Collection());
                 }

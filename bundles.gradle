@@ -46,14 +46,15 @@ subprojects {
     }
 
     repositories {
+        //mavenLocal()
+        jcenter()
         mavenCentral()
-        maven {
-            url "http://maven.forgerock.org/repo/repo"
-        }
         maven {
             url "https://dl.bintray.com/iide/maven"
         }
-        mavenLocal()
+        maven {
+            url "http://maven.forgerock.org/repo/repo"
+        }
     }
 
     configurations {

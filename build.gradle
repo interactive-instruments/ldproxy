@@ -19,13 +19,14 @@ version = '1.2.0'
 group = 'de.interactive_instruments'
 
 repositories {
-    mavenLocal()
+    //mavenLocal()
+    jcenter()
     mavenCentral()
     maven {
-        url "http://maven.forgerock.org/repo/repo"
+        url "https://dl.bintray.com/iide/maven"
     }
     maven {
-        url "https://dl.bintray.com/iide/maven"
+        url "http://maven.forgerock.org/repo/repo"
     }
 }
 
@@ -44,7 +45,7 @@ dependencies {
         // TODO
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
-    //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.0'
+    //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.0-SNAPSHOT'
     bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.1.1'
 
     // ???
