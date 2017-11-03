@@ -25,25 +25,6 @@ jar {
     }
 }
 
-configurations {
-        manager {
-          transitive = false
-        }
-    }
-
-    dependencies {
-        // TODO: get from root project, at least the versions
-        //manager group: 'de.interactive_instruments', name: 'xtraplatform-manager', version: '1.0.0-SNAPSHOT', classifier: 'sources'
-    }
-
-task extractApi(type: Sync) {
-    dependsOn configurations.manager
-
-    from { // use of closure defers evaluation until execution time
-        configurations.manager.collect { zipTree(it) }
-    }
-    into "$buildDir/xtraplatform-manager/"
-}
 
 npm_install {
   execOverrides {
@@ -58,7 +39,6 @@ task npm_build(type: NpmTask) {
   args = ['run', 'build']
 }
 
-//npm_install.dependsOn extractApi
 npm_build.dependsOn npm_install
 
 npm_start {
@@ -66,3 +46,6 @@ npm_start {
     it.workingDir = 'src/main/javascript'
   }
 }
+
+assemble.dependsOn npm_install
+check.dependsOn npm_build
