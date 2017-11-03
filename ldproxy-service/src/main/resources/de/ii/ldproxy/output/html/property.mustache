@@ -1,7 +1,7 @@
 {{#index}}
     {{#value.children}}
         {{#first}}
-            <span {{value.parent.microdata}}>
+            <span {{{value.parent.microdata}}}>
         {{/first}}
         {{> propertySub}}
         {{#last}}
@@ -9,16 +9,16 @@
         {{/last}}
     {{/value.children}}
     {{^value.children}}
-        <dl class="dl-horizontal dl-horizontal-no-space">
-            <dt>{{value.name}}</dt>
-            <dd {{value.microdata}}>{{#value.isUrl}}<a target="_blank" href="{{value.value}}">{{value.value}}</a>{{/value.isUrl}}{{^value.isUrl}}{{#value.isImg}}<img src="{{value.value}}" style="max-width:300px"/>{{/value.isImg}}{{^value.isImg}}{{value.value}}{{/value.isImg}}{{/value.isUrl}}</dd>
-        </dl>
+        <div class="row my-1">
+            <div class="col-md-6 font-weight-bold text-truncate">{{value.name}}</div>
+            <div class="col-md-6" {{{value.microdata}}}>{{#value.isUrl}}<a target="_blank" href="{{value.value}}">{{value.value}}</a>{{/value.isUrl}}{{^value.isUrl}}{{#value.isImg}}<img src="{{value.value}}" style="max-width:300px"/>{{/value.isImg}}{{^value.isImg}}{{value.value}}{{/value.isImg}}{{/value.isUrl}}</div>
+        </div>
     {{/value.children}}
 {{/index}}
 {{^index}}
     {{#children}}
         {{#first}}
-            <span {{value.parent.microdata}}>
+            <span {{{value.parent.microdata}}}>
         {{/first}}
         {{> propertySub}}
         {{#last}}
@@ -26,9 +26,9 @@
         {{/last}}
     {{/children}}
     {{^children}}
-        <dl class="dl-horizontal dl-horizontal-no-space">
-            <dt>{{name}}</dt>
-            <dd {{microdata}}>{{#isUrl}}<a target="_blank" href="{{value}}">{{value}}</a>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src="{{value}}" style="max-width:300px"/>{{/isImg}}{{^isImg}}{{value}}{{/isImg}}{{/isUrl}}</dd>
-        </dl>
+        <div class="row my-1">
+            <div class="col-md-6 font-weight-bold text-truncate">{{name}}</div>
+            <div class="col-md-6" {{{microdata}}}>{{#isUrl}}<a target="_blank" href="{{value}}">{{value}}</a>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src="{{value}}" style="max-width:300px"/>{{/isImg}}{{^isImg}}{{value}}{{/isImg}}{{/isUrl}}</div>
+        </div>
     {{/children}}
 {{/index}}

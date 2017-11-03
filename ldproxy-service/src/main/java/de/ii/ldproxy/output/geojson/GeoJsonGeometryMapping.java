@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.output.geojson;
 
+import de.ii.ldproxy.output.generic.GenericMapping;
+import de.ii.ogc.wfs.proxy.TargetMapping;
+
 import static de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 
 /**
@@ -59,6 +62,14 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
     private static final String PROPERTY_NAME = "geometry";
     private GEO_JSON_GEOMETRY_TYPE geometryType;
 
+    GeoJsonGeometryMapping() {
+    }
+
+    GeoJsonGeometryMapping(GeoJsonGeometryMapping mapping) {
+        super(mapping);
+        this.geometryType = mapping.geometryType;
+    }
+
     public GEO_JSON_GEOMETRY_TYPE getGeometryType() {
         return geometryType;
     }
@@ -74,5 +85,17 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
 
     @Override
     public void setName(String name) {
+    }
+
+    @Override
+    public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        GeoJsonGeometryMapping copy = new GeoJsonGeometryMapping(this);
+        GenericMapping baseMapping = (GenericMapping) targetMapping;
+
+        if (!baseMapping.isEnabled()) {
+            copy.enabled = baseMapping.isEnabled();
+        }
+
+        return copy;
     }
 }

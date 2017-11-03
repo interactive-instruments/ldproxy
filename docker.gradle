@@ -28,7 +28,7 @@ docker {
     javaApplication {
         baseImage = 'openjdk:8-jre-alpine'
         port = 7080
-        tag = "iide/${project.name}:elise"
+        tag = "iide/${project.name}:sdotw"
     }
     /*registryCredentials {
         url =

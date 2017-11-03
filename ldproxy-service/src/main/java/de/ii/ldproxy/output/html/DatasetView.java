@@ -8,11 +8,17 @@
 package de.ii.ldproxy.output.html;
 
 import com.github.mustachejava.util.DecoratedCollection;
+import com.google.common.base.Splitter;
 import de.ii.xsf.core.views.GenericView;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -51,7 +57,7 @@ public class DatasetView extends GenericView {
     }
 
     public DatasetView(String template, URI uri) {
-        this(template, uri, (Object)null);
+        this(template, uri, (Object) null);
     }
 
     public DatasetView(String template, URI uri, Object data) {
@@ -72,5 +78,17 @@ public class DatasetView extends GenericView {
 
     public DecoratedCollection<String> getKeywordsDecorated() {
         return new DecoratedCollection<>(keywords);
+    }
+
+    public Function<String, String> getQueryWithout() {
+        return without -> {
+            List<String> ignore = Splitter.on(',').trimResults().omitEmptyStrings().splitToList(without);
+
+            List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Charset.forName("utf-8")).stream()
+                    .filter(kvp -> !ignore.contains(kvp.getName().toLowerCase()))
+                    .collect(Collectors.toList());
+
+            return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + (!query.isEmpty() ? '&' : "");
+        };
     }
 }

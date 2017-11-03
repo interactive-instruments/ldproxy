@@ -57,7 +57,7 @@ public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
                 MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
                 targetMapping.setEnabled(true);
                 targetMapping.setShowInCollection(true);
-                targetMapping.setName("@id");
+                //targetMapping.setName("@id");
                 targetMapping.setType(dataType);
 
                 return targetMapping;
@@ -78,8 +78,12 @@ public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
             MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
             targetMapping.setEnabled(true);
             targetMapping.setShowInCollection(true);
-            targetMapping.setName(jsonPath);
+            //targetMapping.setName(jsonPath);
             targetMapping.setType(dataType);
+
+            if (dataType == MICRODATA_TYPE.DATE && getTargetType() == MIME_TYPE) {
+                targetMapping.setFormat("eeee, d MMMM yyyy[', 'HH:mm:ss[' 'z]]");
+            }
 
             return targetMapping;
         }
@@ -92,7 +96,7 @@ public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
             MicrodataGeometryMapping targetMapping = new MicrodataGeometryMapping();
             targetMapping.setEnabled(true);
             targetMapping.setShowInCollection(false);
-            targetMapping.setName(jsonPath);
+            //targetMapping.setName(jsonPath);
             targetMapping.setType(MICRODATA_TYPE.GEOMETRY);
             targetMapping.setGeometryType(geoType);
 

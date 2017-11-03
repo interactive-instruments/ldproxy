@@ -50,7 +50,7 @@ public class Gml2GeoJsonMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
             if (dataType.isValid()) {
                 GeoJsonPropertyMapping targetMapping = new GeoJsonPropertyMapping();
                 targetMapping.setEnabled(true);
-                targetMapping.setName("id");
+                //targetMapping.setName("id");
                 targetMapping.setType(dataType);
 
                 return targetMapping;
@@ -70,7 +70,9 @@ public class Gml2GeoJsonMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
 
             GeoJsonPropertyMapping targetMapping = new GeoJsonPropertyMapping();
             targetMapping.setEnabled(true);
-            targetMapping.setName(jsonPath);
+            //TODO: do not set name (etc) for mime types, only for generic
+            //TODO: in manager set base as defaultValue
+            //targetMapping.setName(jsonPath);
             targetMapping.setType(dataType);
 
             return targetMapping;

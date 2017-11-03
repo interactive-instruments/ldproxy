@@ -9,6 +9,7 @@ package de.ii.ldproxy.service;
 
 import com.fasterxml.aalto.stax.InputFactoryImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.xsf.configstore.api.KeyNotFoundException;
 import de.ii.xsf.configstore.api.KeyValueStore;
 import de.ii.xsf.configstore.api.rest.AbstractGenericResourceStore;
@@ -20,6 +21,7 @@ import de.ii.xsf.dropwizard.api.HttpClients;
 import de.ii.xsf.dropwizard.api.Jackson;
 import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.jackson.dynamic.DynamicTypeIdResolver;
 import org.apache.felix.ipojo.annotations.*;
 import org.apache.http.client.HttpClient;
 import org.codehaus.staxmate.SMInputFactory;
@@ -51,9 +53,10 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
     private LdProxyIndexStore indexStore;
     private SparqlAdapter sparqlAdapter;
     private ScheduledExecutorService analyzerQueue;
+    private  CodelistStore codelistStore;
 
 
-    public LdProxyServiceStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires HttpClients httpClients, @Requires CrsTransformation crsTransformation, @Requires LdProxyIndexStore indexStore/*, @Requires SparqlAdapter sparqlAdapter*/) {
+    public LdProxyServiceStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires HttpClients httpClients, @Requires CrsTransformation crsTransformation, @Requires LdProxyIndexStore indexStore, @Requires CodelistStore codelistStore) {
         super(rootConfigStore, SERVICE_STORE_ID, true, new DeepUpdater<LdProxyService>(jackson.getDefaultObjectMapper()), new LdProxyServiceSerializer(jackson.getDefaultObjectMapper()));
 
         jsonMapper = jackson.getDefaultObjectMapper();
@@ -67,6 +70,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
 
         this.indexStore = indexStore;
         this.sparqlAdapter = new SparqlAdapter(jackson, httpClients);
+        this.codelistStore = codelistStore;
 
         this.analyzerQueue = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
@@ -77,6 +81,8 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
             }
         });
 
+
+
         // TODO: orgs layertemplates
         //this.layerTemplateStore = new WFS2GSFSLayerTemplateStore(configStores.getConfigStore(LAYER_TEMPLATES_STORE_ID), jsonMapper);
         //this.layerTemplateStores = new HashMap<String, WFS2GSFSLayerTemplateStore>();
@@ -84,7 +90,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
         //this.WFS2GSFSlayerTemplateStore = new WFS2GSFSLayerTemplateStore(this.jsonMapper, layerTemplateStore);
     }
 
-    // TODO
+    // TODO: needs DynamicTypeIdResolver, require does not work
     @Validate
     private void start() {
         //fillCache();
@@ -100,7 +106,7 @@ public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdP
     protected LdProxyService readResource(String[] path, String id, LdProxyService resource) throws IOException, KeyNotFoundException {
         LdProxyService service = super.readResource(path, id, resource);
         service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);
-        service.initialize(indexStore, sparqlAdapter);
+        service.initialize(indexStore, sparqlAdapter, codelistStore);
 
         if (service.getTargetStatus() == Service.STATUS.STARTED) {
             service.start();
@@ -157,7 +163,7 @@ if (!(operation == ResourceTransaction.OPERATION.UPDATE_OVERRIDE && resource.get
         switch (operation) {
             case ADD:
                 service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);
-                service.initialize(indexStore, sparqlAdapter);
+                service.initialize(indexStore, sparqlAdapter, codelistStore);
             case UPDATE:
             case UPDATE_OVERRIDE:
                 if (service.getTargetStatus() == Service.STATUS.STARTED) {

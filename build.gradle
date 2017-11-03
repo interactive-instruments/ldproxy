@@ -9,22 +9,24 @@ buildscript {
     dependencies {
         classpath group: 'de.interactive_instruments', name: 'gradle-plugin-osgi-ipojo', version: '1.12.1.26'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0"
+        classpath 'com.netflix.nebula:nebula-ospackage-plugin:3.+'
     }
 }
 
 apply plugin: 'application'
 
-version = '1.1.0'
+version = '1.2.0'
 group = 'de.interactive_instruments'
 
 repositories {
-    mavenLocal()
+    //mavenLocal()
+    jcenter()
     mavenCentral()
     maven {
-        url "http://maven.forgerock.org/repo/repo"
+        url "https://dl.bintray.com/iide/maven"
     }
     maven {
-        url "https://dl.bintray.com/iide/maven"
+        url "http://maven.forgerock.org/repo/repo"
     }
 }
 
@@ -35,16 +37,16 @@ configurations {
 
 dependencies {
     // TODO: are all the jars in lib dependencies of this?
-    compile group: 'de.interactive_instruments', name: 'xtraplatform-runtime', version: '1.0.4-SNAPSHOT'
+    compile group: 'de.interactive_instruments', name: 'xtraplatform-runtime', version: '1.1.0'
 
-    bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.0.3'
+    bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.0'
 
-    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.0.4-SNAPSHOT') {
+    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.1.0') {
         // TODO
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
-    bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.0.2'
-    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.0.5-SNAPSHOT'
+    //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.0-SNAPSHOT'
+    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.1.1'
 
     // ???
     subprojects.each {
@@ -91,16 +93,26 @@ distributions {
 }
 distTar.version = ''
 
+ext {
+    dataDir = new File(buildDir, 'data')
+}
+
+task initData {
+    doLast {
+        dataDir.mkdirs()
+    }
+}
 
 task cleanFelixCache(type: Delete) {
-    delete new File(installDist.destinationDir, 'data/felix-cache')
+    delete new File(dataDir, 'felix-cache')
 }
 
 run {
     dependsOn installDist
+    dependsOn initData
     dependsOn cleanFelixCache
     workingDir = installDist.destinationDir
-    debug = project.hasProperty('debug')? project.debug : false
+    args dataDir.absolutePath
 }
 
 tasks.startScripts.unixStartScriptGenerator.template = resources.text.fromFile('gradle/sh-start-script')
@@ -110,5 +122,6 @@ apply from: 'bundles.gradle'
 
 apply from: 'docker.gradle'
 
+//apply from: 'packaging.gradle'
 
-
+apply from: 'license-report.gradle'

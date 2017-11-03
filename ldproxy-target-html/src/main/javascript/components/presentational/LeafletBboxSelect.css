@@ -1,0 +1,22 @@
+/**
+ * Copyright 2017 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+.leaflet-areaselect-shade {
+    position: absolute;
+    background: rgba(0,0,0, 0.4);
+}
+.leaflet-areaselect-handle {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #666;
+    -moz-box-shadow: 1px 1px rgba(0,0,0, 0.2);
+    -webkit-box-shadow: 1px 1px rgba(0,0,0, 0.2);
+    box-shadow: 1px 1px rgba(0,0,0, 0.2);
+    width: 14px;
+    height: 14px;
+    cursor: move;
+}

@@ -7,31 +7,26 @@
  */
 package de.ii.ldproxy.output.geojson;
 
+import de.ii.ldproxy.output.generic.GenericMapping;
+import de.ii.ldproxy.output.html.MicrodataPropertyMapping;
+import de.ii.ogc.wfs.proxy.TargetMapping;
+
 /**
  * @author zahnen
  */
-public class GeoJsonPropertyMapping implements GeoJsonMapping {
+public class GeoJsonPropertyMapping extends GenericMapping implements GeoJsonMapping {
 
-    private Boolean enabled;
-    private String name;
     private GEO_JSON_TYPE type;
 
-    @Override
-    public Boolean isEnabled() {
-        return enabled;
+    public GeoJsonPropertyMapping() {
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public GeoJsonPropertyMapping(GeoJsonPropertyMapping mapping) {
+        this.enabled = mapping.enabled;
+        this.name = mapping.name;
+        this.type = mapping.type;
+        this.format = mapping.format;
+        this.codelist = mapping.codelist;
     }
 
     @Override
@@ -46,5 +41,24 @@ public class GeoJsonPropertyMapping implements GeoJsonMapping {
     @Override
     public boolean isGeometry() {
         return getType() == GEO_JSON_TYPE.GEOMETRY;
+    }
+
+    @Override
+    public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        GeoJsonPropertyMapping copy = new GeoJsonPropertyMapping(this);
+        GenericMapping baseMapping = (GenericMapping) targetMapping;
+
+        if (!baseMapping.isEnabled()) {
+            copy.enabled = baseMapping.isEnabled();
+        }
+        if ((copy.name == null || copy.name.isEmpty()) && baseMapping.getName() != null) {
+            copy.name = baseMapping.getName();
+        }
+        if ((copy.format == null || copy.format.isEmpty()) && baseMapping.getFormat() != null) {
+            copy.format = baseMapping.getFormat();
+        }
+        copy.codelist = baseMapping.getCodelist();
+
+        return copy;
     }
 }

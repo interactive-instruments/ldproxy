@@ -13,6 +13,7 @@ import de.ii.ldproxy.service.LdProxyService;
 import de.ii.xsf.core.api.JsonViews;
 import de.ii.xsf.core.api.MediaTypeCharset;
 import de.ii.xsf.core.api.Service;
+import de.ii.xsf.core.api.exceptions.BadRequest;
 import de.ii.xsf.core.api.exceptions.XtraserverFrameworkException;
 import de.ii.xsf.core.api.permission.Auth;
 import de.ii.xsf.core.api.permission.AuthenticatedUser;
@@ -34,6 +35,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import io.dropwizard.views.ViewRenderer;
 import org.apache.http.HttpEntity;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
@@ -55,7 +57,7 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
     
     @GET
     //@JsonView(JsonViews.AdminView.class)
-    public String getAdminService(@Auth AuthenticatedUser user) {
+    public String getAdminService(/*@Auth AuthenticatedUser user*/) {
         String s = "";
         try {
             s = jsonMapper.writerWithType(Service.class).writeValueAsString(service);
@@ -71,9 +73,9 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
     @Path("/config")
     @GET
     //@JsonView(JsonViews.ConfigurationView.class)
-    public String getServiceConfiguration(@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user, @PathParam("id") String id) {
+    public String getServiceConfiguration(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ @PathParam("id") String id) {
         
-        response.setHeader("Cache-Control", "no-cache");
+        //response.setHeader("Cache-Control", "no-cache");
         
         //return service;
 
@@ -149,6 +151,11 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
     }
 
     @Override
+    public void setMustacheRenderer(ViewRenderer mustacheRenderer) {
+
+    }
+
+    @Override
     protected void callServiceOperation(AuthenticatedUser authenticatedUser, String s, String s1) {
 
     }
@@ -160,10 +167,8 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
         try {
             o = jsonMapper.readValue(request, LdProxyService.class);
         } catch (IOException ex1) {
-            XtraserverFrameworkException ex = new XtraserverFrameworkException();
-            ex.setCode(Response.Status.BAD_REQUEST);
-            ex.setHtmlCode(Response.Status.BAD_REQUEST);
-            throw ex; 
+            LOGGER.getLogger().debug("BAD REQUEST", ex1);
+            throw new BadRequest();
         }
                 
         serviceRegistry.updateService(authUser, id, o);

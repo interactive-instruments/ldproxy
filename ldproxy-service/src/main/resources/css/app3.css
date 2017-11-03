@@ -1,0 +1,65 @@
+/**
+ * Copyright 2017 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+ html {
+   position: relative;
+   min-height: 100%;
+ }
+
+ body {
+   /* Margin bottom by footer height */
+   margin-bottom: 288px;
+ }
+ .footer {
+   position: absolute;
+   bottom: 0;
+   width: 100%;
+   /* Set the fixed height of the footer here */
+   height: 288px;
+ }
+
+
+.list-comma-separated
+{
+padding: 0;
+margin: 0;
+}
+.list-comma-separated li
+{
+display: inline;
+}
+.list-comma-separated li:not(:last-of-type)::after
+{
+content: ", ";
+}
+
+.list-separated
+{
+display: flex;
+flex-wrap: wrap;
+list-style: none;
+}
+.list-separated li:not(:last-of-type)::after
+{
+display: inline-block;
+padding-left: .5rem;
+padding-right: .5rem;
+content: "|";
+}
+
+#map { height: 480px; }
+
+.space-after li {
+margin-bottom: 5em;
+}
+
+[data-toggle="collapse"].collapsed .if-not-collapsed {
+  display: none;
+}
+[data-toggle="collapse"]:not(.collapsed) .if-collapsed {
+  display: none;
+}

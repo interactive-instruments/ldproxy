@@ -41,4 +41,9 @@ public class IndexMapping implements TargetMapping {
     public boolean isGeometry() {
         return false;
     }
+
+    @Override
+    public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        return this;
+    }
 }

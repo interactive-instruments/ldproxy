@@ -5,16 +5,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-.dl-horizontal dt{
-text-align: left;
-}
-
-.dl-horizontal-space dd{
-margin-bottom: 1em;
-}
-.dl-horizontal-no-space {
-margin-bottom: 0;
-}
 .list-comma-separated
 {
 padding: 0;
@@ -28,35 +18,29 @@ display: inline;
 {
 content: ", ";
 }
+
+.list-separated li
+{
+display: inline;
+}
+.list-separated li a
+{
+padding-left: 4px;
+}
+.list-separated li:not(:last-of-type) a
+{
+padding-right: 4px;
+}
+.list-separated li:not(:last-of-type)::after
+{
+content: "|";
+}
+
 #map { height: 480px; }
-.breadcrumb > li + li:before {
-content: "\00BB";
-color: #aaa;
-}
-.breadcrumb {
-padding: 0;
-margin: 15px 0;
-background-color: transparent;
-border-radius: 0;
--moz-border-radius: 0;
--webkit-border-radius: 0;
--o-border-radius: 0;
-}
-.nav-formats span:first-of-type::before
-{
-content: "View as:\a0\a0\a0";
-}
-.nav-formats span:not(:last-of-type)::after
-{
-content: "\a0|\a0";
-}
+
 .nav-formats span:not(:last-of-type)
 {
-margin-right: 0;
-}
-.nav-formats span
-{
-margin-left: 0;
+border-right: 1px solid #e7e7e7;
 }
 .space-after li {
 margin-bottom: 5em;

@@ -7,9 +7,16 @@
  */
 package de.ii.ldproxy.output.html;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -25,7 +32,10 @@ public class FeatureCollectionView extends DatasetView {
     public String indexValue;
     public boolean hideMap;
     public boolean hideMetadata;
+    public boolean showFooterText = true;
     public FeaturePropertyDTO links;
+    public Set<Map.Entry<String,String>> filterFields;
+    public Map<String,String> bbox2;
 
     public FeatureCollectionView(String template, URI uri) {
         super(template, uri);
@@ -43,10 +53,10 @@ public class FeatureCollectionView extends DatasetView {
     }
 
     public String getQueryWithoutPage() {
-        String query = getQuery();
-        if (!query.contains("page=")) {
-            return query;
-        }
-        return query.substring(0, query.lastIndexOf("page="));
+        List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Charset.forName("utf-8")).stream()
+                .filter(kvp -> !kvp.getName().equals("page") && !kvp.getName().equals("startIndex"))
+                .collect(Collectors.toList());
+
+        return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';
     }
 }
