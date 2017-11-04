@@ -9,9 +9,13 @@ package de.ii.ldproxy.output.html;
 
 import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.base.Splitter;
+import de.ii.ldproxy.output.generic.Gml2GenericMapper;
 import de.ii.xsf.core.views.GenericView;
+import de.ii.xsf.logging.XSFLogger;
+import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -25,6 +29,8 @@ import java.util.stream.Collectors;
  * @author zahnen
  */
 public class DatasetView extends GenericView {
+
+    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(DatasetView.class);
 
     public String name;
     public String title;
@@ -84,11 +90,11 @@ public class DatasetView extends GenericView {
         return without -> {
             List<String> ignore = Splitter.on(',').trimResults().omitEmptyStrings().splitToList(without);
 
-            List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Charset.forName("utf-8")).stream()
+            List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Consts.ISO_8859_1).stream()
                     .filter(kvp -> !ignore.contains(kvp.getName().toLowerCase()))
                     .collect(Collectors.toList());
 
-            return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + (!query.isEmpty() ? '&' : "");
+            return '?' + URLEncodedUtils.format(query, '&', Consts.UTF_8) + (!query.isEmpty() ? '&' : "");
         };
     }
 }
