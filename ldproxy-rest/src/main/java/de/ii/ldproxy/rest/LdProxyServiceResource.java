@@ -781,7 +781,7 @@ public class LdProxyServiceResource implements ServiceResource {
             };
         }
 
-        return response.entity(stream).build();
+        return response.entity(stream).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET").build();
     }
 
     private Response getWfsResponse(final WFSOperation operation) {
