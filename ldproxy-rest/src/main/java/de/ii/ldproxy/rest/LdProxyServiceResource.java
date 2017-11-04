@@ -38,6 +38,8 @@ import de.ii.xtraplatform.ogc.api.wfs.parser.LoggingWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.MultiWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesParser;
+import de.ii.xtraplatform.util.json.JSONPOutputStream;
+import de.ii.xtraplatform.util.json.JSONPStreamingOutput;
 import io.dropwizard.views.View;
 import io.dropwizard.views.ViewRenderer;
 import io.swagger.oas.annotations.Operation;
@@ -495,7 +497,7 @@ public class LdProxyServiceResource implements ServiceResource {
         }
 
         //if (indexId.toLowerCase().equals("all")) {
-        return getJsonResponse(getWfsFeaturesPagedAndFiltered(featureType, range), featureType, true, range);
+        return getJsonResponse(getWfsFeaturesPagedAndFiltered(featureType, range), featureType, true, range, callback);
         //} else {
         //    return getWfsPropertiesPaged(layerid, range, indexId);
         //}
@@ -677,13 +679,13 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     private Response getJsonResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection) {
-        return getJsonResponse(operation, featureType, isFeatureCollection, null);
+        return getJsonResponse(operation, featureType, isFeatureCollection, null, null);
     }
 
-    private Response getJsonResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, String range) {
+    private Response getJsonResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, String range, String callback) {
 
         return getResponse(operation, featureType,
-                outputStream -> new GeoJsonFeatureWriter(service.createJsonGenerator(outputStream), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2GeoJsonMapper.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer()), null, range);
+                outputStream -> new GeoJsonFeatureWriter(service.createJsonGenerator(outputStream), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2GeoJsonMapper.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer()), null, range, callback);
     }
 
     private Response getJsonHits(final WFSOperation operation, final WfsProxyFeatureType featureType) {
@@ -713,39 +715,71 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     private Response getResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final GmlAnalyzerBuilder gmlAnalyzer, final WFSRequestConsumer wfsRequestConsumer) {
-        return getResponse(operation, featureType, gmlAnalyzer, wfsRequestConsumer, null);
+        return getResponse(operation, featureType, gmlAnalyzer, wfsRequestConsumer, null, null);
     }
 
-    private Response getResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final GmlAnalyzerBuilder gmlAnalyzer, final WFSRequestConsumer wfsRequestConsumer, final String range) {
+    private Response getResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final GmlAnalyzerBuilder gmlAnalyzer, final WFSRequestConsumer wfsRequestConsumer, final String range, final String callback) {
         Response.ResponseBuilder response = Response.ok();
 
-        //TODO: start parsing before this line, in StreamingOutput call Analyzer.startWrite(output)
-        StreamingOutput stream = output -> {
+        StreamingOutput stream;
+        if (callback != null) {
+            stream = new JSONPStreamingOutput(callback) {
+                @Override
+                public void writeCallback(JSONPOutputStream os) throws IOException, WebApplicationException {
+                    WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
 
-            WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
+                    if (wfsRequestConsumer != null) {
+                        wfsRequestConsumer.with(request);
+                    }
 
-            if (wfsRequestConsumer != null) {
-                wfsRequestConsumer.with(request);
-            }
+                    try {
+                        GMLAnalyzer analyzer;
+                        //if (range != null) {
+                        //    analyzer = new MultiGMLAnalyzer(gmlAnalyzer.with(output), new RangeHeader.RangeWriter(response, range));
+                        //} else {
+                        analyzer = gmlAnalyzer.with(os);
+                        //}
 
-            try {
-                GMLAnalyzer analyzer;
-                //if (range != null) {
-                //    analyzer = new MultiGMLAnalyzer(gmlAnalyzer.with(output), new RangeHeader.RangeWriter(response, range));
-                //} else {
-                analyzer = gmlAnalyzer.with(output);
-                //}
+                        GMLParser gmlParser = new GMLParser(analyzer, service.staxFactory);
+                        if (featureType.getMappings().getMappings().isEmpty()) {
+                            gmlParser.enableTextParsing();
+                        }
+                        gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
 
-                GMLParser gmlParser = new GMLParser(analyzer, service.staxFactory);
-                if (featureType.getMappings().getMappings().isEmpty()) {
-                    gmlParser.enableTextParsing();
+                    } catch (ExecutionException ex) {
+                        // ignore
+                    }
                 }
-                gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
+            };
+        } else {
+            //TODO: start parsing before this line, in StreamingOutput call Analyzer.startWrite(output)
+            stream = output -> {
 
-            } catch (ExecutionException ex) {
-                // ignore
-            }
-        };
+                WFSRequest request = new WFSRequest(service.getWfsAdapter(), operation);
+
+                if (wfsRequestConsumer != null) {
+                    wfsRequestConsumer.with(request);
+                }
+
+                try {
+                    GMLAnalyzer analyzer;
+                    //if (range != null) {
+                    //    analyzer = new MultiGMLAnalyzer(gmlAnalyzer.with(output), new RangeHeader.RangeWriter(response, range));
+                    //} else {
+                    analyzer = gmlAnalyzer.with(output);
+                    //}
+
+                    GMLParser gmlParser = new GMLParser(analyzer, service.staxFactory);
+                    if (featureType.getMappings().getMappings().isEmpty()) {
+                        gmlParser.enableTextParsing();
+                    }
+                    gmlParser.parse(request.getResponse(), featureType.getNamespace(), featureType.getName());
+
+                } catch (ExecutionException ex) {
+                    // ignore
+                }
+            };
+        }
 
         return response.entity(stream).build();
     }
