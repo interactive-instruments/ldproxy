@@ -576,7 +576,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
                 int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
                 if (pos > -1) {
-                    currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
+                    currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
                 }
 
                 // TODO
