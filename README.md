@@ -24,6 +24,7 @@ For more information, have a look at the [deployment guide](http://interactive-i
 When your container is up and running, have a look at the [documentation](http://interactive-instruments.github.io/ldproxy/).
 
 ## Development
+
 The only requirement is an installation of JDK 8.  
 To set up a local development environment, follow these steps:
 
@@ -37,3 +38,7 @@ cd ldproxy
 That's it, a local server is running at port 7080.
 
 You can also create a distribution by running ```./gradlew distTar``` or ```./gradlew distZip```. The resulting archive can then be extracted on any machine with Java 8 and ldproxy can be started with one of the scripts under ```ldproxy/bin/```.
+
+## Sponsors
+
+This software has been supported by the European Location Interoperability Solutions for e-Government ([ELISE](https://myremote.ec.europa.eu/owa/,DanaInfo=remi.webmail.ec.europa.eu,SSL+redir.aspx?C=7NL6MlgTQtBkaWR2KELC3RGIwdr45BZAfixs5M4U8wQOISOzgiDVCA..&URL=https%3a%2f%2fec.europa.eu%2fisa2%2factions%2felise_en)) Action, which is supported by the [ISA² Programme](https://myremote.ec.europa.eu/owa/,DanaInfo=remi.webmail.ec.europa.eu,SSL+redir.aspx?C=KT3mFsidrA7qF9QCK5krKg70ga2h6ZkGIdoprfTbIisOISOzgiDVCA..&URL=https%3a%2f%2fec.europa.eu%2fisa2). ISA² is a programme of the European Commission, supporting the modernisation of public administrations in Europe through the development of eGovernment solutions.
