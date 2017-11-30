@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.output.geojson;
 
-import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;

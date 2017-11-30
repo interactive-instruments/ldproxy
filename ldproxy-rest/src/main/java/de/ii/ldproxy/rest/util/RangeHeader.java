@@ -139,5 +139,10 @@ public class RangeHeader {
         public void analyzeFailed(Exception ex) {
 
         }
+
+        @Override
+        public boolean analyzeNamespaceRewrite(String oldNamespace, String newNamespace, String featureTypeName) {
+            return false;
+        }
     }
 }

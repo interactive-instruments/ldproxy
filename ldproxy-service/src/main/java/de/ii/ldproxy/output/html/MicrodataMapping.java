@@ -9,7 +9,7 @@ package de.ii.ldproxy.output.html;
 
 import de.ii.ogc.wfs.proxy.TargetMapping;
 
-import static de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_TYPE;
+import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
 
 /**
  * @author zahnen

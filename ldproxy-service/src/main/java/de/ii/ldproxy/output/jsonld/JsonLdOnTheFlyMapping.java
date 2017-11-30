@@ -7,14 +7,11 @@
  */
 package de.ii.ldproxy.output.jsonld;
 
-import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping;
-import de.ii.ldproxy.output.geojson.GeoJsonMapping;
-import de.ii.ldproxy.output.geojson.GeoJsonPropertyMapping;
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping;
 import de.ii.ldproxy.output.html.MicrodataMapping;
 import de.ii.ldproxy.output.html.MicrodataPropertyMapping;
-import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer;
 import de.ii.ogc.wfs.proxy.TargetMapping;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 
@@ -78,7 +75,7 @@ public class JsonLdOnTheFlyMapping implements WfsProxyOnTheFlyMapping {
 
     @Override
     public TargetMapping getTargetMappingForGeometry(XMLPathTracker path, String nsuri, String localName) {
-        MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE geoType = MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE.forGmlType(AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE.fromString(localName));
+        MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE geoType = MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE.forGmlType(GML_GEOMETRY_TYPE.fromString(localName));
 
         if (geoType.isValid()) {
 

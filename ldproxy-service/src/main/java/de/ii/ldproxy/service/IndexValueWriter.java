@@ -101,6 +101,11 @@ public class IndexValueWriter implements GMLAnalyzer {
         LOGGER.getLogger().debug("", e);
     }
 
+    @Override
+    public boolean analyzeNamespaceRewrite(String oldNamespace, String newNamespace, String featureTypeName) {
+        return false;
+    }
+
     public SortedSet<String> getValues() {
         return values;
     }

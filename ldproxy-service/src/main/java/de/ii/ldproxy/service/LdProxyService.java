@@ -9,23 +9,17 @@ package de.ii.ldproxy.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-import de.ii.ldproxy.codelists.Codelist;
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.ldproxy.output.generic.GenericMapping;
-import de.ii.ldproxy.output.generic.Gml2GenericMapper;
-import de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter;
-import de.ii.ldproxy.output.geojson.Gml2GeoJsonMapper;
-import de.ii.ldproxy.output.html.Gml2MicrodataMapper;
-import de.ii.ldproxy.output.jsonld.Gml2JsonLdMapper;
-import de.ii.ogc.wfs.proxy.AbstractWfsProxyService;
-import de.ii.ogc.wfs.proxy.TargetMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
+import de.ii.ldproxy.output.generic.Gml2GenericMappingProvider;
+import de.ii.ldproxy.output.geojson.Gml2GeoJsonMappingProvider;
+import de.ii.ldproxy.output.html.Gml2MicrodataMappingProvider;
+import de.ii.ldproxy.output.jsonld.Gml2JsonLdMappingProvider;
+import de.ii.ogc.wfs.proxy.*;
 import de.ii.xsf.core.api.JsonViews;
 import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.ogc.api.WFS;
-import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLParser;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSAdapter;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSOperation;
@@ -70,10 +64,9 @@ public class LdProxyService extends AbstractWfsProxyService {
         //initialize(path, module);
 
         // TODO: dynamic
-        this.schemaAnalyzers.add(new Gml2GenericMapper(this));
-        this.schemaAnalyzers.add(new Gml2MicrodataMapper(this));
-        this.schemaAnalyzers.add(new Gml2GeoJsonMapper(this));
-        this.schemaAnalyzers.add(new Gml2JsonLdMapper(this));
+        List<WfsProxyMappingProvider> mappingProviders = ImmutableList.of(new Gml2GenericMappingProvider(), new Gml2MicrodataMappingProvider(), new Gml2GeoJsonMappingProvider(), new Gml2JsonLdMappingProvider());
+        this.schemaAnalyzers.add(new WfsProxyFeatureTypeAnalyzerFromSchema(this, mappingProviders));
+        this.mappingFromDataAnalyzers = new WfsProxyFeatureTypeAnalyzerFromData(this, mappingProviders);
 
         // TODO
         //this.analyzeWFS();
@@ -128,7 +121,7 @@ public class LdProxyService extends AbstractWfsProxyService {
 
     public Map<String, String> getHtmlNamesForFeatureType(WfsProxyFeatureType featureType) {
 
-        return featureType.getMappings().findMappings(Gml2MicrodataMapper.MIME_TYPE).entrySet().stream()
+        return featureType.getMappings().findMappings(Gml2MicrodataMappingProvider.MIME_TYPE).entrySet().stream()
                 .filter(mapping -> mapping.getValue().get(0).getName() != null && mapping.getValue().get(0).isEnabled())
                 .collect(Collectors.toMap(Map.Entry::getKey, mapping -> mapping.getValue().get(0).getName()));
     }

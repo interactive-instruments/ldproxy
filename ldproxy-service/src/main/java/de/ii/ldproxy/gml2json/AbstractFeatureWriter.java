@@ -94,6 +94,11 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
     }
 
     @Override
+    public boolean analyzeNamespaceRewrite(String oldNamespace, String newNamespace, String featureTypeName) {
+        return false;
+    }
+
+    @Override
     public final void analyzeStart(Future<SMInputCursor> rootFuture) {
         try {
             writeStart(rootFuture);

@@ -10,30 +10,18 @@ package de.ii.ldproxy.output.geojson;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.ldproxy.gml2json.AbstractFeatureWriter;
-import de.ii.ldproxy.gml2json.CoordinatesWriterType;
-import de.ii.ldproxy.gml2json.JsonCoordinateFormatter;
-import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
-import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
-import de.ii.xsf.core.api.exceptions.XtraserverFrameworkException;
 import de.ii.xsf.logging.XSFLogger;
-import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
-import org.codehaus.staxmate.in.SMEvent;
 import org.codehaus.staxmate.in.SMInputCursor;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
-import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Response;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *

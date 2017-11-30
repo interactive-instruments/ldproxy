@@ -9,7 +9,6 @@ package de.ii.ldproxy.output.html;
 
 import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.base.Splitter;
-import de.ii.ldproxy.output.generic.Gml2GenericMapper;
 import de.ii.xsf.core.views.GenericView;
 import de.ii.xsf.logging.XSFLogger;
 import org.apache.http.Consts;
@@ -18,7 +17,6 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;

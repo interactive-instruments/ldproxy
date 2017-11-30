@@ -8,18 +8,16 @@
 package de.ii.ldproxy.output.html;
 
 import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.codelists.CodelistStore;
-import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
 import de.ii.ldproxy.service.SparqlAdapter;
-import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
 import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
@@ -39,13 +37,9 @@ import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -410,6 +404,11 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     public void analyzeFailed(Exception e) {
         LOGGER.getLogger().error("Error writing HTML");
         LOGGER.getLogger().debug("Error writing HTML", e);
+    }
+
+    @Override
+    public boolean analyzeNamespaceRewrite(String oldNamespace, String newNamespace, String featureTypeName) {
+        return false;
     }
 
     protected void writeField(MicrodataPropertyMapping mapping, String value, boolean isId) {

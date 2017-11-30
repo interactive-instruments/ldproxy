@@ -8,7 +8,7 @@
 package de.ii.ldproxy.output.html;
 
 import de.ii.ldproxy.output.generic.GenericMapping;
-import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 
 /**

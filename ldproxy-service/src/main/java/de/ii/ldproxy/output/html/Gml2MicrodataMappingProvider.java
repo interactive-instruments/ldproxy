@@ -10,32 +10,31 @@ package de.ii.ldproxy.output.html;
 
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
-import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer;
 import de.ii.ogc.wfs.proxy.TargetMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyService;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
+import de.ii.ogc.wfs.proxy.WfsProxyMappingProvider;
 import de.ii.xsf.logging.XSFLogger;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
+
+import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_NS_URI;
 
 /**
  * @author zahnen
  */
-public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
+public class Gml2MicrodataMappingProvider implements WfsProxyMappingProvider {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(Gml2MicrodataMapper.class);
+    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(Gml2MicrodataMappingProvider.class);
     public static final String MIME_TYPE = "text/html";
 
-    public Gml2MicrodataMapper(WfsProxyService proxyService) {
-        super(proxyService);
-    }
-
     @Override
-    protected String getTargetType() {
+    public String getTargetType() {
         return MIME_TYPE;
     }
 
     @Override
-    protected TargetMapping getTargetMappingForFeatureType(String nsuri, String localName) {
-        LOGGER.getLogger().debug("FEATURETYPE {} {}", nsuri, localName);
+    public TargetMapping getTargetMappingForFeatureType(String nsUri, String localName) {
+        LOGGER.getLogger().debug("FEATURETYPE {} {}", nsUri, localName);
 
         MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
         targetMapping.setEnabled(true);
@@ -45,19 +44,18 @@ public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
     }
 
     @Override
-    protected TargetMapping getTargetMappingForAttribute(String nsuri, String localName, String type, boolean required) {
+    public TargetMapping getTargetMappingForAttribute(String path, String nsUri, String localName, GML_TYPE type) {
 
-        if ((localName.equals("id") && nsuri.startsWith(GML_NS_URI)) || localName.equals("fid")) {
+        if ((localName.equals("id") && nsUri.startsWith(GML_NS_URI)) || localName.equals("fid")) {
 
-            LOGGER.getLogger().debug("ID {} {} {}", nsuri, localName, type);
+            LOGGER.getLogger().debug("ID {} {} {}", nsUri, localName, type);
 
-            MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(GML_TYPE.fromString(type));
+            MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(type);
 
             if (dataType.isValid()) {
                 MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
                 targetMapping.setEnabled(true);
                 targetMapping.setShowInCollection(true);
-                //targetMapping.setName("@id");
                 targetMapping.setType(dataType);
 
                 return targetMapping;
@@ -68,42 +66,45 @@ public class Gml2MicrodataMapper extends AbstractWfsProxyFeatureTypeAnalyzer {
     }
 
     @Override
-    protected TargetMapping getTargetMappingForProperty(String jsonPath, String nsuri, String localName, String type, long minOccurs, long maxOccurs, int depth, boolean isParentMultiple, boolean isComplex, boolean isObject) {
+    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, GML_TYPE type) {
 
-        MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(GML_TYPE.fromString(type));
+        MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(type);
 
         if (dataType.isValid()) {
-            LOGGER.getLogger().debug("PROPERTY {} {}", jsonPath, dataType);
+            LOGGER.getLogger().debug("PROPERTY {} {}", path, dataType);
 
             MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
             targetMapping.setEnabled(true);
             targetMapping.setShowInCollection(true);
-            //targetMapping.setName(jsonPath);
             targetMapping.setType(dataType);
 
-            if (dataType == MICRODATA_TYPE.DATE && getTargetType() == MIME_TYPE) {
+            if (dataType == MICRODATA_TYPE.DATE && getTargetType().equals(MIME_TYPE)) {
+                // TODO: move default format to global config
                 targetMapping.setFormat("eeee, d MMMM yyyy[', 'HH:mm:ss[' 'z]]");
             }
 
             return targetMapping;
         }
 
-        MICRODATA_GEOMETRY_TYPE geoType = MICRODATA_GEOMETRY_TYPE.forGmlType(GML_GEOMETRY_TYPE.fromString(type));
+        return null;
+    }
+
+    @Override
+    public TargetMapping getTargetMappingForGeometry(String path, String nsUri, String localName, GML_GEOMETRY_TYPE type) {
+
+        MICRODATA_GEOMETRY_TYPE geoType = MICRODATA_GEOMETRY_TYPE.forGmlType(type);
 
         if (geoType.isValid()) {
-            LOGGER.getLogger().debug("GEOMETRY {} {}", jsonPath, geoType);
+            LOGGER.getLogger().debug("GEOMETRY {} {}", path, geoType);
 
             MicrodataGeometryMapping targetMapping = new MicrodataGeometryMapping();
             targetMapping.setEnabled(true);
             targetMapping.setShowInCollection(false);
-            //targetMapping.setName(jsonPath);
             targetMapping.setType(MICRODATA_TYPE.GEOMETRY);
             targetMapping.setGeometryType(geoType);
 
             return targetMapping;
         }
-
-        LOGGER.getLogger().debug("NOT MAPPED {} {}", jsonPath, type);
 
         return null;
     }

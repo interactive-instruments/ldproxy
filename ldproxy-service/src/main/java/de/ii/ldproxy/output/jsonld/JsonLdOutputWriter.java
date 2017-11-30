@@ -15,7 +15,7 @@ import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.gml2json.WktCoordinatesFormatter;
 import de.ii.ldproxy.output.html.*;
 import de.ii.ldproxy.output.jsonld.WktGeometryMapping.WKT_GEOMETRY_TYPE;
-import de.ii.ogc.wfs.proxy.AbstractWfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
 import de.ii.xsf.logging.XSFLogger;
