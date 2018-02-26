@@ -15,7 +15,7 @@ buildscript {
 
 apply plugin: 'application'
 
-version = '1.2.2'
+version = '1.2.3'
 group = 'de.interactive_instruments'
 
 repositories {
@@ -46,7 +46,7 @@ dependencies {
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
     //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.0-SNAPSHOT'
-    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.1.4'
+    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.1.5'
 
     // ???
     subprojects.each {
