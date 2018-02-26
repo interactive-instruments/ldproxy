@@ -1,0 +1,9 @@
+dependencies {
+    compile project(":ldproxy-service")
+
+    //provided group: 'com.typesafe.akka', name: 'akka-stream_2.12', version: '2.5.9'
+    //provided group: 'com.typesafe.akka', name: 'akka-http_2.12',   version: '10.1.0-RC2'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka', version: '1.1.0-SNAPSHOT'
+
+    testCompile group: 'com.typesafe.akka', name: 'akka-testkit_2.12', version: '2.5.9'
+}

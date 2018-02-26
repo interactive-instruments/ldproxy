@@ -114,6 +114,7 @@ run {
     dependsOn cleanFelixCache
     workingDir = installDist.destinationDir
     args dataDir.absolutePath
+    standardInput = System.in
 }
 
 tasks.startScripts.unixStartScriptGenerator.template = resources.text.fromFile('gradle/sh-start-script')
@@ -126,3 +127,22 @@ apply from: 'docker.gradle'
 //apply from: '../spatialdataontheweb/packaging.gradle'
 
 apply from: 'license-report.gradle'
+
+
+subprojects {
+configurations {
+    doclava
+}
+
+dependencies {
+    doclava files('/home/zahnen/development/javadoc-json-doclet/build/libs/javadoc-json-doclet-all.jar')
+}
+
+javadoc {
+//    include 'de/interactive_instruments/xtraserver/config/util/api/*'
+    options.doclet = "com.raidandfade.JsonDoclet.Main"
+    options.docletpath = configurations.doclava.files.asType(List)
+  //  title = null
+}
+tasks.javadoc.dependsOn configurations.doclava
+}

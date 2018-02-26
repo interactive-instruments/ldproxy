@@ -35,6 +35,9 @@ import de.ii.ldproxy.wfs3.Wfs3Dataset;
 import de.ii.ldproxy.wfs3.Wfs3Link;
 import de.ii.ldproxy.wfs3.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
+import de.ii.ogc.wfs.proxy.AkkaStreamer;
+import de.ii.ogc.wfs.proxy.TargetMapping;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
 import de.ii.xsf.core.api.MediaTypeCharset;
 import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.api.exceptions.ResourceNotFound;
@@ -77,6 +80,12 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.*;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.CompletionCallback;
+import javax.ws.rs.container.ConnectionCallback;
+import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -91,6 +100,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.rest.util.RangeHeader.parseRange;
@@ -143,6 +153,7 @@ public class LdProxyServiceResource implements ServiceResource {
     public LdProxyServiceResource() {
         this.wfs3LinksGenerator = new Wfs3LinksGenerator();
     }
+    private AkkaStreamer akkaStreamer;
 
     @Override
     public Service getService() {
@@ -157,7 +168,7 @@ public class LdProxyServiceResource implements ServiceResource {
         }
     }
 
-    public void init(OpenApiResource openApiResource, String externalUrl) {
+    public void inject(OpenApiResource openApiResource, AkkaStreamer akkaStreamer, String externalUrl) {
         this.openApiResource = openApiResource;
 
         URI externalUri = null;
@@ -168,6 +179,7 @@ public class LdProxyServiceResource implements ServiceResource {
         }
 
         this.externalUri = Optional.ofNullable(externalUri);
+        this.akkaStreamer = akkaStreamer;
     }
 
     @Override
@@ -702,6 +714,21 @@ public class LdProxyServiceResource implements ServiceResource {
         //    return getWfsPropertiesPaged(layerid, range, indexId);
         //}
     }
+//TODO: finish async tests
+    @Path("/{layerid}/async")
+    @GET
+    public void getFeaturesAsJsonAsync(@Suspended AsyncResponse asyncResponse, /*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) throws IOException {
+
+        WfsProxyFeatureType featureType = getFeatureTypeForLayerId(layerid);
+
+        LOGGER.getLogger().debug("GET ASNYC JSON FOR {} {}", featureType.getNamespace(), featureType.getName());
+
+        if (resultType != null && resultType.equals("hits")) {
+            asyncResponse.resume(getJsonHits(getWfsHitsFiltered(featureType), featureType));
+        }
+
+        getJsonResponseAsync(getWfsFeaturesPagedAndFiltered(featureType, range), featureType, true, range, callback, asyncResponse);
+    }
 
     @Path("/collections/{layerid}")
     @GET
@@ -925,6 +952,44 @@ public class LdProxyServiceResource implements ServiceResource {
                                                                                                                                                                                                                      .getDefaultTransformer(), links), range, callback, false)
                 .type("application/geo+json")
                 .build();
+    }
+
+    private void getJsonResponseAsync(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, String range, String callback, AsyncResponse asyncResponse) throws IOException {
+
+        asyncResponse.register(new CompletionCallback() {
+            @Override
+            public void onComplete(Throwable throwable) {
+                if (throwable == null) {
+                    //Everything is good. Response has been successfully
+                    //dispatched to client
+                    LOGGER.getLogger().debug("ASYNC SUCCESS");
+                } else {
+                    //An error has occurred during request processing
+                    LOGGER.getLogger().debug("ASYNC FAIL");
+                }
+            }
+        }, new ConnectionCallback() {
+            public void onDisconnect(AsyncResponse disconnected) {
+                //Connection lost or closed by the client!
+                LOGGER.getLogger().debug("DISCONNECT");
+            }
+        });
+
+        final Consumer<StreamingOutput> onSuccess = streamingOutput -> {
+            LOGGER.getLogger().debug("RESUME");
+
+            asyncResponse.resume(
+                    Response.ok()
+                            .entity(streamingOutput)
+                            .header("Access-Control-Allow-Origin", "*")
+                            .header("Access-Control-Allow-Methods", "GET")
+                            .build()
+            );
+        };
+
+        akkaStreamer.stream(featureType, new WFSRequest(service.getWfsAdapter(), operation), Gml2GeoJsonMappingProvider.MIME_TYPE, isFeatureCollection, de.ii.ldproxy.target.geojson.GeoJsonFeatureWriter.writer(null), onSuccess, throwable -> {asyncResponse.resume(throwable);return null;});
+
+
     }
 
     private Response getJsonHits(final FeatureQuery featureQuery, final WfsProxyFeatureType featureType) {

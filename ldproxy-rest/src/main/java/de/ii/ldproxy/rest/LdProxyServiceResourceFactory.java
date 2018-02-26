@@ -12,6 +12,7 @@ import de.ii.ldproxy.output.html.ServiceOverviewView;
 import de.ii.ldproxy.service.LdProxyService;
 import de.ii.ldproxy.target.html.WfsTargetHtml;
 import de.ii.ldproxy.wfs3.URICustomizer;
+import de.ii.ogc.wfs.proxy.AkkaStreamer;
 import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.api.rest.ServiceResource;
 import de.ii.xsf.core.api.rest.ServiceResourceFactory;
@@ -70,6 +71,7 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
     private String getStaticUrlPrefix(final URICustomizer uriCustomizer) {
         return uriCustomizer.copy().ensureLastPathSegment("___static___").getPath();
     }
+    private AkkaStreamer akkaStreamer;
 
     @Override
     public Class getServiceResourceClass() {
@@ -84,7 +86,7 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
     @Override
     public ServiceResource getServiceResource() {
         LdProxyServiceResource serviceResource = new LdProxyServiceResource();
-        serviceResource.init(openApiResource, coreServerConfig.getExternalUrl());
+        serviceResource.inject(openApiResource, akkaStreamer, coreServerConfig.getExternalUrl());
 
         return serviceResource;
     }
