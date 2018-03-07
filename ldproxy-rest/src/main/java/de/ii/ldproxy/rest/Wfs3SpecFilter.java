@@ -1,6 +1,6 @@
 /**
  * Copyright 2018 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -87,10 +87,11 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
             openAPI.getComponents()
                    .getParameters()
                    .get("bbox")
-                   .schema(new ArraySchema().items(new NumberSchema().minItems(4)
-                                                                     .maxItems(4)
-                                                                     .minimum(new BigDecimal(-180))
-                                                                     .maximum(new BigDecimal(180))));
+                   .schema(new ArraySchema().items(new NumberSchema().minimum(new BigDecimal(-180))
+                                                                     .maximum(new BigDecimal(180)))
+                                            .minItems(4)
+                                            .maxItems(4)
+                   );
             openAPI.getComponents()
                    .getSchemas()
                    .get("featureCollectionGeoJSON")
@@ -108,10 +109,10 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                    .getSchemas()
                    .get("bbox")
                    .getProperties()
-                   .replace("bbox", new ArraySchema().items(new NumberSchema().minItems(4)
-                                                                              .maxItems(4)
-                                                                              .minimum(new BigDecimal(-180))
+                   .replace("bbox", new ArraySchema().items(new NumberSchema().minimum(new BigDecimal(-180))
                                                                               .maximum(new BigDecimal(180)))
+                                                     .minItems(4)
+                                                     .maxItems(4)
                                                      .example(ImmutableList.of(-180, -90, 180, 90))
                                                      .description("minimum longitude, minimum latitude, maximum longitude, maximum latitude"));
             openAPI.getComponents()

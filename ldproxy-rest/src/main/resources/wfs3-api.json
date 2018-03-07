@@ -352,10 +352,10 @@
                 "required": false,
                 "schema": {
                     "type": "array",
+                    "minItems": 4,
+                    "maxItems": 4,
                     "items": {
                         "type": "number",
-                        "minItems": 4,
-                        "maxItems": 4,
                         "minimum": -180,
                         "maximum": 180
                     }
@@ -435,9 +435,9 @@
                     "bbox": {
                         "description": "minimum longitude, minimum latitude, maximum longitude, maximum latitude",
                         "type": "array",
+                        "minItems": 4,
+                        "maxItems": 4,
                         "items": {
-                            "minItems": 4,
-                            "maxItems": 4,
                             "type": "number",
                             "minimum": -180,
                             "maximum": 180
