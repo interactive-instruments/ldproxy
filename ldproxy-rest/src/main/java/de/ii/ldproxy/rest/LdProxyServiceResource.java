@@ -35,6 +35,7 @@ import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.ogc.api.Versions;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLParser;
+import de.ii.xtraplatform.ogc.api.wfs.client.DescribeFeatureType;
 import de.ii.xtraplatform.ogc.api.wfs.client.GetCapabilities;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSOperation;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSRequest;
@@ -181,7 +182,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 }
                 collections.get(qn).setName(ft.getName().toLowerCase());
                 collections.get(qn).setTitle(ft.getDisplayName());
-                collections.get(qn).setLinks(generateDatasetCollectionLinks(mediaType, ft.getName().toLowerCase(), ft.getDisplayName()));
+                collections.get(qn).setLinks(generateDatasetCollectionLinks(mediaType, ft.getName().toLowerCase(), ft.getDisplayName(), ft.getNamespace()));
             }
         });
 
@@ -199,20 +200,26 @@ public class LdProxyServiceResource implements ServiceResource {
 
     private List<Wfs3Link> generateDatasetLinks(String mediaType, String... alternativeMediaTypes) {
         String uri = uriInfo.getRequestUri().toString();
+        WFSRequest wfsRequest = new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType());
+
         return new ImmutableList.Builder<Wfs3Link>()
                 .add(new Wfs3Link(uri, "self", mediaType, "this document"))
                 .addAll(Arrays.stream(alternativeMediaTypes).map(generateAlternateLink(mediaType, uri)).collect(Collectors.toList()))
                 .add(new Wfs3Link(uri.replace("?", "api?").replace(mediaTypeFormats.get(mediaType), "json"), "service", "application/openapi+json;version=3.0", "the OpenAPI definition as JSON"))
                 .add(new Wfs3Link(uri.replace("?", "api?").replace(mediaTypeFormats.get(mediaType), "html"), "service", "text/html", "the OpenAPI definition as HTML"))
+                .add(new Wfs3Link(wfsRequest.getAsUrl(), "describedBy", "application/xml", "XML schema for all feature types"))
                 .build();
     }
 
-    private List<Wfs3Link> generateDatasetCollectionLinks(String mediaType, String featureTypeName, String displayName) {
+    private List<Wfs3Link> generateDatasetCollectionLinks(String mediaType, String featureTypeName, String displayName, String namespaceUri) {
         String uri = uriInfo.getRequestUri().toString().replace("?", featureTypeName + "?");
+        WFSRequest wfsRequest = new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType(ImmutableMap.of(namespaceUri, ImmutableList.of(featureTypeName))));
+
         return new ImmutableList.Builder<Wfs3Link>()
                 .add(new Wfs3Link(uri.replace(mediaTypeFormats.get(mediaType), "json"), "item", "application/geo+json", displayName + " as GeoJSON"))
                 .add(new Wfs3Link(uri.replace(mediaTypeFormats.get(mediaType), "html"), "item", "text/html", displayName + " as HTML"))
                 .add(new Wfs3Link(uri.replace(mediaTypeFormats.get(mediaType), "xml"), "item", "application/gml+xml;version=3.2;profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf2", displayName + " as GML"))
+                .add(new Wfs3Link(wfsRequest.getAsUrl(), "describedBy", "application/xml", "XML schema for feature type " + displayName))
                 .build();
     }
 
