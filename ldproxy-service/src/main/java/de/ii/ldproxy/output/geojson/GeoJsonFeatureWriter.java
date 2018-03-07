@@ -13,6 +13,7 @@ import de.ii.ldproxy.gml2json.AbstractFeatureWriter;
 import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.gml2json.JsonCoordinateFormatter;
 import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
+import de.ii.ldproxy.rest.wfs3.Wfs3Link;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
@@ -26,6 +27,7 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -38,11 +40,14 @@ import java.util.logging.Logger;
 public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
 
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(GeoJsonFeatureWriter.class);
+
+    private final List<Wfs3Link> links;
            
-    public GeoJsonFeatureWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer) {
+    public GeoJsonFeatureWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, List<Wfs3Link> links) {
         super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer, new GeoJsonOnTheFlyMapping());
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
+        this.links = links;
     }
 
     private void writeSRS() throws IOException {
@@ -274,9 +279,27 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
 
             //this.writeSRS();
 
+            this.writeLinks();
+
             json.writeFieldName("features");
             json.writeStartArray();
         }
+    }
+
+    private void writeLinks() throws IOException {
+        json.writeFieldName("links");
+        json.writeStartArray();
+
+        for (Wfs3Link link : links) {
+            json.writeStartObject();
+            json.writeStringField("href", link.href);
+            json.writeStringField("rel", link.rel);
+            json.writeStringField("type", link.type);
+            json.writeStringField("title", link.title);
+            json.writeEndObject();
+        }
+
+        json.writeEndArray();
     }
     
     @Override
@@ -300,6 +323,7 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
 
         if (!isFeatureCollection) {
             //this.writeSRS();
+            this.writeLinks();
         }
 
 

@@ -10,6 +10,7 @@ package de.ii.ldproxy.rest.wfs3;
 import com.google.common.collect.ImmutableList;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import java.util.Collection;
@@ -18,17 +19,27 @@ import java.util.List;
 /**
  * @author zahnen
  */
-@XmlRootElement(name = "Collections")
-public class Wfs3Collections {
-
+@XmlRootElement(name = "Dataset")
+public class Wfs3Dataset {
+    private List<Wfs3Link> links;
     private List<Wfs3Collection> collections;
 
-    public Wfs3Collections() {}
-
-    public Wfs3Collections(Collection<Wfs3Collection> collections) {
+    public Wfs3Dataset(Collection<Wfs3Collection> collections, List<Wfs3Link> links) {
         this.collections = ImmutableList.copyOf(collections);
+        this.links = ImmutableList.copyOf(links);
     }
 
+    @XmlElementWrapper(name = "Links")
+    @XmlElement(name = "Link")
+    public List<Wfs3Link> getLinks() {
+        return links;
+    }
+
+    public void setLinks(List<Wfs3Link> links) {
+        this.links = links;
+    }
+
+    @XmlElementWrapper(name = "Collections")
     @XmlElement(name = "Collection")
     public List<Wfs3Collection> getCollections() {
         return collections;
@@ -38,7 +49,7 @@ public class Wfs3Collections {
         this.collections = collections;
     }
 
-    @XmlType(propOrder={"name","title","description", "extent"})
+    @XmlType(propOrder = {"name", "title", "description", "extent", "links"})
     public static class Wfs3Collection {
 
         static class Extent {
@@ -46,7 +57,10 @@ public class Wfs3Collections {
 
             public Extent(String xmin, String ymin, String xmax, String ymax) {
                 try {
-                    this.bbox = ImmutableList.of(xmin, ymin, xmax, ymax).stream().mapToDouble(Double::parseDouble).toArray();
+                    this.bbox = ImmutableList.of(xmin, ymin, xmax, ymax)
+                                             .stream()
+                                             .mapToDouble(Double::parseDouble)
+                                             .toArray();
                 } catch (NumberFormatException e) {
                     // ignore
                 }
@@ -65,6 +79,7 @@ public class Wfs3Collections {
         private String title;
         private String description;
         private Extent extent;
+        private List<Wfs3Link> links;
 
         public String getName() {
             return name;
@@ -96,6 +111,14 @@ public class Wfs3Collections {
 
         public void setExtent(Extent extent) {
             this.extent = extent;
+        }
+
+        public List<Wfs3Link> getLinks() {
+            return links;
+        }
+
+        public void setLinks(List<Wfs3Link> links) {
+            this.links = links;
         }
     }
 }

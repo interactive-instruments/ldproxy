@@ -7,16 +7,21 @@
  */
 package de.ii.ldproxy.rest;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter;
 import de.ii.ldproxy.output.geojson.GeoJsonHitsWriter;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMappingProvider;
 import de.ii.ldproxy.output.html.*;
 import de.ii.ldproxy.output.jsonld.Gml2JsonLdMappingProvider;
 import de.ii.ldproxy.output.jsonld.JsonLdOutputWriter;
+import de.ii.ldproxy.rest.util.RangeHeader;
 import de.ii.ldproxy.rest.wfs3.GetCapabilities2Wfs3Collection;
-import de.ii.ldproxy.rest.wfs3.Wfs3Collections;
+import de.ii.ldproxy.rest.wfs3.Wfs3Dataset;
+import de.ii.ldproxy.rest.wfs3.Wfs3Link;
 import de.ii.ldproxy.service.*;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
@@ -52,6 +57,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.rest.util.RangeHeader.parseRange;
@@ -116,7 +122,7 @@ public class LdProxyServiceResource implements ServiceResource {
         //String query = request.getQueryString() == null ? "" : request.getQueryString();
         dataset.formats = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("JSON", "f=json"))
-                .add(new NavigationDTO("XML", "f=xml"))
+                //.add(new NavigationDTO("XML", "f=xml"))
                 .build();
         try {
             service.getFeatureTypes().values().stream().sorted(Comparator.comparing(WfsProxyFeatureType::getName)).forEach(ft -> {
@@ -151,19 +157,30 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     @GET
-    @Produces({MediaTypeCharset.APPLICATION_JSON_UTF8, "application/xml;charset=utf-8"})
-    public Wfs3Collections getDatasetAsJsonOrXml(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @QueryParam("callback") String callback) {
-        Map<String, Wfs3Collections.Wfs3Collection> collections = new LinkedHashMap<>();
+    @Produces({MediaTypeCharset.APPLICATION_JSON_UTF8})
+    public Wfs3Dataset getDatasetAsJson(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @QueryParam("callback") String callback) {
+        return generateWfs3Dataset("application/json", "application/xml", "text/html");
+    }
+
+    @GET
+    @Produces({"application/xml;charset=utf-8"})
+    public Wfs3Dataset getDatasetAsXml(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @QueryParam("callback") String callback) {
+        return generateWfs3Dataset("application/xml", "application/json", "text/html");
+    }
+
+    private Wfs3Dataset generateWfs3Dataset(String mediaType, String... alternativeMediaTypes) {
+        Map<String, Wfs3Dataset.Wfs3Collection> collections = new LinkedHashMap<>();
 
         service.getFeatureTypes().values().stream().sorted(Comparator.comparing(WfsProxyFeatureType::getName)).forEach(ft -> {
             String qn = service.getWfsAdapter().getNsStore().getNamespacePrefix(ft.getNamespace()) + ":" + ft.getName();
             List<TargetMapping> mappings = ft.getMappings().findMappings(ft.getNamespace() + ":" + ft.getName(), TargetMapping.BASE_TYPE);
             if (!service.getServiceProperties().getMappingStatus().isEnabled() || (!mappings.isEmpty() && mappings.get(0).isEnabled())) {
                 if (!collections.containsKey(qn)) {
-                    collections.put(qn, new Wfs3Collections.Wfs3Collection());
+                    collections.put(qn, new Wfs3Dataset.Wfs3Collection());
                 }
                 collections.get(qn).setName(ft.getName().toLowerCase());
                 collections.get(qn).setTitle(ft.getDisplayName());
+                collections.get(qn).setLinks(generateDatasetCollectionLinks(mediaType, ft.getName().toLowerCase(), ft.getDisplayName()));
             }
         });
 
@@ -174,10 +191,47 @@ public class LdProxyServiceResource implements ServiceResource {
 
         // TODO: apply local information (title, enabled, etc.)
 
-        // TODO: ELISE compile list of dependencies with versions and licenses
+        List<Wfs3Link> links = generateDatasetLinks(mediaType, alternativeMediaTypes);
 
-        return new Wfs3Collections(collections.values());
+        return new Wfs3Dataset(collections.values(), links);
     }
+
+    private List<Wfs3Link> generateDatasetLinks(String mediaType, String... alternativeMediaTypes) {
+        String uri = uriInfo.getRequestUri().toString();
+        return new ImmutableList.Builder<Wfs3Link>()
+                .add(new Wfs3Link(uri, "self", mediaType, "this document"))
+                .addAll(Arrays.stream(alternativeMediaTypes).map(generateAlternateLink(mediaType, uri)).collect(Collectors.toList()))
+                .add(new Wfs3Link(uri.replace("?", "api?").replace(mediaTypeFormats.get(mediaType), "json"), "service", "application/openapi+json;version=3.0", "the OpenAPI definition as JSON"))
+                .add(new Wfs3Link(uri.replace("?", "api?").replace(mediaTypeFormats.get(mediaType), "html"), "service", "text/html", "the OpenAPI definition as HTML"))
+                .build();
+    }
+
+    private List<Wfs3Link> generateDatasetCollectionLinks(String mediaType, String featureTypeName, String displayName) {
+        String uri = uriInfo.getRequestUri().toString().replace("?", featureTypeName + "?");
+        return new ImmutableList.Builder<Wfs3Link>()
+                .add(new Wfs3Link(uri.replace(mediaTypeFormats.get(mediaType), "json"), "item", "application/geo+json", displayName + " as GeoJSON"))
+                .add(new Wfs3Link(uri.replace(mediaTypeFormats.get(mediaType), "html"), "item", "text/html", displayName + " as HTML"))
+                .add(new Wfs3Link(uri.replace(mediaTypeFormats.get(mediaType), "xml"), "item", "application/gml+xml;version=3.2;profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf2", displayName + " as GML"))
+                .build();
+    }
+
+    private Function<String, Wfs3Link> generateAlternateLink(String origMediaType, String uri) {
+        return mediaType -> new Wfs3Link(uri.replace(mediaTypeFormats.get(origMediaType), mediaTypeFormats.get(mediaType)), "alternate", mediaType, "this document as " + mediaTypeNames.get(mediaType));
+    }
+
+    private Map<String, String> mediaTypeNames = new ImmutableMap.Builder<String, String>()
+            .put("application/json", "JSON")
+            .put("application/xml", "XML")
+            .put("text/html", "HTML")
+            .put("application/gml+xml;version=3.2;profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf2", "GML")
+            .build();
+    private Map<String, String> mediaTypeFormats = new ImmutableMap.Builder<String, String>()
+            .put("application/json", "json")
+            .put("application/geo+json", "json")
+            .put("application/xml", "xml")
+            .put("text/html", "html")
+            .put("application/gml+xml;version=3.2;profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf2", "xml")
+            .build();
 
     //@GET
     //@JsonView(JsonViews.GSFSView.class)
@@ -667,6 +721,40 @@ public class LdProxyServiceResource implements ServiceResource {
         return new GetPropertyValuePaging(ft[0], ft[1], indexId, count, startIndex);
     }*/
 
+    private List<Wfs3Link> generateCollectionLinks(boolean isFeatureCollection, int page, int count, String mediaType, String... alternativeMediaTypes) {
+        String uri = uriInfo.getRequestUri().toString();
+
+        List<Wfs3Link> paging = new ArrayList<>();
+        if (isFeatureCollection) {
+            paging.add(new Wfs3Link(getUrlWithPageAndCount(uriInfo, page + 1, count), "next", mediaType, "next page"));
+            if (page > 1) {
+                paging.add(new Wfs3Link(getUrlWithPageAndCount(uriInfo, page - 1, count), "prev", mediaType, "previous page"));
+            }
+        } else {
+            String u = UriBuilder.fromUri(uriInfo.getRequestUri()).replacePath(Joiner.on('/').join(uriInfo.getPathSegments().subList(0, uriInfo.getPathSegments().size()-2)) + "/").build().toString();
+            paging.add(new Wfs3Link(u, "collection", mediaType, "the collection document"));
+        }
+
+        return new ImmutableList.Builder<Wfs3Link>()
+                .add(new Wfs3Link(uri, "self", mediaType, "this document"))
+                .addAll(Arrays.stream(alternativeMediaTypes).map(generateAlternateLink(mediaType, uri)).collect(Collectors.toList()))
+                .addAll(paging)
+                .build();
+    }
+
+    private String getUrlWithPageAndCount(UriInfo uri, int page, int count) {
+        Map<String, List<String>> stringListMap = Maps.filterKeys(uriInfo.getQueryParameters(), key -> !Objects.equals(key, "page") && !Objects.equals(key, "startIndex") && !Objects.equals(key, "count"));
+        Map<String, String> queryParameters = ImmutableMap.<String, String>builder()
+                                                         .putAll(stringListMap.entrySet().stream().map(entry -> Maps.immutableEntry(entry.getKey(), entry.getValue().get(0))).collect(Collectors.toList()))
+                                                         .put("page", String.valueOf(page))
+                                                         .put("count", String.valueOf(count))
+                                                         .build();
+
+        UriBuilder absolutePathBuilder = uri.getAbsolutePathBuilder();
+        queryParameters.entrySet().forEach(entry -> absolutePathBuilder.queryParam(entry.getKey(), entry.getValue()));
+        return absolutePathBuilder.build().toString();
+    }
+
 
     public interface GmlAnalyzerBuilder {
         GMLAnalyzer with(OutputStream outputStream) throws IOException;
@@ -682,8 +770,11 @@ public class LdProxyServiceResource implements ServiceResource {
 
     private Response getJsonResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, String range, String callback) {
 
+        int[] r = RangeHeader.parseRange(range);
+        List<Wfs3Link> links = generateCollectionLinks(isFeatureCollection, r[2], r[3],"application/geo+json", "application/gml+xml;version=3.2;profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf2", "text/html");
+
         return getResponse(operation, featureType,
-                outputStream -> new GeoJsonFeatureWriter(service.createJsonGenerator(outputStream), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2GeoJsonMappingProvider.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer()), null, range, callback);
+                outputStream -> new GeoJsonFeatureWriter(service.createJsonGenerator(outputStream), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2GeoJsonMappingProvider.MIME_TYPE, service.getCrsTransformations().getDefaultTransformer(), links), null, range, callback);
     }
 
     private Response getJsonHits(final WFSOperation operation, final WfsProxyFeatureType featureType) {

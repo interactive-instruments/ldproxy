@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.rest.wfs3;
 
-import de.ii.ldproxy.rest.wfs3.Wfs3Collections.Wfs3Collection;
 import de.ii.xtraplatform.ogc.api.wfs.parser.AbstractWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
 
@@ -18,9 +17,9 @@ import java.util.Map;
  */
 public class GetCapabilities2Wfs3Collection extends AbstractWfsCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer {
 
-    private Map<String, Wfs3Collection> collections;
+    private Map<String, Wfs3Dataset.Wfs3Collection> collections;
 
-    public GetCapabilities2Wfs3Collection(Map<String, Wfs3Collection> collections) {
+    public GetCapabilities2Wfs3Collection(Map<String, Wfs3Dataset.Wfs3Collection> collections) {
         this.collections = collections;
     }
 
@@ -51,7 +50,7 @@ public class GetCapabilities2Wfs3Collection extends AbstractWfsCapabilitiesAnaly
     @Override
     public void analyzeFeatureTypeBoundingBox(String featureTypeName, String xmin, String ymin, String xmax, String ymax) {
         if (collections.containsKey(featureTypeName)) {
-            collections.get(featureTypeName).setExtent(new Wfs3Collection.Extent(xmin, ymin, xmax, ymax));
+            collections.get(featureTypeName).setExtent(new Wfs3Dataset.Wfs3Collection.Extent(xmin, ymin, xmax, ymax));
         }
     }
 
