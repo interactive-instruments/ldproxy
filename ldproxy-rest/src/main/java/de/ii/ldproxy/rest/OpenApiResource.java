@@ -106,7 +106,7 @@ public class OpenApiResource {
     }
 
     @GET
-    @Produces({MediaType.APPLICATION_JSON, "application/openapi+json;version=3.0"})
+    @Produces({"application/openapi+json;version=3.0", MediaType.APPLICATION_JSON})
     //@Operation(summary = "the API description - this document", tags = {"Capabilities"}, parameters = {@Parameter(name = "f")})
     public Response getApiDescriptionJson(@Context HttpHeaders headers, @Context UriInfo uriInfo) throws Exception {
         LOGGER.debug("MIME {})", "JSON");

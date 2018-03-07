@@ -233,7 +233,7 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                 return Response.status(Response.Status.OK)
                                .entity(pretty ? Json.pretty(openAPI) : Json.mapper()
                                                                            .writeValueAsString(openAPI))
-                               .type(MediaTypeCharset.APPLICATION_JSON_UTF8)
+                               .type("application/openapi+json;version=3.0"/*MediaTypeCharset.APPLICATION_JSON_UTF8*/)
                                .header("Access-Control-Allow-Origin", "*")
                                .header("Access-Control-Allow-Methods", "GET")
                                .build();

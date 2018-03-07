@@ -650,7 +650,7 @@ public class LdProxyServiceResource implements ServiceResource {
 
     @Path("/{layerid}")
     @GET
-    @Produces("application/xml;charset=utf-8")
+    @Produces({"application/xml;charset=utf-8", "application/gml+xml;version=3.2"})
     public Response getFeaturesAsXml(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @QueryParam("properties") String fields, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
 
         WfsProxyFeatureType featureType = getFeatureTypeForLayerId(layerid);
@@ -704,7 +704,7 @@ public class LdProxyServiceResource implements ServiceResource {
 
     @Path("/{layerid}/{featureid}")
     @GET
-    @Produces("application/xml;charset=utf-8")
+    @Produces({"application/xml;charset=utf-8", "application/gml+xml;version=3.2"})
     public Response getFeatureByIdAsAXml(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
 
         WfsProxyFeatureType featureType = getFeatureTypeForLayerId(layerid);
@@ -868,21 +868,25 @@ public class LdProxyServiceResource implements ServiceResource {
 
         return getResponse(operation, featureType,
                 outputStream -> new GeoJsonFeatureWriter(service.createJsonGenerator(outputStream), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2GeoJsonMappingProvider.MIME_TYPE, service.getCrsTransformations()
-                                                                                                                                                                                                                     .getDefaultTransformer(), links), null, range, callback);
+                                                                                                                                                                                                                     .getDefaultTransformer(), links), null, range, callback)
+                .type("application/geo+json")
+                .build();
     }
 
     private Response getJsonHits(final WFSOperation operation, final WfsProxyFeatureType featureType) {
 
         return getResponse(operation, featureType,
                 outputStream -> new GeoJsonHitsWriter(service.createJsonGenerator(outputStream), service.jsonMapper, true, service.getCrsTransformations()
-                                                                                                                                  .getDefaultTransformer()));
+                                                                                                                                  .getDefaultTransformer()))
+                .build();
     }
 
     private Response getJsonLdResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final FeatureCollectionView dataset) {
 
         return getResponse(operation, featureType,
                 outputStream -> new JsonLdOutputWriter(service.createJsonGenerator(outputStream), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2JsonLdMappingProvider.MIME_TYPE, service.getCrsTransformations()
-                                                                                                                                                                                                                  .getDefaultTransformer(), uriInfo.getRequestUri(), dataset, service.getRewrites(), service.getVocab()));
+                                                                                                                                                                                                                  .getDefaultTransformer(), uriInfo.getRequestUri(), dataset, service.getRewrites(), service.getVocab()))
+                .build();
     }
 
     private Response getHtmlResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, final List<String> groupings, final boolean group, final String query, final int[] range, final FeatureCollectionView featureTypeDataset) {
@@ -894,18 +898,18 @@ public class LdProxyServiceResource implements ServiceResource {
                 wfsRequest -> {
                     if (featureTypeDataset != null) featureTypeDataset.requestUrl = wfsRequest.getAsUrl();
                 }
-        );
+        ).build();
     }
 
-    private Response getResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final GmlAnalyzerBuilder gmlAnalyzer) {
+    private Response.ResponseBuilder getResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final GmlAnalyzerBuilder gmlAnalyzer) {
         return getResponse(operation, featureType, gmlAnalyzer, null);
     }
 
-    private Response getResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final GmlAnalyzerBuilder gmlAnalyzer, final WFSRequestConsumer wfsRequestConsumer) {
+    private Response.ResponseBuilder getResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final GmlAnalyzerBuilder gmlAnalyzer, final WFSRequestConsumer wfsRequestConsumer) {
         return getResponse(operation, featureType, gmlAnalyzer, wfsRequestConsumer, null, null);
     }
 
-    private Response getResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final GmlAnalyzerBuilder gmlAnalyzer, final WFSRequestConsumer wfsRequestConsumer, final String range, final String callback) {
+    private Response.ResponseBuilder getResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final GmlAnalyzerBuilder gmlAnalyzer, final WFSRequestConsumer wfsRequestConsumer, final String range, final String callback) {
         Response.ResponseBuilder response = Response.ok();
 
         StreamingOutput stream;
@@ -974,8 +978,7 @@ public class LdProxyServiceResource implements ServiceResource {
 
         return response.entity(stream)
                        .header("Access-Control-Allow-Origin", "*")
-                       .header("Access-Control-Allow-Methods", "GET")
-                       .build();
+                       .header("Access-Control-Allow-Methods", "GET");
     }
 
     private Response getWfsResponse(final WFSOperation operation) {
@@ -987,6 +990,7 @@ public class LdProxyServiceResource implements ServiceResource {
 
         return Response.ok()
                        .entity(stream)
+                       .type("application/gml+xml;version=3.2")
                        .build();
     }
 
