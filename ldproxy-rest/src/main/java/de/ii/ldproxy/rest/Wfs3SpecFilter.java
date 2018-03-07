@@ -1,6 +1,6 @@
 /**
  * Copyright 2018 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -75,22 +75,71 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
         boolean pretty = true;
 
         try {
-            OpenAPI openAPI = objectMapper.readerFor(OpenAPI.class).with(DeserializationFeature.READ_ENUMS_USING_TO_STRING).readValue(Resources.asByteSource(Resources.getResource(Wfs3SpecFilter.class, "/wfs3-api.json")).openBufferedStream());
+            OpenAPI openAPI = objectMapper.readerFor(OpenAPI.class)
+                                          .with(DeserializationFeature.READ_ENUMS_USING_TO_STRING)
+                                          .readValue(Resources.asByteSource(Resources.getResource(Wfs3SpecFilter.class, "/wfs3-api.json"))
+                                                              .openBufferedStream());
 
-            openAPI.getInfo().version("1.0.0");
+            openAPI.getInfo()
+                   .version("1.0.0");
 
             // working around swagger bugs
-            openAPI.getComponents().getParameters().get("bbox").schema(new ArraySchema().items(new NumberSchema().minItems(4).maxItems(4).minimum(new BigDecimal(-180)).maximum(new BigDecimal(180))));
-            openAPI.getComponents().getSchemas().get("featureCollectionGeoJSON").getProperties().replace("features", new ArraySchema().items(new Schema().$ref("#/components/schemas/featureGeoJSON")));
-            openAPI.getComponents().getSchemas().get("featureCollectionGML").getProperties().replace("features", new ArraySchema().items(new ComposedSchema().oneOf(ImmutableList.of(new Schema().$ref("#/components/schemas/referenceXlink"), new Schema().$ref("#/components/schemas/featureGML"))).xml(new XML().name("featureMember").namespace("http://www.opengis.net/wfs/3.0").prefix("wfs"))));
-            openAPI.getComponents().getSchemas().get("bbox").getProperties().replace("bbox", new ArraySchema().items(new NumberSchema().minItems(4).maxItems(4).minimum(new BigDecimal(-180)).maximum(new BigDecimal(180))).example(ImmutableList.of(-180, -90, 180, 90)).description("minimum longitude, minimum latitude, maximum longitude, maximum latitude"));
-            openAPI.getComponents().getSchemas().get("content").getProperties().replace("collections", new ArraySchema().items(new Schema().$ref("#/components/schemas/collectionInfo")).xml(new XML().namespace("http://www.opengis.net/wfs/3.0").prefix("wfs")));
-            openAPI.getComponents().getSchemas().get("collectionInfo").getProperties().replace("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
-            openAPI.getComponents().getSchemas().get("collectionInfo").getProperties().replace("crs", new ArraySchema().items(new StringSchema()));
-            openAPI.getComponents().getSchemas().get("req-classes").getProperties().replace("conformsTo", new ArraySchema().items(new StringSchema().example("http://www.opengis.net/spec/wfs-1/3.0/req/core")));
+            openAPI.getComponents()
+                   .getParameters()
+                   .get("bbox")
+                   .schema(new ArraySchema().items(new NumberSchema().minItems(4)
+                                                                     .maxItems(4)
+                                                                     .minimum(new BigDecimal(-180))
+                                                                     .maximum(new BigDecimal(180))));
+            openAPI.getComponents()
+                   .getSchemas()
+                   .get("featureCollectionGeoJSON")
+                   .getProperties()
+                   .replace("features", new ArraySchema().items(new Schema().$ref("#/components/schemas/featureGeoJSON")));
+            openAPI.getComponents()
+                   .getSchemas()
+                   .get("featureCollectionGML")
+                   .getProperties()
+                   .replace("features", new ArraySchema().items(new ComposedSchema().oneOf(ImmutableList.of(new Schema().$ref("#/components/schemas/referenceXlink"), new Schema().$ref("#/components/schemas/featureGML")))
+                                                                                    .xml(new XML().name("featureMember")
+                                                                                                  .namespace("http://www.opengis.net/wfs/3.0")
+                                                                                                  .prefix("wfs"))));
+            openAPI.getComponents()
+                   .getSchemas()
+                   .get("bbox")
+                   .getProperties()
+                   .replace("bbox", new ArraySchema().items(new NumberSchema().minItems(4)
+                                                                              .maxItems(4)
+                                                                              .minimum(new BigDecimal(-180))
+                                                                              .maximum(new BigDecimal(180)))
+                                                     .example(ImmutableList.of(-180, -90, 180, 90))
+                                                     .description("minimum longitude, minimum latitude, maximum longitude, maximum latitude"));
+            openAPI.getComponents()
+                   .getSchemas()
+                   .get("content")
+                   .getProperties()
+                   .replace("collections", new ArraySchema().items(new Schema().$ref("#/components/schemas/collectionInfo"))
+                                                            .xml(new XML().namespace("http://www.opengis.net/wfs/3.0")
+                                                                          .prefix("wfs")));
+            openAPI.getComponents()
+                   .getSchemas()
+                   .get("collectionInfo")
+                   .getProperties()
+                   .replace("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
+            openAPI.getComponents()
+                   .getSchemas()
+                   .get("collectionInfo")
+                   .getProperties()
+                   .replace("crs", new ArraySchema().items(new StringSchema()));
+            openAPI.getComponents()
+                   .getSchemas()
+                   .get("req-classes")
+                   .getProperties()
+                   .replace("conformsTo", new ArraySchema().items(new StringSchema().example("http://www.opengis.net/spec/wfs-1/3.0/req/core")));
 
             // TODO: rewrites
-            if (service.getRewrites().isEmpty())
+            if (service.getRewrites()
+                       .isEmpty())
                 openAPI.servers(ImmutableList.of(new Server().url(externalUrl + "rest/services/" + service.getId())));
             else
                 openAPI.servers(ImmutableList.of(new Server().url(externalUrl + service.getId())));
@@ -104,73 +153,97 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
 
                 WFSCapabilitiesParser wfsParser = new WFSCapabilitiesParser(analyzer, service.staxFactory);
 
-                wfsParser.parse(service.getWfsAdapter().request(operation));
+                wfsParser.parse(service.getWfsAdapter()
+                                       .request(operation));
 
-                openAPI.getInfo().title(service.getName()).description(service.getDescription());
-
-
-                PathItem featuresPathItem = openAPI.getPaths().remove("/{featureType}");
-                PathItem featurePathItem = openAPI.getPaths().remove("/{featureType}/{id}");
-
-                service.getFeatureTypes().values().stream().sorted(Comparator.comparing(WfsProxyFeatureType::getName)).forEach(ft -> {
-                    if (ft.getMappings().findMappings(ft.getNamespace() + ":" + ft.getName(), TargetMapping.BASE_TYPE).get(0).isEnabled()) {
-
-                        PathItem clonedPathItem = clonePathItem(featuresPathItem);
-                        clonedPathItem
-                                .get(clonedPathItem.getGet()
-                                        .summary("retrieve collection of features of type " + ft.getDisplayName())
-                                        .description(null)
-                                        .operationId("get" + ft.getName() + "Collection")
-                                );
-
-                        Map<String, String> filterableFields = service.getFilterableFieldsForFeatureType(ft);
-                        filterableFields.keySet().forEach(field -> {
-                            clonedPathItem.getGet().addParametersItem(
-                                    new Parameter()
-                                            .name(field)
-                                            .in("query")
-                                            .description("Filter the collection by " + field)
-                                            .required(false)
-                                            // TODO
-                                            .schema(new StringSchema())
-                                            .style(Parameter.StyleEnum.FORM)
-                                            .explode(false)
-                            );
-                        });
-
-                        openAPI.getPaths().addPathItem("/" + ft.getName().toLowerCase(), clonedPathItem);
+                openAPI.getInfo()
+                       .title(service.getName())
+                       .description(service.getDescription());
 
 
-                        PathItem clonedPathItem2 = clonePathItem(featurePathItem);
-                        clonedPathItem2 = clonedPathItem2
-                                .get(clonedPathItem2.getGet()
-                                        .summary("retrieve a " + ft.getDisplayName())
-                                        //.description("")
-                                        .operationId("get" + ft.getName())
-                                );
+                PathItem featuresPathItem = openAPI.getPaths()
+                                                   .remove("/{featureType}");
+                PathItem featurePathItem = openAPI.getPaths()
+                                                  .remove("/{featureType}/{id}");
 
-                        openAPI.getPaths().addPathItem("/" + ft.getName().toLowerCase() + "/{id}", clonedPathItem2);
-                    }
-                });
+                service.getFeatureTypes()
+                       .values()
+                       .stream()
+                       .sorted(Comparator.comparing(WfsProxyFeatureType::getName))
+                       .forEach(ft -> {
+                           if (ft.getMappings()
+                                 .findMappings(ft.getNamespace() + ":" + ft.getName(), TargetMapping.BASE_TYPE)
+                                 .get(0)
+                                 .isEnabled()) {
+
+                               PathItem clonedPathItem = clonePathItem(featuresPathItem);
+                               clonedPathItem
+                                       .get(clonedPathItem.getGet()
+                                                          .summary("retrieve collection of features of type " + ft.getDisplayName())
+                                                          .description(null)
+                                                          .operationId("get" + ft.getName() + "Collection")
+                                       );
+
+                               Map<String, String> filterableFields = service.getFilterableFieldsForFeatureType(ft);
+                               filterableFields.keySet()
+                                               .forEach(field -> {
+                                                   clonedPathItem.getGet()
+                                                                 .addParametersItem(
+                                                                         new Parameter()
+                                                                                 .name(field)
+                                                                                 .in("query")
+                                                                                 .description("Filter the collection by " + field)
+                                                                                 .required(false)
+                                                                                 // TODO
+                                                                                 .schema(new StringSchema())
+                                                                                 .style(Parameter.StyleEnum.FORM)
+                                                                                 .explode(false)
+                                                                 );
+                                               });
+
+                               openAPI.getPaths()
+                                      .addPathItem("/" + ft.getName()
+                                                           .toLowerCase(), clonedPathItem);
+
+
+                               PathItem clonedPathItem2 = clonePathItem(featurePathItem);
+                               clonedPathItem2 = clonedPathItem2
+                                       .get(clonedPathItem2.getGet()
+                                                           .summary("retrieve a " + ft.getDisplayName())
+                                                           //.description("")
+                                                           .operationId("get" + ft.getName())
+                                       );
+
+                               openAPI.getPaths()
+                                      .addPathItem("/" + ft.getName()
+                                                           .toLowerCase() + "/{id}", clonedPathItem2);
+                           }
+                       });
             }
 
 
-            if (StringUtils.isNotBlank(type) && type.trim().equalsIgnoreCase("yaml")) {
+            if (StringUtils.isNotBlank(type) && type.trim()
+                                                    .equalsIgnoreCase("yaml")) {
                 return Response.status(Response.Status.OK)
-                        .entity(pretty ? Yaml.pretty(openAPI) : Yaml.mapper().writeValueAsString(openAPI))
-                        .type("application/yaml")
-                        .build();
+                               .entity(pretty ? Yaml.pretty(openAPI) : Yaml.mapper()
+                                                                           .writeValueAsString(openAPI))
+                               .type("application/yaml")
+                               .build();
             } else {
                 return Response.status(Response.Status.OK)
-                        .entity(pretty ? Json.pretty(openAPI) : Json.mapper().writeValueAsString(openAPI))
-                        .type(MediaTypeCharset.APPLICATION_JSON_UTF8)
-                        .build();
+                               .entity(pretty ? Json.pretty(openAPI) : Json.mapper()
+                                                                           .writeValueAsString(openAPI))
+                               .type(MediaTypeCharset.APPLICATION_JSON_UTF8)
+                               .header("Access-Control-Allow-Origin", "*")
+                               .header("Access-Control-Allow-Methods", "GET")
+                               .build();
             }
         } catch (IOException e) {
             // ignore
             LOGGER.debug("ERROR", e);
         }
-        return Response.noContent().build();
+        return Response.noContent()
+                       .build();
     }
 
     private PathItem clonePathItem(PathItem pathItem) {
@@ -234,20 +307,24 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
         //LOGGER.debug("FILTER {}", filteredOpenApi);
 
         if (filteredOpenApi.isPresent()) {
-            filteredOpenApi.get().paths(
-                    filteredOpenApi.get().getPaths().entrySet().stream()
-                            .filter(path -> {
-                                LOGGER.debug("PATH {} {}", path.getKey(), path.getValue());
-                                return true;/*path.getKey().startsWith("/service/");*/
-                            })
-                            .collect(Collector.of(Paths::new,
-                                    (paths, path) -> paths.addPathItem(path.getKey(), path.getValue()),
-                                    (paths1, paths2) -> {
-                                        paths2.forEach(paths1::addPathItem);
-                                        return paths1;
-                                    })
-                            )
-            );
+            filteredOpenApi.get()
+                           .paths(
+                                   filteredOpenApi.get()
+                                                  .getPaths()
+                                                  .entrySet()
+                                                  .stream()
+                                                  .filter(path -> {
+                                                      LOGGER.debug("PATH {} {}", path.getKey(), path.getValue());
+                                                      return true;/*path.getKey().startsWith("/service/");*/
+                                                  })
+                                                  .collect(Collector.of(Paths::new,
+                                                          (paths, path) -> paths.addPathItem(path.getKey(), path.getValue()),
+                                                          (paths1, paths2) -> {
+                                                              paths2.forEach(paths1::addPathItem);
+                                                              return paths1;
+                                                          })
+                                                  )
+                           );
         }
 
         return filteredOpenApi;
@@ -301,62 +378,77 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
 
     protected void doPostProcessing(OpenAPI openApiSpec) {
         openApiSpec.servers(ImmutableList.of(new Server().url("/rest")))
-                .tags(ImmutableList.<Tag>builder()
-                        .add(new Tag()
-                                .name("Capabilities")
-                                .description("Essential characteristics of this API including information about the data."))
-                        .add(new Tag()
-                                .name("Features")
-                                .description("Access to data (features)."))
-                        .build())
-                .components(new Components()
-                        .parameters(ImmutableMap.<String, Parameter>builder()
-                                .put("f", new QueryParameter()
-                                        .description("The format of the response. If no value is provided, the standard http rules apply, i.e., the accept header shall be used to determine the format.\\nAccepted values are \"xml\", \"json\" and \"html\".")
-                                        .schema(new StringSchema()._enum(ImmutableList.of("json", "xml", "html")))
-                                        .style(Parameter.StyleEnum.FORM)
-                                        .explode(false)
-                                        .required(false)
-                                        .name("f"))
-                                .put("startIndex", new QueryParameter()
-                                        .description("The optional startIndex parameter indicates the index within the result set from which the server shall begin presenting results in the response document. The first element has an index of 0.\\\nMinimum = 0.\\\nDefault = 0.")
-                                        .schema(new IntegerSchema()._default(0).minimum(new BigDecimal(0)))
-                                        .style(Parameter.StyleEnum.FORM)
-                                        .explode(false)
-                                        .required(false)
-                                        .name("startIndex"))
-                                .put("count", new QueryParameter()
-                                        .description("The optional count parameter limits the number of items that are presented in the response document.\\\nOnly items are counted that are on the first level of the collection in the response document. \n" +
-                                                "        Nested objects contained within the explicitly requested items shall not be counted.\\\nMinimum = 1.\\\nMaximum = 10000.\\\nDefault = 10.")
-                                        .schema(new IntegerSchema()._default(0).minimum(new BigDecimal(1)).maximum(new BigDecimal(10000)))
-                                        .style(Parameter.StyleEnum.FORM)
-                                        .explode(false)
-                                        .required(false)
-                                        .name("count"))
-                                .build())
-                        .schemas(ImmutableMap.<String, Schema>builder()
-                                .put("exception", new ObjectSchema()
-                                        .xml(new XML().name("Exception").namespace("http://www.opengis.net/wfs/3.0").prefix("wfs"))
-                                        .properties(ImmutableMap.<String, Schema>builder()
-                                                .put("code", new StringSchema().xml(new XML().name("code").attribute(true)))
-                                                .put("description", new StringSchema().xml(new XML().name("description").namespace("http://www.opengis.net/wfs/3.0").prefix("wfs")))
-                                                .build())
-                                        .required(ImmutableList.of("code"))
-                                )
-                                .build())
-                );
+                   .tags(ImmutableList.<Tag>builder()
+                           .add(new Tag()
+                                   .name("Capabilities")
+                                   .description("Essential characteristics of this API including information about the data."))
+                           .add(new Tag()
+                                   .name("Features")
+                                   .description("Access to data (features)."))
+                           .build())
+                   .components(new Components()
+                           .parameters(ImmutableMap.<String, Parameter>builder()
+                                   .put("f", new QueryParameter()
+                                           .description("The format of the response. If no value is provided, the standard http rules apply, i.e., the accept header shall be used to determine the format.\\nAccepted values are \"xml\", \"json\" and \"html\".")
+                                           .schema(new StringSchema()._enum(ImmutableList.of("json", "xml", "html")))
+                                           .style(Parameter.StyleEnum.FORM)
+                                           .explode(false)
+                                           .required(false)
+                                           .name("f"))
+                                   .put("startIndex", new QueryParameter()
+                                           .description("The optional startIndex parameter indicates the index within the result set from which the server shall begin presenting results in the response document. The first element has an index of 0.\\\nMinimum = 0.\\\nDefault = 0.")
+                                           .schema(new IntegerSchema()._default(0)
+                                                                      .minimum(new BigDecimal(0)))
+                                           .style(Parameter.StyleEnum.FORM)
+                                           .explode(false)
+                                           .required(false)
+                                           .name("startIndex"))
+                                   .put("count", new QueryParameter()
+                                           .description("The optional count parameter limits the number of items that are presented in the response document.\\\nOnly items are counted that are on the first level of the collection in the response document. \n" +
+                                                   "        Nested objects contained within the explicitly requested items shall not be counted.\\\nMinimum = 1.\\\nMaximum = 10000.\\\nDefault = 10.")
+                                           .schema(new IntegerSchema()._default(0)
+                                                                      .minimum(new BigDecimal(1))
+                                                                      .maximum(new BigDecimal(10000)))
+                                           .style(Parameter.StyleEnum.FORM)
+                                           .explode(false)
+                                           .required(false)
+                                           .name("count"))
+                                   .build())
+                           .schemas(ImmutableMap.<String, Schema>builder()
+                                   .put("exception", new ObjectSchema()
+                                           .xml(new XML().name("Exception")
+                                                         .namespace("http://www.opengis.net/wfs/3.0")
+                                                         .prefix("wfs"))
+                                           .properties(ImmutableMap.<String, Schema>builder()
+                                                   .put("code", new StringSchema().xml(new XML().name("code")
+                                                                                                .attribute(true)))
+                                                   .put("description", new StringSchema().xml(new XML().name("description")
+                                                                                                       .namespace("http://www.opengis.net/wfs/3.0")
+                                                                                                       .prefix("wfs")))
+                                                   .build())
+                                           .required(ImmutableList.of("code"))
+                                   )
+                                   .build())
+                   );
 
-        openApiSpec.getPaths().values().forEach(pathItem -> {
-            pathItem.readOperations().forEach(operation -> {
-                operation.parameters(
-                        operation.getParameters().stream().map(parameter -> {
-                            if (parameter.getName().equals("f")) {
-                                return new Parameter().$ref("#/components/parameters/f");
-                            }
-                            return parameter;
-                        }).collect(Collectors.toList())
-                );
-            });
-        });
+        openApiSpec.getPaths()
+                   .values()
+                   .forEach(pathItem -> {
+                       pathItem.readOperations()
+                               .forEach(operation -> {
+                                   operation.parameters(
+                                           operation.getParameters()
+                                                    .stream()
+                                                    .map(parameter -> {
+                                                        if (parameter.getName()
+                                                                     .equals("f")) {
+                                                            return new Parameter().$ref("#/components/parameters/f");
+                                                        }
+                                                        return parameter;
+                                                    })
+                                                    .collect(Collectors.toList())
+                                   );
+                               });
+                   });
     }
 }
