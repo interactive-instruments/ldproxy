@@ -87,6 +87,7 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
             openAPI.getComponents().getSchemas().get("content").getProperties().replace("collections", new ArraySchema().items(new Schema().$ref("#/components/schemas/collectionInfo")).xml(new XML().namespace("http://www.opengis.net/wfs/3.0").prefix("wfs")));
             openAPI.getComponents().getSchemas().get("collectionInfo").getProperties().replace("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
             openAPI.getComponents().getSchemas().get("collectionInfo").getProperties().replace("crs", new ArraySchema().items(new StringSchema()));
+            openAPI.getComponents().getSchemas().get("req-classes").getProperties().replace("conformsTo", new ArraySchema().items(new StringSchema().example("http://www.opengis.net/spec/wfs-1/3.0/req/core")));
 
             // TODO: rewrites
             if (service.getRewrites().isEmpty())

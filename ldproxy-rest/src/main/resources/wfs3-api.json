@@ -112,6 +112,42 @@
                 }
             }
         },
+        "/api/conformance": {
+            "get": {
+                "summary": "list all requirements classes specified in a standard (e.g., WFS 3.0) that the server conforms to",
+                "operationId": "getRequirementsClasses",
+                "tags": [
+                    "Capabilities"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/f"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "the URIs of all requirements classes supported by the server",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/req-classes"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "An error occured.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/exception"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/{featureType}": {
             "get": {
                 "summary": "retrieve features",
@@ -670,6 +706,20 @@
                             "namespace": "http://www.w3.org/1999/xlink",
                             "prefix": "xlink",
                             "attribute": true
+                        }
+                    }
+                }
+            },
+            "req-classes": {
+                "type": "object",
+                "required": [
+                    "conformsTo"
+                ],
+                "properties": {
+                    "conformsTo": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
                         }
                     }
                 }

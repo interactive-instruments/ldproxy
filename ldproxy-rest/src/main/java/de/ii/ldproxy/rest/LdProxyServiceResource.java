@@ -20,6 +20,7 @@ import de.ii.ldproxy.output.jsonld.Gml2JsonLdMappingProvider;
 import de.ii.ldproxy.output.jsonld.JsonLdOutputWriter;
 import de.ii.ldproxy.rest.util.RangeHeader;
 import de.ii.ldproxy.rest.wfs3.GetCapabilities2Wfs3Collection;
+import de.ii.ldproxy.rest.wfs3.Wfs3ConformanceClasses;
 import de.ii.ldproxy.rest.wfs3.Wfs3Dataset;
 import de.ii.ldproxy.rest.wfs3.Wfs3Link;
 import de.ii.ldproxy.service.*;
@@ -255,6 +256,13 @@ public class LdProxyServiceResource implements ServiceResource {
     @Operation
     public OpenApiResource getOpenApi() {
         return openApiResource;
+    }
+
+    @Path("/api/conformance")
+    @GET
+    @Produces({MediaTypeCharset.APPLICATION_JSON_UTF8})
+    public Wfs3ConformanceClasses getConformanceClasses() {
+        return new Wfs3ConformanceClasses();
     }
 
     private FeatureCollectionView createFeatureCollectionView(WfsProxyFeatureType featureType) {
