@@ -48,6 +48,7 @@ import io.dropwizard.views.View;
 import io.dropwizard.views.ViewRenderer;
 import io.swagger.oas.annotations.Operation;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.utils.URIBuilder;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -233,8 +234,11 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     private List<Wfs3Link> generateDatasetLinks(String mediaType, String... alternativeMediaTypes) {
-        String uri = uriInfo.getRequestUri()
-                            .toString();
+        String uri = uriInfo.getRequestUri().toString();
+        if (!uriInfo.getQueryParameters().containsKey("f")) {
+            uri = new URIBuilder(uriInfo.getRequestUri()).addParameter("f", mediaTypeFormats.get(mediaType)).toString();
+        }
+
         WFSRequest wfsRequest = new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType());
 
         return new ImmutableList.Builder<Wfs3Link>()
@@ -251,9 +255,12 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     private List<Wfs3Link> generateDatasetCollectionLinks(String mediaType, String featureTypeName, String displayName, String namespaceUri) {
-        String uri = uriInfo.getRequestUri()
-                            .toString()
-                            .replace("?", featureTypeName + "?");
+        String uri = uriInfo.getRequestUri().toString();
+        if (!uriInfo.getQueryParameters().containsKey("f")) {
+            uri = new URIBuilder(uriInfo.getRequestUri()).addParameter("f", mediaTypeFormats.get(mediaType)).toString();
+        }
+        uri = uri.replace("?", featureTypeName + "?");
+
         WFSRequest wfsRequest = new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType(ImmutableMap.of(namespaceUri, ImmutableList.of(featureTypeName))));
 
         return new ImmutableList.Builder<Wfs3Link>()
@@ -802,6 +809,10 @@ public class LdProxyServiceResource implements ServiceResource {
     private List<Wfs3Link> generateCollectionLinks(boolean isFeatureCollection, int page, int count, String mediaType, String... alternativeMediaTypes) {
         String uri = uriInfo.getRequestUri()
                             .toString();
+
+        if (!uriInfo.getQueryParameters().containsKey("f")) {
+            uri = new URIBuilder(uriInfo.getRequestUri()).addParameter("f", mediaTypeFormats.get(mediaType)).toString();
+        }
 
         List<Wfs3Link> paging = new ArrayList<>();
         if (isFeatureCollection) {
