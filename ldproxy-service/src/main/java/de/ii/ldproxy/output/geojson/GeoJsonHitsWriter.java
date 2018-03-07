@@ -86,7 +86,7 @@ public class GeoJsonHitsWriter extends AbstractFeatureWriter {
     }
 
     @Override
-    protected void writeField(TargetMapping mapping, String value) {
+    protected void writeField(TargetMapping mapping, String value, int occurrence) {
 
     }
 

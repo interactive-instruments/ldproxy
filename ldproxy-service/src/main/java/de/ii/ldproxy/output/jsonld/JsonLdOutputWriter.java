@@ -264,7 +264,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
     }
 
     @Override
-    protected void writeField(TargetMapping mapping, String value) {
+    protected void writeField(TargetMapping mapping, String value, int occurrence) {
         if (value == null || value.isEmpty() || (isFeatureCollection && !((MicrodataPropertyMapping) mapping).isShowInCollection())) {
             return;
         }

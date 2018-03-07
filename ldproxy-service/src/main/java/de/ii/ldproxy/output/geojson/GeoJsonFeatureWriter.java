@@ -84,26 +84,32 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
     }
 
     @Override
-    protected void writeField(TargetMapping mapping, String value) {
+    protected void writeField(TargetMapping mapping, String value, int occurrence) {
         if (value == null || value.isEmpty()) {
             return;
+        }
+
+        // handle multiplicity
+        String fieldName = mapping.getName();
+        if (occurrence > 1) {
+            fieldName += "." + occurrence;
         }
 
         try {
             switch (((GeoJsonPropertyMapping)mapping).getType()) {
                 case STRING:
-                    json.writeStringField(mapping.getName(), value);
+                    json.writeStringField(fieldName, value);
                     break;
                 case ID:
-                    json.writeStringField(mapping.getName(), value);
+                    json.writeStringField(fieldName, value);
                     writeStartProperties();
                     break;
                 case NUMBER:
                     // TODO: howto recognize int or double
                     try {
-                        json.writeNumberField(mapping.getName(), Long.parseLong(value));
+                        json.writeNumberField(fieldName, Long.parseLong(value));
                     } catch (NumberFormatException ex) {
-                        json.writeNumberField(mapping.getName(), Double.parseDouble(value));
+                        json.writeNumberField(fieldName, Double.parseDouble(value));
                         //jsonOut.writeNumberField(mapping.getName(), Long.parseLong(value.split(".")[0]));
                     }
                     break;
