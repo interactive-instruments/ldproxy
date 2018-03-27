@@ -28,10 +28,8 @@ public class LdProxyServiceSerializer extends GenericResourceSerializer<LdProxyS
 
     public LdProxyServiceSerializer(ObjectMapper jsonMapper) {
         super(jsonMapper);
-        updateJsonMapper = new ObjectMapper();
-        updateJsonMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        updateJsonMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        updateJsonMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        updateJsonMapper = jsonMapper.copy();
+        updateJsonMapper.setSerializationInclusion(JsonInclude.Include.NON_ABSENT);
     }
 
     @Override
@@ -43,7 +41,7 @@ public class LdProxyServiceSerializer extends GenericResourceSerializer<LdProxyS
 
     @Override
     public String serializeUpdate(LdProxyService resource) throws IOException {
-        return jsonMapper
+        return updateJsonMapper
                 .writerWithView(JsonViews.ConfigurationView.class)
                 .without(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS)
                 .writeValueAsString(resource);
