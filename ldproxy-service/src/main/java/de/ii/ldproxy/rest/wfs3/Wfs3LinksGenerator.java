@@ -28,16 +28,17 @@ public class Wfs3LinksGenerator {
         return new ImmutableList.Builder<Wfs3Link>()
                 .add(new Wfs3Link(uriBuilder.toString(), "self", mediaType, "this document"))
                 .addAll(Arrays.stream(alternativeMediaTypes)
-                              .map(generateAlternateLink(uriBuilder))
+                              .map(generateAlternateLink(uriBuilder.copy()))
                               .collect(Collectors.toList()))
-                .add(new Wfs3Link(uriBuilder
+                // TODO: remove trailing slash
+                .add(new Wfs3Link(uriBuilder.copy()
                         .removeLastPathSegment("collections")
-                        .ensureLastPathSegment("api")
+                        .ensureLastPathSegment("api/")
                         .setParameter("f", "json")
                         .toString(), "service", "application/openapi+json;version=3.0", "the OpenAPI definition as JSON"))
-                .add(new Wfs3Link(uriBuilder
+                .add(new Wfs3Link(uriBuilder.copy()
                         .removeLastPathSegment("collections")
-                        .ensureLastPathSegment("api")
+                        .ensureLastPathSegment("api/")
                         .setParameter("f", "html")
                         .toString(), "service", "text/html", "the OpenAPI definition as HTML"))
                 .add(new Wfs3Link(describeFeatureTypeUrl, "describedBy", "application/xml", "XML schema for all feature types"))

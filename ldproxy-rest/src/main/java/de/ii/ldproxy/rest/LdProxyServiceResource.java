@@ -39,6 +39,7 @@ import de.ii.xtraplatform.ogc.api.wfs.parser.LoggingWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.MultiWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesParser;
+import de.ii.xtraplatform.openapi.DynamicOpenApi;
 import de.ii.xtraplatform.util.json.JSONPOutputStream;
 import de.ii.xtraplatform.util.json.JSONPStreamingOutput;
 import io.dropwizard.views.View;

@@ -163,9 +163,11 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
 
 
                 PathItem featuresPathItem = openAPI.getPaths()
-                                                   .remove("/{featureType}");
+                                                   .remove("/collections/{featureType}");
+                PathItem featuresPathItems = openAPI.getPaths()
+                                                   .remove("/collections/{featureType}/items");
                 PathItem featurePathItem = openAPI.getPaths()
-                                                  .remove("/{featureType}/{id}");
+                                                  .remove("/collections/{featureType}/items/{id}");
 
                 service.getFeatureTypes()
                        .values()
@@ -177,7 +179,19 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                                  .get(0)
                                  .isEnabled()) {
 
-                               PathItem clonedPathItem = clonePathItem(featuresPathItem);
+                               PathItem clonedPathItem1 = clonePathItem(featuresPathItem);
+                               clonedPathItem1
+                                       .get(clonedPathItem1.getGet()
+                                                          .summary("describe collection of features of type " + ft.getDisplayName())
+                                                          .description(null)
+                                                          .operationId("describe" + ft.getName() + "Collection")
+                                       );
+                               openAPI.getPaths()
+                                      .addPathItem("/collections/" + ft.getName()
+                                                           .toLowerCase(), clonedPathItem1);
+
+
+                               PathItem clonedPathItem = clonePathItem(featuresPathItems);
                                clonedPathItem
                                        .get(clonedPathItem.getGet()
                                                           .summary("retrieve collection of features of type " + ft.getDisplayName())
@@ -203,8 +217,8 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                                                });
 
                                openAPI.getPaths()
-                                      .addPathItem("/" + ft.getName()
-                                                           .toLowerCase(), clonedPathItem);
+                                      .addPathItem("/collections/" + ft.getName()
+                                                           .toLowerCase() + "/items", clonedPathItem);
 
 
                                PathItem clonedPathItem2 = clonePathItem(featurePathItem);
@@ -216,8 +230,8 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                                        );
 
                                openAPI.getPaths()
-                                      .addPathItem("/" + ft.getName()
-                                                           .toLowerCase() + "/{id}", clonedPathItem2);
+                                      .addPathItem("/collections/" + ft.getName()
+                                                           .toLowerCase() + "/items/{id}", clonedPathItem2);
                            }
                        });
             }
