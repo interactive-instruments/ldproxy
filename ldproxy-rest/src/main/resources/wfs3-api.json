@@ -7,8 +7,8 @@
     "paths": {
         "/": {
             "get": {
-                "summary": "describe the feature collections in the dataset",
-                "operationId": "describeCollections",
+                "summary": "landing page of this API",
+                "operationId": "getLandingPage",
                 "tags": [
                     "Capabilities"
                 ],
@@ -19,7 +19,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "The feature collections shared by this API.",
+                        "description": "links to the API capabilities and the feature collections shared by this API.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -112,7 +112,7 @@
                 }
             }
         },
-        "/api/conformance": {
+        "/conformance": {
             "get": {
                 "summary": "list all requirements classes specified in a standard (e.g., WFS 3.0) that the server conforms to",
                 "operationId": "getRequirementsClasses",
@@ -148,7 +148,109 @@
                 }
             }
         },
-        "/{featureType}": {
+        "/collections": {
+            "get": {
+                "summary": "describe the feature collections in the dataset",
+                "operationId": "describeCollections",
+                "tags": [
+                    "Capabilities"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/f"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The feature collections shared by this API.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/content"
+                                }
+                            },
+                            "application/xml": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/content"
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "An error occured.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/exception"
+                                }
+                            },
+                            "application/xml": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/exception"
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{featureType}": {
+            "get": {
+                "summary": "describe the feature collection",
+                "operationId": "describeFeatures",
+                "tags": [
+                    "Capabilities"
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/f"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Information about the feature collection",
+                        "content": {
+                            "application/geo+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/collectionInfo"
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "An error occured.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/exception"
+                                }
+                            },
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/collections/{featureType}/items": {
             "get": {
                 "summary": "retrieve features",
                 "description": "Every feature in a dataset belongs to one collection of features. A dataset may consist of multiple feature  collections. Typically, a feature collection is a collection of features of a similar type, based on a  common schema.",
@@ -227,7 +329,7 @@
                 }
             }
         },
-        "/{featureType}/{id}": {
+        "/collections/{featureType}/items/{id}": {
             "get": {
                 "summary": "retrieve a feature",
                 "operationId": "getFeature",
