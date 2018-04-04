@@ -22,22 +22,22 @@ import java.util.stream.Collectors;
 /**
  * @author zahnen
  */
-public class CustomURIBuilder extends URIBuilder {
-    public CustomURIBuilder() {
+public class URICustomizer extends URIBuilder {
+    public URICustomizer() {
         super();
     }
 
-    public CustomURIBuilder(String string) throws URISyntaxException {
+    public URICustomizer(String string) throws URISyntaxException {
         super(string);
     }
 
-    public CustomURIBuilder(URI uri) {
+    public URICustomizer(URI uri) {
         super(uri);
     }
 
-    public CustomURIBuilder copy() {
+    public URICustomizer copy() {
         try {
-            return new CustomURIBuilder(this.toString());
+            return new URICustomizer(this.toString());
         } catch (URISyntaxException e) {
             //ignore
         }
@@ -45,12 +45,12 @@ public class CustomURIBuilder extends URIBuilder {
     }
 
     @Override
-    public CustomURIBuilder clearParameters() {
+    public URICustomizer clearParameters() {
         super.clearParameters();
         return this;
     }
 
-    public CustomURIBuilder ensureParameter(final String parameter, final String value) {
+    public URICustomizer ensureParameter(final String parameter, final String value) {
         if (this.getQueryParams()
                 .stream()
                 .noneMatch(nameValuePair -> nameValuePair.getName()
@@ -60,7 +60,7 @@ public class CustomURIBuilder extends URIBuilder {
         return this;
     }
 
-    public CustomURIBuilder removeParameters(final String... parameters) {
+    public URICustomizer removeParameters(final String... parameters) {
         final List<String> parameterList = Arrays.asList(parameters);
         final List<NameValuePair> queryParams = this.getQueryParams()
                                                     .stream()
@@ -72,7 +72,7 @@ public class CustomURIBuilder extends URIBuilder {
         return this;
     }
 
-    public CustomURIBuilder ensureLastPathSegment(final String segment) {
+    public URICustomizer ensureLastPathSegment(final String segment) {
         final List<String> pathSegments = getPathSegments();
 
         if (!pathSegments.isEmpty() && !pathSegments.get(pathSegments.size() - 1)
@@ -85,7 +85,7 @@ public class CustomURIBuilder extends URIBuilder {
         return this;
     }
 
-    public CustomURIBuilder ensureLastPathSegments(final String... segments) {
+    public URICustomizer ensureLastPathSegments(final String... segments) {
         final List<String> pathSegments = getPathSegments();
 
         int pathSegmentsIndex = pathSegments.size() >= segments.length ? pathSegments.size() - segments.length : 0;
@@ -99,7 +99,7 @@ public class CustomURIBuilder extends URIBuilder {
                     match = false;
                     break;
                 }
-                restIndex = segments.length - l - 1;
+                restIndex = l + 1;
             }
             if (match) {
                 break;
@@ -119,7 +119,7 @@ public class CustomURIBuilder extends URIBuilder {
         return this;
     }
 
-    public CustomURIBuilder removePathSegment(final String segment, final int index) {
+    public URICustomizer removePathSegment(final String segment, final int index) {
         final List<String> pathSegments = getPathSegments();
         final int i = index < 0 ? pathSegments.size() + index : index;
 
@@ -132,7 +132,7 @@ public class CustomURIBuilder extends URIBuilder {
         return this;
     }
 
-    public CustomURIBuilder removeLastPathSegment(final String segment) {
+    public URICustomizer removeLastPathSegment(final String segment) {
         final List<String> pathSegments = getPathSegments();
 
         if (!pathSegments.isEmpty() && pathSegments.get(pathSegments.size() - 1)
@@ -142,7 +142,7 @@ public class CustomURIBuilder extends URIBuilder {
         return this;
     }
 
-    public CustomURIBuilder removeLastPathSegments(final int numberOfSegments) {
+    public URICustomizer removeLastPathSegments(final int numberOfSegments) {
         final List<String> pathSegments = getPathSegments();
 
         if (pathSegments.size() >= numberOfSegments) {

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class Wfs3LinksGenerator {
 
     public List<Wfs3Link> generateDatasetLinks(URI requestUri, String describeFeatureTypeUrl, String mediaType, String... alternativeMediaTypes) {
-        CustomURIBuilder uriBuilder = new CustomURIBuilder(requestUri)
+        URICustomizer uriBuilder = new URICustomizer(requestUri)
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(mediaType));
 
         return new ImmutableList.Builder<Wfs3Link>()
@@ -46,9 +46,9 @@ public class Wfs3LinksGenerator {
     }
 
     public List<Wfs3Link> generateDatasetCollectionLinks(URI requestUri, String mediaType, String collectionId, String collectionName, String describeFeatureTypeUrl) {
-        CustomURIBuilder uriBuilder = new CustomURIBuilder(requestUri)
+        URICustomizer uriBuilder = new URICustomizer(requestUri)
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(mediaType))
-                .ensureLastPathSegments("collections", collectionId);
+                .ensureLastPathSegments("collections", collectionId, "items");
 
         return new ImmutableList.Builder<Wfs3Link>()
                 .add(new Wfs3Link(uriBuilder
@@ -66,7 +66,7 @@ public class Wfs3LinksGenerator {
 
 
     public List<Wfs3Link> generateCollectionOrFeatureLinks(URI requestUri, boolean isFeatureCollection, int page, int count, String mediaType, String... alternativeMediaTypes) {
-        final CustomURIBuilder uriBuilder = new CustomURIBuilder(requestUri)
+        final URICustomizer uriBuilder = new URICustomizer(requestUri)
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(mediaType));
 
         final ImmutableList.Builder<Wfs3Link> links = new ImmutableList.Builder<Wfs3Link>()
@@ -95,11 +95,11 @@ public class Wfs3LinksGenerator {
                 .toString(), "alternate", mediaType, "this document as " + Wfs3MediaTypes.NAMES.get(mediaType));
     }
 
-    private String getUrlWithPageAndCount(final CustomURIBuilder uriBuilder, final int page, final int count) {
+    private String getUrlWithPageAndCount(final URICustomizer uriBuilder, final int page, final int count) {
         return uriBuilder
                 .removeParameters("page", "startIndex", "offset", "count", "limit")
                 .ensureParameter("page", String.valueOf(page))
-                .ensureParameter("count", String.valueOf(count))
+                .ensureParameter("limit", String.valueOf(count))
                 .toString();
     }
 }

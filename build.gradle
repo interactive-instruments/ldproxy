@@ -24,7 +24,7 @@ repositories {
     maven {
         url "https://dl.bintray.com/iide/maven"
     }
-    //mavenLocal()
+//    mavenLocal()
     maven {
         url "http://maven.forgerock.org/repo/repo"
     }
@@ -41,7 +41,7 @@ dependencies {
 
     bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.0'
 
-    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.1.0') {
+    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.1.1') {
         // TODO
         exclude module: 'xtraplatform-kvstore-inmemory'
     }

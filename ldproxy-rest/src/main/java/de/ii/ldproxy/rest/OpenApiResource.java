@@ -101,6 +101,13 @@ public class OpenApiResource {
                     )
             })
     public Response getApiDescription(@Context HttpHeaders headers, @Context UriInfo uriInfo) throws Exception {
+        if (!uriInfo.getRequestUri().getPath().endsWith("/")) {
+            return Response
+                    .status(Response.Status.MOVED_PERMANENTLY)
+                    .location(uriInfo.getRequestUriBuilder().path("/").build())
+                    .build();
+        }
+
         LOGGER.debug("MIME {} {}", "HTML", headers.getHeaderString("Accept"));
         return openApiViewerResource.getFile("index.html");
     }
@@ -111,7 +118,7 @@ public class OpenApiResource {
     public Response getApiDescriptionJson(@Context HttpHeaders headers, @Context UriInfo uriInfo) throws Exception {
         LOGGER.debug("MIME {})", "JSON");
         //return openApi.getOpenApi(headers, uriInfo, "json", wfs3SpecFilter);
-        return wfs3SpecFilter.getOpenApi("json");
+        return wfs3SpecFilter.getOpenApi("json", uriInfo.getRequestUri());
     }
 
 
@@ -121,7 +128,7 @@ public class OpenApiResource {
     public Response getApiDescriptionYaml(@Context HttpHeaders headers, @Context UriInfo uriInfo) throws Exception {
         LOGGER.debug("MIME {})", "YAML");
         //return openApi.getOpenApi(headers, uriInfo, "yaml", wfs3SpecFilter);
-        return wfs3SpecFilter.getOpenApi("yaml");
+        return wfs3SpecFilter.getOpenApi("yaml", uriInfo.getRequestUri());
     }
 
     @GET

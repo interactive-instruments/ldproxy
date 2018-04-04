@@ -7,8 +7,6 @@
  */
 package de.ii.ldproxy.rest;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter;
@@ -20,7 +18,6 @@ import de.ii.ldproxy.output.jsonld.JsonLdOutputWriter;
 import de.ii.ldproxy.rest.util.RangeHeader;
 import de.ii.ldproxy.rest.wfs3.*;
 import de.ii.ldproxy.service.*;
-import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
 import de.ii.xsf.core.api.MediaTypeCharset;
 import de.ii.xsf.core.api.Service;
@@ -28,10 +25,8 @@ import de.ii.xsf.core.api.exceptions.ResourceNotFound;
 import de.ii.xsf.core.api.permission.AuthorizationProvider;
 import de.ii.xsf.core.api.rest.ServiceResource;
 import de.ii.xsf.logging.XSFLogger;
-import de.ii.xtraplatform.ogc.api.Versions;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLParser;
-import de.ii.xtraplatform.ogc.api.wfs.client.DescribeFeatureType;
 import de.ii.xtraplatform.ogc.api.wfs.client.GetCapabilities;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSOperation;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSRequest;
@@ -39,15 +34,12 @@ import de.ii.xtraplatform.ogc.api.wfs.parser.LoggingWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.MultiWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesParser;
-import de.ii.xtraplatform.openapi.DynamicOpenApi;
 import de.ii.xtraplatform.util.json.JSONPOutputStream;
 import de.ii.xtraplatform.util.json.JSONPStreamingOutput;
 import io.dropwizard.views.View;
 import io.dropwizard.views.ViewRenderer;
 import io.swagger.oas.annotations.Operation;
 import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -56,13 +48,10 @@ import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import io.dropwizard.views.ViewMessageBodyWriter;
 
 import static de.ii.ldproxy.rest.util.RangeHeader.parseRange;
 
@@ -139,7 +128,7 @@ public class LdProxyServiceResource implements ServiceResource {
         wfs3Dataset.getWfsCapabilities().url += "?SERVICE=WFS&REQUEST=GetCapabilities";
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Datasets", new CustomURIBuilder(uriInfo.getRequestUri()).removeLastPathSegments(isCollection ? 2 : 1).toString()))
+                .add(new NavigationDTO("Datasets", new URICustomizer(uriInfo.getRequestUri()).removeLastPathSegments(isCollection ? 2 : 1).toString()))
                 .add(new NavigationDTO(service.getName()))
                 .build();
 
@@ -265,7 +254,7 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     private FeatureCollectionView createFeatureCollectionView(WfsProxyFeatureType featureType) {
-        CustomURIBuilder uriBuilder = new CustomURIBuilder(uriInfo.getRequestUri())
+        URICustomizer uriBuilder = new URICustomizer(uriInfo.getRequestUri())
                 .clearParameters()
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(Wfs3MediaTypes.HTML))
                 .ensureLastPathSegment("items");
@@ -313,7 +302,7 @@ public class LdProxyServiceResource implements ServiceResource {
         FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", uriInfo.getRequestUri(), featureType.getName(), featureType.getDisplayName());
         featureTypeDataset.description = featureType.getDisplayName();
 
-        CustomURIBuilder uriBuilder = new CustomURIBuilder(uriInfo.getRequestUri())
+        URICustomizer uriBuilder = new URICustomizer(uriInfo.getRequestUri())
                 .clearParameters()
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(Wfs3MediaTypes.HTML))
                 .removePathSegment("items", -2)
@@ -341,7 +330,7 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     private void addDatasetNavigation(FeatureCollectionView featureCollectionView, WfsProxyFeatureType featureType, List<Wfs3Link> links) {
-        CustomURIBuilder uriBuilder = new CustomURIBuilder(uriInfo.getRequestUri())
+        URICustomizer uriBuilder = new URICustomizer(uriInfo.getRequestUri())
                 .clearParameters()
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(Wfs3MediaTypes.HTML))
                 .removePathSegment("items", -1)
@@ -599,8 +588,25 @@ public class LdProxyServiceResource implements ServiceResource {
 
     @Path("/collections/{layerid}")
     @GET
-    public Response getFeaturesAsJson1(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
-        return getFeaturesAsJson(layerid, indexId, callback, resultType, range);
+    public Response getCollectionInfo(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
+        final Optional<Wfs3Dataset.Wfs3Collection> wfs3Collection = generateWfs3Dataset(Wfs3MediaTypes.JSON, Wfs3MediaTypes.XML, Wfs3MediaTypes.HTML).getCollections().stream().filter(collection -> collection.getName().equals(layerid)).findFirst();
+
+        if (!wfs3Collection.isPresent()) {
+            throw new ResourceNotFound();
+        }
+
+        //final int[] r = RangeHeader.parseRange(range);
+        //final List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(uriInfo.getRequestUri(), true, r[2], r[3], Wfs3MediaTypes.GEO_JSON, Wfs3MediaTypes.GML, Wfs3MediaTypes.HTML);
+
+        //wfs3Collection.get().setLinks(links);
+
+        return Response.ok()
+                       .entity(wfs3Collection.get())
+                       .header("Access-Control-Allow-Origin", "*")
+                       .header("Access-Control-Allow-Methods", "GET")
+                       .build();
+
+        //return getFeaturesAsJson(layerid, indexId, callback, resultType, range);
     }
 
     @Path("/collections/{layerid}/items")

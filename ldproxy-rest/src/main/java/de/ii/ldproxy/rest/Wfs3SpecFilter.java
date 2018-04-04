@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
+import de.ii.ldproxy.rest.wfs3.URICustomizer;
 import de.ii.ldproxy.service.LdProxyService;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
@@ -41,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -70,7 +72,7 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
         this.service = service;
     }
 
-    public Response getOpenApi(String type) {
+    public Response getOpenApi(String type, URI requestUri) {
 
         boolean pretty = true;
 
@@ -87,41 +89,29 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
             openAPI.getComponents()
                    .getParameters()
                    .get("bbox")
-                   .schema(new ArraySchema().items(new NumberSchema().minimum(new BigDecimal(-180))
-                                                                     .maximum(new BigDecimal(180)))
-                                            .minItems(4)
-                                            .maxItems(4)
+                   .schema(new ArraySchema().minItems(4)
+                                            .maxItems(6)
                    );
             openAPI.getComponents()
                    .getSchemas()
-                   .get("featureCollectionGeoJSON")
+                   .get("root")
                    .getProperties()
-                   .replace("features", new ArraySchema().items(new Schema().$ref("#/components/schemas/featureGeoJSON")));
+                   .replace("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
             openAPI.getComponents()
                    .getSchemas()
-                   .get("featureCollectionGML")
+                   .get("req-classes")
                    .getProperties()
-                   .replace("features", new ArraySchema().items(new ComposedSchema().oneOf(ImmutableList.of(new Schema().$ref("#/components/schemas/referenceXlink"), new Schema().$ref("#/components/schemas/featureGML")))
-                                                                                    .xml(new XML().name("featureMember")
-                                                                                                  .namespace("http://www.opengis.net/wfs/3.0")
-                                                                                                  .prefix("wfs"))));
-            openAPI.getComponents()
-                   .getSchemas()
-                   .get("bbox")
-                   .getProperties()
-                   .replace("bbox", new ArraySchema().items(new NumberSchema().minimum(new BigDecimal(-180))
-                                                                              .maximum(new BigDecimal(180)))
-                                                     .minItems(4)
-                                                     .maxItems(4)
-                                                     .example(ImmutableList.of(-180, -90, 180, 90))
-                                                     .description("minimum longitude, minimum latitude, maximum longitude, maximum latitude"));
+                   .replace("conformsTo", new ArraySchema().items(new StringSchema().example("http://www.opengis.net/spec/wfs-1/3.0/req/core")));
             openAPI.getComponents()
                    .getSchemas()
                    .get("content")
                    .getProperties()
-                   .replace("collections", new ArraySchema().items(new Schema().$ref("#/components/schemas/collectionInfo"))
-                                                            .xml(new XML().namespace("http://www.opengis.net/wfs/3.0")
-                                                                          .prefix("wfs")));
+                   .replace("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
+            openAPI.getComponents()
+                   .getSchemas()
+                   .get("content")
+                   .getProperties()
+                   .replace("collections", new ArraySchema().items(new Schema().$ref("#/components/schemas/collectionInfo")));
             openAPI.getComponents()
                    .getSchemas()
                    .get("collectionInfo")
@@ -134,16 +124,39 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                    .replace("crs", new ArraySchema().items(new StringSchema()));
             openAPI.getComponents()
                    .getSchemas()
-                   .get("req-classes")
+                   .get("extent")
                    .getProperties()
-                   .replace("conformsTo", new ArraySchema().items(new StringSchema().example("http://www.opengis.net/spec/wfs-1/3.0/req/core")));
+                   .replace("spatial", new ArraySchema().minItems(4)
+                                                        .maxItems(6)
+                                                        .example(ImmutableList.of(-180, -90, 180, 90))
+                                                        .description("West, north, east, south edges of the spatial extent. The minimum and maximum values apply to the coordinate reference system WGS84 longitude/latitude that is supported in the Core. If, for example, a projected coordinate reference system is used, the minimum and maximum values need to be adjusted."));
+            openAPI.getComponents()
+                   .getSchemas()
+                   .get("featureCollectionGeoJSON")
+                   .getProperties()
+                   .replace("features", new ArraySchema().items(new Schema().$ref("#/components/schemas/featureGeoJSON")));
+            openAPI.getComponents()
+                   .getSchemas()
+                   .get("featureCollectionGeoJSON")
+                   .getProperties()
+                   .replace("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
+            /*openAPI.getComponents()
+                   .getSchemas()
+                   .get("featureCollectionGML")
+                   .getProperties()
+                   .replace("features", new ArraySchema().items(new ComposedSchema().oneOf(ImmutableList.of(new Schema().$ref("#/components/schemas/referenceXlink"), new Schema().$ref("#/components/schemas/featureGML")))
+                                                                                    .xml(new XML().name("featureMember")
+                                                                                                  .namespace("http://www.opengis.net/wfs/3.0")
+                                                                                                  .prefix("wfs"))));*/
+
 
             // TODO: rewrites
-            if (service.getRewrites()
+            /*if (service.getRewrites()
                        .isEmpty())
                 openAPI.servers(ImmutableList.of(new Server().url(externalUrl + "rest/services/" + service.getId())));
             else
-                openAPI.servers(ImmutableList.of(new Server().url(externalUrl + service.getId())));
+                openAPI.servers(ImmutableList.of(new Server().url(externalUrl + service.getId())));*/
+            openAPI.servers(ImmutableList.of(new Server().url(new URICustomizer(requestUri).clearParameters().removeLastPathSegment("api").toString())));
 
             if (service != null) {
                 WFSOperation operation = new GetCapabilities();
@@ -167,7 +180,7 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                 PathItem featuresPathItems = openAPI.getPaths()
                                                    .remove("/collections/{featureType}/items");
                 PathItem featurePathItem = openAPI.getPaths()
-                                                  .remove("/collections/{featureType}/items/{id}");
+                                                  .remove("/collections/{featureType}/items/{featureId}");
 
                 service.getFeatureTypes()
                        .values()
@@ -182,9 +195,9 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                                PathItem clonedPathItem1 = clonePathItem(featuresPathItem);
                                clonedPathItem1
                                        .get(clonedPathItem1.getGet()
-                                                          .summary("describe collection of features of type " + ft.getDisplayName())
+                                                          .summary("describe the " + ft.getDisplayName() + " feature collection")
                                                           .description(null)
-                                                          .operationId("describe" + ft.getName() + "Collection")
+                                                          .operationId("describeCollection")
                                        );
                                openAPI.getPaths()
                                       .addPathItem("/collections/" + ft.getName()
@@ -194,9 +207,9 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                                PathItem clonedPathItem = clonePathItem(featuresPathItems);
                                clonedPathItem
                                        .get(clonedPathItem.getGet()
-                                                          .summary("retrieve collection of features of type " + ft.getDisplayName())
+                                                          .summary("retrieve features of " + ft.getDisplayName() + " feature collection")
                                                           .description(null)
-                                                          .operationId("get" + ft.getName() + "Collection")
+                                                          .operationId("getFeatures")
                                        );
 
                                Map<String, String> filterableFields = service.getFilterableFieldsForFeatureType(ft);
@@ -226,12 +239,12 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                                        .get(clonedPathItem2.getGet()
                                                            .summary("retrieve a " + ft.getDisplayName())
                                                            //.description("")
-                                                           .operationId("get" + ft.getName())
+                                                           .operationId("getFeature")
                                        );
 
                                openAPI.getPaths()
                                       .addPathItem("/collections/" + ft.getName()
-                                                           .toLowerCase() + "/items/{id}", clonedPathItem2);
+                                                           .toLowerCase() + "/items/{featureId}", clonedPathItem2);
                            }
                        });
             }
@@ -418,8 +431,8 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                                            .explode(false)
                                            .required(false)
                                            .name("startIndex"))
-                                   .put("count", new QueryParameter()
-                                           .description("The optional count parameter limits the number of items that are presented in the response document.\\\nOnly items are counted that are on the first level of the collection in the response document. \n" +
+                                   .put("limit", new QueryParameter()
+                                           .description("The optional limit parameter limits the number of items that are presented in the response document.\\\nOnly items are counted that are on the first level of the collection in the response document. \n" +
                                                    "        Nested objects contained within the explicitly requested items shall not be counted.\\\nMinimum = 1.\\\nMaximum = 10000.\\\nDefault = 10.")
                                            .schema(new IntegerSchema()._default(0)
                                                                       .minimum(new BigDecimal(1))
@@ -427,7 +440,7 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                                            .style(Parameter.StyleEnum.FORM)
                                            .explode(false)
                                            .required(false)
-                                           .name("count"))
+                                           .name("limit"))
                                    .build())
                            .schemas(ImmutableMap.<String, Schema>builder()
                                    .put("exception", new ObjectSchema()

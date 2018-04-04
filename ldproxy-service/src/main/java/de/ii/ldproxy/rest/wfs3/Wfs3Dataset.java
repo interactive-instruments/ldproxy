@@ -122,25 +122,25 @@ public class Wfs3Dataset {
     public static class Wfs3Collection {
 
         protected static class Extent {
-            private double[] bbox;
+            private double[] spatial;
 
             public Extent(String xmin, String ymin, String xmax, String ymax) {
                 try {
-                    this.bbox = ImmutableList.of(xmin, ymin, xmax, ymax)
-                                             .stream()
-                                             .mapToDouble(Double::parseDouble)
-                                             .toArray();
+                    this.spatial = ImmutableList.of(xmin, ymin, xmax, ymax)
+                                                .stream()
+                                                .mapToDouble(Double::parseDouble)
+                                                .toArray();
                 } catch (NumberFormatException e) {
                     // ignore
                 }
             }
 
-            public double[] getBbox() {
-                return bbox;
+            public double[] getSpatial() {
+                return spatial;
             }
 
-            public void setBbox(double[] bbox) {
-                this.bbox = bbox;
+            public void setSpatial(double[] spatial) {
+                this.spatial = spatial;
             }
         }
 
