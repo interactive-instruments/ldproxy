@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.output.html;
 
-import de.ii.ldproxy.rest.wfs3.URICustomizer;
+import de.ii.ldproxy.wfs3.URICustomizer;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 

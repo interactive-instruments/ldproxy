@@ -1,11 +1,11 @@
 /**
  * Copyright 2018 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.rest.wfs3;
+package de.ii.ldproxy.wfs3;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.http.client.utils.URIBuilder;
@@ -22,31 +22,42 @@ import java.util.stream.Collectors;
 public class Wfs3LinksGenerator {
 
     public List<Wfs3Link> generateDatasetLinks(URI requestUri, String describeFeatureTypeUrl, String mediaType, String... alternativeMediaTypes) {
-        URICustomizer uriBuilder = new URICustomizer(requestUri)
+        final URICustomizer uriBuilder = new URICustomizer(requestUri)
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(mediaType));
 
-        return new ImmutableList.Builder<Wfs3Link>()
+        final boolean isCollections = uriBuilder.isLastPathSegment("collections");
+
+        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
                 .add(new Wfs3Link(uriBuilder.toString(), "self", mediaType, "this document"))
                 .addAll(Arrays.stream(alternativeMediaTypes)
                               .map(generateAlternateLink(uriBuilder.copy()))
                               .collect(Collectors.toList()))
                 .add(new Wfs3Link(uriBuilder.copy()
-                        .removeLastPathSegment("collections")
-                        .ensureLastPathSegment("api")
-                        .setParameter("f", "json")
-                        .toString(), "service", "application/openapi+json;version=3.0", "the OpenAPI definition as JSON"))
+                                            .removeLastPathSegment("collections")
+                                            .ensureLastPathSegment("api")
+                                            .setParameter("f", "json")
+                                            .toString(), "service", "application/openapi+json;version=3.0", "the OpenAPI definition as JSON"))
                 .add(new Wfs3Link(uriBuilder.copy()
-                        .removeLastPathSegment("collections")
-                        .ensureLastPathSegment("api")
-                        .setParameter("f", "html")
-                        .toString(), "service", "text/html", "the OpenAPI definition as HTML"))
+                                            .removeLastPathSegment("collections")
+                                            .ensureLastPathSegment("api")
+                                            .setParameter("f", "html")
+                                            .toString(), "service", "text/html", "the OpenAPI definition as HTML"))
                 .add(new Wfs3Link(uriBuilder.copy()
                                             .removeLastPathSegment("collections")
                                             .ensureLastPathSegment("conformance")
                                             .setParameter("f", "json")
-                                            .toString(), "conformance", "application/json", "WFS 3.0 conformance classes implemented by this server"))
-                .add(new Wfs3Link(describeFeatureTypeUrl, "describedBy", "application/xml", "XML schema for all feature types"))
-                .build();
+                                            .toString(), "conformance", "application/json", "WFS 3.0 conformance classes implemented by this server"));
+
+        if (!isCollections) {
+            builder
+                    .add(new Wfs3Link(uriBuilder.copy()
+                                                .ensureLastPathSegment("collections")
+                                                .setParameter("f", "json")
+                                                .toString(), "data", "application/json", "Metadata about the feature collections"));
+        }
+
+        return builder.add(new Wfs3Link(describeFeatureTypeUrl, "describedBy", "application/xml", "XML schema for all feature types"))
+                      .build();
     }
 
     public List<Wfs3Link> generateDatasetCollectionLinks(URI requestUri, String mediaType, String collectionId, String collectionName, String describeFeatureTypeUrl) {
@@ -86,7 +97,9 @@ public class Wfs3LinksGenerator {
             }
         } else {
             links.add(new Wfs3Link(uriBuilder.copy()
-                                             .removeLastPathSegments(2)
+                                             .removeLastPathSegments(1)
+                                             .clearParameters()
+                                             .setParameter("f", Wfs3MediaTypes.FORMATS.get(mediaType))
                                              .toString(), "collection", mediaType, "the collection document"));
         }
 

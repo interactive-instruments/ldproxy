@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.rest.wfs3;
+package de.ii.ldproxy.wfs3;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -70,6 +70,13 @@ public class URICustomizer extends URIBuilder {
         this.setParameters(queryParams);
 
         return this;
+    }
+
+    public boolean isLastPathSegment(final String segment) {
+        final List<String> pathSegments = getPathSegments();
+
+        return !pathSegments.isEmpty() && pathSegments.get(pathSegments.size() - 1)
+                                                    .equals(segment);
     }
 
     public URICustomizer ensureLastPathSegment(final String segment) {

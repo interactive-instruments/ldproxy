@@ -8,8 +8,8 @@
 package de.ii.ldproxy.output.html;
 
 import com.google.common.base.Charsets;
-import de.ii.ldproxy.rest.wfs3.Wfs3Dataset;
-import de.ii.ldproxy.rest.wfs3.Wfs3MediaTypes;
+import de.ii.ldproxy.wfs3.Wfs3Dataset;
+import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import io.dropwizard.views.View;
 
 import java.util.List;
