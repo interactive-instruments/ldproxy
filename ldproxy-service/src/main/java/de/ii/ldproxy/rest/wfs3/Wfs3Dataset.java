@@ -22,7 +22,9 @@ import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesParser;
 
 import javax.xml.bind.annotation.*;
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 

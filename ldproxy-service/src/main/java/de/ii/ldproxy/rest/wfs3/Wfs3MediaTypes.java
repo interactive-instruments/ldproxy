@@ -20,8 +20,8 @@ public class Wfs3MediaTypes {
     public static final String JSON = MediaType.APPLICATION_JSON;
     public static final String XML = MediaType.APPLICATION_XML;
     public static final String HTML = MediaType.TEXT_HTML;
-    public static final String GEO_JSON = new MediaType("application", "geo+json").toString();
-    public static final String GML = new MediaType("application", "gml+xml", ImmutableMap.of("version", "3.2", "profile", "http://www.opengis.net/def/profile/ogc/2.0/gml-sf2")).toString();
+    public static final String GEO_JSON = "application/geo+json";
+    public static final String GML = "application/gml+xml;version=3.2;profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf2";
 
     public static final Map<String, String> NAMES = new ImmutableMap.Builder<String, String>()
             .put(JSON, "JSON")

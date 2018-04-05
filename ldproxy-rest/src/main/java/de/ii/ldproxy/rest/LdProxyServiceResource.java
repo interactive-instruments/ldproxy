@@ -209,7 +209,7 @@ public class LdProxyServiceResource implements ServiceResource {
     @Produces({MediaTypeCharset.APPLICATION_JSON_UTF8})
     public Response getDatasetAsJson(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @QueryParam("callback") String callback) {
         return Response.ok()
-                       .entity(generateWfs3Dataset(Wfs3MediaTypes.JSON, Wfs3MediaTypes.XML, Wfs3MediaTypes.HTML))
+                       .entity(generateWfs3Dataset(Wfs3MediaTypes.JSON, /*Wfs3MediaTypes.XML,*/ Wfs3MediaTypes.HTML))
                        .header("Access-Control-Allow-Origin", "*")
                        .header("Access-Control-Allow-Methods", "GET")
                        .build();
@@ -220,7 +220,7 @@ public class LdProxyServiceResource implements ServiceResource {
     @Produces({MediaTypeCharset.APPLICATION_JSON_UTF8})
     public Response getDatasetAsJson2(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @QueryParam("callback") String callback) {
         return Response.ok()
-                       .entity(generateWfs3Dataset(Wfs3MediaTypes.JSON, Wfs3MediaTypes.XML, Wfs3MediaTypes.HTML))
+                       .entity(generateWfs3Dataset(Wfs3MediaTypes.JSON, /*Wfs3MediaTypes.XML,*/ Wfs3MediaTypes.HTML))
                        .header("Access-Control-Allow-Origin", "*")
                        .header("Access-Control-Allow-Methods", "GET")
                        .build();
@@ -589,7 +589,7 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/collections/{layerid}")
     @GET
     public Response getCollectionInfo(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
-        final Optional<Wfs3Dataset.Wfs3Collection> wfs3Collection = generateWfs3Dataset(Wfs3MediaTypes.JSON, Wfs3MediaTypes.XML, Wfs3MediaTypes.HTML).getCollections().stream().filter(collection -> collection.getName().equals(layerid)).findFirst();
+        final Optional<Wfs3Dataset.Wfs3Collection> wfs3Collection = generateWfs3Dataset(Wfs3MediaTypes.JSON, /*Wfs3MediaTypes.XML,*/ Wfs3MediaTypes.HTML).getCollections().stream().filter(collection -> collection.getName().equals(layerid)).findFirst();
 
         if (!wfs3Collection.isPresent()) {
             throw new ResourceNotFound();
