@@ -28,7 +28,9 @@ public class QueryParamPagingFilter implements ContainerRequestFilter {
     private static final String RANGE_UNIT = "items";
     private static final String PAGE_PARAMETER = "page";
     private static final String COUNT_PARAMETER = "count";
+    private static final String LIMIT_PARAMETER = "limit";
     private static final String START_INDEX_PARAMETER = "startIndex";
+    private static final String OFFSET_PARAMETER = "offset";
     // TODO: get from config
     private static final int PAGE_SIZE = 10;
 
@@ -60,9 +62,28 @@ public class QueryParamPagingFilter implements ContainerRequestFilter {
             }
         }
 
+        if (requestContext.getUriInfo().getQueryParameters().containsKey(LIMIT_PARAMETER)) {
+            try {
+                pageSize = Integer.parseInt(requestContext.getUriInfo().getQueryParameters().getFirst(LIMIT_PARAMETER));
+                from = page * pageSize;
+                to = from + pageSize;
+            } catch (NumberFormatException ex) {
+                // ignore
+            }
+        }
+
         if (requestContext.getUriInfo().getQueryParameters().containsKey(START_INDEX_PARAMETER)) {
             try {
                 from = Integer.parseInt(requestContext.getUriInfo().getQueryParameters().getFirst(START_INDEX_PARAMETER));
+                to = from + pageSize;
+            } catch (NumberFormatException ex) {
+                // ignore
+            }
+        }
+
+        if (requestContext.getUriInfo().getQueryParameters().containsKey(OFFSET_PARAMETER)) {
+            try {
+                from = Integer.parseInt(requestContext.getUriInfo().getQueryParameters().getFirst(OFFSET_PARAMETER));
                 to = from + pageSize;
             } catch (NumberFormatException ex) {
                 // ignore

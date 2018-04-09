@@ -144,7 +144,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         if (featureTypeMapping.getMappings().isEmpty()) {
             TargetMapping mapping = onTheFlyMapping.getTargetMappingForAttribute(currentPath, nsuri, localName, value);
             if (mapping != null) {
-                writeField(mapping, value);
+                writeField(mapping, value, 1);
             }
             return;
         }
@@ -154,7 +154,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
                 continue;
             }
 
-            writeField(mapping, value);
+            writeField(mapping, value, 1);
         }
     }
 
@@ -163,6 +163,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         currentPath.track(nsuri, localName, depth);
         String path = currentPath.toString();
         String value = "";
+        fieldCounter.compute(path, (k, v) -> (v == null) ? 1 : v+1);
 
         if (featureTypeMapping.getMappings().isEmpty()) {
             TargetMapping mapping = onTheFlyMapping.getTargetMappingForGeometry(currentPath, nsuri, localName);
@@ -191,7 +192,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
                     }
                 }
 
-                writeField(mapping, value);
+                writeField(mapping, value, fieldCounter.get(path));
             } else {
                 // TODO: write geometry
                 writeGeometry(mapping, feature);
@@ -204,7 +205,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         if (featureTypeMapping.getMappings().isEmpty()) {
             TargetMapping mapping = onTheFlyMapping.getTargetMappingForProperty(currentPath, nsuri, localName, text);
             if (mapping != null) {
-                writeField(mapping, text);
+                writeField(mapping, text, fieldCounter.get(currentPath.toString()));
             }
         }
     }
@@ -251,7 +252,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
     protected abstract void writeFeatureEnd() throws IOException;
 
-    protected abstract void writeField(TargetMapping mapping, String value);
+    protected abstract void writeField(TargetMapping mapping, String value, int occurrence);
 
     protected abstract void writePointGeometry(String x, String y) throws IOException;
 

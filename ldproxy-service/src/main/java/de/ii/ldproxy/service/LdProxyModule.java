@@ -74,6 +74,10 @@ public class LdProxyModule implements ServiceModule {
             //srvc.setDateCreated(new DateTime().getMillis());
             //srvc.setLastModified(srvc.getDateCreated());
 
+            if (queryParams.containsKey("user") && queryParams.containsKey("password")) {
+                wfsUrl = wfsUrl.replaceFirst("^(https?://)", "$1" + queryParams.get("user") + ":" + queryParams.get("password") + "@");
+            }
+
             LdProxyService srvc = serviceStore.addService(id, wfsUrl, disableMapping);
 
             // TODO

@@ -31,7 +31,7 @@
             <ol class="breadcrumb bg-light my-0 pl-0">
                     {{#breadCrumbs}}
                         {{#url}}
-                            <li class="breadcrumb-item"><a href="{{path}}{{.}}">{{label}}</a></li>
+                            <li class="breadcrumb-item"><a href="{{.}}">{{label}}</a></li>
                         {{/url}}
                         {{^url}}
                             <li class="breadcrumb-item active">{{label}}</li>
@@ -40,7 +40,7 @@
             </ol>
             <ul class="list-separated m-0 p-0 text-muted">
                     {{#formats}}
-                        <li><a href="{{path}}{{#queryWithout}}f{{/queryWithout}}{{url}}" target="_blank">{{label}}</a></li>
+                        <li><a href="{{url}}" target="_blank">{{label}}</a></li>
                     {{/formats}}
             </ul>            
         </div>
@@ -53,4 +53,3 @@
 </nav>
 
 <div class="container mt-4">
-

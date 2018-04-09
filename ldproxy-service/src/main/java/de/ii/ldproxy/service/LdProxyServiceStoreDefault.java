@@ -162,10 +162,11 @@ if (!(operation == ResourceTransaction.OPERATION.UPDATE_OVERRIDE && resource.get
 
         switch (operation) {
             case ADD:
-                service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);
                 service.initialize(indexStore, sparqlAdapter, codelistStore);
             case UPDATE:
             case UPDATE_OVERRIDE:
+                // also call on update for defaultCrs axis order changes
+                service.initialize(path, httpClient, sslHttpClient, staxFactory, jsonMapper, crsTransformation);
                 if (service.getTargetStatus() == Service.STATUS.STARTED) {
                     service.start();
                 }

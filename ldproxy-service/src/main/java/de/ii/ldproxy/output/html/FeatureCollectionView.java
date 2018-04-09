@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.output.html;
 
+import de.ii.ldproxy.wfs3.URICustomizer;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +38,7 @@ public class FeatureCollectionView extends DatasetView {
     public FeaturePropertyDTO links;
     public Set<Map.Entry<String,String>> filterFields;
     public Map<String,String> bbox2;
+    public URICustomizer uriBuilder;
 
     public FeatureCollectionView(String template, URI uri) {
         super(template, uri);
@@ -58,5 +61,9 @@ public class FeatureCollectionView extends DatasetView {
                 .collect(Collectors.toList());
 
         return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';
+    }
+
+    public Function<String, String> getCurrentUrlWithSegment() {
+        return segment -> uriBuilder.ensureLastPathSegment(segment).toString();
     }
 }

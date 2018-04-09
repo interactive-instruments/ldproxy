@@ -1,6 +1,9 @@
-{{> header}}
+{{#wfs3Dataset}}
+    {{#wfsCapabilities}}
 
-<div itemscope itemtype="http://schema.org/Dataset">
+        {{> header}}
+
+        <div itemscope itemtype="http://schema.org/Dataset">
     <h1 itemprop="name">{{title}}</h1>
     <span itemprop="description">{{description}}</span>
     <br/>
@@ -12,7 +15,7 @@
             <ul class="list-unstyled">
                 {{#featureTypes}}
                     <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
-                        <a itemprop="url" href="{{path}}{{name}}/">{{title}}</a>
+                        <a itemprop="url" href="{{url}}">{{title}}</a>
                     </li>
                 {{/featureTypes}}
                 {{^featureTypes}}
@@ -24,7 +27,7 @@
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">API</div>
         <div class="col-md-10">
-            <a href="api/">OpenAPI 3.0</a>
+            <a href="{{apiUrl}}">OpenAPI 3.0</a>
         </div>
     </div>
     <div class="row my-3">
@@ -71,9 +74,9 @@
                     <li itemprop="url"><a href="{{.}}" target="_blank">{{.}}</a></li>
                 {{/providerUrl}}
                 {{^providerUrl}}
-                        {{#contactUrl}}
-                            <li itemprop="url"><a href="{{.}}" target="_blank">{{.}}</a></li>
-                        {{/contactUrl}}
+                    {{#contactUrl}}
+                        <li itemprop="url"><a href="{{.}}" target="_blank">{{.}}</a></li>
+                    {{/contactUrl}}
                 {{/providerUrl}}
                 <li itemprop="contactPoint" itemscope itemtype="http://schema.org/ContactPoint">
                     <span class="hidden" itemprop="contactType">technical support</span>
@@ -122,7 +125,9 @@
             </ul>
         </div>
     </div>
-
 </div>
 
 {{> footer}}
+
+    {{/wfsCapabilities}}
+{{/wfs3Dataset}}
