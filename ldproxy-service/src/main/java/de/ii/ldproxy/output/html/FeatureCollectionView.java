@@ -64,6 +64,6 @@ public class FeatureCollectionView extends DatasetView {
     }
 
     public Function<String, String> getCurrentUrlWithSegment() {
-        return segment -> uriBuilder.ensureLastPathSegment(segment).toString();
+        return segment -> uriBuilder.copy().ensureLastPathSegment(segment).toString();
     }
 }
