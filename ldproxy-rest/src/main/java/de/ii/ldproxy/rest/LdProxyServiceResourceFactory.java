@@ -71,21 +71,26 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
             }
         });
         String urlPrefix = "";
+        URICustomizer uriCustomizer = new URICustomizer(uri);
         if (!collection.isEmpty()) {
             try {
                 LdProxyService s = (LdProxyService) collection.iterator().next();
                 if (!s.getRewrites().isEmpty() && s.getRewrites().containsKey("rest/services")) {
                     // TODO
                     urlPrefix = "/t14";
-                    try {
-                        uri = new URICustomizer(uri).replaceInPath("rest/services", s.getRewrites().get("rest/services")).ensureTrailingSlash().build();
-                    } catch (URISyntaxException e) {
-                        // ignore
-                    }
+                        uriCustomizer = uriCustomizer.replaceInPath("rest/services", s.getRewrites().get("rest/services"));
+                }
+                if (!s.getRewrites().isEmpty() && s.getRewrites().containsKey("http")) {
+                    uriCustomizer = uriCustomizer.setScheme(s.getRewrites().get("http"));
                 }
             } catch (ClassCastException e) {
                 // ignore
             }
+        }
+        try {
+            uri = uriCustomizer.ensureTrailingSlash().build();
+        } catch (URISyntaxException e) {
+            // ignore
         }
         return new ServiceOverviewView(uri, collection2, urlPrefix);
     }

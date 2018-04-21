@@ -50,6 +50,12 @@ public class URICustomizer extends URIBuilder {
         return this;
     }
 
+    @Override
+    public URICustomizer setScheme(String scheme) {
+        super.setScheme(scheme);
+        return this;
+    }
+
     public URICustomizer ensureParameter(final String parameter, final String value) {
         if (this.getQueryParams()
                 .stream()

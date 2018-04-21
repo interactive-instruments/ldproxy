@@ -81,6 +81,9 @@ public class LdProxyServiceResource implements ServiceResource {
             service.getRewrites().forEach((original, replacement) -> {
                 uriCustomizer.replaceInPath(original, replacement);
             });
+            if (service.getRewrites().containsKey("http")) {
+                uriCustomizer = uriCustomizer.setScheme(service.getRewrites().get("http"));
+            }
         }
     }
 
@@ -111,6 +114,9 @@ public class LdProxyServiceResource implements ServiceResource {
             this.service.getRewrites().forEach((original, replacement) -> {
                 uriCustomizer.replaceInPath(original, replacement);
             });
+            if (this.service.getRewrites().containsKey("http")) {
+                uriCustomizer = uriCustomizer.setScheme(this.service.getRewrites().get("http"));
+            }
         }
         if (openApiResource != null) {
             openApiResource.setService(this.service, getUriCustomizer().copy());
@@ -119,6 +125,7 @@ public class LdProxyServiceResource implements ServiceResource {
             // TODO
             this.urlPrefix = "/t14";// + this.service.getRewrites().get("rest/services");
         }
+
     }
 
     public void setOpenApiResource(OpenApiResource openApiResource) {
