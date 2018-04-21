@@ -69,7 +69,18 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
                 return s.isStarted();
             }
         });
-        return new ServiceOverviewView(uri, collection2);
+        String urlPrefix = "";
+        if (!collection.isEmpty()) {
+            try {
+                LdProxyService s = (LdProxyService) collection.iterator().next();
+                if (!s.getRewrites().isEmpty() && s.getRewrites().containsKey("rest/services")) {
+                    urlPrefix = "/" + s.getRewrites().get("rest/services");
+                }
+            } catch (ClassCastException e) {
+                // ignore
+            }
+        }
+        return new ServiceOverviewView(uri, collection2, urlPrefix);
     }
 
     @Override

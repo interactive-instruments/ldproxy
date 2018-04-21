@@ -71,6 +71,7 @@ public class LdProxyServiceResource implements ServiceResource {
 
     protected UriInfo uriInfo;
     protected URICustomizer uriCustomizer;
+    private String urlPrefix = "";
 
     @Context
     protected void setUriInfo(UriInfo uriInfo) {
@@ -113,6 +114,9 @@ public class LdProxyServiceResource implements ServiceResource {
         }
         if (openApiResource != null) {
             openApiResource.setService(this.service, getUriCustomizer().copy());
+        }
+        if (!this.service.getRewrites().isEmpty() && this.service.getRewrites().containsKey("rest/services")) {
+            this.urlPrefix = "/" + this.service.getRewrites().get("rest/services");
         }
     }
 
@@ -159,7 +163,7 @@ public class LdProxyServiceResource implements ServiceResource {
                 .add(new NavigationDTO(service.getName()))
                 .build();
 
-        return new Wfs3DatasetView(wfs3Dataset, breadCrumbs);
+        return new Wfs3DatasetView(wfs3Dataset, breadCrumbs, urlPrefix);
 /*
         //String pathSuffix = isCollection ? "../" : "";
         URIBuilder baseUriBuilder = new URIBuilder(uriInfo.getRequestUri());
@@ -286,8 +290,8 @@ public class LdProxyServiceResource implements ServiceResource {
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(Wfs3MediaTypes.HTML))
                 .ensureLastPathSegment("items");
 
-        DatasetView dataset = new DatasetView("", uriInfo.getRequestUri());
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureCollection", uriInfo.getRequestUri(), featureType.getName(), featureType.getDisplayName());
+        DatasetView dataset = new DatasetView("", uriInfo.getRequestUri(), urlPrefix);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureCollection", uriInfo.getRequestUri(), featureType.getName(), featureType.getDisplayName(), urlPrefix);
         featureTypeDataset.uriBuilder = uriBuilder;
         dataset.featureTypes.add(featureTypeDataset);
 
@@ -326,7 +330,7 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     private FeatureCollectionView createFeatureDetailsView(WfsProxyFeatureType featureType, String featureId, List<Wfs3Link> links) {
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", uriInfo.getRequestUri(), featureType.getName(), featureType.getDisplayName());
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", uriInfo.getRequestUri(), featureType.getName(), featureType.getDisplayName(), urlPrefix);
         featureTypeDataset.description = featureType.getDisplayName();
 
         URICustomizer uriBuilder = getUriCustomizer()

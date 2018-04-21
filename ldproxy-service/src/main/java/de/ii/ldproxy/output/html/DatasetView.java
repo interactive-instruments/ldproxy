@@ -55,27 +55,21 @@ public class DatasetView extends GenericView {
     public String contactCountry;
     public List<NavigationDTO> breadCrumbs;
     public List<NavigationDTO> formats;
+    public String urlPrefix;
 
-    public DatasetView(URI uri) {
-        this("service", uri);
+    public DatasetView(String template, URI uri, String urlPrefix) {
+        this(template, uri, (Object) null, urlPrefix);
     }
 
-    public DatasetView(String template, URI uri) {
-        this(template, uri, (Object) null);
-    }
-
-    public DatasetView(String template, URI uri, Object data) {
+    public DatasetView(String template, URI uri, Object data, String urlPrefix) {
         super(template, uri, data);
         this.keywords = new ArrayList<>();
         this.featureTypes = new ArrayList<>();
+        this.urlPrefix = urlPrefix;
     }
 
-    public DatasetView(String template, URI uri, String name) {
-        this(template, uri, name, name);
-    }
-
-    public DatasetView(String template, URI uri, String name, String title) {
-        this(template, uri);
+    public DatasetView(String template, URI uri, String name, String title, String urlPrefix) {
+        this(template, uri, urlPrefix);
         this.name = name;
         this.title = title;
     }
@@ -94,5 +88,9 @@ public class DatasetView extends GenericView {
 
             return '?' + URLEncodedUtils.format(query, '&', Consts.UTF_8) + (!query.isEmpty() ? '&' : "");
         };
+    }
+
+    public String getUrlPrefix() {
+        return urlPrefix;
     }
 }

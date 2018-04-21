@@ -40,18 +40,8 @@ public class FeatureCollectionView extends DatasetView {
     public Map<String,String> bbox2;
     public URICustomizer uriBuilder;
 
-    public FeatureCollectionView(String template, URI uri) {
-        super(template, uri);
-        this.features = new ArrayList<>();
-    }
-
-    public FeatureCollectionView(String template, URI uri, String name) {
-        super(template, uri, name);
-        this.features = new ArrayList<>();
-    }
-
-    public FeatureCollectionView(String template, URI uri, String name, String title) {
-        super(template, uri, name, title);
+    public FeatureCollectionView(String template, URI uri, String name, String title, String urlPrefix) {
+        super(template, uri, name, title, urlPrefix);
         this.features = new ArrayList<>();
     }
 

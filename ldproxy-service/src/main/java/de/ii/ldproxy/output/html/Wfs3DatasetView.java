@@ -21,11 +21,13 @@ import java.util.stream.Collectors;
 public class Wfs3DatasetView extends View {
     private final Wfs3Dataset wfs3Dataset;
     private final List<NavigationDTO> breadCrumbs;
+    private final String urlPrefix;
 
-    public Wfs3DatasetView(Wfs3Dataset wfs3Dataset, final List<NavigationDTO> breadCrumbs) {
+    public Wfs3DatasetView(Wfs3Dataset wfs3Dataset, final List<NavigationDTO> breadCrumbs, String urlPrefix) {
         super("service.mustache", Charsets.UTF_8);
         this.wfs3Dataset = wfs3Dataset;
         this.breadCrumbs = breadCrumbs;
+        this.urlPrefix = urlPrefix;
     }
 
     public Wfs3Dataset getWfs3Dataset() {
@@ -69,5 +71,9 @@ public class Wfs3DatasetView extends View {
                               .findFirst()
                               .orElse("");
         }
+    }
+
+    public String getUrlPrefix() {
+        return urlPrefix;
     }
 }
