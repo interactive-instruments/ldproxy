@@ -116,7 +116,8 @@ public class LdProxyServiceResource implements ServiceResource {
             openApiResource.setService(this.service, getUriCustomizer().copy());
         }
         if (!this.service.getRewrites().isEmpty() && this.service.getRewrites().containsKey("rest/services")) {
-            this.urlPrefix = "/" + this.service.getRewrites().get("rest/services");
+            // TODO
+            this.urlPrefix = "/t14";// + this.service.getRewrites().get("rest/services");
         }
     }
 

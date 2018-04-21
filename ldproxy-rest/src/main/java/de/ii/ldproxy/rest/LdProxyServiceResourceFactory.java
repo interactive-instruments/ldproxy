@@ -75,7 +75,8 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
             try {
                 LdProxyService s = (LdProxyService) collection.iterator().next();
                 if (!s.getRewrites().isEmpty() && s.getRewrites().containsKey("rest/services")) {
-                    urlPrefix = "/" + s.getRewrites().get("rest/services");
+                    // TODO
+                    urlPrefix = "/t14";
                     try {
                         uri = new URICustomizer(uri).replaceInPath("rest/services", s.getRewrites().get("rest/services")).ensureTrailingSlash().build();
                     } catch (URISyntaxException e) {
