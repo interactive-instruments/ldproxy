@@ -169,4 +169,8 @@ public class URICustomizer extends URIBuilder {
         this.setPath(Joiner.on('/')
                            .join(pathSegments));
     }
+
+    public void replaceInPath(String original, String replacement) {
+        this.setPath(this.getPath().replaceFirst(original, replacement));
+    }
 }

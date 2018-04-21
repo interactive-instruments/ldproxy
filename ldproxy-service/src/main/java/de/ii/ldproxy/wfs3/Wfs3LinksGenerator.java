@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
  */
 public class Wfs3LinksGenerator {
 
-    public List<Wfs3Link> generateDatasetLinks(URI requestUri, String describeFeatureTypeUrl, String mediaType, String... alternativeMediaTypes) {
-        final URICustomizer uriBuilder = new URICustomizer(requestUri)
+    public List<Wfs3Link> generateDatasetLinks(URICustomizer uriBuilder, String describeFeatureTypeUrl, String mediaType, String... alternativeMediaTypes) {
+        uriBuilder
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(mediaType));
 
         final boolean isCollections = uriBuilder.isLastPathSegment("collections");
@@ -60,8 +60,8 @@ public class Wfs3LinksGenerator {
                       .build();
     }
 
-    public List<Wfs3Link> generateDatasetCollectionLinks(URI requestUri, String mediaType, String collectionId, String collectionName, String describeFeatureTypeUrl) {
-        URICustomizer uriBuilder = new URICustomizer(requestUri)
+    public List<Wfs3Link> generateDatasetCollectionLinks(URICustomizer uriBuilder, String mediaType, String collectionId, String collectionName, String describeFeatureTypeUrl) {
+        uriBuilder
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(mediaType))
                 .ensureLastPathSegments("collections", collectionId, "items");
 
@@ -80,8 +80,8 @@ public class Wfs3LinksGenerator {
     }
 
 
-    public List<Wfs3Link> generateCollectionOrFeatureLinks(URI requestUri, boolean isFeatureCollection, int page, int count, String mediaType, String... alternativeMediaTypes) {
-        final URICustomizer uriBuilder = new URICustomizer(requestUri)
+    public List<Wfs3Link> generateCollectionOrFeatureLinks(URICustomizer uriBuilder, boolean isFeatureCollection, int page, int count, String mediaType, String... alternativeMediaTypes) {
+        uriBuilder
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(mediaType));
 
         final ImmutableList.Builder<Wfs3Link> links = new ImmutableList.Builder<Wfs3Link>()

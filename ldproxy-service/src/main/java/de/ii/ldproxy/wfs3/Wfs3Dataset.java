@@ -37,7 +37,7 @@ public class Wfs3Dataset {
     private List<Wfs3Collection> collections;
     private WfsCapabilities wfsCapabilities;
 
-    public Wfs3Dataset(final URI requestUri, final LdProxyService service, final String mediaType, final String... alternativeMediaTypes) {
+    public Wfs3Dataset(final URICustomizer uriCustomizer, final LdProxyService service, final String mediaType, final String... alternativeMediaTypes) {
         final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
 
         this.collections = service.getFeatureTypes()
@@ -56,7 +56,7 @@ public class Wfs3Dataset {
                                         .toLowerCase());
                    collection.setTitle(featureType.getDisplayName());
                    collection.setPrefixedName(qn);
-                   collection.setLinks(wfs3LinksGenerator.generateDatasetCollectionLinks(requestUri, mediaType, featureType.getName()
+                   collection.setLinks(wfs3LinksGenerator.generateDatasetCollectionLinks(uriCustomizer.copy(), mediaType, featureType.getName()
                                                                                                                   .toLowerCase(), featureType.getDisplayName(), new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType(ImmutableMap.of(featureType.getNamespace(), ImmutableList.of(featureType.getName())))).getAsUrl()));
                    return collection;
                })
@@ -71,7 +71,7 @@ public class Wfs3Dataset {
 
         // TODO: apply local information (title, enabled, etc.)
 
-        this.links =  wfs3LinksGenerator.generateDatasetLinks(requestUri, new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl(), mediaType, alternativeMediaTypes);
+        this.links =  wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl(), mediaType, alternativeMediaTypes);
     }
 
     private Predicate<WfsProxyFeatureType> isFeatureTypeEnabled(final LdProxyService service) {

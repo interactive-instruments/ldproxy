@@ -14,6 +14,8 @@ package de.ii.ldproxy.rest;
 
 
 import de.ii.ldproxy.service.LdProxyService;
+import de.ii.ldproxy.wfs3.URICustomizer;
+import de.ii.xsf.core.api.Service;
 import de.ii.xsf.dropwizard.api.Dropwizard;
 import de.ii.xsf.dropwizard.api.Jackson;
 import de.ii.xsf.dropwizard.cfg.JacksonProvider;
@@ -51,14 +53,22 @@ public class OpenApiResource {
     @Requires(optional = true)
     private OpenApiViewerResource openApiViewerResource;
 
+    protected URICustomizer uriCustomizer;
+
+    private URICustomizer getUriCustomizer() {
+        return uriCustomizer.copy();
+    }
+
+
     private Wfs3SpecFilter wfs3SpecFilter;
 
     OpenApiResource(@Requires Jackson jackson, @Requires Dropwizard dropwizard) {
         this.wfs3SpecFilter = new Wfs3SpecFilter(jackson.getDefaultObjectMapper(), dropwizard.getExternalUrl());
     }
 
-    public void setService(LdProxyService service) {
+    public void setService(LdProxyService service, URICustomizer uriCustomizer) {
         wfs3SpecFilter.setService(service);
+        this.uriCustomizer = uriCustomizer;
     }
 
     @GET
@@ -104,7 +114,7 @@ public class OpenApiResource {
         if (!uriInfo.getRequestUri().getPath().endsWith("/")) {
             return Response
                     .status(Response.Status.MOVED_PERMANENTLY)
-                    .location(uriInfo.getRequestUriBuilder().path("/").build())
+                    .location(getUriCustomizer().copy().setPath("/").build())
                     .build();
         }
 
@@ -115,20 +125,20 @@ public class OpenApiResource {
     @GET
     @Produces({"application/openapi+json;version=3.0", MediaType.APPLICATION_JSON})
     //@Operation(summary = "the API description - this document", tags = {"Capabilities"}, parameters = {@Parameter(name = "f")})
-    public Response getApiDescriptionJson(@Context HttpHeaders headers, @Context UriInfo uriInfo) throws Exception {
+    public Response getApiDescriptionJson(@Context HttpHeaders headers) throws Exception {
         LOGGER.debug("MIME {})", "JSON");
         //return openApi.getOpenApi(headers, uriInfo, "json", wfs3SpecFilter);
-        return wfs3SpecFilter.getOpenApi("json", uriInfo.getRequestUri());
+        return wfs3SpecFilter.getOpenApi("json", getUriCustomizer());
     }
 
 
     @GET
     @Produces({DynamicOpenApi.YAML})
     //@Operation(summary = "the API description - this document", tags = {"Capabilities"}, parameters = {@Parameter(name = "f")})
-    public Response getApiDescriptionYaml(@Context HttpHeaders headers, @Context UriInfo uriInfo) throws Exception {
+    public Response getApiDescriptionYaml(@Context HttpHeaders headers) throws Exception {
         LOGGER.debug("MIME {})", "YAML");
         //return openApi.getOpenApi(headers, uriInfo, "yaml", wfs3SpecFilter);
-        return wfs3SpecFilter.getOpenApi("yaml", uriInfo.getRequestUri());
+        return wfs3SpecFilter.getOpenApi("yaml", getUriCustomizer());
     }
 
     @GET

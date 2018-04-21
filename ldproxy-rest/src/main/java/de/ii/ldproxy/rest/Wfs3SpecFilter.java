@@ -71,7 +71,7 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
         this.service = service;
     }
 
-    public Response getOpenApi(String type, URI requestUri) {
+    public Response getOpenApi(String type, URICustomizer requestUriCustomizer) {
 
         boolean pretty = true;
 
@@ -155,7 +155,7 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                 openAPI.servers(ImmutableList.of(new Server().url(externalUrl + "rest/services/" + service.getId())));
             else
                 openAPI.servers(ImmutableList.of(new Server().url(externalUrl + service.getId())));*/
-            openAPI.servers(ImmutableList.of(new Server().url(new URICustomizer(requestUri).clearParameters().removeLastPathSegment("api").toString())));
+            openAPI.servers(ImmutableList.of(new Server().url(requestUriCustomizer.copy().clearParameters().removeLastPathSegment("api").toString())));
 
             if (service != null) {
                 WFSOperation operation = new GetCapabilities();

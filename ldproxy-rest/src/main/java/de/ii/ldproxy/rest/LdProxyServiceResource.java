@@ -68,8 +68,25 @@ public class LdProxyServiceResource implements ServiceResource {
 
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(LdProxyServiceResource.class);
     protected LdProxyService service = null;
-    @Context
+
     protected UriInfo uriInfo;
+    protected URICustomizer uriCustomizer;
+
+    @Context
+    protected void setUriInfo(UriInfo uriInfo) {
+        this.uriInfo = uriInfo;
+        this.uriCustomizer = new URICustomizer(uriInfo.getRequestUri());
+        if (service != null && !service.getRewrites().isEmpty()) {
+            service.getRewrites().forEach((original, replacement) -> {
+                uriCustomizer.replaceInPath(original, replacement);
+            });
+        }
+    }
+
+    private URICustomizer getUriCustomizer() {
+        return uriCustomizer.copy();
+    }
+
     @Context
     protected HttpServletRequest request;
 
@@ -89,15 +106,20 @@ public class LdProxyServiceResource implements ServiceResource {
     @Override
     public void setService(Service service) {
         this.service = (LdProxyService) service;
+        if (uriCustomizer != null && !this.service.getRewrites().isEmpty()) {
+            this.service.getRewrites().forEach((original, replacement) -> {
+                uriCustomizer.replaceInPath(original, replacement);
+            });
+        }
         if (openApiResource != null) {
-            openApiResource.setService(this.service);
+            openApiResource.setService(this.service, getUriCustomizer().copy());
         }
     }
 
     public void setOpenApiResource(OpenApiResource openApiResource) {
         this.openApiResource = openApiResource;
         if (service != null) {
-            openApiResource.setService(service);
+            openApiResource.setService(service, getUriCustomizer().copy());
         }
     }
 
@@ -133,7 +155,7 @@ public class LdProxyServiceResource implements ServiceResource {
         wfs3Dataset.getWfsCapabilities().url += "?SERVICE=WFS&REQUEST=GetCapabilities";
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Datasets", new URICustomizer(uriInfo.getRequestUri()).removeLastPathSegments(isCollection ? 2 : 1).toString()))
+                .add(new NavigationDTO("Datasets", getUriCustomizer().removeLastPathSegments(isCollection ? 2 : 1).toString()))
                 .add(new NavigationDTO(service.getName()))
                 .build();
 
@@ -238,7 +260,7 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     private Wfs3Dataset generateWfs3Dataset(String mediaType, String... alternativeMediaTypes) {
-        return new Wfs3Dataset(uriInfo.getRequestUri(), service, mediaType, alternativeMediaTypes);
+        return new Wfs3Dataset(getUriCustomizer(), service, mediaType, alternativeMediaTypes);
     }
 
     @Path("/api")
@@ -259,7 +281,7 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     private FeatureCollectionView createFeatureCollectionView(WfsProxyFeatureType featureType) {
-        URICustomizer uriBuilder = new URICustomizer(uriInfo.getRequestUri())
+        URICustomizer uriBuilder = getUriCustomizer()
                 .clearParameters()
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(Wfs3MediaTypes.HTML))
                 .ensureLastPathSegment("items");
@@ -307,7 +329,7 @@ public class LdProxyServiceResource implements ServiceResource {
         FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", uriInfo.getRequestUri(), featureType.getName(), featureType.getDisplayName());
         featureTypeDataset.description = featureType.getDisplayName();
 
-        URICustomizer uriBuilder = new URICustomizer(uriInfo.getRequestUri())
+        URICustomizer uriBuilder = getUriCustomizer()
                 .clearParameters()
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(Wfs3MediaTypes.HTML))
                 .removePathSegment("items", -2)
@@ -335,7 +357,7 @@ public class LdProxyServiceResource implements ServiceResource {
     }
 
     private void addDatasetNavigation(FeatureCollectionView featureCollectionView, WfsProxyFeatureType featureType, List<Wfs3Link> links) {
-        URICustomizer uriBuilder = new URICustomizer(uriInfo.getRequestUri())
+        URICustomizer uriBuilder = getUriCustomizer()
                 .clearParameters()
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(Wfs3MediaTypes.HTML))
                 .removePathSegment("items", -1)
@@ -475,7 +497,7 @@ public class LdProxyServiceResource implements ServiceResource {
               .debug("GET HTML FOR {} {}", featureType.getNamespace(), featureType.getName());
 
         int[] r = RangeHeader.parseRange(range);
-        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(uriInfo.getRequestUri(), true, r[2], r[3], Wfs3MediaTypes.HTML, Wfs3MediaTypes.GEO_JSON, Wfs3MediaTypes.GML);
+        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(getUriCustomizer(), true, r[2], r[3], Wfs3MediaTypes.HTML, Wfs3MediaTypes.GEO_JSON, Wfs3MediaTypes.GML);
 
 
 
@@ -761,7 +783,7 @@ public class LdProxyServiceResource implements ServiceResource {
         LOGGER.getLogger()
               .debug("GET HTML FOR {} {}", featureType.getNamespace(), featureType.getName());
 
-        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(uriInfo.getRequestUri(), false, 0, 0, Wfs3MediaTypes.HTML, Wfs3MediaTypes.GEO_JSON, Wfs3MediaTypes.GML);
+        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(getUriCustomizer(), false, 0, 0, Wfs3MediaTypes.HTML, Wfs3MediaTypes.GEO_JSON, Wfs3MediaTypes.GML);
 
         FeatureCollectionView featureTypeDataset = createFeatureDetailsView(featureType, featureid, links);
 
@@ -849,7 +871,7 @@ public class LdProxyServiceResource implements ServiceResource {
     private Response getJsonResponse(final WFSOperation operation, final WfsProxyFeatureType featureType, final boolean isFeatureCollection, String range, String callback) {
 
         int[] r = RangeHeader.parseRange(range);
-        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(uriInfo.getRequestUri(), isFeatureCollection, r[2], r[3], Wfs3MediaTypes.GEO_JSON, Wfs3MediaTypes.GML, Wfs3MediaTypes.HTML);
+        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(getUriCustomizer(), isFeatureCollection, r[2], r[3], Wfs3MediaTypes.GEO_JSON, Wfs3MediaTypes.GML, Wfs3MediaTypes.HTML);
 
         return getResponse(operation, featureType,
                 outputStream -> new GeoJsonFeatureWriter(service.createJsonGenerator(outputStream), service.jsonMapper, isFeatureCollection, featureType.getMappings(), Gml2GeoJsonMappingProvider.MIME_TYPE, service.getCrsTransformations()
