@@ -170,7 +170,15 @@ public class URICustomizer extends URIBuilder {
                            .join(pathSegments));
     }
 
-    public void replaceInPath(String original, String replacement) {
+    public URICustomizer replaceInPath(String original, String replacement) {
         this.setPath(this.getPath().replaceFirst(original, replacement));
+        return this;
+    }
+
+    public URICustomizer ensureTrailingSlash() {
+        if (!this.getPath().endsWith("/")) {
+            this.setPath(this.getPath() + "/");
+        }
+        return this;
     }
 }

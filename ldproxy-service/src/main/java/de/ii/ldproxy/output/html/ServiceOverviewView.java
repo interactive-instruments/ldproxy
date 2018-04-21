@@ -19,8 +19,10 @@ import java.util.List;
  * @author zahnen
  */
 public class ServiceOverviewView extends DatasetView {
+    public URI uri;
     public ServiceOverviewView(URI uri, Object data, String urlPrefix) {
         super("services", uri, data, urlPrefix);
+        this.uri = uri;
         this.title = "ldproxy Dataset Overview";
         this.description = "ldproxy Dataset Overview";
         this.keywords = new ImmutableList.Builder<String>().add("ldproxy", "service", "dataset", "overview").build();

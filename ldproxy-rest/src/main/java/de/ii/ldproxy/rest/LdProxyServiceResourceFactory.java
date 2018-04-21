@@ -11,6 +11,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import de.ii.ldproxy.output.html.ServiceOverviewView;
 import de.ii.ldproxy.service.LdProxyService;
+import de.ii.ldproxy.wfs3.URICustomizer;
 import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.api.rest.ServiceResource;
 import de.ii.xsf.core.api.rest.ServiceResourceFactory;
@@ -75,6 +76,11 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
                 LdProxyService s = (LdProxyService) collection.iterator().next();
                 if (!s.getRewrites().isEmpty() && s.getRewrites().containsKey("rest/services")) {
                     urlPrefix = "/" + s.getRewrites().get("rest/services");
+                    try {
+                        uri = new URICustomizer(uri).replaceInPath("rest/services", s.getRewrites().get("rest/services")).ensureTrailingSlash().build();
+                    } catch (URISyntaxException e) {
+                        // ignore
+                    }
                 }
             } catch (ClassCastException e) {
                 // ignore
