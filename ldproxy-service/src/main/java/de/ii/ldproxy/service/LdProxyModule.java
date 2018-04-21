@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -157,14 +158,10 @@ public class LdProxyModule implements ServiceModule {
 
     @Override
     public List<Service> getServiceList(AuthenticatedUser authenticatedUser) {
-        //LOGGER.getLogger().debug("GET SERVICE LIST");
-        List<Service> srvs = new ArrayList<>();
-        for (String id : serviceStore.getResourceIds()) {
-            //LOGGER.getLogger().debug("GET SERVICE LIST {}", id);
-            srvs.add(serviceStore.getResource(id));
-        }
-        //LOGGER.getLogger().debug("GET SERVICE LIST {}", srvs);
-        return srvs;
+        return serviceStore.getResourceIds().stream()
+                    .map(serviceStore::getResource)
+                    .sorted()
+                .collect(Collectors.toList());
     }
 
     @Override
