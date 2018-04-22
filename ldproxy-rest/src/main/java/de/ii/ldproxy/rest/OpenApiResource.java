@@ -110,11 +110,11 @@ public class OpenApiResource {
                             }
                     )
             })
-    public Response getApiDescription(@Context HttpHeaders headers, @Context UriInfo uriInfo) throws Exception {
-        if (!uriInfo.getRequestUri().getPath().endsWith("/")) {
+    public Response getApiDescription(@Context HttpHeaders headers) throws Exception {
+        if (!getUriCustomizer().getPath().endsWith("/")) {
             return Response
                     .status(Response.Status.MOVED_PERMANENTLY)
-                    .location(getUriCustomizer().copy().setPath("/").build())
+                    .location(getUriCustomizer().copy().ensureTrailingSlash().build())
                     .build();
         }
 
