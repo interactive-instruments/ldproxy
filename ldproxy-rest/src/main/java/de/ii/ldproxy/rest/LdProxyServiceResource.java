@@ -344,12 +344,12 @@ public class LdProxyServiceResource implements ServiceResource {
         URICustomizer uriBuilder = getUriCustomizer()
                 .clearParameters()
                 .ensureParameter("f", Wfs3MediaTypes.FORMATS.get(Wfs3MediaTypes.HTML))
-                .removePathSegment("items", -2)
+                //.removePathSegment("items", -2)
                 .removeLastPathSegments(1);
 
         featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Datasets", uriBuilder.copy().removePathSegment("collections", -2).removeLastPathSegments(2).toString()))
-                .add(new NavigationDTO(service.getName(), uriBuilder.copy().removePathSegment("collections", -2).removeLastPathSegments(1).toString()))
+                .add(new NavigationDTO("Datasets", uriBuilder.copy().removePathSegment("collections", -3).removeLastPathSegments(3).toString()))
+                .add(new NavigationDTO(service.getName(), uriBuilder.copy().removePathSegment("collections", -3).removeLastPathSegments(2).toString()))
                 .add(new NavigationDTO(featureType.getDisplayName(), uriBuilder.toString()))
                 .add(new NavigationDTO(featureId))
                 .build();
