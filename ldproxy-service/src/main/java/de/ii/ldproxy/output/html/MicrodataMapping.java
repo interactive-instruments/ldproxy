@@ -7,15 +7,14 @@
  */
 package de.ii.ldproxy.output.html;
 
-import de.ii.ogc.wfs.proxy.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
 
 import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
 
 /**
  * @author zahnen
  */
-public interface MicrodataMapping extends TargetMapping {
-    MICRODATA_TYPE getType();
+public interface MicrodataMapping extends TargetMapping<MicrodataMapping.MICRODATA_TYPE> {
     Boolean isShowInCollection();
     String getItemType();
     String getItemProp();

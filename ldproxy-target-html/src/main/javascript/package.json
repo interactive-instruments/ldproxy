@@ -28,6 +28,8 @@
         "prop-types": "^15.5.10",
         "qs": "^6.5.1",
         "react": "^16.0.0",
+        "react-datetime": "^2.14.0",
+        "react-datetime-range-picker": "^1.0.5",
         "react-dom": "^16.0.0",
         "react-hot-loader": "^3.1.1",
         "react-leaflet": "^1.7.1",

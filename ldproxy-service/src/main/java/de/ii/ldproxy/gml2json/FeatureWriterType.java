@@ -29,7 +29,7 @@ public enum FeatureWriterType {
             return new GeoJsonFeatureWriter(layer, jsonOut, queryParams, singleFeature);
         }
     };
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(FeatureWriterType.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureWriterType.class);
     protected String stringRepresentation;
     protected WFS2GSFSLayer layer;
     protected JsonGenerator jsonOut;

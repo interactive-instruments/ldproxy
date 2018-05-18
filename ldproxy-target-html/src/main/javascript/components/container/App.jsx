@@ -4,11 +4,13 @@ import PropTypes from 'prop-types';
 import { Button, Row, Col, Collapse } from 'reactstrap/dist/reactstrap.es';
 import { Map, TileLayer } from 'react-leaflet'
 import qs from 'qs';
+import moment from 'moment';
 
 import LeafletBboxSelect from '../presentational/LeafletBboxSelect';
 import FieldFilter from '../presentational/FieldFilter';
 import BboxFilter from '../presentational/BboxFilter';
 import FilterBadge from '../presentational/FilterBadge';
+import TimeFilter, { toTimeLabel } from '../presentational/TimeFilter';
 
 //import "bootstrap/scss/bootstrap";
 
@@ -23,10 +25,12 @@ export default class App extends Component {
             ignoreQueryPrefix: true
         });
 
-        const filters = Object.keys(fields).concat('bbox').reduce((filters, field) => {
+        const filters = Object.keys(fields).concat(['bbox', 'time']).reduce((filters, field) => {
             if (query[field]) {
                 filters[field] = {
-                    value: field === 'bbox' ? query[field].split(',') : query[field]
+                    value: field === 'bbox'
+                        ? query[field].split(',')
+                        : query[field]
                 }
             }
             return filters;
@@ -74,10 +78,12 @@ export default class App extends Component {
             ignoreQueryPrefix: true
         });
         delete query['page'];
-        Object.keys(fields).concat('bbox').forEach(field => {
+        Object.keys(fields).concat(['bbox', 'time']).forEach(field => {
             delete query[field];
             if (newFilters[field]) {
-                query[field] = field === 'bbox' ? newFilters[field].value.join(',') : newFilters[field].value;
+                query[field] = field === 'bbox'
+                    ? newFilters[field].value.join(',')
+                    : newFilters[field].value;
             }
         })
 
@@ -148,6 +154,10 @@ export default class App extends Component {
             return `bbox≈${parseFloat(filters[field].value[0]).toFixed(2)},${parseFloat(filters[field].value[1]).toFixed(2)},${parseFloat(filters[field].value[2]).toFixed(2)},${parseFloat(filters[field].value[3]).toFixed(2)}`
         }
 
+        if (field === 'time') {
+            return toTimeLabel(filters[field].value);
+        }
+
         return `${field}=${filters[field].value}`
     }
 
@@ -157,7 +167,7 @@ export default class App extends Component {
 
     render() {
         const {field, value, filters, isOpen, isShown, lat, lng, zoom, bbox} = this.state;
-        const {fields, map} = window['_ldproxy'];
+        const {fields, map, time} = window['_ldproxy'];
 
         return (
             <div>
@@ -196,6 +206,10 @@ export default class App extends Component {
                                                   [k]: fields[k]
                                               }), {}) } onChange={ this._addFilter } />
                         <BboxFilter bbox={ bbox } onChange={ this._addFilter } />
+                        <TimeFilter start={ time.start }
+                            end={ time.end }
+                            filter={ filters.time ? filters.time.value : null }
+                            onChange={ this._addFilter } />
                         </Col>
                         <Col md="6">
                         { isShown && <Map bounds={ filters.bbox ? this._getBounds(filters.bbox.value) : map.bounds } selectArea={ true } className="w-100 h-100">

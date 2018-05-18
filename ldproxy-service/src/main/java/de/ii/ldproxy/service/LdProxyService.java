@@ -8,7 +8,6 @@
 package de.ii.ldproxy.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.ldproxy.output.generic.GenericMapping;
@@ -16,19 +15,31 @@ import de.ii.ldproxy.output.generic.Gml2GenericMappingProvider;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMappingProvider;
 import de.ii.ldproxy.output.html.Gml2MicrodataMappingProvider;
 import de.ii.ldproxy.output.jsonld.Gml2JsonLdMappingProvider;
-import de.ii.ogc.wfs.proxy.*;
-import de.ii.xsf.core.api.JsonViews;
-import de.ii.xsf.logging.XSFLogger;
+import de.ii.ogc.wfs.proxy.AbstractWfsProxyService;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzerFromData;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzerFromSchema;
+import de.ii.ogc.wfs.proxy.WfsProxyMappingProvider;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureType;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLParser;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSAdapter;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSOperation;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSRequest;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -36,7 +47,7 @@ import java.util.stream.Collectors;
  */
 public class LdProxyService extends AbstractWfsProxyService {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(LdProxyService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LdProxyService.class);
     public static final String SERVICE_TYPE = "ldproxy";
     private static final String INTERFACE_SPECIFICATION = "LinkedDataService";
 
@@ -45,20 +56,16 @@ public class LdProxyService extends AbstractWfsProxyService {
     private SparqlAdapter sparqlAdapter;
     private CodelistStore codelistStore;
 
-    // TODO: we already have external url, can we use it here?
-    private Map<String, String> rewrites;
-
     private String vocab;
 
 
     public LdProxyService() {
-        this.rewrites = new HashMap<>();
+
     }
 
     public LdProxyService(String id, String wfsUrl) {
         super(id, SERVICE_TYPE, null, new WFSAdapter(wfsUrl.trim()));
 
-        this.rewrites = new HashMap<>();
                 //this.description = "";
         //String[] path = {orgid};
         //initialize(path, module);
@@ -83,15 +90,6 @@ public class LdProxyService extends AbstractWfsProxyService {
         return INTERFACE_SPECIFICATION;
     }
 
-    @JsonView(JsonViews.FullView.class)
-    public Map<String, String> getRewrites() {
-        return rewrites;
-    }
-
-    public void setRewrites(Map<String, String> rewrites) {
-        this.rewrites = rewrites;
-    }
-
     public Map<String, String> findIndicesForFeatureType(WfsProxyFeatureType ft) {
         return  findIndicesForFeatureType(ft, true);
     }
@@ -112,11 +110,26 @@ public class LdProxyService extends AbstractWfsProxyService {
     }
 
     public Map<String, String> getFilterableFieldsForFeatureType(WfsProxyFeatureType featureType) {
-        //return featureType.getMappings().findMappings(TargetMapping.BASE_TYPE).values().stream().filter(mapping -> mapping.get(0).isEnabled()).map(mapping -> mapping.get(0).getName().toLowerCase().replaceAll(" ", "%20")).collect(Collectors.toList());
+        return getFilterableFieldsForFeatureType(featureType, false);
+    }
 
-        return featureType.getMappings().findMappings(TargetMapping.BASE_TYPE).entrySet().stream()
-                .filter(mapping -> ((GenericMapping)mapping.getValue().get(0)).isFilterable() && mapping.getValue().get(0).getName() != null && mapping.getValue().get(0).isEnabled())
-                .collect(Collectors.toMap(mapping -> mapping.getValue().get(0).getName().toLowerCase(), Map.Entry::getKey));
+    public Map<String, String> getFilterableFieldsForFeatureType(WfsProxyFeatureType featureType, boolean withoutSpatialAndTemporal) {
+        return featureType.getMappings().findMappings(GenericMapping.BASE_TYPE).entrySet().stream()
+                .filter(isFilterable(withoutSpatialAndTemporal))
+                .collect(Collectors.toMap(getParameterName(), mapping -> mapping.getKey().substring(mapping.getKey().lastIndexOf(":")+1)));
+    }
+
+    private Function<Map.Entry<String, List<TargetMapping>>, String> getParameterName() {
+        return mapping -> ((GenericMapping)mapping.getValue().get(0)).isSpatial() ? "bbox"
+                : ((GenericMapping)mapping.getValue().get(0)).isTemporal() ? "time"
+                : mapping.getValue().get(0).getName().toLowerCase();
+    }
+
+    private Predicate<Map.Entry<String, List<TargetMapping>>> isFilterable(boolean withoutSpatialAndTemporal) {
+        return mapping -> ((GenericMapping)mapping.getValue().get(0)).isFilterable() &&
+                (mapping.getValue().get(0).getName() != null || ((GenericMapping)mapping.getValue().get(0)).isSpatial()) &&
+                mapping.getValue().get(0).isEnabled() &&
+                (!withoutSpatialAndTemporal || (!((GenericMapping)mapping.getValue().get(0)).isSpatial() && !((GenericMapping)mapping.getValue().get(0)).isTemporal()));
     }
 
     public Map<String, String> getHtmlNamesForFeatureType(WfsProxyFeatureType featureType) {
@@ -126,16 +139,25 @@ public class LdProxyService extends AbstractWfsProxyService {
                 .collect(Collectors.toMap(Map.Entry::getKey, mapping -> mapping.getValue().get(0).getName()));
     }
 
-    public String getGeometryPathForFeatureType(WfsProxyFeatureType featureType) {
-        //return featureType.getMappings().findMappings(TargetMapping.BASE_TYPE).values().stream().filter(mapping -> mapping.get(0).isEnabled()).map(mapping -> mapping.get(0).getName().toLowerCase().replaceAll(" ", "%20")).collect(Collectors.toList());
+    public Optional<String> getSpatialFieldPathForFeatureType(WfsProxyFeatureType featureType) {
+        //return featureType.getMappings().findMappings(TargetMapping.BASE_TYPE).values().stream()
+        // .filter(mapping -> mapping.get(0).isEnabled()).map(mapping -> mapping.get(0).getName().toLowerCase().replaceAll(" ", "%20")).collect(Collectors.toList());
 
         // TODO: provide isGeometry on TargetMapping.BASE_TYPE
         // TODO: does mapping.getValue().get(0).isEnabled() take into account general mapping?
-        List<Map.Entry<String,List<TargetMapping>>> geometries = featureType.getMappings().findMappings("application/geo+json").entrySet().stream()
-                .filter(mapping -> mapping.getValue().get(0).isGeometry() && mapping.getValue().get(0).isEnabled())
-                .collect(Collectors.toList());
+        return featureType.getMappings().findMappings(GenericMapping.BASE_TYPE).entrySet().stream()
+                .filter(mapping -> ((GenericMapping)mapping.getValue().get(0)).isSpatial() && mapping.getValue().get(0).isEnabled())
+                .map(Map.Entry::getKey)
+                .findFirst();
 
-        return !geometries.isEmpty() ? geometries.get(0).getKey() : null;
+        //return !geometries.isEmpty() ? geometries.get(0).getKey() : null;
+    }
+
+    public Optional<String> getTemporalFieldPathForFeatureType(WfsProxyFeatureType featureType) {
+        return featureType.getMappings().findMappings(GenericMapping.BASE_TYPE).entrySet().stream()
+                          .filter(mapping -> ((GenericMapping)mapping.getValue().get(0)).isTemporal() && mapping.getValue().get(0).isEnabled())
+                          .map(Map.Entry::getKey)
+                          .findFirst();
     }
 
     @JsonIgnore
@@ -153,7 +175,7 @@ public class LdProxyService extends AbstractWfsProxyService {
 
                     indexStore.addResource(propertyIndex);
                 } catch (ExecutionException | IOException e) {
-                    LOGGER.getLogger().debug("Error harvesting index", e);
+                    LOGGER.debug("Error harvesting index", e);
                 }
             } else {
                 return indexStore.getResource(index).getValues();
@@ -190,7 +212,7 @@ public class LdProxyService extends AbstractWfsProxyService {
             }
             if(indexValueWriter.hasFailed() && tries < 3) {
                 tries++;
-                LOGGER.getLogger().debug("TRYING AGAIN {}", tries);
+                LOGGER.debug("TRYING AGAIN {}", tries);
                 continue;
             }
 
@@ -198,7 +220,7 @@ public class LdProxyService extends AbstractWfsProxyService {
             numberMatched = indexValueWriter.getNumberMatched();
             startIndex += count;
             tries = 0;
-            LOGGER.getLogger().debug("{}/{}", startIndex, numberMatched);
+            LOGGER.debug("{}/{}", startIndex, numberMatched);
         }
 
         return values;

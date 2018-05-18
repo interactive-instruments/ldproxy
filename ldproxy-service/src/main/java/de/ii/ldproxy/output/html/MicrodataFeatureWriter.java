@@ -16,23 +16,30 @@ import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
 import de.ii.ldproxy.service.SparqlAdapter;
-import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import io.dropwizard.views.ViewRenderer;
 import org.apache.http.client.utils.URIBuilder;
 import org.codehaus.staxmate.in.SMEvent;
 import org.codehaus.staxmate.in.SMInputCursor;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,7 +56,7 @@ import java.util.concurrent.Future;
  */
 public class MicrodataFeatureWriter implements GMLAnalyzer {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(MicrodataFeatureWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MicrodataFeatureWriter.class);
 
     private OutputStreamWriter outputStreamWriter;
     protected XMLPathTracker currentPath;
@@ -118,14 +125,14 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
         this.dataset = featureTypeDataset;
 
-        try {
+        /*try {
             URIBuilder urlBuilder = new URIBuilder(dataset.requestUrl);
             urlBuilder.clearParameters();
             this.wfsUrl = urlBuilder.build().toString();
             this.wfsByIdUrl = urlBuilder.addParameter("SERVICE", "WFS").addParameter("VERSION", "2.0.0").addParameter("REQUEST", "GetFeature").addParameter("STOREDQUERY_ID", "urn:ogc:def:query:OGC-WFS::GetFeatureById").addParameter("ID", "").build().toString();
         } catch (URISyntaxException e) {
             //ignore
-        }
+        }*/
 
         this.sparqlAdapter = sparqlAdapter;
         this.codelistStore = codelistStore;
@@ -136,7 +143,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     public void analyzeStart(Future<SMInputCursor> future) {
 
 
-        LOGGER.getLogger().debug("START");
+        LOGGER.debug("START");
 
         if (isFeatureCollection) {
             try {
@@ -154,11 +161,11 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                     pages = Math.max(pages, numberMatched / pageSize + (numberMatched % pageSize > 0 ? 1 : 0));
                 }
 
-                LOGGER.getLogger().debug("numberMatched {}", numberMatched);
-                LOGGER.getLogger().debug("numberReturned {}", numberReturned);
-                LOGGER.getLogger().debug("pageSize {}", pageSize);
-                LOGGER.getLogger().debug("page {}", page);
-                LOGGER.getLogger().debug("pages {}", pages);
+                LOGGER.debug("numberMatched {}", numberMatched);
+                LOGGER.debug("numberReturned {}", numberReturned);
+                LOGGER.debug("pageSize {}", pageSize);
+                LOGGER.debug("page {}", page);
+                LOGGER.debug("pages {}", pages);
 
                 ImmutableList.Builder<NavigationDTO> pagination = new ImmutableList.Builder<>();
                 ImmutableList.Builder<NavigationDTO> metaPagination = new ImmutableList.Builder<>();
@@ -227,7 +234,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
             } catch (InterruptedException | ExecutionException | XMLStreamException | NumberFormatException ex) {
                 //analyzeFailed(ex);
-                LOGGER.getLogger().error("Pagination not supported by WFS");
+                LOGGER.error("Pagination not supported by WFS");
             }
         }
     }
@@ -249,7 +256,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             analyzeFailed(e);
         } catch (Throwable e) {
             // TODO: analyzeFailed(Throwable)
-            LOGGER.getLogger().error("Error writing HTML: {}", e.getClass());
+            LOGGER.error("Error writing HTML: {}", e.getClass());
         }
     }
 
@@ -307,7 +314,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     public void analyzeAttribute(String nsuri, String localName, String value) {
         currentPath.track(nsuri, "@" + localName);
         String path = currentPath.toString();
-        //LOGGER.getLogger().debug(" - attribute {}", path);
+        //LOGGER.debug(" - attribute {}", path);
 
         // on-the-fly mapping
         if (featureTypeMapping.getMappings().isEmpty() && localName.equals("id") && !currentPath.toFieldName().contains(".")) {
@@ -377,7 +384,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     @Override
     public void analyzePropertyText(String nsuri, String localName, int depth, String text) {
         if (featureTypeMapping.getMappings().isEmpty() && !isGeometry(currentPath)) {
-            LOGGER.getLogger().debug("TEXT {} {}", currentPath.toFieldName(), text);
+            LOGGER.debug("TEXT {} {}", currentPath.toFieldName(), text);
             MicrodataPropertyMapping mapping = new MicrodataPropertyMapping();
             mapping.setName(currentPath.toFieldNameGml());
             mapping.setType(MICRODATA_TYPE.STRING);
@@ -402,8 +409,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
     @Override
     public void analyzeFailed(Exception e) {
-        LOGGER.getLogger().error("Error writing HTML");
-        LOGGER.getLogger().debug("Error writing HTML", e);
+        LOGGER.error("Error writing HTML");
+        LOGGER.debug("Error writing HTML", e);
     }
 
     @Override
@@ -546,14 +553,14 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                     } catch (Exception e) {
                         //ignore
                     }
-                } else if(mapping.getType() == MICRODATA_TYPE.STRING && mapping.getFormat() != null && !mapping.getFormat().isEmpty()) {
+                } /*else if(mapping.getType() == MICRODATA_TYPE.STRING && mapping.getFormat() != null && !mapping.getFormat().isEmpty()) {
                     try {
                         property.value = mapping.getFormat().replace("{{value}}", value).replace("{{wfs}}", this.wfsUrl != null ? this.wfsUrl : "").replace("{{wfs-by-id}}", this.wfsByIdUrl != null ? this.wfsByIdUrl : "");
                     } catch (Exception e) {
                         //ignore
-                        LOGGER.getLogger().debug("err", e);
+                        LOGGER.debug("err", e);
                     }
-                }
+                }*/
                 if (property.value.startsWith("http://") || property.value.startsWith("https://")) {
                     if (property.value.endsWith(".png") || property.value.endsWith(".jpg") || property.value.endsWith(".gif")) {
                         property.isImg = true;

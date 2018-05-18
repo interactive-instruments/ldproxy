@@ -9,23 +9,15 @@ package de.ii.ldproxy.rest.filter;
 
 import com.google.common.io.Resources;
 import de.ii.ldproxy.output.html.DatasetView;
-import de.ii.xsf.logging.XSFLogger;
 import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.eclipse.jetty.http.MimeTypes;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
-import org.glassfish.jersey.server.ContainerRequest;
-import org.glassfish.jersey.server.ContainerResponse;
 
-import javax.activation.MimeType;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -35,11 +27,9 @@ import java.io.OutputStream;
  */
 @Component
 @Provides
-@Instantiate
+//@Instantiate
 @PreMatching
 public class RestRootFilter implements ContainerResponseFilter {
-
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(RestRootFilter.class);
 
     // TODO: verify, adjust for manager
     @Override

@@ -7,14 +7,14 @@
  */
 package de.ii.ldproxy.output.geojson;
 
+import de.ii.ldproxy.output.generic.AbstractGenericMapping;
 import de.ii.ldproxy.output.generic.GenericMapping;
-import de.ii.ldproxy.output.html.MicrodataPropertyMapping;
-import de.ii.ogc.wfs.proxy.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
 
 /**
  * @author zahnen
  */
-public class GeoJsonPropertyMapping extends GenericMapping implements GeoJsonMapping {
+public class GeoJsonPropertyMapping extends AbstractGenericMapping<GeoJsonMapping.GEO_JSON_TYPE> implements GeoJsonMapping {
 
     private GEO_JSON_TYPE type;
 
@@ -39,7 +39,7 @@ public class GeoJsonPropertyMapping extends GenericMapping implements GeoJsonMap
     }
 
     @Override
-    public boolean isGeometry() {
+    public boolean isSpatial() {
         return getType() == GEO_JSON_TYPE.GEOMETRY;
     }
 

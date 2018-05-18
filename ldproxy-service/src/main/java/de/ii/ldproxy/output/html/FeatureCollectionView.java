@@ -8,8 +8,10 @@
 package de.ii.ldproxy.output.html;
 
 import de.ii.ldproxy.wfs3.URICustomizer;
+import de.ii.xtraplatform.feature.query.api.TemporalExtent;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.threeten.extra.Interval;
 
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -38,6 +40,7 @@ public class FeatureCollectionView extends DatasetView {
     public FeaturePropertyDTO links;
     public Set<Map.Entry<String,String>> filterFields;
     public Map<String,String> bbox2;
+    public TemporalExtent temporalExtent;
     public URICustomizer uriBuilder;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String urlPrefix) {

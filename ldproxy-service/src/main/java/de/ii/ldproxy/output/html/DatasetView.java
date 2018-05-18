@@ -10,11 +10,9 @@ package de.ii.ldproxy.output.html;
 import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.base.Splitter;
 import de.ii.xsf.core.views.GenericView;
-import de.ii.xsf.logging.XSFLogger;
 import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -27,8 +25,6 @@ import java.util.stream.Collectors;
  * @author zahnen
  */
 public class DatasetView extends GenericView {
-
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(DatasetView.class);
 
     public String name;
     public String title;

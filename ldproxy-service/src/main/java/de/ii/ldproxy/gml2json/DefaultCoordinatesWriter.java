@@ -7,10 +7,8 @@
  */
 package de.ii.ldproxy.gml2json;
 
-import de.ii.xsf.logging.XSFLogger;
 import java.io.IOException;
 import java.io.Writer;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 /**
  *
@@ -18,7 +16,6 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
  */
 public class DefaultCoordinatesWriter extends Writer {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(DefaultCoordinatesWriter.class);
     protected CoordinateFormatter formatter;
     private boolean started;
     protected String chunkBoundaryBuffer;

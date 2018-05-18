@@ -7,12 +7,9 @@
  */
 package de.ii.ldproxy.output.html;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.LazyStringCoordinateTuple;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -23,7 +20,6 @@ import java.io.Writer;
  */
 public class HtmlTransformingCoordinatesWriter extends HtmlCoordinatesWriter {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(HtmlTransformingCoordinatesWriter.class);
     private LazyStringCoordinateTuple coordinateBuffer;
     private CrsTransformer transformer;
 

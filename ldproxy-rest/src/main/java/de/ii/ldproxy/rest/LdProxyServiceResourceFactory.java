@@ -7,18 +7,23 @@
  */
 package de.ii.ldproxy.rest;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import de.ii.ldproxy.output.html.ServiceOverviewView;
 import de.ii.ldproxy.service.LdProxyService;
+import de.ii.ldproxy.target.html.WfsTargetHtml;
 import de.ii.ldproxy.wfs3.URICustomizer;
 import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.api.rest.ServiceResource;
 import de.ii.xsf.core.api.rest.ServiceResourceFactory;
+import de.ii.xsf.core.server.CoreServerConfig;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSAdapter;
 import io.dropwizard.views.View;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.StaticServiceProperty;
 import org.apache.http.client.utils.URIBuilder;
 
 import javax.ws.rs.core.Response;
@@ -41,8 +46,30 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
 
     public static final String PARAM_WFS_URL = "wfsUrl";
 
-    @Requires
+   @Requires
     private OpenApiResource openApiResource;
+
+    @Requires
+    private CoreServerConfig coreServerConfig;
+
+    @Requires
+    private WfsTargetHtml wfsTargetHtml;
+
+    private void customizeUri(final URICustomizer uriCustomizer) {
+        try {
+            final URI externalUri = new URI(coreServerConfig.getExternalUrl());
+
+            uriCustomizer.setScheme(externalUri.getScheme());
+            uriCustomizer.replaceInPath("/rest/services", externalUri.getPath());
+            uriCustomizer.ensureTrailingSlash();
+        } catch (URISyntaxException e) {
+            // ignore
+        }
+    }
+
+    private String getStaticUrlPrefix(final URICustomizer uriCustomizer) {
+        return uriCustomizer.copy().ensureLastPathSegment("___static___").getPath();
+    }
 
     @Override
     public Class getServiceResourceClass() {
@@ -57,42 +84,23 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
     @Override
     public ServiceResource getServiceResource() {
         LdProxyServiceResource serviceResource = new LdProxyServiceResource();
-        serviceResource.setOpenApiResource(openApiResource);
+        serviceResource.init(openApiResource, coreServerConfig.getExternalUrl());
 
         return serviceResource;
     }
 
     @Override
-    public View getServicesView(Collection<Service> collection, URI uri) {
-        Collection<Service> collection2 = Collections2.filter(collection, new Predicate<Service>() {
-            @Override
-            public boolean apply(Service s) {
-                return s.isStarted();
-            }
-        });
-        String urlPrefix = "";
+    public View getServicesView(Collection<Service> services, URI uri) {
+        Collection<Service> runningServices = Collections2.filter(services, Service::isStarted);
         URICustomizer uriCustomizer = new URICustomizer(uri);
-        if (!collection.isEmpty()) {
-            try {
-                LdProxyService s = (LdProxyService) collection.iterator().next();
-                if (!s.getRewrites().isEmpty() && s.getRewrites().containsKey("rest/services")) {
-                    // TODO
-                    urlPrefix = "/t14";
-                        uriCustomizer = uriCustomizer.replaceInPath("rest/services", s.getRewrites().get("rest/services"));
-                }
-                if (!s.getRewrites().isEmpty() && s.getRewrites().containsKey("http")) {
-                    uriCustomizer = uriCustomizer.setScheme(s.getRewrites().get("http"));
-                }
-            } catch (ClassCastException e) {
-                // ignore
-            }
-        }
+        customizeUri(uriCustomizer);
+        String urlPrefix = getStaticUrlPrefix(uriCustomizer);
         try {
-            uri = uriCustomizer.ensureTrailingSlash().build();
+            uri = uriCustomizer.build();
         } catch (URISyntaxException e) {
             // ignore
         }
-        return new ServiceOverviewView(uri, collection2, urlPrefix);
+        return new ServiceOverviewView(uri, runningServices, urlPrefix);
     }
 
     @Override
@@ -113,6 +121,11 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return null;
+    }
+
+    @Override
+    public Response getFile(String file) {
+        return wfsTargetHtml.getFile(file);
     }
 
     private String getPath(UriInfo uriInfo) {

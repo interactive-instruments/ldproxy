@@ -7,11 +7,11 @@
  */
 package de.ii.ldproxy.gml2json;
 
-import de.ii.xsf.logging.XSFLogger;
-import java.io.Writer;
-
 import de.ii.xtraplatform.crs.api.CrsTransformer;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Writer;
 
 /**
  *
@@ -56,8 +56,8 @@ public enum CoordinatesWriterType {
     }*/;
 
     abstract Writer create(Builder builder);
-    
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(CoordinatesWriterType.class);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoordinatesWriterType.class);
     
     public static Builder builder() {
         return new Builder();

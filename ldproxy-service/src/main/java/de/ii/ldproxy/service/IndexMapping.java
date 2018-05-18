@@ -7,12 +7,12 @@
  */
 package de.ii.ldproxy.service;
 
-import de.ii.ogc.wfs.proxy.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
 
 /**
  * @author zahnen
  */
-public class IndexMapping implements TargetMapping {
+public class IndexMapping implements TargetMapping<Object> {
     public static final String MIME_TYPE = "index";
 
 
@@ -33,13 +33,13 @@ public class IndexMapping implements TargetMapping {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public Object getType() {
+        return null;
     }
 
-    @Override
-    public boolean isGeometry() {
-        return false;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

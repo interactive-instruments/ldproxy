@@ -10,9 +10,11 @@ package de.ii.ldproxy.service;
 import de.ii.xsf.configstore.api.KeyValueStore;
 import de.ii.xsf.configstore.api.rest.AbstractGenericResourceStore;
 import de.ii.xsf.dropwizard.api.Jackson;
-import de.ii.xsf.logging.XSFLogger;
-import org.apache.felix.ipojo.annotations.*;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.Validate;
 
 /**
  * @author zahnen
@@ -22,7 +24,6 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
 @Instantiate
 public class LdProxyIndexStoreDefault extends AbstractGenericResourceStore<PropertyIndex, LdProxyIndexStore> implements LdProxyIndexStore {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(LdProxyIndexStoreDefault.class);
     public static final String STORE_ID = "ldproxy-indices";
 
     public LdProxyIndexStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore) {

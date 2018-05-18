@@ -7,33 +7,55 @@
  */
 package de.ii.ldproxy.output.generic;
 
-import de.ii.ogc.wfs.proxy.TargetMapping;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
 
 /**
  * @author zahnen
  */
-public class GenericMapping implements TargetMapping {
+public class GenericMapping extends AbstractGenericMapping<GenericMapping.GENERIC_TYPE> {
 
-    protected String name;
-    protected Boolean enabled;
-    protected boolean isGeometry;
-    protected String format;
-    protected String codelist;
-    protected boolean filterable;
+    enum GENERIC_TYPE {
 
-    @Override
-    public String getName() {
-        return name;
+        ID(GML_TYPE.ID),
+        VALUE(GML_TYPE.STRING, GML_TYPE.URI, GML_TYPE.INT, GML_TYPE.INTEGER, GML_TYPE.LONG, GML_TYPE.SHORT, GML_TYPE.DECIMAL, GML_TYPE.DOUBLE, GML_TYPE.FLOAT, GML_TYPE.BOOLEAN),
+        TEMPORAL(GML_TYPE.DATE, GML_TYPE.DATE_TIME),
+        SPATIAL(),
+        NONE(GML_TYPE.NONE);
+
+        private GML_TYPE[] gmlTypes;
+
+        GENERIC_TYPE(GML_TYPE... gmlType) {
+            this.gmlTypes = gmlType;
+        }
+
+        public static GENERIC_TYPE forGmlType(GML_TYPE gmlType) {
+            for (GENERIC_TYPE geoJsonType : GENERIC_TYPE.values()) {
+                for (GML_TYPE v2: geoJsonType.gmlTypes) {
+                    if (v2 == gmlType) {
+                        return geoJsonType;
+                    }
+                }
+            }
+
+            return NONE;
+        }
+
+        public boolean isValid() {
+            return this != NONE;
+        }
     }
 
-    @Override
-    public Boolean isEnabled() {
-        return enabled;
-    }
+    protected GENERIC_TYPE type;
 
     @Override
-    public boolean isGeometry() {
-        return isGeometry;
+    public GENERIC_TYPE getType() {
+        return type;
+    }
+
+    public void setType(GENERIC_TYPE type) {
+        this.type = type;
     }
 
     @Override
@@ -41,39 +63,25 @@ public class GenericMapping implements TargetMapping {
         return this;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @JsonIgnore
+    public boolean isId() {
+        return type == GENERIC_TYPE.ID;
     }
 
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
+    @JsonIgnore
+    public boolean isValue() {
+        return type == GENERIC_TYPE.VALUE;
     }
 
-    public void setGeometry(boolean geometry) {
-        isGeometry = geometry;
+    @Override
+    public boolean isSpatial() {
+        return type == GENERIC_TYPE.SPATIAL;
     }
 
-    public String getFormat() {
-        return format;
+    @JsonIgnore
+    public boolean isTemporal() {
+        return type == GENERIC_TYPE.TEMPORAL;
     }
 
-    public void setFormat(String format) {
-        this.format = format;
-    }
 
-    public String getCodelist() {
-        return codelist;
-    }
-
-    public void setCodelist(String codelist) {
-        this.codelist = codelist;
-    }
-
-    public boolean isFilterable() {
-        return filterable;
-    }
-
-    public void setFilterable(boolean filterable) {
-        this.filterable = filterable;
-    }
 }

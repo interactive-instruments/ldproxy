@@ -8,11 +8,9 @@
 package de.ii.ldproxy.rest.filter;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.xsf.logging.XSFLogger;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -30,7 +28,6 @@ import java.util.Map;
 @Instantiate
 @PreMatching
 public class QueryParamContentNegotiationFilter implements ContainerRequestFilter {
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(QueryParamContentNegotiationFilter.class);
     private static final String CONTENT_TYPE_PARAMETER = "f";
     private static final String ACCEPT_HEADER = "Accept";
     private static final Map<String, MediaType> MIME_TYPES = new ImmutableMap.Builder<String, MediaType>()

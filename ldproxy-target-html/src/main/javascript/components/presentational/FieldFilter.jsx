@@ -64,7 +64,7 @@ export default class FieldFilter extends Component {
                         <option value="" className="d-none">
                             none
                         </option>
-                        { Object.keys(fields).map(f => <option value={ f }>
+                        { Object.keys(fields).map(f => <option value={ f } key={ f }>
                                                            { fields[f] }
                                                        </option>) }
                         </Input>
@@ -99,6 +99,6 @@ export default class FieldFilter extends Component {
 }
 
 FieldFilter.propTypes = {
-    fields: PropTypes.array.isRequired,
+    fields: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired
 };

@@ -11,8 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.service.LdProxyService;
-import de.ii.ogc.wfs.proxy.TargetMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureType;
 import de.ii.xtraplatform.ogc.api.wfs.client.DescribeFeatureType;
 import de.ii.xtraplatform.ogc.api.wfs.client.GetCapabilities;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSOperation;
@@ -20,8 +20,13 @@ import de.ii.xtraplatform.ogc.api.wfs.client.WFSRequest;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesParser;
 
-import javax.xml.bind.annotation.*;
-import java.net.URI;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -58,6 +63,7 @@ public class Wfs3Dataset {
                    collection.setPrefixedName(qn);
                    collection.setLinks(wfs3LinksGenerator.generateDatasetCollectionLinks(uriCustomizer.copy(), mediaType, featureType.getName()
                                                                                                                   .toLowerCase(), featureType.getDisplayName(), new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType(ImmutableMap.of(featureType.getNamespace(), ImmutableList.of(featureType.getName())))).getAsUrl()));
+                   collection.setExtent(new Wfs3Collection.Extent(featureType.getTemporalExtent().getStart(), featureType.getTemporalExtent().getComputedEnd()));
                    return collection;
                })
         .collect(Collectors.toList());
@@ -125,6 +131,7 @@ public class Wfs3Dataset {
 
         protected static class Extent {
             private double[] spatial;
+            private String[] temporal;
 
             public Extent(String xmin, String ymin, String xmax, String ymax) {
                 try {
@@ -136,6 +143,10 @@ public class Wfs3Dataset {
                     // ignore
                 }
             }
+            public Extent(long begin, long end) {
+                final String[] t = {Instant.ofEpochMilli(begin).truncatedTo(ChronoUnit.SECONDS).toString(), Instant.ofEpochMilli(end).truncatedTo(ChronoUnit.SECONDS).toString()};
+                this.temporal = t;
+            }
 
             public double[] getSpatial() {
                 return spatial;
@@ -143,6 +154,14 @@ public class Wfs3Dataset {
 
             public void setSpatial(double[] spatial) {
                 this.spatial = spatial;
+            }
+
+            public String[] getTemporal() {
+                return temporal;
+            }
+
+            public void setTemporal(String[] temporal) {
+                this.temporal = temporal;
             }
         }
 

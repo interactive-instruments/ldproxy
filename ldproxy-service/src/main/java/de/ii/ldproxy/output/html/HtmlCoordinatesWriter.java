@@ -7,9 +7,6 @@
  */
 package de.ii.ldproxy.output.html;
 
-import de.ii.xsf.logging.XSFLogger;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
-
 import java.io.IOException;
 import java.io.Writer;
 
@@ -19,7 +16,6 @@ import java.io.Writer;
  */
 public class HtmlCoordinatesWriter extends Writer {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(HtmlCoordinatesWriter.class);
     //protected JsonGenerator jsonOut;
     protected Writer output;
     private boolean started;

@@ -7,14 +7,12 @@
  */
 package de.ii.ldproxy.gml2json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.LazyStringCoordinateTuple;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +23,7 @@ import java.util.List;
  */
 public class BufferedTransformingCoordinatesWriter extends DefaultCoordinatesWriter {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(BufferedTransformingCoordinatesWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BufferedTransformingCoordinatesWriter.class);
     private static final int BUFFER_SIZE = 10000;
     private LazyStringCoordinateTuple tupleBuffer;
     private final double[] coordinateBuffer;

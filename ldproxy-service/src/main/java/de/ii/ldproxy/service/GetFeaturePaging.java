@@ -8,9 +8,6 @@
 package de.ii.ldproxy.service;
 
 
-import de.ii.xsf.logging.XSFLogger;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
-
 import java.util.Map;
 
 /**
@@ -18,8 +15,6 @@ import java.util.Map;
  * @author fischer
  */
 public class GetFeaturePaging extends GetFeatureFiltered {
-
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(GetFeaturePaging.class);
 
     public GetFeaturePaging(String namespaceUri, String featureTypeName, int count, int startIndex) {
         this(namespaceUri, featureTypeName, count, startIndex, null, null);

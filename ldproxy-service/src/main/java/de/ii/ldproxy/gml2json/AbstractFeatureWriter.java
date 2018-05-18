@@ -10,17 +10,18 @@ package de.ii.ldproxy.gml2json;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import de.ii.ogc.wfs.proxy.TargetMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
+import de.ii.ldproxy.output.generic.AbstractGenericMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
 import de.ii.xtraplatform.ogc.api.exceptions.GMLAnalyzeFailed;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import org.codehaus.staxmate.in.SMInputCursor;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
@@ -35,7 +36,7 @@ import java.util.concurrent.Future;
  */
 public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(AbstractFeatureWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeatureWriter.class);
     protected JsonGenerator json;
     protected JsonGenerator jsonOut;
     protected TokenBuffer jsonBuffer;
@@ -89,7 +90,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
     @Override
     public final void analyzeFailed(Exception ex) {
-        LOGGER.getLogger().error("AbstractFeatureWriter -> analyzeFailed", ex);
+        LOGGER.error("AbstractFeatureWriter -> analyzeFailed", ex);
         throw new GMLAnalyzeFailed("AbstractFeatureWriter -> analyzeFailed");
     }
 
@@ -182,7 +183,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
             // TODO: I guess fieldCounter is for multiplicity
 
             // TODO: only if not geometry
-            if (!mapping.isGeometry()) {
+            if (!((AbstractGenericMapping)mapping).isSpatial()) {
                 if (value.isEmpty()) {
                     try {
                         value = feature.collectDescendantText();

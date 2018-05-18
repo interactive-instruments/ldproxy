@@ -15,14 +15,11 @@ package de.ii.ldproxy.rest;
 
 import de.ii.ldproxy.service.LdProxyService;
 import de.ii.ldproxy.wfs3.URICustomizer;
-import de.ii.xsf.core.api.Service;
 import de.ii.xsf.dropwizard.api.Dropwizard;
 import de.ii.xsf.dropwizard.api.Jackson;
-import de.ii.xsf.dropwizard.cfg.JacksonProvider;
 import de.ii.xtraplatform.openapi.DynamicOpenApi;
 import de.ii.xtraplatform.openapi.OpenApiViewerResource;
 import io.dropwizard.jersey.caching.CacheControl;
-import io.swagger.core.filter.OpenAPISpecFilter;
 import io.swagger.oas.annotations.Operation;
 import io.swagger.oas.annotations.Parameter;
 import io.swagger.oas.annotations.media.Content;
@@ -35,9 +32,15 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletConfig;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Component
 @Provides(specifications = {OpenApiResource.class})

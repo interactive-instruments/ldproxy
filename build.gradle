@@ -7,7 +7,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath group: 'de.interactive_instruments', name: 'gradle-plugin-osgi-ipojo', version: '1.12.1.28'
+        classpath group: 'de.interactive_instruments', name: 'gradle-plugin-osgi-ipojo', version: '1.12.1.29'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0"
         classpath 'com.netflix.nebula:nebula-ospackage-plugin:3.+'
     }
@@ -15,7 +15,8 @@ buildscript {
 
 apply plugin: 'application'
 
-version = '1.2.6'
+version = '1.2.7'
+version += '-SNAPSHOT'
 group = 'de.interactive_instruments'
 
 repositories {
@@ -24,7 +25,7 @@ repositories {
     maven {
         url "https://dl.bintray.com/iide/maven"
     }
-//    mavenLocal()
+    //mavenLocal()
     maven {
         url "http://maven.forgerock.org/repo/repo"
     }
@@ -37,16 +38,16 @@ configurations {
 
 dependencies {
     // TODO: are all the jars in lib dependencies of this?
-    compile group: 'de.interactive_instruments', name: 'xtraplatform-runtime', version: '1.1.0'
+    compile group: 'de.interactive_instruments', name: 'xtraplatform-runtime', version: '1.1.1'
 
-    bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.0'
+    bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.1'
 
-    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.1.2') {
+    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.1.3') {
         // TODO
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
-    //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.0-SNAPSHOT'
-    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.1.8'
+    //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.1-SNAPSHOT'
+    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '1.1.9'
 
     // ???
     subprojects.each {

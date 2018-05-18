@@ -7,10 +7,10 @@
  */
 package de.ii.ldproxy.service;
 
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import org.codehaus.staxmate.in.SMInputCursor;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.SortedSet;
@@ -23,7 +23,7 @@ import java.util.concurrent.Future;
  */
 public class IndexValueWriter implements GMLAnalyzer {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(IndexValueWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IndexValueWriter.class);
 
     private final String index;
     private final SortedSet<String> values;
@@ -98,7 +98,7 @@ public class IndexValueWriter implements GMLAnalyzer {
     @Override
     public void analyzeFailed(Exception e) {
         this.failed = true;
-        LOGGER.getLogger().debug("", e);
+        LOGGER.debug("", e);
     }
 
     @Override

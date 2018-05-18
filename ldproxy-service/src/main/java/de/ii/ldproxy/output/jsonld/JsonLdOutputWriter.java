@@ -13,17 +13,22 @@ import com.google.common.base.Joiner;
 import de.ii.ldproxy.gml2json.AbstractFeatureWriter;
 import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.gml2json.WktCoordinatesFormatter;
-import de.ii.ldproxy.output.html.*;
+import de.ii.ldproxy.output.generic.AbstractGenericMapping;
+import de.ii.ldproxy.output.html.FeatureCollectionView;
+import de.ii.ldproxy.output.html.FeaturePropertyDTO;
+import de.ii.ldproxy.output.html.HtmlTransformingCoordinatesWriter;
+import de.ii.ldproxy.output.html.MicrodataGeometryMapping;
+import de.ii.ldproxy.output.html.MicrodataPropertyMapping;
 import de.ii.ldproxy.output.jsonld.WktGeometryMapping.WKT_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
-import de.ii.ogc.wfs.proxy.TargetMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
 import org.codehaus.staxmate.in.SMEvent;
 import org.codehaus.staxmate.in.SMInputCursor;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
@@ -42,7 +47,7 @@ import static de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOME
  */
 public class JsonLdOutputWriter extends AbstractFeatureWriter {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(JsonLdOutputWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonLdOutputWriter.class);
 
     private int objectDepth;
     private String lastItemProp;
@@ -56,6 +61,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
         this.objectDepth = 0;
+        // TODO
         this.requestUrl = requestUri.toString().split("\\?")[0];
         for (Map.Entry<String, String> rewrite : rewrites.entrySet()) {
             this.requestUrl = requestUrl.replaceFirst(rewrite.getKey(), rewrite.getValue());
@@ -120,7 +126,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                 //jsonOut.writeEndObject();
                 for (List<TargetMapping> mappings : featureTypeMapping.findMappings(outputFormat).values()) {
                     for (TargetMapping mapping : mappings) {
-                        if (((MicrodataPropertyMapping) mapping).getItemProp() == null && mapping.isEnabled() && mapping.getName() != null && !mapping.getName().startsWith("@") && ((MicrodataPropertyMapping) mapping).isShowInCollection() && !mapping.isGeometry()) {
+                        if (((MicrodataPropertyMapping) mapping).getItemProp() == null && mapping.isEnabled() && mapping.getName() != null && !mapping.getName().startsWith("@") && ((MicrodataPropertyMapping) mapping).isShowInCollection() && !((AbstractGenericMapping)mapping).isSpatial()) {
                             json.writeNullField(mapping.getName());
                         }
                     }
@@ -235,7 +241,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                 if (!type.contains("demo.bp4mc2.org")) {
                     for (List<TargetMapping> mappings : featureTypeMapping.findMappings(outputFormat).values()) {
                         for (TargetMapping m : mappings) {
-                            if (((MicrodataPropertyMapping) m).getItemProp() == null && m.isEnabled() && m.getName() != null && !m.getName().startsWith("@") && !m.isGeometry()) {
+                            if (((MicrodataPropertyMapping) m).getItemProp() == null && m.isEnabled() && m.getName() != null && !m.getName().startsWith("@") && !((AbstractGenericMapping)m).isSpatial()) {
                                 json.writeNullField(m.getName());
                             }
                         }

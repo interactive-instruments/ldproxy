@@ -8,7 +8,7 @@
 package de.ii.ldproxy.output.geojson;
 
 import de.ii.ldproxy.output.generic.GenericMapping;
-import de.ii.ogc.wfs.proxy.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
 
 import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 

@@ -15,18 +15,20 @@ import de.ii.ldproxy.gml2json.JsonCoordinateFormatter;
 import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.wfs3.Wfs3Link;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
-import de.ii.ogc.wfs.proxy.TargetMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
 import org.codehaus.staxmate.in.SMEvent;
 import org.codehaus.staxmate.in.SMInputCursor;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.io.Writer;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -39,7 +41,7 @@ import java.util.logging.Logger;
  */
 public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(GeoJsonFeatureWriter.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(GeoJsonFeatureWriter.class);
 
     private final List<Wfs3Link> links;
            
@@ -286,6 +288,21 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
             //this.writeSRS();
 
             this.writeLinks();
+
+            try {
+                int numberMatched = Integer.parseInt(rootFuture.getAttrValue("numberMatched"));
+                json.writeNumberField("numberMatched", numberMatched);
+            } catch (NumberFormatException | XMLStreamException e) {
+                // ignore
+            }
+            try {
+                int numberReturned = Integer.parseInt(rootFuture.getAttrValue("numberReturned"));
+                json.writeNumberField("numberReturned", numberReturned);
+            } catch (NumberFormatException | XMLStreamException e) {
+                // ignore
+            }
+            json.writeStringField("timeStamp", Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
+
 
             json.writeFieldName("features");
             json.writeStartArray();

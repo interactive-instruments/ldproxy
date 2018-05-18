@@ -7,14 +7,13 @@
  */
 package de.ii.ldproxy.output.geojson;
 
-import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
 
 /**
  * @author zahnen
  */
-public interface GeoJsonMapping extends TargetMapping {
-    GEO_JSON_TYPE getType();
+public interface GeoJsonMapping extends TargetMapping<GeoJsonMapping.GEO_JSON_TYPE> {
 
     enum GEO_JSON_TYPE {
 

@@ -27,14 +27,14 @@ import com.fasterxml.aalto.stax.InputFactoryImpl;
 import de.ii.xsf.core.api.MediaTypeCharset;
 import de.ii.xsf.core.api.permission.Auth;
 import de.ii.xsf.core.api.permission.AuthenticatedUser;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.ogc.csw.parser.ExtractWFSUrlsFromCSW;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.staxmate.SMInputFactory;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -53,12 +53,12 @@ import java.util.Collection;
 @Produces(MediaTypeCharset.APPLICATION_JSON_UTF8)
 public class CatalogResource {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(CatalogResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CatalogResource.class);
 
 
     @GET
     public Collection<String> parseCatalogPost(@Auth(required = false) AuthenticatedUser user, @QueryParam("url") String url) {
-        LOGGER.getLogger().debug("CATALOG {}", url);
+        LOGGER.debug("CATALOG {}", url);
         ExtractWFSUrlsFromCSW urlsFromCSW = new ExtractWFSUrlsFromCSW(new DefaultHttpClient(), new SMInputFactory(new InputFactoryImpl()));
 
            return urlsFromCSW.extract(url);

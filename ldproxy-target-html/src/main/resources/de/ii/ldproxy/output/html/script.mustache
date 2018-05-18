@@ -1,0 +1,27 @@
+<script type="text/javascript">
+    window._ldproxy = {
+        map: {
+            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+            {{#bbox2}}
+            bounds: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]]
+            {{/bbox2}}
+        },
+        time: {
+            {{#temporalExtent}}
+            start: {{start}},
+            end: {{end}}
+            {{/temporalExtent}}
+        },
+        fields: {
+            {{#filterFields}}
+                '{{key}}': '{{value}}',
+            {{/filterFields}}
+        }
+    };
+</script>
+
+<script type="text/javascript" src="{{urlPrefix}}/app/js/manifest.c8db0efddb7326d94a5b.js"></script>
+<script type="text/javascript" src="{{urlPrefix}}/app/js/vendor.bb7de172680d71540421.js"></script>
+<script type="text/javascript" src="{{urlPrefix}}/app/js/main.b99422bf2fccd79cd720.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>

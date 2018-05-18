@@ -7,11 +7,9 @@
  */
 package de.ii.ldproxy.gml2json;
 
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.LazyStringCoordinateTuple;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import java.io.IOException;
 
@@ -21,7 +19,6 @@ import java.io.IOException;
  */
 public class TransformingCoordinatesWriter extends DefaultCoordinatesWriter {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(TransformingCoordinatesWriter.class);
     private LazyStringCoordinateTuple coordinateBuffer;
     private CrsTransformer transformer;
 

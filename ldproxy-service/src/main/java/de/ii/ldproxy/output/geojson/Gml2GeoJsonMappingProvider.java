@@ -10,12 +10,12 @@ package de.ii.ldproxy.output.geojson;
 
 import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.geojson.GeoJsonMapping.GEO_JSON_TYPE;
-import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
 import de.ii.ogc.wfs.proxy.WfsProxyMappingProvider;
-import de.ii.xsf.logging.XSFLogger;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_NS_URI;
 
@@ -24,7 +24,7 @@ import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_NS_URI;
  */
 public class Gml2GeoJsonMappingProvider implements WfsProxyMappingProvider {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(Gml2GeoJsonMappingProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Gml2GeoJsonMappingProvider.class);
     public static final String MIME_TYPE = "application/geo+json";
 
     @Override
@@ -42,7 +42,7 @@ public class Gml2GeoJsonMappingProvider implements WfsProxyMappingProvider {
 
         if ((localName.equals("id") && nsUri.startsWith(GML_NS_URI)) || localName.equals("fid")) {
 
-            LOGGER.getLogger().debug("ID {} {} {}", nsUri, localName, type);
+            LOGGER.debug("ID {} {} {}", nsUri, localName, type);
 
             GEO_JSON_TYPE dataType = GEO_JSON_TYPE.forGmlType(type);
 
@@ -64,7 +64,7 @@ public class Gml2GeoJsonMappingProvider implements WfsProxyMappingProvider {
         GEO_JSON_TYPE dataType = GEO_JSON_TYPE.forGmlType(type);
 
         if (dataType.isValid()) {
-            LOGGER.getLogger().debug("PROPERTY {} {}", path, dataType);
+            LOGGER.debug("PROPERTY {} {}", path, dataType);
 
             GeoJsonPropertyMapping targetMapping = new GeoJsonPropertyMapping();
             targetMapping.setEnabled(true);
@@ -82,7 +82,7 @@ public class Gml2GeoJsonMappingProvider implements WfsProxyMappingProvider {
         GEO_JSON_GEOMETRY_TYPE geoType = GEO_JSON_GEOMETRY_TYPE.forGmlType(type);
 
         if (geoType.isValid()) {
-            LOGGER.getLogger().debug("GEOMETRY {} {}", path, geoType);
+            LOGGER.debug("GEOMETRY {} {}", path, geoType);
 
             GeoJsonGeometryMapping targetMapping = new GeoJsonGeometryMapping();
             targetMapping.setEnabled(true);

@@ -7,11 +7,12 @@
  */
 package de.ii.ldproxy.output.generic;
 
-import de.ii.ogc.wfs.proxy.TargetMapping;
+import de.ii.ldproxy.output.generic.GenericMapping.GENERIC_TYPE;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer;
 import de.ii.ogc.wfs.proxy.WfsProxyMappingProvider;
-import de.ii.xsf.logging.XSFLogger;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_NS_URI;
 
@@ -20,8 +21,11 @@ import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_NS_URI;
  */
 public class Gml2GenericMappingProvider implements WfsProxyMappingProvider {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(Gml2GenericMappingProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Gml2GenericMappingProvider.class);
     public static final String MIME_TYPE = TargetMapping.BASE_TYPE;
+
+    private boolean hasSpatialField;
+    private boolean hasTemporalField;
 
     @Override
     public String getTargetType() {
@@ -33,6 +37,9 @@ public class Gml2GenericMappingProvider implements WfsProxyMappingProvider {
         GenericMapping targetMapping = new GenericMapping();
         targetMapping.setEnabled(true);
 
+        this.hasSpatialField = false;
+        this.hasTemporalField = false;
+
         return targetMapping;
     }
 
@@ -41,12 +48,15 @@ public class Gml2GenericMappingProvider implements WfsProxyMappingProvider {
 
         if ((localName.equals("id") && nsUri.startsWith(GML_NS_URI)) || localName.equals("fid")) {
 
-            LOGGER.getLogger().debug("ID {} {} {}", nsUri, localName, type);
+            LOGGER.debug("ID {} {} {}", nsUri, localName, type);
 
-            if (type.isValid()) {
+            GENERIC_TYPE dataType = GENERIC_TYPE.forGmlType(type);
+
+            if (dataType.isValid()) {
                 GenericMapping targetMapping = new GenericMapping();
                 targetMapping.setEnabled(true);
                 targetMapping.setName("id");
+                targetMapping.setType(dataType);
 
                 return targetMapping;
             }
@@ -58,12 +68,20 @@ public class Gml2GenericMappingProvider implements WfsProxyMappingProvider {
     @Override
     public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, WfsProxyFeatureTypeAnalyzer.GML_TYPE type) {
 
-        if (type.isValid()) {
-            LOGGER.getLogger().debug("PROPERTY {} {}", path, type);
+        GENERIC_TYPE dataType = GENERIC_TYPE.forGmlType(type);
+
+        if (dataType.isValid()) {
+            LOGGER.debug("PROPERTY {} {}", path, dataType);
 
             GenericMapping targetMapping = new GenericMapping();
             targetMapping.setEnabled(true);
             targetMapping.setName(path);
+            targetMapping.setType(dataType);
+
+            if (dataType.equals(GENERIC_TYPE.TEMPORAL) && !hasTemporalField) {
+                targetMapping.setFilterable(true);
+                this.hasTemporalField = true;
+            }
 
             return targetMapping;
         }
@@ -75,11 +93,16 @@ public class Gml2GenericMappingProvider implements WfsProxyMappingProvider {
     public TargetMapping getTargetMappingForGeometry(String path, String nsUri, String localName, WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE type) {
 
         if (type.isValid()) {
-            LOGGER.getLogger().debug("GEOMETRY {} {}", path, type);
+            LOGGER.debug("GEOMETRY {} {}", path, type);
 
             GenericMapping targetMapping = new GenericMapping();
             targetMapping.setEnabled(true);
-            targetMapping.setGeometry(true);
+            targetMapping.setType(GENERIC_TYPE.SPATIAL);
+
+            if (!hasSpatialField) {
+                targetMapping.setFilterable(true);
+                this.hasSpatialField = true;
+            }
 
             return targetMapping;
         }

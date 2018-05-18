@@ -10,12 +10,12 @@ package de.ii.ldproxy.output.html;
 
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
-import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
 import de.ii.ogc.wfs.proxy.WfsProxyMappingProvider;
-import de.ii.xsf.logging.XSFLogger;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_NS_URI;
 
@@ -24,7 +24,7 @@ import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_NS_URI;
  */
 public class Gml2MicrodataMappingProvider implements WfsProxyMappingProvider {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(Gml2MicrodataMappingProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Gml2MicrodataMappingProvider.class);
     public static final String MIME_TYPE = "text/html";
 
     @Override
@@ -34,7 +34,7 @@ public class Gml2MicrodataMappingProvider implements WfsProxyMappingProvider {
 
     @Override
     public TargetMapping getTargetMappingForFeatureType(String nsUri, String localName) {
-        LOGGER.getLogger().debug("FEATURETYPE {} {}", nsUri, localName);
+        LOGGER.debug("FEATURETYPE {} {}", nsUri, localName);
 
         MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
         targetMapping.setEnabled(true);
@@ -48,7 +48,7 @@ public class Gml2MicrodataMappingProvider implements WfsProxyMappingProvider {
 
         if ((localName.equals("id") && nsUri.startsWith(GML_NS_URI)) || localName.equals("fid")) {
 
-            LOGGER.getLogger().debug("ID {} {} {}", nsUri, localName, type);
+            LOGGER.debug("ID {} {} {}", nsUri, localName, type);
 
             MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(type);
 
@@ -71,7 +71,7 @@ public class Gml2MicrodataMappingProvider implements WfsProxyMappingProvider {
         MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(type);
 
         if (dataType.isValid()) {
-            LOGGER.getLogger().debug("PROPERTY {} {}", path, dataType);
+            LOGGER.debug("PROPERTY {} {}", path, dataType);
 
             MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
             targetMapping.setEnabled(true);
@@ -95,7 +95,7 @@ public class Gml2MicrodataMappingProvider implements WfsProxyMappingProvider {
         MICRODATA_GEOMETRY_TYPE geoType = MICRODATA_GEOMETRY_TYPE.forGmlType(type);
 
         if (geoType.isValid()) {
-            LOGGER.getLogger().debug("GEOMETRY {} {}", path, geoType);
+            LOGGER.debug("GEOMETRY {} {}", path, geoType);
 
             MicrodataGeometryMapping targetMapping = new MicrodataGeometryMapping();
             targetMapping.setEnabled(true);

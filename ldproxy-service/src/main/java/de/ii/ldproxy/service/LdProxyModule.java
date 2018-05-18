@@ -7,27 +7,19 @@
  */
 package de.ii.ldproxy.service;
 
-import com.fasterxml.aalto.stax.InputFactoryImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.api.ServiceModule;
 import de.ii.xsf.core.api.exceptions.WriteError;
 import de.ii.xsf.core.api.permission.AuthenticatedUser;
-import de.ii.xsf.dropwizard.api.HttpClients;
-import de.ii.xsf.dropwizard.api.Jackson;
-import de.ii.xsf.logging.XSFLogger;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.http.client.HttpClient;
-import org.codehaus.staxmate.SMInputFactory;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +36,7 @@ import java.util.stream.Collectors;
 // TODO: replace this and ServiceRegistry with ServiceSuperStore and ServiceSubStores
 public class LdProxyModule implements ServiceModule {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(LdProxyModule.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LdProxyModule.class);
 
     @Requires
     private LdProxyServiceStore serviceStore;
@@ -102,8 +94,8 @@ public class LdProxyModule implements ServiceModule {
         } catch (IOException ex) {
 
             // TODO Logging
-            LOGGER.getLogger().error("Error updating service with id {}", id);
-            LOGGER.getLogger().debug("Exception: ", ex);
+            LOGGER.error("Error updating service with id {}", id);
+            LOGGER.debug("Exception: ", ex);
             throw new WriteError();
         }
 
@@ -117,7 +109,7 @@ public class LdProxyModule implements ServiceModule {
 
             serviceStore.deleteResource(service.getId());
         } catch (IOException ex) {
-            LOGGER.getLogger().error("Error deleting service with id {}", service.getId());
+            LOGGER.error("Error deleting service with id {}", service.getId());
         }
     }
 
@@ -139,9 +131,9 @@ public class LdProxyModule implements ServiceModule {
 
             try {
                 services.get(null).add(getService(null, id));
-                LOGGER.getLogger().debug("Loaded Service: {}", id);
+                LOGGER.debug("Loaded Service: {}", id);
             } catch (IOException ex) {
-                LOGGER.getLogger().error("Failed to load Service: {}", id);
+                LOGGER.error("Failed to load Service: {}", id);
             }
         }
 
@@ -151,7 +143,7 @@ public class LdProxyModule implements ServiceModule {
     // TODO
     @Override
     public List<Service> getServiceList() throws Exception {
-        //LOGGER.getLogger().debug("GET SERVICE LIST 2");
+        //LOGGER.debug("GET SERVICE LIST 2");
         List<Service> services = new ArrayList<>();
         return services;
     }

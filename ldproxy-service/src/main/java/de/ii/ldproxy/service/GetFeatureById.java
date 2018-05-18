@@ -7,12 +7,12 @@
  */
 package de.ii.ldproxy.service;
 
-import de.ii.xsf.logging.XSFLogger;
-import de.ii.xtraplatform.ogc.api.filter.*;
+import de.ii.xtraplatform.ogc.api.filter.OGCFilter;
+import de.ii.xtraplatform.ogc.api.filter.OGCFilterExpression;
+import de.ii.xtraplatform.ogc.api.filter.OGCResourceIdExpression;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSOperationGetFeature;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSQuery;
 import de.ii.xtraplatform.util.xml.XMLNamespaceNormalizer;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 /**
  *
@@ -20,7 +20,6 @@ import org.forgerock.i18n.slf4j.LocalizedLogger;
  */
 public class GetFeatureById extends WFSOperationGetFeature {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(GetFeatureById.class);
     private int count;
     private int startIndex;
     private String nsUrl;

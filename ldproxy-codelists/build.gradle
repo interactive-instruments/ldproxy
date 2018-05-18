@@ -1,3 +1,6 @@
+version = '1.2.1'
+version += '-SNAPSHOT'
+
 dependencies {
      compile group: 'com.sun.xsom', name: 'xsom', version: '20140925'
     compile group: 'com.fasterxml', name: 'aalto-xml', version: '0.9.11'

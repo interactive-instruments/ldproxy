@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.xsf.dropwizard.api.HttpClients;
 import de.ii.xsf.dropwizard.api.Jackson;
-import de.ii.xsf.logging.XSFLogger;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -22,7 +21,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,7 +39,7 @@ import java.util.Map;
 @Instantiate
 public class SparqlAdapter {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(SparqlAdapter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SparqlAdapter.class);
 
     private static final String SPARQL_ENDPOINT = "http://demo.linkeddatafactory.nl:8890/sparql";
     private static final String POSTAL_QUERY_BEGIN = "prefix schema: <http://schema.org/> " +
@@ -91,7 +91,7 @@ public class SparqlAdapter {
                 String title = node.get("title").get("value").asText();
                 ids.put(id, title);
 
-                LOGGER.getLogger().debug("LINK {} {}", id, title);
+                LOGGER.debug("LINK {} {}", id, title);
             }
 
         } catch (IOException | URISyntaxException e) {
@@ -133,7 +133,7 @@ public class SparqlAdapter {
                 query = LOCALITY_QUERY_BEGIN + value + LOCALITY_QUERY_END;
                 break;
         }
-        LOGGER.getLogger().debug("SPARQL QUERY: {}", query);
+        LOGGER.debug("SPARQL QUERY: {}", query);
         return query;
     }
 }

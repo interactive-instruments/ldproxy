@@ -132,6 +132,46 @@ public class URICustomizer extends URIBuilder {
         return this;
     }
 
+    public URICustomizer cutPathAfterSegments(final String... segments) {
+        if (segments.length <= 0) {
+            return this;
+        }
+
+        final List<String> pathSegments = getPathSegments();
+
+        int pathSegmentsIndex = pathSegments.indexOf(segments[0]);
+
+        if (pathSegmentsIndex == -1) {
+            return this;
+        }
+
+        boolean match = true;
+        int cutIndex = 0;
+        for (int k = pathSegmentsIndex; k < pathSegments.size(); k++) {
+            for (int l = 0; k + l < pathSegments.size() && l < segments.length; l++) {
+                if (!pathSegments.get(k + l)
+                                 .equals(segments[l])) {
+                    match = false;
+                    break;
+                }
+                cutIndex = k + l + 1;
+            }
+            if (match) {
+                break;
+            } else {
+                match = true;
+            }
+        }
+
+        int segmentsIndex = match ? cutIndex : pathSegments.size();
+
+        this.setPathSegments(new ImmutableList.Builder<String>()
+                .addAll(pathSegments.subList(0, segmentsIndex))
+                .build());
+
+        return this;
+    }
+
     public URICustomizer removePathSegment(final String segment, final int index) {
         final List<String> pathSegments = getPathSegments();
         final int i = index < 0 ? pathSegments.size() + index : index;
@@ -172,7 +212,7 @@ public class URICustomizer extends URIBuilder {
     }
 
     private void setPathSegments(final List<String> pathSegments) {
-        this.setPath(Joiner.on('/')
+        this.setPath("/" + Joiner.on('/')
                            .join(pathSegments));
     }
 

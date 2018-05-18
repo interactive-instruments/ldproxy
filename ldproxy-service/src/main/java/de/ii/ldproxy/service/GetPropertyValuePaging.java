@@ -7,19 +7,15 @@
  */
 package de.ii.ldproxy.service;
 
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSOperationGetPropertyValue;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSQuery;
 import de.ii.xtraplatform.util.xml.XMLNamespaceNormalizer;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 /**
  *
  * @author fischer
  */
 public class GetPropertyValuePaging extends WFSOperationGetPropertyValue {
-
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(WFSOperationGetPropertyValue.class);
 
     private int count;
     private int startIndex;

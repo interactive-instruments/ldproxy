@@ -8,13 +8,10 @@
 package de.ii.ldproxy.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import de.ii.xsf.configstore.api.rest.GenericResourceSerializer;
 import de.ii.xsf.core.api.JsonViews;
-import de.ii.xsf.logging.XSFLogger;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
 
 import java.io.IOException;
 
@@ -22,8 +19,6 @@ import java.io.IOException;
  * @author zahnen
  */
 public class LdProxyServiceSerializer extends GenericResourceSerializer<LdProxyService> {
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(LdProxyServiceSerializer.class);
-
     private final ObjectMapper updateJsonMapper;
 
     public LdProxyServiceSerializer(ObjectMapper jsonMapper) {

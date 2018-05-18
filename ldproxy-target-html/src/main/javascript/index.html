@@ -1118,12 +1118,13 @@ $.getJSON(geoJsonUrl, function(data) {
                         //bounds: [[50.51342652633956,6.65771484375],[52.26815737376817,8.547363281250002]]
                         bounds: [[51.193115244645874,7.27294921875],[51.60437164681676,7.932128906250001]]
                     },
-                    fields: [
-                        'name',
-                        'funktion',
-                        'foo',
-                        'bar'
-                    ]
+                    time: {start: new Date().getTime()-7200000, end: new Date().getTime()},
+                    fields: {
+                        'name': 'name',
+                        'funktion': 'funktion',
+                        'foo': 'foo',
+                        'bar': 'bar'
+                    }
                 };
             </script>
         </div>

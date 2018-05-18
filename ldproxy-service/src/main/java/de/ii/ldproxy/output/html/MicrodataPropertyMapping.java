@@ -7,13 +7,14 @@
  */
 package de.ii.ldproxy.output.html;
 
+import de.ii.ldproxy.output.generic.AbstractGenericMapping;
 import de.ii.ldproxy.output.generic.GenericMapping;
-import de.ii.ogc.wfs.proxy.TargetMapping;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
 
 /**
  * @author zahnen
  */
-public class MicrodataPropertyMapping extends GenericMapping implements MicrodataMapping {
+public class MicrodataPropertyMapping extends AbstractGenericMapping<MicrodataMapping.MICRODATA_TYPE> implements MicrodataMapping {
 
     private MICRODATA_TYPE type;
     private Boolean showInCollection;
@@ -82,7 +83,7 @@ public class MicrodataPropertyMapping extends GenericMapping implements Microdat
     }
 
     @Override
-    public boolean isGeometry() {
+    public boolean isSpatial() {
         return getType() == MICRODATA_TYPE.GEOMETRY;
     }
 

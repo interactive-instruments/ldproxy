@@ -9,6 +9,8 @@
     <meta name="description" content="{{description}}">
     <meta name="keywords" content="{{#keywordsDecorated}}{{value}}{{^last}},{{/last}}{{/keywordsDecorated}}">
 
+    <link rel="shortcut icon" type="image/x-icon" href="{{urlPrefix}}/app/img/favicon.ico">
+
     {{#metaPagination}}
         {{#url}}
             <link rel="{{label}}" href="{{path}}{{#queryWithout}}page,startindex{{/queryWithout}}{{.}}"/>

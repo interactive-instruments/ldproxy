@@ -10,11 +10,11 @@ package de.ii.ldproxy.output.geojson;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.ldproxy.gml2json.AbstractFeatureWriter;
-import de.ii.ogc.wfs.proxy.TargetMapping;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import org.codehaus.staxmate.in.SMInputCursor;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Response;
@@ -30,7 +30,7 @@ import java.util.concurrent.Future;
 // TODO: implement AbstractHitsWriter
 public class GeoJsonHitsWriter extends AbstractFeatureWriter {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(GeoJsonHitsWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeoJsonHitsWriter.class);
 
     public GeoJsonHitsWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, CrsTransformer crsTransformer) {
         super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer, new GeoJsonOnTheFlyMapping());
@@ -59,7 +59,7 @@ public class GeoJsonHitsWriter extends AbstractFeatureWriter {
         try {
             this.writeStart(rootFuture.get());
         } catch (InterruptedException | ExecutionException ex) {
-            LOGGER.getLogger().debug("Unexpected error", ex);
+            LOGGER.debug("Unexpected error", ex);
         }
     }
 

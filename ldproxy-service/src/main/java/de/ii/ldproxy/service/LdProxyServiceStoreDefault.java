@@ -13,23 +13,26 @@ import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.xsf.configstore.api.KeyNotFoundException;
 import de.ii.xsf.configstore.api.KeyValueStore;
 import de.ii.xsf.configstore.api.rest.AbstractGenericResourceStore;
-import de.ii.xsf.configstore.api.rest.GenericResourceSerializer;
 import de.ii.xsf.configstore.api.rest.ResourceTransaction;
 import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.util.json.DeepUpdater;
 import de.ii.xsf.dropwizard.api.HttpClients;
 import de.ii.xsf.dropwizard.api.Jackson;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
-import de.ii.xtraplatform.jackson.dynamic.DynamicTypeIdResolver;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.Validate;
 import org.apache.http.client.HttpClient;
 import org.codehaus.staxmate.SMInputFactory;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zahnen
@@ -41,7 +44,6 @@ import java.util.concurrent.*;
 @Instantiate
 public class LdProxyServiceStoreDefault extends AbstractGenericResourceStore<LdProxyService, LdProxyServiceStore> implements LdProxyServiceStore {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(LdProxyServiceStoreDefault.class);
     public static final String SERVICE_STORE_ID = "ldproxy-services";
 
     // TODO: move to more generic WfsProxyServiceStore

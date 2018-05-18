@@ -129,7 +129,11 @@ public class GetCapabilities2Wfs3Dataset extends AbstractWfsCapabilitiesAnalyzer
         wfsCapabilities.bbox = xmin + "," + ymin + " " + xmax + "," + ymax;
 
         if (collections.containsKey(featureTypeName)) {
-            collections.get(featureTypeName).setExtent(new Wfs3Dataset.Wfs3Collection.Extent(xmin, ymin, xmax, ymax));
+            Wfs3Dataset.Wfs3Collection.Extent extent = new Wfs3Dataset.Wfs3Collection.Extent(xmin, ymin, xmax, ymax);
+            if (collections.get(featureTypeName).getExtent() != null) {
+                extent.setTemporal(collections.get(featureTypeName).getExtent().getTemporal());
+            }
+            collections.get(featureTypeName).setExtent(extent);
         }
     }
 
