@@ -47,6 +47,9 @@ class MappingEditGeneral extends Component {
 
     render() {
         let {ui, updateUI, title, mimeType, mapping, isFeatureType, isSaving, onChange, codelists} = this.props;
+        const isSpatial = mapping.type === 'SPATIAL';
+        const isTemporal = mapping.type === 'TEMPORAL';
+        const isValue = mapping.type === 'VALUE';
 
         let options = [
             {
@@ -67,6 +70,13 @@ class MappingEditGeneral extends Component {
             label: codelists[ui.codelist].name
         } : undefined;
 
+        const show = {
+            name: !isFeatureType && !isSpatial,
+            codelist: !isFeatureType && isValue,
+            format: !isFeatureType && (isValue || isTemporal),
+            filterable: !isFeatureType && (isValue || isTemporal || isSpatial)
+        }
+
         return (
             <MappingEdit title={ title }
                 heading="h3"
@@ -74,26 +84,27 @@ class MappingEditGeneral extends Component {
                 mimeType={ mimeType }
                 mapping={ mapping }
                 isFeatureType={ isFeatureType }
+                showName={ show.name }
                 isSaving={ isSaving }
                 onChange={ onChange }
                 initStateExt={ initState }>
-                { !isFeatureType && <FormField label="Codelist">
-                                        <SelectUi name="codelist"
-                                            placeHolder='None'
-                                            options={ options }
-                                            value={ value }
-                                            onChange={ updateUI } />
-                                    </FormField> }
-                { !isFeatureType && <FormField label="Format">
-                                        <TextInputUi name="format" value={ ui.format } onChange={ updateUI } />
-                                    </FormField> }
-                { !isFeatureType && <FormField label="Use in filters">
-                                        <CheckboxUi name="filterable"
-                                            checked={ ui.filterable }
-                                            toggle={ false }
-                                            reverse={ false }
-                                            onChange={ updateUI } />
-                                    </FormField> }
+                { show.codelist && <FormField label="Codelist">
+                                       <SelectUi name="codelist"
+                                           placeHolder='None'
+                                           options={ options }
+                                           value={ value }
+                                           onChange={ updateUI } />
+                                   </FormField> }
+                { show.format && <FormField label="Format">
+                                     <TextInputUi name="format" value={ ui.format } onChange={ updateUI } />
+                                 </FormField> }
+                { show.filterable && <FormField label={ isSpatial ? "Use for bbox filters" : isTemporal ? "Use for time filters" : "Usable in filters" }>
+                                         <CheckboxUi name="filterable"
+                                             checked={ ui.filterable }
+                                             toggle={ false }
+                                             reverse={ false }
+                                             onChange={ updateUI } />
+                                     </FormField> }
             </MappingEdit>
         );
     }

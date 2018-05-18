@@ -67,7 +67,19 @@ export default class MappingEditHtml extends Component {
     }*/
 
     render() {
-        let {ui, updateUI, mapping, baseMapping, mimeType, isFeatureType, isSaving, onChange} = this.props;
+        const {ui, updateUI, mapping, baseMapping, mimeType, isFeatureType, isSaving, onChange} = this.props;
+        const isSpatial = baseMapping.type === 'SPATIAL';
+        const isTemporal = baseMapping.type === 'TEMPORAL';
+        const isValue = baseMapping.type === 'VALUE';
+        const isJsonLd = mimeType === 'application/ld+json';
+
+        const show = {
+            name: !isSpatial && (!isFeatureType || !isJsonLd),
+            format: !isFeatureType && (isValue || isTemporal),
+            itemProp: !isFeatureType,
+            itemType: isFeatureType,
+            showInCollection: !isFeatureType && !isJsonLd
+        }
 
         return (
             <MappingEdit title={ mimeType }
@@ -75,28 +87,29 @@ export default class MappingEditHtml extends Component {
                 mapping={ mapping }
                 baseMapping={ baseMapping }
                 isFeatureType={ isFeatureType }
+                showName={ show.name }
                 isSaving={ isSaving }
                 onChange={ onChange }
                 initStateExt={ initState }>
-                { !isFeatureType && <FormField label="Format">
-                                        <TextInputUi name="format"
-                                            placeHolder={ baseMapping.format }
-                                            value={ ui.format }
-                                            onChange={ updateUI } />
-                                    </FormField> }
-                { !isFeatureType && <FormField label="LD Type">
-                                        <TextInputUi name="itemProp" value={ ui.itemProp } onChange={ updateUI } />
-                                    </FormField> }
-                { isFeatureType && <FormField label="LD Type">
+                { show.format && <FormField label="Format">
+                                     <TextInputUi name="format"
+                                         placeHolder={ baseMapping.format }
+                                         value={ ui.format }
+                                         onChange={ updateUI } />
+                                 </FormField> }
+                { show.itemProp && <FormField label={ isJsonLd ? "Value type" : "Microdata itemprop" }>
+                                       <TextInputUi name="itemProp" value={ ui.itemProp } onChange={ updateUI } />
+                                   </FormField> }
+                { show.itemType && <FormField label={ isJsonLd ? "Node type" : "Microdata itemtype" }>
                                        <TextInputUi name="itemType" value={ ui.itemType } onChange={ updateUI } />
                                    </FormField> }
-                { !isFeatureType && <FormField label="Show in collection">
-                                        <CheckboxUi name="showInCollection"
-                                            checked={ ui.showInCollection }
-                                            toggle={ false }
-                                            reverse={ false }
-                                            onChange={ updateUI } />
-                                    </FormField> }
+                { show.showInCollection && <FormField label="Show in collection">
+                                               <CheckboxUi name="showInCollection"
+                                                   checked={ ui.showInCollection }
+                                                   toggle={ false }
+                                                   reverse={ false }
+                                                   onChange={ updateUI } />
+                                           </FormField> }
             </MappingEdit>
         );
     }
