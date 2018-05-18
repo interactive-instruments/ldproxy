@@ -116,7 +116,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
         TargetMapping featureMapping = null;
 
-        if (featureTypeMapping.getMappings().isEmpty()) {
+        if (featureTypeMapping.isEmpty()) {
             featureMapping = onTheFlyMapping.getTargetMappingForFeatureType(currentPath, nsuri, localName);
         }
 
@@ -142,7 +142,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         String path = currentPath.toString();
         //LOGGER.debug(" - attribute {}", path);
 
-        if (featureTypeMapping.getMappings().isEmpty()) {
+        if (featureTypeMapping.isEmpty()) {
             TargetMapping mapping = onTheFlyMapping.getTargetMappingForAttribute(currentPath, nsuri, localName, value);
             if (mapping != null) {
                 writeField(mapping, value, 1);
@@ -166,7 +166,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         String value = "";
         fieldCounter.compute(path, (k, v) -> (v == null) ? 1 : v+1);
 
-        if (featureTypeMapping.getMappings().isEmpty()) {
+        if (featureTypeMapping.isEmpty()) {
             TargetMapping mapping = onTheFlyMapping.getTargetMappingForGeometry(currentPath, nsuri, localName);
 
             if (mapping != null) {
@@ -203,7 +203,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
     @Override
     public void analyzePropertyText(String nsuri, String localName, int depth, String text) {
-        if (featureTypeMapping.getMappings().isEmpty()) {
+        if (featureTypeMapping.isEmpty()) {
             TargetMapping mapping = onTheFlyMapping.getTargetMappingForProperty(currentPath, nsuri, localName, text);
             if (mapping != null) {
                 writeField(mapping, text, fieldCounter.get(currentPath.toString()));

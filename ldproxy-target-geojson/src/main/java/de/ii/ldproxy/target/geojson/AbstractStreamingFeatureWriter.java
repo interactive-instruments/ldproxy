@@ -31,7 +31,7 @@ public abstract class AbstractStreamingFeatureWriter extends GraphStageWithMater
 
     protected abstract void writeEvent(final TransformEvent transformEvent, Runnable onComplete, ExecutionContext executionContext) throws IOException;
 
-    protected abstract void setOutputStream(final OutputStream outputStream);
+    //protected abstract void setOutputStream(final OutputStream outputStream);
 
     protected abstract void initalize(OutputStream outputStream, Consumer<ByteString> push);
 
@@ -93,7 +93,7 @@ public abstract class AbstractStreamingFeatureWriter extends GraphStageWithMater
             }
         };
 
-        return Tuple2.apply(graphStageLogic, (Consumer<OutputStream>) this::setOutputStream);
+        return Tuple2.apply(graphStageLogic, (Consumer<OutputStream>) o -> {});
     }
 
     //@Override

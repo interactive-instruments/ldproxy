@@ -13,6 +13,7 @@ import akka.pattern.PatternsCS;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Flow;
+import akka.stream.javadsl.Sink;
 import akka.testkit.javadsl.TestKit;
 import akka.util.ByteString;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -52,32 +53,7 @@ public class GeoJsonFeatureWriterTest {
         system = ActorSystem.create();
 
         mapper = new ObjectMapper();
-        mapper.setHandlerInstantiator(new HandlerInstantiator() {
-            @Override
-            public JsonDeserializer<?> deserializerInstance(DeserializationConfig config, Annotated annotated, Class<?> deserClass) {
-                return null;
-            }
-
-            @Override
-            public KeyDeserializer keyDeserializerInstance(DeserializationConfig config, Annotated annotated, Class<?> keyDeserClass) {
-                return null;
-            }
-
-            @Override
-            public JsonSerializer<?> serializerInstance(SerializationConfig config, Annotated annotated, Class<?> serClass) {
-                return null;
-            }
-
-            @Override
-            public TypeResolverBuilder<?> typeResolverBuilderInstance(MapperConfig<?> config, Annotated annotated, Class<?> builderClass) {
-                return null;
-            }
-
-            @Override
-            public TypeIdResolver typeIdResolverInstance(MapperConfig<?> config, Annotated annotated, Class<?> resolverClass) {
-                return new DynamicTypeIdResolverMock(new GeoJsonTargetMappingSubTypeIds(), new GenericMappingSubTypeIds(), new MicrodataMappingSubTypeIds(), new JsonLdMappingSubTypeIds());
-            }
-        });
+        mapper.setHandlerInstantiator(DynamicTypeIdResolverMock.handlerInstantiator());
     }
 
     @AfterClass(groups = {"default"})
@@ -145,8 +121,8 @@ public class GeoJsonFeatureWriterTest {
 
                         httpResponse.entity().getDataBytes()
                                 .via(parser)
-                                .runWith(GeoJsonFeatureWriter.writer(new JsonFactory().createGenerator(System.out).useDefaultPrettyPrinter()), materializer);
-                                //.runWith(Sink.foreach(event -> log.info(event.toString())), materializer);
+                                //.runWith(GeoJsonFeatureWriter.writer(new JsonFactory().createGenerator(System.out).useDefaultPrettyPrinter()), materializer);
+                                .runWith(Sink.foreach(event -> log.info(event.toString())), materializer);
                     })
                     .build();
         }

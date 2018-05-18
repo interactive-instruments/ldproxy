@@ -98,7 +98,7 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
         };
     }*/
 
-    @Override
+    /*@Override
     protected void setOutputStream(OutputStream outputStream) {
         LOGGER.getLogger().debug("STREAMING");
         try {
@@ -110,7 +110,7 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
         } catch (IOException e) {
             LOGGER.getLogger().debug("STREAMING FAILED");
         }
-    }
+    }*/
 
     @Override
     protected void initalize(OutputStream outputStream, Consumer<ByteString> push) {

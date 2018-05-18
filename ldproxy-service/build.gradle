@@ -14,9 +14,9 @@ dependencies {
 
 /*jar {
     manifest {
-        instruction 'X-Web-Resource-Version', '1.1'
-        instruction 'X-Web-Resource', '/app/js;/js'
-        instruction 'X-Web-Resource', '/app/css;/css'
-        instruction 'X-Web-Resource', '/app/img;/img'
+        //instruction 'X-Web-Resource-Version', '1.1'
+        //instruction 'X-Web-Resource', '/app/js;/js'
+        //instruction 'X-Web-Resource', '/app/css;/css'
+        //instruction 'X-Web-Resource', '/app/img;/img'
     }
 }*/

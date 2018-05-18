@@ -35,6 +35,14 @@ import de.ii.ldproxy.wfs3.Wfs3Dataset;
 import de.ii.ldproxy.wfs3.Wfs3Link;
 import de.ii.ldproxy.wfs3.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
+import de.ii.ldproxy.rest.wfs3.GetCapabilities2Wfs3Collection;
+import de.ii.ldproxy.rest.wfs3.Wfs3Collections;
+import de.ii.ldproxy.service.GetFeatureById;
+import de.ii.ldproxy.service.GetFeatureHits;
+import de.ii.ldproxy.service.GetFeaturePaging;
+import de.ii.ldproxy.service.LdProxyService;
+import de.ii.ldproxy.service.SparqlAdapter;
+import de.ii.ldproxy.target.geojson.StreamingGml2GeoJsonFlow;
 import de.ii.ogc.wfs.proxy.AkkaStreamer;
 import de.ii.ogc.wfs.proxy.TargetMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureType;
@@ -85,7 +93,13 @@ import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.CompletionCallback;
 import javax.ws.rs.container.ConnectionCallback;
 import javax.ws.rs.container.Suspended;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
+import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -94,6 +108,9 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +120,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.rest.util.RangeHeader.parseRange;
+import static de.ii.ldproxy.rest.internal.util.RangeHeader.parseRange;
 
 /**
  * @author zahnen
@@ -987,7 +1004,7 @@ public class LdProxyServiceResource implements ServiceResource {
             );
         };
 
-        akkaStreamer.stream(featureType, new WFSRequest(service.getWfsAdapter(), operation), Gml2GeoJsonMappingProvider.MIME_TYPE, isFeatureCollection, de.ii.ldproxy.target.geojson.GeoJsonFeatureWriter.writer(null), onSuccess, throwable -> {asyncResponse.resume(throwable);return null;});
+        akkaStreamer.stream(featureType, new WFSRequest(service.getWfsAdapter(), operation), Gml2GeoJsonMappingProvider.MIME_TYPE, isFeatureCollection, () -> StreamingGml2GeoJsonFlow.transformer(new QName(featureType.getNamespace(), featureType.getName()), featureType.getMappings()), onSuccess, throwable -> {asyncResponse.resume(throwable);return null;});
 
 
     }
@@ -1154,3 +1171,4 @@ public class LdProxyServiceResource implements ServiceResource {
         return featureType.get();
     }
 }
+

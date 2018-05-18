@@ -1,7 +1,8 @@
 
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'osgi-ipojo'
+    //apply plugin: 'osgi-ipojo'
+    apply plugin: 'biz.aQute.bnd.builder'
     apply plugin: 'license'
 
     sourceCompatibility = 1.8
@@ -98,13 +99,21 @@ subprojects {
     jar {
         manifest {
             attributes("Implementation-Title": project.name, "Implementation-Version": project.version)
-
+            /*
             instruction '-removeheaders', 'Bnd-LastModified'
             instructionReplace "Bundle-SymbolicName",project.name.replaceAll('-', '.')
 
             instruction 'Import-Package', 'com.fasterxml.jackson.module.afterburner.ser'
             instruction 'Import-Package', '*'
             instruction 'Private-Package', 'de.ii.empty'
+            */
+            bnd('-removeheaders': 'Bnd-LastModified',
+                "Bundle-SymbolicName": project.name.replaceAll('-', '.'),
+                'Import-Package': 'com.fasterxml.jackson.module.afterburner.ser, *',
+                //'Import-Package': '*',
+                'Private-Package': 'de.ii.empty;-split-package:=merge-first, de.ii.' + project.name.replaceAll('-', '.') + '.internal.*',
+                'Export-Package': '!de.ii.' + project.name.replaceAll('-', '.') + '.internal.*, de.ii.' + project.name.replaceAll('-', '.') + '*'
+                )
         }
     }
     afterEvaluate {

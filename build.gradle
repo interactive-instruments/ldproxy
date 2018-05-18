@@ -10,6 +10,8 @@ buildscript {
         classpath group: 'de.interactive_instruments', name: 'gradle-plugin-osgi-ipojo', version: '1.12.1.29'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0"
         classpath 'com.netflix.nebula:nebula-ospackage-plugin:3.+'
+        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.5.0'
+        classpath files('buildSrc/build/libs/buildSrc-all.jar')
     }
 }
 
@@ -128,21 +130,36 @@ apply from: 'docker.gradle'
 
 apply from: 'license-report.gradle'
 
+apply plugin: 'xtraplatform-docs'
 
-subprojects {
-configurations {
-    doclava
+
+/*
+
+gradle-plugin-xtraplatform-docs-source
+
+xpdocs {
+    source: {
+        format: markdown|asciidoc,
+        layout: default|arc42,
+        arc42: {
+            goals: docs/01_introduction_and_goals.md,
+            ...
+        }
+    }
 }
 
-dependencies {
-    doclava files('/home/zahnen/development/javadoc-json-doclet/build/libs/javadoc-json-doclet-all.jar')
+
+gradle-plugin-xtraplatform-docs
+
+xpdocs {
+    target: {
+        processor: default|asciidoctor,
+        theme: ii,
+        style: {
+            primaryColor: #111111,
+            ...
+        }
+    }
 }
 
-javadoc {
-//    include 'de/interactive_instruments/xtraserver/config/util/api/*'
-    options.doclet = "com.raidandfade.JsonDoclet.Main"
-    options.docletpath = configurations.doclava.files.asType(List)
-  //  title = null
-}
-tasks.javadoc.dependsOn configurations.doclava
-}
+*/

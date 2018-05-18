@@ -269,7 +269,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             currentFeature.idAsUrl = true;
         }
 
-        if (featureTypeMapping.getMappings().isEmpty()) {
+        if (featureTypeMapping.isEmpty()) {
             currentFeature.name = localName;
             currentFeature.itemType = "http://schema.org/Place";
             return;
@@ -317,7 +317,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         //LOGGER.debug(" - attribute {}", path);
 
         // on-the-fly mapping
-        if (featureTypeMapping.getMappings().isEmpty() && localName.equals("id") && !currentPath.toFieldName().contains(".")) {
+        if (featureTypeMapping.isEmpty() && localName.equals("id") && !currentPath.toFieldName().contains(".")) {
 
             currentFeature.name = value;
 
@@ -343,7 +343,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     public void analyzePropertyStart(String nsuri, String localName, int depth, SMInputCursor feature, boolean nil) {
         currentPath.track(nsuri, localName, depth);
 
-        if (featureTypeMapping.getMappings().isEmpty() && !isFeatureCollection) {
+        if (featureTypeMapping.isEmpty() && !isFeatureCollection) {
             // TODO: detect geometries
             if (GML_GEOMETRY_TYPE.fromString(localName) != GML_GEOMETRY_TYPE.NONE) {
 

@@ -7,9 +7,7 @@
  */
 package de.ii.ldproxy.rest;
 
-import de.ii.ldproxy.output.html.DatasetView;
 import de.ii.xtraplatform.ogc.api.OWS;
-import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.wfs.parser.AbstractWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
 import io.swagger.oas.models.OpenAPI;

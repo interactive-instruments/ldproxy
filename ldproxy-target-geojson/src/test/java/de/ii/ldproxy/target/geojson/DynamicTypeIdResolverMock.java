@@ -1,12 +1,19 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.DatabindContext;
-import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.HandlerInstantiator;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
+import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import de.ii.ldproxy.output.generic.GenericMappingSubTypeIds;
+import de.ii.ldproxy.output.geojson.GeoJsonTargetMappingSubTypeIds;
+import de.ii.ldproxy.output.html.MicrodataMappingSubTypeIds;
+import de.ii.ldproxy.output.jsonld.JsonLdMappingSubTypeIds;
 import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.jackson.dynamic.JacksonSubTypeIds;
 import org.forgerock.i18n.slf4j.LocalizedLogger;
@@ -18,13 +25,42 @@ import java.util.stream.Stream;
  */
 public class DynamicTypeIdResolverMock  implements TypeIdResolver {
 
+    public static HandlerInstantiator handlerInstantiator() {
+        return new HandlerInstantiator() {
+            @Override
+            public JsonDeserializer<?> deserializerInstance(DeserializationConfig config, Annotated annotated, Class<?> deserClass) {
+                return null;
+            }
+
+            @Override
+            public KeyDeserializer keyDeserializerInstance(DeserializationConfig config, Annotated annotated, Class<?> keyDeserClass) {
+                return null;
+            }
+
+            @Override
+            public JsonSerializer<?> serializerInstance(SerializationConfig config, Annotated annotated, Class<?> serClass) {
+                return null;
+            }
+
+            @Override
+            public TypeResolverBuilder<?> typeResolverBuilderInstance(MapperConfig<?> config, Annotated annotated, Class<?> builderClass) {
+                return null;
+            }
+
+            @Override
+            public TypeIdResolver typeIdResolverInstance(MapperConfig<?> config, Annotated annotated, Class<?> resolverClass) {
+                return new DynamicTypeIdResolverMock(new GeoJsonTargetMappingSubTypeIds(), new GenericMappingSubTypeIds(), new MicrodataMappingSubTypeIds(), new JsonLdMappingSubTypeIds());
+            }
+        };
+    }
+
     private static final LocalizedLogger LOGGER = XSFLogger.getLogger(de.ii.xtraplatform.jackson.dynamic.DynamicTypeIdResolver.class);
 
     private JavaType mBaseType;
     private final BiMap<Class<?>, String> mapping;
 
     // TODO: for tests only
-    public DynamicTypeIdResolverMock(JacksonSubTypeIds subTypeIds, JacksonSubTypeIds... otherJacksonSubTypeIds) {
+    DynamicTypeIdResolverMock(JacksonSubTypeIds subTypeIds, JacksonSubTypeIds... otherJacksonSubTypeIds) {
         this.mapping = HashBiMap.create(subTypeIds.getMapping());
         Stream.of(otherJacksonSubTypeIds)
                 .forEach(ids -> mapping.putAll(ids.getMapping()));
