@@ -12,7 +12,7 @@ cache:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
 install:
-- "./gradlew assemble"
+- "./gradlew clean assemble"
 script:
 - "./gradlew check"
 after_success:
