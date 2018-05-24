@@ -20,8 +20,8 @@ import java.util.List;
  */
 public class ServiceOverviewView extends DatasetView {
     public URI uri;
-    public ServiceOverviewView(URI uri, Object data, String urlPrefix) {
-        super("services", uri, data, urlPrefix);
+    public ServiceOverviewView(URI uri, Object data, String urlPrefix, HtmlConfig htmlConfig) {
+        super("services", uri, data, urlPrefix, htmlConfig);
         this.uri = uri;
         this.title = "ldproxy Dataset Overview";
         this.description = "ldproxy Dataset Overview";

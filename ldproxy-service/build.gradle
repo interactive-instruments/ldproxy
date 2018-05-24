@@ -9,14 +9,17 @@ dependencies {
     //compile group: 'com.fasterxml.staxmate', name: 'staxmate', version: '2.2.1'
 
     compile project(":ldproxy-codelists")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api', version: '1.1.1-SNAPSHOT'
    
 }
 
-/*jar {
+jar {
     manifest {
         //instruction 'X-Web-Resource-Version', '1.1'
         //instruction 'X-Web-Resource', '/app/js;/js'
         //instruction 'X-Web-Resource', '/app/css;/css'
         //instruction 'X-Web-Resource', '/app/img;/img'
+        //attributes( 'Export-Package': 'de.ii.ldproxy.*')
     }
-}*/
+}

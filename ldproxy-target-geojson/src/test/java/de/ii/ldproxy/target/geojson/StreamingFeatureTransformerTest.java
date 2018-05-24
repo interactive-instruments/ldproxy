@@ -1,3 +1,10 @@
+/**
+ * Copyright 2018 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.target.geojson;
 
 import akka.Done;
@@ -5,10 +12,19 @@ import akka.NotUsed;
 import akka.actor.ActorSystem;
 import akka.event.LoggingAdapter;
 import akka.japi.function.Function2;
-import akka.stream.*;
+import akka.stream.ActorMaterializer;
+import akka.stream.Attributes;
+import akka.stream.FlowShape;
+import akka.stream.IOResult;
+import akka.stream.Inlet;
+import akka.stream.Outlet;
 import akka.stream.alpakka.xml.ParseEvent;
 import akka.stream.alpakka.xml.javadsl.XmlParsing;
-import akka.stream.javadsl.*;
+import akka.stream.javadsl.FileIO;
+import akka.stream.javadsl.Flow;
+import akka.stream.javadsl.Keep;
+import akka.stream.javadsl.Sink;
+import akka.stream.javadsl.Source;
 import akka.stream.stage.AbstractInHandler;
 import akka.stream.stage.AbstractOutHandler;
 import akka.stream.stage.GraphStageLogic;
@@ -26,15 +42,16 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import de.ii.ldproxy.target.geojson.GeoJsonFeatureWriter;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMappingProvider;
 import de.ii.ldproxy.service.LdProxyService;
-import de.ii.ogc.wfs.proxy.*;
-import de.ii.ogc.wfs.proxy.StreamingFeatureTransformer.TransformEvent;
+import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureType;
+import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.StreamingFeatureTransformer;
+import de.ii.xtraplatform.feature.transformer.api.StreamingGMLParser;
+import de.ii.xtraplatform.feature.transformer.api.StreamingGmlParserSink;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLParser;
-import de.ii.xtraplatform.ogc.api.gml.parser.StreamingGMLParser;
-import de.ii.xtraplatform.ogc.api.gml.parser.StreamingGMLParser.GmlEvent;
-import de.ii.xtraplatform.ogc.api.gml.parser.StreamingGmlParserSink;
 import org.codehaus.staxmate.SMInputFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -42,12 +59,20 @@ import org.testng.annotations.Test;
 import scala.Tuple2;
 
 import javax.xml.namespace.QName;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -77,7 +102,7 @@ public class StreamingFeatureTransformerTest {
         mapper.setHandlerInstantiator(DynamicTypeIdResolverMock.handlerInstantiator());
 
         LdProxyService mapping = mapper.readerFor(LdProxyService.class)
-                .readValue(new File("/home/zahnen/development/ldproxy/build/data/config-store/ldproxy-services/aaaxs06"));
+                .readValue(new File("/home/zahnen/development/ldproxy/build/data/config-store/ldproxy-services/alkis-sf-xpt3"));
 
         mappings = mapping.getFeatureTypes();
     }
@@ -178,9 +203,9 @@ public class StreamingFeatureTransformerTest {
                 .conflate((Function2<ByteString, ByteString, ByteString>) ByteString::concat);
 
         Flow<ByteString, ParseEvent, NotUsed> parserXml = XmlParsing.parser(); // 610
-        Flow<ByteString, GmlEvent, NotUsed> parserGml = StreamingGMLParser.parser(featureType); // 1203 (610 + 593)
-        Flow<ByteString, TransformEvent, NotUsed> parserTransform = StreamingFeatureTransformer.parser(featureType, mapping, outputFormat); // 1649 (1203 + 446)
-        Flow<TransformEvent, ByteString, Consumer<OutputStream>> writer = GeoJsonFeatureWriter.writer(null); // 1783 (1649 + 134)
+        Flow<ByteString, StreamingGMLParser.GmlEvent, NotUsed> parserGml = StreamingGMLParser.parser(featureType); // 1203 (610 + 593)
+        Flow<ByteString, StreamingFeatureTransformer.TransformEvent, NotUsed> parserTransform = StreamingFeatureTransformer.parser(featureType, mapping, outputFormat); // 1649 (1203 + 446)
+        Flow<StreamingFeatureTransformer.TransformEvent, ByteString, Consumer<OutputStream>> writer = GeoJsonFeatureWriter.writer(null); // 1783 (1649 + 134)
 
         Source<ByteString, Metrics> stream =
                 fromFile
@@ -210,7 +235,7 @@ public class StreamingFeatureTransformerTest {
         final ListenableFuture<InputStream> gml = executorService.submit(() -> new FileInputStream("/home/zahnen/development/ldproxy/artillery/flurstueck-" + count + "-" + page + ".xml"));
         final JsonGenerator jsonGenerator = new JsonFactory().createGenerator(new IgnorableOutputStream()).useDefaultPrettyPrinter().disable(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM);
 
-        GMLAnalyzer analyzer = new de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter(jsonGenerator, mapper, true, mapping, outputFormat, null);
+        GMLAnalyzer analyzer = new de.ii.ldproxy.output.geojson.GeoJsonFeatureWriter(jsonGenerator, mapper, true, mapping, outputFormat, null, new ArrayList<>());
         GMLParser gmlParser = new GMLParser(analyzer, new SMInputFactory(new InputFactoryImpl()));
         gmlParser.parseStream(gml, featureType.getNamespaceURI(), featureType.getLocalPart());
     }

@@ -1,8 +1,10 @@
 <script type="text/javascript">
     window._ldproxy = {
         map: {
-            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+            {{#htmlConfig}}
+            url: '{{leafletUrl}}',
+            attribution: '{{leafletAttribution}}',
+            {{/htmlConfig}}
             {{#bbox2}}
             bounds: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]]
             {{/bbox2}}

@@ -15,7 +15,7 @@ import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
-import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.ogc.api.exceptions.GMLAnalyzeFailed;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
@@ -53,7 +53,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
     protected CrsTransformer crsTransformer;
 
     protected String outputFormat; // as constant somewhere
-    protected WfsProxyFeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
+    protected FeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
     // type
     // id
     // properties

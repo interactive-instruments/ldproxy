@@ -16,16 +16,15 @@ import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
 import de.ii.ldproxy.service.SparqlAdapter;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
-import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import io.dropwizard.views.ViewRenderer;
-import org.apache.http.client.utils.URIBuilder;
 import org.codehaus.staxmate.in.SMEvent;
 import org.codehaus.staxmate.in.SMInputCursor;
 import org.slf4j.Logger;
@@ -40,7 +39,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -62,7 +60,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     protected XMLPathTracker currentPath;
     protected FeatureDTO currentFeature;
     protected String outputFormat; // as constant somewhere
-    protected WfsProxyFeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
+    protected FeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
     protected boolean isFeatureCollection;
     protected boolean isAddress;
     protected List<String> groupings;
@@ -87,7 +85,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     private String wfsUrl;
     private String wfsByIdUrl;
 
-    public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, int[] range, FeatureCollectionView featureTypeDataset, CrsTransformer crsTransformer, SparqlAdapter sparqlAdapter, CodelistStore codelistStore, ViewRenderer mustacheRenderer) {
+    public MicrodataFeatureWriter(OutputStreamWriter outputStreamWriter, FeatureTypeMapping featureTypeMapping, String outputFormat, boolean isFeatureCollection, boolean isAddress, List<String> groupings, boolean isGrouped, String query, int[] range, FeatureCollectionView featureTypeDataset, CrsTransformer crsTransformer, SparqlAdapter sparqlAdapter, CodelistStore codelistStore, ViewRenderer mustacheRenderer) {
         this.outputStreamWriter = outputStreamWriter;
         this.currentPath = new XMLPathTracker();
         this.featureTypeMapping = featureTypeMapping;
@@ -383,7 +381,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
     @Override
     public void analyzePropertyText(String nsuri, String localName, int depth, String text) {
-        if (featureTypeMapping.getMappings().isEmpty() && !isGeometry(currentPath)) {
+        if (featureTypeMapping.isEmpty() && !isGeometry(currentPath)) {
             LOGGER.debug("TEXT {} {}", currentPath.toFieldName(), text);
             MicrodataPropertyMapping mapping = new MicrodataPropertyMapping();
             mapping.setName(currentPath.toFieldNameGml());

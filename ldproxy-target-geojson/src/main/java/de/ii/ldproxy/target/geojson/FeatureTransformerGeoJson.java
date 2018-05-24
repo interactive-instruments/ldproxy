@@ -7,10 +7,6 @@
  */
 package de.ii.ldproxy.target.geojson;
 
-import akka.Done;
-import akka.stream.javadsl.Flow;
-import akka.util.ByteString;
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
@@ -21,60 +17,40 @@ import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYP
 import de.ii.ldproxy.output.geojson.GeoJsonMapping.GEO_JSON_TYPE;
 import de.ii.ldproxy.output.geojson.GeoJsonPropertyMapping;
 import de.ii.ldproxy.output.geojson.Gml2GeoJsonMappingProvider;
-import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
+import de.ii.ldproxy.wfs3.Wfs3Link;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer;
-import de.ii.xtraplatform.feature.transformer.api.GmlStreamParserFlow;
-import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalInt;
-import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 /**
  * @author zahnen
  */
-// TODO make an extension of FeatureTransformerGeoJson
-public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransformerFlow {
+public class FeatureTransformerGeoJson implements FeatureTransformer {
 
-    public static Flow<ByteString, ByteString, CompletionStage<Done>> transformer(final QName featureType, final FeatureTypeMapping featureTypeMapping) {
-        return GmlStreamParserFlow.transform(featureType, featureTypeMapping, new StreamingGml2GeoJsonFlow(true));
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerGeoJson.class);
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StreamingGml2GeoJsonFlow.class);
+    private final JsonGenerator jsonOut;
+    private final boolean isFeatureCollection;
+    private final CrsTransformer crsTransformer;
+    private final List<Wfs3Link> links;
+    private final int pageSize;
+    private JsonGenerator json;
+    private TokenBuffer jsonBuffer;
+    private double maxAllowableOffset;
 
-    protected JsonGenerator json;
-    protected JsonGenerator jsonOut;
-    protected TokenBuffer jsonBuffer;
-    protected ObjectMapper jsonMapper;
-    //protected WFS2GSFSLayer layer;
-    protected XMLPathTracker currentPath;
-    protected EpsgCrs outSRS;
-    protected List<String> outFields;
-    protected boolean geometryWithSR;
-    protected boolean returnGeometry;
-    protected Map<String, Integer> fieldCounter;
-    protected boolean isFeatureCollection;
-    protected double maxAllowableOffset;
-    protected CrsTransformer crsTransformer;
-
-    protected String outputFormat; // as constant somewhere
-    protected FeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
-
-
-    protected WfsProxyOnTheFlyMapping onTheFlyMapping;
 
     GEO_JSON_GEOMETRY_TYPE currentGeometryType;
     boolean currentGeometryNested;
@@ -83,43 +59,16 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
     OutputStream outputStream;
     Consumer<Throwable> failStage;
 
-    public StreamingGml2GeoJsonFlow(boolean isFeatureCollection) {
-        //this.jsonOut = jsonOut;
-        //this.json = jsonOut;
-        //this.jsonMapper = jsonMapper;
+    public FeatureTransformerGeoJson(JsonGenerator jsonOut, boolean isFeatureCollection, CrsTransformer crsTransformer, List<Wfs3Link> links, int pageSize) {
+        this.jsonOut = jsonOut;
+        this.json = jsonOut;
         this.isFeatureCollection = isFeatureCollection;
-        //this.currentPath = new XMLPathTracker();
-        //this.crsTransformer = crsTransformer;
-        //this.onTheFlyMapping = new GeoJsonOnTheFlyMapping();
-        //this.featureTypeMapping = featureTypeMapping;
-        //this.outputFormat = outputFormat;
+        this.crsTransformer = crsTransformer;
+        this.links = links;
+        this.pageSize = pageSize;
     }
 
 
-
-    @Override
-    public void initialize(Consumer<ByteString> push, Consumer<Throwable> failStage) {
-        this.failStage = failStage;
-
-        try {
-            final JsonGenerator jsonGenerator = new JsonFactory().createGenerator(new OutputStream() {
-                @Override
-                public void write(int i) {
-
-                }
-
-                @Override
-                public void write(byte[] bytes, int i, int i1) {
-                    push.accept(ByteString.ByteStrings.fromArray(bytes, i, i1));
-                }
-            }).useDefaultPrettyPrinter().disable(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM);
-
-            StreamingGml2GeoJsonFlow.this.json = jsonGenerator;
-            StreamingGml2GeoJsonFlow.this.jsonOut = jsonGenerator;
-        } catch (IOException e) {
-            LOGGER.debug("STREAMING FAILED");
-        }
-    }
 
     @Override
     public String getTargetFormat() {
@@ -133,6 +82,16 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
             json.writeStringField("type", "FeatureCollection");
 
             //this.writeSRS();
+
+            this.writeLinks(numberReturned.orElse(0) < pageSize);
+
+            if (numberReturned.isPresent()) {
+                json.writeNumberField("numberReturned", numberReturned.getAsInt());
+            }
+            if (numberMatched.isPresent()) {
+                json.writeNumberField("numberMatched", numberMatched.getAsInt());
+            }
+            json.writeStringField("timeStamp", Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
 
             json.writeFieldName("features");
             json.writeStartArray();
@@ -152,6 +111,11 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
     public void onFeatureStart(TargetMapping mapping) throws IOException {
         json.writeStartObject();
         json.writeStringField("type", "Feature");
+
+        if (!isFeatureCollection) {
+            //this.writeSRS();
+            this.writeLinks(false);
+        }
     }
 
     @Override
@@ -205,7 +169,11 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
     public void onPropertyEnd() throws IOException {
         // TODO
         //writeValue(mapping, stringBuilder.toString());
-        if (stringBuilder != null) json.writeString(stringBuilder.toString());
+        if (stringBuilder != null) {
+            json.writeString(stringBuilder.toString());
+        } else {
+            json.writeString("NOTXT");
+        }
     }
 
     @Override
@@ -311,6 +279,24 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
                                 }
                                 break;
                         }*/
+    }
+
+    private void writeLinks(boolean isLastPage) throws IOException {
+        json.writeFieldName("links");
+        json.writeStartArray();
+
+        for (Wfs3Link link : links) {
+            if (!(isLastPage && link.rel.equals("next"))) {
+                json.writeStartObject();
+                json.writeStringField("href", link.href);
+                json.writeStringField("rel", link.rel);
+                json.writeStringField("type", link.type);
+                json.writeStringField("title", link.title);
+                json.writeEndObject();
+            }
+        }
+
+        json.writeEndArray();
     }
 
     protected final void startBuffering() throws IOException {

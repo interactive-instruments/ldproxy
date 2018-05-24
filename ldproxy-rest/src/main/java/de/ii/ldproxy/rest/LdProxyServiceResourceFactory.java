@@ -8,15 +8,17 @@
 package de.ii.ldproxy.rest;
 
 import com.google.common.collect.Collections2;
+import de.ii.ldproxy.output.html.HtmlConfig;
 import de.ii.ldproxy.output.html.ServiceOverviewView;
 import de.ii.ldproxy.service.LdProxyService;
 import de.ii.ldproxy.target.html.WfsTargetHtml;
 import de.ii.ldproxy.wfs3.URICustomizer;
-import de.ii.ogc.wfs.proxy.AkkaStreamer;
 import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.api.rest.ServiceResource;
 import de.ii.xsf.core.api.rest.ServiceResourceFactory;
 import de.ii.xsf.core.server.CoreServerConfig;
+import de.ii.xtraplatform.akka.http.AkkaHttp;
+import de.ii.xtraplatform.feature.transformer.api.AkkaStreamer;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSAdapter;
 import io.dropwizard.views.View;
@@ -54,6 +56,9 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
     private CoreServerConfig coreServerConfig;
 
     @Requires
+    private HtmlConfig htmlConfig;
+
+    @Requires
     private WfsTargetHtml wfsTargetHtml;
 
     private void customizeUri(final URICustomizer uriCustomizer) {
@@ -71,7 +76,12 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
     private String getStaticUrlPrefix(final URICustomizer uriCustomizer) {
         return uriCustomizer.copy().ensureLastPathSegment("___static___").getPath();
     }
+
+    //@Requires
     private AkkaStreamer akkaStreamer;
+
+    @Requires
+    private AkkaHttp akkaHttp;
 
     @Override
     public Class getServiceResourceClass() {
@@ -86,7 +96,7 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
     @Override
     public ServiceResource getServiceResource() {
         LdProxyServiceResource serviceResource = new LdProxyServiceResource();
-        serviceResource.inject(openApiResource, akkaStreamer, coreServerConfig.getExternalUrl());
+        serviceResource.inject(openApiResource, akkaStreamer, akkaHttp, coreServerConfig.getExternalUrl(), htmlConfig);
 
         return serviceResource;
     }
@@ -102,7 +112,7 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
         } catch (URISyntaxException e) {
             // ignore
         }
-        return new ServiceOverviewView(uri, runningServices, urlPrefix);
+        return new ServiceOverviewView(uri, runningServices, urlPrefix, htmlConfig);
     }
 
     @Override

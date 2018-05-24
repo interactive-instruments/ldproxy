@@ -1,13 +1,23 @@
+/**
+ * Copyright 2018 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.target.geojson;
 
-import akka.stream.*;
+import akka.stream.Attributes;
+import akka.stream.FlowShape;
+import akka.stream.Inlet;
+import akka.stream.Outlet;
 import akka.stream.stage.AbstractInHandler;
 import akka.stream.stage.AbstractOutHandler;
 import akka.stream.stage.GraphStageLogic;
 import akka.stream.stage.GraphStageWithMaterializedValue;
 import akka.util.ByteString;
 import akka.util.ByteString.ByteStrings;
-import de.ii.ogc.wfs.proxy.StreamingFeatureTransformer.TransformEvent;
+import de.ii.xtraplatform.feature.transformer.api.EventBasedStreamingFeatureTransformer;
 import scala.Tuple2;
 import scala.concurrent.ExecutionContext;
 
@@ -18,18 +28,18 @@ import java.util.function.Consumer;
 /**
  * @author zahnen
  */
-public abstract class AbstractStreamingFeatureWriter extends GraphStageWithMaterializedValue<FlowShape<TransformEvent, ByteString>, Consumer<OutputStream>> {
+public abstract class AbstractStreamingFeatureWriter extends GraphStageWithMaterializedValue<FlowShape<EventBasedStreamingFeatureTransformer.TransformEvent, ByteString>, Consumer<OutputStream>> {
 
-    private final Inlet<TransformEvent> in = Inlet.create("AbstractStreamingFeatureWriter.in");
+    private final Inlet<EventBasedStreamingFeatureTransformer.TransformEvent> in = Inlet.create("AbstractStreamingFeatureWriter.in");
     private final Outlet<ByteString> out = Outlet.create("AbstractStreamingFeatureWriter.out");
-    private final FlowShape<TransformEvent, ByteString> shape = FlowShape.of(in, out);
+    private final FlowShape<EventBasedStreamingFeatureTransformer.TransformEvent, ByteString> shape = FlowShape.of(in, out);
 
     @Override
-    public FlowShape<TransformEvent, ByteString> shape() {
+    public FlowShape<EventBasedStreamingFeatureTransformer.TransformEvent, ByteString> shape() {
         return shape;
     }
 
-    protected abstract void writeEvent(final TransformEvent transformEvent, Runnable onComplete, ExecutionContext executionContext) throws IOException;
+    protected abstract void writeEvent(final EventBasedStreamingFeatureTransformer.TransformEvent transformEvent, Runnable onComplete, ExecutionContext executionContext) throws IOException;
 
     //protected abstract void setOutputStream(final OutputStream outputStream);
 
@@ -53,7 +63,7 @@ public abstract class AbstractStreamingFeatureWriter extends GraphStageWithMater
 
                     @Override
                     public void onPush() throws Exception {
-                        final TransformEvent transformEvent = grab(in);
+                        final EventBasedStreamingFeatureTransformer.TransformEvent transformEvent = grab(in);
 
                         writeEvent(transformEvent, () -> completeStage(), materializer().executionContext());
 

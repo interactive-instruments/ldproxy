@@ -20,11 +20,11 @@ import de.ii.ldproxy.output.html.HtmlTransformingCoordinatesWriter;
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping;
 import de.ii.ldproxy.output.html.MicrodataPropertyMapping;
 import de.ii.ldproxy.output.jsonld.WktGeometryMapping.WKT_GEOMETRY_TYPE;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
-import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import org.codehaus.staxmate.in.SMEvent;
 import org.codehaus.staxmate.in.SMInputCursor;
 import org.slf4j.Logger;
@@ -56,7 +56,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
     private FeatureCollectionView dataset;
     private String vocab;
 
-    public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, URI requestUri, FeatureCollectionView dataset, Map<String, String> rewrites, String vocab) {
+    public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, FeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, URI requestUri, FeatureCollectionView dataset, Map<String, String> rewrites, String vocab) {
         super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer, new JsonLdOnTheFlyMapping());
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;

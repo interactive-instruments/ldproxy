@@ -1,8 +1,6 @@
 package de.ii.ldproxy.target.geojson;
 
-import akka.dispatch.Futures;
 import akka.stream.javadsl.Flow;
-import akka.stream.javadsl.Sink;
 import akka.util.ByteString;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -14,27 +12,22 @@ import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.geojson.GeoJsonMapping.GEO_JSON_TYPE;
 import de.ii.ldproxy.output.geojson.GeoJsonPropertyMapping;
-import de.ii.ogc.wfs.proxy.StreamingFeatureTransformer.*;
-import de.ii.ogc.wfs.proxy.TargetMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
 import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.transformer.api.EventBasedStreamingFeatureTransformer;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
-import scala.Function1;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.concurrent.ExecutionContext;
-import scala.concurrent.Future;
-import scala.util.Try;
 
-import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 /**
@@ -42,7 +35,7 @@ import java.util.function.Consumer;
  */
 public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(GeoJsonFeatureWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeoJsonFeatureWriter.class);
 
     protected JsonGenerator json;
     protected JsonGenerator jsonOut;
@@ -60,9 +53,9 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
     protected CrsTransformer crsTransformer;
 
     protected String outputFormat; // as constant somewhere
-    protected WfsProxyFeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
+    protected FeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
 
-    public static Flow<TransformEvent, ByteString, Consumer<OutputStream>> writer(JsonGenerator jsonOut) {
+    public static Flow<EventBasedStreamingFeatureTransformer.TransformEvent, ByteString, Consumer<OutputStream>> writer(JsonGenerator jsonOut) {
 
         return Flow.fromGraph(new GeoJsonFeatureWriter(jsonOut, true));
     }
@@ -89,9 +82,9 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
 
     /*@Override
     protected StreamingOutput getStreamingOutput() {
-        LOGGER.getLogger().debug("STREAMING");
+        LOGGER.debug("STREAMING");
         return outputStream -> {
-            LOGGER.getLogger().debug("STREAMING2");
+            LOGGER.debug("STREAMING2");
             final JsonGenerator jsonGenerator = new JsonFactory().createGenerator(outputStream);
             GeoJsonFeatureWriter.this.json = jsonGenerator;
             GeoJsonFeatureWriter.this.jsonOut = jsonGenerator;
@@ -100,21 +93,21 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
 
     /*@Override
     protected void setOutputStream(OutputStream outputStream) {
-        LOGGER.getLogger().debug("STREAMING");
+        LOGGER.debug("STREAMING");
         try {
             final JsonGenerator jsonGenerator = new JsonFactory().createGenerator(outputStream).useDefaultPrettyPrinter().disable(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM);
             GeoJsonFeatureWriter.this.json = jsonGenerator;
             GeoJsonFeatureWriter.this.jsonOut = jsonGenerator;
             GeoJsonFeatureWriter.this.outputStream = outputStream;
-            LOGGER.getLogger().debug("STREAMING2");
+            LOGGER.debug("STREAMING2");
         } catch (IOException e) {
-            LOGGER.getLogger().debug("STREAMING FAILED");
+            LOGGER.debug("STREAMING FAILED");
         }
     }*/
 
     @Override
     protected void initalize(OutputStream outputStream, Consumer<ByteString> push) {
-        LOGGER.getLogger().debug("STREAMING");
+        LOGGER.debug("STREAMING");
         try {
             final JsonGenerator jsonGenerator = new JsonFactory().createGenerator(new OutputStream() {
                 @Override
@@ -131,21 +124,21 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
             GeoJsonFeatureWriter.this.json = jsonGenerator;
             GeoJsonFeatureWriter.this.jsonOut = jsonGenerator;
             GeoJsonFeatureWriter.this.outputStream = outputStream;
-            LOGGER.getLogger().debug("STREAMING2");
+            LOGGER.debug("STREAMING2");
         } catch (IOException e) {
-            LOGGER.getLogger().debug("STREAMING FAILED");
+            LOGGER.debug("STREAMING FAILED");
         }
     }
 
     @Override
-    protected void writeEvent(final TransformEvent transformEvent, Runnable onComplete, ExecutionContext executionContext) throws IOException {
-        //LOGGER.getLogger().debug(transformEvent.toString());
+    protected void writeEvent(final EventBasedStreamingFeatureTransformer.TransformEvent transformEvent, Runnable onComplete, ExecutionContext executionContext) throws IOException {
+        //LOGGER.debug(transformEvent.toString());
         //System.out.println(transformEvent.toString());
 
-        new TransformEventHandler(transformEvent) {
+        new EventBasedStreamingFeatureTransformer.TransformEventHandler(transformEvent) {
 
             @Override
-            protected void onStart(TransformStart transformStart) throws IOException {
+            protected void onStart(EventBasedStreamingFeatureTransformer.TransformStart transformStart) throws IOException {
                 if (isFeatureCollection) {
                     json.writeStartObject();
                     json.writeStringField("type", "FeatureCollection");
@@ -158,7 +151,7 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
             }
 
             @Override
-            protected void onEnd(TransformEnd transformEnd) throws IOException {
+            protected void onEnd(EventBasedStreamingFeatureTransformer.TransformEnd transformEnd) throws IOException {
                 if (isFeatureCollection) {
                     json.writeEndArray();
                     json.writeEndObject();
@@ -168,9 +161,9 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
 
                 //Futures.future((Callable<Void>) () -> {
                     //json.close();
-                    LOGGER.getLogger().debug("CLOSE STREAM");
+                    LOGGER.debug("CLOSE STREAM");
                     outputStream.flush();
-                    LOGGER.getLogger().debug("CLOSED STREAM");
+                    LOGGER.debug("CLOSED STREAM");
                   //  return null;
                 //}, executionContext);
                         /*.onComplete(v1 -> {
@@ -182,19 +175,19 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
             }
 
             @Override
-            protected void onFeatureStart(TransformFeatureStart transformFeatureStart) throws IOException {
+            protected void onFeatureStart(EventBasedStreamingFeatureTransformer.TransformFeatureStart transformFeatureStart) throws IOException {
                 json.writeStartObject();
                 json.writeStringField("type", "Feature");
             }
 
             @Override
-            protected void onFeatureEnd(TransformFeatureEnd transformFeatureEnd) throws IOException {
+            protected void onFeatureEnd(EventBasedStreamingFeatureTransformer.TransformFeatureEnd transformFeatureEnd) throws IOException {
                 json.writeEndObject();
                 json.writeEndObject();
             }
 
             @Override
-            protected void onAttribute(TransformAttribute transformAttribute) throws IOException {
+            protected void onAttribute(EventBasedStreamingFeatureTransformer.TransformAttribute transformAttribute) throws IOException {
                 if (transformAttribute.mapping.isPresent() && transformAttribute.value.isPresent()) {
 
                     final GeoJsonPropertyMapping mapping = (GeoJsonPropertyMapping) transformAttribute.mapping.get();
@@ -212,7 +205,7 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
             }
 
             @Override
-            protected void onPropertyStart(TransformProperty transformProperty) throws IOException {
+            protected void onPropertyStart(EventBasedStreamingFeatureTransformer.TransformProperty transformProperty) throws IOException {
                 if (transformProperty.mapping.isPresent()) {
                     stringBuilder = new StringBuilder();
 
@@ -229,18 +222,18 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
             }
 
             @Override
-            protected void onPropertyText(TransformPropertyText transformPropertyText) throws IOException {
+            protected void onPropertyText(EventBasedStreamingFeatureTransformer.TransformPropertyText transformPropertyText) throws IOException {
                 if (stringBuilder != null) stringBuilder.append(transformPropertyText.text);
             }
 
             @Override
-            protected void onPropertyEnd(TransformPropertyEnd transformPropertyEnd) throws IOException {
+            protected void onPropertyEnd(EventBasedStreamingFeatureTransformer.TransformPropertyEnd transformPropertyEnd) throws IOException {
                 //writeValue(mapping, stringBuilder.toString());
                 if (stringBuilder != null) json.writeString(stringBuilder.toString());
             }
 
             @Override
-            protected void onGeometryStart(TransformGeometry transformGeometry) throws IOException {
+            protected void onGeometryStart(EventBasedStreamingFeatureTransformer.TransformGeometry transformGeometry) throws IOException {
                 if (transformGeometry.mapping.isPresent()) {
                     stopBuffering();
 
@@ -269,7 +262,7 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
             }
 
             @Override
-            protected void onGeometryNestedStart(TransformGeometryNestedStart transformGeometryNestedStart) throws IOException {
+            protected void onGeometryNestedStart(EventBasedStreamingFeatureTransformer.TransformGeometryNestedStart transformGeometryNestedStart) throws IOException {
                 if (currentGeometryType == null) return;
 
                 if (!currentGeometryNested) {
@@ -288,7 +281,7 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
             }
 
             @Override
-            protected void onGeometryCoordinates(TransformGeometryCoordinates transformGeometryCoordinates) throws IOException {
+            protected void onGeometryCoordinates(EventBasedStreamingFeatureTransformer.TransformGeometryCoordinates transformGeometryCoordinates) throws IOException {
                 if (currentGeometryType == null) return;
 
                 Writer coordinatesWriter = cwBuilder.build();
@@ -298,14 +291,14 @@ public class GeoJsonFeatureWriter extends AbstractStreamingFeatureWriter {
             }
 
             @Override
-            protected void onGeometryNestedEnd(TransformGeometryNestedEnd transformGeometryNestedEnd) throws IOException {
+            protected void onGeometryNestedEnd(EventBasedStreamingFeatureTransformer.TransformGeometryNestedEnd transformGeometryNestedEnd) throws IOException {
                 if (currentGeometryType == null) return;
 
                 json.writeEndArray();
             }
 
             @Override
-            protected void onGeometryEnd(TransformGeometryEnd transformGeometryEnd) throws IOException {
+            protected void onGeometryEnd(EventBasedStreamingFeatureTransformer.TransformGeometryEnd transformGeometryEnd) throws IOException {
                 if (currentGeometryType == null) return;
 
                 if (currentGeometryNested) {

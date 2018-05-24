@@ -1,15 +1,20 @@
+/**
+ * Copyright 2018 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.target.geojson;
 
-import akka.stream.*;
-import akka.stream.stage.*;
+import akka.stream.Attributes;
+import akka.stream.Outlet;
+import akka.stream.SourceShape;
+import akka.stream.stage.AbstractOutHandler;
+import akka.stream.stage.GraphStage;
+import akka.stream.stage.GraphStageLogic;
 import akka.util.ByteString;
-import akka.util.ByteString.ByteStrings;
-import de.ii.ogc.wfs.proxy.StreamingFeatureTransformer.TransformEvent;
-import scala.Tuple2;
-import scala.concurrent.ExecutionContext;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.function.Consumer;
 
 /**

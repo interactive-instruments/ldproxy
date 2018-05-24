@@ -8,18 +8,19 @@
 package de.ii.ldproxy.output.generic;
 
 import de.ii.ldproxy.output.generic.GenericMapping.GENERIC_TYPE;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer;
-import de.ii.ogc.wfs.proxy.WfsProxyMappingProvider;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_TYPE;
+import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_NS_URI;
+import static de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_NS_URI;
 
 /**
  * @author zahnen
  */
-public class Gml2GenericMappingProvider implements WfsProxyMappingProvider {
+public class Gml2GenericMappingProvider implements TargetMappingProviderFromGml {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Gml2GenericMappingProvider.class);
     public static final String MIME_TYPE = TargetMapping.BASE_TYPE;
@@ -44,7 +45,7 @@ public class Gml2GenericMappingProvider implements WfsProxyMappingProvider {
     }
 
     @Override
-    public TargetMapping getTargetMappingForAttribute(String path, String nsUri, String localName, WfsProxyFeatureTypeAnalyzer.GML_TYPE type) {
+    public TargetMapping getTargetMappingForAttribute(String path, String nsUri, String localName, GML_TYPE type) {
 
         if ((localName.equals("id") && nsUri.startsWith(GML_NS_URI)) || localName.equals("fid")) {
 
@@ -66,7 +67,7 @@ public class Gml2GenericMappingProvider implements WfsProxyMappingProvider {
     }
 
     @Override
-    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, WfsProxyFeatureTypeAnalyzer.GML_TYPE type) {
+    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, GML_TYPE type) {
 
         GENERIC_TYPE dataType = GENERIC_TYPE.forGmlType(type);
 
@@ -90,7 +91,7 @@ public class Gml2GenericMappingProvider implements WfsProxyMappingProvider {
     }
 
     @Override
-    public TargetMapping getTargetMappingForGeometry(String path, String nsUri, String localName, WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE type) {
+    public TargetMapping getTargetMappingForGeometry(String path, String nsUri, String localName, GML_GEOMETRY_TYPE type) {
 
         if (type.isValid()) {
             LOGGER.debug("GEOMETRY {} {}", path, type);

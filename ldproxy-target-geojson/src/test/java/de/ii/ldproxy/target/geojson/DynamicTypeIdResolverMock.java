@@ -1,7 +1,20 @@
+/**
+ * Copyright 2018 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.DatabindContext;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.KeyDeserializer;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.cfg.HandlerInstantiator;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
@@ -14,9 +27,9 @@ import de.ii.ldproxy.output.generic.GenericMappingSubTypeIds;
 import de.ii.ldproxy.output.geojson.GeoJsonTargetMappingSubTypeIds;
 import de.ii.ldproxy.output.html.MicrodataMappingSubTypeIds;
 import de.ii.ldproxy.output.jsonld.JsonLdMappingSubTypeIds;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.jackson.dynamic.JacksonSubTypeIds;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.stream.Stream;
 
@@ -54,7 +67,7 @@ public class DynamicTypeIdResolverMock  implements TypeIdResolver {
         };
     }
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(de.ii.xtraplatform.jackson.dynamic.DynamicTypeIdResolver.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(de.ii.xtraplatform.jackson.dynamic.DynamicTypeIdResolver.class);
 
     private JavaType mBaseType;
     private final BiMap<Class<?>, String> mapping;

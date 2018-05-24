@@ -16,7 +16,7 @@ import com.google.common.io.Resources;
 import de.ii.ldproxy.service.LdProxyService;
 import de.ii.ldproxy.wfs3.URICustomizer;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
-import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureType;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.ogc.api.wfs.client.GetCapabilities;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSOperation;
 import de.ii.xtraplatform.ogc.api.wfs.parser.MultiWfsCapabilitiesAnalyzer;
@@ -31,9 +31,6 @@ import io.swagger.oas.models.PathItem;
 import io.swagger.oas.models.Paths;
 import io.swagger.oas.models.media.ArraySchema;
 import io.swagger.oas.models.media.IntegerSchema;
-import io.swagger.oas.models.media.ComposedSchema;
-import io.swagger.oas.models.media.IntegerSchema;
-import io.swagger.oas.models.media.NumberSchema;
 import io.swagger.oas.models.media.ObjectSchema;
 import io.swagger.oas.models.media.Schema;
 import io.swagger.oas.models.media.StringSchema;
@@ -53,8 +50,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URI;
-import java.util.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -195,7 +190,7 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                 service.getFeatureTypes()
                        .values()
                        .stream()
-                       .sorted(Comparator.comparing(WfsProxyFeatureType::getName))
+                       .sorted(Comparator.comparing(FeatureTypeConfiguration::getName))
                        .forEach(ft -> {
                            if (ft.getMappings()
                                  .findMappings(ft.getNamespace() + ":" + ft.getName(), TargetMapping.BASE_TYPE)

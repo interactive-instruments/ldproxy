@@ -18,9 +18,9 @@ import de.ii.ldproxy.output.jsonld.Gml2JsonLdMappingProvider;
 import de.ii.ogc.wfs.proxy.AbstractWfsProxyService;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzerFromData;
 import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzerFromSchema;
-import de.ii.ogc.wfs.proxy.WfsProxyMappingProvider;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
-import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureType;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
+import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.ogc.api.WFS;
 import de.ii.xtraplatform.ogc.api.gml.parser.GMLParser;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSAdapter;
@@ -71,7 +71,7 @@ public class LdProxyService extends AbstractWfsProxyService {
         //initialize(path, module);
 
         // TODO: dynamic
-        List<WfsProxyMappingProvider> mappingProviders = ImmutableList.of(new Gml2GenericMappingProvider(), new Gml2MicrodataMappingProvider(), new Gml2GeoJsonMappingProvider(), new Gml2JsonLdMappingProvider());
+        List<TargetMappingProviderFromGml> mappingProviders = ImmutableList.of(new Gml2GenericMappingProvider(), new Gml2MicrodataMappingProvider(), new Gml2GeoJsonMappingProvider(), new Gml2JsonLdMappingProvider());
         this.schemaAnalyzers.add(new WfsProxyFeatureTypeAnalyzerFromSchema(this, mappingProviders));
         this.mappingFromDataAnalyzers = new WfsProxyFeatureTypeAnalyzerFromData(this, mappingProviders);
 
@@ -90,11 +90,11 @@ public class LdProxyService extends AbstractWfsProxyService {
         return INTERFACE_SPECIFICATION;
     }
 
-    public Map<String, String> findIndicesForFeatureType(WfsProxyFeatureType ft) {
+    public Map<String, String> findIndicesForFeatureType(FeatureTypeConfiguration ft) {
         return  findIndicesForFeatureType(ft, true);
     }
 
-    public Map<String, String> findIndicesForFeatureType(WfsProxyFeatureType ft, boolean onlyEnabled) {
+    public Map<String, String> findIndicesForFeatureType(FeatureTypeConfiguration ft, boolean onlyEnabled) {
         Map<String, String> indices = new HashMap<>();
 
         Map<String, List<TargetMapping>> mappings = ft.getMappings().findMappings(IndexMapping.MIME_TYPE);
@@ -109,11 +109,11 @@ public class LdProxyService extends AbstractWfsProxyService {
         return indices;
     }
 
-    public Map<String, String> getFilterableFieldsForFeatureType(WfsProxyFeatureType featureType) {
+    public Map<String, String> getFilterableFieldsForFeatureType(FeatureTypeConfiguration featureType) {
         return getFilterableFieldsForFeatureType(featureType, false);
     }
 
-    public Map<String, String> getFilterableFieldsForFeatureType(WfsProxyFeatureType featureType, boolean withoutSpatialAndTemporal) {
+    public Map<String, String> getFilterableFieldsForFeatureType(FeatureTypeConfiguration featureType, boolean withoutSpatialAndTemporal) {
         return featureType.getMappings().findMappings(GenericMapping.BASE_TYPE).entrySet().stream()
                 .filter(isFilterable(withoutSpatialAndTemporal))
                 .collect(Collectors.toMap(getParameterName(), mapping -> mapping.getKey().substring(mapping.getKey().lastIndexOf(":")+1)));
@@ -132,14 +132,14 @@ public class LdProxyService extends AbstractWfsProxyService {
                 (!withoutSpatialAndTemporal || (!((GenericMapping)mapping.getValue().get(0)).isSpatial() && !((GenericMapping)mapping.getValue().get(0)).isTemporal()));
     }
 
-    public Map<String, String> getHtmlNamesForFeatureType(WfsProxyFeatureType featureType) {
+    public Map<String, String> getHtmlNamesForFeatureType(FeatureTypeConfiguration featureType) {
 
         return featureType.getMappings().findMappings(Gml2MicrodataMappingProvider.MIME_TYPE).entrySet().stream()
                 .filter(mapping -> mapping.getValue().get(0).getName() != null && mapping.getValue().get(0).isEnabled())
                 .collect(Collectors.toMap(Map.Entry::getKey, mapping -> mapping.getValue().get(0).getName()));
     }
 
-    public Optional<String> getSpatialFieldPathForFeatureType(WfsProxyFeatureType featureType) {
+    public Optional<String> getSpatialFieldPathForFeatureType(FeatureTypeConfiguration featureType) {
         //return featureType.getMappings().findMappings(TargetMapping.BASE_TYPE).values().stream()
         // .filter(mapping -> mapping.get(0).isEnabled()).map(mapping -> mapping.get(0).getName().toLowerCase().replaceAll(" ", "%20")).collect(Collectors.toList());
 
@@ -153,7 +153,7 @@ public class LdProxyService extends AbstractWfsProxyService {
         //return !geometries.isEmpty() ? geometries.get(0).getKey() : null;
     }
 
-    public Optional<String> getTemporalFieldPathForFeatureType(WfsProxyFeatureType featureType) {
+    public Optional<String> getTemporalFieldPathForFeatureType(FeatureTypeConfiguration featureType) {
         return featureType.getMappings().findMappings(GenericMapping.BASE_TYPE).entrySet().stream()
                           .filter(mapping -> ((GenericMapping)mapping.getValue().get(0)).isTemporal() && mapping.getValue().get(0).isEnabled())
                           .map(Map.Entry::getKey)
@@ -161,7 +161,7 @@ public class LdProxyService extends AbstractWfsProxyService {
     }
 
     @JsonIgnore
-    public List<String> getIndexValues(WfsProxyFeatureType featureType, String index, String property) {
+    public List<String> getIndexValues(FeatureTypeConfiguration featureType, String index, String property) {
         List<String> values = new ArrayList<>();
 
         if(findIndicesForFeatureType(featureType).containsKey(index)) {
@@ -185,7 +185,7 @@ public class LdProxyService extends AbstractWfsProxyService {
         return values;
     }
 
-    private SortedSet<String> harvestIndex(WfsProxyFeatureType featureType, String property) throws ExecutionException {
+    private SortedSet<String> harvestIndex(FeatureTypeConfiguration featureType, String property) throws ExecutionException {
         // TODO: only if WFS 2.0.0, else GetFeature
         // TODO: seems to be incomplete, try GetFeature with paging
 

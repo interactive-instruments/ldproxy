@@ -8,7 +8,7 @@
 package de.ii.ldproxy.output.jsonld;
 
 import de.ii.ldproxy.output.html.MicrodataPropertyMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 
 /**
  * @author zahnen

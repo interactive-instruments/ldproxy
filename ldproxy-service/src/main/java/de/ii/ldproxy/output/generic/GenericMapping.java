@@ -8,8 +8,8 @@
 package de.ii.ldproxy.output.generic;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_TYPE;
 
 /**
  * @author zahnen

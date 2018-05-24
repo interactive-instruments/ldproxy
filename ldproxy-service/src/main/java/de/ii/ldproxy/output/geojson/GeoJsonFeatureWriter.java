@@ -14,11 +14,11 @@ import de.ii.ldproxy.gml2json.CoordinatesWriterType;
 import de.ii.ldproxy.gml2json.JsonCoordinateFormatter;
 import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.wfs3.Wfs3Link;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
-import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
 import org.codehaus.staxmate.in.SMEvent;
 import org.codehaus.staxmate.in.SMInputCursor;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -45,7 +44,7 @@ public class GeoJsonFeatureWriter extends AbstractFeatureWriter {
 
     private final List<Wfs3Link> links;
            
-    public GeoJsonFeatureWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, WfsProxyFeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, List<Wfs3Link> links) {
+    public GeoJsonFeatureWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, FeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, List<Wfs3Link> links) {
         super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer, new GeoJsonOnTheFlyMapping());
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;

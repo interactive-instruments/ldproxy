@@ -31,6 +31,7 @@ public abstract class AbstractGenericMapping<T> implements TargetMapping<T> {
         return enabled;
     }
 
+    @Override
     @JsonIgnore
     public abstract boolean isSpatial();
 

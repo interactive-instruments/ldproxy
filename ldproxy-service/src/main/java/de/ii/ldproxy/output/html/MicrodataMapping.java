@@ -8,8 +8,7 @@
 package de.ii.ldproxy.output.html;
 
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
-
-import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_TYPE;
 
 /**
  * @author zahnen

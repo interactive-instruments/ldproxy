@@ -1,3 +1,10 @@
+/**
+ * Copyright 2018 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.target.geojson;
 
 import akka.NotUsed;
@@ -16,19 +23,9 @@ import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
 import akka.testkit.javadsl.TestKit;
 import akka.util.ByteString;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.cfg.HandlerInstantiator;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
-import de.ii.ldproxy.output.generic.GenericMappingSubTypeIds;
-import de.ii.ldproxy.output.geojson.GeoJsonTargetMappingSubTypeIds;
-import de.ii.ldproxy.output.html.MicrodataMappingSubTypeIds;
-import de.ii.ldproxy.output.jsonld.JsonLdMappingSubTypeIds;
-import de.ii.ogc.wfs.proxy.StreamingFeatureTransformer;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeMapping;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.StreamingFeatureTransformer;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;

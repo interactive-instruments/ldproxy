@@ -46,4 +46,10 @@ public class IndexMapping implements TargetMapping<Object> {
     public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
         return this;
     }
+
+    //TODO
+    @Override
+    public boolean isSpatial() {
+        return false;
+    }
 }

@@ -12,7 +12,9 @@
         namespace = "http://www.opengis.net/wfs/3.0",
         elementFormDefault = XmlNsForm.QUALIFIED,
         xmlns = {
-                @XmlNs(prefix="wfs", namespaceURI="http://www.opengis.net/wfs/3.0")
+                @XmlNs(prefix="wfs", namespaceURI="http://www.opengis.net/wfs/3.0"),
+                @XmlNs(prefix="atom", namespaceURI="http://www.w3.org/2005/Atom"),
+                @XmlNs(prefix="xsi", namespaceURI="http://www.w3.org/2001/XMLSchema-instance")
         }
 )
 package de.ii.ldproxy.wfs3;

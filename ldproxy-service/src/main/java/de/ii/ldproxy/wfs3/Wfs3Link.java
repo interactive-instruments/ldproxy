@@ -7,16 +7,25 @@
  */
 package de.ii.ldproxy.wfs3;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
+
 /**
  * @author zahnen
  */
 
-//@XmlType(propOrder={"href","rel","type", "title"})
+@XmlType(propOrder={"rel","type","title", "href"})
 public class Wfs3Link {
+    @XmlAttribute
     public String href;
+    @XmlAttribute
     public String rel;
+    @XmlAttribute
     public String type;
+    @XmlAttribute
     public String title;
+
+    public Wfs3Link() {}
 
     public Wfs3Link(String href, String rel, String type, String title) {
         this.href = href;

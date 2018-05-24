@@ -5,8 +5,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-var osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+var osmTiles = L.tileLayer(window._ldproxy.map.url, {
+    attribution: window._ldproxy.map.attribution
 });
 var geoJsonUrl = '?f=json&';
 if (window.location.href.indexOf('?') > 0) {

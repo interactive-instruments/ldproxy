@@ -17,6 +17,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,20 +53,22 @@ public class DatasetView extends GenericView {
     public List<NavigationDTO> breadCrumbs;
     public List<NavigationDTO> formats;
     public String urlPrefix;
+    public HtmlConfig htmlConfig;
 
-    public DatasetView(String template, URI uri, String urlPrefix) {
-        this(template, uri, (Object) null, urlPrefix);
+    public DatasetView(String template, URI uri, String urlPrefix, HtmlConfig htmlConfig) {
+        this(template, uri, null, urlPrefix, htmlConfig);
     }
 
-    public DatasetView(String template, URI uri, Object data, String urlPrefix) {
+    public DatasetView(String template, URI uri, Object data, String urlPrefix, HtmlConfig htmlConfig) {
         super(template, uri, data);
         this.keywords = new ArrayList<>();
         this.featureTypes = new ArrayList<>();
         this.urlPrefix = urlPrefix;
+        this.htmlConfig = htmlConfig;
     }
 
-    public DatasetView(String template, URI uri, String name, String title, String urlPrefix) {
-        this(template, uri, urlPrefix);
+    public DatasetView(String template, URI uri, String name, String title, String urlPrefix, HtmlConfig htmlConfig) {
+        this(template, uri, urlPrefix, htmlConfig);
         this.name = name;
         this.title = title;
     }
