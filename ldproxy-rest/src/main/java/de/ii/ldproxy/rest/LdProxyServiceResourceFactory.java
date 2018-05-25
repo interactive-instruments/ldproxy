@@ -74,7 +74,19 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
     }
 
     private String getStaticUrlPrefix(final URICustomizer uriCustomizer) {
-        return uriCustomizer.copy().ensureLastPathSegment("___static___").getPath();
+        try {
+            final URI externalUri = new URI(coreServerConfig.getExternalUrl());
+        return uriCustomizer.copy()
+                            .cutPathAfterSegments("rest", "services")
+                            .replaceInPath("/rest/services", externalUri
+                                                                        .getPath())
+                            .ensureTrailingSlash()
+                            .ensureLastPathSegment("___static___")
+                            .getPath();
+        } catch (URISyntaxException e) {
+            // ignore
+        }
+        return "";
     }
 
     //@Requires
@@ -105,8 +117,8 @@ public class LdProxyServiceResourceFactory implements ServiceResourceFactory/*, 
     public View getServicesView(Collection<Service> services, URI uri) {
         Collection<Service> runningServices = Collections2.filter(services, Service::isStarted);
         URICustomizer uriCustomizer = new URICustomizer(uri);
-        customizeUri(uriCustomizer);
         String urlPrefix = getStaticUrlPrefix(uriCustomizer);
+        customizeUri(uriCustomizer);
         try {
             uri = uriCustomizer.build();
         } catch (URISyntaxException e) {
