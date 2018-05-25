@@ -8,6 +8,6 @@ ldproxy is an adapter that sits in front of existing WFS services and provides a
 
 ldproxy was designed with the goal to enhance existing WFS services with the ideas from the [Spatial Data on the Web Best Practices](https://www.w3.org/TR/sdw-bp/) as well as the [Data on the Web Best Practices](https://www.w3.org/TR/dwbp/) developed by the W3C. In the meantime the OGC published the first draft of the [WFS 3.0 specification](https://rawgit.com/opengeospatial/WFS_FES/master/docs/17-069.html), which also builds on these best practices and is mostly implemented by ldproxy.
 
-A demo is available at [www.ldproxy.net](http://ldproxy.net), the source code is on [GitHub](https://github.com/interactive-instruments/ldproxy). ldproxy is available under the [MPL 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
+An example service is published with [Open Data from North-Rhine Westphalia](https://www.ldproxy.nrw.de/rest/services/), the source code is on [GitHub](https://github.com/interactive-instruments/ldproxy). ldproxy is available under the [MPL 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
 
 
