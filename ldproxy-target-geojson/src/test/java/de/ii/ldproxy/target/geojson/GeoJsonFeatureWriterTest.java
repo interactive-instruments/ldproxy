@@ -24,8 +24,8 @@ import akka.stream.javadsl.Sink;
 import akka.testkit.javadsl.TestKit;
 import akka.util.ByteString;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureTypeMapping;
-import de.ii.xtraplatform.feature.transformer.api.StreamingFeatureTransformer;
+import de.ii.xtraplatform.feature.transformer.api.EventBasedStreamingFeatureTransformer;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -59,7 +59,7 @@ public class GeoJsonFeatureWriterTest {
         system = null;
     }
 
-    @Test(groups = {"default"})
+    //@Test(groups = {"default"})
     public void testParser2() throws Exception {
         new TestKit(system) {
             {
@@ -99,9 +99,9 @@ public class GeoJsonFeatureWriterTest {
         final ExecutionContextExecutor dispatcher = context().dispatcher();
         final Materializer materializer = ActorMaterializer.create(context());
         final LoggingAdapter log = context().system().log();
-        final WfsProxyFeatureTypeMapping featureTypeMapping = mapper.readValue(mapping + mapping2 + mapping3, WfsProxyFeatureTypeMapping.class);
+        final FeatureTypeMapping featureTypeMapping = mapper.readValue(mapping + mapping2 + mapping3, FeatureTypeMapping.class);
 
-        final Flow<ByteString, StreamingFeatureTransformer.TransformEvent, NotUsed> parser = StreamingFeatureTransformer.parser(featureType, featureTypeMapping, "application/geo+json");
+        final Flow<ByteString, EventBasedStreamingFeatureTransformer.TransformEvent, NotUsed> parser = EventBasedStreamingFeatureTransformer.parser(featureType, featureTypeMapping, "application/geo+json");
 
         FeatureWriterActor() throws IOException {
         }
