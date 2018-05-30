@@ -127,7 +127,6 @@ public class LdProxyServiceResource implements ServiceResource {
                                                .getScheme());
             uriCustomizer.replaceInPath("/rest/services", externalUri.get()
                                                                      .getPath());
-            uriCustomizer.ensureTrailingSlash();
 
             this.staticUrlPrefix = new URICustomizer(uriInfo.getRequestUri())
                                                 .cutPathAfterSegments("rest", "services")
