@@ -10,19 +10,19 @@ package de.ii.ldproxy.output.geojson;
 
 import de.ii.ldproxy.output.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.geojson.GeoJsonMapping.GEO_JSON_TYPE;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
-import de.ii.ogc.wfs.proxy.WfsProxyMappingProvider;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_TYPE;
+import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_NS_URI;
+import static de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_NS_URI;
 
 /**
  * @author zahnen
  */
-public class Gml2GeoJsonMappingProvider implements WfsProxyMappingProvider {
+public class Gml2GeoJsonMappingProvider implements TargetMappingProviderFromGml {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Gml2GeoJsonMappingProvider.class);
     public static final String MIME_TYPE = "application/geo+json";

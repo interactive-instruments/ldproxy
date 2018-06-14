@@ -21,12 +21,12 @@ import java.util.stream.Collectors;
  */
 public class GetCapabilities2Wfs3Dataset extends AbstractWfsCapabilitiesAnalyzer implements WFSCapabilitiesAnalyzer {
 
-    private Map<String, Wfs3Dataset.Wfs3Collection> collections;
+    private Map<String, Wfs3Collection> collections;
     private WfsCapabilities wfsCapabilities;
 
-    public GetCapabilities2Wfs3Dataset(Wfs3Dataset wfs3Dataset) {
+    public GetCapabilities2Wfs3Dataset(Wfs3Collections wfs3Dataset) {
         this.collections = wfs3Dataset.getCollections().stream()
-        .collect(Collectors.toMap(Wfs3Dataset.Wfs3Collection::getPrefixedName, collection -> collection));
+                                      .collect(Collectors.toMap(Wfs3Collection::getPrefixedName, collection -> collection));
         this.wfsCapabilities = wfs3Dataset.getWfsCapabilities();
     }
 
@@ -129,7 +129,7 @@ public class GetCapabilities2Wfs3Dataset extends AbstractWfsCapabilitiesAnalyzer
         wfsCapabilities.bbox = xmin + "," + ymin + " " + xmax + "," + ymax;
 
         if (collections.containsKey(featureTypeName)) {
-            Wfs3Dataset.Wfs3Collection.Extent extent = new Wfs3Dataset.Wfs3Collection.Extent(xmin, ymin, xmax, ymax);
+            Wfs3Collection.Extent extent = new Wfs3Collection.Extent(xmin, ymin, xmax, ymax);
             if (collections.get(featureTypeName).getExtent() != null) {
                 extent.setTemporal(collections.get(featureTypeName).getExtent().getTemporal());
             }

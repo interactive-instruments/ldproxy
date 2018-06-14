@@ -10,19 +10,19 @@ package de.ii.ldproxy.output.html;
 
 import de.ii.ldproxy.output.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.output.html.MicrodataMapping.MICRODATA_TYPE;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
-import de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_TYPE;
-import de.ii.ogc.wfs.proxy.WfsProxyMappingProvider;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_GEOMETRY_TYPE;
+import de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_TYPE;
+import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static de.ii.ogc.wfs.proxy.WfsProxyFeatureTypeAnalyzer.GML_NS_URI;
+import static de.ii.xtraplatform.feature.transformer.api.GmlFeatureTypeAnalyzer.GML_NS_URI;
 
 /**
  * @author zahnen
  */
-public class Gml2MicrodataMappingProvider implements WfsProxyMappingProvider {
+public class Gml2MicrodataMappingProvider implements TargetMappingProviderFromGml {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Gml2MicrodataMappingProvider.class);
     public static final String MIME_TYPE = "text/html";

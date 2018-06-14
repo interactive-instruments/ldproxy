@@ -2,21 +2,24 @@ version = '1.2.4'
 version += '-SNAPSHOT'
 
 dependencies {    
-     compile group: 'com.sun.xsom', name: 'xsom', version: '20140925'
-    compile group: 'com.fasterxml', name: 'aalto-xml', version: '0.9.11'
+     //compile group: 'com.sun.xsom', name: 'xsom', version: '20140925'
+    //compile group: 'com.fasterxml', name: 'aalto-xml', version: '0.9.11'
     // go back to woodstox if aalto has issues
     //compile group: 'com.fasterxml.woodstox', name: 'woodstox-core', version: '5.0.1'
-    compile group: 'com.fasterxml.staxmate', name: 'staxmate', version: '2.2.1'
+    //compile group: 'com.fasterxml.staxmate', name: 'staxmate', version: '2.2.1'
 
     compile project(":ldproxy-codelists")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api', version: '1.1.1-SNAPSHOT'
    
 }
 
-/*jar {
+jar {
     manifest {
-        instruction 'X-Web-Resource-Version', '1.1'
-        instruction 'X-Web-Resource', '/app/js;/js'
-        instruction 'X-Web-Resource', '/app/css;/css'
-        instruction 'X-Web-Resource', '/app/img;/img'
+        //instruction 'X-Web-Resource-Version', '1.1'
+        //instruction 'X-Web-Resource', '/app/js;/js'
+        //instruction 'X-Web-Resource', '/app/css;/css'
+        //instruction 'X-Web-Resource', '/app/img;/img'
+        //attributes( 'Export-Package': 'de.ii.ldproxy.*')
     }
-}*/
+}

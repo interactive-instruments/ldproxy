@@ -21,9 +21,11 @@ sourceSets {
 
 jar {
     manifest {
-        instruction 'X-Web-Resource-Version', '1.1'
-        instruction 'X-Web-Resource', '/manager;/manager'
-        instruction 'X-Web-Resource-Default-Page', 'index.html'
+        attributes(
+            'X-Web-Resource-Version': '1.1',
+            'X-Web-Resource': '/manager;/manager',
+            'X-Web-Resource-Default-Page': 'index.html'
+        )
     }
 }
 
@@ -49,5 +51,5 @@ yarn_start {
   }
 }
 
-assemble.dependsOn yarn_install
+assemble.dependsOn yarn_build
 check.dependsOn yarn_build

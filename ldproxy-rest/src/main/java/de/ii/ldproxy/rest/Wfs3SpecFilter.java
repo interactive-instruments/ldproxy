@@ -16,7 +16,7 @@ import com.google.common.io.Resources;
 import de.ii.ldproxy.service.LdProxyService;
 import de.ii.ldproxy.wfs3.URICustomizer;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
-import de.ii.xtraplatform.feature.query.api.WfsProxyFeatureType;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.ogc.api.wfs.client.GetCapabilities;
 import de.ii.xtraplatform.ogc.api.wfs.client.WFSOperation;
 import de.ii.xtraplatform.ogc.api.wfs.parser.MultiWfsCapabilitiesAnalyzer;
@@ -190,7 +190,7 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                 service.getFeatureTypes()
                        .values()
                        .stream()
-                       .sorted(Comparator.comparing(WfsProxyFeatureType::getName))
+                       .sorted(Comparator.comparing(FeatureTypeConfiguration::getName))
                        .forEach(ft -> {
                            if (ft.getMappings()
                                  .findMappings(ft.getNamespace() + ":" + ft.getName(), TargetMapping.BASE_TYPE)

@@ -26,6 +26,7 @@ public class GenericMappingSubTypeIds implements JacksonSubTypeIds {
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
                 .put(GenericMapping.class, "GENERIC_PROPERTY")
+                //.put(GenericMapping.class, "META_PROPERTY")
                 .build();
     }
 }

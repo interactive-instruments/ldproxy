@@ -8,29 +8,33 @@
 package de.ii.ldproxy.output.html;
 
 import com.google.common.base.Charsets;
-import de.ii.ldproxy.wfs3.Wfs3Dataset;
+import de.ii.ldproxy.wfs3.Wfs3Collection;
+import de.ii.ldproxy.wfs3.Wfs3Collections;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import io.dropwizard.views.View;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
  * @author zahnen
  */
 public class Wfs3DatasetView extends View {
-    private final Wfs3Dataset wfs3Dataset;
+    private final Wfs3Collections wfs3Dataset;
     private final List<NavigationDTO> breadCrumbs;
     private final String urlPrefix;
+    public final HtmlConfig htmlConfig;
 
-    public Wfs3DatasetView(Wfs3Dataset wfs3Dataset, final List<NavigationDTO> breadCrumbs, String urlPrefix) {
+    public Wfs3DatasetView(Wfs3Collections wfs3Dataset, final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig) {
         super("service.mustache", Charsets.UTF_8);
         this.wfs3Dataset = wfs3Dataset;
         this.breadCrumbs = breadCrumbs;
         this.urlPrefix = urlPrefix;
+        this.htmlConfig = htmlConfig;
     }
 
-    public Wfs3Dataset getWfs3Dataset() {
+    public Wfs3Collections getWfs3Dataset() {
         return wfs3Dataset;
     }
 
@@ -48,8 +52,8 @@ public class Wfs3DatasetView extends View {
 
     public List<FeatureType> getFeatureTypes() {
         return wfs3Dataset.getCollections().stream()
-                .map(FeatureType::new)
-                .collect(Collectors.toList());
+                          .map(FeatureType::new)
+                          .collect(Collectors.toList());
     }
 
     public List<NavigationDTO> getFormats() {
@@ -59,8 +63,8 @@ public class Wfs3DatasetView extends View {
                           .collect(Collectors.toList());
     }
 
-    static class FeatureType extends Wfs3Dataset.Wfs3Collection {
-        public FeatureType(Wfs3Dataset.Wfs3Collection collection) {
+    static class FeatureType extends Wfs3Collection {
+        public FeatureType(Wfs3Collection collection) {
             super(collection.getName(), collection.getTitle(), collection.getDescription(), collection.getExtent(), collection.getLinks(), collection.getPrefixedName());
         }
 

@@ -14,7 +14,7 @@ cache:
 install:
 - "./gradlew clean assemble"
 script:
-- "./gradlew check"
+- "./gradlew assemble"
 after_success:
 - "./gradlew dockerDistTar"
 - cd build/docker

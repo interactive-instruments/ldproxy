@@ -8,10 +8,9 @@
 package de.ii.ldproxy.output.html;
 
 import de.ii.ldproxy.wfs3.URICustomizer;
-import de.ii.xtraplatform.feature.query.api.TemporalExtent;
+import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.threeten.extra.Interval;
 
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -43,8 +42,8 @@ public class FeatureCollectionView extends DatasetView {
     public TemporalExtent temporalExtent;
     public URICustomizer uriBuilder;
 
-    public FeatureCollectionView(String template, URI uri, String name, String title, String urlPrefix) {
-        super(template, uri, name, title, urlPrefix);
+    public FeatureCollectionView(String template, URI uri, String name, String title, String urlPrefix, HtmlConfig htmlConfig) {
+        super(template, uri, name, title, urlPrefix, htmlConfig);
         this.features = new ArrayList<>();
     }
 
