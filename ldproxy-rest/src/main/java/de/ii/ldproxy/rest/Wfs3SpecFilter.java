@@ -88,9 +88,11 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
         boolean pretty = true;
 
         try {
+            //TODO
+            String resourceName = service.isSecured() ? "/wfs3-api-sec-todo.json" : "/wfs3-api.json";
             OpenAPI openAPI = objectMapper.readerFor(OpenAPI.class)
                                           .with(DeserializationFeature.READ_ENUMS_USING_TO_STRING)
-                                          .readValue(Resources.asByteSource(Resources.getResource(Wfs3SpecFilter.class, "/wfs3-api.json"))
+                                          .readValue(Resources.asByteSource(Resources.getResource(Wfs3SpecFilter.class, resourceName))
                                                               .openBufferedStream());
 
             openAPI.getInfo()

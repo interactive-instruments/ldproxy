@@ -28,6 +28,7 @@ public class Wfs3ConformanceClasses extends Wfs3Xml {
             .add("http://www.opengis.net/spec/wfs-1/3.0/req/oas30")
             .add("http://www.opengis.net/spec/wfs-1/3.0/req/html")
             .add("http://www.opengis.net/spec/wfs-1/3.0/req/geojson")
+            .add("http://www.opengis.net/spec/wfs-1/3.0/req/gmlsf0")
             .add("http://www.opengis.net/spec/wfs-1/3.0/req/gmlsf2")
             .build();
 

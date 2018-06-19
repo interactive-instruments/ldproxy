@@ -9,6 +9,6 @@ dependencies {
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi', version: '1.1.0'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api', version: '1.1.1-SNAPSHOT'
-
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api', version: '1.1.0-SNAPSHOT'
 }
  

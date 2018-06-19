@@ -8,6 +8,7 @@
 package de.ii.ldproxy.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.ldproxy.output.generic.GenericMapping;
@@ -57,6 +58,7 @@ public class LdProxyService extends AbstractWfsProxyService {
     private CodelistStore codelistStore;
 
     private String vocab;
+    private Boolean secured;
 
 
     public LdProxyService() {
@@ -153,9 +155,9 @@ public class LdProxyService extends AbstractWfsProxyService {
         //return !geometries.isEmpty() ? geometries.get(0).getKey() : null;
     }
 
-    public Optional<String> getTemporalFieldPathForFeatureType(FeatureTypeConfiguration featureType) {
+    public Optional<String> getTemporalFieldPathForFeatureType(FeatureTypeConfiguration featureType, boolean onlyFilterable) {
         return featureType.getMappings().findMappings(GenericMapping.BASE_TYPE).entrySet().stream()
-                          .filter(mapping -> ((GenericMapping)mapping.getValue().get(0)).isTemporal() && mapping.getValue().get(0).isEnabled())
+                          .filter(mapping -> ((GenericMapping)mapping.getValue().get(0)).isTemporal() && mapping.getValue().get(0).isEnabled() && (!onlyFilterable || ((GenericMapping) mapping.getValue().get(0)).isFilterable()))
                           .map(Map.Entry::getKey)
                           .findFirst();
     }
@@ -243,5 +245,19 @@ public class LdProxyService extends AbstractWfsProxyService {
 
     public void setVocab(String vocab) {
         this.vocab = vocab;
+    }
+
+    @JsonIgnore
+    public boolean isSecured() {
+        return secured != null && secured;
+    }
+
+    @JsonProperty
+    public Boolean getSecured() {
+        return secured;
+    }
+
+    public void setSecured(Boolean secured) {
+        this.secured = secured;
     }
 }

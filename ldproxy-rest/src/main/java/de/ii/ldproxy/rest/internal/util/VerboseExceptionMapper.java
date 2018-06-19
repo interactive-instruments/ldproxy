@@ -21,7 +21,7 @@ import javax.ws.rs.ext.Provider;
  */
 @Component
 @Provides
-@Instantiate
+//@Instantiate
 @Provider
 public class VerboseExceptionMapper implements ExceptionMapper<Throwable> {
     @Override

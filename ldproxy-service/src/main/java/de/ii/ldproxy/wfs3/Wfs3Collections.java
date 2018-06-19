@@ -65,10 +65,16 @@ public class Wfs3Collections extends Wfs3Xml {
                                       collection.setPrefixedName(qn);
                                       collection.setLinks(wfs3LinksGenerator.generateDatasetCollectionLinks(uriCustomizer.copy(), mediaType, featureType.getName()
                                                                                                                                                         .toLowerCase(), featureType.getDisplayName(), new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType(ImmutableMap.of(featureType.getNamespace(), ImmutableList.of(featureType.getName())))).getAsUrl()));
-                                      collection.setExtent(new Wfs3Collection.Extent(featureType.getTemporalExtent().getStart(), featureType.getTemporalExtent().getComputedEnd()));
+                                      if (service.getTemporalFieldPathForFeatureType(featureType, true).isPresent()) {
+                                          collection.setExtent(new Wfs3Collection.Extent(featureType.getTemporalExtent()
+                                                                                                    .getStart(), featureType.getTemporalExtent()
+                                                                                                                            .getComputedEnd()));
+                                      } else{
+                                          collection.setExtent(new Wfs3Collection.Extent());
+                                      }
                                       return collection;
                                   })
-                                  .collect(Collectors.toList());;
+                                  .collect(Collectors.toList());
 
         this.wfsCapabilities = new WfsCapabilities();
         WFSOperation operation = new GetCapabilities();
@@ -79,7 +85,7 @@ public class Wfs3Collections extends Wfs3Xml {
 
         // TODO: apply local information (title, enabled, etc.)
 
-        this.links =  wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl(), mediaType, alternativeMediaTypes);
+        this.links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl(), mediaType, alternativeMediaTypes);
     }
 
     private Predicate<FeatureTypeConfiguration> isFeatureTypeEnabled(final LdProxyService service) {
@@ -89,7 +95,7 @@ public class Wfs3Collections extends Wfs3Xml {
             return !service.getServiceProperties()
                            .getMappingStatus()
                            .isEnabled() || (!mappings.isEmpty() && mappings.get(0)
-                                                                              .isEnabled());
+                                                                           .isEnabled());
         };
     }
 

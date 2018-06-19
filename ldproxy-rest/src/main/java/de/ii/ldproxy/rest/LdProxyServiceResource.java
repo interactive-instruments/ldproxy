@@ -41,6 +41,7 @@ import de.ii.xsf.core.api.exceptions.ResourceNotFound;
 import de.ii.xsf.core.api.permission.AuthorizationProvider;
 import de.ii.xsf.core.api.rest.ServiceResource;
 import de.ii.xtraplatform.akka.http.AkkaHttp;
+import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.feature.query.api.FeatureQuery;
 import de.ii.xtraplatform.feature.query.api.FeatureQueryBuilder;
 import de.ii.xtraplatform.feature.query.api.FeatureStream;
@@ -56,6 +57,7 @@ import de.ii.xtraplatform.ogc.api.wfs.parser.LoggingWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.MultiWfsCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesAnalyzer;
 import de.ii.xtraplatform.ogc.api.wfs.parser.WFSCapabilitiesParser;
+import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
 import io.dropwizard.views.ViewRenderer;
 import io.swagger.oas.annotations.Operation;
@@ -64,14 +66,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.CompletionCallback;
 import javax.ws.rs.container.ConnectionCallback;
@@ -104,6 +111,8 @@ import static de.ii.ldproxy.rest.internal.util.RangeHeader.parseRange;
 /**
  * @author zahnen
  */
+//@RolesAllowed("USER")
+@PermitAll
 @Produces({MediaTypeCharset.APPLICATION_JSON_UTF8, "application/geo+json"})
 public class LdProxyServiceResource implements ServiceResource {
 
@@ -195,16 +204,27 @@ public class LdProxyServiceResource implements ServiceResource {
 
     }
 
+    private void checkAuthentication(Optional<User> optionalUser) {
+        if (service.isSecured() && !optionalUser.isPresent()) {
+            throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
+            //throw new ClientErrorException(Response.Status.UNAUTHORIZED);
+        }
+    }
+
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public View getDatasetAsHtml1() throws URISyntaxException {
+    public View getDatasetAsHtml1(@Auth Optional<User> optionalUser) throws URISyntaxException {
+        checkAuthentication(optionalUser);
+
         return getDatasetAsHtml(false);
     }
 
     @Path("/collections")
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public View getDatasetAsHtml2() throws URISyntaxException {
+    public View getDatasetAsHtml2(@Auth Optional<User> optionalUser) throws URISyntaxException {
+        checkAuthentication(optionalUser);
+
         return getDatasetAsHtml(true);
     }
 
@@ -226,9 +246,11 @@ public class LdProxyServiceResource implements ServiceResource {
 
     @GET
     @Produces({MediaTypeCharset.APPLICATION_JSON_UTF8})
-    public Response getDatasetAsJson(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @QueryParam("callback") String callback) {
+    public Response getDatasetAsJson(@Auth Optional<User> optionalUser, @QueryParam("callback") String callback) {
+        checkAuthentication(optionalUser);
+
         return Response.ok()
-                       .entity(generateWfs3Dataset(Wfs3MediaTypes.JSON, Wfs3MediaTypes.XML, Wfs3MediaTypes.HTML))
+                       .entity(new LandingPage(getUriCustomizer(), service, Wfs3MediaTypes.JSON, Wfs3MediaTypes.XML, Wfs3MediaTypes.HTML))
                        .header("Access-Control-Allow-Origin", "*")
                        .header("Access-Control-Allow-Methods", "GET")
                        .build();
@@ -237,7 +259,9 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/collections")
     @GET
     @Produces({MediaTypeCharset.APPLICATION_JSON_UTF8})
-    public Response getDatasetAsJson2(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @QueryParam("callback") String callback) {
+    public Response getDatasetAsJson2(@Auth Optional<User> optionalUser, @QueryParam("callback") String callback) {
+        checkAuthentication(optionalUser);
+
         return Response.ok()
                        .entity(generateWfs3Dataset(Wfs3MediaTypes.JSON, Wfs3MediaTypes.XML, Wfs3MediaTypes.HTML))
                        .header("Access-Control-Allow-Origin", "*")
@@ -247,14 +271,18 @@ public class LdProxyServiceResource implements ServiceResource {
 
     @GET
     @Produces({"application/xml;charset=utf-8"})
-    public LandingPage getDatasetAsXml(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @QueryParam("callback") String callback) {
+    public LandingPage getDatasetAsXml(@Auth Optional<User> optionalUser, @QueryParam("callback") String callback) {
+        checkAuthentication(optionalUser);
+
         return new LandingPage(getUriCustomizer(), service, Wfs3MediaTypes.XML, Wfs3MediaTypes.JSON, Wfs3MediaTypes.HTML);
     }
 
     @Path("/collections")
     @GET
     @Produces({"application/xml;charset=utf-8"})
-    public Wfs3Collections getCollectionsAsXml(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @QueryParam("callback") String callback) {
+    public Wfs3Collections getCollectionsAsXml(@Auth Optional<User> optionalUser, @QueryParam("callback") String callback) {
+        checkAuthentication(optionalUser);
+
         return generateWfs3Dataset(Wfs3MediaTypes.XML, Wfs3MediaTypes.JSON, Wfs3MediaTypes.HTML);
     }
 
@@ -271,7 +299,9 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/conformance")
     @GET
     @Produces({MediaTypeCharset.APPLICATION_JSON_UTF8})
-    public Response getConformanceClasses() {
+    public Response getConformanceClasses(@Auth Optional<User> optionalUser) {
+        checkAuthentication(optionalUser);
+
         return Response.ok()
                        .entity(new Wfs3ConformanceClasses())
                        .header("Access-Control-Allow-Origin", "*")
@@ -282,7 +312,9 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/conformance")
     @GET
     @Produces({"application/xml;charset=utf-8"})
-    public Response getConformanceClassesAsXml() {
+    public Response getConformanceClassesAsXml(@Auth Optional<User> optionalUser) {
+        checkAuthentication(optionalUser);
+
         return Response.ok()
                        .entity(new Wfs3ConformanceClasses())
                        .build();
@@ -497,14 +529,18 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/collections/{layerid}")
     @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
-    public Response getFeaturesAsHtml1(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @QueryParam("fields") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeaturesAsHtml1(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @QueryParam("fields") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
         return getFeaturesAsHtml(layerid, fields, callback, range);
     }
 
     @Path("/collections/{layerid}/items")
     @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
-    public Response getFeaturesAsHtml2(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @QueryParam("fields") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeaturesAsHtml2(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @QueryParam("fields") String fields, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
         return getFeaturesAsHtml(layerid, fields, callback, range);
     }
 
@@ -685,7 +721,9 @@ public class LdProxyServiceResource implements ServiceResource {
 
     @Path("/collections/{layerid}")
     @GET
-    public Response getCollectionInfo(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
+    public Response getCollectionInfo(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
         final Optional<Wfs3Collection> wfs3Collection = generateWfs3Dataset(Wfs3MediaTypes.JSON, Wfs3MediaTypes.XML, Wfs3MediaTypes.HTML).getCollections()
                                                                                                                                              .stream()
                                                                                                                                              .filter(collection -> collection.getName()
@@ -712,7 +750,9 @@ public class LdProxyServiceResource implements ServiceResource {
 
     @Path("/collections/{layerid}/items")
     @GET
-    public Response getFeaturesAsJson2(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
+    public Response getFeaturesAsJson2(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
         return getFeaturesAsJson(layerid, indexId, callback, resultType, range);
     }
 
@@ -737,7 +777,9 @@ public class LdProxyServiceResource implements ServiceResource {
     //TODO: finish async tests
     @Path("/{layerid}/async")
     @GET
-    public void getFeaturesAsJsonAsync(@Suspended AsyncResponse asyncResponse, /*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) throws IOException {
+    public void getFeaturesAsJsonAsync(@Suspended AsyncResponse asyncResponse, @Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) throws IOException {
+        checkAuthentication(optionalUser);
+
 
         FeatureTypeConfiguration featureType = getFeatureTypeForLayerId(layerid);
 
@@ -749,7 +791,9 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/collections/{layerid}/async")
     @GET
     @ManagedAsync
-    public void getFeaturesAsJsonAsync2(@Suspended AsyncResponse asyncResponse, /*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) throws IOException {
+    public void getFeaturesAsJsonAsync2(@Suspended AsyncResponse asyncResponse, @Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) throws IOException {
+        checkAuthentication(optionalUser);
+
 
         FeatureTypeConfiguration featureType = getFeatureTypeForLayerId(layerid);
 
@@ -765,14 +809,18 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/collections/{layerid}")
     @GET
     @Produces("application/ld+json;charset=utf-8")
-    public Response getFeaturesAsJsonLd1(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeaturesAsJsonLd1(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
         return getFeaturesAsJsonLd(layerid, indexId, callback, range);
     }
 
     @Path("/collections/{layerid}/items")
     @GET
     @Produces("application/ld+json;charset=utf-8")
-    public Response getFeaturesAsJsonLd2(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeaturesAsJsonLd2(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
         return getFeaturesAsJsonLd(layerid, indexId, callback, range);
     }
 
@@ -797,7 +845,9 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/collections/{layerid}")
     @GET
     @Produces({"application/xml;charset=utf-8", "application/gml+xml;version=3.2"})
-    public Response getCollectionInfoAsXml(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
+    public Response getCollectionInfoAsXml(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
         final List<Wfs3Collection> wfs3Collection = generateWfs3Dataset(Wfs3MediaTypes.XML, Wfs3MediaTypes.JSON, Wfs3MediaTypes.HTML).getCollections()
                                                                                                                                      .stream()
                                                                                                                                      .filter(collection -> collection.getName()
@@ -816,7 +866,9 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/collections/{layerid}/items")
     @GET
     @Produces({"application/xml;charset=utf-8", "application/gml+xml;version=3.2"})
-    public Response getFeaturesAsXml2(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @QueryParam("properties") String fields, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
+    public Response getFeaturesAsXml2(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @QueryParam("properties") String fields, @QueryParam("callback") String callback, @QueryParam("resultType") String resultType, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
         return getFeaturesAsXml(layerid, fields, callback, resultType, range);
     }
 
@@ -849,7 +901,9 @@ public class LdProxyServiceResource implements ServiceResource {
 
     @Path("/collections/{layerid}/items/{featureid}")
     @GET
-    public Response getFeatureByIdAsJson(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeatureByIdAsJson(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
 
         FeatureTypeConfiguration featureType = getFeatureTypeForLayerId(layerid);
 
@@ -866,7 +920,9 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/collections/{layerid}/items/{featureid}")
     @GET
     @Produces("application/ld+json;charset=utf-8")
-    public Response getFeatureByIdAsJsonLd(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeatureByIdAsJsonLd(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
 
         FeatureTypeConfiguration featureType = getFeatureTypeForLayerId(layerid);
 
@@ -883,7 +939,9 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/collections/{layerid}/items/{featureid}")
     @GET
     @Produces({"application/xml;charset=utf-8", "application/gml+xml;version=3.2"})
-    public Response getFeatureByIdAsAXml(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeatureByIdAsAXml(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
 
         FeatureTypeConfiguration featureType = getFeatureTypeForLayerId(layerid);
 
@@ -909,7 +967,9 @@ public class LdProxyServiceResource implements ServiceResource {
     @Path("/collections/{layerid}/items/{featureid}")
     @GET
     @Produces(MediaTypeCharset.TEXT_HTML_UTF8)
-    public Response getFeatureByIdAsHtml(/*@Auth(protectedResource = true, exceptions = "arcgis") AuthenticatedUser user,*/ @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+    public Response getFeatureByIdAsHtml(@Auth Optional<User> optionalUser, @PathParam("layerid") String layerid, @PathParam("indexId") String indexId, @PathParam("featureid") final String featureid, @QueryParam("callback") String callback, @HeaderParam("Range") String range) {
+        checkAuthentication(optionalUser);
+
         FeatureTypeConfiguration featureType = getFeatureTypeForLayerId(layerid);
 
         LOGGER
