@@ -1,5 +1,5 @@
-version = '1.2.1'
-version += '-SNAPSHOT'
+version = '1.2.2'
+//version += '-SNAPSHOT'
 
 dependencies {
      //compile group: 'com.sun.xsom', name: 'xsom', version: '20140925'

@@ -1,5 +1,5 @@
-version = '1.2.4'
-version += '-SNAPSHOT'
+version = '1.2.5'
+//version += '-SNAPSHOT'
 
 dependencies {    
      //compile group: 'com.sun.xsom', name: 'xsom', version: '20140925'
@@ -10,7 +10,7 @@ dependencies {
 
     compile project(":ldproxy-codelists")
 
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api', version: '1.1.1-SNAPSHOT'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api', version: '1.1.2'
    
 }
 

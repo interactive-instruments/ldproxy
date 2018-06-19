@@ -1,5 +1,5 @@
-version = '1.2.1'
-version += '-SNAPSHOT'
+version = '1.2.2'
+//version += '-SNAPSHOT'
 
 dependencies {    
     compile project(':ldproxy-service')

@@ -1,5 +1,5 @@
-version = '1.2.4'
-version += '-SNAPSHOT'
+version = '1.2.5'
+//version += '-SNAPSHOT'
 
 dependencies {    
     compile project(':ldproxy-service')
@@ -7,8 +7,8 @@ dependencies {
     compile project(':ldproxy-target-geojson')
     compile project(':ldproxy-target-gml')
 
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi', version: '1.1.0'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api', version: '1.1.1-SNAPSHOT'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api', version: '1.1.0-SNAPSHOT'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi', version: '1.1.1'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api', version: '1.1.2'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api', version: '1.1.0'
 }
  
