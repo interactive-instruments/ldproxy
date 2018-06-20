@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * @author zahnen
@@ -149,7 +150,7 @@ public class Wfs3Collection {
         @JsonIgnore
         @XmlElement(name = "Temporal")
         public Extent.TemporalExtent getTemporalAsXml() {
-            return new Extent.TemporalExtent(temporal[0], temporal[1]);
+            return Objects.nonNull(temporal) ? new Extent.TemporalExtent(temporal[0], temporal[1]) : null;
         }
 
         public void setTemporal(String[] temporal) {
