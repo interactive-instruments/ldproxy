@@ -251,8 +251,6 @@ public class LdProxyServiceResource implements ServiceResource {
 
         return Response.ok()
                        .entity(new LandingPage(getUriCustomizer(), service, Wfs3MediaTypes.JSON, Wfs3MediaTypes.XML, Wfs3MediaTypes.HTML))
-                       .header("Access-Control-Allow-Origin", "*")
-                       .header("Access-Control-Allow-Methods", "GET")
                        .build();
     }
 
@@ -264,8 +262,6 @@ public class LdProxyServiceResource implements ServiceResource {
 
         return Response.ok()
                        .entity(generateWfs3Dataset(Wfs3MediaTypes.JSON, Wfs3MediaTypes.XML, Wfs3MediaTypes.HTML))
-                       .header("Access-Control-Allow-Origin", "*")
-                       .header("Access-Control-Allow-Methods", "GET")
                        .build();
     }
 
@@ -304,8 +300,6 @@ public class LdProxyServiceResource implements ServiceResource {
 
         return Response.ok()
                        .entity(new Wfs3ConformanceClasses())
-                       .header("Access-Control-Allow-Origin", "*")
-                       .header("Access-Control-Allow-Methods", "GET")
                        .build();
     }
 
@@ -741,8 +735,6 @@ public class LdProxyServiceResource implements ServiceResource {
 
         return Response.ok()
                        .entity(wfs3Collection.get())
-                       .header("Access-Control-Allow-Origin", "*")
-                       .header("Access-Control-Allow-Methods", "GET")
                        .build();
 
         //return getFeaturesAsJson(layerid, indexId, callback, resultType, range);
@@ -1116,8 +1108,6 @@ public class LdProxyServiceResource implements ServiceResource {
             asyncResponse.resume(
                     Response.ok()
                             .entity(streamingOutput)
-                            .header("Access-Control-Allow-Origin", "*")
-                            .header("Access-Control-Allow-Methods", "GET")
                             .build()
             );
         };
@@ -1158,8 +1148,6 @@ public class LdProxyServiceResource implements ServiceResource {
             asyncResponse.resume(
                     Response.ok()
                             .entity(streamingOutput)
-                            .header("Access-Control-Allow-Origin", "*")
-                            .header("Access-Control-Allow-Methods", "GET")
                             .build()
             );
         };
@@ -1308,9 +1296,7 @@ public class LdProxyServiceResource implements ServiceResource {
         };
         //}
 
-        return response.entity(stream)
-                       .header("Access-Control-Allow-Origin", "*")
-                       .header("Access-Control-Allow-Methods", "GET");
+        return response.entity(stream);
     }
 
     private Response getWfsResponse(final FeatureQuery featureQuery, GmlConsumerBuilder gmlConsumer) {
