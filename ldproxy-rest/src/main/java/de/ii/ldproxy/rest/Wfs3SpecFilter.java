@@ -31,6 +31,7 @@ import io.swagger.oas.models.PathItem;
 import io.swagger.oas.models.Paths;
 import io.swagger.oas.models.media.ArraySchema;
 import io.swagger.oas.models.media.IntegerSchema;
+import io.swagger.oas.models.media.NumberSchema;
 import io.swagger.oas.models.media.ObjectSchema;
 import io.swagger.oas.models.media.Schema;
 import io.swagger.oas.models.media.StringSchema;
@@ -139,7 +140,8 @@ public class Wfs3SpecFilter extends AbstractSpecFilter {
                    .getSchemas()
                    .get("extent")
                    .getProperties()
-                   .replace("spatial", new ArraySchema().minItems(4)
+                   .replace("spatial", new ArraySchema().items(new NumberSchema())
+                                                        .minItems(4)
                                                         .maxItems(6)
                                                         .example(ImmutableList.of(-180, -90, 180, 90))
                                                         .description("West, north, east, south edges of the spatial extent. The minimum and maximum values apply to the coordinate reference system WGS84 longitude/latitude that is supported in the Core. If, for example, a projected coordinate reference system is used, the minimum and maximum values need to be adjusted."));
