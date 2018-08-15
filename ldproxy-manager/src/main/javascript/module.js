@@ -16,7 +16,7 @@ import MappingEditHtml from './components/presentational/MappingEditHtml'
 export default {
     applicationName: 'ldproxy',
     typeLabels: {
-        ldproxy: 'ldproxy'
+        WFS3: 'WFS3'
     },
     routes: {
         path: '/',
