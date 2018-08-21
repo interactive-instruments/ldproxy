@@ -11,8 +11,8 @@ cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
-install:
-- "./gradlew clean assemble"
+#install:
+#- "./gradlew clean assemble"
 script:
 - "./gradlew assemble"
 after_success:
