@@ -39,7 +39,7 @@ dependencies {
     // TODO: are all the jars in lib dependencies of this?
     compile group: 'de.interactive_instruments', name: 'xtraplatform-runtime', version: '1.1.2'
 
-    bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.4'
+    bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.5'
 
     bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.0') {
         // TODO
