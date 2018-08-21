@@ -1,0 +1,45 @@
+{{#wfs3Dataset}}
+
+        {{> header}}
+
+        <div itemscope itemtype="http://schema.org/Dataset">
+    <h1 itemprop="name">{{title}}</h1>
+    <span itemprop="description">{{{description}}}</span>
+    <br/>
+    <br/>
+    <br/>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Collections</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#featureTypes}}
+                    <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
+                        <a itemprop="url" href="{{url}}">{{title}}</a>
+                    </li>
+                {{/featureTypes}}
+                {{^featureTypes}}
+                    <li>None</li>
+                {{/featureTypes}}
+            </ul>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">API Definition</div>
+        <div class="col-md-10">
+            <a href="{{apiUrl}}">OpenAPI 3.0</a>
+        </div>
+    </div>
+        {{#dataSourceUrl}}
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Data source</div>
+        <div class="col-md-10">
+            <link itemprop="url" href="{{path}}./"/>
+            <a itemprop="sameAs" href="{{.}}" target="_blank">{{.}}</a>
+        </div>
+    </div>
+        {{/dataSourceUrl}}
+</div>
+
+{{> footer}}
+
+{{/wfs3Dataset}}

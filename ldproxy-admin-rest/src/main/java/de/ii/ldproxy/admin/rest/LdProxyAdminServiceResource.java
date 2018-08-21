@@ -8,13 +8,12 @@
 package de.ii.ldproxy.admin.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import de.ii.ldproxy.service.LdProxyService;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xsf.core.api.MediaTypeCharset;
-import de.ii.xsf.core.api.Service;
 import de.ii.xsf.core.api.exceptions.BadRequest;
 import de.ii.xsf.core.api.permission.AuthenticatedUser;
-import de.ii.xsf.core.api.permission.AuthorizationProvider;
-import de.ii.xsf.core.api.rest.AdminServiceResource;
+import de.ii.xtraplatform.service.api.AdminServiceResource;
+import de.ii.xtraplatform.service.api.ServiceData;
 import io.dropwizard.jersey.caching.CacheControl;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
@@ -50,7 +49,7 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
     public String getAdminService(/*@Auth AuthenticatedUser user*/) {
         String s = "";
         try {
-            s = jsonMapper.writerWithType(Service.class).writeValueAsString(service);
+            s = jsonMapper.writerFor(ServiceData.class).writeValueAsString(service.getData());
             //LOGGER.debug("GET SERVICE {}", s);
         } catch (JsonProcessingException e) {
             LOGGER.error("ERROR", e);
@@ -66,12 +65,12 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
     public String getServiceConfiguration(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ @PathParam("id") String id) {
         
         //response.setHeader("Cache-Control", "no-cache");
-        
+
         //return service;
 
         String s = "";
         try {
-            s = jsonMapper.writeValueAsString(service);
+            s = jsonMapper.writerFor(Wfs3ServiceData.class).writeValueAsString(service.getData());
             //LOGGER.debug("GET SERVICE CONFIG {}", s);
         } catch (JsonProcessingException e) {
             LOGGER.error("ERROR", e);
@@ -136,11 +135,6 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
     }*/
 
     @Override
-    public void init(AuthorizationProvider permProvider) {
-        
-    }
-
-    @Override
     public void setMustacheRenderer(ViewRenderer mustacheRenderer) {
 
     }
@@ -153,15 +147,17 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
     @Override
     protected void updateService(AuthenticatedUser authUser, String id, String request) {
         
-         LdProxyService o = null;
+         //Wfs3ServiceData o = null;
         try {
-            o = jsonMapper.readValue(request, LdProxyService.class);
+            //o = jsonMapper.readValue(request, ModifiableWfs3ServiceData.class);
+            //serviceRegistry.updateEntity(o);
+            serviceRegistry.updateEntity(id, request);
         } catch (IOException ex1) {
             LOGGER.debug("BAD REQUEST", ex1);
             throw new BadRequest();
         }
-                
-        serviceRegistry.updateService(authUser, id, o);
+
+        //serviceRegistry.updateService(authUser, id, o);
         
     }
 }

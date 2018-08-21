@@ -33,7 +33,7 @@ import java.io.IOException;
 @Component
 @Provides
 @Instantiate
-public class CodelistStoreDefault extends AbstractGenericResourceStore<Codelist, CodelistStore> implements CodelistStore {
+public class CodelistStoreDefault extends AbstractGenericResourceStore<CodelistOld, CodelistStore> implements CodelistStore {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CodelistStoreDefault.class);
     public static final String STORE_ID = "ldproxy-codelists";
@@ -58,13 +58,18 @@ public class CodelistStoreDefault extends AbstractGenericResourceStore<Codelist,
     }
 
     @Override
-    protected Codelist createEmptyResource() {
-        return new Codelist();
+    protected CodelistOld createEmptyResource(String id, String... paths) {
+        return new CodelistOld();
     }
 
     @Override
-    public Codelist addCodelist(String id) throws IOException {
-        Codelist codelist = new Codelist(id, id);
+    protected Class<?> getResourceClass(String id, String... path) {
+        return null;
+    }
+
+    @Override
+    public CodelistOld addCodelist(String id) throws IOException {
+        CodelistOld codelist = new CodelistOld(id, id);
 
         addResource(codelist);
 
@@ -72,8 +77,8 @@ public class CodelistStoreDefault extends AbstractGenericResourceStore<Codelist,
     }
 
     @Override
-    public Codelist addCodelist(String sourceUrl, IMPORT_TYPE sourceType) throws IOException {
-        Codelist codelist = new Codelist(sourceUrl, sourceType);
+    public CodelistOld addCodelist(String sourceUrl, IMPORT_TYPE sourceType) throws IOException {
+        CodelistOld codelist = new CodelistOld(sourceUrl, sourceType);
 
         if (sourceType == IMPORT_TYPE.GML_DICTIONARY) {
             HttpClient client = httpClient;

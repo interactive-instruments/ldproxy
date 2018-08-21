@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.admin.rest;
 
-import de.ii.ldproxy.codelists.Codelist;
+import de.ii.ldproxy.codelists.CodelistOld;
 import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.xsf.core.api.MediaTypeCharset;
 import de.ii.xsf.dropwizard.api.Jackson;
@@ -54,19 +54,19 @@ public class CodelistResource {
 
     @GET
     @Path("/{id}")
-    public Codelist getCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ @PathParam("id") String id) {
+    public CodelistOld getCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ @PathParam("id") String id) {
         return codelistStore.getResource(id);
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Codelist addCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ String request) {
+    public CodelistOld addCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ String request) {
         LOGGER.debug("CODELIST {}", request);
 
-        Codelist codelist = null;
+        CodelistOld codelist = null;
 
         try {
-            codelist = jackson.getDefaultObjectMapper().readValue(request, Codelist.class);
+            codelist = jackson.getDefaultObjectMapper().readValue(request, CodelistOld.class);
             codelist = codelistStore.addCodelist(codelist.getSourceUrl(), codelist.getSourceType());
         } catch (IOException e) {
             LOGGER.debug("ERROR", e);
