@@ -19,11 +19,22 @@ public interface Wfs3EndpointExtension extends Wfs3Extension {
 
     String getPath();
 
+    default String getSubPathRegex() {
+        return null;
+    }
+
     default List<String> getMethods() {
         return ImmutableList.of();
     }
 
-    default boolean matches(String path, String method) {
-        return Objects.nonNull(path) && path.startsWith(getPath()) && (getMethods().isEmpty() || getMethods().contains(method));
+    default boolean matches(String firstPathSegment, String method, String subPath) {
+        boolean regex = Objects.isNull(getSubPathRegex());
+        if (!regex) {
+            regex = subPath.matches(getSubPathRegex());
+        }
+
+        return Objects.nonNull(firstPathSegment) && firstPathSegment.startsWith(getPath())
+                && (getMethods().isEmpty() || getMethods().contains(method))
+                && (regex);
     }
 }

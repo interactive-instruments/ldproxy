@@ -137,7 +137,7 @@ public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3Output
     }
 
     // TODO: move somewhere else
-    public JsonGenerator createJsonGenerator(OutputStream output) {
+    public static JsonGenerator createJsonGenerator(OutputStream output) {
         JsonGenerator json = null;
         try {
             json = new JsonFactory().createGenerator(output);

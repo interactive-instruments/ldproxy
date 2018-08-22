@@ -7,9 +7,12 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zahnen
@@ -23,6 +26,7 @@ public class Wfs3Collection {
     private List<Wfs3Link> links;
     private String prefixedName;
     private List<String> crs;
+    private Map<String,Object> extensions;
 
     public Wfs3Collection() {
 
@@ -94,4 +98,15 @@ public class Wfs3Collection {
         this.prefixedName = prefixedName;
     }
 
+    @JsonAnyGetter
+    public Map<String, Object> getExtensions() {
+        return extensions;
+    }
+
+    public void addExtension(String name, Object extension) {
+        if (extensions == null) {
+            this.extensions = new LinkedHashMap<>();
+        }
+        this.extensions.put(name, extension);
+    }
 }

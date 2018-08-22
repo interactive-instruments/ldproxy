@@ -47,15 +47,22 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
     @Context
     private BundleContext bundleContext;
 
+    private final List<Wfs3Extension> wfs3Extensions;
     private final List<Wfs3ConformanceClass> wfs3ConformanceClasses;
     private final Map<Wfs3MediaType, Wfs3OutputFormatExtension> wfs3OutputFormats;
     private final List<Wfs3EndpointExtension> wfs3Endpoints;
 
     Wfs3ExtensionRegistryImpl() {
         //TODO
+        this.wfs3Extensions = new ArrayList<>();
         this.wfs3ConformanceClasses = Lists.newArrayList(() -> "http://www.opengis.net/spec/wfs-1/3.0/req/core");
         this.wfs3OutputFormats = new LinkedHashMap<>();
         this.wfs3Endpoints = new ArrayList<>();
+    }
+
+    @Override
+    public List<Wfs3Extension> getExtensions() {
+        return wfs3Extensions;
     }
 
     @Override
@@ -76,6 +83,8 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
     private synchronized void onArrival(ServiceReference<Wfs3Extension> ref) {
         try {
             final Wfs3Extension wfs3Extension = bundleContext.getService(ref);
+
+            wfs3Extensions.add(wfs3Extension);
 
             if (wfs3Extension instanceof Wfs3ConformanceClass) {
                 final Wfs3ConformanceClass wfs3ConformanceClass = (Wfs3ConformanceClass) wfs3Extension;
@@ -109,6 +118,8 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
         final Wfs3Extension wfs3Extension = bundleContext.getService(ref);
 
         if (Objects.nonNull(wfs3Extension)) {
+
+            wfs3Extensions.remove(wfs3Extension);
 
             if (wfs3Extension instanceof Wfs3ConformanceClass) {
                 wfs3ConformanceClasses.remove(wfs3Extension);

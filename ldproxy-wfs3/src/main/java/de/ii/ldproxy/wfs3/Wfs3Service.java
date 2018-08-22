@@ -268,7 +268,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         }
     }
 
-    private CrsTransformer getCrsTransformer(EpsgCrs crs) {
+    public CrsTransformer getCrsTransformer(EpsgCrs crs) {
         CrsTransformer crsTransformer = crs != null ? additonalTransformers.get(crs.getAsUri()) : defaultTransformer;
 
         if (crsTransformer == null) {

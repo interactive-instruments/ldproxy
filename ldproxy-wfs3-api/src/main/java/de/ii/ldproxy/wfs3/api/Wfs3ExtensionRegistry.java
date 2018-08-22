@@ -14,6 +14,9 @@ import java.util.Map;
  * @author zahnen
  */
 public interface Wfs3ExtensionRegistry {
+
+    List<Wfs3Extension> getExtensions();
+
     List<Wfs3ConformanceClass> getConformanceClasses();
 
     Map<Wfs3MediaType, Wfs3OutputFormatExtension> getOutputFormats();
