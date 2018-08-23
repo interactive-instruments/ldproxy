@@ -76,7 +76,7 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
 
     @Override
     public String getSubPathRegex() {
-        return "^\\/?(?:\\/\\w+\\/?(?:\\/items\\/?)?)?$";
+        return "^\\/?(?:\\/\\w+\\/?(?:\\/items\\/?.*)?)?$";
     }
 
     @Override
