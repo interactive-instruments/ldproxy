@@ -1,0 +1,19 @@
+{{> header}}
+
+<div class="row">
+    <div class="col-md-6">
+        {{#features}}
+            {{> feature}}
+        {{/features}}
+    </div>
+    <div class="col-md-6">
+        <div id="map"></div>
+        
+    </div>
+</div>
+
+{{> script}}
+
+<script src="{{urlPrefix}}/app/js/featureDetails.js" defer></script>
+
+{{> footer}}

@@ -1,0 +1,29 @@
+<script type="text/javascript">
+    window._ldproxy = {
+        map: {
+            {{#htmlConfig}}
+            url: '{{{leafletUrl}}}',
+            attribution: '{{{leafletAttribution}}}',
+            {{/htmlConfig}}
+            {{#bbox2}}
+            bounds: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]]
+            {{/bbox2}}
+        },
+        time: {
+             {{#temporalExtent}}
+             start: {{start}},
+             end: {{computedEnd}}
+             {{/temporalExtent}}
+         },
+        fields: {
+            {{#filterFields}}
+                '{{key}}': '{{value}}',
+            {{/filterFields}}
+        }
+    };
+</script>
+
+<script type="text/javascript" src="{{urlPrefix}}/app/js/manifest.4ca8fe2ce5e1f587147d.js"></script>
+<script type="text/javascript" src="{{urlPrefix}}/app/js/vendor.bb7de172680d71540421.js"></script>
+<script type="text/javascript" src="{{urlPrefix}}/app/js/main.ac61cb202e9b92aa7dc7.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>

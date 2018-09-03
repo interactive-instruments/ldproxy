@@ -13,14 +13,17 @@ import de.ii.xsf.configstore.api.rest.AbstractGenericResourceStore;
 import de.ii.xsf.core.api.exceptions.BadRequest;
 import de.ii.xsf.dropwizard.api.HttpClients;
 import de.ii.xsf.dropwizard.api.Jackson;
-import de.ii.xsf.logging.XSFLogger;
-import org.apache.felix.ipojo.annotations.*;
-import org.apache.http.HttpEntity;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.Validate;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.codehaus.staxmate.SMInputFactory;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -30,9 +33,9 @@ import java.io.IOException;
 @Component
 @Provides
 @Instantiate
-public class CodelistStoreDefault extends AbstractGenericResourceStore<Codelist, CodelistStore> implements CodelistStore {
+public class CodelistStoreDefault extends AbstractGenericResourceStore<CodelistOld, CodelistStore> implements CodelistStore {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(CodelistStoreDefault.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodelistStoreDefault.class);
     public static final String STORE_ID = "ldproxy-codelists";
 
     private HttpClient httpClient;
@@ -55,13 +58,18 @@ public class CodelistStoreDefault extends AbstractGenericResourceStore<Codelist,
     }
 
     @Override
-    protected Codelist createEmptyResource() {
-        return new Codelist();
+    protected CodelistOld createEmptyResource(String id, String... paths) {
+        return new CodelistOld();
     }
 
     @Override
-    public Codelist addCodelist(String id) throws IOException {
-        Codelist codelist = new Codelist(id, id);
+    protected Class<?> getResourceClass(String id, String... path) {
+        return null;
+    }
+
+    @Override
+    public CodelistOld addCodelist(String id) throws IOException {
+        CodelistOld codelist = new CodelistOld(id, id);
 
         addResource(codelist);
 
@@ -69,8 +77,8 @@ public class CodelistStoreDefault extends AbstractGenericResourceStore<Codelist,
     }
 
     @Override
-    public Codelist addCodelist(String sourceUrl, IMPORT_TYPE sourceType) throws IOException {
-        Codelist codelist = new Codelist(sourceUrl, sourceType);
+    public CodelistOld addCodelist(String sourceUrl, IMPORT_TYPE sourceType) throws IOException {
+        CodelistOld codelist = new CodelistOld(sourceUrl, sourceType);
 
         if (sourceType == IMPORT_TYPE.GML_DICTIONARY) {
             HttpClient client = httpClient;

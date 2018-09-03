@@ -7,7 +7,8 @@ node {
     download = project.findProperty('downloadNode') ?: false
 }
 
-version='1.2.0'
+version='1.2.1'
+//version += '-SNAPSHOT'
 
 sourceSets {
   main {
@@ -20,33 +21,35 @@ sourceSets {
 
 jar {
     manifest {
-        instruction 'X-Web-Resource-Version', '1.1'
-        instruction 'X-Web-Resource', '/manager;/manager'
-        instruction 'X-Web-Resource-Default-Page', 'index.html'
+        attributes(
+            'X-Web-Resource-Version': '1.1',
+            'X-Web-Resource': '/manager;/manager',
+            'X-Web-Resource-Default-Page': 'index.html'
+        )
     }
 }
 
 
-npm_install {
+yarn_install {
   execOverrides {
     it.workingDir = 'src/main/javascript'
   }
 }
 
-task npm_build(type: NpmTask) {
+task yarn_build(type: YarnTask) {
   execOverrides {
     it.workingDir = 'src/main/javascript'
   }
   args = ['run', 'build']
 }
 
-npm_build.dependsOn npm_install
+yarn_build.dependsOn yarn_install
 
-npm_start {
+yarn_start {
   execOverrides {
     it.workingDir = 'src/main/javascript'
   }
 }
 
-assemble.dependsOn npm_install
-check.dependsOn npm_build
+assemble.dependsOn yarn_build
+check.dependsOn yarn_build

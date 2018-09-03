@@ -45,8 +45,6 @@ downloadLicenses {
         'de.interactive_instruments:xtraplatform-config-store-api:1.1.0-SNAPSHOT',
         'de.interactive_instruments:xtraplatform-ogc-wfs-client:1.1.0-SNAPSHOT',
         'de.interactive_instruments:xtraplatform-crs-api:1.1.0-SNAPSHOT',
-        'de.interactive_instruments:xtraplatform-logging-i18n:1.1.0-SNAPSHOT',
-        'de.interactive_instruments:xtraplatform-logging-i18n:1.1.0',
         'de.interactive_instruments:xtraplatform-openapi-viewer:1.1.0-SNAPSHOT',
         'de.interactive_instruments:xtraplatform-kvstore-inmemory:1.1.0-SNAPSHOT',
         'de.interactive_instruments:xtraplatform-sessions-api:1.1.0-SNAPSHOT',

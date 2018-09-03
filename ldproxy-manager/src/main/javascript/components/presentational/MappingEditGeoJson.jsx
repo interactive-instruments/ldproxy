@@ -40,13 +40,17 @@ const initState = {
 export default class MappingEditGeoJson extends Component {
 
     render() {
-        let {ui, updateUI, mapping, baseMapping, mimeType, isFeatureType, isSaving, onChange} = this.props;
+        const {ui, updateUI, mapping, baseMapping, mimeType, isFeatureType, isSaving, onChange} = this.props;
+        const isSpatial = baseMapping.type === 'SPATIAL';
+        const isId = baseMapping.type === 'ID';
+
         return (
             <MappingEdit title={ mimeType }
                 mimeType={ mimeType }
                 mapping={ mapping }
                 baseMapping={ baseMapping }
                 isFeatureType={ isFeatureType }
+                showName={ !isFeatureType && !isId && !isSpatial }
                 isSaving={ isSaving }
                 onChange={ onChange }
                 initStateExt={ initState } />

@@ -11,10 +11,10 @@ cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
-install:
-- "./gradlew assemble"
+#install:
+#- "./gradlew clean assemble"
 script:
-- "./gradlew check"
+- "./gradlew assemble"
 after_success:
 - "./gradlew dockerDistTar"
 - cd build/docker

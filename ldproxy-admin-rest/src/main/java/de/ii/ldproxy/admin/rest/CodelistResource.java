@@ -7,22 +7,25 @@
  */
 package de.ii.ldproxy.admin.rest;
 
-import de.ii.ldproxy.codelists.Codelist;
+import de.ii.ldproxy.codelists.CodelistOld;
 import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.xsf.core.api.MediaTypeCharset;
-import de.ii.xsf.core.api.permission.Auth;
-import de.ii.xsf.core.api.permission.AuthenticatedUser;
-import de.ii.xsf.core.api.permission.Role;
 import de.ii.xsf.dropwizard.api.Jackson;
-import de.ii.xsf.logging.XSFLogger;
 import de.ii.xtraplatform.ogc.api.exceptions.ParseError;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.forgerock.i18n.slf4j.LocalizedLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.List;
@@ -37,7 +40,7 @@ import java.util.List;
 @Produces(MediaTypeCharset.APPLICATION_JSON_UTF8)
 public class CodelistResource {
 
-    private static final LocalizedLogger LOGGER = XSFLogger.getLogger(CodelistResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CodelistResource.class);
     @Requires
     private CodelistStore codelistStore;
     @Requires
@@ -51,22 +54,22 @@ public class CodelistResource {
 
     @GET
     @Path("/{id}")
-    public Codelist getCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ @PathParam("id") String id) {
+    public CodelistOld getCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ @PathParam("id") String id) {
         return codelistStore.getResource(id);
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Codelist addCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ String request) {
-        LOGGER.getLogger().debug("CODELIST {}", request);
+    public CodelistOld addCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/ String request) {
+        LOGGER.debug("CODELIST {}", request);
 
-        Codelist codelist = null;
+        CodelistOld codelist = null;
 
         try {
-            codelist = jackson.getDefaultObjectMapper().readValue(request, Codelist.class);
+            codelist = jackson.getDefaultObjectMapper().readValue(request, CodelistOld.class);
             codelist = codelistStore.addCodelist(codelist.getSourceUrl(), codelist.getSourceType());
         } catch (IOException e) {
-            LOGGER.getLogger().debug("ERROR", e);
+            LOGGER.debug("ERROR", e);
             throw new ParseError("Codelist could not be parsed.");
         }
 

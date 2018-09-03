@@ -1,0 +1,141 @@
+{{#wfs3Dataset}}
+    {{#wfsCapabilities}}
+
+        {{> header}}
+
+        <div itemscope itemtype="http://schema.org/Dataset">
+    <h1 itemprop="name">{{title}}</h1>
+    <span itemprop="description">{{description}}</span>
+    <br/>
+    <br/>
+    <br/>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Feature Types</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#featureTypes}}
+                    <li itemprop="hasPart" itemscope itemtype="http://schema.org/Dataset">
+                        <a itemprop="url" href="{{url}}">{{title}}</a>
+                    </li>
+                {{/featureTypes}}
+                {{^featureTypes}}
+                    <li>None</li>
+                {{/featureTypes}}
+            </ul>
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">API</div>
+        <div class="col-md-10">
+            <a href="{{apiUrl}}">OpenAPI 3.0</a>
+        </div>
+    </div>
+            {{#keywords}}
+            <div class="row my-3">
+                <div class="col-md-2 font-weight-bold">Keywords</div>
+                <div class="col-md-10">
+                    <span itemprop="keywords">
+                        <ul class="list-comma-separated">
+                                <li>{{.}}</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+            {{/keywords}}
+        {{#license}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">License</div>
+            <div class="col-md-10">
+                <span itemprop="license">{{.}}</span>
+            </div>
+        </div>
+        {{/license}}
+        {{#bbox}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">Extent</div>
+            <div class="col-md-10">
+                <span itemprop="spatial" itemscope itemtype="http://schema.org/Place">
+                    <span itemprop="geo" itemscope itemtype="http://schema.org/GeoShape">
+                        <span itemprop="box">{{.}}</span>
+                    </span>
+                </span>
+            </div>
+        </div>
+        {{/bbox}}
+        {{#url}}
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">WFS 2.0</div>
+        <div class="col-md-10">
+            <link itemprop="url" href="{{path}}./"/>
+            <a itemprop="sameAs" href="{{.}}" target="_blank">{{.}}</a>
+        </div>
+    </div>
+        {{/url}}
+        {{#providerName}}
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Provider</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled" itemprop="provider" itemscope itemtype="http://schema.org/Organization">
+                <li itemprop="name">{{providerName}}</li>
+                {{#providerUrl}}
+                    <li itemprop="url"><a href="{{.}}" target="_blank">{{.}}</a></li>
+                {{/providerUrl}}
+                {{^providerUrl}}
+                    {{#contactUrl}}
+                        <li itemprop="url"><a href="{{.}}" target="_blank">{{.}}</a></li>
+                    {{/contactUrl}}
+                {{/providerUrl}}
+                <li itemprop="contactPoint" itemscope itemtype="http://schema.org/ContactPoint">
+                    <span class="hidden" itemprop="contactType">technical support</span>
+                    <ul class="list-unstyled">
+                        {{#contactName}}
+                            <li itemprop="name">{{.}}</li>
+                        {{/contactName}}
+                        {{#contactEmail}}
+                            <li itemprop="email">{{.}}</li>
+                        {{/contactEmail}}
+                        {{#contactTelephone}}
+                            <li itemprop="telephone">{{.}}</li>
+                        {{/contactTelephone}}
+                        {{#contactFaxNumber}}
+                            <li itemprop="faxNumber">{{.}}</li>
+                        {{/contactFaxNumber}}
+                        {{#contactHoursOfService}}
+                            <li itemprop="hoursAvailable">{{.}}</li>
+                        {{/contactHoursOfService}}
+                        {{#providerUrl}}
+                            {{#contactUrl}}
+                                <li itemprop="url"><a href="{{.}}" target="_blank">{{.}}</a></li>
+                            {{/contactUrl}}
+                        {{/providerUrl}}
+                    </ul>
+                </li>
+                <li itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+                    <ul class="list-unstyled">
+                        {{#contactStreetAddress}}
+                            <li itemprop="streetAddress">{{.}}</li>
+                        {{/contactStreetAddress}}
+                        {{#contactLocality}}
+                            <li itemprop="addressLocality">{{.}}</li>
+                        {{/contactLocality}}
+                        {{#contactPostalCode}}
+                            <li itemprop="postalCode">{{.}}</li>
+                        {{/contactPostalCode}}
+                        {{#contactRegion}}
+                            <li itemprop="addressRegion">{{.}}</li>
+                        {{/contactRegion}}
+                        {{#contactCountry}}
+                            <li itemprop="addressCountry">{{.}}</li>
+                        {{/contactCountry}}
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+        {{/providerName}}
+</div>
+
+{{> footer}}
+
+    {{/wfsCapabilities}}
+{{/wfs3Dataset}}

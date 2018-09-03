@@ -1,7 +1,8 @@
+version = '1.2.2'
+//version += '-SNAPSHOT'
 
-
-dependencies {    
-    compile project(':ldproxy-service')
+dependencies {
     compile project(':ldproxy-codelists')
+    compile project(':ldproxy-wfs3')
 }
  

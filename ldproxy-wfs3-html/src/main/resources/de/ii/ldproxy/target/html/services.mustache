@@ -1,0 +1,21 @@
+{{> header}}
+
+<ul class="list-unstyled space-after">
+    {{#data}}
+    {{#uri}}
+    <li itemscope itemtype="http://schema.org/Dataset">
+        <h1>
+            <a itemprop="url" href="{{path}}{{id}}">
+                <span itemprop="name">{{label}}</span>
+            </a>
+        </h1>
+        <span itemprop="description">{{{description}}}</span>
+    </li>
+    {{/uri}}
+    {{/data}}
+    {{^data}}
+    <li>None</li>
+    {{/data}}
+</ul>
+
+{{> footer}}

@@ -1,0 +1,7 @@
+version = '1.3.0'
+version += '-SNAPSHOT'
+
+dependencies {
+    compile project(":ldproxy-wfs3-api")
+    compile project(":ldproxy-wfs3-html")
+}

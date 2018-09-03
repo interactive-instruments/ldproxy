@@ -7,10 +7,9 @@
  */
 package de.ii.ldproxy.admin.rest;
 
-import de.ii.ldproxy.service.LdProxyService;
-import de.ii.xsf.core.api.rest.AdminServiceResource;
-import de.ii.xsf.core.api.rest.AdminServiceResourceFactory;
-import de.ii.xsf.core.api.rest.ServiceResource;
+import de.ii.xtraplatform.service.api.AdminServiceResource;
+import de.ii.xtraplatform.service.api.AdminServiceResourceFactory;
+import de.ii.xtraplatform.service.api.ServiceResource;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -22,7 +21,7 @@ import org.apache.felix.ipojo.annotations.StaticServiceProperty;
  */
 @Component
 @Provides(properties= {
-            @StaticServiceProperty(name=ServiceResource.SERVICE_TYPE_KEY, type="java.lang.String", value= LdProxyService.SERVICE_TYPE)
+            @StaticServiceProperty(name=ServiceResource.SERVICE_TYPE_KEY, type="java.lang.String", value= "WFS3")
     })
 @Instantiate
 
