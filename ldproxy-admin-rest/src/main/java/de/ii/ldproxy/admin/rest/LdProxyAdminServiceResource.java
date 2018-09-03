@@ -49,7 +49,7 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
     public String getAdminService(/*@Auth AuthenticatedUser user*/) {
         String s = "";
         try {
-            s = jsonMapper.writerFor(ServiceData.class).writeValueAsString(service.getData());
+            s = jsonMapper.writeValueAsString(serviceDataWithStatus);
             //LOGGER.debug("GET SERVICE {}", s);
         } catch (JsonProcessingException e) {
             LOGGER.error("ERROR", e);
@@ -70,7 +70,7 @@ public class LdProxyAdminServiceResource extends AdminServiceResource {
 
         String s = "";
         try {
-            s = jsonMapper.writerFor(Wfs3ServiceData.class).writeValueAsString(service.getData());
+            s = jsonMapper.writerFor(Wfs3ServiceData.class).writeValueAsString(serviceData);
             //LOGGER.debug("GET SERVICE CONFIG {}", s);
         } catch (JsonProcessingException e) {
             LOGGER.error("ERROR", e);

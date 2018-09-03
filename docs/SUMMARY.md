@@ -9,6 +9,11 @@
    * [Editing services](book/04-editing-services.md)
    * [Using codelists](book/05-using-codelists.md)
 
+* [Settings](book/06-settings.md)
+   * [Security](book/07-security.md)
+
+* [Logging](book/08-logging.md)
+
 ---
 
 * [Sponsors](SPONSORS.md)

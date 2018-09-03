@@ -30,6 +30,7 @@ import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -56,6 +57,9 @@ public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3Output
                                                                           .label("GeoJSON")
                                                                           .metadata(MediaType.APPLICATION_JSON_TYPE)
                                                                           .build();
+
+    @Requires
+    private GeoJsonConfig geoJsonConfig;
 
     @Override
     public String getConformanceClass() {
@@ -97,7 +101,7 @@ public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3Output
         return response(stream(featureTransformStream, outputStream -> new FeatureTransformerGeoJson(createJsonGenerator(outputStream), isCollection, crsTransformer, links, pageSize, uriCustomizer.copy()
                                                                                                                                                                                                     .cutPathAfterSegments(serviceData.getId())
                                                                                                                                                                                                     .clearParameters()
-                                                                                                                                                                                                    .toString(), query.getMaxAllowableOffset())), MEDIA_TYPE.main()
+                                                                                                                                                                                                    .toString(), query.getMaxAllowableOffset(), geoJsonConfig.getNestedObjectStrategy(), geoJsonConfig.getMultiplicityStrategy())), MEDIA_TYPE.main()
                                                                                                                                                                                                                                                             .toString());
     }
 

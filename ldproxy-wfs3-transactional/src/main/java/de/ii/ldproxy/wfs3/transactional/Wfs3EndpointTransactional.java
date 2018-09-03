@@ -23,6 +23,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -38,7 +39,7 @@ import java.util.Optional;
  */
 @Component
 @Provides
-//@Instantiate
+@Instantiate
 public class Wfs3EndpointTransactional implements Wfs3EndpointExtension {
 
     @Override
@@ -57,7 +58,9 @@ public class Wfs3EndpointTransactional implements Wfs3EndpointExtension {
     @POST
     @Consumes(Wfs3MediaTypes.GEO_JSON)
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpServletRequest request, InputStream requestBody) {
-        //checkAuthorization(optionalUser);
+        checkTransactional((Wfs3Service)service);
+
+        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
         return ((Wfs3Service)service).postItemsResponse(wfs3Request.getMediaType(), wfs3Request.getUriCustomizer().copy(), id, requestBody);
     }
@@ -66,7 +69,9 @@ public class Wfs3EndpointTransactional implements Wfs3EndpointExtension {
     @PUT
     @Consumes(Wfs3MediaTypes.GEO_JSON)
     public Response putItem(@Auth Optional<User> optionalUser, @PathParam("id") String id, @PathParam("featureid") final String featureId, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpServletRequest request, InputStream requestBody) {
-        //checkAuthorization(optionalUser);
+        checkTransactional((Wfs3Service)service);
+
+        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
         return ((Wfs3Service)service).putItemResponse(wfs3Request.getMediaType(), id, featureId, requestBody);
     }
@@ -74,8 +79,16 @@ public class Wfs3EndpointTransactional implements Wfs3EndpointExtension {
     @Path("/{id}/items/{featureid}")
     @DELETE
     public Response deleteItem(@Auth Optional<User> optionalUser, @Context Service service, @PathParam("id") String id, @PathParam("featureid") final String featureId) {
-        //checkAuthorization(optionalUser);
+        checkTransactional((Wfs3Service)service);
+
+        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
         return ((Wfs3Service)service).deleteItemResponse(id, featureId);
+    }
+
+    private void checkTransactional(Wfs3Service wfs3Service) {
+        if (!wfs3Service.getData().getFeatureProvider().supportsTransactions()) {
+            throw new NotFoundException();
+        }
     }
 }

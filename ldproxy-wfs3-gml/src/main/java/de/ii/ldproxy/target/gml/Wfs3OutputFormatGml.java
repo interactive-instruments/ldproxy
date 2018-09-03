@@ -29,6 +29,9 @@ import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.ServiceController;
+import org.apache.felix.ipojo.annotations.Validate;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -54,6 +57,17 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
                                                                           .label("GML")
                                                                           .metadata(MediaType.APPLICATION_XML_TYPE)
                                                                           .build();
+
+    @Requires
+    private GmlConfig gmlConfig;
+
+    @ServiceController(value = false)
+    private boolean enable;
+
+    @Validate
+    private void onStart() {
+        this.enable = gmlConfig.isEnabled();
+    }
 
     @Override
     public String getConformanceClass() {

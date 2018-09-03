@@ -1,3 +1,10 @@
+/**
+ * Copyright 2018 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.wfs3.core;
 
 import com.google.common.collect.ImmutableList;
@@ -89,6 +96,8 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     public Response getCollections(@Auth Optional<User> optionalUser, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
         Wfs3Service wfs3Service = (Wfs3Service) service;
 
+        checkAuthorization(wfs3Service.getData(), optionalUser);
+
         Wfs3Collections collections = wfs3Core.createCollections(wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer());
 
         return wfs3OutputFormats.get(wfs3Request.getMediaType())
@@ -99,6 +108,8 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     @GET
     public Response getCollectionInfo(@Auth Optional<User> optionalUser, @PathParam("id") String id, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
         Wfs3Service wfs3Service = (Wfs3Service) service;
+
+        checkAuthorization(wfs3Service.getData(), optionalUser);
 
         wfs3Core.checkCollectionName(wfs3Service.getData(), id);
 
@@ -114,6 +125,8 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     @Path("/{id}/items")
     @GET
     public Response getItems(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("bbox-crs") String bboxCrs, @QueryParam("resultType") String resultType, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @HeaderParam("Range") String range, @Context Service service, @Context UriInfo uriInfo, @Context Wfs3RequestContext wfs3Request) {
+        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
+
         FeatureQuery query = getFeatureQuery(((Wfs3Service) service), id, range, crs, bboxCrs, maxAllowableOffset, uriInfo.getQueryParameters(), resultType != null && resultType.toLowerCase()
                                                                                                                                                                                  .equals("hits"));
 
@@ -123,6 +136,8 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     @Path("/{id}/items/{featureid}")
     @GET
     public Response getItem(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @PathParam("featureid") final String featureId, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
+        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
+
         ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                           .type(id)
                                                                           .filter(String.format("IN ('%s')", featureId));
