@@ -159,7 +159,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
         FeatureStream<FeatureTransformer> featureTransformStream = wfs3Service.getFeatureProvider().getFeatureTransformStream(query);
 
-        FeatureTransformerGeoJson featureTransformer = new FeatureTransformerGeoJson(createJsonGenerator(outputStream), true, wfs3Service.getCrsTransformer(null), ImmutableList.of(), 0, "", 0);
+        FeatureTransformerGeoJson featureTransformer = new FeatureTransformerGeoJson(createJsonGenerator(outputStream), true, wfs3Service.getCrsTransformer(null), ImmutableList.of(), 0, "", 0, FeatureTransformerGeoJson.NESTED_OBJECTS.NEST, FeatureTransformerGeoJson.MULTIPLICITY.ARRAY);
 
         try {
             featureTransformStream.apply(featureTransformer)
