@@ -34,7 +34,7 @@ import java.util.Objects;
  */
 @Component
 @Provides
-//@Instantiate
+@Instantiate
 public class Wfs3OpenApiTransactional implements Wfs3OpenApiExtension {
     @Override
     public int getSortPriority() {
@@ -43,7 +43,7 @@ public class Wfs3OpenApiTransactional implements Wfs3OpenApiExtension {
 
     @Override
     public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
-        if (serviceData != null) {
+        if (serviceData != null && serviceData.getFeatureProvider().supportsTransactions()) {
 
             serviceData.getFeatureTypes()
                        .values()

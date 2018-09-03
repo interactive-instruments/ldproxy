@@ -76,8 +76,9 @@ public class FeatureTransformerGeoJson implements FeatureTransformer {
     GeoJsonPropertyMapping currentMapping;
     String currentFormatter;
     String currentFieldName;
+    boolean currentFieldMulti;
 
-    public FeatureTransformerGeoJson(JsonGenerator jsonOut, boolean isFeatureCollection, CrsTransformer crsTransformer, List<Wfs3Link> links, int pageSize, String serviceUrl, double maxAllowableOffset) {
+    public FeatureTransformerGeoJson(JsonGenerator jsonOut, boolean isFeatureCollection, CrsTransformer crsTransformer, List<Wfs3Link> links, int pageSize, String serviceUrl, double maxAllowableOffset, NESTED_OBJECTS nestedObjects, MULTIPLICITY multiplicity) {
         this.jsonOut = jsonOut;
         this.json = jsonOut;
         this.isFeatureCollection = isFeatureCollection;
@@ -87,9 +88,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer {
         this.serviceUrl = serviceUrl;
         this.maxAllowableOffset = maxAllowableOffset;
 
-        //TODO: inject from settings
-        this.nestedObjects = NESTED_OBJECTS.NEST;
-        this.multiplicity = MULTIPLICITY.ARRAY;
+        this.nestedObjects = nestedObjects;
+        this.multiplicity = multiplicity;
     }
 
     @Override
@@ -151,6 +151,11 @@ public class FeatureTransformerGeoJson implements FeatureTransformer {
         if (nestedObjects == NESTED_OBJECTS.NEST) {
             writePropertyName("", ImmutableList.of());
             currentMultiplicities = new HashMap<>();
+        }
+
+        if (json == jsonBuffer)  {
+            stopBuffering();
+            flushBuffer();
         }
 
         json.writeEndObject();
@@ -251,7 +256,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer {
                     currentFieldName = field;
                 }
                 if (isMulti && multi == 1) {
-                    json.writeStartArray();
+                    //json.writeStartArray();
+                    currentFieldMulti = true;
                 }
             }
 
@@ -313,6 +319,10 @@ public class FeatureTransformerGeoJson implements FeatureTransformer {
                     if (currentFieldName != null) {
                         json.writeFieldName(currentFieldName);
                         currentFieldName = null;
+                        if (currentFieldMulti) {
+                            json.writeStartArray();
+                            currentFieldMulti = false;
+                        }
                     }
                     json.writeString(currentFormatter);
                     currentFormatter = null;
@@ -324,6 +334,10 @@ public class FeatureTransformerGeoJson implements FeatureTransformer {
                 if (currentFieldName != null) {
                     json.writeFieldName(currentFieldName);
                     currentFieldName = null;
+                    if (currentFieldMulti) {
+                        json.writeStartArray();
+                        currentFieldMulti = false;
+                    }
                 }
                 writeValue(stringBuilder.toString(), currentMapping.getType());
             }
@@ -343,7 +357,6 @@ public class FeatureTransformerGeoJson implements FeatureTransformer {
                                                             .equals("true") || value.equals("1"));
                 break;
             case NUMBER:
-                // TODO: howto recognize int or double
                 try {
                     json.writeNumber(Long.parseLong(value));
                     break;
@@ -403,7 +416,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer {
             // TODO
             switch (currentGeometryType) {
                 case MULTI_POLYGON:
-                    json.writeStartArray();
+                    //json.writeStartArray();
                 case POLYGON:
                 case MULTI_LINE_STRING:
                     json.writeStartArray();
@@ -438,7 +451,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer {
             // TODO
             switch (currentGeometryType) {
                 case MULTI_POLYGON:
-                    json.writeEndArray();
+                    //json.writeEndArray();
                 case POLYGON:
                 case MULTI_LINE_STRING:
                     json.writeEndArray();

@@ -41,12 +41,12 @@ dependencies {
 
     bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.5'
 
-    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.0') {
+    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.1') {
         // TODO
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
     //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.1-SNAPSHOT'
-    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.0'
+    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.3'
 
     // ???
     subprojects.each {

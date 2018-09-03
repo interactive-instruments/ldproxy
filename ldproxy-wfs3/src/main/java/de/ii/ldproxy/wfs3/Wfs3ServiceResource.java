@@ -8,20 +8,17 @@
 package de.ii.ldproxy.wfs3;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.xsf.core.api.permission.AuthorizationProvider;
 import de.ii.xsf.core.server.CoreServerConfig;
 import de.ii.xtraplatform.auth.api.User;
-import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.entity.api.EntityRepository;
-import de.ii.xtraplatform.feature.query.api.FeatureQuery;
-import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.service.api.Service;
+import de.ii.xtraplatform.service.api.ServiceData;
+import de.ii.xtraplatform.service.api.ServiceDataWithStatus;
 import de.ii.xtraplatform.service.api.ServiceResource;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.views.ViewRenderer;
@@ -34,43 +31,24 @@ import org.apache.felix.ipojo.annotations.StaticServiceProperty;
 import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.threeten.extra.Interval;
 
 import javax.annotation.security.PermitAll;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.time.format.DateTimeParseException;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.MatchResult;
-import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
-import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS_URI;
 
 /**
  * @author zahnen
@@ -116,17 +94,17 @@ public class Wfs3ServiceResource implements ServiceResource {
     }
 
     @Override
-    public Service getService() {
+    public ServiceData getService() {
         return null;
     }
 
     @Override
-    public void setService(Service service) {
+    public void setService(ServiceData service) {
 
     }
 
     @Override
-    public void init(ObjectMapper defaultObjectMapper, EntityRepository entityRepository, AuthorizationProvider permProvider) {
+    public void init(ObjectMapper defaultObjectMapper, EntityRepository entityRepository, AuthorizationProvider permProvider, ServiceDataWithStatus serviceDataWithStatus) {
 
     }
 
@@ -153,8 +131,7 @@ public class Wfs3ServiceResource implements ServiceResource {
     }
 
     @Path("/{path}")
-    public Wfs3EndpointExtension dispatch(@Auth Optional<User> optionalUser, @PathParam("path") String path, @Context Service service, @Context HttpHeaders httpHeaders, @Context ContainerRequestContext request) {
-        checkAuthorization((Wfs3Service) service, optionalUser);
+    public Wfs3EndpointExtension dispatch(@PathParam("path") String path, @Context Service service, @Context HttpHeaders httpHeaders, @Context ContainerRequestContext request) {
 
         String subPath = ((UriRoutingContext) request.getUriInfo()).getFinalMatchingGroup();
 
