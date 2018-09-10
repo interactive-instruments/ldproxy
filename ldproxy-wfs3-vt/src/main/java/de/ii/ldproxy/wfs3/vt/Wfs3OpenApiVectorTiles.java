@@ -15,6 +15,8 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 /**
+ * TODO: this is just a placeholder.
+ *
  * @author zahnen
  */
 @Component

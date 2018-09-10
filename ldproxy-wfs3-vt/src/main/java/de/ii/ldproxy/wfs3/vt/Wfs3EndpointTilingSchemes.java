@@ -29,6 +29,8 @@ import java.util.List;
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 /**
+ * TODO: this is just a placeholder.
+ *
  * @author zahnen
  */
 @Component
