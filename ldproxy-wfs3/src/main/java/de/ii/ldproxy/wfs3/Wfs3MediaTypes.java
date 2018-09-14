@@ -39,7 +39,7 @@ public class Wfs3MediaTypes {
             .put(HTML, "html")
             .put(GEO_JSON, "json")
             .put(GML, "xml")
-            .put(MVT, "pbf")
+            .put(MVT, "mvt")
             .build();
 
     public static final Map<String, String> FEATURE = new ImmutableMap.Builder<String, String>()

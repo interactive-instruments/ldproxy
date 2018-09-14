@@ -1,5 +1,10 @@
 package de.ii.ldproxy.wfs3.vt;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
@@ -27,7 +32,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
@@ -35,11 +39,8 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
+import javax.print.attribute.standard.Media;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -131,13 +132,13 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         //TODO read from tilingSchemesDirectory or 301, wait for specs
 
         return Response.ok(ImmutableMap.of())
-                       .build();
+                .build();
     }
 
     @Path("/{collectionId}/tiles/{tilingSchemeId}/{level}/{row}/{col}")
     @GET
-    @Produces({Wfs3MediaTypes.MVT, MediaType.WILDCARD})
-    public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @Context Service service) throws CrsTransformationException, FileNotFoundException {
+    @Produces({Wfs3MediaTypes.MVT})
+    public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @Context Service service) throws CrsTransformationException, FileNotFoundException, NotFoundException {
 
         // TODO support f
         // TODO support time
@@ -148,6 +149,16 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         // we just pass the collection to the feature query, nothing to do for collectionId
 
         // get the TilingScheme
+
+
+        //check if collectionId is valid
+        Wfs3Service wfsService = (Wfs3Service) service;
+        Set<String> featureTypeNames= wfsService.getData().getFeatureTypes().keySet();
+        if(collectionId.isEmpty() || !featureTypeNames.contains(collectionId)){
+            throw new NotFoundException();
+        }
+
+
         TilingScheme tilingScheme = new DefaultTilingScheme(); // TODO, currently just support "default"
 
         int l = checkZoomLevel(tilingScheme, level);
@@ -174,42 +185,59 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
             try {
                 // TODO protect against GeoJSON syntax errors
-                Object obj = parser.parse(new FileReader(tileFileJson));
-                JSONObject jsonFeatureCollection = (JSONObject) obj;
+
+                /*JacksonParser*/
+                ObjectMapper mapper = new ObjectMapper();
+
+
+                Map<String,Object> jsonFeatureCollection;
+                //If file is empty, don't read from file
+                BufferedReader br = new BufferedReader(new FileReader(tileFileJson));
+
+                if (br.readLine() == null) {
+                    jsonFeatureCollection = null;
+                } else {
+                    jsonFeatureCollection =  mapper.readValue(tileFileJson, new TypeReference<LinkedHashMap>() {});
+                }
+
 
                 // Prepare MVT output
                 VectorTileEncoder encoder = new VectorTileEncoder(tilingScheme.getTileExtent());
                 BoundingBox bboxTilingSchemeCrs = tilingScheme.getBoundingBox(l, r, c);
                 CrsTransformer transformer = crsTransformation.getTransformer(tilingScheme.getCrs(), DEFAULT_CRS);
                 BoundingBox bboxCrs84 = transformer.transformBoundingBox(bboxTilingSchemeCrs);
-                AffineTransformation transform = createTransformLonLatToTile( tilingScheme, bboxCrs84 );
+                AffineTransformation transform = createTransformLonLatToTile(tilingScheme, bboxCrs84);
 
-                Geometry jtsGeom;
-                JSONArray jsonFeatures = (JSONArray) jsonFeatureCollection.get("features");
+                //empty Collection or no features in the collection
+                if (jsonFeatureCollection != null) {
 
-                for (Object object : jsonFeatures.toArray()) {
-                    JSONObject jsonFeature = (JSONObject) object;
-                    JSONObject jsonGeometry = (JSONObject) jsonFeature.get("geometry");
+                    Geometry jtsGeom;
+                    List<Object> jsonFeatures = (List<Object>) jsonFeatureCollection.get("features");
 
-                    // read JTS geometry in WGS 84 lon/lat
-                    jtsGeom = reader.read(jsonGeometry.toJSONString());
-                    jtsGeom.apply(transform);
+                    for (Object object : jsonFeatures) {
+                        Map<String,Object> jsonFeature = (Map<String,Object>) object;
+                        Map<String,Object> jsonGeometry = (Map<String,Object>) jsonFeature.get("geometry");
 
-                    // TODO select properties
-                    JSONObject jsonProperties = (JSONObject) jsonFeature.get("properties");
+                        // read JTS geometry in WGS 84 lon/lat
+                        jtsGeom = reader.read(mapper.writeValueAsString(jsonGeometry));
+                        jtsGeom.apply(transform);
 
-                    // Add the feature with the layer name, a Map with attributes and the JTS Geometry.
-                    encoder.addFeature(collectionId, jsonProperties, jtsGeom);
+                        // TODO select properties
+                        Map<String,Object> jsonProperties = (Map<String,Object>) jsonFeature.get("properties");
+
+                        // Add the feature with the layer name, a Map with attributes and the JTS Geometry.
+                        encoder.addFeature(collectionId, jsonProperties, jtsGeom);
+                    }
                 }
 
                 // Finally, get the byte array and write it to the cache
                 byte[] encoded = encoder.encode();
                 Files.write(encoded, tileFilePbf);
-            } catch (IOException | ParseException | org.locationtech.jts.io.ParseException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 // TODO handle exceptions properly
                 return Response.ok(null)
-                               .build();
+                        .build();
             }
         }
 
@@ -218,12 +246,13 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         };
 
         return Response.ok(streamingOutput, Wfs3MediaTypes.MVT)
-                       .build();
+                .build();
+
     }
 
     @Path("/{collectionId}/tiles/{tilingSchemeId}/{level}/{row}/{col}")
     @GET
-    @Produces({Wfs3MediaTypes.GEO_JSON})
+    @Produces({Wfs3MediaTypes.GEO_JSON, MediaType.APPLICATION_JSON})
     public Response getTileJson(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @Context Service service) throws CrsTransformationException, FileNotFoundException {
 
         // TODO support f
@@ -263,7 +292,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         };
 
         return Response.ok(streamingOutput, Wfs3MediaTypes.GEO_JSON)
-                       .build();
+                .build();
     }
 
     /**
@@ -370,9 +399,9 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         LOGGER.debug("TILE {}", String.format(Locale.US, "BBOX(%.3f, %.3f, %.3f, %.3f, '%s')", bboxTilingSchemeCrs.getXmin(), bboxTilingSchemeCrs.getYmin(), bboxTilingSchemeCrs.getXmax(), bboxTilingSchemeCrs.getYmax(), bboxTilingSchemeCrs.getEpsgCrs().getAsSimple()));
 
         // transform to native crs via the default crs
-        CrsTransformer transformer = crsTransformation.getTransformer(tilingScheme.getCrs(), DEFAULT_CRS);
-        BoundingBox bboxCrs84 = transformer.transformBoundingBox(bboxTilingSchemeCrs);
-        BoundingBox bboxNativeCrs = service.transformBoundingBox(bboxCrs84);
+        CrsTransformer transformer = crsTransformation.getTransformer(tilingScheme.getCrs(), service.getData().getFeatureProvider().getNativeCrs());
+        BoundingBox bboxNativeCrs = transformer.transformBoundingBox(bboxTilingSchemeCrs);
+        //BoundingBox bboxNativeCrs = service.transformBoundingBox(bboxCrs84);
 
         return String.format(Locale.US, "BBOX(%s, %.3f, %.3f, %.3f, %.3f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs().getAsSimple());
     }
@@ -383,8 +412,8 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         OutputStream outputStream = new FileOutputStream(tileFile);
 
         String geometryField = wfs3Service.getData()
-                                          .getFilterableFieldsForFeatureType(collectionId)
-                                          .get("bbox");
+                .getFilterableFieldsForFeatureType(collectionId)
+                .get("bbox");
 
         String filter = getFilterForTile(geometryField, tilingScheme, level, row, col, wfs3Service);
 
@@ -394,10 +423,10 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         double maxAllowableOffsetCrs84 = tilingScheme.getMaxAllowableOffset(level, row, col, DEFAULT_CRS, crsTransformation);
 
         ImmutableFeatureQuery query = ImmutableFeatureQuery.builder()
-                                                           .type(collectionId)
-                                                           .filter(filter)
-                                                           .maxAllowableOffset(maxAllowableOffsetNative)
-                                                           .build();
+                .type(collectionId)
+                .filter(filter)
+                .maxAllowableOffset(maxAllowableOffsetNative)
+                .build();
 
         TransformingFeatureProvider provider = wfs3Service.getFeatureProvider();
         FeatureStream<FeatureTransformer> featureTransformStream = provider.getFeatureTransformStream(query);
@@ -406,8 +435,8 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
         try {
             featureTransformStream.apply(featureTransformer)
-                                  .toCompletableFuture()
-                                  .join();
+                    .toCompletableFuture()
+                    .join();
         } catch (CompletionException e) {
             if (e.getCause() instanceof WebApplicationException) {
                 throw (WebApplicationException) e.getCause();
@@ -415,4 +444,6 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
             throw new IllegalStateException("Feature stream error", e.getCause());
         }
     }
+
+
 }
