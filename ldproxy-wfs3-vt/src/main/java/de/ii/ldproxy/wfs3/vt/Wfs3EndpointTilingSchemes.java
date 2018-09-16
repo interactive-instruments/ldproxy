@@ -9,14 +9,12 @@ package de.ii.ldproxy.wfs3.vt;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.osgi.framework.BundleContext;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -29,26 +27,22 @@ import java.util.List;
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 /**
- * TODO: this is just a placeholder.
+ * fetch tiling schemes / tile matrix sets that have been configured for this service
  *
- * @author zahnen
+ * @author portele
  */
 @Component
 @Provides
 @Instantiate
 public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
 
-    static final String TILING_SCHEMES_DIR_NAME = "tilingSchemes";
-
-    // in dev env this would be build/data/tilingSchemes
-    private final File tilingSchemesDirectory;
+    private final VectorTilesCache cache;
 
     Wfs3EndpointTilingSchemes(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
-        this.tilingSchemesDirectory = new File(new File(bundleContext.getProperty(DATA_DIR_KEY)), TILING_SCHEMES_DIR_NAME);
+        String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
+        cache = new VectorTilesCache(dataDirectory);
 
-        if (!tilingSchemesDirectory.exists()) {
-            tilingSchemesDirectory.mkdirs();
-        }
+        // TODO: populate tiling scheme registry with default tiling scheme(s)
     }
 
     @Override
@@ -57,29 +51,36 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
     }
 
     @Override
+    public String getSubPathRegex() {
+        return "^\\/?.*$";
+    }
+
+    @Override
     public List<String> getMethods() {
         return ImmutableList.of("GET");
     }
 
+    @Override
+    public boolean matches(String firstPathSegment, String method, String subPath) {
+        return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
+    }
 
     @Path("/")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTilingSchemes() {
 
-        //TODO read from tilingSchemesDirectory
-
-        return Response.ok(ImmutableMap.of("tilingSchemes", ImmutableList.of()))
+        return Response.ok(ImmutableMap.of("tilingSchemes", cache.getTilingSchemeIds().toArray() ))
                        .build();
     }
 
-    @Path("/{id}")
+    @Path("/{tilingSchemeId}")
     @GET
-    @Consumes(Wfs3MediaTypes.GEO_JSON)
-    public Response getTilingScheme(@PathParam("id") String id) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTilingScheme(@PathParam("tilingSchemeId") String tilingSchemeId) {
 
-        //TODO read from tilingSchemesDirectory
+        File file = cache.getTilingScheme(tilingSchemeId);
 
-        return Response.ok(ImmutableMap.of()).build();
+        return Response.ok(file, MediaType.APPLICATION_JSON).build();
     }
 }
