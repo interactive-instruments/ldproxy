@@ -13,6 +13,7 @@ import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import no.ecc.vectortile.VectorTileEncoder;
+import org.apache.felix.ipojo.util.Logger;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.io.ParseException;
@@ -238,7 +239,7 @@ class VectorTile {
             //empty Collection or no features in the collection
             if (jsonFeatureCollection != null) {
 
-                Geometry jtsGeom;
+                Geometry jtsGeom = null;
                 List<Object> jsonFeatures = (List<Object>) jsonFeatureCollection.get("features");
 
                 int pntCount = 0;
@@ -251,7 +252,15 @@ class VectorTile {
 
                     // read JTS geometry in WGS 84 lon/lat
                     try {
-                        jtsGeom = reader.read(mapper.writeValueAsString(jsonGeometry));
+                       // if(jsonGeometry.get("type").equals("MultiLineString") || jsonGeometry.get("type").equals("LineString"))
+                        //    LOGGER.info(jsonGeometry.get("coordinates").toString());
+                        if(jsonGeometry.get("type").equals("MultiLineString")){
+                            if (jsonGeometry.get("coordinates").toString().contains("],")) 
+                               jtsGeom = reader.read(mapper.writeValueAsString(jsonGeometry));
+                        }
+                        else
+                            jtsGeom = reader.read(mapper.writeValueAsString(jsonGeometry));
+
                     } catch (ParseException e) {
                         String msg = "Internal server error: exception parsing the GeoJSON file of a tile.";
                         LOGGER.error(msg);
