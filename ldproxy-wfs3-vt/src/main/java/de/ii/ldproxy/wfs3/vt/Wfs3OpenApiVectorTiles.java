@@ -126,7 +126,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         List<String> f4Enum=new ArrayList<String>();
         f4Enum.add("mvt");
         f4.setSchema(new StringSchema()._enum(f4Enum));
-        f4.example("json");
+        f4.example("mvt");
 
         Parameter collections=new Parameter();
         collections.setName("collections");
@@ -136,15 +136,16 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         collections.setStyle(Parameter.StyleEnum.FORM);
         collections.setExplode(false);
         List<String> collectionsEnum=new ArrayList<String>();
-        collectionsEnum.add("aircraft_hangar_s");
-        collectionsEnum.add("amusement_park_s");
-        collectionsEnum.add("allOtherCollectionIds");
+        serviceData.getFeatureTypes()
+                .values()
+                .stream()
+                .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
+                .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                .forEach(ft -> collectionsEnum.add(ft.getId()));
         Schema collectionsArrayItems = new Schema().type("string");
         collectionsArrayItems.setEnum(collectionsEnum);
         Schema collectionsSchema=new ArraySchema().items(collectionsArrayItems);
-
         collections.setSchema(collectionsSchema);
-        collections.setExample("aircraft_hangar_s,amusement_park_s");
 
         Parameter properties =new Parameter();
         properties.name("properties");
@@ -155,7 +156,6 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         properties.setExplode(false);
         Schema propertiesSchema=new ArraySchema().items(new Schema().type("string"));
         properties.setSchema(propertiesSchema);
-        properties.setExample("name, function, type");
 
         /*Add the parameters to definition*/
         openAPI.getComponents().addParameters("f2", f2);
