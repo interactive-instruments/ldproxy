@@ -13,7 +13,6 @@ import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import no.ecc.vectortile.VectorTileEncoder;
-import org.apache.felix.ipojo.util.Logger;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.io.ParseException;
@@ -218,8 +217,6 @@ class VectorTile {
             String layerName = (String) entry.getKey();
             File tileFileJson = (File) entry.getValue();
 
-            // TODO protect against GeoJSON syntax errors
-
             // Jackson parser
             ObjectMapper mapper = new ObjectMapper();
 
@@ -230,8 +227,8 @@ class VectorTile {
                     });
                 }
             } catch (IOException e) {
-                String msg = "Internal server error: exception reading the GeoJSON file of a tile.";
-                LOGGER.error(msg);
+                String msg = "Internal server error: exception reading the GeoJSON file of tile {}/{}/{} in dataset '{}', layer {}.";
+                LOGGER.error(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), service.getId(), layerName);
                 e.printStackTrace();
                 return false;
             }
@@ -252,42 +249,37 @@ class VectorTile {
 
                     // read JTS geometry in WGS 84 lon/lat
                     try {
-                       // if(jsonGeometry.get("type").equals("MultiLineString") || jsonGeometry.get("type").equals("LineString"))
-                        //    LOGGER.info(jsonGeometry.get("coordinates").toString());
-                        if(jsonGeometry.get("type").equals("MultiLineString")){
-                            if (jsonGeometry.get("coordinates").toString().contains("],")) 
-                               jtsGeom = reader.read(mapper.writeValueAsString(jsonGeometry));
-                        }
-                        else
-                            jtsGeom = reader.read(mapper.writeValueAsString(jsonGeometry));
+                        if(jsonGeometry.get("type").equals("MultiLineString") && !(jsonGeometry.get("coordinates").toString().contains("],")))
+                            continue; // TODO: skip MultiLineStrings with a single LineString for now because of an issue with the JTS code
+                        jtsGeom = reader.read(mapper.writeValueAsString(jsonGeometry));
 
                     } catch (ParseException e) {
-                        String msg = "Internal server error: exception parsing the GeoJSON file of a tile.";
-                        LOGGER.error(msg);
+                        String msg = "Internal server error: exception parsing the GeoJSON file of tile {}/{}/{} in dataset '{}', layer {}.";
+                        LOGGER.error(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), service.getId(), layerName);
                         e.printStackTrace();
                         return false;
                     } catch (JsonProcessingException e) {
-                        String msg = "Internal server error: exception processing the GeoJSON file of a tile.";
-                        LOGGER.error(msg);
+                        String msg = "Internal server error: exception processing the GeoJSON file of tile {}/{}/{} in dataset '{}', layer {}.";
+                        LOGGER.error(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), service.getId(), layerName);
                         e.printStackTrace();
                         return false;
                     }
                     jtsGeom.apply(transform);
                     // filter features
-                    // TODO: this should be much more sophisticated...
+                    // TODO: this should be more sophisticated...
                     String geomType = jtsGeom.getGeometryType();
                     if (geomType.contains("Polygon")) {
-                        if (srfCount++ > srfLimit)
-                            continue;
                         double area = jtsGeom.getArea();
                         if (area <= 4)
                             continue;
+                        if (srfCount++ > srfLimit)
+                            continue;
                     }
                     else if (geomType.contains("LineString")) {
-                        if (crvCount++ > crvLimit)
-                            continue;
                         double length = jtsGeom.getLength();
                         if (length <= 2)
+                            continue;
+                        if (crvCount++ > crvLimit)
                             continue;
                     }
                     else if (geomType.contains("Point")) {
@@ -305,14 +297,16 @@ class VectorTile {
                     // remove null values
                     jsonProperties.entrySet().removeIf(property->property.getValue() == null );
                     // TODO: these are temporary fixes for TDS data
-                    jsonProperties.entrySet().removeIf(property->property.getValue() instanceof String && ((String) property.getValue()).equalsIgnoreCase("no information") );
+                    jsonProperties.entrySet().removeIf(property->property.getValue() instanceof String && ((String) property.getValue()).toLowerCase().matches("^(no[ ]?information|\\-999999)$") );
                     jsonProperties.entrySet().removeIf(property->property.getValue() instanceof Number && ((Number) property.getValue()).intValue()==-999999 );
 
                     // Add the feature with the layer name, a Map with attributes and the JTS Geometry.
                     encoder.addFeature(layerName, jsonProperties, jtsGeom);
                 }
 
-                LOGGER.debug("FEATURE COUNT MVT {} {} {} {} {} {} {} {}", service.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), layerName, Integer.toString(pntCount), Integer.toString(crvCount), Integer.toString(srfCount));
+                if (srfCount > srfLimit || crvCount > crvLimit || pntCount > pntLimit) {
+                    LOGGER.info("Feature counts above limits for tile {}/{}/{} in dataset '{}', layer {}: {} points, {} curves, {} surfaces.", Integer.toString(level), Integer.toString(row), Integer.toString(col), service.getId(), layerName, Integer.toString(pntCount), Integer.toString(crvCount), Integer.toString(srfCount));
+                }
             }
         }
 

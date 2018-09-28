@@ -33,6 +33,8 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 /**
  * Handle responses under '/collection/{collectionId}/tiles'.
  *
+ * TODO: Make support for the path configurable. Include in the configuration for each collection: min/max zoom level, automated seeding (based on the spatial extent) for specified zoom levels
+ *
  * @author portele
  */
 @Component
