@@ -34,11 +34,23 @@ public class DefaultTilingScheme implements TilingScheme {
         return "default";
     };
 
+
+    /**
+     * @return the coordinate reference system of the default tiling scheme is EPSG 3857
+     */
     @Override
     public EpsgCrs getCrs() {
         return CRS;
     };
 
+    /**
+     * Fetch a Bounding box from a tile.
+     *
+     * @param level the zoom level
+     * @param row the row number
+     * @param col the column number
+     * @return the bounding box of th tiling scheme in the coordinate reference system EPSG 3857
+     */
     @Override
     public BoundingBox getBoundingBox(int level, int row, int col) {
 
@@ -58,11 +70,30 @@ public class DefaultTilingScheme implements TilingScheme {
         return new BoundingBox(minX, minY, maxX, maxY, CRS);
     };
 
+
+    /**
+     * determine the Douglas-Peucker distance parameter for a tile
+     *
+     * @param level the zoom level
+     * @param row the row number
+     * @param col the column number
+     * @return the distance in the units of measure of the coordinate references system EPSG 3857 of the tiling scheme
+     */
     @Override
     public double getMaxAllowableOffset(int level, int row, int col) {
         return 40075016.6856 / Math.pow(2, level) / TILE_EXTENT;
     }
-
+    /**
+     * determine the Douglas-Peucker distance parameter for a tile
+     *
+     * @param level the zoom level
+     * @param row the row number
+     * @param col the column number
+     * @param crs  the target coordinate references system
+     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @return the distance in the units of measure of the target coordinate references system
+     * @throws CrsTransformationException an error occurred when transforming the coordinates
+     */
     @Override
     public double getMaxAllowableOffset(int level, int row, int col, EpsgCrs crs, CrsTransformation crsTransformation) throws CrsTransformationException {
         BoundingBox bbox = getBoundingBox(level, row, col);
@@ -74,33 +105,57 @@ public class DefaultTilingScheme implements TilingScheme {
         return (bbox.getXmax()-bbox.getXmin())/TILE_EXTENT;
     }
 
+    /**
+     * @return the maximum zoom level for the default tiling scheme is 24
+     */
     @Override
     public int getMaxLevel() {
         return 24;
     };
-
+    /**
+     * @return the minimum zoom level for the default tiling schemes is 0
+     */
     @Override
     public int getMinLevel() {
         return 0;
     };
 
+    /**
+     * fetch the width/height of a tile, typically 256x256
+     * @return the width/height of a tile
+     */
     @Override
     public int getTileSize() { return TILE_SIZE; };
 
+    /**
+     * to produce a smoother visualization, internally tiles may use a different coordinate system than the
+     * width/height of a tile, typically 4096x4096
+     * @return the width/height of a tile in the internal coordinate system
+     */
     @Override
     public int getTileExtent() {
         return TILE_EXTENT;
     }
-
+    /**
+     * validate, whether the row is valid for the zoom level
+     * @param level the zoom level
+     * @param row the row
+     * @return {@code true}, if the row is valid for the zoom level
+     */
     @Override
     public boolean validateRow(int level, int row) {
         if (level<getMinLevel() || level>getMaxLevel())
             return false;
         return true;
     }
-
+    /**
+     * validate, whether the column is valid for the zoom level
+     * @param level the zoom level
+     * @param col the column
+     * @return {@code true}, if the column is valid for the zoom level
+     */
     @Override
-    public boolean validateCol(int level, int row) {
+    public boolean validateCol(int level, int col) {
         if (level<getMinLevel() || level>getMaxLevel())
             return false;
         return true;

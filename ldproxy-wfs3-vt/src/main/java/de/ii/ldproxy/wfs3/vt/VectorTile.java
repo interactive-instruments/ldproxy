@@ -33,8 +33,6 @@ import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
 /**
  * This class represents a vector tile
  *
- * TODO: add Javadoc
- *
  * @author portele
  */
 class VectorTile {
@@ -49,6 +47,19 @@ class VectorTile {
     private final Wfs3Service service;
     private final boolean temporary;
     private final String fileName;
+
+    /**
+     * specify the vector tile
+     *
+     * @param collectionId the id of the collection in which the tile belongs
+     * @param tilingSchemeId the local identifier of a specific tiling scheme
+     * @param level the zoom level as a string
+     * @param row the row number as a string
+     * @param col the column number as a string
+     * @param service the wfs3 service
+     * @param temporary the info, if this is a temporary or permanent vector tile
+     * @param cache the tile cache
+     * */
 
     VectorTile(String collectionId, String tilingSchemeId, String level, String row, String col, Wfs3Service service, boolean temporary, VectorTilesCache cache) throws FileNotFoundException {
 
@@ -416,6 +427,7 @@ class VectorTile {
      *
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @return the transform
+     * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
     private AffineTransformation createTransformLonLatToTile(CrsTransformation crsTransformation) throws CrsTransformationException {
 
@@ -443,10 +455,18 @@ class VectorTile {
         return tilingScheme;
     }
 
+    /**
+     * @return the bounding box of the tiling scheme object
+     */
     private BoundingBox getBoundingBox() {
         return tilingScheme.getBoundingBox(level, row, col);
     }
 
+    /**
+     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @return the bounding box of the tiling scheme in the form of the native crs
+     * @throws CrsTransformationException an error occurred when transforming the coordinates
+     */
     private BoundingBox getBoundingBoxNativeCrs(CrsTransformation crsTransformation) throws CrsTransformationException {
         EpsgCrs crs = service.getData().getFeatureProvider().getNativeCrs();
         BoundingBox bboxTilingSchemeCrs = getBoundingBox();
@@ -456,7 +476,12 @@ class VectorTile {
         CrsTransformer transformer = crsTransformation.getTransformer(tilingScheme.getCrs(), crs);
         return transformer.transformBoundingBox(bboxTilingSchemeCrs);
     }
-
+    /**
+     * @param crs the target coordinate references system
+     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @return the bounding box of the tiling scheme in the form of the target crs
+     * @throws CrsTransformationException an error occurred when transforming the coordinates
+     */
     private BoundingBox getBoundingBox(EpsgCrs crs, CrsTransformation crsTransformation) throws CrsTransformationException {
         BoundingBox bboxTilingSchemeCrs = getBoundingBox();
         if (crs==tilingScheme.getCrs())

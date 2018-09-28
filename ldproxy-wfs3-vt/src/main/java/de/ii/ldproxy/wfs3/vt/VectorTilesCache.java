@@ -41,7 +41,7 @@ public class VectorTilesCache {
     }
 
     /**
-     * return and if necessary create the directory for the tiles cache
+     * return and if necessary create the directory for the tiling schemes cache
      * @return the file object of the directory
      */
     private File getTilingSchemesDirectory() {

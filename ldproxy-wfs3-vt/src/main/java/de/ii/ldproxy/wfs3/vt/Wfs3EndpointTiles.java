@@ -75,16 +75,41 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
     }
 
+    /**
+     * retrieve a tiling scheme to partition the dataset into tiles
+     *
+     * @param optionalUser the user
+     * @param tilingSchemeId the local identifier of a specific tiling scheme
+     * @return the tiling scheme in a json file
+     */
     @Path("/{tilingSchemeId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingScheme(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId) {
+    public Response getTilingScheme(@Auth Optional<User> optionalUser, @PathParam("tilingSchemeId") String tilingSchemeId) {
 
         File file = cache.getTilingScheme(tilingSchemeId);
 
         return Response.ok(file, MediaType.APPLICATION_JSON).build();
     }
 
+    /**
+     * The tile in the requested tiling scheme, on the requested zoom level in the tiling scheme, with the requested grid coordinates (row, column) is returned.
+     * Each collection of the dataset is returned as a separate layer.
+     * The collections and the feature properties to include in the tile representation can be limited using query parameters.
+     *
+     * @param optionalUser the user
+     * @param tilingSchemeId the local identifier of a specific tiling scheme
+     * @param level the zoom level of the tile as a string
+     * @param row the row index of the tile on the selected zoom level
+     * @param col the column index of the tile on the selected zoom level
+     * @param collections the collections that should be included in the tile. The parameter value is a list of collection identifiers.
+     * @param properties the properties that should be included for each feature. The parameter value is a list of property names.
+     * @param service the wfs3 service
+     * @return all mvt's that match the criteria
+     * @throws CrsTransformationException
+     * @throws FileNotFoundException
+     * @throws NotFoundException
+     */
     @Path("/{tilingSchemeId}/{level}/{row}/{col}")
     @GET
     @Produces({Wfs3MediaTypes.MVT})
@@ -167,6 +192,21 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         return Response.ok(streamingOutput, Wfs3MediaTypes.MVT)
                 .build();
     }
+
+    /**
+     * The tile in the requested tiling scheme, on the requested zoom level in the tiling scheme, with the requested grid coordinates (row, column)
+     * is returned. Each collection of the dataset is returned as a separate layer.
+     *
+     * @param optionalUser the user
+     * @param tilingSchemeId the local identifier of a specific tiling scheme
+     * @param level the zoom level of the tile as a string
+     * @param row the row index of the tile on the selected zoom level
+     * @param col the column index of the tile on the selected zoom level
+     * @param service the wfs3 service
+     * @return all geoJson features in json format
+     * @throws CrsTransformationException an error occurred when transforming the coordinates
+     * @throws FileNotFoundException an error occurred when searching for a file
+     */
 
     @Path("/{tilingSchemeId}/{level}/{row}/{col}")
     @GET

@@ -41,6 +41,13 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         return 20;
     }
 
+    /**
+     * extend the openAPI definition with necessary parameters and schemas. Add paths with parameters and responses to the OpenAPI definition.
+     *
+     * @param openAPI the openAPI definition
+     * @param serviceData the data from the Wfs3 Service
+     * @return the extended OpenAPI definition
+     */
     @Override
     public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
         /*specify all new parameters. They are:

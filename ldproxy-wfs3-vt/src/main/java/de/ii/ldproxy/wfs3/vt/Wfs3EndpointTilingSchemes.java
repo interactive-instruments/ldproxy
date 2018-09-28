@@ -45,6 +45,7 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
         // TODO: populate tiling scheme registry with default tiling scheme(s)
     }
 
+
     @Override
     public String getPath() {
         return "tilingSchemes";
@@ -65,6 +66,11 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
         return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
     }
 
+    /**
+     * retrieve all available tiling schemes
+     *
+     * @return all tiling schemes in a json array
+     */
     @Path("/")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -74,6 +80,12 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
                        .build();
     }
 
+    /**
+     * retrieve one specific tiling scheme by id
+     *
+     * @param tilingSchemeId the local identifier of a specific tiling scheme
+     * @return the tiling scheme in a json file
+     */
     @Path("/{tilingSchemeId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
