@@ -407,7 +407,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                                     .get(new Operation()
                                             .addTagsItem("Tiles")
                                             .summary("retrieve a tiling scheme used to partition the collection" +ft.getLabel()+" into tiles")
-                                            .operationId("getTilingSchemeCollection")
+                                            .operationId("getTilingSchemeCollection"+ft.getId())
                                             .addParametersItem(new Parameter().$ref("#/components/parameters/tilingSchemeId"))
                                             .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
                                             //.requestBody(requestBody)
@@ -441,7 +441,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                                             .description("The tile in the requested tiling scheme, on the requested zoom level in the tiling scheme, with the requested grid coordinates (row, column) is returned. " +
                                                     "The tile has a single layer with all selected features in the bounding box of the tile. The feature properties to " +
                                                     "include in the tile representation can be limited using a query parameter.")
-                                            .operationId("getTilesCollection")
+                                            .operationId("getTilesCollection"+ft.getId())
                                             .addParametersItem(new Parameter().$ref("#/components/parameters/tilingSchemeId"))
                                             .addParametersItem(new Parameter().$ref("#/components/parameters/zoomLevel"))
                                             .addParametersItem(new Parameter().$ref("#/components/parameters/row"))
