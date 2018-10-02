@@ -107,7 +107,7 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
     public Map<String, String> getHtmlNamesForFeatureType(String featureType) {
         return getFeatureProvider().getMappings()
                                    .get(featureType)
-                                   .findMappings("text/hml")
+                                   .findMappings("text/html")
                                    .entrySet()
                                    .stream()
                                    .filter(mapping -> mapping.getValue()
