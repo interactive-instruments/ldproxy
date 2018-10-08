@@ -18,13 +18,22 @@ import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.slf4j.LoggerFactory;
+import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
+import org.threeten.extra.Interval;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 import java.io.*;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.target.geojson.Wfs3OutputFormatGeoJson.createJsonGenerator;
 import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
@@ -51,15 +60,15 @@ class VectorTile {
     /**
      * specify the vector tile
      *
-     * @param collectionId the id of the collection in which the tile belongs
+     * @param collectionId   the id of the collection in which the tile belongs
      * @param tilingSchemeId the local identifier of a specific tiling scheme
-     * @param level the zoom level as a string
-     * @param row the row number as a string
-     * @param col the column number as a string
-     * @param service the wfs3 service
-     * @param temporary the info, if this is a temporary or permanent vector tile
-     * @param cache the tile cache
-     * */
+     * @param level          the zoom level as a string
+     * @param row            the row number as a string
+     * @param col            the column number as a string
+     * @param service        the wfs3 service
+     * @param temporary      the info, if this is a temporary or permanent vector tile
+     * @param cache          the tile cache
+     */
 
     VectorTile(String collectionId, String tilingSchemeId, String level, String row, String col, Wfs3Service service, boolean temporary, VectorTilesCache cache) throws FileNotFoundException {
 
@@ -111,7 +120,7 @@ class VectorTile {
      * Verify that the zoom level is an integer value in the valid range for the tiling scheme
      *
      * @param tilingScheme the tiling scheme used in the request
-     * @param level the zoom level as a string
+     * @param level        the zoom level as a string
      * @return the zoom level as an integer, or -1 in case of an invalid zoom level
      */
     private int checkZoomLevel(TilingScheme tilingScheme, String level) {
@@ -131,15 +140,15 @@ class VectorTile {
      * Verify that the row number is an integer value
      *
      * @param tilingScheme the tiling scheme used in the request
-     * @param level the zoom level
-     * @param row the row number as a string
+     * @param level        the zoom level
+     * @param row          the row number as a string
      * @return the row number as an integer, or -1 in case of an invalid value
      */
-    private int checkRow( TilingScheme tilingScheme, int level, String row ) {
+    private int checkRow(TilingScheme tilingScheme, int level, String row) {
         int r;
         try {
             r = Integer.parseInt(row);
-            if (!tilingScheme.validateRow(level,r))
+            if (!tilingScheme.validateRow(level, r))
                 r = -1;
         } catch (NumberFormatException e) {
             r = -1;
@@ -151,15 +160,15 @@ class VectorTile {
      * Verify that the column number is an integer value
      *
      * @param tilingScheme the tiling scheme used in the request
-     * @param level the zoom level
-     * @param col the column number as a string
+     * @param level        the zoom level
+     * @param col          the column number as a string
      * @return the column number as an integer, or -1 in case of an invalid value
      */
-    private int checkColumn( TilingScheme tilingScheme, int level, String col ) {
+    private int checkColumn(TilingScheme tilingScheme, int level, String col) {
         int c;
         try {
             c = Integer.parseInt(col);
-            if (!tilingScheme.validateCol(level,c))
+            if (!tilingScheme.validateCol(level, c))
                 c = -1;
         } catch (NumberFormatException e) {
             c = -1;
@@ -169,7 +178,8 @@ class VectorTile {
 
     /**
      * fetch the file object of a tile in the cache
-     * @param cache the tile cache
+     *
+     * @param cache     the tile cache
      * @param extension the file extension of the cached file
      * @return the file object of the tile in the cache
      */
@@ -179,6 +189,7 @@ class VectorTile {
 
     /**
      * retrieve the subdirectory in the tiles directory for the selected service, tiling scheme, etc.
+     *
      * @param cache the tile cache
      * @return the directory with the cached tile files
      */
@@ -187,7 +198,7 @@ class VectorTile {
         if (temporary)
             subDir = cache.getTmpDirectory();
         else
-            subDir = new File(new File(new File(cache.getTilesDirectory(), service.getId()), (collectionId==null ? "__all__" : collectionId)), tilingScheme.getId());
+            subDir = new File(new File(new File(cache.getTilesDirectory(), service.getId()), (collectionId == null ? "__all__" : collectionId)), tilingScheme.getId());
 
         if (!subDir.exists()) {
             subDir.mkdirs();
@@ -197,8 +208,9 @@ class VectorTile {
 
     /**
      * generate the Mapbox Vector Tile file in the cache
-     * @param tileFileMvt the file object of the tile in the cache
-     * @param layers map of the layers names and the file objects of the existing GeoJSON tiles in the cache; these files must exist
+     *
+     * @param tileFileMvt       the file object of the tile in the cache
+     * @param layers            map of the layers names and the file objects of the existing GeoJSON tiles in the cache; these files must exist
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @return true, if the file was generated successfully, false, if an error occurred
      */
@@ -260,7 +272,7 @@ class VectorTile {
 
                     // read JTS geometry in WGS 84 lon/lat
                     try {
-                        if(jsonGeometry.get("type").equals("MultiLineString") && !(jsonGeometry.get("coordinates").toString().contains("],")))
+                        if (jsonGeometry.get("type").equals("MultiLineString") && !(jsonGeometry.get("coordinates").toString().contains("],")))
                             continue; // TODO: skip MultiLineStrings with a single LineString for now because of an issue with the JTS code
                         jtsGeom = reader.read(mapper.writeValueAsString(jsonGeometry));
 
@@ -285,15 +297,13 @@ class VectorTile {
                             continue;
                         if (srfCount++ > srfLimit)
                             continue;
-                    }
-                    else if (geomType.contains("LineString")) {
+                    } else if (geomType.contains("LineString")) {
                         double length = jtsGeom.getLength();
                         if (length <= 2)
                             continue;
                         if (crvCount++ > crvLimit)
                             continue;
-                    }
-                    else if (geomType.contains("Point")) {
+                    } else if (geomType.contains("Point")) {
                         if (pntCount++ > pntLimit)
                             continue;
                     }
@@ -301,15 +311,15 @@ class VectorTile {
                     Map<String, Object> jsonProperties = (Map<String, Object>) jsonFeature.get("properties");
 
                     // remove properties that have not been requested
-                    if (propertyNames!=null) {
+                    if (propertyNames != null) {
                         jsonProperties.entrySet().removeIf(property -> !propertyNames.contains(property.getKey()));
                     }
 
                     // remove null values
-                    jsonProperties.entrySet().removeIf(property->property.getValue() == null );
+                    jsonProperties.entrySet().removeIf(property -> property.getValue() == null);
                     // TODO: these are temporary fixes for TDS data
-                    jsonProperties.entrySet().removeIf(property->property.getValue() instanceof String && ((String) property.getValue()).toLowerCase().matches("^(no[ ]?information|\\-999999)$") );
-                    jsonProperties.entrySet().removeIf(property->property.getValue() instanceof Number && ((Number) property.getValue()).intValue()==-999999 );
+                    jsonProperties.entrySet().removeIf(property -> property.getValue() instanceof String && ((String) property.getValue()).toLowerCase().matches("^(no[ ]?information|\\-999999)$"));
+                    jsonProperties.entrySet().removeIf(property -> property.getValue() instanceof Number && ((Number) property.getValue()).intValue() == -999999);
 
                     // Add the feature with the layer name, a Map with attributes and the JTS Geometry.
                     encoder.addFeature(layerName, jsonProperties, jtsGeom);
@@ -337,34 +347,35 @@ class VectorTile {
 
     /**
      * generate the GeoJSON tile file in the cache
-     * @param tileFile the file object of the tile in the cache
+     *
+     * @param tileFile          the file object of the tile in the cache
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @return true, if the file was generated successfully, false, if an error occurred
      */
-    boolean generateTileJson(File tileFile, CrsTransformation crsTransformation) {
+    boolean generateTileJson(File tileFile, CrsTransformation crsTransformation, @Context UriInfo uriInfo, Map<String, String> filters, Map<String, String> filterableFields) {
 
         // TODO add support for multi-collection GeoJSON output
-        if (collectionId==null)
+        if (collectionId == null)
             return false;
 
         OutputStream outputStream = null;
         try {
             outputStream = new FileOutputStream(tileFile);
         } catch (FileNotFoundException e) {
-            LOGGER.error("File not found: "+e.getMessage());
+            LOGGER.error("File not found: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
 
         String geometryField = service.getData()
-                                          .getFilterableFieldsForFeatureType(collectionId)
-                                          .get("bbox");
+                .getFilterableFieldsForFeatureType(collectionId)
+                .get("bbox");
 
         String filter = null;
         try {
             filter = getSpatialFilter(geometryField, crsTransformation);
         } catch (CrsTransformationException e) {
-            LOGGER.error("CRS transformation error: "+e.getMessage());
+            LOGGER.error("CRS transformation error: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -376,27 +387,47 @@ class VectorTile {
         try {
             maxAllowableOffsetCrs84 = tilingScheme.getMaxAllowableOffset(level, row, col, DEFAULT_CRS, crsTransformation);
         } catch (CrsTransformationException e) {
-            LOGGER.error("CRS transformation error: "+e.getMessage());
+            LOGGER.error("CRS transformation error: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
 
-        ImmutableFeatureQuery query = ImmutableFeatureQuery.builder()
-                                                           .type(collectionId)
-                                                           .filter(filter)
-                                                           .maxAllowableOffset(maxAllowableOffsetNative)
-                                                           .build();
+        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+
+        List<String> propertiesList = Wfs3EndpointCore.getPropertiesList(queryParameters);
+
+        final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
+                .type(collectionId)
+                .filter(filter)
+                .maxAllowableOffset(maxAllowableOffsetNative)
+                .fields(propertiesList);
+
+
+        if (filters!= null &&filterableFields!=null) {
+            if (!filters.isEmpty()) {
+                String cql = getCQLFromFilters(service, filters, filterableFields);
+                LOGGER.debug("CQL {}", cql);
+                queryBuilder
+                        .filter(cql + " AND " + filter)
+                        .type(collectionId)
+                        .maxAllowableOffset(maxAllowableOffsetNative)
+                        .fields(propertiesList);
+            }
+        }
+
+        queryBuilder.build();
+
 
         TransformingFeatureProvider provider = service.getFeatureProvider();
-        FeatureStream<FeatureTransformer> featureTransformStream = provider.getFeatureTransformStream(query);
+        FeatureStream<FeatureTransformer> featureTransformStream = provider.getFeatureTransformStream(queryBuilder.build());
 
         FeatureTransformerGeoJson featureTransformer = new FeatureTransformerGeoJson(createJsonGenerator(outputStream), true, service.getCrsTransformer(null), ImmutableList
                 .of(), 0, "", maxAllowableOffsetCrs84, FeatureTransformerGeoJson.NESTED_OBJECTS.NEST, FeatureTransformerGeoJson.MULTIPLICITY.ARRAY);
 
         try {
             featureTransformStream.apply(featureTransformer)
-                                  .toCompletableFuture()
-                                  .join();
+                    .toCompletableFuture()
+                    .join();
         } catch (CompletionException e) {
             if (e.getCause() instanceof WebApplicationException) {
                 throw (WebApplicationException) e.getCause();
@@ -409,7 +440,8 @@ class VectorTile {
 
     /**
      * generate the spatial filter for a tile in the native coordinate reference system of the dataset in CQL
-     * @param geometryField the name of the geometry field to use for the filter
+     *
+     * @param geometryField     the name of the geometry field to use for the filter
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @return the spatial filter in CQL
      * @throws CrsTransformationException if the bounding box could not be converted
@@ -439,13 +471,13 @@ class VectorTile {
         double latMax = bbox.getYmax();
 
         double tileSize = tilingScheme.getTileSize();
-        double xScale = tileSize / (lonMax-lonMin);
-        double yScale = tileSize / (latMax-latMin);
+        double xScale = tileSize / (lonMax - lonMin);
+        double yScale = tileSize / (latMax - latMin);
 
-        double xOffset = - lonMin * xScale;
+        double xOffset = -lonMin * xScale;
         double yOffset = latMin * yScale + tileSize;
 
-        return new AffineTransformation( xScale, 0.0d, xOffset, 0.0d, -yScale, yOffset );
+        return new AffineTransformation(xScale, 0.0d, xOffset, 0.0d, -yScale, yOffset);
     }
 
     /**
@@ -470,25 +502,58 @@ class VectorTile {
     private BoundingBox getBoundingBoxNativeCrs(CrsTransformation crsTransformation) throws CrsTransformationException {
         EpsgCrs crs = service.getData().getFeatureProvider().getNativeCrs();
         BoundingBox bboxTilingSchemeCrs = getBoundingBox();
-        if (crs==tilingScheme.getCrs())
+        if (crs == tilingScheme.getCrs())
             return bboxTilingSchemeCrs;
 
         CrsTransformer transformer = crsTransformation.getTransformer(tilingScheme.getCrs(), crs);
         return transformer.transformBoundingBox(bboxTilingSchemeCrs);
     }
+
     /**
-     * @param crs the target coordinate references system
+     * @param crs               the target coordinate references system
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @return the bounding box of the tiling scheme in the form of the target crs
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
     private BoundingBox getBoundingBox(EpsgCrs crs, CrsTransformation crsTransformation) throws CrsTransformationException {
         BoundingBox bboxTilingSchemeCrs = getBoundingBox();
-        if (crs==tilingScheme.getCrs())
+        if (crs == tilingScheme.getCrs())
             return bboxTilingSchemeCrs;
 
         CrsTransformer transformer = crsTransformation.getTransformer(tilingScheme.getCrs(), crs);
         return transformer.transformBoundingBox(bboxTilingSchemeCrs);
     }
+
+
+
+    private String getCQLFromFilters(Wfs3Service service, Map<String, String> filters, Map<String, String> filterableFields) {
+        return filters.entrySet()
+                .stream()
+                .map(f -> {
+                    if (f.getKey()
+                            .equals("time")) {
+                        try {
+                            Interval fromIso8601Period = Interval.parse(f.getValue());
+                            return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);
+                        } catch (DateTimeParseException ignore) {
+                            try {
+                                Instant fromIso8601 = Instant.parse(f.getValue());
+                                return String.format("%s TEQUALS %s", filterableFields.get(f.getKey()), fromIso8601);
+                            } catch (DateTimeParseException e) {
+                                LOGGER.debug("TIME PARSER ERROR", e);
+                                throw new BadRequestException();
+                            }
+                        }
+                    }
+                    if (f.getValue()
+                            .contains("*")) {
+                        return String.format("%s LIKE '%s'", filterableFields.get(f.getKey()), f.getValue());
+                    }
+
+                    return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
+                })
+                .collect(Collectors.joining(" AND "));
+    }
+
 
 }

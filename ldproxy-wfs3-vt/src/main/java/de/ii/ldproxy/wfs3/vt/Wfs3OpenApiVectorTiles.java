@@ -447,13 +447,29 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                                             .addParametersItem(new Parameter().$ref("#/components/parameters/row"))
                                             .addParametersItem(new Parameter().$ref("#/components/parameters/column"))
                                             .addParametersItem(new Parameter().$ref("#/components/parameters/properties"))
-
                                             .addParametersItem(new Parameter().$ref("#/components/parameters/f2"))
+                                            .addParametersItem(new Parameter().$ref("#/components/parameters/time"))
                                             //.requestBody(requestBody)
                                             .responses(new ApiResponses()
                                                     .addApiResponse("200", success2)
                                                     .addApiResponse("default", exception2))
                                     );
+                            Map<String, String> filterableFields = serviceData.getFilterableFieldsForFeatureType(ft.getId(), true);
+                            PathItem finalPathItem = pathItem2;
+                            filterableFields.keySet()
+                                    .forEach(field -> {
+                                        finalPathItem.getGet()
+                                                .addParametersItem(
+                                                        new Parameter()
+                                                                .name(field)
+                                                                .in("query")
+                                                                .description("Filter the collection by " + field)
+                                                                .required(false)
+                                                                .schema(new StringSchema())
+                                                                .style(Parameter.StyleEnum.FORM)
+                                                                .explode(false)
+                                                );
+                                    });
                         }
                         openAPI.getPaths()
                                 .addPathItem("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}", pathItem2);

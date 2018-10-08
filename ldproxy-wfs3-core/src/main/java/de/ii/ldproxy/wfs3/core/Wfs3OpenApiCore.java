@@ -133,7 +133,7 @@ public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
                                                    .example(0.05)
                                    );
                            clonedPathItem.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/maxAllowableOffset"));
-
+                           clonedPathItem.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/properties"));
                            /*
                            clonedPathItem.getGet()
                                          .addParametersItem(
