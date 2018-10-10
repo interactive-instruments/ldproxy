@@ -333,8 +333,22 @@ class VectorTile {
                     jsonProperties.entrySet().removeIf(property -> property.getValue() instanceof String && ((String) property.getValue()).toLowerCase().matches("^(no[ ]?information|\\-999999)$"));
                     jsonProperties.entrySet().removeIf(property -> property.getValue() instanceof Number && ((Number) property.getValue()).intValue() == -999999);
 
+                    // If we have an id that happens to be a long value, use it
+                    Object ids = jsonFeature.get("id");
+                    Long id = null;
+                    if (ids!=null && ids instanceof String) {
+                        try {
+                            id = Long.parseLong((String) ids);
+                        } catch (Exception e) {
+                            // nothing to do
+                        }
+                    }
+
                     // Add the feature with the layer name, a Map with attributes and the JTS Geometry.
-                    encoder.addFeature(layerName, jsonProperties, jtsGeom);
+                    if (id!=null)
+                        encoder.addFeature(layerName, jsonProperties, jtsGeom, id);
+                    else
+                        encoder.addFeature(layerName, jsonProperties, jtsGeom);
                 }
 
                 if (srfCount > srfLimit || crvCount > crvLimit || pntCount > pntLimit) {
