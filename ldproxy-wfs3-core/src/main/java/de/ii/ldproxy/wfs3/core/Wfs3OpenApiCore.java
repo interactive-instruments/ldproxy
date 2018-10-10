@@ -233,6 +233,7 @@ public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
                                           );*/
                            clonedPathItem2.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/crs"));
                            clonedPathItem2.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/maxAllowableOffset"));
+                           clonedPathItem2.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/properties"));
 
 
                            openAPI.getPaths()

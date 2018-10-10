@@ -6,6 +6,8 @@ import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
+import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -110,7 +112,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
     @Path("/{tilingSchemeId}/{level}/{row}/{col}")
     @GET
     @Produces({Wfs3MediaTypes.MVT})
-    public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @QueryParam("collections") String collections, @QueryParam("properties") String properties, @Context Service service, @Context UriInfo uriInfo) throws CrsTransformationException, FileNotFoundException, NotFoundException {
+    public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @QueryParam("collections") String collections, @QueryParam("properties") String properties, @Context Service service, @Context UriInfo uriInfo, @Context Wfs3RequestContext wfs3Request) throws CrsTransformationException, FileNotFoundException, NotFoundException {
 
         // TODO support time
         // TODO support other filter parameters
@@ -170,7 +172,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
                 File tileFileJson = layerTile.getFile(cache, "json");
                 if (!tileFileJson.exists()) {
-                    boolean success = layerTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null);
+                    boolean success = layerTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null,wfs3Request,false);
                     if (!success) {
                         String msg = "Internal server error: could not generate GeoJSON for a tile.";
                         LOGGER.error(msg);
@@ -214,7 +216,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
     @Path("/{tilingSchemeId}/{level}/{row}/{col}")
     @GET
     @Produces({Wfs3MediaTypes.GEO_JSON, MediaType.APPLICATION_JSON})
-    public Response getTileJson(@Auth Optional<User> optionalUser, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @Context Service service, @Context UriInfo uriInfo) throws CrsTransformationException, FileNotFoundException {
+    public Response getTileJson(@Auth Optional<User> optionalUser, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @Context Service service, @Context UriInfo uriInfo,@Context Wfs3RequestContext wfs3Request) throws CrsTransformationException, FileNotFoundException {
 
         // TODO support time
         // TODO support other filter parameters
@@ -235,7 +237,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         File tileFileJson = tile.getFile(cache, "json");
 
         if (!tileFileJson.exists()) {
-            tile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null);
+            tile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null,wfs3Request,false);
         }
 
         StreamingOutput streamingOutput = outputStream -> {

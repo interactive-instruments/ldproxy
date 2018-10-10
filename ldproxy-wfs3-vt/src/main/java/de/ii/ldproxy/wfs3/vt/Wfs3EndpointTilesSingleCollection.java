@@ -5,6 +5,8 @@ import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
+import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
@@ -43,6 +45,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
 
     @Requires
     private CrsTransformation crsTransformation;
+
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTilesSingleCollection.class);
 
@@ -115,7 +118,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
     @Path("/{collectionId}/tiles/{tilingSchemeId}/{level}/{row}/{col}")
     @GET
     @Produces({Wfs3MediaTypes.MVT})
-    public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @QueryParam("properties") String properties, @Context Service service, @Context UriInfo uriInfo) throws CrsTransformationException, FileNotFoundException, NotFoundException {
+    public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @QueryParam("properties") String properties, @Context Service service, @Context UriInfo uriInfo, @Context Wfs3RequestContext wfs3Request) throws CrsTransformationException, FileNotFoundException, NotFoundException {
 
         LOGGER.debug("GET TILE MVT {} {} {} {} {} {}", service.getId(), collectionId, tilingSchemeId, level, row, col);
         cache.cleanup(); // TODO centralize this
@@ -153,7 +156,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
             VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService, doNotCache, cache);
             File tileFileJson = jsonTile.getFile(cache, "json");
             if (!tileFileJson.exists()) {
-                boolean success = jsonTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,filters, filterableFields);
+                boolean success = jsonTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,filters, filterableFields, wfs3Request,true);
                 if (!success) {
                     String msg = "Internal server error: could not generate GeoJSON for a tile.";
                     LOGGER.error(msg);
@@ -201,7 +204,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
     @Path("/{collectionId}/tiles/{tilingSchemeId}/{level}/{row}/{col}")
     @GET
     @Produces({Wfs3MediaTypes.GEO_JSON, MediaType.APPLICATION_JSON})
-    public Response getTileJson(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @Context Service service, @Context UriInfo uriInfo) throws CrsTransformationException, FileNotFoundException {
+    public Response getTileJson(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @Context Service service, @Context UriInfo uriInfo, @Context Wfs3RequestContext wfs3Request) throws CrsTransformationException, FileNotFoundException {
 
 
         // TODO reduce content based on zoom level and feature counts
@@ -230,7 +233,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
         File tileFileJson = tile.getFile(cache, "json");
 
         if (!tileFileJson.exists()) {
-            tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields);
+            tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields,wfs3Request,true);
         }
 
         StreamingOutput streamingOutput = outputStream -> {

@@ -212,4 +212,34 @@ public class Wfs3LinksGenerator {
                 .ensureParameter("limit", String.valueOf(count))
                 .toString();
     }
+
+
+    public List<Wfs3Link> generateGeoJSONTileLinks(URICustomizer uriBuilder, Wfs3MediaType mediaType,Wfs3MediaType alternativeMediaType, String zoomLevel, String row, String col) {
+        uriBuilder
+                .ensureParameter("f", mediaType.parameter())
+                .ensureLastPathSegments("tiles","default",zoomLevel,row,col);
+
+
+        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
+                .add(ImmutableWfs3Link.builder()
+                        .href(uriBuilder.toString())
+                        .rel("self")
+                        .type(mediaType.metadata()
+                                .toString())
+                        .description("this document")
+                        .build())
+                .add(ImmutableWfs3Link.builder()
+                        .href(uriBuilder.copy()
+                                .removeLastPathSegment("")
+                                .setParameter("f", "mvt")
+                                .toString())
+                        .rel("alternate")
+                        .type(alternativeMediaType.metadata()
+                                .toString())
+                        .description("this document as MVT")
+                        .build());
+
+
+        return builder.build();
+    }
 }

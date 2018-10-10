@@ -6,13 +6,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
+import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
+import de.ii.ldproxy.wfs3.api.*;
+import de.ii.ldproxy.wfs3.core.Wfs3CollectionMetadataExtension;
 import de.ii.xtraplatform.crs.api.*;
 import de.ii.xtraplatform.feature.query.api.FeatureStream;
 import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
+import de.ii.xtraplatform.service.api.ServiceData;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import no.ecc.vectortile.VectorTileEncoder;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.hibernate.validator.constraints.pl.REGON;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.io.ParseException;
@@ -20,12 +27,15 @@ import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.slf4j.LoggerFactory;
 import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
 import org.threeten.extra.Interval;
+import de.ii.ldproxy.wfs3.core.Wfs3Core;
+
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import java.io.*;
@@ -56,6 +66,8 @@ class VectorTile {
     private final Wfs3Service service;
     private final boolean temporary;
     private final String fileName;
+
+
 
     /**
      * specify the vector tile
@@ -352,8 +364,7 @@ class VectorTile {
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @return true, if the file was generated successfully, false, if an error occurred
      */
-    boolean generateTileJson(File tileFile, CrsTransformation crsTransformation, @Context UriInfo uriInfo, Map<String, String> filters, Map<String, String> filterableFields) {
-
+    boolean generateTileJson(File tileFile, CrsTransformation crsTransformation, @Context UriInfo uriInfo, Map<String, String> filters, Map<String, String> filterableFields, /*TODO Deniz added this, things who are not required => delete here and in EPT/EPTSC*/Wfs3RequestContext wfs3Request, boolean isCollection) {
         // TODO add support for multi-collection GeoJSON output
         if (collectionId == null)
             return false;
@@ -418,11 +429,29 @@ class VectorTile {
         queryBuilder.build();
 
 
+
+        List<Wfs3Link> wfs3Links=new ArrayList<>();
+
+
+
+        if (isCollection) { //TODO if tiles member is active
+            Wfs3MediaType alternativeMediatype;
+            alternativeMediatype = ImmutableWfs3MediaType.builder()
+                    .main(new MediaType("application","vnd.mapbox-vector-tile"))
+                    .label("MVT")
+                    .build();
+            final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
+            wfs3Links  = wfs3LinksGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype,Integer.toString(level),Integer.toString(row),Integer.toString(col));
+        }
+
+
+
+
         TransformingFeatureProvider provider = service.getFeatureProvider();
         FeatureStream<FeatureTransformer> featureTransformStream = provider.getFeatureTransformStream(queryBuilder.build());
 
-        FeatureTransformerGeoJson featureTransformer = new FeatureTransformerGeoJson(createJsonGenerator(outputStream), true, service.getCrsTransformer(null), ImmutableList
-                .of(), 0, "", maxAllowableOffsetCrs84, FeatureTransformerGeoJson.NESTED_OBJECTS.NEST, FeatureTransformerGeoJson.MULTIPLICITY.ARRAY);
+        FeatureTransformerGeoJson featureTransformer = new FeatureTransformerGeoJson(createJsonGenerator(outputStream), true, service.getCrsTransformer(null),wfs3Links,
+                0, "", maxAllowableOffsetCrs84, FeatureTransformerGeoJson.NESTED_OBJECTS.NEST, FeatureTransformerGeoJson.MULTIPLICITY.ARRAY);
 
         try {
             featureTransformStream.apply(featureTransformer)
@@ -554,6 +583,4 @@ class VectorTile {
                 })
                 .collect(Collectors.joining(" AND "));
     }
-
-
 }

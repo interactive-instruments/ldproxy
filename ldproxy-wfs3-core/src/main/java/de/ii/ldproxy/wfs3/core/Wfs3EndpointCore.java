@@ -131,12 +131,16 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
 
     @Path("/{id}/items/{featureid}")
     @GET
-    public Response getItem(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @PathParam("featureid") final String featureId, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
+    public Response getItem(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @PathParam("featureid") final String featureId, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context UriInfo uriInfo) {
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
+
+
+        List<String> propertiesList = getPropertiesList(uriInfo.getQueryParameters());
 
         ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                           .type(id)
-                                                                          .filter(String.format("IN ('%s')", featureId));
+                                                                          .filter(String.format("IN ('%s')", featureId))
+                                                                          .fields(propertiesList);
 
         if (Objects.nonNull(crs) && !isDefaultCrs(crs)) {
             EpsgCrs targetCrs = new EpsgCrs(crs);
@@ -263,7 +267,7 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
                       .collect(Collectors.joining(" AND "));
     }
 
-    private Wfs3MediaType[] getAlternativeMediaTypes(Wfs3MediaType mediaType) {
+    public Wfs3MediaType[] getAlternativeMediaTypes(Wfs3MediaType mediaType) {
         return wfs3OutputFormats.keySet()
                                 .stream()
                                 .filter(wfs3MediaType -> !wfs3MediaType.equals(mediaType))
