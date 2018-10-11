@@ -21,6 +21,7 @@ import de.ii.xtraplatform.crs.api.JsonCoordinateFormatter;
 import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +43,14 @@ import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
 /**
  * @author zahnen
  */
-public class FeatureTransformerGeoJson implements FeatureTransformer {
+public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTransformer.OnTheFly {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerGeoJson.class);
+
+    @Override
+    public OnTheFlyMapping getOnTheFlyMapping() {
+        return new GeoJsonOnTheFlyMapping();
+    }
 
     public enum NESTED_OBJECTS {NEST, FLATTEN}
 

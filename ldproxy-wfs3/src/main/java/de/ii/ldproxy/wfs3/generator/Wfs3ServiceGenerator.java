@@ -69,6 +69,10 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
 
             FeatureProviderMetadataConsumer metadataConsumer = new MultiFeatureProviderMetadataConsumer(new Metadata2Wfs3((ModifiableWfs3ServiceData) partialData), dataGenerator.getDataGenerator(partialData.getFeatureProvider()));
             metadataAware.getMetadata(metadataConsumer);
+
+            //TODO: to onServiceStart queue
+            //TODO: set mappingStatus.enabled to false for catalog services
+            //TODO: reactivate on-the-fly mapping
             schemaAware.getSchema(((TransformingFeatureProvider.DataGenerator) dataGenerator).getMappingGenerator(partialData.getFeatureProvider(), getMappingProviders()), partialData.getFeatureProvider().getFeatureTypes());
 
             ((ModifiableWfs3ServiceData) partialData).setShouldStart(true);

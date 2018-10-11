@@ -1,6 +1,6 @@
 /**
  * Copyright 2018 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -23,6 +23,7 @@ import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ import java.util.OptionalLong;
 /**
  * @author zahnen
  */
-public class FeatureTransformerHtml implements FeatureTransformer {
+public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransformer.OnTheFly {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerHtml.class);
 
@@ -258,7 +259,7 @@ public class FeatureTransformerHtml implements FeatureTransformer {
             currentFeature.idAsUrl = true;
         }
 
-        currentFeature.name = mapping.getName();
+        //currentFeature.name = mapping.getName();
         currentFeature.itemType = ((MicrodataPropertyMapping) mapping).getItemType();
         currentFeature.itemProp = ((MicrodataPropertyMapping) mapping).getItemProp();
     }
@@ -470,7 +471,10 @@ public class FeatureTransformerHtml implements FeatureTransformer {
                     }
                 }
                 if (property.value.startsWith("http://") || property.value.startsWith("https://")) {
-                    if (property.value.toLowerCase().endsWith(".png") || property.value.toLowerCase().endsWith(".jpg") || property.value.toLowerCase().endsWith(".gif")) {
+                    if (property.value.toLowerCase()
+                                      .endsWith(".png") || property.value.toLowerCase()
+                                                                         .endsWith(".jpg") || property.value.toLowerCase()
+                                                                                                            .endsWith(".gif")) {
                         property.isImg = true;
                     } else {
                         property.isUrl = true;
@@ -627,4 +631,10 @@ public class FeatureTransformerHtml implements FeatureTransformer {
 
         currentGeometryType = null;
     }
+
+    @Override
+    public OnTheFlyMapping getOnTheFlyMapping() {
+        return new OnTheFlyMappingHtml();
+    }
+
 }
