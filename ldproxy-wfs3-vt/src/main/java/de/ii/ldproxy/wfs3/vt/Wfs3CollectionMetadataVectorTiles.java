@@ -30,6 +30,7 @@ public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadata
                                                                                        .description(collection.getTitle()+" as Mapbox vector tiles. The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property, {level}/{row}/{col} the tile based on the tiling scheme.")
                                                                                        .type(Wfs3MediaTypes.MVT)
                                                                                        .href(uriCustomizer.ensureLastPathSegment("tiles/")
+                                                                                                          .clearParameters()
                                                                                                           .toString()+
                                                                                                "{tilingSchemeId}/{level}/{row}/{col}?f=mvt")
                                                                                        .build())
