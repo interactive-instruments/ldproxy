@@ -1,6 +1,6 @@
 /**
  * Copyright 2018 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -15,7 +15,10 @@ import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.StreamConverters;
 import akka.util.ByteString;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collections;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
@@ -37,6 +40,7 @@ import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.entity.api.handler.Entity;
 import de.ii.xtraplatform.feature.provider.wfs.FeatureProviderWfs;
+import de.ii.xtraplatform.feature.query.api.FeatureProvider;
 import de.ii.xtraplatform.feature.query.api.FeatureProviderRegistry;
 import de.ii.xtraplatform.feature.query.api.FeatureQuery;
 import de.ii.xtraplatform.feature.query.api.FeatureStream;
@@ -65,6 +69,7 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.AbstractMap;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -127,29 +132,37 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
 
     @Override
     protected ImmutableWfs3ServiceData dataToImmutable(Wfs3ServiceData data) {
-        final ImmutableWfs3ServiceData serviceData = ImmutableWfs3ServiceData.copyOf(data);
 
         //TODO
-        this.featureProvider = (TransformingFeatureProvider) featureProviderRegistry.createFeatureProvider(serviceData.getFeatureProvider());
+        this.featureProvider = (TransformingFeatureProvider) featureProviderRegistry.createFeatureProvider(data.getFeatureProvider());
 
-        executorService.schedule(() -> {
-            try {
-                EpsgCrs sourceCrs = serviceData.getFeatureProvider()
-                                               .getNativeCrs();
-                this.defaultTransformer = crsTransformation.getTransformer(sourceCrs, Wfs3ServiceData.DEFAULT_CRS);
-                this.defaultReverseTransformer = crsTransformation.getTransformer(Wfs3ServiceData.DEFAULT_CRS, sourceCrs);
+        ImmutableWfs3ServiceData serviceData;
 
-                serviceData.getAdditionalCrs()
-                           .forEach(crs -> {
-                               additonalTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(sourceCrs, crs));
-                               additonalReverseTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(crs, sourceCrs));
-                           });
+        try {
+            EpsgCrs sourceCrs = data.getFeatureProvider()
+                                    .getNativeCrs();
+            this.defaultTransformer = crsTransformation.getTransformer(sourceCrs, Wfs3ServiceData.DEFAULT_CRS);
+            this.defaultReverseTransformer = crsTransformation.getTransformer(Wfs3ServiceData.DEFAULT_CRS, sourceCrs);
 
-                LOGGER.debug("TRANSFORMER {} {} -> {} {}", sourceCrs.getCode(), sourceCrs.isForceLongitudeFirst() ? "lonlat" : "latlon", Wfs3ServiceData.DEFAULT_CRS.getCode(), Wfs3ServiceData.DEFAULT_CRS.isForceLongitudeFirst() ? "lonlat" : "latlon");
-            } catch (Throwable e) {
-                LOGGER.error("CRS transformer could not created"/*, e*/);
-            }
-        }, 3, TimeUnit.SECONDS);
+
+            ImmutableMap<String, FeatureTypeConfigurationWfs3> featureTypesWithComputedBboxes = computeMissingBboxes(data.getFeatureTypes(), featureProvider, defaultTransformer);
+
+            serviceData = ImmutableWfs3ServiceData.builder()
+                                                  .from(data)
+                                                  .featureTypes(featureTypesWithComputedBboxes)
+                                                  .build();
+
+            data.getAdditionalCrs()
+                .forEach(crs -> {
+                    additonalTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(sourceCrs, crs));
+                    additonalReverseTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(crs, sourceCrs));
+                });
+
+            LOGGER.debug("TRANSFORMER {} {} -> {} {}", sourceCrs.getCode(), sourceCrs.isForceLongitudeFirst() ? "lonlat" : "latlon", Wfs3ServiceData.DEFAULT_CRS.getCode(), Wfs3ServiceData.DEFAULT_CRS.isForceLongitudeFirst() ? "lonlat" : "latlon");
+        } catch (Throwable e) {
+            LOGGER.error("CRS transformer could not created"/*, e*/);
+            serviceData = ImmutableWfs3ServiceData.copyOf(data);
+        }
 
         return serviceData;
     }
@@ -397,5 +410,38 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
             );
         }
         return collection;
+    }
+
+    private ImmutableMap<String, FeatureTypeConfigurationWfs3> computeMissingBboxes(Map<String, FeatureTypeConfigurationWfs3> featureTypes, FeatureProvider featureProvider, CrsTransformer defaultTransformer) {
+        return featureTypes
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    if (Objects.isNull(entry.getValue()
+                                            .getExtent()
+                                            .getSpatial())) {
+
+                        BoundingBox bbox = null;
+                        try {
+                            bbox = defaultTransformer.transformBoundingBox(featureProvider.getSpatialExtent(entry.getValue()
+                                                                                                                 .getId()));
+                        } catch (CrsTransformationException e) {
+                            //ignore
+                        }
+
+                        ImmutableFeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3 = ImmutableFeatureTypeConfigurationWfs3.builder()
+                                                                                                                                  .from(entry.getValue())
+                                                                                                                                  .extent(ImmutableFeatureTypeExtent.builder()
+                                                                                                                                                                    .from(entry.getValue()
+                                                                                                                                                                               .getExtent())
+                                                                                                                                                                    .spatial(bbox)
+                                                                                                                                                                    .build())
+                                                                                                                                  .build();
+
+                        return new AbstractMap.SimpleEntry<>(entry.getKey(), featureTypeConfigurationWfs3);
+                    }
+                    return entry;
+                })
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }
