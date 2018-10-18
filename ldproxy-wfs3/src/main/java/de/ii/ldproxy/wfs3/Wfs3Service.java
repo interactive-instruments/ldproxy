@@ -16,6 +16,7 @@ import akka.stream.javadsl.StreamConverters;
 import akka.util.ByteString;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.MoreExecutors;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
@@ -33,6 +34,7 @@ import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.wfs3.api.Wfs3StartupTask;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -77,9 +79,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -97,6 +100,8 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3Service.class);
 
+    private static final ExecutorService startupTaskExecutor = MoreExecutors.getExitingExecutorService((ThreadPoolExecutor) Executors.newSingleThreadExecutor());
+
     @Requires
     private CrsTransformation crsTransformation;
 
@@ -107,6 +112,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
 
     private final List<Wfs3ConformanceClass> wfs3ConformanceClasses;
     private final Map<Wfs3MediaType, Wfs3OutputFormatExtension> wfs3OutputFormats;
+    private final List<Wfs3StartupTask> wfs3StartupTasks;
 
     private CrsTransformer defaultTransformer;
     private CrsTransformer defaultReverseTransformer;
@@ -118,6 +124,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         super();
         this.wfs3ConformanceClasses = wfs3ConformanceClassRegistry.getConformanceClasses();
         this.wfs3OutputFormats = wfs3ConformanceClassRegistry.getOutputFormats();
+        this.wfs3StartupTasks = wfs3ConformanceClassRegistry.getStartupTasks();
 
         this.additonalTransformers = new LinkedHashMap<>();
         this.additonalReverseTransformers = new LinkedHashMap<>();
@@ -163,6 +170,9 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
             LOGGER.error("CRS transformer could not created"/*, e*/);
             serviceData = ImmutableWfs3ServiceData.copyOf(data);
         }
+
+        ImmutableWfs3ServiceData finalServiceData = serviceData;
+        wfs3StartupTasks.forEach(wfs3StartupTask -> startupTaskExecutor.submit(wfs3StartupTask.getTask(finalServiceData)));
 
         return serviceData;
     }
