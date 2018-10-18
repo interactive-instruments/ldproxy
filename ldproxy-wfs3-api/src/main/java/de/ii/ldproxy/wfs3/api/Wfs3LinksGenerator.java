@@ -302,7 +302,7 @@ public class Wfs3LinksGenerator {
         final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
                 .add(ImmutableWfs3Link.builder()
                         .href(uriBuilder.copy().ensureLastPathSegment("tiles/").clearParameters().toString() + "{tilingSchemeId}/{level}/{row}/{column}?f=json")
-                        .rel("tile-template")
+                        .rel("tiles")
                         .type("application/geo+json")
                         .description("Tiles in GeoJSON. The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property, {level}/{row}/{col} the tile based on the tiling scheme.")
                         .templated("true")
@@ -310,7 +310,7 @@ public class Wfs3LinksGenerator {
 
                 .add(ImmutableWfs3Link.builder()
                         .href(uriBuilder.copy().ensureLastPathSegment("tiles/").clearParameters().toString() + "{tilingSchemeId}/{level}/{row}/{column}?f=mvt")
-                        .rel("tile-template")
+                        .rel("tiles")
                         .type("application/vnd.mapbox-vector-tile")
                         .description("Mapbox vector tiles. The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property, {level}/{row}/{col} the tile based on the tiling scheme.")
                         .templated("true")

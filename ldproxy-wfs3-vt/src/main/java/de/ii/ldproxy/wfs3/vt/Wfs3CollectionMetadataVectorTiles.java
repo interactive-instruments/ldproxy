@@ -26,7 +26,7 @@ public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadata
         if (!isNested) {
             collection.setLinks(ImmutableList.<Wfs3Link>builder().addAll(collection.getLinks())
                                                                  .add(ImmutableWfs3Link.builder()
-                                                                                       .rel("tile-template")
+                                                                                       .rel("tiles")
                                                                                        .description(collection.getTitle()+" as Mapbox vector tiles. The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property, {level}/{row}/{col} the tile based on the tiling scheme.")
                                                                                        .type(Wfs3MediaTypes.MVT)
                                                                                        .href(uriCustomizer.ensureLastPathSegment("tiles/")
@@ -36,7 +36,7 @@ public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadata
                                                                                        .templated("true")
                                                                                        .build())
                                                                  .add(ImmutableWfs3Link.builder()
-                                                                                       .rel("tile-template")
+                                                                                       .rel("tiles")
                                                                                        .description(collection.getTitle()+" as tiles in GeoJSON. The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property, {level}/{row}/{col} the tile based on the tiling scheme.")
                                                                                        .type(Wfs3MediaTypes.GEO_JSON)
                                                                                        .href(uriCustomizer.toString()+
@@ -44,7 +44,7 @@ public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadata
                                                                                        .templated("true")
                                                                                        .build())
                                                                  .add(ImmutableWfs3Link.builder()
-                                                                                       .rel("tilingScheme-template")
+                                                                                       .rel("tilingSchemes")
                                                                                        .description("The tiling Scheme of " + collection.getTitle() + ". The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property.")
                                                                                        .type(Wfs3MediaTypes.JSON)
                                                                                        .href(uriCustomizer.copy().ensureLastPathSegment("tiles").toString()+"{tilingSchemeId}?f=json")
