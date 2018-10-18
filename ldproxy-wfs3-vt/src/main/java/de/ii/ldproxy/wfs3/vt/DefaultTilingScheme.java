@@ -52,7 +52,7 @@ public class DefaultTilingScheme implements TilingScheme {
      * @return the bounding box of th tiling scheme in the coordinate reference system EPSG 3857
      */
     @Override
-    public BoundingBox getBoundingBox(int level, int row, int col) {
+    public BoundingBox getBoundingBox(int level, int col, int row) {
 
         // TODO optimize computations
         double x1 = -20037508.3427892;
