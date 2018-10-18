@@ -52,7 +52,7 @@ public class DefaultTilingScheme implements TilingScheme {
      * @return the bounding box of th tiling scheme in the coordinate reference system EPSG 3857
      */
     @Override
-    public BoundingBox getBoundingBox(int level, int row, int col) {
+    public BoundingBox getBoundingBox(int level, int col, int row) {
 
         // TODO optimize computations
         double x1 = -20037508.3427892;
@@ -96,7 +96,7 @@ public class DefaultTilingScheme implements TilingScheme {
      */
     @Override
     public double getMaxAllowableOffset(int level, int row, int col, EpsgCrs crs, CrsTransformation crsTransformation) throws CrsTransformationException {
-        BoundingBox bbox = getBoundingBox(level, row, col);
+        BoundingBox bbox = getBoundingBox(level, col, row);
         if (crs!=null && !crs.equals(CRS)) {
             CrsTransformer transformer = crsTransformation.getTransformer(CRS, crs);
             BoundingBox bboxCrs = transformer.transformBoundingBox(bbox);

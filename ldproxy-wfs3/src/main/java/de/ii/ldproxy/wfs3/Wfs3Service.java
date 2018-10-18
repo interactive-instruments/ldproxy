@@ -17,6 +17,7 @@ import akka.util.ByteString;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.typesafe.config.ConfigException;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
@@ -46,11 +47,7 @@ import de.ii.xtraplatform.feature.query.api.FeatureProvider;
 import de.ii.xtraplatform.feature.query.api.FeatureProviderRegistry;
 import de.ii.xtraplatform.feature.query.api.FeatureQuery;
 import de.ii.xtraplatform.feature.query.api.FeatureStream;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService2;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
-import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
-import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
+import de.ii.xtraplatform.feature.transformer.api.*;
 import de.ii.xtraplatform.feature.transformer.geojson.GeoJsonStreamParser;
 import de.ii.xtraplatform.feature.transformer.geojson.MappingSwapper;
 import de.ii.xtraplatform.service.api.AbstractService;
@@ -68,6 +65,7 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.annotation.XmlType;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -78,13 +76,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 
 /**
  * @author zahnen
@@ -100,7 +95,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3Service.class);
 
-    private static final ExecutorService startupTaskExecutor = MoreExecutors.getExitingExecutorService((ThreadPoolExecutor) Executors.newSingleThreadExecutor());
+    private static final ExecutorService startupTaskExecutor = MoreExecutors.getExitingExecutorService((ThreadPoolExecutor) Executors.newFixedThreadPool(1));
 
     @Requires
     private CrsTransformation crsTransformation;
@@ -421,32 +416,33 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         }
         return collection;
     }
-
-    private ImmutableMap<String, FeatureTypeConfigurationWfs3> computeMissingBboxes(Map<String, FeatureTypeConfigurationWfs3> featureTypes, FeatureProvider featureProvider, CrsTransformer defaultTransformer) {
+//TODO Test
+    private ImmutableMap<String, FeatureTypeConfigurationWfs3> computeMissingBboxes(Map<String, FeatureTypeConfigurationWfs3> featureTypes, FeatureProvider featureProvider, CrsTransformer defaultTransformer) throws IllegalStateException{
         return featureTypes
                 .entrySet()
                 .stream()
                 .map(entry -> {
-                    if (Objects.isNull(entry.getValue()
-                                            .getExtent()
-                                            .getSpatial())) {
+
+
+                    if (Objects.isNull(entry.getValue().getExtent().getSpatial())) {
 
                         BoundingBox bbox = null;
                         try {
                             bbox = defaultTransformer.transformBoundingBox(featureProvider.getSpatialExtent(entry.getValue()
                                                                                                                  .getId()));
-                        } catch (CrsTransformationException e) {
-                            //ignore
+                        } catch ( CrsTransformationException | CompletionException e) {
+                              bbox=new BoundingBox(-180.0,-90.0,180.0,90.0, new EpsgCrs(4326,true));
                         }
 
                         ImmutableFeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3 = ImmutableFeatureTypeConfigurationWfs3.builder()
-                                                                                                                                  .from(entry.getValue())
-                                                                                                                                  .extent(ImmutableFeatureTypeExtent.builder()
-                                                                                                                                                                    .from(entry.getValue()
-                                                                                                                                                                               .getExtent())
-                                                                                                                                                                    .spatial(bbox)
-                                                                                                                                                                    .build())
-                                                                                                                                  .build();
+                                    .from(entry.getValue())
+                                    .extent(ImmutableFeatureTypeExtent.builder()
+                                            .from(entry.getValue()
+                                                    .getExtent())
+                                            .spatial(bbox)
+                                            .build())
+                                    .build();
+
 
                         return new AbstractMap.SimpleEntry<>(entry.getKey(), featureTypeConfigurationWfs3);
                     }

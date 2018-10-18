@@ -1,12 +1,12 @@
 package de.ii.ldproxy.wfs3.vt;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
+import de.ii.ldproxy.wfs3.api.*;
 import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
@@ -24,9 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.*;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
@@ -88,11 +86,36 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
     @Path("/{collectionId}/tiles/{tilingSchemeId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingScheme(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId) {
+    public Response getTilingScheme(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId, @Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException {
+        Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
+        checkTilesParameterCollection(wfsService,collectionId);
 
         File file = cache.getTilingScheme(tilingSchemeId);
 
-        return Response.ok(file, MediaType.APPLICATION_JSON).build();
+        final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
+        List<Wfs3Link> wfs3Link = wfs3LinksGenerator.generateTilingSchemeLinks(wfs3Request.getUriCustomizer(),tilingSchemeId);
+
+
+        /*read the json file to add links*/
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> jsonTilingScheme;
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        if (br.readLine() == null) {
+            jsonTilingScheme = null;
+        } else {
+            jsonTilingScheme =  mapper.readValue(file, new TypeReference<LinkedHashMap>() {});
+        }
+
+        jsonTilingScheme.put("links",wfs3Link);
+
+        return Response.ok(jsonTilingScheme).build();
+
+
     }
 
     /**
@@ -120,6 +143,23 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
     @Produces({Wfs3MediaTypes.MVT})
     public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @QueryParam("properties") String properties, @Context Service service, @Context UriInfo uriInfo, @Context Wfs3RequestContext wfs3Request) throws CrsTransformationException, FileNotFoundException, NotFoundException {
 
+        Wfs3Service wfsService = Wfs3EndpointTiles.wfs3ServiceCheck(service);
+        checkTilesParameterCollection(wfsService, collectionId);
+        VectorTile.checkFormats(wfsService, collectionId, Wfs3MediaTypes.MVT);
+
+
+        boolean doNotCache = false;
+
+        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+        final Map<String, String> filterableFields = wfsService.getData().getFilterableFieldsForFeatureType(collectionId);
+        final Map<String, String> filters = Wfs3EndpointCore.getFiltersFromQuery(queryParameters, filterableFields);
+        if (!filters.isEmpty() || queryParameters.containsKey("properties"))
+            doNotCache = true;
+
+
+        VectorTile.checkZoomLevels(Integer.parseInt(level),wfsService,collectionId, tilingSchemeId,Wfs3MediaTypes.MVT,row,col,doNotCache,cache,true, wfs3Request,crsTransformation);
+
+
         LOGGER.debug("GET TILE MVT {} {} {} {} {} {}", service.getId(), collectionId, tilingSchemeId, level, row, col);
         cache.cleanup(); // TODO centralize this
 
@@ -133,20 +173,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
             }
         }
 
-        boolean doNotCache = false;
 
-        if (!(service instanceof Wfs3Service)) {
-            String msg = "Internal server error: vector tiles require a WFS 3 service.";
-            LOGGER.error(msg);
-            throw new InternalServerErrorException(msg);
-        }
-        Wfs3Service wfsService = (Wfs3Service) service;
-
-        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-        final Map<String, String> filterableFields = wfsService.getData().getFilterableFieldsForFeatureType(collectionId);
-        final Map<String, String> filters = Wfs3EndpointCore.getFiltersFromQuery(queryParameters, filterableFields);
-        if(!filters.isEmpty()||queryParameters.containsKey("properties"))
-            doNotCache=true;
 
         VectorTile tile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService, doNotCache, cache);
 
@@ -206,20 +233,9 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
     @Produces({Wfs3MediaTypes.GEO_JSON, MediaType.APPLICATION_JSON})
     public Response getTileJson(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("tilingSchemeId") String tilingSchemeId, @PathParam("level") String level, @PathParam("row") String row, @PathParam("col") String col, @Context Service service, @Context UriInfo uriInfo, @Context Wfs3RequestContext wfs3Request) throws CrsTransformationException, FileNotFoundException {
 
-
-        // TODO reduce content based on zoom level and feature counts
-
-        LOGGER.debug("GET TILE GeoJSON {} {} {} {} {} {}", service.getId(), collectionId, tilingSchemeId, level, row, col);
-
-        // check and process parameters
-        if (!(service instanceof Wfs3Service)) {
-            String msg = "Internal server error: vector tiles require a WFS 3 service.";
-            LOGGER.error(msg);
-            throw new InternalServerErrorException(msg);
-        }
-
-        Wfs3Service wfsService = (Wfs3Service) service;
-
+        Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
+        checkTilesParameterCollection(wfsService,collectionId);
+        VectorTile.checkFormats(wfsService,collectionId, Wfs3MediaTypes.JSON);
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         final Map<String, String> filterableFields = wfsService.getData().getFilterableFieldsForFeatureType(collectionId);
         final Map<String, String> filters = Wfs3EndpointCore.getFiltersFromQuery(queryParameters, filterableFields);
@@ -227,6 +243,14 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
         boolean doNotCache=false;
         if(!filters.isEmpty()||queryParameters.containsKey("properties"))
             doNotCache=true;
+
+        VectorTile.checkZoomLevels(Integer.parseInt(level),wfsService,collectionId, tilingSchemeId,MediaType.APPLICATION_JSON,row,col,doNotCache,cache, true,wfs3Request,crsTransformation);
+
+        LOGGER.debug("GET TILE GeoJSON {} {} {} {} {} {}", service.getId(), collectionId, tilingSchemeId, level, row, col);
+
+
+
+
 
         VectorTile tile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService, doNotCache, cache);
 
@@ -242,5 +266,19 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
 
         return Response.ok(streamingOutput, Wfs3MediaTypes.GEO_JSON)
                 .build();
+    }
+
+    public static void checkTilesParameterCollection(Wfs3Service wfsService, String collectionId){
+        FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3=wfsService.getData().getFeatureTypes().get(collectionId);
+
+        try{
+            featureTypeConfigurationWfs3.getTiles();
+        }catch (IllegalStateException e){
+            throw new NotFoundException();
+        }
+
+        if(!featureTypeConfigurationWfs3.getTiles().getEnabled()){
+            throw new NotFoundException();
+        }
     }
 }

@@ -9,7 +9,9 @@ package de.ii.ldproxy.wfs3.vt;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
+import de.ii.ldproxy.wfs3.Wfs3Service;
+import de.ii.ldproxy.wfs3.api.*;
+import de.ii.xtraplatform.service.api.Service;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -19,10 +21,15 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -74,10 +81,22 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
     @Path("/")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingSchemes() {
+    public Response getTilingSchemes(@Context Service service, @Context Wfs3RequestContext wfs3Request) {
 
-        return Response.ok(ImmutableMap.of("tilingSchemes", cache.getTilingSchemeIds().toArray() ))
-                       .build();
+        Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
+        Wfs3EndpointTiles.checkTilesParameterDataset(wfsService);
+
+            final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
+            List<Map<String,Object>> wfs3LinksList = new ArrayList<>();
+
+        for(Object tilingSchemeId : cache.getTilingSchemeIds().toArray()){
+            Map<String,Object> wfs3LinksMap = new HashMap<>();
+            wfs3LinksMap.put("identifier",tilingSchemeId);
+            wfs3LinksMap.put("links",wfs3LinksGenerator.generateTilingSchemesLinks(wfs3Request.getUriCustomizer(),tilingSchemeId.toString()));
+            wfs3LinksList.add(wfs3LinksMap);
+        }
+
+        return Response.ok(ImmutableMap.of("tilingSchemes", wfs3LinksList)).build();
     }
 
     /**
@@ -89,7 +108,11 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
     @Path("/{tilingSchemeId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingScheme(@PathParam("tilingSchemeId") String tilingSchemeId) {
+    public Response getTilingScheme(@PathParam("tilingSchemeId") String tilingSchemeId,@Context Service service) {
+
+        Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
+        Wfs3EndpointTiles.checkTilesParameterDataset(wfsService);
+
 
         File file = cache.getTilingScheme(tilingSchemeId);
 

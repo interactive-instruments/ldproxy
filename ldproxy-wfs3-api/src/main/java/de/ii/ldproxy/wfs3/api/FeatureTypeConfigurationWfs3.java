@@ -29,6 +29,8 @@ public abstract class FeatureTypeConfigurationWfs3 extends FeatureTypeConfigurat
     //public abstract BoundingBox getSpatialExtent();
 
     public abstract FeatureTypeExtent getExtent();
+    public abstract FeatureTypeTiles getTiles();
+
 
     @Value.Immutable
     @JsonDeserialize(as = ImmutableFeatureTypeExtent.class)
@@ -39,4 +41,6 @@ public abstract class FeatureTypeConfigurationWfs3 extends FeatureTypeConfigurat
         @Nullable
         public abstract BoundingBox getSpatial();
     }
+
 }
+

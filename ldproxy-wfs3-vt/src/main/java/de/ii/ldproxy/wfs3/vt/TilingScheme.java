@@ -33,7 +33,7 @@ public interface TilingScheme {
      * @param col the column
      * @return the bounding box in the coordinate reference system of the tiling scheme
      */
-    BoundingBox getBoundingBox(int level, int row, int col);
+    BoundingBox getBoundingBox(int level, int col, int row);
 
     /**
      * determine the Douglas-Peucker distance parameter for a tile
