@@ -9,6 +9,11 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * add tiling information to the collection metadata (supported tiling schemes, links)
  *
@@ -24,35 +29,18 @@ public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadata
 
         // The hrefs are URI templates and not URIs, so the templates should not be percent encoded!
         if (!isNested) {
-            collection.setLinks(ImmutableList.<Wfs3Link>builder().addAll(collection.getLinks())
-                                                                 .add(ImmutableWfs3Link.builder()
-                                                                                       .rel("tiles")
-                                                                                       .description(collection.getTitle()+" as Mapbox vector tiles. The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property, {level}/{row}/{col} the tile based on the tiling scheme.")
-                                                                                       .type(Wfs3MediaTypes.MVT)
-                                                                                       .href(uriCustomizer.ensureLastPathSegment("tiles/")
-                                                                                                          .clearParameters()
-                                                                                                          .toString()+
-                                                                                               "{tilingSchemeId}/{level}/{row}/{col}?f=mvt")
-                                                                                       .templated("true")
-                                                                                       .build())
-                                                                 .add(ImmutableWfs3Link.builder()
-                                                                                       .rel("tiles")
-                                                                                       .description(collection.getTitle()+" as tiles in GeoJSON. The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property, {level}/{row}/{col} the tile based on the tiling scheme.")
-                                                                                       .type(Wfs3MediaTypes.GEO_JSON)
-                                                                                       .href(uriCustomizer.toString()+
-                                                                                               "{tilingSchemeId}/{level}/{row}/{col}?f=json")
-                                                                                       .templated("true")
-                                                                                       .build())
-                                                                 .add(ImmutableWfs3Link.builder()
-                                                                                       .rel("tilingSchemes")
-                                                                                       .description("The tiling Scheme of " + collection.getTitle() + ". The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property.")
-                                                                                       .type(Wfs3MediaTypes.JSON)
-                                                                                       .href(uriCustomizer.copy().ensureLastPathSegment("tiles").toString()+"{tilingSchemeId}?f=json")
-                                                                                       .templated("true")
-                                                                                       .build())
-                                                                 .build());
 
-            collection.addExtension("tilingSchemes", ImmutableList.of( "default" ));
+                final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
+                List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
+                Map<String, Object> wfs3LinksMap = new HashMap<>();
+          //  for(Object tilingSchemeId : TODO tilingSchemeIDs) {
+
+                wfs3LinksMap.put("identifier", "default"); //TODO replace with tilingSchemeId
+                wfs3LinksMap.put("links", wfs3LinksGenerator.generateTilingSchemesLinks(uriCustomizer, "default")); //TODO replace with tilingSchemeId
+                wfs3LinksList.add(wfs3LinksMap);
+
+        //    }
+            collection.addExtension("tilingSchemes",ImmutableList.of(wfs3LinksList));
         }
 
         return collection;

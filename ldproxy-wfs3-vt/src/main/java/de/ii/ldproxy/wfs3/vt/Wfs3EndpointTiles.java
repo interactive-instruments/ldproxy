@@ -76,6 +76,32 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
     }
 
     /**
+     * retrieve all available tiling schemes
+     *
+     * @return all tiling schemes in a json array
+     */
+    @Path("/")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTilingSchemes(@Context Service service, @Context Wfs3RequestContext wfs3Request) {
+
+        Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
+        Wfs3EndpointTiles.checkTilesParameterDataset(wfsService);
+
+        final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
+        List<Map<String,Object>> wfs3LinksList = new ArrayList<>();
+
+        for(Object tilingSchemeId : cache.getTilingSchemeIds().toArray()){
+            Map<String,Object> wfs3LinksMap = new HashMap<>();
+            wfs3LinksMap.put("identifier",tilingSchemeId);
+            wfs3LinksMap.put("links",wfs3LinksGenerator.generateTilesLinks(wfs3Request.getUriCustomizer(),tilingSchemeId.toString()));
+            wfs3LinksList.add(wfs3LinksMap);
+        }
+
+        return Response.ok(ImmutableMap.of("tilingSchemes", wfs3LinksList)).build();
+    }
+
+    /**
      * retrieve a tiling scheme to partition the dataset into tiles
      *
      * @param optionalUser the user
@@ -91,7 +117,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         File file = cache.getTilingScheme(tilingSchemeId);
 
         final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
-        List<Wfs3Link> wfs3Link = wfs3LinksGenerator.generateTilingSchemeLinks(wfs3Request.getUriCustomizer(),tilingSchemeId);
+        List<Wfs3Link> wfs3Link = wfs3LinksGenerator.generateTilingSchemeLinksOnlyMVT(wfs3Request.getUriCustomizer(),tilingSchemeId);
 
 
         /*read the json file to add links*/

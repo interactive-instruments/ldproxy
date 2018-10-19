@@ -287,32 +287,70 @@ public class Wfs3LinksGenerator {
                                 .setParameter("f", "json")
                                 .toString()
                         )
-                        .rel("about")
+                        .rel("tilingScheme")
                         .type("application/json")
-                        .description(tilingSchemeId + " tiling Scheme")
+                        .description("Google Maps Tiling Scheme")//TODO dynamic naming
                         .build())
                 ;
 
 
         return builder.build();
     }
+    public List<Wfs3Link> generateTilesLinks(URICustomizer uriBuilder, String tilingSchemeId) {
+
+
+        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
+                .add(ImmutableWfs3Link.builder()
+                        .href(uriBuilder.copy()
+                                .ensureLastPathSegment("tiles")
+                                .ensureLastPathSegment(tilingSchemeId)
+                                .setParameter("f", "json")
+                                .toString()
+                        )
+                        .rel("tilingScheme")
+                        .type("application/json")
+                        .description("Google Maps Tiling Scheme") //TODO dynamic naming
+                        .build())
+                ;
+
+
+        return builder.build();
+    }
+
     public List<Wfs3Link> generateTilingSchemeLinks(URICustomizer uriBuilder, String tilingSchemeId) {
 
 
         final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
                 .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy().ensureLastPathSegment("tiles/").clearParameters().toString() + "{tilingSchemeId}/{level}/{row}/{column}?f=json")
+                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{column}?f=json")
                         .rel("tiles")
                         .type("application/geo+json")
-                        .description("Tiles in GeoJSON. The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property, {level}/{row}/{col} the tile based on the tiling scheme.")
+                        .description("Tile in GeoJSON. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
                         .templated("true")
                         .build())
 
                 .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy().ensureLastPathSegment("tiles/").clearParameters().toString() + "{tilingSchemeId}/{level}/{row}/{column}?f=mvt")
+                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{column}?f=mvt")
                         .rel("tiles")
                         .type("application/vnd.mapbox-vector-tile")
-                        .description("Mapbox vector tiles. The link is a URI template where {tilingSchemeId} is one of the schemes listed in the 'tilingSchemes' property, {level}/{row}/{col} the tile based on the tiling scheme.")
+                        .description("Mapbox vector tile. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
+                        .templated("true")
+                        .build());
+
+
+        return builder.build();
+    }
+
+    public List<Wfs3Link> generateTilingSchemeLinksOnlyMVT(URICustomizer uriBuilder,String tilingSchemeId) {
+
+
+        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
+
+                .add(ImmutableWfs3Link.builder()
+                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{column}?f=mvt")
+                        .rel("tiles")
+                        .type("application/vnd.mapbox-vector-tile")
+                        .description("Mapbox vector tile. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
                         .templated("true")
                         .build());
 

@@ -3,6 +3,7 @@ package de.ii.ldproxy.wfs3.vt;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
@@ -72,6 +73,31 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
     @Override
     public boolean matches(String firstPathSegment, String method, String subPath) {
         return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
+    }
+    /**
+     * retrieve all available tiling schemes from the collection
+     *
+     * @return all tiling schemes from the collection in a json array
+     */
+    @Path("/{collectionId}/tiles")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTilingSchemes(@Context Service service, @Context Wfs3RequestContext wfs3Request, @PathParam("collectionId") String collectionId) {
+
+        Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
+        Wfs3EndpointTilesSingleCollection.checkTilesParameterCollection(wfsService,collectionId);
+
+        final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
+        List<Map<String,Object>> wfs3LinksList = new ArrayList<>();
+
+        for(Object tilingSchemeId : cache.getTilingSchemeIds().toArray()){
+            Map<String,Object> wfs3LinksMap = new HashMap<>();
+            wfs3LinksMap.put("identifier",tilingSchemeId);
+            wfs3LinksMap.put("links",wfs3LinksGenerator.generateTilesLinks(wfs3Request.getUriCustomizer(),tilingSchemeId.toString()));
+            wfs3LinksList.add(wfs3LinksMap);
+        }
+
+        return Response.ok(ImmutableMap.of("tilingSchemes", wfs3LinksList)).build();
     }
 
     /**

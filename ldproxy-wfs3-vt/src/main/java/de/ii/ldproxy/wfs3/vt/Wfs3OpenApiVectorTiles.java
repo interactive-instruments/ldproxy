@@ -209,7 +209,10 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         matrix.addProperties("TileHeight", new Schema().minimum(BigDecimal.valueOf(0)).type("integer").example(256));
         matrix.addProperties("TileWidth", new Schema().minimum(BigDecimal.valueOf(0)).type("integer").example(256));
         matrix.addProperties("scaleDenominator", new Schema().type("number").example(559082264.028717));
-        matrix.addProperties("topLeftCorner", new Schema().type("string").example("-20037508.3427892 20037508.3427892"));
+        List<Double> topLeftCorner=new ArrayList<>();
+        topLeftCorner.add(-20037508.3427892);
+        topLeftCorner.add(20037508.3427892);
+        matrix.addProperties("topLeftCorner", new Schema().type("array").example(topLeftCorner));
 
         List<String> tilingSchemeRequirements=new LinkedList<String>();
         tilingSchemeRequirements.add("type");
@@ -261,7 +264,6 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
 
         if (serviceData != null && serviceData.getFeatureProvider().supportsTransactions()) {
 
-            //first new path - TilingSchemes
             openAPI.getPaths().addPathItem("/tilingSchemes",new PathItem().description("something"));  //create a new path
             PathItem pathItem = openAPI.getPaths().get("/tilingSchemes");
             ApiResponse success = new ApiResponse().description("A list of tiling schemes.")
@@ -288,7 +290,6 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
             openAPI.getPaths()
                     .addPathItem("/tilingSchemes", pathItem); //save to Path
 
-            //second new path - TilingScheme
             openAPI.getPaths().addPathItem("/tilingSchemes/{tilingSchemeId}",new PathItem().description("something"));
             pathItem = openAPI.getPaths().get("/tilingSchemes/{tilingSchemeId}");
             success = new ApiResponse().description("A tiling scheme.")
@@ -316,7 +317,34 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
             openAPI.getPaths()
                     .addPathItem("/tilingSchemes/{tilingSchemeId}", pathItem);
 
-            //third new path Tiles - TilingScheme
+
+            openAPI.getPaths().addPathItem("/tiles",new PathItem().description("something"));  //create a new path
+             pathItem = openAPI.getPaths().get("/tiles");
+             success = new ApiResponse().description("A list of tiling schemes.")
+                    .content(new Content()
+                            .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tilingSchemes")))
+                    );
+             exception = new ApiResponse().description("An error occured.")
+                    .content(new Content()
+                            .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                    );
+            if (Objects.nonNull(pathItem)) {
+                pathItem
+                        .get(new Operation()
+                                .addTagsItem("Tiles")
+                                .summary("retrieve all available tiling schemes")
+                                .operationId("getTilingSchemesAlt")
+                                .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                //.requestBody(requestBody)
+                                .responses(new ApiResponses()
+                                        .addApiResponse("200", success)
+                                        .addApiResponse("default", exception))
+                        );
+            }
+            openAPI.getPaths()
+                    .addPathItem("/tiles", pathItem); //save to Path
+
+
             openAPI.getPaths().addPathItem("/tiles/{tilingSchemeId}",new PathItem().description("something"));
             pathItem = openAPI.getPaths().get("/tiles/{tilingSchemeId}");
             success= new ApiResponse().description("A tiling scheme used to partition the dataset into tiles.")
@@ -346,7 +374,6 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                     .addPathItem("/tiles/{tilingSchemeId}", pathItem);
 
 
-            //fourth new path -  All tiles
             openAPI.getPaths().addPathItem("/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}",new PathItem().description("something"));
             pathItem = openAPI.getPaths().get("/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}");
             success = new ApiResponse().description("A tile of the dataset.")
@@ -391,14 +418,43 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                     .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
                     .forEach(ft -> {
 
-                        //fifth new path Tiles - TilingScheme (for every collection)
+
+                        openAPI.getPaths().addPathItem("/collections/"+ft.getId()+"/tiles",new PathItem().description("something"));  //create a new path
+                        PathItem pathItem2 = openAPI.getPaths().get("/collections/"+ft.getId()+"/tiles");
+                        ApiResponse success2 = new ApiResponse().description("A list of tiling schemes from the collection" + ft.getLabel()+".")
+                                .content(new Content()
+                                        .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tilingSchemes")))
+                                );
+                        ApiResponse exception2 = new ApiResponse().description("An error occured.")
+                                .content(new Content()
+                                        .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                                );
+                        if (Objects.nonNull(pathItem2)) {
+                            pathItem2
+                                    .get(new Operation()
+                                            .addTagsItem("Tiles")
+                                            .summary("retrieve all available tiling schemes from the collection " + ft.getLabel())
+                                            .operationId("getTilingSchemesCollection"+ft.getId())
+                                            .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                            //.requestBody(requestBody)
+                                            .responses(new ApiResponses()
+                                                    .addApiResponse("200", success2)
+                                                    .addApiResponse("default", exception2))
+                                    );
+                        }
+                        openAPI.getPaths().addPathItem("/collections/"+ft.getId()+"/tiles", pathItem2); //save to Path
+
+
+
+
+
                         openAPI.getPaths().addPathItem("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}",new PathItem().description("something"));
-                       PathItem pathItem2 = openAPI.getPaths().get("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}");
-                        ApiResponse success2 = new ApiResponse().description("A tiling scheme used to partition the collection"+ft.getLabel()+" into tiles.")
+                        pathItem2 = openAPI.getPaths().get("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}");
+                        success2 = new ApiResponse().description("A tiling scheme used to partition the collection "+ft.getLabel()+" into tiles.")
                                 .content(new Content()
                                         .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tilingScheme")))
                                 );
-                        ApiResponse exception2 = new ApiResponse().description("An error occured.")
+                        exception2 = new ApiResponse().description("An error occured.")
                                 .content(new Content()
                                         .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
                                 );
@@ -421,7 +477,6 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                                 .addPathItem("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}", pathItem2);
 
 
-                        //sixth new path - All tiles (for every collection)
                         openAPI.getPaths().addPathItem("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}",new PathItem().description("something"));
                         pathItem2 = openAPI.getPaths().get("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}");
                         success2 = new ApiResponse().description("A tile of the collection "+ ft.getLabel()+".")

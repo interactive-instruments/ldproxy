@@ -443,7 +443,7 @@ class VectorTile {
 
 
         List<Wfs3Link> wfs3Links = new ArrayList<>();
-
+        URICustomizer uriCustomizer=wfs3Request.getUriCustomizer();
 
         if (isCollection) {
             Wfs3MediaType alternativeMediatype;
