@@ -31,60 +31,70 @@ public class Wfs3LinksGenerator {
                 .ensureParameter("f", mediaType.parameter());
 
         final boolean isCollections = uriBuilder.isLastPathSegment("collections");
-
         final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
                 .add(ImmutableWfs3Link.builder()
-                                      .href(uriBuilder.toString())
-                                      .rel("self")
-                                      .type(mediaType.metadata()
-                                                     .toString())
-                                      .description("this document")
-                                      .build())
+                        .href(uriBuilder.toString())
+                        .rel("self")
+                        .type(mediaType.metadata()
+                                .toString())
+                        .description("this document")
+                        .build())
                 .addAll(Arrays.stream(alternativeMediaTypes)
-                              .map(generateAlternateLink(uriBuilder.copy(), true))
-                              .collect(Collectors.toList()))
+                        .map(generateAlternateLink(uriBuilder.copy(), true))
+                        .collect(Collectors.toList()))
                 .add(ImmutableWfs3Link.builder()
-                                      .href(uriBuilder.copy()
-                                                      .removeLastPathSegment("collections")
-                                                      .ensureLastPathSegment("api")
-                                                      .setParameter("f", "json")
-                                                      .toString())
-                                      .rel("service")
-                                      .type("application/openapi+json;version=3.0")
-                                      .description("the OpenAPI definition")
-                                      .typeLabel("JSON")
-                                      .build())
+                        .href(uriBuilder.copy()
+                                .removeLastPathSegment("collections")
+                                .ensureLastPathSegment("api")
+                                .setParameter("f", "json")
+                                .toString())
+                        .rel("service")
+                        .type("application/openapi+json;version=3.0")
+                        .description("the OpenAPI definition")
+                        .typeLabel("JSON")
+                        .build())
                 .add(ImmutableWfs3Link.builder()
-                                      .href(uriBuilder.copy()
-                                                      .removeLastPathSegment("collections")
-                                                      .ensureLastPathSegment("api")
-                                                      .setParameter("f", "html")
-                                                      .toString())
-                                      .rel("service")
-                                      .type("text/html")
-                                      .description("the OpenAPI definition")
-                                      .typeLabel("HTML")
-                                      .build())
+                        .href(uriBuilder.copy()
+                                .removeLastPathSegment("collections")
+                                .ensureLastPathSegment("api")
+                                .setParameter("f", "html")
+                                .toString())
+                        .rel("service")
+                        .type("text/html")
+                        .description("the OpenAPI definition")
+                        .typeLabel("HTML")
+                        .build())
                 .add(ImmutableWfs3Link.builder()
-                                      .href(uriBuilder.copy()
-                                                      .removeLastPathSegment("collections")
-                                                      .ensureLastPathSegment("conformance")
-                                                      .setParameter("f", "json")
-                                                      .toString())
-                                      .rel("conformance")
-                                      .type("application/json")
-                                      .description("WFS 3.0 conformance classes implemented by this server")
-                                      .build())
+                        .href(uriBuilder.copy()
+                                .removeLastPathSegment("collections")
+                                .ensureLastPathSegment("conformance")
+                                .setParameter("f", "json")
+                                .toString())
+                        .rel("conformance")
+                        .type("application/json")
+                        .description("WFS 3.0 conformance classes implemented by this server")
+                        .build())
                 .add(ImmutableWfs3Link.builder()
-                                      .href(uriBuilder.copy()
-                                                      .removeLastPathSegment("collections")
-                                                      .ensureLastPathSegment("tilingSchemes")
-                                                      .setParameter("f", "json")
-                                                      .toString())
-                                                      .rel("tilingSchemes")
-                                      .type("application/json")
-                                      .description("the list of available tiling schemes")
-                                      .build());
+                        .href(uriBuilder.copy()
+                                .removeLastPathSegment("collections")
+                                .ensureLastPathSegment("tilingSchemes")
+                                .setParameter("f", "json")
+                                .toString())
+                        .rel("tilingSchemes")
+                        .type("application/json")
+                        .description("the list of available tiling schemes")
+                        .build())
+                .add(ImmutableWfs3Link.builder()
+                        .href(uriBuilder.copy()
+                                .removeLastPathSegment("collections")
+                                .ensureLastPathSegment("tiles")
+                                .setParameter("f", "json")
+                                .toString())
+                        .rel("tiles")
+                        .type("application/json")
+                        .description("the list of available tiling schemes")
+                        .build());
+
 
         if (!isCollections) {
             builder
@@ -219,19 +229,41 @@ public class Wfs3LinksGenerator {
     }
 
     private Function<Wfs3MediaType, Wfs3Link> generateCollectionsLink(final URICustomizer uriBuilder, final String collectionName, final String collectionId) {
-        return mediaType -> ImmutableWfs3Link.builder()
-                .href(uriBuilder
-                        .copy()
-                        .removeLastPathSegment("items")
-                        .ensureLastPathSegment(collectionId)
-                        .setParameter("f", mediaType.parameter())
-                        .toString())
-                .rel("data")
-                .type(mediaType.main()
-                        .toString())
-                .description(collectionName)
-                .typeLabel(mediaType.label())
-                .build();
+
+
+        return mediaType -> {
+            String rel="";
+            String type="";
+            String media=mediaType.parameter();
+            switch(media){
+                case "json":
+                    rel="self";
+                    type="application/json";
+                    break;
+                case "geo+json":
+                    rel="self";
+                    type="application/json";
+                    break;
+                case "html":
+                    rel="alternate";
+                    type="text/html";
+                    break;
+                case "xml":
+                    rel="alternate";
+                    type= "application/gml+xml;profile=\\\"http://www.opengis.net/def/profile/ogc/2.0/gml-sf2\\\";version=3.2";
+            }
+            return ImmutableWfs3Link.builder()
+                    .href(uriBuilder
+                            .copy()
+                            .removeLastPathSegment("items")
+                            .ensureLastPathSegment(collectionId)
+                            .setParameter("f", mediaType.parameter())
+                            .toString())
+                    .rel(rel)
+                    .type(type)
+                    .description("Information about the "+ collectionName+ " data")
+                    .build();
+        };
     }
 
     private String getUrlWithPageAndCount(final URICustomizer uriBuilder, final int page, final int count) {

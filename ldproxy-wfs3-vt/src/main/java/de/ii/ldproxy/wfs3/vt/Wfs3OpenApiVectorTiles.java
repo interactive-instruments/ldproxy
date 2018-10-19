@@ -193,8 +193,16 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         boundingBoxEnum.add("BoundingBox");
         boundingBox.addProperties("type",new StringSchema()._enum(boundingBoxEnum));
         boundingBox.addProperties("crs",new Schema().type("string").example("http://www.opengis.net/def/crs/EPSG/0/3857"));
-        boundingBox.addProperties("lowerCorner",new Schema().type("string").example("-20037508.3427892 -20037508.342789"));
-        boundingBox.addProperties("upperCorner",new Schema().type("string").example("20037508.3427892 20037508.3427892"));
+
+        List<Double> lowerCorner=new ArrayList<>();
+        lowerCorner.add(-20037508.3427892);
+        lowerCorner.add(-20037508.342789);
+        boundingBox.addProperties("lowerCorner",new Schema().type("array").example(lowerCorner));
+
+        List<Double> upperCorner=new ArrayList<>();
+        upperCorner.add(20037508.3427892);
+        upperCorner.add(20037508.3427892);
+        boundingBox.addProperties("upperCorner",new Schema().type("array").example(upperCorner));
 
 
         Schema matrix=new Schema();

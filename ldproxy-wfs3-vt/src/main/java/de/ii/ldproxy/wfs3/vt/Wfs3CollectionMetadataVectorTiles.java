@@ -36,7 +36,7 @@ public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadata
           //  for(Object tilingSchemeId : TODO tilingSchemeIDs) {
 
                 wfs3LinksMap.put("identifier", "default"); //TODO replace with tilingSchemeId
-                wfs3LinksMap.put("links", wfs3LinksGenerator.generateTilingSchemesLinks(uriCustomizer, "default")); //TODO replace with tilingSchemeId
+                wfs3LinksMap.put("links", wfs3LinksGenerator.generateTilesLinks(uriCustomizer, "default")); //TODO replace with tilingSchemeId
                 wfs3LinksList.add(wfs3LinksMap);
 
         //    }
