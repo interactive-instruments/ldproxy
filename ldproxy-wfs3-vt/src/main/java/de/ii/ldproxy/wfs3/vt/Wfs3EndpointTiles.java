@@ -1,3 +1,10 @@
+/**
+ * Copyright 2018 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.wfs3.vt;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -198,7 +205,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
             doNotCache=true;
 
 
-        VectorTile tile = new VectorTile(null, tilingSchemeId, level, row, col, wfsService, doNotCache, cache);
+        VectorTile tile = new VectorTile(null, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
 
         // generate tile
         File tileFileMvt = tile.getFile(cache, "pbf");
@@ -216,11 +223,11 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
                 VectorTile.checkFormats(wfsService,collectionId, Wfs3MediaTypes.MVT);
                 VectorTile.checkZoomLevels(Integer.parseInt(level),wfsService,collectionId, tilingSchemeId,Wfs3MediaTypes.MVT,row,col,doNotCache,cache,false,wfs3Request,crsTransformation);
 
-                VectorTile layerTile = new VectorTile( collectionId, tilingSchemeId, level, row, col, wfsService, doNotCache, cache);
+                VectorTile layerTile = new VectorTile( collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
 
                 File tileFileJson = layerTile.getFile(cache, "json");
                 if (!tileFileJson.exists()) {
-                    boolean success = layerTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null,wfs3Request,false);
+                    boolean success = layerTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),false);
                     if (!success) {
                         String msg = "Internal server error: could not generate GeoJSON for a tile.";
                         LOGGER.error(msg);
@@ -288,12 +295,12 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
 
 
-        VectorTile tile = new VectorTile(null, tilingSchemeId, level, row, col, wfsService, doNotCache, cache);
+        VectorTile tile = new VectorTile(null, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
 
         File tileFileJson = tile.getFile(cache, "json");
 
         if (!tileFileJson.exists()) {
-            tile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null,wfs3Request,false);
+            tile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),false);
         }
 
         StreamingOutput streamingOutput = outputStream -> {

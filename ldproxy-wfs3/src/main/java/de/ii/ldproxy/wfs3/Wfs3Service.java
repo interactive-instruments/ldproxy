@@ -1,6 +1,6 @@
 /**
  * Copyright 2018 interactive instruments GmbH
- * <p>
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -167,7 +167,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         }
 
         ImmutableWfs3ServiceData finalServiceData = serviceData;
-        wfs3StartupTasks.forEach(wfs3StartupTask -> startupTaskExecutor.submit(wfs3StartupTask.getTask(finalServiceData)));
+        wfs3StartupTasks.forEach(wfs3StartupTask -> startupTaskExecutor.submit(wfs3StartupTask.getTask(finalServiceData,featureProvider)));
 
         return serviceData;
     }

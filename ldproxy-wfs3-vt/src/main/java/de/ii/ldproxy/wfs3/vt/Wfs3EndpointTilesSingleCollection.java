@@ -1,3 +1,10 @@
+/**
+ * Copyright 2018 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.wfs3.vt;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -201,15 +208,15 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
 
 
 
-        VectorTile tile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService, doNotCache, cache);
+        VectorTile tile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
 
         File tileFileMvt = tile.getFile(cache, "pbf");
         if (!tileFileMvt.exists()) {
 
-            VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService, doNotCache, cache);
+            VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
             File tileFileJson = jsonTile.getFile(cache, "json");
             if (!tileFileJson.exists()) {
-                boolean success = jsonTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,filters, filterableFields, wfs3Request,true);
+                boolean success = jsonTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,filters, filterableFields, wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),true);
                 if (!success) {
                     String msg = "Internal server error: could not generate GeoJSON for a tile.";
                     LOGGER.error(msg);
@@ -278,12 +285,12 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
 
 
 
-        VectorTile tile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService, doNotCache, cache);
+        VectorTile tile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
 
         File tileFileJson = tile.getFile(cache, "json");
 
         if (!tileFileJson.exists()) {
-            tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields,wfs3Request,true);
+            tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),true);
         }
 
         StreamingOutput streamingOutput = outputStream -> {
