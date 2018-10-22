@@ -122,6 +122,11 @@ public class Wfs3LinksGenerator {
     }
 
     public List<Wfs3Link> generateDatasetCollectionLinks(URICustomizer uriBuilder, String collectionId, String collectionName, Optional<String> describeFeatureTypeUrl, Wfs3MediaType mediaType, Wfs3MediaType... alternativeMediaTypes) {
+        boolean isCollection=false;
+
+        if(uriBuilder.getLastPathSegment().equals("collections"))
+            isCollection=true;
+
         uriBuilder
                 .ensureParameter("f", mediaType.parameter())
                 .ensureLastPathSegments("collections", collectionId, "items");
@@ -131,7 +136,7 @@ public class Wfs3LinksGenerator {
                               .map(generateItemLink(uriBuilder.copy(), collectionName))
                               .collect(Collectors.toList()))
                 .addAll(Stream.concat(Stream.of(mediaType), Arrays.stream(alternativeMediaTypes))
-                        .map(generateCollectionsLink(uriBuilder.copy(), collectionName,collectionId))
+                        .map(generateCollectionsLink(uriBuilder.copy(), collectionName,collectionId,isCollection))
                         .collect(Collectors.toList()));
 
         describeFeatureTypeUrl.ifPresent(url -> links.add(ImmutableWfs3Link.builder()
@@ -228,7 +233,7 @@ public class Wfs3LinksGenerator {
                                              .build();
     }
 
-    private Function<Wfs3MediaType, Wfs3Link> generateCollectionsLink(final URICustomizer uriBuilder, final String collectionName, final String collectionId) {
+    private Function<Wfs3MediaType, Wfs3Link> generateCollectionsLink(final URICustomizer uriBuilder, final String collectionName, final String collectionId,boolean isCollection) {
 
 
         return mediaType -> {
@@ -252,6 +257,8 @@ public class Wfs3LinksGenerator {
                     rel="alternate";
                     type= "application/gml+xml;profile=\\\"http://www.opengis.net/def/profile/ogc/2.0/gml-sf2\\\";version=3.2";
             }
+            if (isCollection)
+                rel="data";
             return ImmutableWfs3Link.builder()
                     .href(uriBuilder
                             .copy()
