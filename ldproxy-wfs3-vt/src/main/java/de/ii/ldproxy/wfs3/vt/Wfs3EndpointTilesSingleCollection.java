@@ -216,7 +216,13 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
             VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
             File tileFileJson = jsonTile.getFile(cache, "json");
             if (!tileFileJson.exists()) {
-                boolean success = jsonTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,filters, filterableFields, wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),true);
+                Wfs3MediaType geojsonMediaType;
+                geojsonMediaType = ImmutableWfs3MediaType.builder()
+                                                             .main(new MediaType("application", "geo+json"))
+                                                             .metadata(new MediaType("application", "json"))
+                                                             .label("GeoJSON")
+                                                             .build();
+                boolean success = jsonTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,filters, filterableFields, wfs3Request.getUriCustomizer(), geojsonMediaType,true);
                 if (!success) {
                     String msg = "Internal server error: could not generate GeoJSON for a tile.";
                     LOGGER.error(msg);

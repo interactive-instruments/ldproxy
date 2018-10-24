@@ -227,7 +227,13 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
                 File tileFileJson = layerTile.getFile(cache, "json");
                 if (!tileFileJson.exists()) {
-                    boolean success = layerTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),false);
+                    Wfs3MediaType geojsonMediaType;
+                    geojsonMediaType = ImmutableWfs3MediaType.builder()
+                                                             .main(new MediaType("application", "geo+json"))
+                                                             .metadata(new MediaType("application", "json"))
+                                                             .label("GeoJSON")
+                                                             .build();
+                    boolean success = layerTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null,wfs3Request.getUriCustomizer(), geojsonMediaType,false);
                     if (!success) {
                         String msg = "Internal server error: could not generate GeoJSON for a tile.";
                         LOGGER.error(msg);

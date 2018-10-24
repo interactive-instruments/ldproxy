@@ -47,7 +47,7 @@ public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadata
                 wfs3LinksList.add(wfs3LinksMap);
 
         //    }
-            collection.addExtension("tilingSchemes",ImmutableList.of(wfs3LinksList));
+            collection.addExtension("tilingSchemes",wfs3LinksList);
         }
 
         return collection;

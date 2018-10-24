@@ -247,7 +247,7 @@ public class Wfs3LinksGenerator {
                     break;
                 case "geo+json":
                     rel="self";
-                    type="application/json";
+                    type="application/geo+json";
                     break;
                 case "html":
                     rel="alternate";
@@ -296,7 +296,7 @@ public class Wfs3LinksGenerator {
                                 .ensureLastPathSegments("tiles",tilingSchemeId,zoomLevel,row,col)
                                 .toString())
                         .rel("self")
-                        .type(mediaType.metadata()
+                        .type(mediaType.main()
                                 .toString())
                         .description("this document")
                         .build())
@@ -361,7 +361,7 @@ public class Wfs3LinksGenerator {
 
         final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
                 .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{column}?f=json")
+                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{col}?f=json")
                         .rel("tiles")
                         .type("application/geo+json")
                         .description("Tile in GeoJSON. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
@@ -369,7 +369,7 @@ public class Wfs3LinksGenerator {
                         .build())
 
                 .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{column}?f=mvt")
+                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{col}?f=mvt")
                         .rel("tiles")
                         .type("application/vnd.mapbox-vector-tile")
                         .description("Mapbox vector tile. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
@@ -386,7 +386,7 @@ public class Wfs3LinksGenerator {
         final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
 
                 .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{column}?f=mvt")
+                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{col}?f=mvt")
                         .rel("tiles")
                         .type("application/vnd.mapbox-vector-tile")
                         .description("Mapbox vector tile. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")

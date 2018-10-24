@@ -69,7 +69,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         tilingSchemeId.setSchema(tilingSchemeIdSchema);
 
         Parameter zoomLevel=new Parameter();
-        zoomLevel.setName("zoomLevel");
+        zoomLevel.setName("level");
         zoomLevel.in("path");
         zoomLevel.description("Zoom level of the tile");
         zoomLevel.setRequired(true);
@@ -83,7 +83,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         row.setSchema(tilingSchemeIdSchema);
 
         Parameter column=new Parameter();
-        column.setName("column");
+        column.setName("col");
         column.in("path");
         column.description("Column index of the tile on the selected zoom level");
         column.setRequired(true);
@@ -169,9 +169,9 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         openAPI.getComponents().addParameters("f3", f3);
         openAPI.getComponents().addParameters("f4", f4);
         openAPI.getComponents().addParameters("tilingSchemeId", tilingSchemeId);
-        openAPI.getComponents().addParameters("zoomLevel", zoomLevel);
+        openAPI.getComponents().addParameters("level", zoomLevel);
         openAPI.getComponents().addParameters("row", row);
-        openAPI.getComponents().addParameters("column", column);
+        openAPI.getComponents().addParameters("col", column);
         openAPI.getComponents().addParameters("collections", collections);
         openAPI.getComponents().addParameters("properties", properties);
 
@@ -382,8 +382,8 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                     .addPathItem("/tiles/{tilingSchemeId}", pathItem);
 
 
-            openAPI.getPaths().addPathItem("/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}",new PathItem().description("something"));
-            pathItem = openAPI.getPaths().get("/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}");
+            openAPI.getPaths().addPathItem("/tiles/{tilingSchemeId}/{level}/{row}/{col}",new PathItem().description("something"));
+            pathItem = openAPI.getPaths().get("/tiles/{tilingSchemeId}/{level}/{row}/{col}");
             success = new ApiResponse().description("A tile of the dataset.")
                     .content(new Content()
                             .addMediaType("application/vnd.mapbox-vector-tile", new MediaType().schema(new Schema().$ref("#/components/schemas/mvt")))
@@ -416,7 +416,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
             }
 
             openAPI.getPaths()
-                    .addPathItem("/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}", pathItem);
+                    .addPathItem("/tiles/{tilingSchemeId}/{level}/{row}/{col}", pathItem);
 
             //do for every feature type
             serviceData.getFeatureTypes()
@@ -485,8 +485,8 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                                 .addPathItem("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}", pathItem2);
 
 
-                        openAPI.getPaths().addPathItem("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}",new PathItem().description("something"));
-                        pathItem2 = openAPI.getPaths().get("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}");
+                        openAPI.getPaths().addPathItem("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}/{level}/{row}/{col}",new PathItem().description("something"));
+                        pathItem2 = openAPI.getPaths().get("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}/{level}/{row}/{col}");
                         success2 = new ApiResponse().description("A tile of the collection "+ ft.getLabel()+".")
                                 .content(new Content()
                                         .addMediaType("application/geo+json",new MediaType().schema(new Schema().$ref("#/components/schemas/featureCollectionGeoJSON")))
@@ -535,7 +535,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                                     });
                         }
                         openAPI.getPaths()
-                                .addPathItem("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}/{zoomLevel}/{row}/{column}", pathItem2);
+                                .addPathItem("/collections/"+ ft.getId()+"/tiles/{tilingSchemeId}/{level}/{row}/{col}", pathItem2);
                     });
         }
         return openAPI;
