@@ -131,7 +131,7 @@ class VectorTile {
         if (this.temporary) {
             fileName = UUID.randomUUID().toString();
         } else {
-            fileName = String.format("%s_%s_%s", Integer.toString(this.level), Integer.toString(this.row), Integer.toString(this.col));
+            fileName = String.format("%s_%s_%s", Integer.toString(this.level), Integer.toString(this.col), Integer.toString(this.row));
         }
     }
 
@@ -308,6 +308,9 @@ class VectorTile {
                         e.printStackTrace();
                         return false;
                     }
+
+                    if(jsonGeometry.get("type").equals("Polygon")||jsonGeometry.get("type").equals("MultiPolygon"))
+                        jtsGeom=jtsGeom.reverse();
                     jtsGeom.apply(transform);
                     // filter features
                     // TODO: this should be more sophisticated...
@@ -751,16 +754,22 @@ class VectorTile {
         return true;
     }
 
-    public void test(Wfs3Service service, ImmutableFeatureQuery query){
-
-        TransformingFeatureProvider transformingFeatureProvider=service.getFeatureProvider();
-        FeatureStream featureTransformStream = transformingFeatureProvider.getFeatureTransformStream(query);
-
-        final FeatureProviderDataTransformer featureProvider = service.getData().getFeatureProvider();
-
-
-
-
+    public static boolean validateJSON(File tileFileJson, VectorTile tile, CrsTransformation crsTransformation, UriInfo uriInfo, Map<String,String> filters, Map<String,String> filterableFields,URICustomizer uriCustomizer, Wfs3MediaType mediaType) throws FileNotFoundException {
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> jsonFeatureCollection;
+        BufferedReader br = new BufferedReader(new FileReader(tileFileJson));
+        try {
+            if (br.readLine() == null) {
+                jsonFeatureCollection = null;
+            } else {
+                jsonFeatureCollection =  mapper.readValue(tileFileJson, new TypeReference<LinkedHashMap>() {});
+            }
+        } catch (IOException e) {
+            tileFileJson.delete();
+            tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields,uriCustomizer,mediaType,true);
+            return false;
+        }
+    return true;
     }
 
 

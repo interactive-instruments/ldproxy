@@ -228,15 +228,20 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
                     LOGGER.error(msg);
                     throw new InternalServerErrorException(msg);
                 }
+            }else{
+                VectorTile.validateJSON(tileFileJson,tile,crsTransformation,uriInfo,filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType());
             }
 
-            Map<String, File> layers = new HashMap<>();
-            layers.put(collectionId, tileFileJson);
-            boolean success = tile.generateTileMvt(tileFileMvt, layers, requestedProperties, crsTransformation);
-            if (!success) {
-                String msg = "Internal server error: could not generate protocol buffers for a tile.";
-                LOGGER.error(msg);
-                throw new InternalServerErrorException(msg);
+            generateTileCollection(collectionId,tileFileJson,tileFileMvt,tile,requestedProperties,crsTransformation);
+        }else{
+            VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
+            File tileFileJson = jsonTile.getFile(cache, "json");
+
+            if(!VectorTile.validateJSON(tileFileJson, tile, crsTransformation, uriInfo, null, null, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType())){
+                tileFileMvt.delete();
+                generateTileCollection(collectionId,tileFileJson,tileFileMvt,tile,requestedProperties,crsTransformation);
+
+
             }
         }
 
@@ -295,12 +300,17 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
 
         File tileFileJson = tile.getFile(cache, "json");
 
+        //TODO parse file (check if valid) if not valid delete it and generate new one
+
         if (!tileFileJson.exists()) {
             tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),true);
+        } else{
+           VectorTile.validateJSON(tileFileJson,tile,crsTransformation,uriInfo,filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType());
         }
 
+        File finalTileFileJson = tileFileJson;
         StreamingOutput streamingOutput = outputStream -> {
-            ByteStreams.copy(new FileInputStream(tileFileJson), outputStream);
+            ByteStreams.copy(new FileInputStream(finalTileFileJson), outputStream);
         };
 
         return Response.ok(streamingOutput, Wfs3MediaTypes.GEO_JSON)
@@ -318,6 +328,18 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
 
         if(!featureTypeConfigurationWfs3.getTiles().getEnabled()){
             throw new NotFoundException();
+        }
+    }
+
+    public static void generateTileCollection(String collectionId, File tileFileJson, File tileFileMvt, VectorTile tile, Set<String> requestedProperties, CrsTransformation crsTransformation){
+
+        Map<String, File> layers = new HashMap<>();
+        layers.put(collectionId, tileFileJson);
+        boolean success = tile.generateTileMvt(tileFileMvt, layers, requestedProperties, crsTransformation);
+        if (!success) {
+            String msg = "Internal server error: could not generate protocol buffers for a tile.";
+            LOGGER.error(msg);
+            throw new InternalServerErrorException(msg);
         }
     }
 }
