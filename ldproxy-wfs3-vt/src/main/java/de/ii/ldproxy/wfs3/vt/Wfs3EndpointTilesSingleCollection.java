@@ -126,7 +126,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
         File file = cache.getTilingScheme(tilingSchemeId);
 
         final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
-        List<Wfs3Link> wfs3Link = wfs3LinksGenerator.generateTilingSchemeLinks(wfs3Request.getUriCustomizer(),tilingSchemeId);
+        List<Wfs3Link> wfs3Link = wfs3LinksGenerator.generateTilingSchemeLinks(wfs3Request.getUriCustomizer(),tilingSchemeId,VectorTile.checkFormats(wfsService.getData(),collectionId,Wfs3MediaTypes.MVT,true),VectorTile.checkFormats(wfsService.getData(),collectionId,Wfs3MediaTypes.JSON,true));
 
 
         /*read the json file to add links*/
@@ -178,7 +178,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
 
         Wfs3Service wfsService = Wfs3EndpointTiles.wfs3ServiceCheck(service);
         checkTilesParameterCollection(wfsService, collectionId);
-        VectorTile.checkFormats(wfsService, collectionId, Wfs3MediaTypes.MVT);
+        VectorTile.checkFormats(wfsService.getData(), collectionId, Wfs3MediaTypes.MVT,false);
 
 
         boolean doNotCache = false;
@@ -279,7 +279,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
 
         Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
         checkTilesParameterCollection(wfsService,collectionId);
-        VectorTile.checkFormats(wfsService,collectionId, Wfs3MediaTypes.JSON);
+        VectorTile.checkFormats(wfsService.getData(),collectionId, Wfs3MediaTypes.JSON,false);
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         final Map<String, String> filterableFields = wfsService.getData().getFilterableFieldsForFeatureType(collectionId);
         final Map<String, String> filters = Wfs3EndpointCore.getFiltersFromQuery(queryParameters, filterableFields);

@@ -340,7 +340,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
                                    .collect(Collectors.toList()))
                 .build();
 
-        List<Wfs3Link> wfs3Links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, mediaType, alternativeMediaTypes);
+        List<Wfs3Link> wfs3Links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, mediaType, false,alternativeMediaTypes);
 
 
         return ImmutableWfs3Collections.builder()

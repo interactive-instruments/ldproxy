@@ -98,11 +98,19 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         int rowMax=0;
         int colMin=0;
         int colMax=0;
-        Map<String, FeatureTypeTiles.MinMax> seeding = serviceData.getFeatureTypes().get(collectionId).getTiles().getSeeding();
-        BoundingBox spatial = serviceData.getFeatureTypes().get(collectionId).getExtent().getSpatial();
+        boolean enabled = false;
+        List<String> formats = null;
+        Map<String, FeatureTypeTiles.MinMax> seeding = null;
+        BoundingBox spatial =null;
+        try {
+            enabled = serviceData.getFeatureTypes().get(collectionId).getTiles().getEnabled();
+            formats = serviceData.getFeatureTypes().get(collectionId).getTiles().getFormats();
+            seeding = serviceData.getFeatureTypes().get(collectionId).getTiles().getSeeding();
+            spatial = serviceData.getFeatureTypes().get(collectionId).getExtent().getSpatial();
+        }catch (Exception e){}
 
-        //only do seeding if there are values for it
-        if (seeding.size() != 0 && spatial!= null) {
+        //only do seeding if tiles enabled and mvt supported there are values for it
+        if (enabled && (formats.contains("application/vnd.mapbox-vector-tile") || formats.size() == 0 ) && seeding.size() != 0 && spatial!= null) {
             maxZoom = seeding.get(tilingSchemeId).getMax();
             minZoom = seeding.get(tilingSchemeId).getMin();
             xMin =  spatial.getXmin();
@@ -308,7 +316,5 @@ public class VectorTileSeeding implements Wfs3StartupTask {
                 }
             }
         }
-
     }
-
 }

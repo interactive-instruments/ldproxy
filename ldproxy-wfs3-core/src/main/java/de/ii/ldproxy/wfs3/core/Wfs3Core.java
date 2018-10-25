@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotFoundException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -85,7 +86,9 @@ public class Wfs3Core {
                                    .collect(Collectors.toList()))
                 .build();
 
-        List<Wfs3Link> wfs3Links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, mediaType, alternativeMediaTypes);
+
+       boolean tilesEnabled= checkTilesEnabled(serviceData);
+       List<Wfs3Link> wfs3Links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, mediaType,tilesEnabled, alternativeMediaTypes);
 
 
         return ImmutableWfs3Collections.builder()
@@ -165,6 +168,21 @@ public class Wfs3Core {
         }
 
         return collection;
+    }
+
+    public static boolean checkTilesEnabled(Wfs3ServiceData serviceData){
+
+        Optional<FeatureTypeConfigurationWfs3> first = serviceData
+                .getFeatureTypes()
+                .values()
+                .stream()
+                .filter(ft -> { try{ return ft.getTiles().getEnabled(); } catch (IllegalStateException ignored){return false;} })
+                .findFirst();
+
+        if(!first.isPresent())
+            return false;
+        else
+            return true;
     }
 
 }

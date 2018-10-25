@@ -476,7 +476,7 @@ class VectorTile {
                     .label("MVT")
                     .build();
             final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
-            wfs3Links = wfs3LinksGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternativeMediatype, tilingScheme.getId(),Integer.toString(level), Integer.toString(row), Integer.toString(col));
+            wfs3Links = wfs3LinksGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternativeMediatype, tilingScheme.getId(),Integer.toString(level), Integer.toString(row), Integer.toString(col),checkFormats(serviceData,collectionId,Wfs3MediaTypes.MVT,true),checkFormats(serviceData,collectionId,Wfs3MediaTypes.JSON,true));
         }
 
 
@@ -616,13 +616,19 @@ class VectorTile {
                 })
                 .collect(Collectors.joining(" AND "));
     }
-    public static void checkFormats(Wfs3Service service, String collectionId, String mediaType) {
+    public static boolean checkFormats(Wfs3ServiceData serviceData, String collectionId, String mediaType,boolean forLinks) {
+
+
         try {
-            List<String> formats = service.getData().getFeatureTypes().get(collectionId).getTiles().getFormats();
+            List<String> formats = serviceData.getFeatureTypes().get(collectionId).getTiles().getFormats();
             if (!formats.contains(mediaType) && formats.size() != 0) {
-                throw new NotAcceptableException();
+                if(forLinks)
+                    return false;
+                else
+                    throw new NotAcceptableException();
             }
         } catch (IllegalStateException ignored) { }
+        return true;
     }
 
     public static void checkZoomLevels(int zoomLevel, Wfs3Service wfsService, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache,VectorTilesCache cache,boolean isCollection, Wfs3RequestContext wfs3Request,CrsTransformation crsTransformation ) throws FileNotFoundException {
@@ -734,7 +740,7 @@ class VectorTile {
                     .label("MVT")
                     .build();
             final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
-            wfs3Links = wfs3LinksGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype,tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col));
+            wfs3Links = wfs3LinksGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype,tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), checkFormats(service.getData(),collectionId,Wfs3MediaTypes.MVT,true),checkFormats(service.getData(),collectionId,Wfs3MediaTypes.JSON,true));
         }
 
         FeatureTransformerGeoJson featureTransformer = new FeatureTransformerGeoJson(createJsonGenerator(outputStream), true, service.getCrsTransformer(null), wfs3Links,

@@ -125,7 +125,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         File file = cache.getTilingScheme(tilingSchemeId);
 
         final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
-        List<Wfs3Link> wfs3Link = wfs3LinksGenerator.generateTilingSchemeLinksOnlyMVT(wfs3Request.getUriCustomizer(),tilingSchemeId);
+        List<Wfs3Link> wfs3Link = wfs3LinksGenerator.generateTilingSchemeLinks(wfs3Request.getUriCustomizer(),tilingSchemeId,true,false);
 
 
         /*read the json file to add links*/
@@ -274,7 +274,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
         for(String collectionId : collectionIds) {
             VectorTile.checkZoomLevels(Integer.parseInt(level), wfsService, collectionId, tilingSchemeId,MediaType.APPLICATION_JSON,row,col,doNotCache,cache,false,wfs3Request,crsTransformation);
-            VectorTile.checkFormats(wfsService, collectionId, Wfs3MediaTypes.JSON);
+            VectorTile.checkFormats(wfsService.getData(), collectionId, Wfs3MediaTypes.JSON,false);
         }
         LOGGER.debug("GET TILE GeoJSON {} {} {} {} {} {}", service.getId(), "all", tilingSchemeId, level, row, col);
 
@@ -352,7 +352,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
             if (requestedCollections!=null && !requestedCollections.contains(collectionId))
                 continue;
-            VectorTile.checkFormats(wfsService,collectionId, Wfs3MediaTypes.MVT);
+            VectorTile.checkFormats(wfsService.getData(),collectionId, Wfs3MediaTypes.MVT,false);
             VectorTile.checkZoomLevels(Integer.parseInt(level),wfsService,collectionId, tilingSchemeId,Wfs3MediaTypes.MVT,row,col,doNotCache,cache,false,wfs3Request,crsTransformation);
 
             VectorTile layerTile = new VectorTile( collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());

@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  */
 public class Wfs3LinksGenerator {
 
-    public List<Wfs3Link> generateDatasetLinks(URICustomizer uriBuilder, Optional<String> describeFeatureTypeUrl, Wfs3MediaType mediaType, Wfs3MediaType... alternativeMediaTypes) {
+    public List<Wfs3Link> generateDatasetLinks(URICustomizer uriBuilder, Optional<String> describeFeatureTypeUrl, Wfs3MediaType mediaType, boolean tiles,Wfs3MediaType... alternativeMediaTypes) {
         uriBuilder
                 .ensureParameter("f", mediaType.parameter());
 
@@ -73,28 +73,30 @@ public class Wfs3LinksGenerator {
                         .rel("conformance")
                         .type("application/json")
                         .description("WFS 3.0 conformance classes implemented by this server")
-                        .build())
-                .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy()
-                                .removeLastPathSegment("collections")
-                                .ensureLastPathSegment("tilingSchemes")
-                                .setParameter("f", "json")
-                                .toString())
-                        .rel("tilingSchemes")
-                        .type("application/json")
-                        .description("the list of available tiling schemes")
-                        .build())
-                .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy()
-                                .removeLastPathSegment("collections")
-                                .ensureLastPathSegment("tiles")
-                                .setParameter("f", "json")
-                                .toString())
-                        .rel("tiles")
-                        .type("application/json")
-                        .description("the list of available tiling schemes")
                         .build());
 
+        if(tiles) {
+                builder.add(ImmutableWfs3Link.builder()
+                    .href(uriBuilder.copy()
+                            .removeLastPathSegment("collections")
+                            .ensureLastPathSegment("tilingSchemes")
+                            .setParameter("f", "json")
+                            .toString())
+                    .rel("tilingSchemes")
+                    .type("application/json")
+                    .description("the list of available tiling schemes")
+                    .build())
+                    .add(ImmutableWfs3Link.builder()
+                            .href(uriBuilder.copy()
+                                    .removeLastPathSegment("collections")
+                                    .ensureLastPathSegment("tiles")
+                                    .setParameter("f", "json")
+                                    .toString())
+                            .rel("tiles")
+                            .type("application/json")
+                            .description("the list of available tiling schemes")
+                            .build());
+        }
 
         if (!isCollections) {
             builder
@@ -281,40 +283,6 @@ public class Wfs3LinksGenerator {
                 .toString();
     }
 
-
-    public List<Wfs3Link> generateGeoJSONTileLinks(URICustomizer uriBuilder, Wfs3MediaType mediaType,Wfs3MediaType alternativeMediaType,String tilingSchemeId, String zoomLevel, String row, String col) {
-
-        uriBuilder.removeLastPathSegments(3);
-        uriBuilder
-                .ensureParameter("f", mediaType.parameter())
-                .ensureLastPathSegments("tiles","default",zoomLevel,row,col);
-
-
-        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
-                .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder
-                                .ensureLastPathSegments("tiles",tilingSchemeId,zoomLevel,row,col)
-                                .toString())
-                        .rel("self")
-                        .type(mediaType.main()
-                                .toString())
-                        .description("this document")
-                        .build())
-                .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy().ensureLastPathSegments("tiles",tilingSchemeId,zoomLevel,row,col)
-                                .removeLastPathSegment("")
-                                .setParameter("f", "mvt")
-                                .toString())
-                        .rel("alternate")
-                        .type(alternativeMediaType.metadata()
-                                .toString())
-                        .description("this document as MVT")
-                        .build());
-
-
-        return builder.build();
-    }
-
     public List<Wfs3Link> generateTilingSchemesLinks(URICustomizer uriBuilder, String tilingSchemeId) {
 
 
@@ -356,44 +324,69 @@ public class Wfs3LinksGenerator {
         return builder.build();
     }
 
-    public List<Wfs3Link> generateTilingSchemeLinks(URICustomizer uriBuilder, String tilingSchemeId) {
+    public List<Wfs3Link> generateGeoJSONTileLinks(URICustomizer uriBuilder, Wfs3MediaType mediaType,Wfs3MediaType alternativeMediaType,String tilingSchemeId, String zoomLevel, String row, String col, boolean mvt, boolean json) {
+
+        uriBuilder.removeLastPathSegments(3);
+        uriBuilder
+                .ensureParameter("f", mediaType.parameter())
+                .ensureLastPathSegments("tiles","default",zoomLevel,row,col);
 
 
-        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
-                .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{col}?f=json")
-                        .rel("tiles")
-                        .type("application/geo+json")
-                        .description("Tile in GeoJSON. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
-                        .templated("true")
-                        .build())
+        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>();
 
-                .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{col}?f=mvt")
-                        .rel("tiles")
-                        .type("application/vnd.mapbox-vector-tile")
-                        .description("Mapbox vector tile. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
-                        .templated("true")
-                        .build());
+        if(json){
+            builder.add(ImmutableWfs3Link.builder()
+                    .href(uriBuilder
+                            .ensureLastPathSegments("tiles",tilingSchemeId,zoomLevel,row,col)
+                            .toString())
+                    .rel("self")
+                    .type(mediaType.main()
+                            .toString())
+                    .description("this document")
+                    .build());
+        }
+        if(mvt){
+            builder.add(ImmutableWfs3Link.builder()
+                    .href(uriBuilder.copy().ensureLastPathSegments("tiles",tilingSchemeId,zoomLevel,row,col)
+                            .removeLastPathSegment("")
+                            .setParameter("f", "mvt")
+                            .toString())
+                    .rel("alternate")
+                    .type(alternativeMediaType.metadata()
+                            .toString())
+                    .description("this document as MVT")
+                    .build());
+        }
+        return builder.build();
+    }
 
+
+
+    public List<Wfs3Link> generateTilingSchemeLinks(URICustomizer uriBuilder, String tilingSchemeId, boolean mvt, boolean json) {
+
+
+        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>();
+
+        if(json) {
+                builder.add(ImmutableWfs3Link.builder()
+                    .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{col}?f=json")
+                    .rel("tiles")
+                    .type("application/geo+json")
+                    .description("Tile in GeoJSON. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
+                    .templated("true")
+                    .build());
+        }
+        if (mvt) {
+            builder.add(ImmutableWfs3Link.builder()
+                    .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{col}?f=mvt")
+                    .rel("tiles")
+                    .type("application/vnd.mapbox-vector-tile")
+                    .description("Mapbox vector tile. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
+                    .templated("true")
+                    .build());
+        }
 
         return builder.build();
     }
 
-    public List<Wfs3Link> generateTilingSchemeLinksOnlyMVT(URICustomizer uriBuilder,String tilingSchemeId) {
-
-
-        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
-
-                .add(ImmutableWfs3Link.builder()
-                        .href(uriBuilder.copy().ensureLastPathSegment(tilingSchemeId).clearParameters().toString() + "/{level}/{row}/{col}?f=mvt")
-                        .rel("tiles")
-                        .type("application/vnd.mapbox-vector-tile")
-                        .description("Mapbox vector tile. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
-                        .templated("true")
-                        .build());
-
-
-        return builder.build();
-    }
 }
