@@ -179,9 +179,6 @@ public class VectorTileSeeding implements Wfs3StartupTask {
             if (!tileFileJson.exists()) {
                 tile.generateTileJson(tileFileJson, crsTransformation,null, null,null,uriCustomizer,mediaType,true);
             }
-            else{
-                VectorTile.validateJSON(tileFileJson,tile,crsTransformation,null,null,null,uriCustomizer,mediaType);
-            }
             return tileFileJson;
         }catch (FileNotFoundException e){
             e.printStackTrace();

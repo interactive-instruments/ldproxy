@@ -62,7 +62,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         Parameter tilingSchemeId=new Parameter();
         tilingSchemeId.setName("tilingSchemeId");
         tilingSchemeId.in("path");
-        tilingSchemeId.description("Local identifier of a specific tiling scheme");
+        tilingSchemeId.description("Local identifier of a specific tiling scheme. A list of all available tilingSchemeIds can be found under the /tiles path.");
         tilingSchemeId.setRequired(true);
         Schema tilingSchemeIdSchema=new Schema();
         tilingSchemeIdSchema.setType("string");
