@@ -13,6 +13,7 @@ import org.immutables.value.Value;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author zahnen
@@ -21,7 +22,12 @@ import java.util.Map;
 @Value.Modifiable
 @JsonDeserialize(as = ImmutableCodelistData.class)
 public abstract class CodelistData extends AbstractEntityData {
-    public abstract Map<String,String> getEntries();
+
+    public enum IMPORT_TYPE {
+        TEMPLATES,
+        GML_DICTIONARY,
+        ONEO_SCHLUESSELLISTE
+    }
 
     @Value.Default
     @Override
@@ -34,4 +40,14 @@ public abstract class CodelistData extends AbstractEntityData {
     public long getLastModified() {
         return Instant.now().toEpochMilli();
     }
+
+    public abstract String getLabel();
+
+    public abstract Map<String,String> getEntries();
+
+    public abstract IMPORT_TYPE getSourceType();
+
+    public abstract Optional<String> getSourceUrl();
+
+    public abstract Optional<String> getFallback();
 }

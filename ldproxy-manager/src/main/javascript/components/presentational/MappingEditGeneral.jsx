@@ -34,6 +34,7 @@ import { shallowDiffers } from 'xtraplatform-manager/src/util';
 import MappingEdit from 'xtraplatform-manager-wfs-proxy/src/components/presentational/MappingEdit'
 
 const initState = {
+    type: (props) => props.mapping.type || 'NONE',
     format: (props) => props.mapping.format || '',
     codelist: (props) => props.mapping.codelist || '',
     filterable: (props) => props.mapping.filterable || false
@@ -60,8 +61,8 @@ class MappingEditGeneral extends Component {
         if (codelists) {
             options = options.concat(Object.values(codelists).map(cl => {
                 return {
-                    value: cl.resourceId,
-                    label: cl.name
+                    value: cl.id,
+                    label: cl.label || cl.id
                 }
             }))
         }

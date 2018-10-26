@@ -35,7 +35,7 @@ export default class CodelistShow extends Component {
                   </Header>
                   <Section>
                       <List>
-                          { codelist && Object.keys(codelist.entries).map((key, index) => (
+                          { codelist && codelist.entries && Object.keys(codelist.entries).map((key, index) => (
                                 <ListItem key={ key } separator={ index === 0 ? 'horizontal' : 'bottom' }>
                                     <Columns size='small'>
                                         <span>{ key }</span>

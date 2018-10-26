@@ -9,7 +9,7 @@
 import { normalize, schema } from 'normalizr';
 
 const clSchema = new schema.Entity('codelists', {}, {
-    idAttribute: 'resourceId'
+    idAttribute: 'id'
 })
 
 export default {
