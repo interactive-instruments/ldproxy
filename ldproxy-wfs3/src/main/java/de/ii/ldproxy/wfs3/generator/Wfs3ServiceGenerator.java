@@ -105,9 +105,11 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
             wfs3ServiceData.setCreatedAt(now);
             wfs3ServiceData.setLastModified(now);
             wfs3ServiceData.setShouldStart(true);
-            ((ModifiableFeatureProviderDataWfs) wfs3ServiceData.getFeatureProvider()).setMappingStatus(ModifiableMappingStatus.create()
-                                                                                                                              .setEnabled(true)
-                                                                                                                              .setSupported(false));
+            if (!((ModifiableFeatureProviderDataWfs)wfs3ServiceData.getFeatureProvider()).mappingStatusIsSet()) {
+                ((ModifiableFeatureProviderDataWfs) wfs3ServiceData.getFeatureProvider()).setMappingStatus(ModifiableMappingStatus.create()
+                                                                                                                                  .setEnabled(true)
+                                                                                                                                  .setSupported(false));
+            }
 
 
             FeatureProvider featureProvider = featureProviderRegistry.createFeatureProvider(wfs3ServiceData.getFeatureProvider());

@@ -58,7 +58,7 @@ public class GeoJsonOnTheFlyMapping implements OnTheFlyMapping {
         GeoJsonMapping.GEO_JSON_TYPE dataType = GeoJsonMapping.GEO_JSON_TYPE.STRING;
         String field = getFieldName(path);
 
-        if (dataType.isValid() && !hasPath(field)) {
+        if (!value.isEmpty() && dataType.isValid() && !hasPath(field)) {
 
             GeoJsonPropertyMapping targetMapping = new GeoJsonPropertyMapping();
             targetMapping.setEnabled(true);
