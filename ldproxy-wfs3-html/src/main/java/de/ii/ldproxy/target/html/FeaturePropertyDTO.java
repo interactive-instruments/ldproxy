@@ -20,6 +20,7 @@ public class FeaturePropertyDTO {
     public String value;
     public boolean isUrl;
     public boolean isImg;
+    public boolean isHtml;
     public List<FeaturePropertyDTO> childList;
     public FeaturePropertyDTO parent;
 

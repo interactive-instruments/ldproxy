@@ -1,6 +1,6 @@
 /**
  * Copyright 2017 European Union, interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,6 +11,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.google.common.base.Charsets;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.codelists.CodelistStore;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
@@ -47,6 +48,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -225,7 +229,6 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 }
 
 
-
                 this.dataset.pagination = pagination.build();
                 this.dataset.metaPagination = metaPagination.build();
 
@@ -247,7 +250,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 mustache = mustacheFactory.compile("featureDetails.mustache");
             }
             mustache.execute(outputStreamWriter, dataset).flush();*/
-            ((FallbackMustacheViewRenderer)mustacheRenderer).render(dataset, outputStreamWriter);
+            ((FallbackMustacheViewRenderer) mustacheRenderer).render(dataset, outputStreamWriter);
             outputStreamWriter.flush();
         } catch (Exception e) {
             analyzeFailed(e);
@@ -273,11 +276,13 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         }
 
         Optional<TargetMapping> mapping = featureTypeMapping.findMappings(nsuri + ":" + localName, outputFormat);
-            if (mapping.isPresent() && mapping.get().isEnabled()) {
-                currentFeature.name = mapping.get().getName();
-                currentFeature.itemType = ((MicrodataPropertyMapping) mapping.get()).getItemType();
-                currentFeature.itemProp = ((MicrodataPropertyMapping) mapping.get()).getItemProp();
-            }
+        if (mapping.isPresent() && mapping.get()
+                                          .isEnabled()) {
+            currentFeature.name = mapping.get()
+                                         .getName();
+            currentFeature.itemType = ((MicrodataPropertyMapping) mapping.get()).getItemType();
+            currentFeature.itemProp = ((MicrodataPropertyMapping) mapping.get()).getItemProp();
+        }
     }
 
     @Override
@@ -298,7 +303,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             currentFeature.name = currentFeature.name.replaceAll("\\{\\{[^}]*\\}\\}", "");
         if (!isFeatureCollection) {
             this.dataset.title = currentFeature.name;
-            this.dataset.breadCrumbs.get(dataset.breadCrumbs.size()-1).label = currentFeature.name;
+            this.dataset.breadCrumbs.get(dataset.breadCrumbs.size() - 1).label = currentFeature.name;
         }
         dataset.features.add(currentFeature);
         currentFeature = null;
@@ -311,7 +316,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         //LOGGER.debug(" - attribute {}", path);
 
         // on-the-fly mapping
-        if (featureTypeMapping.isEmpty() && localName.equals("id") && !currentPath.toFieldName().contains(".")) {
+        if (featureTypeMapping.isEmpty() && localName.equals("id") && !currentPath.toFieldName()
+                                                                                  .contains(".")) {
 
             currentFeature.name = value;
 
@@ -325,9 +331,10 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         }
 
         Optional<TargetMapping> mapping = featureTypeMapping.findMappings(path, outputFormat);
-        if (mapping.isPresent() && mapping.get().isEnabled()) {
-                writeField((MicrodataPropertyMapping) mapping.get(), value, true);
-            }
+        if (mapping.isPresent() && mapping.get()
+                                          .isEnabled()) {
+            writeField((MicrodataPropertyMapping) mapping.get(), value, true);
+        }
 
 
     }
@@ -340,7 +347,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
             // TODO: detect geometries
             if (GML_GEOMETRY_TYPE.fromString(localName) != GML_GEOMETRY_TYPE.NONE) {
 
-                writeGeometry(MICRODATA_GEOMETRY_TYPE.forGmlType(GML_GEOMETRY_TYPE.fromString(localName).toSimpleFeatureGeometry()), feature);
+                writeGeometry(MICRODATA_GEOMETRY_TYPE.forGmlType(GML_GEOMETRY_TYPE.fromString(localName)
+                                                                                  .toSimpleFeatureGeometry()), feature);
             }
             return;
         }
@@ -349,26 +357,27 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         String value = "";
 
         Optional<TargetMapping> mapping = featureTypeMapping.findMappings(path, outputFormat);
-            if (mapping.isPresent() && mapping.get().isEnabled() && (!isFeatureCollection || ((MicrodataPropertyMapping) mapping.get()).isShowInCollection())) {
-                // TODO: I guess fieldCounter is for multiplicity
+        if (mapping.isPresent() && mapping.get()
+                                          .isEnabled() && (!isFeatureCollection || ((MicrodataPropertyMapping) mapping.get()).isShowInCollection())) {
+            // TODO: I guess fieldCounter is for multiplicity
 
-                // TODO: only if not geometry
-                if (((MicrodataPropertyMapping) mapping.get()).getType() != MICRODATA_TYPE.GEOMETRY) {
-                    if (value.isEmpty()) {
-                        try {
-                            value = feature.collectDescendantText();
-                        } catch (XMLStreamException ex) {
-                            //LOGGER.error(FrameworkMessages.ERROR_PARSING_GETFEATURE_REQUEST);
-                            analyzeFailed(ex);
-                        }
+            // TODO: only if not geometry
+            if (((MicrodataPropertyMapping) mapping.get()).getType() != MICRODATA_TYPE.GEOMETRY) {
+                if (value.isEmpty()) {
+                    try {
+                        value = feature.collectDescendantText();
+                    } catch (XMLStreamException ex) {
+                        //LOGGER.error(FrameworkMessages.ERROR_PARSING_GETFEATURE_REQUEST);
+                        analyzeFailed(ex);
                     }
-
-                    writeField((MicrodataPropertyMapping) mapping.get(), value, false);
-                } else {
-                    // TODO: write geometry
-                    writeGeometry(((MicrodataGeometryMapping) mapping.get()).getGeometryType(), feature);
                 }
+
+                writeField((MicrodataPropertyMapping) mapping.get(), value, false);
+            } else {
+                // TODO: write geometry
+                writeGeometry(((MicrodataGeometryMapping) mapping.get()).getGeometryType(), feature);
             }
+        }
     }
 
     @Override
@@ -384,7 +393,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
     }
 
     private boolean isGeometry(XMLPathTracker path) {
-        for (String elem: path.toFieldName().split("\\.")) {
+        for (String elem : path.toFieldName()
+                               .split("\\.")) {
             if (GML_GEOMETRY_TYPE.fromString(elem) != GML_GEOMETRY_TYPE.NONE) {
                 return true;
             }
@@ -438,8 +448,10 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         } else {
             // TODO: better way to de/serialize
 
-            if (mapping.getItemProp() != null && !mapping.getItemProp().isEmpty()) {
-                String[] path = mapping.getItemProp().split("::");
+            if (mapping.getItemProp() != null && !mapping.getItemProp()
+                                                         .isEmpty()) {
+                String[] path = mapping.getItemProp()
+                                       .split("::");
 
                 FeaturePropertyDTO lastProperty = null;
 
@@ -456,7 +468,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                             itemType = p[1].split("=")[1];
                             itemType = itemType.substring(0, itemType.indexOf(']'));
                         } else if (props[0].equals("prefix")) {
-                            prefix = props[1].substring(0, props[1].length()-1);
+                            prefix = props[1].substring(0, props[1].length() - 1);
                         }
                     }//"itemProp": "address[itemType=http://schema.org/PostalAddress]::streetAddress"
 
@@ -465,7 +477,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
 
                     if (i == 0) {
                         for (FeaturePropertyDTO p : currentFeature.childList) {
-                            if (p != null && p.itemProp != null &&  (p.itemProp.equals(itemProp) || p.name.equals(mapping.getName()))) {
+                            if (p != null && p.itemProp != null && (p.itemProp.equals(itemProp) || p.name.equals(mapping.getName()))) {
                                 currentProperty = p;
                                 knownProperty = true;
                                 break;
@@ -473,7 +485,7 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                         }
                     } else if (lastProperty != null) {
                         for (FeaturePropertyDTO p : lastProperty.childList) {
-                            if (p != null &&  (p.itemProp.equals(itemProp) || p.name.equals(mapping.getName()))) {
+                            if (p != null && (p.itemProp.equals(itemProp) || p.name.equals(mapping.getName()))) {
                                 currentProperty = p;
                                 knownProperty = true;
                                 break;
@@ -534,7 +546,19 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                 property.itemType = mapping.getItemType();
                 property.itemProp = mapping.getItemProp();
 
-                if(mapping.getType() == MICRODATA_TYPE.DATE) {
+
+                if (mapping.getCodelist() != null) {
+                    String resolvedValue = null;
+                    try {
+                        resolvedValue = codelistStore.getResource(mapping.getCodelist())
+                                                     .getEntries()
+                                                     .get(property.value);
+                    } catch (Exception e) {
+                        //ignore
+                    }
+                    property.value = resolvedValue != null ? resolvedValue : property.value;
+                }
+                if (mapping.getType() == MICRODATA_TYPE.DATE) {
                     try {
                         DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd['T'HH:mm:ss][X]");
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(mapping.getFormat());
@@ -543,29 +567,50 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                     } catch (Exception e) {
                         //ignore
                     }
-                } /*else if(mapping.getType() == MICRODATA_TYPE.STRING && mapping.getFormat() != null && !mapping.getFormat().isEmpty()) {
-                    try {
-                        property.value = mapping.getFormat().replace("{{value}}", value).replace("{{wfs}}", this.wfsUrl != null ? this.wfsUrl : "").replace("{{wfs-by-id}}", this.wfsByIdUrl != null ? this.wfsByIdUrl : "");
-                    } catch (Exception e) {
-                        //ignore
-                        LOGGER.debug("err", e);
+                } else if (mapping.getType() == MICRODATA_TYPE.STRING && mapping.getFormat() != null && !mapping.getFormat()
+                                                                                                                .isEmpty()) {
+                    Pattern valuePattern = Pattern.compile("\\{\\{value( ?\\| ?[\\w]+(:'[^']*')*)+\\}\\}");
+                    Pattern filterPattern = Pattern.compile(" ?\\| ?([\\w]+)((?::'[^']*')*)");
+                    String formattedValue = mapping.getFormat();
+                    Matcher matcher = valuePattern.matcher(formattedValue);
+
+                    int lastMatch = 0;
+                    while (matcher.find()) {
+                        String filteredValue = property.value;
+                        Matcher matcher2 = filterPattern.matcher(formattedValue.substring(matcher.start(), matcher.end()));
+                        while (matcher2.find()) {
+                            String filter = matcher2.group(1);
+                            List<String> parameters = matcher2.groupCount() < 3
+                                    ? ImmutableList.of()
+                                    : Splitter.on(':')
+                                              .splitToList(matcher2.group(2))
+                                              .stream()
+                                              .map(s -> s.substring(1, s.length() - 2))
+                                              .collect(Collectors.toList());
+
+                            if (filter.equals("markdown")) {
+
+                            } else if (filter.equals("replace") && parameters.size() >= 2) {
+                                filteredValue = filteredValue.replaceAll(parameters.get(0), parameters.get(1));
+                            } else {
+                                LOGGER.warn("Template filter '{}' not supported", filter);
+                            }
+                        }
+                        formattedValue = formattedValue.substring(lastMatch, matcher.start()) + filteredValue + formattedValue.substring(matcher.end());
+                        lastMatch = matcher.start();
                     }
-                }*/
-                if (property.value.startsWith("http://") || property.value.startsWith("https://")) {
-                    if (property.value.endsWith(".png") || property.value.endsWith(".jpg") || property.value.endsWith(".gif")) {
+                }
+                if (property.value.toLowerCase()
+                                  .startsWith("http://") || property.value.toLowerCase()
+                                                                          .startsWith("https://")) {
+                    if (property.value.toLowerCase()
+                                      .endsWith(".png") || property.value.toLowerCase()
+                                                                         .endsWith(".jpg") || property.value.toLowerCase()
+                                                                                                            .endsWith(".gif")) {
                         property.isImg = true;
                     } else {
                         property.isUrl = true;
                     }
-                }
-                if (mapping.getCodelist() != null) {
-                    String resolvedValue = null;
-                    try {
-                        resolvedValue = codelistStore.getResource(mapping.getCodelist()).getEntries().get(property.value);
-                    } catch (Exception e) {
-                        //ignore
-                    }
-                    property.value = resolvedValue != null ? resolvedValue : property.value;
                 }
 
                 currentFeature.addChild(property);
@@ -602,7 +647,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
         Writer coordinatesWriter = new HtmlTransformingCoordinatesWriter(output, 2, crsTransformer);
 
         try {
-            SMInputCursor geo = feature.descendantElementCursor().advance();
+            SMInputCursor geo = feature.descendantElementCursor()
+                                       .advance();
 
             while (geo.readerAccessible()) {
                 if (!gmlType.isValid()) {
@@ -617,7 +663,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                     }
                 }
 
-                if (geo.getCurrEvent().equals(SMEvent.START_ELEMENT)
+                if (geo.getCurrEvent()
+                       .equals(SMEvent.START_ELEMENT)
                         && (geo.hasLocalName("exterior") || geo.hasLocalName("interior")
                         || geo.hasLocalName("outerBoundaryIs") || geo.hasLocalName("innerBoundaryIs")
                         || geo.hasLocalName("LineString"))) {
@@ -642,7 +689,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                         }
                     }
 
-                } else if (geo.getCurrEvent().equals(SMEvent.END_ELEMENT)
+                } else if (geo.getCurrEvent()
+                              .equals(SMEvent.END_ELEMENT)
                         && (geo.hasLocalName("exterior") || geo.hasLocalName("interior")
                         || geo.hasLocalName("outerBoundaryIs") || geo.hasLocalName("innerBoundaryIs")
                         || geo.hasLocalName("LineString"))) {
@@ -655,7 +703,8 @@ public class MicrodataFeatureWriter implements GMLAnalyzer {
                             currentFeature.geo.itemProp = "geo";
                             currentFeature.geo.name = "geometry";
 
-                            String[] coordinates = geo.getElemStringValue().split(" ");
+                            String[] coordinates = geo.getElemStringValue()
+                                                      .split(" ");
                             CoordinateTuple point = new CoordinateTuple(coordinates[0], coordinates[1]);
                             if (crsTransformer != null) {
                                 point = crsTransformer.transform(point);

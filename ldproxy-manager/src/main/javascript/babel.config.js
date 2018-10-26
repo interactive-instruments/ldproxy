@@ -1,5 +1,7 @@
-{
-  "presets": [
+module.exports = function (api) {
+  api.cache.never();
+
+  const presets = [
     [
       "@babel/preset-env",
       {
@@ -7,8 +9,8 @@
       }
     ],
     "@babel/preset-react"
-  ],
-  "plugins": [
+  ];
+  const plugins = [
     "react-hot-loader/babel",
     "@babel/plugin-syntax-dynamic-import",
     "@babel/plugin-syntax-import-meta",
@@ -30,5 +32,10 @@
     "@babel/plugin-proposal-numeric-separator",
     "@babel/plugin-proposal-object-rest-spread",
     "@babel/plugin-proposal-throw-expressions"
-  ]
+  ];
+
+  return {
+    presets,
+    plugins
+  };
 }

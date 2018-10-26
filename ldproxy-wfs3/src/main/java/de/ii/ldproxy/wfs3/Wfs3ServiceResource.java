@@ -104,7 +104,7 @@ public class Wfs3ServiceResource implements ServiceResource {
     }
 
     @Override
-    public void init(ObjectMapper defaultObjectMapper, EntityRepository entityRepository, AuthorizationProvider permProvider, ServiceDataWithStatus serviceDataWithStatus) {
+    public void init(ObjectMapper defaultObjectMapper, EntityRepository entityRepository, AuthorizationProvider permProvider) {
 
     }
 

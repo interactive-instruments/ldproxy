@@ -19,5 +19,9 @@ public interface Codelist extends PersistentEntity {
     default String getType() {
         return ENTITY_TYPE;
     }
+
+    @Override
+    CodelistData getData();
+
     String getValue(String key);
 }
