@@ -29,6 +29,7 @@ public abstract class FeatureTypeConfigurationWfs3 extends FeatureTypeConfigurat
     //public abstract BoundingBox getSpatialExtent();
 
     public abstract FeatureTypeExtent getExtent();
+    @Nullable
     public abstract FeatureTypeTiles getTiles();
 
 

@@ -8,9 +8,9 @@
 package de.ii.ldproxy.wfs3.api;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,7 @@ public abstract class FeatureTypeTiles{
 
     @Value.Default
     public boolean getEnabled(){return true;}
-
+    @Nullable
     public abstract List<String> getFormats();
     @Value.Immutable
     @Value.Modifiable
@@ -37,8 +37,8 @@ public abstract class FeatureTypeTiles{
         public abstract int getMax();
 
     }
-
+    @Nullable
     public abstract LinkedHashMap<String,MinMax> getSeeding();
-
+    @Nullable
     public abstract Map<String,MinMax> getZoomLevels();
 }

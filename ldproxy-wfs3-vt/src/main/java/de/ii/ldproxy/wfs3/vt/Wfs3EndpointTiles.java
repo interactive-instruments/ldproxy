@@ -25,17 +25,13 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.dmt.Uri;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -307,7 +303,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
                 .getFeatureTypes()
                 .values()
                 .stream()
-                .filter(ft -> { try{ return ft.getTiles().getEnabled(); } catch (IllegalStateException ignored){return false;} })
+                .filter(ft -> { try{ return ft.getTiles().getEnabled(); } catch (NullPointerException ignored){return false;} })
                 .findFirst();
 
         if(!first.isPresent())
@@ -338,7 +334,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
                         if (ft.getTiles().getEnabled()){
                             collectionIds.add(ft.getId());
                         }
-                    } catch (IllegalStateException ignored){
+                    } catch (NullPointerException ignored){
                     }
                 });
 
@@ -350,31 +346,31 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         for (String collectionId : collectionIds) {
             // include only the requested layers / collections
 
-            if (requestedCollections!=null && !requestedCollections.contains(collectionId))
+            if (requestedCollections != null && !requestedCollections.contains(collectionId))
                 continue;
-            VectorTile.checkFormats(wfsService.getData(),collectionId, Wfs3MediaTypes.MVT,false);
-            VectorTile.checkZoomLevels(Integer.parseInt(level),wfsService,collectionId, tilingSchemeId,Wfs3MediaTypes.MVT,row,col,doNotCache,cache,false,wfs3Request,crsTransformation);
+            if (VectorTile.checkFormats(wfsService.getData(), collectionId, Wfs3MediaTypes.MVT, true)) {
+                VectorTile.checkZoomLevels(Integer.parseInt(level), wfsService, collectionId, tilingSchemeId, Wfs3MediaTypes.MVT, row, col, doNotCache, cache, false, wfs3Request, crsTransformation);
 
-            VectorTile layerTile = new VectorTile( collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
+                VectorTile layerTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider());
 
-            File tileFileJson = layerTile.getFile(cache, "json");
-            if (!tileFileJson.exists()) {
-                Wfs3MediaType geojsonMediaType;
-                geojsonMediaType = ImmutableWfs3MediaType.builder()
-                        .main(new MediaType("application", "geo+json"))
-                        .metadata(new MediaType("application", "json"))
-                        .label("GeoJSON")
-                        .build();
-                boolean success = layerTile.generateTileJson(tileFileJson, crsTransformation,uriInfo,null,null,wfs3Request.getUriCustomizer(), geojsonMediaType,false);
-                if (!success) {
-                    String msg = "Internal server error: could not generate GeoJSON for a tile.";
-                    LOGGER.error(msg);
-                    throw new InternalServerErrorException(msg);
+                File tileFileJson = layerTile.getFile(cache, "json");
+                if (!tileFileJson.exists()) {
+                    Wfs3MediaType geojsonMediaType;
+                    geojsonMediaType = ImmutableWfs3MediaType.builder()
+                            .main(new MediaType("application", "geo+json"))
+                            .metadata(new MediaType("application", "json"))
+                            .label("GeoJSON")
+                            .build();
+                    boolean success = layerTile.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, wfs3Request.getUriCustomizer(), geojsonMediaType, false);
+                    if (!success) {
+                        String msg = "Internal server error: could not generate GeoJSON for a tile.";
+                        LOGGER.error(msg);
+                        throw new InternalServerErrorException(msg);
+                    }
                 }
+                layers.put(collectionId, tileFileJson);
             }
-            layers.put(collectionId, tileFileJson);
         }
-
         boolean success = tile.generateTileMvt(tileFileMvt, layers, requestedProperties, crsTransformation);
         if (!success) {
             String msg = "Internal server error: could not generate protocol buffers for a tile.";

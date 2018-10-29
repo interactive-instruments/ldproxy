@@ -322,7 +322,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
 
         try{
             featureTypeConfigurationWfs3.getTiles();
-        }catch (IllegalStateException e){
+        }catch (NullPointerException e){
             throw new NotFoundException();
         }
 

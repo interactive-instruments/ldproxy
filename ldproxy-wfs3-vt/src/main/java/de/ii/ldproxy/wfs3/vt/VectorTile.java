@@ -10,35 +10,28 @@ package de.ii.ldproxy.wfs3.vt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.*;
-import de.ii.ldproxy.wfs3.core.Wfs3CollectionMetadataExtension;
+import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
 import de.ii.xtraplatform.crs.api.*;
 import de.ii.xtraplatform.feature.query.api.FeatureStream;
 import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
-import de.ii.xtraplatform.feature.transformer.api.FeatureProviderDataTransformer;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
-import de.ii.xtraplatform.service.api.ServiceData;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import no.ecc.vectortile.VectorTileEncoder;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.hibernate.validator.constraints.pl.REGON;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.slf4j.LoggerFactory;
-import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
 import org.threeten.extra.Interval;
-import de.ii.ldproxy.wfs3.core.Wfs3Core;
-
-
-import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -308,7 +301,7 @@ class VectorTile {
                         e.printStackTrace();
                         return false;
                     }
-
+                    
                     if(jsonGeometry.get("type").equals("Polygon")||jsonGeometry.get("type").equals("MultiPolygon"))
                         jtsGeom=jtsGeom.reverse();
                     jtsGeom.apply(transform);
@@ -484,7 +477,7 @@ class VectorTile {
 
 
 
-        FeatureTransformerGeoJson featureTransformer = new FeatureTransformerGeoJson(createJsonGenerator(outputStream), true, null, wfs3Links,
+        FeatureTransformerGeoJson featureTransformer = new FeatureTransformerGeoJson(createJsonGenerator(outputStream), true, crsTransformation.getTransformer(serviceData.getFeatureProvider().getNativeCrs(), DEFAULT_CRS), wfs3Links,
                 0, "", maxAllowableOffsetCrs84, FeatureTransformerGeoJson.NESTED_OBJECTS.NEST, FeatureTransformerGeoJson.MULTIPLICITY.ARRAY);
 
         try {
@@ -616,9 +609,8 @@ class VectorTile {
                 })
                 .collect(Collectors.joining(" AND "));
     }
+
     public static boolean checkFormats(Wfs3ServiceData serviceData, String collectionId, String mediaType,boolean forLinks) {
-
-
         try {
             List<String> formats = serviceData.getFeatureTypes().get(collectionId).getTiles().getFormats();
             if (!formats.contains(mediaType) && formats.size() != 0) {
@@ -627,7 +619,9 @@ class VectorTile {
                 else
                     throw new NotAcceptableException();
             }
-        } catch (IllegalStateException ignored) { }
+        } catch (NullPointerException ignored) {
+
+        }
         return true;
     }
 
@@ -686,7 +680,7 @@ class VectorTile {
                     }
                 }
             }
-        } catch (IllegalStateException ignored) { }
+        } catch (NullPointerException ignored) { }
     }
 
 

@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-
+/*
 
 package de.ii.ldproxy.wfs3.vt;
 
@@ -26,6 +26,7 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.crypto.dsig.Transform;
@@ -61,33 +62,85 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         Runnable startSeeding=()->{
 
             //service, bundleContext, crsTransformation
-        Set<String> collectionIdsDataset = Wfs3EndpointTiles.getCollectionIdsDataset(wfs3ServiceData);
-            if(wfs3ServiceData.getId().equals("daraa")) {
-                for (String collectionId : collectionIdsDataset) {
-                    Set<String> tilingSchemeIdsCollection = wfs3ServiceData.getFeatureTypes().get(collectionId).getTiles().getSeeding().keySet();
+            Set<String> collectionIdsDataset = Wfs3EndpointTiles.getCollectionIdsDataset(wfs3ServiceData);
+            boolean tilesEnabled=true;
+            boolean seedingEnabled=true;
+
+            for (String collectionId : collectionIdsDataset) {
+                tilesEnabled=true;
+                seedingEnabled=true;
+                try{
+                    wfs3ServiceData.getFeatureTypes().get(collectionId).getTiles();
+                }catch(NullPointerException e) {
+                    tilesEnabled = false;
+                }
+                if(tilesEnabled) {
+                    try {
+                        wfs3ServiceData.getFeatureTypes().get(collectionId).getTiles().getSeeding();
+                    } catch (NullPointerException e) {
+                        seedingEnabled = false;
+                    }
+                }
+
+                if(tilesEnabled && seedingEnabled) {
+                    Set<String> tilingSchemeIdsCollection=null;
+                    try{
+                        tilingSchemeIdsCollection = wfs3ServiceData.getFeatureTypes().get(collectionId).getTiles().getSeeding().keySet();
+                    }catch(NullPointerException e){
+                    }
                     for (String tilingSchemeId : tilingSchemeIdsCollection) {
                         try {
                             LOGGER.debug("Seeding - Service: " + wfs3ServiceData.getId() + " Collection: " + collectionId + " TilingScheme: " + tilingSchemeId);
                             seeding(wfs3ServiceData, collectionId, tilingSchemeId, cache, crsTransformation, featureProvider);
-                        } catch (CrsTransformationException e) {
+                        } catch (Exception e) {
                         }
                     }
                 }
             }
             try {
-                if(wfs3ServiceData.getId().equals("daraa"))
+                boolean tilesDatasetEnabled=true;
+                boolean seedingDatasetEnabled=true;
+
+
+                Optional<FeatureTypeConfigurationWfs3> firstTiles = wfs3ServiceData
+                        .getFeatureTypes()
+                        .values()
+                        .stream()
+                        .filter(ft -> { try{ return ft.getTiles().getEnabled(); } catch (IllegalStateException ignored){return false;} })
+                        .findFirst();
+
+                if(!firstTiles.isPresent())
+                    tilesDatasetEnabled = false;
+
+                if(tilesDatasetEnabled) {
+                    Optional<FeatureTypeConfigurationWfs3> firstSeeding = wfs3ServiceData
+                            .getFeatureTypes()
+                            .values()
+                            .stream()
+                            .filter(ft -> {
+                                try {
+                                    ft.getTiles().getSeeding();
+                                    return true;
+                                } catch (IllegalStateException ignored) {
+                                    return false;
+                                }
+                            })
+                            .findFirst();
+                    if(!firstSeeding.isPresent())
+                        seedingDatasetEnabled= false;
+                }
+
+
+                if(tilesDatasetEnabled && seedingDatasetEnabled) {
                     seedingDataset(wfs3ServiceData.getId(), collectionIdsDataset, wfs3ServiceData, crsTransformation, cache, featureProvider);
-                if(wfs3ServiceData.getId().equals("iraq"))
-                seedingDataset(wfs3ServiceData.getId(),collectionIdsDataset,wfs3ServiceData,crsTransformation,cache,featureProvider);
-                if(wfs3ServiceData.getId().equals("syria"))
-                seedingDataset(wfs3ServiceData.getId(),collectionIdsDataset,wfs3ServiceData,crsTransformation,cache,featureProvider);
+                }
             } catch (FileNotFoundException e) { e.printStackTrace(); }
         };
         new Thread(startSeeding).start();
         return startSeeding;
     }
 
-    public static void seeding(Wfs3ServiceData serviceData, String collectionId, String tilingSchemeId, VectorTilesCache cache, CrsTransformation crsTransformation,TransformingFeatureProvider featureProvider) throws CrsTransformationException {
+    public static void seeding(Wfs3ServiceData serviceData, String collectionId, String tilingSchemeId, VectorTilesCache cache, CrsTransformation crsTransformation,TransformingFeatureProvider featureProvider) throws CrsTransformationException, NullPointerException {
         int maxZoom = 0;
         int minZoom = 0;
         double xMin = 0;
@@ -110,7 +163,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         }catch (Exception e){}
 
         //only do seeding if tiles enabled and mvt supported there are values for it
-        if (enabled && (formats.contains("application/vnd.mapbox-vector-tile") || formats.size() == 0 ) && seeding.size() != 0 && spatial!= null) {
+        if (enabled && (formats.contains("application/vnd.mapbox-vector-tile") || formats.size() == 0 ) && seeding !=null && spatial!= null) {
             maxZoom = seeding.get(tilingSchemeId).getMax();
             minZoom = seeding.get(tilingSchemeId).getMin();
             xMin =  spatial.getXmin();
@@ -223,7 +276,6 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
         return minMax;
     }
-
     public static void seedingDataset(String datasetId, Set<String>collectionIdsDataset, Wfs3ServiceData wfs3ServiceData,CrsTransformation crsTransformation,VectorTilesCache cache, TransformingFeatureProvider featureProvider) throws FileNotFoundException {
         //TODO Max/MinZOOM / spatial for datatset in config?
         List<Double> xMinList=new ArrayList<>();
@@ -240,6 +292,10 @@ public class VectorTileSeeding implements Wfs3StartupTask {
                 try {
                     Map<String, FeatureTypeTiles.MinMax> seeding = wfs3ServiceData.getFeatureTypes().get(collectionId).getTiles().getSeeding();
                     BoundingBox spatial = wfs3ServiceData.getFeatureTypes().get(collectionId).getExtent().getSpatial();
+
+                    if(spatial==null){
+
+                    }
                     //only do seeding if there are values for it
                     if (seeding.size() != 0 && spatial!= null) {
                         int maxZoom = seeding.get(tilingSchemeId).getMax();
@@ -315,3 +371,4 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         }
     }
 }
+*/
