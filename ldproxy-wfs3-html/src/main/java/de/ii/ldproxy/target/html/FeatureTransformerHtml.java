@@ -285,7 +285,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
             currentFeature.idAsUrl = true;
         }
 
-        //currentFeature.name = mapping.getName();
+        currentFeature.name = mapping.getName();
         currentFeature.itemType = ((MicrodataPropertyMapping) mapping).getItemType();
         currentFeature.itemProp = ((MicrodataPropertyMapping) mapping).getItemProp();
     }
@@ -462,6 +462,11 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                 property.itemType = mapping.getItemType();
                 property.itemProp = mapping.getItemProp();
 
+                int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
+                if (pos > -1) {
+                    currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
+                }
+
 
                 if (mapping.getCodelist() != null) {
                     //TODO: read into map in Wfs3OutputFormatHtml with @Bind(aggregate=true)
@@ -533,11 +538,6 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                 }
 
                 currentFeature.addChild(property);
-
-                int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
-                if (pos > -1) {
-                    currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
-                }
 
                 // TODO
                 /*if (property.name.equals("postalCode") && !isFeatureCollection) {
