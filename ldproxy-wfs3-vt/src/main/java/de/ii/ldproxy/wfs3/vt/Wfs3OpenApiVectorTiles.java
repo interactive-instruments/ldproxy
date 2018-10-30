@@ -10,13 +10,11 @@ package de.ii.ldproxy.wfs3.vt;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
-import io.swagger.v3.oas.annotations.tags.Tags;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.tags.Tag;
@@ -62,7 +60,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         Parameter tilingSchemeId=new Parameter();
         tilingSchemeId.setName("tilingSchemeId");
         tilingSchemeId.in("path");
-        tilingSchemeId.description("Local identifier of a specific tiling scheme. A list of all available tilingSchemeIds can be found under the /tiles path or below. The default Tiling Scheme is the Google Maps Tiling Scheme");
+        tilingSchemeId.description("Local identifier of a specific tiling scheme. A list of all available tilingSchemeIds can be found under the /tiles path or below. The default Tiling Scheme is the Google Maps Tiling Scheme.");
         tilingSchemeId.setRequired(true);
         Schema tilingSchemeIdSchema=new Schema();
         tilingSchemeIdSchema.setType("string");
@@ -77,8 +75,8 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         Parameter zoomLevel=new Parameter();
         zoomLevel.setName("level");
         zoomLevel.in("path");
-        zoomLevel.description("Zoom level of the tile. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Zoom Level, Row and Column in the Google Maps Tiling Scheme. \n" +
-                "Example: Ireland is fully within the Tile with the following values: ZoomLevel 5, Row 10 and Col 15");
+        zoomLevel.description("Level of the tile. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps Tiling Scheme. \\\n \\\n" +
+                "Example: Ireland is fully within the Tile with the following values: Level 5, Row 10 and Col 15");
         zoomLevel.setRequired(true);
         zoomLevel.setSchema(tilingSchemeIdSchema);
         zoomLevel.setExample("11");
@@ -86,8 +84,8 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         Parameter row=new Parameter();
         row.setName("row");
         row.in("path");
-        row.description("Row index of the tile on the selected zoom level. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Zoom Level, Row and Column in the Google Maps Tiling Scheme.\n" +
-                "Example: Ireland is fully within the Tile with the following values: ZoomLevel 5, Row 10 and Col 15");
+        row.description("Row index of the tile on the selected zoom level. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps Tiling Scheme.\\\n \\\n" +
+                "Example: Ireland is fully within the Tile with the following values: Level 5, Row 10 and Col 15");
         row.setRequired(true);
         row.setSchema(tilingSchemeIdSchema);
         row.setExample("827");
@@ -95,8 +93,8 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         Parameter column=new Parameter();
         column.setName("col");
         column.in("path");
-        column.description("Column index of the tile on the selected zoom level. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Zoom Level, Row and Column in the Google Maps Tiling Scheme.\n" +
-                "Example: Ireland is fully within the Tile with the following values: ZoomLevel 5, Row 10 and Col 15");
+        column.description("Column index of the tile on the selected zoom level. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps Tiling Scheme.\\\n \\\n" +
+                "Example: Ireland is fully within the Tile with the following values: Level 5, Row 10 and Col 15");
         column.setRequired(true);
         column.setSchema(tilingSchemeIdSchema);
         column.setExample("1231");

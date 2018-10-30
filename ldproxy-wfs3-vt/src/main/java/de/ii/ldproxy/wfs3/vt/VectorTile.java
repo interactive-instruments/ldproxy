@@ -124,7 +124,7 @@ class VectorTile {
         if (this.temporary) {
             fileName = UUID.randomUUID().toString();
         } else {
-            fileName = String.format("%s_%s_%s", Integer.toString(this.level), Integer.toString(this.col), Integer.toString(this.row));
+            fileName = String.format("%s_%s_%s", Integer.toString(this.level), Integer.toString(this.row), Integer.toString(this.col));
         }
     }
 
