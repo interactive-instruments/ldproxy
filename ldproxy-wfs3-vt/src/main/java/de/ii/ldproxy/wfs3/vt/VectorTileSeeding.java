@@ -5,15 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-/*
+
 
 package de.ii.ldproxy.wfs3.vt;
 
-import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
-import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.*;
-import de.ii.ldproxy.wfs3.vt.VectorTilesCache;
-import de.ii.ldproxy.wfs3.vt.Wfs3EndpointTiles;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -26,10 +22,7 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
-import javax.xml.crypto.dsig.Transform;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
@@ -371,4 +364,3 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         }
     }
 }
-*/
