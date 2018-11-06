@@ -259,10 +259,14 @@ class VectorTile {
 
             Map<String, Object> jsonFeatureCollection = null;
             try {
-                if (new BufferedReader(new FileReader(tileFileJson)).readLine() != null) {
-                    jsonFeatureCollection = mapper.readValue(tileFileJson, new TypeReference<LinkedHashMap>() {
-                    });
+                if (tileFileJson != null) {
+                    if (new BufferedReader(new FileReader(tileFileJson)).readLine() != null) {
+                        jsonFeatureCollection = mapper.readValue(tileFileJson, new TypeReference<LinkedHashMap>() {
+                        });
+                    }
+
                 }
+
             } catch (IOException e) {
                 String msg = "Internal server error: exception reading the GeoJSON file of tile {}/{}/{} in dataset '{}', layer {}.";
                 LOGGER.error(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
@@ -610,11 +614,11 @@ class VectorTile {
                 .collect(Collectors.joining(" AND "));
     }
 
-    public static boolean checkFormats(Wfs3ServiceData serviceData, String collectionId, String mediaType,boolean forLinks) {
+    public static boolean checkFormats(Wfs3ServiceData serviceData, String collectionId, String mediaType,boolean forLinksOrDataset) {
         try {
             List<String> formats = serviceData.getFeatureTypes().get(collectionId).getTiles().getFormats();
-            if (!formats.contains(mediaType) && formats.size() != 0) {
-                if(forLinks)
+            if (!formats.contains(mediaType) && formats!= null) {
+                if(forLinksOrDataset)
                     return false;
                 else
                     throw new NotAcceptableException();
@@ -754,7 +758,7 @@ class VectorTile {
         return true;
     }
 
-    public static boolean validateJSON(File tileFileJson, VectorTile tile, CrsTransformation crsTransformation, UriInfo uriInfo, Map<String,String> filters, Map<String,String> filterableFields,URICustomizer uriCustomizer, Wfs3MediaType mediaType) throws FileNotFoundException {
+    public static boolean deleteJSON(File tileFileJson, VectorTile tile, CrsTransformation crsTransformation, UriInfo uriInfo, Map<String,String> filters, Map<String,String> filterableFields,URICustomizer uriCustomizer, Wfs3MediaType mediaType, VectorTilesCache cache) throws FileNotFoundException {
         ObjectMapper mapper = new ObjectMapper();
         Map<String,Object> jsonFeatureCollection;
         BufferedReader br = new BufferedReader(new FileReader(tileFileJson));
@@ -766,10 +770,9 @@ class VectorTile {
             }
         } catch (IOException e) {
             tileFileJson.delete();
-            tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields,uriCustomizer,mediaType,true);
-            return false;
+            return true;
         }
-    return true;
+        return false;
     }
 
 

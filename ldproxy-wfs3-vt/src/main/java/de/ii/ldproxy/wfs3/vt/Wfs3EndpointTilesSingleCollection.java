@@ -229,7 +229,9 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
                     throw new InternalServerErrorException(msg);
                 }
             }else{
-                VectorTile.validateJSON(tileFileJson,tile,crsTransformation,uriInfo,filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType());
+                if(VectorTile.deleteJSON(tileFileJson,tile,crsTransformation,uriInfo,filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),cache)){
+                    tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),true);
+                }
             }
 
             generateTileCollection(collectionId,tileFileJson,tileFileMvt,tile,requestedProperties,crsTransformation);
@@ -237,11 +239,10 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
             VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
             File tileFileJson = jsonTile.getFile(cache, "json");
 
-            if(!VectorTile.validateJSON(tileFileJson, tile, crsTransformation, uriInfo, null, null, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType())){
+            if(VectorTile.deleteJSON(tileFileJson, tile, crsTransformation, uriInfo, null, null, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(),cache)){
+                tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),true);
                 tileFileMvt.delete();
                 generateTileCollection(collectionId,tileFileJson,tileFileMvt,tile,requestedProperties,crsTransformation);
-
-
             }
         }
 
@@ -305,7 +306,10 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
         if (!tileFileJson.exists()) {
             tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),true);
         } else{
-           VectorTile.validateJSON(tileFileJson,tile,crsTransformation,uriInfo,filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType());
+           if(VectorTile.deleteJSON(tileFileJson,tile,crsTransformation,uriInfo,filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),cache)){
+               tile.generateTileJson(tileFileJson, crsTransformation,uriInfo, filters,filterableFields,wfs3Request.getUriCustomizer(),wfs3Request.getMediaType(),true);
+           }
+
         }
 
         File finalTileFileJson = tileFileJson;
