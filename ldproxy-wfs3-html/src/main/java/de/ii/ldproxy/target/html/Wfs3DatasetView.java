@@ -11,13 +11,16 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import de.ii.ldproxy.wfs3.api.Wfs3Collection;
 import de.ii.ldproxy.wfs3.api.Wfs3Collections;
+import de.ii.ldproxy.wfs3.api.Wfs3Extent;
 import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import io.dropwizard.views.View;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -88,8 +91,9 @@ public class Wfs3DatasetView extends View {
     }
 
     static class FeatureType extends Wfs3Collection {
+        private final Wfs3Collection collection;
         public FeatureType(Wfs3Collection collection) {
-            super(collection.getName(), collection.getTitle(), collection.getDescription(), collection.getExtent(), collection.getLinks(), collection.getPrefixedName());
+            this.collection = collection;
         }
 
         public String getUrl() {
@@ -100,6 +104,46 @@ public class Wfs3DatasetView extends View {
                        .map(Wfs3Link::getHref)
                        .findFirst()
                        .orElse("");
+        }
+
+        @Override
+        public String getName() {
+            return collection.getName();
+        }
+
+        @Override
+        public String getTitle() {
+            return collection.getTitle();
+        }
+
+        @Override
+        public Optional<String> getDescription() {
+            return collection.getDescription();
+        }
+
+        @Override
+        public Wfs3Extent getExtent() {
+            return collection.getExtent();
+        }
+
+        @Override
+        public List<Wfs3Link> getLinks() {
+            return collection.getLinks();
+        }
+
+        @Override
+        public List<String> getCrs() {
+            return collection.getCrs();
+        }
+
+        @Override
+        public String getPrefixedName() {
+            return collection.getPrefixedName();
+        }
+
+        @Override
+        public Map<String, Object> getExtensions() {
+            return collection.getExtensions();
         }
     }
 

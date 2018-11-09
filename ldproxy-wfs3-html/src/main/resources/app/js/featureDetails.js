@@ -40,5 +40,24 @@ $.getJSON(geoJsonUrl, function(data) {
     var extentWidth = map.getBounds().getEast() - map.getBounds().getWest();
     var mapWidth = map.getSize().x;
     var maxAllowableOffset = extentWidth / mapWidth;
-    console.log('maxAllowableOffset', maxAllowableOffset);
+    //console.log('maxAllowableOffset', maxAllowableOffset);
+
+
+    if (data.additionalFeatures) {
+        Object.keys(data.additionalFeatures).forEach(ft => {
+            var geoJson2 = L.geoJson(data.additionalFeatures[ft], {
+                    onEachFeature: function (feature, layer) {
+                                if (feature.geometry.type != 'Point') {
+                                    layer.bindPopup(feature.id);
+                                }
+                            },
+                            style: {
+                        color: 'red',
+                            fillColor: '#f03',
+                            fillOpacity: 0.5
+                    }
+            });
+            geoJson2.addTo(map);
+        });
+    }
 });

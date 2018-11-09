@@ -17,6 +17,7 @@ public class FeatureDTO extends FeaturePropertyDTO {
     public FeaturePropertyDTO links;
     public boolean idAsUrl;
     public boolean noUrlClosingSlash;
+    public String additionalParams;
 
     /*public FeatureDTO() {
         this.properties = new ArrayList<>();
