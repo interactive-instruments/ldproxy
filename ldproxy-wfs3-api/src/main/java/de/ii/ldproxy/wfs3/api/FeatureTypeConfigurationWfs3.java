@@ -13,6 +13,8 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
 import org.immutables.value.Value;
 
+import java.util.Map;
+
 /**
  * @author zahnen
  */
@@ -22,11 +24,10 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ModifiableFeatureTypeConfigurationWfs3.class)
 public abstract class FeatureTypeConfigurationWfs3 extends FeatureTypeConfiguration {
 
-    //public abstract TemporalExtent getTemporalExtent();
-
-    //public abstract BoundingBox getSpatialExtent();
-
     public abstract FeatureTypeExtent getExtent();
+
+    public abstract Map<String, FeatureTypeConfigurationExtension> getExtensions();
+
     //TODO
     public static class FeatureTypeExtent {
         TemporalExtent temporal;
