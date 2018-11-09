@@ -1,6 +1,6 @@
 /**
  * Copyright 2018 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,8 +8,6 @@
 package de.ii.ldproxy.wfs3.core;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.wfs3.RangeHeader;
-import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3Collection;
 import de.ii.ldproxy.wfs3.api.Wfs3Collections;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
@@ -18,6 +16,7 @@ import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
+import de.ii.ldproxy.wfs3.api.Wfs3Service2;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -94,7 +93,7 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     @Path("/")
     @GET
     public Response getCollections(@Auth Optional<User> optionalUser, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
-        Wfs3Service wfs3Service = (Wfs3Service) service;
+        Wfs3Service2 wfs3Service = (Wfs3Service2) service;
 
         checkAuthorization(wfs3Service.getData(), optionalUser);
 
@@ -107,14 +106,15 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     @Path("/{id}")
     @GET
     public Response getCollectionInfo(@Auth Optional<User> optionalUser, @PathParam("id") String id, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
-        Wfs3Service wfs3Service = (Wfs3Service) service;
+        Wfs3Service2 wfs3Service = (Wfs3Service2) service;
 
         checkAuthorization(wfs3Service.getData(), optionalUser);
 
         wfs3Core.checkCollectionName(wfs3Service.getData(), id);
 
-        Wfs3Collection wfs3Collection = wfs3Core.createCollection(wfs3Service.getData().getFeatureTypes()
-                                                                  .get(id), new Wfs3LinksGenerator(), wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), false);
+        Wfs3Collection wfs3Collection = wfs3Core.createCollection(wfs3Service.getData()
+                                                                             .getFeatureTypes()
+                                                                             .get(id), new Wfs3LinksGenerator(), wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), false);
 
         return wfs3OutputFormats.get(wfs3Request.getMediaType())
                                 .getCollectionResponse(wfs3Collection, wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), id);
@@ -125,18 +125,18 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     @Path("/{id}/items")
     @GET
     public Response getItems(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("bbox-crs") String bboxCrs, @QueryParam("resultType") String resultType, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @HeaderParam("Range") String range, @Context Service service, @Context UriInfo uriInfo, @Context Wfs3RequestContext wfs3Request) {
-        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
+        checkAuthorization(((Wfs3Service2) service).getData(), optionalUser);
 
-        FeatureQuery query = getFeatureQuery(((Wfs3Service) service), id, range, crs, bboxCrs, maxAllowableOffset, uriInfo.getQueryParameters(), resultType != null && resultType.toLowerCase()
-                                                                                                                                                                                 .equals("hits"));
+        FeatureQuery query = getFeatureQuery(((Wfs3Service2) service), id, range, crs, bboxCrs, maxAllowableOffset, uriInfo.getQueryParameters(), resultType != null && resultType.toLowerCase()
+                                                                                                                                                                                  .equals("hits"));
 
-        return ((Wfs3Service) service).getItemsResponse(wfs3Request, id, query);
+        return ((Wfs3Service2) service).getItemsResponse(wfs3Request, id, query);
     }
 
     @Path("/{id}/items/{featureid}")
     @GET
     public Response getItem(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @PathParam("featureid") final String featureId, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
-        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
+        checkAuthorization(((Wfs3Service2) service).getData(), optionalUser);
 
         ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                           .type(id)
@@ -157,10 +157,10 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
 
         //Wfs3Request wfs3Request = new Wfs3Request(uriInfo.getRequestUri(), externalUri, httpHeaders);
 
-        return ((Wfs3Service) service).getItemsResponse(wfs3Request, id, queryBuilder.build());
+        return ((Wfs3Service2) service).getItemsResponse(wfs3Request, id, queryBuilder.build());
     }
 
-    private FeatureQuery getFeatureQuery(Wfs3Service service, String featureType, String range, String crs, String bboxCrs, String maxAllowableOffset, MultivaluedMap<String, String> queryParameters, boolean hitsOnly) {
+    private FeatureQuery getFeatureQuery(Wfs3Service2 service, String featureType, String range, String crs, String bboxCrs, String maxAllowableOffset, MultivaluedMap<String, String> queryParameters, boolean hitsOnly) {
         final Map<String, String> filterableFields = service.getData()
                                                             .getFilterableFieldsForFeatureType(featureType);
 
@@ -216,7 +216,7 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
         return filters;
     }
 
-    private String getCQLFromFilters(Wfs3Service service, Map<String, String> filters, Map<String, String> filterableFields, Optional<EpsgCrs> bboxCrs) {
+    private String getCQLFromFilters(Wfs3Service2 service, Map<String, String> filters, Map<String, String> filterableFields, Optional<EpsgCrs> bboxCrs) {
         return filters.entrySet()
                       .stream()
                       .map(f -> {
