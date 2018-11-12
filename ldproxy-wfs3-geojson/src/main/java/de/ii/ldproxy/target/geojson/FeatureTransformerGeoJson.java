@@ -227,6 +227,11 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
                 if (!Objects.equals(lastPath.get(i), path.get(i))) break;
             }
 
+            //TODO: test cases
+            if (increasedMultiplicityLevel[0] > 0 && increasedMultiplicityLevel[0] < i)  {
+                i = increasedMultiplicityLevel[0] + 1;
+            }
+
             //close nested objects as well as arrays for multiplicities
             for (int j = lastPath.size() - 1; j >= i; j--) {
                 closeArrayAndOrObject(lastPath.get(j), j < lastPath.size() - 1, lastPath.get(j)
