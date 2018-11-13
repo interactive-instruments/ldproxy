@@ -285,7 +285,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
             currentFeature.idAsUrl = true;
         }
 
-        //currentFeature.name = mapping.getName();
+        currentFeature.name = mapping.getName();
         currentFeature.itemType = ((MicrodataPropertyMapping) mapping).getItemType();
         currentFeature.itemProp = ((MicrodataPropertyMapping) mapping).getItemProp();
     }

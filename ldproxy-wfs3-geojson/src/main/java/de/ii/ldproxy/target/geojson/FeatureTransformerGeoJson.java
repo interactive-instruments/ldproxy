@@ -228,15 +228,19 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
             }
 
             //TODO: test cases
-            if (increasedMultiplicityLevel[0] > 0 && increasedMultiplicityLevel[0] < i)  {
+            /*if (increasedMultiplicityLevel[0] > 0 && increasedMultiplicityLevel[0] < i)  {
                 i = increasedMultiplicityLevel[0] + 1;
-            }
+            }*/
 
             //close nested objects as well as arrays for multiplicities
             for (int j = lastPath.size() - 1; j >= i; j--) {
-                closeArrayAndOrObject(lastPath.get(j), j < lastPath.size() - 1, lastPath.get(j)
-                                                                                        .contains("["));
+                // omit if lastPath is array value that was never opened
+                if (j < lastPath.size()-1 || !currentFieldMulti) {
+                    closeArrayAndOrObject(lastPath.get(j), j < lastPath.size() - 1, lastPath.get(j)
+                                                                                            .contains("["));
+                }
             }
+            currentFieldMulti = false;
 
             // open nested objects as well as arrays for multiplicities
             for (int j = i; j < path.size() - 1; j++) {
