@@ -44,6 +44,7 @@ $.getJSON(geoJsonUrl, function(data) {
 
 
     if (data.additionalFeatures) {
+        var bounds = geoJson.getBounds();
         Object.keys(data.additionalFeatures).forEach(ft => {
             var geoJson2 = L.geoJson(data.additionalFeatures[ft], {
                     onEachFeature: function (feature, layer) {
@@ -57,6 +58,13 @@ $.getJSON(geoJsonUrl, function(data) {
                             fillOpacity: 0.5
                     }
             });
+
+            bounds.extend(geoJson2.getBounds());
+            map.fitBounds(bounds, {
+                    padding: [5, 5],
+                    maxZoom: 16
+                });
+
             geoJson2.addTo(map);
         });
     }
