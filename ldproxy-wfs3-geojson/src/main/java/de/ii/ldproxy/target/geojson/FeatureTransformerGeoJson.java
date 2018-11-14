@@ -74,6 +74,9 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
 
     @Override
     public void onStart(OptionalLong numberReturned, OptionalLong numberMatched) throws IOException {
+        transformationContext.getState().setNumberReturned(numberReturned);
+        transformationContext.getState().setNumberMatched(numberMatched);
+
         transformationContext.getState().setEvent(FeatureTransformationContext.Event.START);
         executePipeline(featureWriters.iterator()).accept(transformationContext);
     }

@@ -208,7 +208,7 @@ public class Wfs3LinksGenerator {
     private String getUrlWithPageAndCount(final URICustomizer uriBuilder, final int page, final int count) {
         return uriBuilder
                 .removeParameters("page", "startIndex", "offset", "count", "limit")
-                .ensureParameter("page", String.valueOf(page))
+                .ensureParameter("offset", String.valueOf((page-1)*count))
                 .ensureParameter("limit", String.valueOf(count))
                 .toString();
     }
