@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
+import com.fasterxml.jackson.annotation.JsonMerge;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
@@ -25,6 +27,8 @@ public abstract class FeatureTypeTiles{
 
     @Value.Default
     public boolean getEnabled(){return true;}
+
+    @JsonMerge(value = OptBoolean.FALSE)
     @Nullable
     public abstract List<String> getFormats();
     @Value.Immutable

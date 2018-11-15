@@ -39,7 +39,8 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 public class VectorTileSeeding implements Wfs3StartupTask {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
     private final VectorTilesCache cache;
-
+    private Thread t=null;
+    private Map<Thread,String> threadMap=new HashMap<>();
 
 
     @Requires
@@ -52,13 +53,14 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
         cache = new VectorTilesCache(dataDirectory);
     }
+
+
     @Override
     public Runnable getTask(Wfs3ServiceData wfs3ServiceData, TransformingFeatureProvider featureProvider) {
 
 
         Runnable startSeeding=()->{
 
-            //service, bundleContext, crsTransformation
             Set<String> collectionIdsDataset = Wfs3EndpointTiles.getCollectionIdsDataset(wfs3ServiceData,false,false,true);
             try {
                 boolean tilesDatasetEnabled=false;
@@ -82,10 +84,28 @@ public class VectorTileSeeding implements Wfs3StartupTask {
                     seedingDataset(collectionIdsDataset, wfs3ServiceData, crsTransformation, cache, featureProvider,coreServerConfig);
                 }
             } catch (FileNotFoundException e) { e.printStackTrace(); }
+
+
+
+
         };
-        new Thread(startSeeding).start();
+        t = new Thread(startSeeding);
+        t.setDaemon(true);
+        t.start();
+        threadMap.put(t,wfs3ServiceData.getId());
         return startSeeding;
+
     }
+
+    public Map<Thread,String> getThreadMap(){
+        return threadMap;
+    }
+
+    public void removeThreadMapEntry(Thread t){
+        threadMap.remove(t);
+    }
+
+
 
 
     private static File generateSeedingMVT(Wfs3ServiceData serviceData, String collectionId, String tilingSchemeId, int z, int x, int y, VectorTilesCache cache, CrsTransformation crsTransformation, TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig){

@@ -34,13 +34,18 @@ public abstract class FeatureTypeConfigurationWfs3 extends FeatureTypeConfigurat
 
 
     @Value.Immutable
-    @JsonDeserialize(as = ImmutableFeatureTypeExtent.class)
+    @Value.Modifiable
+    @JsonDeserialize(as = ModifiableFeatureTypeExtent.class)
     public static abstract class FeatureTypeExtent {
 
         public abstract TemporalExtent getTemporal();
 
         @Nullable
         public abstract BoundingBox getSpatial();
+
+        @Value.Default
+        public boolean getSpatialComputed(){return false;}
+
     }
 
 }

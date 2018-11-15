@@ -17,30 +17,10 @@ import akka.util.ByteString;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.typesafe.config.ConfigException;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collections;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Collection;
-import de.ii.ldproxy.wfs3.api.Wfs3Collections;
-import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3Extent;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.Wfs3StartupTask;
-import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
-import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.ldproxy.wfs3.api.*;
+import de.ii.xtraplatform.crs.api.*;
 import de.ii.xtraplatform.entity.api.handler.Entity;
 import de.ii.xtraplatform.feature.provider.wfs.FeatureProviderWfs;
 import de.ii.xtraplatform.feature.query.api.FeatureProvider;
@@ -52,11 +32,7 @@ import de.ii.xtraplatform.feature.transformer.geojson.GeoJsonStreamParser;
 import de.ii.xtraplatform.feature.transformer.geojson.MappingSwapper;
 import de.ii.xtraplatform.service.api.AbstractService;
 import de.ii.xtraplatform.service.api.Service;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.HandlerDeclaration;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.felix.ipojo.annotations.Validate;
+import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,17 +41,10 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.annotation.XmlType;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.AbstractMap;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -167,7 +136,26 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         }
 
         ImmutableWfs3ServiceData finalServiceData = serviceData;
+
+
+        Map<Thread, String> threadMap=null;
+        for (Wfs3StartupTask startupTask : wfs3StartupTasks) {
+            threadMap= startupTask.getThreadMap();
+        }
+
+        if (threadMap != null) {
+            for (Map.Entry<Thread, String> entry : threadMap.entrySet()) {
+                if(entry.getValue().equals(serviceData.getId())){
+                    if(entry.getKey().getState()!= Thread.State.TERMINATED) {
+                        entry.getKey().interrupt();
+                        wfs3StartupTasks.forEach(wfs3StartupTask -> wfs3StartupTask.removeThreadMapEntry(entry.getKey()));
+                    }
+                }
+            }
+        }
+
         wfs3StartupTasks.forEach(wfs3StartupTask -> startupTaskExecutor.submit(wfs3StartupTask.getTask(finalServiceData,featureProvider)));
+
 
         return serviceData;
     }
@@ -423,9 +411,8 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
                 .stream()
                 .map(entry -> {
 
-
                     if (Objects.isNull(entry.getValue().getExtent().getSpatial())) {
-
+                        boolean isComputed=true;
                         BoundingBox bbox = null;
                         try {
                             bbox = defaultTransformer.transformBoundingBox(featureProvider.getSpatialExtent(entry.getValue()
@@ -440,6 +427,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
                                             .from(entry.getValue()
                                                     .getExtent())
                                             .spatial(bbox)
+                                            .spatialComputed(isComputed)
                                             .build())
                                     .build();
 
