@@ -17,6 +17,8 @@ import org.apache.felix.ipojo.annotations.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
 /**
  * @author zahnen
  */
@@ -39,7 +41,11 @@ public class CodelistEntity extends AbstractPersistentEntity<CodelistData> imple
 
     @Override
     public String getValue(String key) {
-        return getData().getEntries().get(key);
+
+        return Optional.ofNullable(getData().getEntries()
+                                            .get(key))
+                       .orElse(getData().getFallback()
+                                        .orElse(key));
     }
 
     @Override
@@ -48,7 +54,12 @@ public class CodelistEntity extends AbstractPersistentEntity<CodelistData> imple
     }
 
     @Override
+    public CodelistData getData() {
+        return super.getData();
+    }
+
+    /*@Override
     public String getType() {
         return null;
-    }
+    }*/
 }

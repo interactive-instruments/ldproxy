@@ -11,8 +11,10 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.google.common.base.Charsets;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.codelists.Codelist;
+import de.ii.ldproxy.codelists.CodelistData;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.target.html.MicrodataMapping.MICRODATA_TYPE;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
@@ -23,8 +25,24 @@ import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import io.dropwizard.views.ViewRenderer;
+import org.commonmark.Extension;
+import org.commonmark.ext.gfm.tables.TableBlock;
+import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.node.Link;
+import org.commonmark.node.Node;
+import org.commonmark.node.Paragraph;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.renderer.html.AttributeProvider;
+import org.commonmark.renderer.html.AttributeProviderContext;
+import org.commonmark.renderer.html.AttributeProviderFactory;
+import org.commonmark.renderer.html.CoreHtmlNodeRenderer;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +53,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -43,14 +64,20 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalLong;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
  */
-public class FeatureTransformerHtml implements FeatureTransformer {
+public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransformer.OnTheFly {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerHtml.class);
 
@@ -435,6 +462,28 @@ public class FeatureTransformerHtml implements FeatureTransformer {
                 property.itemType = mapping.getItemType();
                 property.itemProp = mapping.getItemProp();
 
+
+                if (mapping.getCodelist() != null) {
+                    //TODO: read into map in Wfs3OutputFormatHtml with @Bind(aggregate=true)
+                    //  private void bindHello(Hello h) { m_hellos.add(h); }
+
+                    property.value = Arrays.stream(codelists)
+                                           .filter(cl -> cl.getId()
+                                                           .equals(mapping.getCodelist()))
+                                           .findFirst()
+                                           .map(cl -> {
+                                               String resolvedValue = cl.getValue(property.value);
+
+                                               if (cl.getData().getSourceType() == CodelistData.IMPORT_TYPE.TEMPLATES) {
+                                                   resolvedValue = applyFilterMarkdown(applyTemplate(property, resolvedValue));
+                                                   property.isHtml = true;
+                                               }
+
+                                               return resolvedValue;
+                                           })
+                                           .orElse(property.value);
+                }
+
                 if (mapping.getType() == MICRODATA_TYPE.DATE) {
                     try {
                         DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd[['T'][' ']HH:mm:ss][.SSS][X]");
@@ -448,8 +497,11 @@ public class FeatureTransformerHtml implements FeatureTransformer {
                                                                                                                 .isEmpty()) {
                     boolean more = false;
                     if (currentFormatter == null) {
-                        property.value = mapping.getFormat()
-                                                .replace("{{serviceUrl}}", serviceUrl);
+
+                        String formattedValue = applyTemplate(property, mapping.getFormat());
+
+                        property.value = formattedValue
+                                .replace("{{serviceUrl}}", serviceUrl);
                         int subst = property.value.indexOf("}}");
                         if (subst > -1) {
                             property.value = property.value.substring(0, property.value.indexOf("{{")) + value + property.value.substring(subst + 2);
@@ -470,30 +522,14 @@ public class FeatureTransformerHtml implements FeatureTransformer {
                     }
                 }
                 if (property.value.startsWith("http://") || property.value.startsWith("https://")) {
-                    if (property.value.toLowerCase().endsWith(".png") || property.value.toLowerCase().endsWith(".jpg") || property.value.toLowerCase().endsWith(".gif")) {
+                    if (property.value.toLowerCase()
+                                      .endsWith(".png") || property.value.toLowerCase()
+                                                                         .endsWith(".jpg") || property.value.toLowerCase()
+                                                                                                            .endsWith(".gif")) {
                         property.isImg = true;
                     } else {
                         property.isUrl = true;
                     }
-                }
-                if (mapping.getCodelist() != null) {
-                    String resolvedValue = null;
-                    try {
-                        //TODO: read into map in Wfs3OutputFormatHtml with @Bind(aggregate=true)
-                        //  private void bindHello(Hello h) { m_hellos.add(h); }
-                        resolvedValue = Arrays.stream(codelists)
-                                              .filter(cl -> cl.getId()
-                                                              .equals(mapping.getCodelist()))
-                                              .findFirst()
-                                              .map(cl -> cl.getValue(property.value))
-                                              .orElse(null);
-                        /*resolvedValue = codelistStore.getResource(mapping.getCodelist())
-                                                     .getEntries()
-                                                     .get(property.value);*/
-                    } catch (Exception e) {
-                        //ignore
-                    }
-                    property.value = resolvedValue != null ? resolvedValue : property.value;
                 }
 
                 currentFeature.addChild(property);
@@ -521,6 +557,83 @@ public class FeatureTransformerHtml implements FeatureTransformer {
                 }*/
             }
         }
+    }
+
+    static final Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
+    static final Parser parser = Parser.builder()
+                                       .extensions(EXTENSIONS)
+                                       .build();
+
+    static final HtmlRenderer renderer = HtmlRenderer.builder()
+                                                     .extensions(EXTENSIONS)
+                                                     .nodeRendererFactory(context -> new CoreHtmlNodeRenderer(context) {
+                                                         @Override
+                                                         public void visit(Paragraph paragraph) {
+                                                             this.visitChildren(paragraph);
+                                                         }
+                                                     })
+                                                     .attributeProviderFactory(context -> (node, tagName, attributes) -> {
+                                                         if (node instanceof Link) {
+                                                             attributes.put("target", "_blank");
+                                                         }
+                                                     })
+                                                     .build();
+
+    static String applyFilterMarkdown(String value) {
+
+        Node document = parser.parse(value);
+        return renderer.render(document);
+    }
+
+    static String applyTemplate(FeaturePropertyDTO property, String template) {
+        Pattern valuePattern = Pattern.compile("\\{\\{value( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
+        Pattern filterPattern = Pattern.compile(" ?\\| ?([\\w]+)((?::'[^']*')*)");
+
+        String formattedValue = "";
+        Matcher matcher = valuePattern.matcher(template);
+
+        int lastMatch = 0;
+        while (matcher.find()) {
+            String filteredValue = property.value;
+            Matcher matcher2 = filterPattern.matcher(template.substring(matcher.start(), matcher.end()));
+            while (matcher2.find()) {
+                String filter = matcher2.group(1);
+                List<String> parameters = matcher2.groupCount() < 2
+                        ? ImmutableList.of()
+                        : Splitter.on(':')
+                                  .omitEmptyStrings()
+                                  .splitToList(matcher2.group(2))
+                                  .stream()
+                                  .map(s -> s.substring(1, s.length() - 1))
+                                  .collect(Collectors.toList());
+
+                if (filter.equals("markdown")) {
+                    filteredValue = applyFilterMarkdown(filteredValue);
+                    property.isHtml = true;
+                } else if (filter.equals("replace") && parameters.size() >= 2) {
+                    filteredValue = filteredValue.replaceAll(parameters.get(0), parameters.get(1));
+                } else if (filter.equals("prepend") && parameters.size() >= 1) {
+                    filteredValue = parameters.get(0) + filteredValue;
+                } else if (filter.equals("append") && parameters.size() >= 1) {
+                    filteredValue = filteredValue + parameters.get(0);
+                } else if (filter.equals("urlencode")) {
+                    try {
+                        filteredValue = URLEncoder.encode(filteredValue, Charsets.UTF_8.toString());
+                    } catch (UnsupportedEncodingException e) {
+                        //ignore
+                    }
+                } else {
+                    LOGGER.warn("Template filter '{}' not supported", filter);
+                }
+            }
+            //formattedValue = formattedValue.substring(lastMatch, matcher.start()) + filteredValue + formattedValue.substring(matcher.end());
+            //lastMatch = matcher.start();
+            formattedValue += template.substring(lastMatch, matcher.start()) + filteredValue;
+            lastMatch = matcher.end();
+        }
+        formattedValue += template.substring(lastMatch);
+
+        return formattedValue;
     }
 
 
@@ -627,4 +740,10 @@ public class FeatureTransformerHtml implements FeatureTransformer {
 
         currentGeometryType = null;
     }
+
+    @Override
+    public OnTheFlyMapping getOnTheFlyMapping() {
+        return new OnTheFlyMappingHtml();
+    }
+
 }

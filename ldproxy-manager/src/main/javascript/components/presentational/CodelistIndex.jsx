@@ -90,7 +90,7 @@ export default class CodelistIndex extends Component {
                                       onClick={ () => showCodelist(key) }>
                                       <Columns size="medium">
                                           <Box pad='small'>
-                                              { codelists[key].name }
+                                              { codelists[key].label || codelists[key].id }
                                           </Box>
                                           <Button plain={ true } icon={ <TrashIcon /> } onClick={ (event) => this._onLayerOpen(event, key) } />
                                       </Columns>

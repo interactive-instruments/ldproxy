@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerServiceData;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -66,13 +68,15 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
     @Value.Default
     @Override
     public long getCreatedAt() {
-        return Instant.now().toEpochMilli();
+        return Instant.now()
+                      .toEpochMilli();
     }
 
     @Value.Default
     @Override
     public long getLastModified() {
-        return Instant.now().toEpochMilli();
+        return Instant.now()
+                      .toEpochMilli();
     }
 
     @JsonMerge
@@ -92,32 +96,37 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
     }
 
     public Map<String, String> getFilterableFieldsForFeatureType(String featureType, boolean withoutSpatialAndTemporal) {
-        return getFeatureProvider().getMappings()
-                                   .get(featureType)
-                                   .findMappings(BASE_TYPE)
-                                   .entrySet()
-                                   .stream()
-                                   .filter(isFilterable(withoutSpatialAndTemporal))
-                                   .collect(Collectors.toMap(getParameterName(), mapping -> propertyPathsToCql(mapping.getKey()
-                                                                                                   .substring(mapping.getKey()
-                                                                                                                     .lastIndexOf(":") + 1))));
+        FeatureTypeMapping featureTypeMapping = getFeatureProvider().getMappings()
+                                                                    .get(featureType);
+
+        return Objects.isNull(featureTypeMapping) ? (withoutSpatialAndTemporal ? ImmutableMap.of() : ImmutableMap.of("bbox", "NOT_AVAILABLE")) :
+                featureTypeMapping.findMappings(BASE_TYPE)
+                                  .entrySet()
+                                  .stream()
+                                  .filter(isFilterable(withoutSpatialAndTemporal))
+                                  .collect(Collectors.toMap(getParameterName(), mapping -> propertyPathsToCql(mapping.getKey()
+                                                                                                                     .substring(mapping.getKey()
+                                                                                                                                       .lastIndexOf(":") + 1))));
     }
 
     //TODO: move to html module
     public Map<String, String> getHtmlNamesForFeatureType(String featureType) {
-        return getFeatureProvider().getMappings()
-                                   .get(featureType)
-                                   .findMappings("text/html")
-                                   .entrySet()
-                                   .stream()
-                                   .filter(mapping -> mapping.getValue()
-                                                             .getName() != null && mapping.getValue()
-                                                                                          .isEnabled())
-                                   .map(mapping -> new AbstractMap.SimpleImmutableEntry<>(propertyPathsToCql(mapping.getKey()
-                                                                                                                    .substring(mapping.getKey()
-                                                                                                                                      .lastIndexOf(":") + 1)), mapping.getValue()
-                                                                                                                                                                      .getName()))
-                                   .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue, (s, s2) -> s));
+        FeatureTypeMapping featureTypeMapping = getFeatureProvider().getMappings()
+                                                                    .get(featureType);
+
+        return Objects.isNull(featureTypeMapping) ? ImmutableMap.of() :
+                featureTypeMapping
+                        .findMappings("text/html")
+                        .entrySet()
+                        .stream()
+                        .filter(mapping -> mapping.getValue()
+                                                  .getName() != null && mapping.getValue()
+                                                                               .isEnabled())
+                        .map(mapping -> new AbstractMap.SimpleImmutableEntry<>(propertyPathsToCql(mapping.getKey()
+                                                                                                         .substring(mapping.getKey()
+                                                                                                                           .lastIndexOf(":") + 1)), mapping.getValue()
+                                                                                                                                                           .getName()))
+                        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue, (s, s2) -> s));
     }
 
     private String propertyPathsToCql(String propertyPath) {

@@ -21,6 +21,7 @@ import de.ii.xtraplatform.crs.api.JsonCoordinateFormatter;
 import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +43,14 @@ import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
 /**
  * @author zahnen
  */
-public class FeatureTransformerGeoJson implements FeatureTransformer {
+public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTransformer.OnTheFly {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerGeoJson.class);
+
+    @Override
+    public OnTheFlyMapping getOnTheFlyMapping() {
+        return new GeoJsonOnTheFlyMapping();
+    }
 
     public enum NESTED_OBJECTS {NEST, FLATTEN}
 
@@ -221,11 +227,20 @@ public class FeatureTransformerGeoJson implements FeatureTransformer {
                 if (!Objects.equals(lastPath.get(i), path.get(i))) break;
             }
 
+            //TODO: test cases
+            /*if (increasedMultiplicityLevel[0] > 0 && increasedMultiplicityLevel[0] < i)  {
+                i = increasedMultiplicityLevel[0] + 1;
+            }*/
+
             //close nested objects as well as arrays for multiplicities
             for (int j = lastPath.size() - 1; j >= i; j--) {
-                closeArrayAndOrObject(lastPath.get(j), j < lastPath.size() - 1, lastPath.get(j)
-                                                                                        .contains("["));
+                // omit if lastPath is array value that was never opened
+                if (j < lastPath.size()-1 || !currentFieldMulti) {
+                    closeArrayAndOrObject(lastPath.get(j), j < lastPath.size() - 1, lastPath.get(j)
+                                                                                            .contains("["));
+                }
             }
+            currentFieldMulti = false;
 
             // open nested objects as well as arrays for multiplicities
             for (int j = i; j < path.size() - 1; j++) {

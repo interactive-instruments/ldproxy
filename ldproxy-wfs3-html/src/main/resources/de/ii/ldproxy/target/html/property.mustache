@@ -11,7 +11,7 @@
     {{^value.children}}
         <div class="row my-1">
             <div class="col-md-6 font-weight-bold text-truncate" title="{{value.name}}">{{value.name}}</div>
-            <div class="col-md-6" {{{value.microdata}}}>{{#value.isUrl}}<a target="_blank" href="{{value.value}}">{{value.value}}</a>{{/value.isUrl}}{{^value.isUrl}}{{#value.isImg}}<img src="{{value.value}}" class="img-fluid"/>{{/value.isImg}}{{^value.isImg}}{{value.value}}{{/value.isImg}}{{/value.isUrl}}</div>
+            <div class="col-md-6" {{{value.microdata}}}>{{#value.isUrl}}<a target="_blank" href="{{value.value}}">{{value.value}}</a>{{/value.isUrl}}{{^value.isUrl}}{{#value.isImg}}<img src="{{value.value}}" class="img-fluid"/>{{/value.isImg}}{{^value.isImg}}{{#value.isHtml}}{{{value.value}}}{{/value.isHtml}}{{^value.isHtml}}{{value.value}}{{/value.isHtml}}{{/value.isImg}}{{/value.isUrl}}</div>
         </div>
     {{/value.children}}
 {{/index}}
@@ -28,7 +28,7 @@
     {{^children}}
         <div class="row my-1">
             <div class="col-md-6 font-weight-bold text-truncate" title="{{value.name}}">{{name}}</div>
-            <div class="col-md-6" {{{microdata}}}>{{#isUrl}}<a target="_blank" href="{{value}}">{{value}}</a>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src="{{value}}" class="img-fluid"/>{{/isImg}}{{^isImg}}{{value}}{{/isImg}}{{/isUrl}}</div>
+            <div class="col-md-6" {{{microdata}}}>{{#isUrl}}<a target="_blank" href="{{value}}">{{value}}</a>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src="{{value}}" class="img-fluid"/>{{/isImg}}{{^isImg}}{{#isHtml}}{{{value}}}{{/isHtml}}{{^isHtml}}{{value}}{{/isHtml}}{{/isImg}}{{/isUrl}}</div>
         </div>
     {{/children}}
 {{/index}}

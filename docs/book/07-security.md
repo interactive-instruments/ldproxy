@@ -1,15 +1,17 @@
 # Security
 
-ldproxy supports token based security for [secured services](). It expects tokens to be passed in the request headers as `Authorization: Bearer <JWT>`.
+ldproxy supports token based authentication for secured services. It expects tokens to be passed in the request headers as `Authorization: Bearer <token>`.
 
-#### JSON Web Token (jwtSigningKey)
+#### JSON Web Tokens (jwtSigningKey)
 ldproxy supports supports verification of signed JWTs. If you configure a signing key, ldproxy will use it to verify given JWTs. Additionally, if the JWT contains an expiration time in the `exp` claim, requests with expired tokens will be rejected.
 
 #### Other tokens (userInfoEndpoint)
-Tokens may also be verified by sending them to a given endpoint. The token is sent as ... and ... is expected as response.
+Tokens may also be verified by sending them to a given endpoint by configuring an URL template, e.g. `http://localhost/userinfo?access_token={{token}}`. If the token is valid, a successful response with status code 200/204 is expected.
 
 #### External dynamic authorization (externalDynamicAuthorizationEndpoint)
-For [secured services](), ldproxy supports dynamic authorization using an external endpoint using JSON based XACML. For a request with a valid token, an request with Content-Type `application/xacml+json` will be sent to the configured endpoint:
+For secured services, ldproxy supports dynamic authorization by an external endpoint using JSON based XACML (see http://docs.oasis-open.org/xacml/xacml-json-http/v1.0/xacml-json-http-v1.0.html and http://docs.oasis-open.org/xacml/xacml-rest/v1.0/xacml-rest-v1.0.html). 
+
+For a request with a valid token, a request with Content-Type `application/xacml+json` will be sent to the configured endpoint:
 
 ```
 {
@@ -34,7 +36,7 @@ For [secured services](), ldproxy supports dynamic authorization using an extern
 }
 ```
 
-An responsewith Content-Type `application/xacml+json` that permits or denies authorization is expected:
+A response with Content-Type `application/xacml+json` that permits or denies authorization is expected:
 
 ```
 {
@@ -45,6 +47,5 @@ An responsewith Content-Type `application/xacml+json` that permits or denies aut
 }
 ``` 
 
-
 #### Postprocessing for POST/PUT (postProcessingEndpoint)
-For services with POST/PUT/DELETE support, request bodies for POST/PUT requests may be passed through a postprocessing endpoint. The body is sent as ... and ... is expected as response.
+For services with POST/PUT/DELETE support, request bodies for POST/PUT requests may be passed through a postprocessing endpoint. The body is sent per POST with Content-Type `application/json` and should be returned either changed or unchanged.
