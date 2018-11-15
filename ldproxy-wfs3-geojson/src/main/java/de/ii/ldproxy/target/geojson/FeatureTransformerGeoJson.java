@@ -77,12 +77,13 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
     boolean currentIsId;
     List<String> lastPath = new ArrayList<>();
     List<String> currentPath2 = new ArrayList<>();
-    Map<String, Integer> currentMultiplicities = new HashMap<>();
+    //Map<String, Integer> currentMultiplicities = new HashMap<>();
     String serviceUrl;
     GeoJsonPropertyMapping currentMapping;
     String currentFormatter;
     String currentFieldName;
     boolean currentFieldMulti;
+    JsonNestingTracker nestingTracker = new JsonNestingTracker();
 
     public FeatureTransformerGeoJson(JsonGenerator jsonOut, boolean isFeatureCollection, CrsTransformer crsTransformer, List<Wfs3Link> links, int pageSize, String serviceUrl, double maxAllowableOffset, NESTED_OBJECTS nestedObjects, MULTIPLICITY multiplicity) {
         this.jsonOut = jsonOut;
@@ -156,7 +157,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
     public void onFeatureEnd() throws IOException {
         if (nestedObjects == NESTED_OBJECTS.NEST) {
             writePropertyName("", ImmutableList.of());
-            currentMultiplicities = new HashMap<>();
+            //currentMultiplicities = new HashMap<>();
+            nestingTracker = new JsonNestingTracker();
         }
 
         if (json == jsonBuffer)  {
@@ -199,10 +201,11 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
             }
             LOGGER.debug("PATH {} {}", lastPath, path);
 
-            final int[] increasedMultiplicityLevel = {0};
+            /*final int[] increasedMultiplicityLevel = {0};
             final int[] current = {0};
+            final boolean[] increased = {false};
             path.stream()
-                .filter(element -> element.contains("[") /*&& !(path.indexOf(element) == path.size() - 1)*/)
+                .filter(element -> element.contains("[") )
                 //.map(element -> element.substring(element.indexOf("[") + 1, element.indexOf("]")))
 
                 .forEach(element -> {
@@ -213,8 +216,9 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
                     currentMultiplicities.putIfAbsent(multiplicity, currentMultiplicity);
                     LOGGER.debug("{} {} {}", multiplicity, currentMultiplicity, currentMultiplicities.get(multiplicity));
                     if (!Objects.equals(currentMultiplicities.get(multiplicity), currentMultiplicity)) {
-                        if (isObject) {
-                            increasedMultiplicityLevel[0]++;
+                        if (!increased[0]) {
+                            increasedMultiplicityLevel[0] = current[0];
+                            increased[0] = true;
                         }
                         currentMultiplicities.put(multiplicity, currentMultiplicity);
                     }
@@ -228,32 +232,81 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
             }
 
             //TODO: test cases
-            /*if (increasedMultiplicityLevel[0] > 0 && increasedMultiplicityLevel[0] < i)  {
-                i = increasedMultiplicityLevel[0] + 1;
+            if (increasedMultiplicityLevel[0] > 0 && increasedMultiplicityLevel[0] < i)  {
+                i = increasedMultiplicityLevel[0];
             }*/
 
-            //close nested objects as well as arrays for multiplicities
-            for (int j = lastPath.size() - 1; j >= i; j--) {
-                // omit if lastPath is array value that was never opened
-                if (j < lastPath.size()-1 || !currentFieldMulti) {
-                    closeArrayAndOrObject(lastPath.get(j), j < lastPath.size() - 1, lastPath.get(j)
-                                                                                            .contains("["));
+            nestingTracker.track(path, multiplicities);
+
+            List<String> closeActions = nestingTracker.getCurrentCloseActions();
+            LOGGER.debug("CLOSE {}", closeActions);
+
+            for (int i = 0; i < closeActions.size(); i++) {
+                if (i < closeActions.size()-1 || !currentFieldMulti) {
+                    switch (closeActions.get(i)) {
+                        case "OBJECT":
+                            json.writeEndObject();
+                            break;
+                        case "ARRAY":
+                            json.writeEndArray();
+                            break;
+                    }
                 }
             }
+
+
+            /*int differsAt = nestingTracker.differsAt();
+
+            //close nested objects as well as arrays for multiplicities
+            for (int j = lastPath.size() - 1; j >= differsAt; j--) {
+                // omit if lastPath is array value that was never opened
+                if (j < lastPath.size()-1 || !currentFieldMulti) {
+                    boolean closeObject = j < lastPath.size() - 1;
+                    boolean closeArray = lastPath.get(j)
+                                              .contains("[") && !(closeObject && j == differsAt && j > 0);
+                    closeArrayAndOrObject(lastPath.get(j), closeObject, closeArray);
+                }
+            }*/
             currentFieldMulti = false;
 
-            // open nested objects as well as arrays for multiplicities
-            for (int j = i; j < path.size() - 1; j++) {
-                openArrayAndOrObject(path.get(j));
+            int differsAt = nestingTracker.differsAt();
+            List<List<String>> openActions = nestingTracker.getCurrentOpenActions();
+            LOGGER.debug("OPEN {}", openActions);
+
+            for (int i = 0; i < openActions.size(); i++) {
+                String fieldName = path.get(differsAt + i);
+                for (String action : openActions.get(i)) {
+                    switch (action) {
+                        case "OBJECT":
+                            if (fieldName.contains("[")) {
+                                json.writeStartObject();
+                            } else {
+                                json.writeObjectFieldStart(fieldName.substring(0, fieldName.indexOf("[")));
+                            }
+                            break;
+                        case "ARRAY":
+                            if (fieldName.contains("[")) {
+                                json.writeArrayFieldStart(fieldName.substring(0, fieldName.indexOf("[")));
+                            } else {
+                                json.writeStartArray();
+                            }
+                            break;
+                    }
+                }
             }
+
+            // open nested objects as well as arrays for multiplicities
+            /*for (int j = differsAt; j < path.size() - 1; j++) {
+                openArrayAndOrObject(path.get(j));
+            }*/
 
             //TODO: multilevel
             // close and open on changed multiplicities
-            for (int j = 0; j < increasedMultiplicityLevel[0]; j++) {
+            /*for (int j = 0; j < increasedMultiplicityLevel[0]; j++) {
                 LOGGER.debug("MULTI {}", j);
                 json.writeEndObject();
                 json.writeStartObject();
-            }
+            }*/
 
             // write field name
             if (!path.isEmpty()) {
@@ -261,9 +314,9 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
                 boolean isMulti = field.contains("[");
                 int multi = 0;
                 if (isMulti) {
-                    String multiplicity = field.substring(field.indexOf("[") + 1, field.indexOf("]"));
+                    String multiplicityKey = field.substring(field.indexOf("[") + 1, field.indexOf("]"));
                     field = field.substring(0, field.indexOf("["));
-                    multi = currentMultiplicities.getOrDefault(multiplicity, 1);
+                    multi = nestingTracker.getCurrentMultiplicityLevel(multiplicityKey);
                 }
                 if (!isMulti || multi == 1) {
                     LOGGER.debug("FIELD {}", field);
@@ -328,9 +381,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
                     more = currentFormatter.contains("}}");
                 }
 
-                if (more) {
-                    return;
-                } else {
+                if (!more) {
                     if (currentFieldName != null) {
                         json.writeFieldName(currentFieldName);
                         currentFieldName = null;
