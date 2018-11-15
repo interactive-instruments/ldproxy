@@ -8,9 +8,7 @@ Did you ever wish you could access WFS services with a simple RESTful JSON API? 
 
 ldproxy is an adapter that sits in front of existing WFS services and provides a simple RESTful API and additional output formats like GeoJson, HTML and JSON-LD. These representations are created on the fly using live data from the WFS.
 
-ldproxy was designed with the goal to enhance existing WFS services with the ideas from the [Spatial Data on the Web Best Practices](https://www.w3.org/TR/sdw-bp/) as well as the [Data on the Web Best Practices](https://www.w3.org/TR/dwbp/) developed by the W3C. In the meantime the OGC published the first draft of the [WFS 3.0 specification](https://rawgit.com/opengeospatial/WFS_FES/master/docs/17-069.html), which also builds on these best practices and is mostly implemented by ldproxy.
-
-Have a look at the demo at http://www.ldproxy.net.
+ldproxy was designed with the goal to enhance existing WFS services with the ideas from the [Spatial Data on the Web Best Practices](https://www.w3.org/TR/sdw-bp/) as well as the [Data on the Web Best Practices](https://www.w3.org/TR/dwbp/) developed by the W3C. In the meantime the OGC published the first draft of the [WFS 3.0 specification](https://cdn.rawgit.com/opengeospatial/WFS_FES/3.0.0-draft.1/docs/17-069.html), which also builds on these best practices and is mostly implemented by ldproxy.
 
 ## Installation
 ldproxy is available on [Docker Hub](https://hub.docker.com/r/iide/ldproxy/). If you are new to Docker, have a look at the  [Docker Documentation](https://docs.docker.com/).  
