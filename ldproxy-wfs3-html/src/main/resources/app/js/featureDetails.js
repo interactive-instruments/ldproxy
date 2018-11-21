@@ -45,7 +45,7 @@ $.getJSON(geoJsonUrl, function(data) {
 
     if (data.additionalFeatures) {
         var bounds = geoJson.getBounds();
-        Object.keys(data.additionalFeatures).forEach(ft => {
+        Object.keys(data.additionalFeatures).forEach(function(ft) {
             var geoJson2 = L.geoJson(data.additionalFeatures[ft], {
                     onEachFeature: function (feature, layer) {
                                 if (feature.geometry.type != 'Point') {
