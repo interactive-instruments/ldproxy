@@ -3095,10 +3095,10 @@ grommet-addons@^0.6.0:
     prop-types "^15.5.10"
     react-router "^3.0.0"
 
-grommet@^1.11.0:
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/grommet/-/grommet-1.11.0.tgz#ebc8878d24a3546e214ae6b10487265610db8b6b"
-  integrity sha512-RMKJyx6d2Zyttt+aTpfsIwpc0Ic1rLHsgRsc9BL27YtsoKdXJLyUNTOJmLWAUz+mR6LMwox/PON6J1faDG/1ew==
+grommet@^1.13.0:
+  version "1.13.0"
+  resolved "https://registry.yarnpkg.com/grommet/-/grommet-1.13.0.tgz#e3096b1f1e93349a43eecfacb32a5437c1687b7b"
+  integrity sha512-gx3HCPODbHzOYVvS+oJ/15WuKy0DQmSuPoIhhUW4dCDPaP5GPlIgiM2dxMpH+hNsn6Uxl1RGI+G7Vr3E+52kAw==
   dependencies:
     classnames "^2.2.3"
     deep-assign "^2.0.0"

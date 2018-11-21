@@ -25,10 +25,10 @@ import static de.ii.ldproxy.target.html.HtmlConfig.*;
 @Instantiate
 @LocalBundleConfig(category = "HTML Views", properties = {
         @ConfigPropertyDescriptor(name = LEGAL_NAME, label = "Label for legal notice", defaultValue = "Legal notice"),
-        @ConfigPropertyDescriptor(name = LEGAL_URL, label = "URL for legal notice", defaultValue = ""),
+        @ConfigPropertyDescriptor(name = LEGAL_URL, label = "URL for legal notice", defaultValue = "", uiType = ConfigPropertyDescriptor.UI_TYPE.URL),
         @ConfigPropertyDescriptor(name = PRIVACY_NAME, label = "Label for privacy notice", defaultValue = "Privacy notice"),
-        @ConfigPropertyDescriptor(name = PRIVACY_URL, label = "URL for privacy notice", defaultValue = ""),
-        @ConfigPropertyDescriptor(name = LEAFLET_URL, label = "URL for leaflet background tiles", defaultValue = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"),
+        @ConfigPropertyDescriptor(name = PRIVACY_URL, label = "URL for privacy notice", defaultValue = "",uiType = ConfigPropertyDescriptor.UI_TYPE.URL),
+        @ConfigPropertyDescriptor(name = LEAFLET_URL, label = "URL for leaflet background tiles", defaultValue = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",uiType = ConfigPropertyDescriptor.UI_TYPE.URL),
         //TODO: single quotes do not work in javascript, but double quotes are obviously not accepted by LocalBundleConfigHandler
         @ConfigPropertyDescriptor(name = LEAFLET_ATTRIBUTION, label = "Attribution for leaflet", defaultValue = "&copy; <a href=''http://osm.org/copyright''>OpenStreetMap</a> contributors"),
         @ConfigPropertyDescriptor(name = FOOTER_TEXT, label = "Text for footer", defaultValue = "")
