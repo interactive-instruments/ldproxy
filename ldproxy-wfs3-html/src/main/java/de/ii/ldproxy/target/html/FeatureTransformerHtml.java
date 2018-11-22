@@ -7,9 +7,6 @@
  */
 package de.ii.ldproxy.target.html;
 
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.MustacheException;
-import com.github.mustachejava.MustacheFactory;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -17,6 +14,11 @@ import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.CodelistData;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.target.html.MicrodataMapping.MICRODATA_TYPE;
+import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration;
+import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationResolver;
+import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsQuery;
+import de.ii.ldproxy.wfs3.aroundrelations.SimpleAroundRelationResolver;
+import de.ii.xtraplatform.akka.http.AkkaHttp;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
@@ -24,39 +26,26 @@ import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
 import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import io.dropwizard.views.ViewRenderer;
 import org.commonmark.Extension;
-import org.commonmark.ext.gfm.tables.TableBlock;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Link;
 import org.commonmark.node.Node;
 import org.commonmark.node.Paragraph;
 import org.commonmark.parser.Parser;
-import org.commonmark.renderer.NodeRenderer;
-import org.commonmark.renderer.html.AttributeProvider;
-import org.commonmark.renderer.html.AttributeProviderContext;
-import org.commonmark.renderer.html.AttributeProviderFactory;
 import org.commonmark.renderer.html.CoreHtmlNodeRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -66,13 +55,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMayThrow;
 
 /**
  * @author zahnen
@@ -84,14 +74,14 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
     private OutputStreamWriter outputStreamWriter;
     protected XMLPathTracker currentPath;
     protected FeatureDTO currentFeature;
-    protected String outputFormat; // as constant somewhere
-    protected FeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
+    //protected String outputFormat; // as constant somewhere
+    //protected FeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
     protected boolean isFeatureCollection;
     protected boolean isAddress;
     protected List<String> groupings;
     protected boolean isGrouped;
     //protected String query;
-    protected MustacheFactory mustacheFactory;
+    //protected MustacheFactory mustacheFactory;
     protected ViewRenderer mustacheRenderer;
     protected int page;
     protected int pageSize;
@@ -120,19 +110,28 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
     private int currentGeometryParts;
     private String currentFormatter;
 
-    public FeatureTransformerHtml(OutputStreamWriter outputStreamWriter, boolean isFeatureCollection, CrsTransformer crsTransformer, int page, int pageSize, FeatureCollectionView featureTypeDataset, Codelist[] codelists, ViewRenderer mustacheRenderer, String serviceUrl) {
-        this.outputStreamWriter = outputStreamWriter;
+    private AroundRelationsQuery aroundRelationsQuery;
+
+    //TODO inject, multiple implementations
+    private final AroundRelationResolver aroundRelationResolver;
+
+    private final FeatureTransformationContextHtml transformationContext;
+    private final int offset;
+
+    public FeatureTransformerHtml(FeatureTransformationContextHtml transformationContext, AkkaHttp akkaHttp) {
+        this.outputStreamWriter = new OutputStreamWriter(transformationContext.getOutputStream());
         this.currentPath = new XMLPathTracker();
-        this.featureTypeMapping = featureTypeMapping;
-        this.outputFormat = outputFormat;
-        this.isFeatureCollection = isFeatureCollection;
+        //this.featureTypeMapping = featureTypeMapping;
+        //this.outputFormat = outputFormat;
+        this.isFeatureCollection = transformationContext.isFeatureCollection();
         this.isAddress = false;//isAddress;
         this.groupings = new ArrayList<>();//groupings;
         this.isGrouped = false;//isGrouped;
         //this.query = query;
-        this.page = page;
-        this.pageSize = pageSize;
-        this.mustacheFactory = new DefaultMustacheFactory() {
+        this.page = transformationContext.getPage();
+        this.pageSize = transformationContext.getLimit();
+        this.offset = transformationContext.getOffset();
+        /*this.mustacheFactory = new DefaultMustacheFactory() {
             @Override
             public Reader getReader(String resourceName) {
                 final InputStream is = getClass().getResourceAsStream(resourceName);
@@ -150,10 +149,11 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                     // ignore
                 }
             }
-        };
-        this.crsTransformer = crsTransformer;
+        };*/
+        this.crsTransformer = transformationContext.getCrsTransformer()
+                                                   .orElse(null);
 
-        this.dataset = featureTypeDataset;
+        this.dataset = transformationContext.getFeatureTypeDataset();
 
         /*try {
             URIBuilder urlBuilder = new URIBuilder(dataset.requestUrl);
@@ -163,11 +163,14 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         } catch (URISyntaxException e) {
             //ignore
         }*/
-        this.serviceUrl = serviceUrl;
+        this.serviceUrl = transformationContext.getServiceUrl();
 
         //this.sparqlAdapter = null;//sparqlAdapter;
-        this.codelists = codelists;
-        this.mustacheRenderer = mustacheRenderer;
+        this.codelists = transformationContext.getCodelists();
+        this.mustacheRenderer = transformationContext.getMustacheRenderer();
+
+        this.aroundRelationResolver = new SimpleAroundRelationResolver(akkaHttp);
+        this.transformationContext = transformationContext;
     }
 
     @Override
@@ -199,10 +202,10 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
             ImmutableList.Builder<NavigationDTO> metaPagination = new ImmutableList.Builder<>();
             if (page > 1) {
                 pagination
-                        .add(new NavigationDTO("«", "page=1"))
-                        .add(new NavigationDTO("‹", "page=" + String.valueOf(page - 1)));
+                        .add(new NavigationDTO("«", "offset=0"))
+                        .add(new NavigationDTO("‹", "offset=" + String.valueOf(offset - pageSize)));
                 metaPagination
-                        .add(new NavigationDTO("prev", "page=" + String.valueOf(page - 1)));
+                        .add(new NavigationDTO("prev", "offset=" + String.valueOf(offset - pageSize)));
             } else {
                 pagination
                         .add(new NavigationDTO("«"))
@@ -219,16 +222,16 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                     if (i == page) {
                         pagination.add(new NavigationDTO(String.valueOf(i), true));
                     } else {
-                        pagination.add(new NavigationDTO(String.valueOf(i), "page=" + String.valueOf(i)));
+                        pagination.add(new NavigationDTO(String.valueOf(i), "offset=" + String.valueOf((i - 1) * pageSize)));
                     }
                 }
 
                 if (page < pages) {
                     pagination
-                            .add(new NavigationDTO("›", "page=" + String.valueOf(page + 1)))
-                            .add(new NavigationDTO("»", "page=" + String.valueOf(pages)));
+                            .add(new NavigationDTO("›", "offset=" + String.valueOf(offset + pageSize)))
+                            .add(new NavigationDTO("»", "offset=" + String.valueOf((pages - 1) * pageSize)));
                     metaPagination
-                            .add(new NavigationDTO("next", "page=" + String.valueOf(page + 1)));
+                            .add(new NavigationDTO("next", "offset=" + String.valueOf(offset + pageSize)));
                 } else {
                     pagination
                             .add(new NavigationDTO("›"))
@@ -241,14 +244,14 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                     if (i == page) {
                         pagination.add(new NavigationDTO(String.valueOf(i), true));
                     } else {
-                        pagination.add(new NavigationDTO(String.valueOf(i), "page=" + String.valueOf(i)));
+                        pagination.add(new NavigationDTO(String.valueOf(i), "offset=" + String.valueOf((i - 1) * pageSize)));
                     }
                 }
                 if (returned >= pageSize) {
                     pagination
-                            .add(new NavigationDTO("›", "page=" + String.valueOf(page + 1)));
+                            .add(new NavigationDTO("›", "offset=" + String.valueOf(offset + pageSize)));
                     metaPagination
-                            .add(new NavigationDTO("next", "page=" + String.valueOf(page + 1)));
+                            .add(new NavigationDTO("next", "offset=" + String.valueOf(offset + pageSize)));
                 } else {
                     pagination
                             .add(new NavigationDTO("›"));
@@ -262,6 +265,8 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
             //analyzeFailed(ex);
             LOGGER.error("Pagination not supported by feature provider");
         }
+
+        this.aroundRelationsQuery = new AroundRelationsQuery(transformationContext);
     }
 
     @Override
@@ -288,6 +293,14 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         currentFeature.name = mapping.getName();
         currentFeature.itemType = ((MicrodataPropertyMapping) mapping).getItemType();
         currentFeature.itemProp = ((MicrodataPropertyMapping) mapping).getItemProp();
+
+        if (isFeatureCollection && !aroundRelationsQuery.getRelations()
+                                 .isEmpty()) {
+            currentFeature.additionalParams = "&relations=" + aroundRelationsQuery.getRelations()
+                                                                  .stream()
+                                                                  .map(AroundRelationConfiguration.Relation::getId)
+                                                                  .collect(Collectors.joining(",")) + "&resolve=true";
+        }
     }
 
     @Override
@@ -312,6 +325,44 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         }
         dataset.features.add(currentFeature);
         currentFeature = null;
+
+
+        //TODO
+        dataset.additionalFeatures = new ArrayList<>();
+
+        if (!isFeatureCollection && aroundRelationsQuery.isReady()) {
+
+            boolean[] started = {false};
+
+            aroundRelationsQuery.getQueries()
+                                .forEach(consumerMayThrow(query -> {
+
+
+                                    FeaturePropertyDTO featurePropertyDTO = new FeaturePropertyDTO();
+                                    featurePropertyDTO.name = query.getConfiguration()
+                                                                   .getLabel();
+                                    dataset.additionalFeatures.add(featurePropertyDTO);
+
+                                    if (aroundRelationsQuery.isResolve()) {
+                                        String resolved = aroundRelationResolver.resolve(query, "&f=html&bare=true");
+
+                                        if (Objects.nonNull(resolved) && resolved.contains("<h4")) {
+
+                                            String url = dataset.getPath() + dataset.getQueryWithout()
+                                                                                    .apply("limit,offset");
+
+                                            //TODO multiple relations
+                                            featurePropertyDTO.value = resolved.replaceAll("<a class=\"page-link\" href=\".*(&limit(?:=|(?:&#61;))[0-9]+)(?:.*(&offset(?:=|(?:&#61;))[0-9]+))?.*\">", "<a class=\"page-link\" href=\"" + url.substring(0, url.length() - 1) + "$1$2\">");
+                                        } else {
+                                            featurePropertyDTO.value = "Keine";
+                                        }
+                                    } else {
+                                        String url = aroundRelationResolver.getUrl(query, "&f=html");
+
+                                        featurePropertyDTO.value = "<a href=\"" + url + "\" target=\"_blank\">Öffnen</a>";
+                                    }
+                                }));
+        }
     }
 
     @Override
@@ -462,6 +513,11 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                 property.itemType = mapping.getItemType();
                 property.itemProp = mapping.getItemProp();
 
+                int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
+                if (pos > -1) {
+                    currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
+                }
+
 
                 if (mapping.getCodelist() != null) {
                     //TODO: read into map in Wfs3OutputFormatHtml with @Bind(aggregate=true)
@@ -474,7 +530,8 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                                            .map(cl -> {
                                                String resolvedValue = cl.getValue(property.value);
 
-                                               if (cl.getData().getSourceType() == CodelistData.IMPORT_TYPE.TEMPLATES) {
+                                               if (cl.getData()
+                                                     .getSourceType() == CodelistData.IMPORT_TYPE.TEMPLATES) {
                                                    resolvedValue = applyFilterMarkdown(applyTemplate(property, resolvedValue));
                                                    property.isHtml = true;
                                                }
@@ -533,11 +590,6 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                 }
 
                 currentFeature.addChild(property);
-
-                int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
-                if (pos > -1) {
-                    currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
-                }
 
                 // TODO
                 /*if (property.name.equals("postalCode") && !isFeatureCollection) {
@@ -652,6 +704,20 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         coordinatesOutput = new StringWriter();
         coordinatesWriter = new HtmlTransformingCoordinatesWriter(coordinatesOutput, Objects.nonNull(dimension) ? dimension : 2, crsTransformer);
 
+        // for relations
+        this.cwBuilder = CoordinatesWriterType.builder();
+
+        if (transformationContext.getCrsTransformer()
+                                 .isPresent()) {
+            cwBuilder.transformer(transformationContext.getCrsTransformer()
+                                                       .get());
+        }
+
+        if (dimension != null) {
+            cwBuilder.dimension(dimension);
+        }
+
+
         currentGeometryParts = 0;
     }
 
@@ -723,6 +789,10 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                 }
                 break;
         }
+
+        if (!isFeatureCollection && aroundRelationsQuery.isActive()) {
+            aroundRelationsQuery.addCoordinates(text, cwBuilder);
+        }
     }
 
     @Override
@@ -736,6 +806,10 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
 
         if (currentGeometryPart != null) {
             currentGeometryPart.value = coordinatesOutput.toString();
+        }
+
+        if (!isFeatureCollection && aroundRelationsQuery.isActive()) {
+            aroundRelationsQuery.computeBbox(currentGeometryType.toSimpleFeatureGeometry());
         }
 
         currentGeometryType = null;

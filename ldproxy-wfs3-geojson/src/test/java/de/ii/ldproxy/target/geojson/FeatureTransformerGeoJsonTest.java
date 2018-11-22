@@ -7,17 +7,36 @@
  */
 package de.ii.ldproxy.target.geojson;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.wfs3.api.FeatureTransformationContext.Event;
+import de.ii.ldproxy.wfs3.api.FeatureWriterGeoJson;
+import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceData;
+import de.ii.ldproxy.wfs3.api.URICustomizer;
+import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
+import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfo;
+import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfo;
+import de.ii.xtraplatform.feature.provider.wfs.ImmutableFeatureProviderDataWfs;
+import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalLong;
+import java.util.function.Consumer;
 
-import static org.testng.Assert.*;
+import static de.ii.ldproxy.target.geojson.GeoJsonWriterSetupUtil.createTransformationContext;
+import static org.testng.Assert.assertEquals;
 
 /**
  * @author zahnen
@@ -26,234 +45,153 @@ public class FeatureTransformerGeoJsonTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerGeoJsonTest.class);
 
+    static final GeoJsonPropertyMapping featureMapping = new GeoJsonPropertyMapping();
+
+    static final GeoJsonPropertyMapping propertyMapping = new GeoJsonPropertyMapping();
+
+    static final GeoJsonPropertyMapping propertyMapping2 = new GeoJsonPropertyMapping();
+
+    static final GeoJsonGeometryMapping geometryMapping = new GeoJsonGeometryMapping();
+
+    static final String value1 = "val1";
+    static final String value2 = "val2";
+    static final String coordinates = "10 50, 11 51";
+
+
+    static {
+        featureMapping.setName("f1");
+        propertyMapping.setName("p1");
+        propertyMapping2.setName("p2");
+        geometryMapping.setGeometryType(GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.MULTI_POLYGON);
+    }
+
+    /**
+     * Is FeatureWriter.onEvent called with the correct state?
+     */
     @Test(groups = {"default"})
-    public void testNestingOneLevel() throws IOException {
-        // nested property is followed by a flat one
-        assertEquals(getActualNestingOneLevel(false), getExpectedNestingOneLevel(false));
+    public void testPipelineState() throws Exception {
+        List<Event> actualEvents = new ArrayList<>();
 
-        // nested property comes last
-        assertEquals(getActualNestingOneLevel(true), getExpectedNestingOneLevel(true));
+        List<Event> expectedEvents = ImmutableList.of(Event.START, Event.FEATURE_START, Event.PROPERTY, Event.COORDINATES, Event.GEOMETRY_END, Event.PROPERTY, Event.FEATURE_END, Event.END);
 
-        // nested and multiple property is followed by a flat one
-        assertEquals(getActualNestingOneLevelMultiplicity(false), getExpectedNestingOneLevelMultiplicity(false));
+        List<TargetMapping> actualMappings = new ArrayList<>();
 
-        // nested and multiple property comes last
-        assertEquals(getActualNestingOneLevelMultiplicity(true), getExpectedNestingOneLevelMultiplicity(true));
+        List<TargetMapping> expectedMappings = ImmutableList.of(featureMapping, propertyMapping, geometryMapping, propertyMapping2);
+
+        List<String> actualValues = new ArrayList<>();
+
+        List<String> expectedValues = ImmutableList.of(value1, coordinates, value2);
+
+        FeatureTransformationContextGeoJson transformationContext = createTransformationContext(new ByteArrayOutputStream(), false);
+        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new FeatureWriterGeoJson<FeatureTransformationContextGeoJson>() {
+            @Override
+            public int getSortPriority() {
+                return 0;
+            }
+
+            @Override
+            public void onEvent(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+                actualEvents.add(transformationContext.getState()
+                                                      .getEvent());
+
+                switch (transformationContext.getState()
+                                             .getEvent()) {
+                    case PROPERTY:
+                    case COORDINATES:
+                        transformationContext.getState()
+                                             .getCurrentValue()
+                                             .ifPresent(actualValues::add);
+                    case FEATURE_START:
+                        transformationContext.getState()
+                                             .getCurrentMapping()
+                                             .ifPresent(actualMappings::add);
+                }
+            }
+        }));
+
+        writeFeature(transformer, true);
+
+        assertEquals(actualEvents, expectedEvents);
+
+        assertEquals(actualMappings, expectedMappings);
+
+        assertEquals(actualValues, expectedValues);
     }
 
+    /**
+     * Is every FeatureWriter in the pipeline called in the correct order?
+     */
     @Test(groups = {"default"})
-    public void testNestingTwoLevel() throws IOException {
-        // nested and multiple property is followed by a flat one
-        assertEquals(getActualNestingTwoLevelMultiplicity(false), getExpectedNestingTwoLevelMultiplicity(false));
+    public void testPipelineChaining() throws Exception {
+        //is every writer called in the correct order
     }
 
-    private String getActualNestingOneLevel(boolean lastPropertyIsNested) throws IOException {
-        TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
-        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(json, false, null, new ArrayList<>(), 10, "");
-        GeoJsonPropertyMapping mapping = new GeoJsonPropertyMapping();
+    /**
+     * Is currentGeometryNestingChange set correctly?
+     */
+    @Test(groups = {"default"})
+    public void testGeometryNesting() throws Exception {
 
-        json.writeStartObject();
-        json.writeObjectFieldStart("properties");
+        List<Integer> expectedNestingChanges = ImmutableList.of(2, 1, 2, 2, 1, 1);
+        List<Integer> actualNestingChanges = new ArrayList<>();
 
-        mapping.setName("foto.bemerkung");
-        transformer.onPropertyStart(mapping, ImmutableList.of());
+        FeatureTransformationContextGeoJson transformationContext = createTransformationContext(new ByteArrayOutputStream(), true);
+        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new FeatureWriterGeoJson<FeatureTransformationContextGeoJson>() {
+            @Override
+            public int getSortPriority() {
+                return 0;
+            }
+
+            @Override
+            public void onEvent(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+
+
+                switch (transformationContext.getState()
+                                             .getEvent()) {
+                    case COORDINATES:
+                        actualNestingChanges.add(transformationContext.getState()
+                                                                      .getCurrentGeometryNestingChange());
+                }
+            }
+        }));
+
+        writeFeature(transformer, true, expectedNestingChanges);
+
+
+        assertEquals(actualNestingChanges, expectedNestingChanges);
+    }
+
+    private void writeFeature(FeatureTransformerGeoJson transformer, boolean startEnd, List<Integer> nestingPattern) throws IOException {
+        if (startEnd) {
+            transformer.onStart(OptionalLong.empty(), OptionalLong.empty());
+        }
+        transformer.onFeatureStart(featureMapping);
+        transformer.onPropertyStart(propertyMapping, ImmutableList.of());
+        transformer.onPropertyText(value1);
         transformer.onPropertyEnd();
+        transformer.onGeometryStart(geometryMapping, SimpleFeatureGeometry.MULTI_POLYGON, null);
 
-        mapping.setName("foto.hauptfoto");
-        transformer.onPropertyStart(mapping, ImmutableList.of());
-        transformer.onPropertyEnd();
-
-        if (lastPropertyIsNested) {
-
-        } else {
-            mapping.setName("kennung");
-            transformer.onPropertyStart(mapping, ImmutableList.of());
-            transformer.onPropertyEnd();
+        for (Integer depth : nestingPattern) {
+            for (int i = 0; i < depth; i++) {
+                transformer.onGeometryNestedStart();
+            }
+            transformer.onGeometryCoordinates(coordinates);
+            for (int i = 0; i < depth; i++) {
+                transformer.onGeometryNestedEnd();
+            }
         }
 
+        transformer.onGeometryEnd();
+        transformer.onPropertyStart(propertyMapping2, ImmutableList.of());
+        transformer.onPropertyText(value2);
+        transformer.onPropertyEnd();
         transformer.onFeatureEnd();
-
-        String actual = json.toString();
-        LOGGER.debug("ACTUAL   {}", actual);
-        return actual;
+        if (startEnd) {
+            transformer.onEnd();
+        }
     }
 
-    private String getExpectedNestingOneLevel(boolean lastPropertyIsNested) throws IOException {
-        TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
-
-        json.writeStartObject();
-        json.writeObjectFieldStart("properties");
-        json.writeFieldName("foto");
-        json.writeStartObject();
-        json.writeStringField("bemerkung", "");
-        json.writeStringField("hauptfoto", "");
-        json.writeEndObject();
-        if (!lastPropertyIsNested) {
-            json.writeStringField("kennung", "");
-        }
-        json.writeEndObject();
-        json.writeEndObject();
-
-        String expected = json.toString();
-        LOGGER.debug("EXPECTED {}", expected);
-        return expected;
-    }
-
-    private String getActualNestingOneLevelMultiplicity(boolean lastPropertyIsNested) throws IOException {
-        TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
-        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(json, false, null, new ArrayList<>(), 10, "");
-        GeoJsonPropertyMapping mapping = new GeoJsonPropertyMapping();
-
-        json.writeStartObject();
-        json.writeObjectFieldStart("properties");
-
-        // multiple object
-        mapping.setName("foto[foto].bemerkung");
-        transformer.onPropertyStart(mapping, ImmutableList.of(1));
-        transformer.onPropertyEnd();
-
-        mapping.setName("foto[foto].hauptfoto");
-        transformer.onPropertyStart(mapping, ImmutableList.of(1));
-        transformer.onPropertyEnd();
-
-        mapping.setName("foto[foto].bemerkung");
-        transformer.onPropertyStart(mapping, ImmutableList.of(2));
-        transformer.onPropertyEnd();
-
-        mapping.setName("foto[foto].hauptfoto");
-        transformer.onPropertyStart(mapping, ImmutableList.of(2));
-        transformer.onPropertyEnd();
-
-        // multiple value
-        mapping.setName("fachreferenz[fachreferenz]");
-        transformer.onPropertyStart(mapping, ImmutableList.of(1));
-        transformer.onPropertyEnd();
-
-        mapping.setName("fachreferenz[fachreferenz]");
-        transformer.onPropertyStart(mapping, ImmutableList.of(2));
-        transformer.onPropertyEnd();
-
-        if (!lastPropertyIsNested) {
-            mapping.setName("kennung");
-            transformer.onPropertyStart(mapping, ImmutableList.of());
-            transformer.onPropertyEnd();
-        }
-
-        transformer.onFeatureEnd();
-
-        String actual = json.toString();
-        LOGGER.debug("ACTUAL   {}", actual);
-        return actual;
-    }
-
-    private String getExpectedNestingOneLevelMultiplicity(boolean lastPropertyIsNested) throws IOException {
-        TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
-
-        json.writeStartObject();
-        json.writeObjectFieldStart("properties");
-        json.writeFieldName("foto");
-        json.writeStartArray();
-        json.writeStartObject();
-        json.writeStringField("bemerkung", "");
-        json.writeStringField("hauptfoto", "");
-        json.writeEndObject();
-        json.writeStartObject();
-        json.writeStringField("bemerkung", "");
-        json.writeStringField("hauptfoto", "");
-        json.writeEndObject();
-        json.writeEndArray();
-        json.writeFieldName("fachreferenz");
-        json.writeStartArray();
-        json.writeString("");
-        json.writeString("");
-        json.writeEndArray();
-        if (!lastPropertyIsNested) {
-            json.writeStringField("kennung", "");
-        }
-        json.writeEndObject();
-        json.writeEndObject();
-
-        String expected = json.toString();
-        LOGGER.debug("EXPECTED {}", expected);
-        return expected;
-    }
-
-    private String getActualNestingTwoLevelMultiplicity(boolean lastPropertyIsNested) throws IOException {
-        TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
-        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(json, false, null, new ArrayList<>(), 10, "");
-        GeoJsonPropertyMapping mapping = new GeoJsonPropertyMapping();
-
-        json.writeStartObject();
-        json.writeObjectFieldStart("properties");
-
-        mapping.setName("raumreferenz[raumreferenz].datumAbgleich");
-        transformer.onPropertyStart(mapping, ImmutableList.of(1));
-        transformer.onPropertyEnd();
-
-        mapping.setName("raumreferenz[raumreferenz].ortsangaben[ortsangaben].kreis");
-        transformer.onPropertyStart(mapping, ImmutableList.of(1, 1));
-        transformer.onPropertyEnd();
-
-        mapping.setName("raumreferenz[raumreferenz].ortsangaben[ortsangaben].flurstueckskennung[ortsangaben_flurstueckskennung]");
-        transformer.onPropertyStart(mapping, ImmutableList.of(1, 1, 1));
-        transformer.onPropertyEnd();
-
-        mapping.setName("raumreferenz[raumreferenz].ortsangaben[ortsangaben].flurstueckskennung[ortsangaben_flurstueckskennung]");
-        transformer.onPropertyStart(mapping, ImmutableList.of(1, 1, 2));
-        transformer.onPropertyEnd();
-
-        mapping.setName("raumreferenz[raumreferenz].ortsangaben[ortsangaben].kreis");
-        transformer.onPropertyStart(mapping, ImmutableList.of(1, 2));
-        transformer.onPropertyEnd();
-
-        mapping.setName("raumreferenz[raumreferenz].ortsangaben[ortsangaben].flurstueckskennung[ortsangaben_flurstueckskennung]");
-        transformer.onPropertyStart(mapping, ImmutableList.of(1, 2, 1));
-        transformer.onPropertyEnd();
-
-        if (!lastPropertyIsNested) {
-            mapping.setName("kennung");
-            transformer.onPropertyStart(mapping, ImmutableList.of());
-            transformer.onPropertyEnd();
-        }
-
-        transformer.onFeatureEnd();
-
-        String actual = json.toString();
-        LOGGER.debug("ACTUAL   {}", actual);
-        return actual;
-    }
-
-    private String getExpectedNestingTwoLevelMultiplicity(boolean lastPropertyIsNested) throws IOException {
-        TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
-
-        json.writeStartObject();
-        json.writeObjectFieldStart("properties");
-        json.writeFieldName("raumreferenz");
-        json.writeStartArray();
-        json.writeStartObject();
-        json.writeStringField("datumAbgleich", "");
-        json.writeFieldName("ortsangaben");
-        json.writeStartArray();
-        json.writeStartObject();
-        json.writeStringField("kreis", "");
-        json.writeStringField("flurstueckskennung", "");
-        json.writeStringField("flurstueckskennung", "");
-        json.writeEndObject();
-        json.writeStartObject();
-        json.writeStringField("kreis", "");
-        json.writeStringField("flurstueckskennung", "");
-        json.writeEndObject();
-        json.writeEndArray();
-        json.writeEndObject();
-        json.writeEndArray();
-        if (!lastPropertyIsNested) {
-            json.writeStringField("kennung", "");
-        }
-        json.writeEndObject();
-        json.writeEndObject();
-
-        String expected = json.toString();
-        LOGGER.debug("EXPECTED {}", expected);
-        return expected;
+    private void writeFeature(FeatureTransformerGeoJson transformer, boolean startEnd) throws IOException {
+        writeFeature(transformer, startEnd, ImmutableList.of(1));
     }
 }

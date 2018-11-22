@@ -12,6 +12,14 @@
     </div>
 </div>
 
+
+{{#additionalFeatures}}
+    <div class="my-4">
+        <h2 class="my-4">{{name}}</h2>
+        {{{value}}}
+    </div>
+{{/additionalFeatures}}
+
 {{> script}}
 
 <script src="{{urlPrefix}}/app/js/featureDetails.js" defer></script>

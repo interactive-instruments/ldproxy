@@ -7,9 +7,6 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
-import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.feature.query.api.FeatureQuery;
-import de.ii.xtraplatform.feature.query.api.FeatureStream;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
@@ -30,7 +27,21 @@ public interface Wfs3OutputFormatExtension extends Wfs3Extension {
 
     Response getCollectionResponse(Wfs3Collection wfs3Collection, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String collectionName);
 
-    Response getItemsResponse(Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String collectionName, FeatureQuery query, FeatureStream<FeatureTransformer> featureTransformStream, CrsTransformer crsTransformer, String staticUrlPrefix, FeatureStream<GmlConsumer> featureStream);
+    default boolean canPassThroughFeatures() {
+        return false;
+    }
+
+    default boolean canTransformFeatures() {
+        return false;
+    }
+
+    default Optional<GmlConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
+        return Optional.empty();
+    }
+
+    default Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext) {
+        return Optional.empty();
+    }
 
     Optional<TargetMappingProviderFromGml> getMappingGenerator();
 }
