@@ -10,6 +10,7 @@ package de.ii.ldproxy.target.geojson;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson.MULTIPLICITY;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson.NESTED_OBJECTS;
 import de.ii.ldproxy.target.geojson.GeoJsonMapping.GEO_JSON_TYPE;
@@ -36,28 +37,34 @@ import java.util.function.Consumer;
 @Instantiate
 public class GeoJsonWriterProperties implements GeoJsonWriter {
 
-    @Override
-    public GeoJsonWriterProperties create() {
-        return new GeoJsonWriterProperties();
-    }
-
     private static final Logger LOGGER = LoggerFactory.getLogger(GeoJsonWriterProperties.class);
 
+    private final JsonNestingStrategy nestingStrategy;
     private final StringBuilder stringBuilder = new StringBuilder();
     private List<String> lastPath = new ArrayList<>();
     private Map<String, Integer> currentMultiplicities = new HashMap<>();
-    String serviceUrl;
     private String currentFormatter;
     private String currentFieldName;
     private boolean currentFieldMulti;
     private boolean currentStarted;
+    private JsonNestingTracker nestingTracker;
+
+    public GeoJsonWriterProperties() {
+        this.nestingStrategy = new JsonNestingStrategyNestArray();
+        this.nestingTracker = new JsonNestingTracker(nestingStrategy);
+    }
+
+    @Override
+    public GeoJsonWriterProperties create() {
+        return new GeoJsonWriterProperties();
+    }
 
     @Override
     public int getSortPriority() {
         return 40;
     }
 
-    private void reset() {
+    /*private void reset() {
         this.stringBuilder.setLength(0);
         this.lastPath = new ArrayList<>();
         this.currentMultiplicities = new HashMap<>();
@@ -65,17 +72,22 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         this.currentFieldName = null;
         this.currentFieldMulti = false;
         this.currentStarted = false;
-    }
+    }*/
 
     @Override
     public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        reset();
+        //reset();
 
         next.accept(transformationContext);
     }
 
     @Override
     public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+
+        writePropertyName(transformationContext.getJson(), "", ImmutableList.of(), NESTED_OBJECTS.NEST);
+        this.currentMultiplicities = new HashMap<>();
+        this.nestingTracker = new JsonNestingTracker(nestingStrategy);
+
 
         if (currentStarted) {
             this.currentStarted = false;
@@ -85,7 +97,6 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                                  .writeEndObject();
         }
 
-        this.currentMultiplicities = new HashMap<>();
 
 
         // next chain for extensions
@@ -130,7 +141,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         }
 
 
-        writePropertyName(json, currentMapping.getName(), multiplicities, nestedObjectStrategy, multiplicityStrategy);
+        writePropertyName(json, currentMapping.getName(), multiplicities, nestedObjectStrategy);
 
 
         if (currentMapping.getType() == GEO_JSON_TYPE.STRING && currentMapping.getFormat() != null && !currentMapping.getFormat()
@@ -138,12 +149,13 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
             boolean more = false;
             if (currentFormatter == null) {
                 currentFormatter = currentMapping.getFormat()
-                                                 .replace("{{serviceUrl}}", serviceUrl);
+                                                 .replace("{{serviceUrl}}", transformationContext.getServiceUrl());
             }
 
+            //TODO: shouldn't we replace {{currentFieldName}} with current value?
             int subst = currentFormatter.indexOf("}}");
             if (subst > -1) {
-                currentFormatter = currentFormatter.substring(0, currentFormatter.indexOf("{{")) + stringBuilder.toString() + currentFormatter.substring(subst + 2);
+                currentFormatter = currentFormatter.substring(0, currentFormatter.indexOf("{{")) + currentValue + currentFormatter.substring(subst + 2);
                 more = currentFormatter.contains("}}");
             }
 
@@ -174,7 +186,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         }
     }
 
-    private void writePropertyName(JsonGenerator json, String name, List<Integer> multiplicities, NESTED_OBJECTS nestedObjectStrategy, MULTIPLICITY multiplicityStrategy) throws IOException {
+    private void writePropertyName(JsonGenerator json, String name, List<Integer> multiplicities, NESTED_OBJECTS nestedObjectStrategy) throws IOException {
         if (nestedObjectStrategy == NESTED_OBJECTS.NEST) {
             List<String> path = Splitter.on('.')
                                         .omitEmptyStrings()
@@ -184,7 +196,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
             }
             LOGGER.debug("PATH {} {}", lastPath, path);
 
-            final int[] increasedMultiplicityLevel = {0};
+            /*final int[] increasedMultiplicityLevel = {0};
             final int[] current = {0};
             path.stream()
                 .filter(element -> element.contains("[")) //&& !(path.indexOf(element) == path.size() - 1)
@@ -204,10 +216,14 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                         currentMultiplicities.put(multiplicity, currentMultiplicity);
                     }
                     current[0]++;
-                });
+                });*/
+
+            boolean doNotCloseValueArray = currentFieldMulti;
+            nestingTracker.track(path, multiplicities, json, doNotCloseValueArray);
+            currentFieldMulti = false;
 
             // find index where lastPath and path start to differ
-            int i;
+            /*int i;
             for (i = 0; i < lastPath.size() && i < path.size(); i++) {
                 if (!Objects.equals(lastPath.get(i), path.get(i))) break;
             }
@@ -229,7 +245,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                 LOGGER.debug("MULTI {}", j);
                 json.writeEndObject();
                 json.writeStartObject();
-            }
+            }*/
 
             // write field name
             if (!path.isEmpty()) {
@@ -237,9 +253,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                 boolean isMulti = field.contains("[");
                 int multi = 0;
                 if (isMulti) {
-                    String multiplicity = field.substring(field.indexOf("[") + 1, field.indexOf("]"));
+                    String multiplicityKey = field.substring(field.indexOf("[") + 1, field.indexOf("]"));
                     field = field.substring(0, field.indexOf("["));
-                    multi = currentMultiplicities.getOrDefault(multiplicity, 1);
+                    multi = nestingTracker.getCurrentMultiplicityLevel(multiplicityKey);
                 }
                 if (!isMulti || multi == 1) {
                     LOGGER.debug("FIELD {}", field);
