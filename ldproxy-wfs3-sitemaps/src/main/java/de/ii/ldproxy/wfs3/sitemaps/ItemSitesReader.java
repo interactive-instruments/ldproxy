@@ -1,5 +1,6 @@
 package de.ii.ldproxy.wfs3.sitemaps;
 
+import de.ii.ldproxy.wfs3.api.AbstractWfs3GenericMapping;
 import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
@@ -27,7 +28,7 @@ public class ItemSitesReader implements FeatureTransformer {
 
     @Override
     public String getTargetFormat() {
-        return null;
+        return AbstractWfs3GenericMapping.BASE_TYPE;
     }
 
     @Override
@@ -57,7 +58,7 @@ public class ItemSitesReader implements FeatureTransformer {
 
     @Override
     public void onPropertyText(String id) throws Exception {
-        this.sites.add(new Site(baseUrl + "/" + id));
+        this.sites.add(new Site(baseUrl + "/" + id + "?f=html"));
     }
 
     @Override
