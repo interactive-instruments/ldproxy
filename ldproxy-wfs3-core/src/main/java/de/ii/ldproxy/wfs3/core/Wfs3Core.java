@@ -173,19 +173,13 @@ public class Wfs3Core {
         return collection.build();
     }
 
-    public static boolean checkTilesEnabled(Wfs3ServiceData serviceData){
+    private static boolean checkTilesEnabled(Wfs3ServiceData serviceData){
 
-        Optional<FeatureTypeConfigurationWfs3> first = serviceData
+        return serviceData
                 .getFeatureTypes()
                 .values()
                 .stream()
-                .filter(ft -> { try{ return ft.getTiles().getEnabled(); } catch (IllegalStateException ignored){return false;} })
-                .findFirst();
-
-        if(!first.isPresent())
-            return false;
-        else
-            return true;
+                .anyMatch(ft -> { try{ return ft.getTiles().getEnabled(); } catch (Throwable ignored){return false;} });
     }
 
 }
