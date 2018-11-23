@@ -18,9 +18,11 @@ import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
+import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.auth.api.User;
@@ -83,7 +85,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
     private CrsTransformation crsTransformation;
 
     @Requires
-    private Wfs3OutputFormatGeoJson wfs3OutputFormatGeoJson;
+    private Wfs3ExtensionRegistry wfs3ExtensionRegistry;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
 
@@ -244,6 +246,8 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         if (queryParameters.containsKey("properties"))
             doNotCache = true;
 
+        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
+
 
         VectorTile tile = new VectorTile(null, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
         // generate tile
@@ -317,6 +321,8 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         boolean doNotCache = false;
         if (queryParameters.containsKey("properties"))
             doNotCache = true;
+
+        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
 
         for (String collectionId : collectionIds) {
             VectorTile.checkZoomLevels(Integer.parseInt(level), wfsService, wfs3OutputFormatGeoJson, collectionId, tilingSchemeId, MediaType.APPLICATION_JSON, row, col, doNotCache, cache, false, wfs3Request, crsTransformation);
@@ -424,6 +430,8 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
     }
 
     private void generateTileDataset(VectorTile tile, File tileFileMvt, Map<String, File> layers, Set<String> collectionIds, Set<String> requestedCollections, Set<String> requestedProperties, Wfs3Service wfsService, String level, String row, String col, String tilingSchemeId, boolean doNotCache, VectorTilesCache cache, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation, UriInfo uriInfo, boolean invalid) throws FileNotFoundException {
+
+        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
 
         for (String collectionId : collectionIds) {
             // include only the requested layers / collections

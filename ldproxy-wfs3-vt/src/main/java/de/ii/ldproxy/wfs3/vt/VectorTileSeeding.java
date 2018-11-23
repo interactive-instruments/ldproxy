@@ -12,7 +12,9 @@ import de.ii.ldproxy.target.geojson.Wfs3OutputFormatGeoJson;
 import de.ii.ldproxy.wfs3.api.FeatureTypeTiles;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
+import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
+import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.Wfs3StartupTask;
 import de.ii.xsf.core.server.CoreServerConfig;
@@ -61,7 +63,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
     private CoreServerConfig coreServerConfig;
 
     @Requires
-    private Wfs3OutputFormatGeoJson wfs3OutputFormatGeoJson;
+    private Wfs3ExtensionRegistry wfs3ExtensionRegistry;
 
     public VectorTileSeeding(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
@@ -125,6 +127,8 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
     private File generateSeedingMVT(Wfs3ServiceData serviceData, String collectionId, String tilingSchemeId, int z, int x, int y, VectorTilesCache cache, CrsTransformation crsTransformation, TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig) {
 
+        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
+
         try {
             LOGGER.debug("seeding - ZoomLevel: " + Integer.toString(z) + " row: " + Integer.toString(x) + " col: " + Integer.toString(y));
             VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), serviceData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
@@ -148,6 +152,8 @@ public class VectorTileSeeding implements Wfs3StartupTask {
     }
 
     private File generateSeedingJSON(Wfs3ServiceData serviceData, String collectionId, String tilingSchemeId, int z, int x, int y, VectorTilesCache cache, CrsTransformation crsTransformation, TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig) {
+        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
+
         try {
             VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), serviceData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
             File tileFileJson = tile.getFile(cache, "json");
@@ -315,6 +321,8 @@ public class VectorTileSeeding implements Wfs3StartupTask {
                                      .max(Comparator.comparing(Double::doubleValue))
                                      .orElseThrow(NoSuchElementException::new);
         /*Comupation end*/
+
+        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
 
         /*Begin seeding*/
         for (int z = minZoomDataset; z <= maxZoomDataset; z++) {

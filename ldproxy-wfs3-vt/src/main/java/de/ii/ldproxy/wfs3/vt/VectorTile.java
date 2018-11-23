@@ -23,6 +23,7 @@ import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
+import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
@@ -94,13 +95,12 @@ class VectorTile {
     private final TransformingFeatureProvider featureProvider;
     private final boolean temporary;
     private final String fileName;
-    private final Wfs3OutputFormatGeoJson wfs3OutputFormatGeoJson;
+    private final Wfs3OutputFormatExtension wfs3OutputFormatGeoJson;
 
 
     /**
      * specify the vector tile
-     *
-     * @param collectionId            the id of the collection in which the tile belongs
+     *  @param collectionId            the id of the collection in which the tile belongs
      * @param tilingSchemeId          the local identifier of a specific tiling scheme
      * @param level                   the zoom level as a string
      * @param row                     the row number as a string
@@ -112,7 +112,7 @@ class VectorTile {
      * @param wfs3OutputFormatGeoJson
      */
 
-    VectorTile(String collectionId, String tilingSchemeId, String level, String row, String col, Wfs3ServiceData serviceData, boolean temporary, VectorTilesCache cache, TransformingFeatureProvider featureProvider, Wfs3OutputFormatGeoJson wfs3OutputFormatGeoJson) throws FileNotFoundException {
+    VectorTile(String collectionId, String tilingSchemeId, String level, String row, String col, Wfs3ServiceData serviceData, boolean temporary, VectorTilesCache cache, TransformingFeatureProvider featureProvider, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
         this.wfs3OutputFormatGeoJson = wfs3OutputFormatGeoJson;
 
         // check and process parameters
@@ -695,7 +695,7 @@ class VectorTile {
         return true;
     }
 
-    public static void checkZoomLevels(int zoomLevel, Wfs3Service wfsService, Wfs3OutputFormatGeoJson wfs3OutputFormatGeoJson, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache, VectorTilesCache cache, boolean isCollection, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation) throws FileNotFoundException {
+    public static void checkZoomLevels(int zoomLevel, Wfs3Service wfsService, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache, VectorTilesCache cache, boolean isCollection, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation) throws FileNotFoundException {
         try {
             int maxZoom = 0;
             int minZoom = 0;
@@ -768,7 +768,7 @@ class VectorTile {
         }
     }
 
-    private static boolean generateEmptyJSON(File tileFile, TilingScheme tilingScheme, Wfs3ServiceData serviceData, Wfs3OutputFormatGeoJson wfs3OutputFormatGeoJson, String collectionId, boolean isCollection, Wfs3RequestContext wfs3Request, int level, int row, int col, CrsTransformation crsTransformation, Wfs3Service service) {
+    private static boolean generateEmptyJSON(File tileFile, TilingScheme tilingScheme, Wfs3ServiceData serviceData, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, boolean isCollection, Wfs3RequestContext wfs3Request, int level, int row, int col, CrsTransformation crsTransformation, Wfs3Service service) {
 
         if (collectionId == null)
             return false;

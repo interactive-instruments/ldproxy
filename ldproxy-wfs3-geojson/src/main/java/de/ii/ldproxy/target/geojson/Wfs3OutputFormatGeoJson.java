@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 @Instantiate
 public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3OutputFormatExtension {
 
-    private static final Wfs3MediaType MEDIA_TYPE = ImmutableWfs3MediaType.builder()
+    public static final Wfs3MediaType MEDIA_TYPE = ImmutableWfs3MediaType.builder()
                                                                           .main(new MediaType("application", "geo+json"))
                                                                           .label("GeoJSON")
                                                                           .metadata(MediaType.APPLICATION_JSON_TYPE)

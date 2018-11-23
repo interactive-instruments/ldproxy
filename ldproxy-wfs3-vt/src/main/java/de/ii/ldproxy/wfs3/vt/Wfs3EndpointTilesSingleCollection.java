@@ -18,9 +18,11 @@ import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
+import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
 import de.ii.xtraplatform.auth.api.User;
@@ -82,7 +84,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
     private CrsTransformation crsTransformation;
 
     @Requires
-    private Wfs3OutputFormatGeoJson wfs3OutputFormatGeoJson;
+    private Wfs3ExtensionRegistry wfs3ExtensionRegistry;
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTilesSingleCollection.class);
@@ -217,6 +219,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
         checkTilesParameterCollection(wfsService, collectionId);
         VectorTile.checkFormats(wfsService.getData(), collectionId, Wfs3MediaTypes.MVT, false);
 
+        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
 
         boolean doNotCache = false;
 
@@ -328,6 +331,8 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
         boolean doNotCache = false;
         if (!filters.isEmpty() || queryParameters.containsKey("properties"))
             doNotCache = true;
+
+        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
 
         VectorTile.checkZoomLevels(Integer.parseInt(level), wfsService, wfs3OutputFormatGeoJson, collectionId, tilingSchemeId, MediaType.APPLICATION_JSON, row, col, doNotCache, cache, true, wfs3Request, crsTransformation);
 
