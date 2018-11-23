@@ -11,27 +11,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
-import de.ii.ldproxy.target.geojson.Wfs3OutputFormatGeoJson;
 import de.ii.ldproxy.wfs3.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ldproxy.wfs3.ImmutableWfs3RequestContextImpl;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.wfs3.api.FeatureTypeTiles;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.wfs3.api.*;
 import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
-import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
-import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.crs.api.*;
 import de.ii.xtraplatform.feature.query.api.FeatureStream;
 import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
@@ -52,25 +38,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
@@ -370,21 +342,26 @@ class VectorTile {
 
                     Map<String, Object> jsonProperties = (Map<String, Object>) jsonFeature.get("properties");
 
-                    // remove properties that have not been requested
-                    if (propertyNames != null) {
-                        jsonProperties.entrySet()
-                                      .removeIf(property -> !propertyNames.contains(property.getKey()));
+                    if(jsonProperties==null){
+                        jsonProperties=new HashMap<>();
                     }
+                    else{
+                        // remove properties that have not been requested
+                        if (propertyNames != null) {
+                            jsonProperties.entrySet()
+                                    .removeIf(property -> !propertyNames.contains(property.getKey()));
+                        }
 
-                    // remove null values
-                    jsonProperties.entrySet()
-                                  .removeIf(property -> property.getValue() == null);
-                    // TODO: these are temporary fixes for TDS data
-                    jsonProperties.entrySet()
-                                  .removeIf(property -> property.getValue() instanceof String && ((String) property.getValue()).toLowerCase()
-                                                                                                                               .matches("^(no[ ]?information|\\-999999)$"));
-                    jsonProperties.entrySet()
-                                  .removeIf(property -> property.getValue() instanceof Number && ((Number) property.getValue()).intValue() == -999999);
+                        // remove null values
+                        jsonProperties.entrySet()
+                                .removeIf(property -> property.getValue() == null);
+                        // TODO: these are temporary fixes for TDS data
+                        jsonProperties.entrySet()
+                                .removeIf(property -> property.getValue() instanceof String && ((String) property.getValue()).toLowerCase()
+                                        .matches("^(no[ ]?information|\\-999999)$"));
+                        jsonProperties.entrySet()
+                                .removeIf(property -> property.getValue() instanceof Number && ((Number) property.getValue()).intValue() == -999999);
+                    }
 
                     // If we have an id that happens to be a long value, use it
                     Object ids = jsonFeature.get("id");
@@ -533,7 +510,8 @@ class VectorTile {
                                                                                                                                                                          .getNativeCrs(), DEFAULT_CRS))
                                                                                                              .links(wfs3Links)
                                                                                                              .isFeatureCollection(true)
-                                                                                                             //TODO
+                                                                                                             .limit(0) //TODO
+                                                                                                             .offset(0)
                                                                                                              .serviceUrl("")
                                                                                                              .maxAllowableOffset(maxAllowableOffsetCrs84)
                                                                                                              .outputStream(outputStream)
