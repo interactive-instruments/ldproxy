@@ -22,6 +22,7 @@ public class Wfs3MediaTypes {
     public static final String HTML = MediaType.TEXT_HTML;
     public static final String GEO_JSON = "application/geo+json";
     public static final String GML = "application/gml+xml;version=3.2;profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf2";
+    public static final String MVT = "application/vnd.mapbox-vector-tile";
 
     public static final Map<String, String> NAMES = new ImmutableMap.Builder<String, String>()
             .put(JSON, "JSON")
@@ -29,6 +30,7 @@ public class Wfs3MediaTypes {
             .put(HTML, "HTML")
             .put(GEO_JSON, "GeoJSON")
             .put(GML, "GML")
+            .put(MVT, "Mapbox Vector Tile")
             .build();
 
     public static final Map<String, String> FORMATS = new ImmutableMap.Builder<String, String>()
@@ -37,6 +39,7 @@ public class Wfs3MediaTypes {
             .put(HTML, "html")
             .put(GEO_JSON, "json")
             .put(GML, "xml")
+            .put(MVT, "mvt")
             .build();
 
     public static final Map<String, String> FEATURE = new ImmutableMap.Builder<String, String>()

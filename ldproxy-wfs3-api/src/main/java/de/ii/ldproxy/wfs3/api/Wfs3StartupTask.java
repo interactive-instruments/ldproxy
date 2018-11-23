@@ -7,21 +7,15 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
-import java.util.List;
+import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
+
 import java.util.Map;
 
 /**
  * @author zahnen
  */
-public interface Wfs3ExtensionRegistry {
-
-    List<Wfs3Extension> getExtensions();
-
-    List<Wfs3ConformanceClass> getConformanceClasses();
-
-    Map<Wfs3MediaType, Wfs3OutputFormatExtension> getOutputFormats();
-
-    List<Wfs3EndpointExtension> getEndpoints();
-
-    List<Wfs3StartupTask> getStartupTasks();
+public interface Wfs3StartupTask extends Wfs3Extension {
+    Runnable getTask(Wfs3ServiceData wfs3ServiceData, TransformingFeatureProvider featureProvider);
+    Map<Thread,String> getThreadMap();
+    void removeThreadMapEntry(Thread t);
 }

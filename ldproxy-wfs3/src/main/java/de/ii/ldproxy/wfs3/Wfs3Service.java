@@ -33,23 +33,25 @@ import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.entity.api.handler.Entity;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.MoreExecutors;
+import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.*;
+import de.ii.xtraplatform.crs.api.*;
+import de.ii.xtraplatform.entity.api.handler.Entity;
+import de.ii.xtraplatform.feature.provider.wfs.FeatureProviderWfs;
+import de.ii.xtraplatform.feature.query.api.FeatureProvider;
 import de.ii.xtraplatform.feature.query.api.FeatureProviderRegistry;
 import de.ii.xtraplatform.feature.query.api.FeatureQuery;
 import de.ii.xtraplatform.feature.query.api.FeatureStream;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService2;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
-import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
-import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
+import de.ii.xtraplatform.feature.transformer.api.*;
 import de.ii.xtraplatform.feature.transformer.geojson.GeoJsonStreamParser;
 import de.ii.xtraplatform.feature.transformer.geojson.MappingSwapper;
 import de.ii.xtraplatform.service.api.AbstractService;
 import de.ii.xtraplatform.service.api.Service;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.HandlerDeclaration;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.felix.ipojo.annotations.Validate;
+import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +76,10 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.Function;
+
 
 /**
  * @author zahnen
@@ -90,6 +95,8 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3Service.class);
 
+    private static final ExecutorService startupTaskExecutor = MoreExecutors.getExitingExecutorService((ThreadPoolExecutor) Executors.newFixedThreadPool(1));
+
     @Requires
     private CrsTransformation crsTransformation;
 
@@ -103,6 +110,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
 
     private final List<Wfs3ConformanceClass> wfs3ConformanceClasses;
     private final Map<Wfs3MediaType, Wfs3OutputFormatExtension> wfs3OutputFormats;
+    private final List<Wfs3StartupTask> wfs3StartupTasks;
 
     private CrsTransformer defaultTransformer;
     private CrsTransformer defaultReverseTransformer;
@@ -114,6 +122,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         super();
         this.wfs3ConformanceClasses = wfs3ConformanceClassRegistry.getConformanceClasses();
         this.wfs3OutputFormats = wfs3ConformanceClassRegistry.getOutputFormats();
+        this.wfs3StartupTasks = wfs3ConformanceClassRegistry.getStartupTasks();
 
         this.additonalTransformers = new LinkedHashMap<>();
         this.additonalReverseTransformers = new LinkedHashMap<>();
@@ -128,29 +137,59 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
 
     @Override
     protected ImmutableWfs3ServiceData dataToImmutable(Wfs3ServiceData data) {
-        final ImmutableWfs3ServiceData serviceData = ImmutableWfs3ServiceData.copyOf(data);
 
         //TODO
-        this.featureProvider = (TransformingFeatureProvider) featureProviderRegistry.createFeatureProvider(serviceData.getFeatureProvider());
+        this.featureProvider = (TransformingFeatureProvider) featureProviderRegistry.createFeatureProvider(data.getFeatureProvider());
 
-        executorService.schedule(() -> {
-            try {
-                EpsgCrs sourceCrs = serviceData.getFeatureProvider()
-                                               .getNativeCrs();
-                this.defaultTransformer = crsTransformation.getTransformer(sourceCrs, Wfs3ServiceData.DEFAULT_CRS);
-                this.defaultReverseTransformer = crsTransformation.getTransformer(Wfs3ServiceData.DEFAULT_CRS, sourceCrs);
+        ImmutableWfs3ServiceData serviceData;
 
-                serviceData.getAdditionalCrs()
-                           .forEach(crs -> {
-                               additonalTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(sourceCrs, crs));
-                               additonalReverseTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(crs, sourceCrs));
-                           });
+        try {
+            EpsgCrs sourceCrs = data.getFeatureProvider()
+                                    .getNativeCrs();
+            this.defaultTransformer = crsTransformation.getTransformer(sourceCrs, Wfs3ServiceData.DEFAULT_CRS);
+            this.defaultReverseTransformer = crsTransformation.getTransformer(Wfs3ServiceData.DEFAULT_CRS, sourceCrs);
 
-                LOGGER.debug("TRANSFORMER {} {} -> {} {}", sourceCrs.getCode(), sourceCrs.isForceLongitudeFirst() ? "lonlat" : "latlon", Wfs3ServiceData.DEFAULT_CRS.getCode(), Wfs3ServiceData.DEFAULT_CRS.isForceLongitudeFirst() ? "lonlat" : "latlon");
-            } catch (Throwable e) {
-                LOGGER.error("CRS transformer could not created"/*, e*/);
+
+            ImmutableMap<String, FeatureTypeConfigurationWfs3> featureTypesWithComputedBboxes = computeMissingBboxes(data.getFeatureTypes(), featureProvider, defaultTransformer);
+
+            serviceData = ImmutableWfs3ServiceData.builder()
+                                                  .from(data)
+                                                  .featureTypes(featureTypesWithComputedBboxes)
+                                                  .build();
+
+            data.getAdditionalCrs()
+                .forEach(crs -> {
+                    additonalTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(sourceCrs, crs));
+                    additonalReverseTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(crs, sourceCrs));
+                });
+
+            LOGGER.debug("TRANSFORMER {} {} -> {} {}", sourceCrs.getCode(), sourceCrs.isForceLongitudeFirst() ? "lonlat" : "latlon", Wfs3ServiceData.DEFAULT_CRS.getCode(), Wfs3ServiceData.DEFAULT_CRS.isForceLongitudeFirst() ? "lonlat" : "latlon");
+        } catch (Throwable e) {
+            LOGGER.error("CRS transformer could not created"/*, e*/);
+            serviceData = ImmutableWfs3ServiceData.copyOf(data);
+        }
+
+        ImmutableWfs3ServiceData finalServiceData = serviceData;
+
+
+        Map<Thread, String> threadMap=null;
+        for (Wfs3StartupTask startupTask : wfs3StartupTasks) {
+            threadMap= startupTask.getThreadMap();
+        }
+
+        if (threadMap != null) {
+            for (Map.Entry<Thread, String> entry : threadMap.entrySet()) {
+                if(entry.getValue().equals(serviceData.getId())){
+                    if(entry.getKey().getState()!= Thread.State.TERMINATED) {
+                        entry.getKey().interrupt();
+                        wfs3StartupTasks.forEach(wfs3StartupTask -> wfs3StartupTask.removeThreadMapEntry(entry.getKey()));
+                    }
+                }
             }
-        }, 3, TimeUnit.SECONDS);
+        }
+
+        wfs3StartupTasks.forEach(wfs3StartupTask -> startupTaskExecutor.submit(wfs3StartupTask.getTask(finalServiceData,featureProvider)));
+
 
         return serviceData;
     }
@@ -391,5 +430,39 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
                 throw new IllegalStateException("Feature stream error", e.getCause());
             }
         };
+    }
+//TODO Test
+    private ImmutableMap<String, FeatureTypeConfigurationWfs3> computeMissingBboxes(Map<String, FeatureTypeConfigurationWfs3> featureTypes, FeatureProvider featureProvider, CrsTransformer defaultTransformer) throws IllegalStateException{
+        return featureTypes
+                .entrySet()
+                .stream()
+                .map(entry -> {
+
+                    if (Objects.isNull(entry.getValue().getExtent().getSpatial())) {
+                        boolean isComputed=true;
+                        BoundingBox bbox = null;
+                        try {
+                            bbox = defaultTransformer.transformBoundingBox(featureProvider.getSpatialExtent(entry.getValue()
+                                                                                                                 .getId()));
+                        } catch ( CrsTransformationException | CompletionException e) {
+                              bbox=new BoundingBox(-180.0,-90.0,180.0,90.0, new EpsgCrs(4326,true));
+                        }
+
+                        ImmutableFeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3 = ImmutableFeatureTypeConfigurationWfs3.builder()
+                                    .from(entry.getValue())
+                                    .extent(ImmutableFeatureTypeExtent.builder()
+                                            .from(entry.getValue()
+                                                    .getExtent())
+                                            .spatial(bbox)
+                                            .spatialComputed(isComputed)
+                                            .build())
+                                    .build();
+
+
+                        return new AbstractMap.SimpleEntry<>(entry.getKey(), featureTypeConfigurationWfs3);
+                    }
+                    return entry;
+                })
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

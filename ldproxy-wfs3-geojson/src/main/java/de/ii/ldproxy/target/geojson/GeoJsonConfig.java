@@ -26,9 +26,9 @@ import static de.ii.ldproxy.target.geojson.GeoJsonConfig.NESTED_OBJECTS;
 @Provides(specifications = {GeoJsonConfig.class})
 @Instantiate
 @LocalBundleConfig(bundleId = "ldproxy-target-geojson", category = "GeoJson Output Format", properties = {
-        @ConfigPropertyDescriptor(name = ENABLED, label = "Enable GeoJson output format?", defaultValue = "true"),
-        @ConfigPropertyDescriptor(name = NESTED_OBJECTS, label = "How to format nested objects?", defaultValue = "NEST"),
-        @ConfigPropertyDescriptor(name = MULTIPLICITY, label = "How to format multiple values?", defaultValue = "ARRAY")
+        @ConfigPropertyDescriptor(name = ENABLED, label = "Enable GeoJson output format?", defaultValue = "true", uiType = ConfigPropertyDescriptor.UI_TYPE.CHECKBOX),
+        @ConfigPropertyDescriptor(name = NESTED_OBJECTS, label = "How to format nested objects?", defaultValue = "NEST", uiType = ConfigPropertyDescriptor.UI_TYPE.SELECT, allowedValues = "{NEST: 'Nest', FLATTEN: 'Flatten'}"),
+        @ConfigPropertyDescriptor(name = MULTIPLICITY, label = "How to format multiple values?", defaultValue = "ARRAY", uiType = ConfigPropertyDescriptor.UI_TYPE.SELECT, allowedValues = "{ARRAY: 'Array', SUFFIX: 'Suffix'}")
 })
 public class GeoJsonConfig extends BundleConfigDefault {
 

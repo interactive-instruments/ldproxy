@@ -14,6 +14,7 @@ import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3StartupTask;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -51,6 +52,7 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
     private final List<Wfs3ConformanceClass> wfs3ConformanceClasses;
     private final Map<Wfs3MediaType, Wfs3OutputFormatExtension> wfs3OutputFormats;
     private final List<Wfs3EndpointExtension> wfs3Endpoints;
+    private final List<Wfs3StartupTask> wfs3StartupTasks;
 
     Wfs3ExtensionRegistryImpl() {
         //TODO
@@ -58,6 +60,7 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
         this.wfs3ConformanceClasses = Lists.newArrayList(() -> "http://www.opengis.net/spec/wfs-1/3.0/req/core");
         this.wfs3OutputFormats = new LinkedHashMap<>();
         this.wfs3Endpoints = new ArrayList<>();
+        this.wfs3StartupTasks = new ArrayList<>();
     }
 
     @Override
@@ -78,6 +81,11 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
     @Override
     public List<Wfs3EndpointExtension> getEndpoints() {
         return wfs3Endpoints;
+    }
+
+    @Override
+    public List<Wfs3StartupTask> getStartupTasks() {
+        return wfs3StartupTasks;
     }
 
     private synchronized void onArrival(ServiceReference<Wfs3Extension> ref) {
@@ -109,6 +117,14 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
 
                 wfs3Endpoints.add(wfs3Endpoint);
             }
+
+            if (wfs3Extension instanceof Wfs3StartupTask) {
+                final Wfs3StartupTask wfs3StartupTask = (Wfs3StartupTask) wfs3Extension;
+
+                LOGGER.debug("WFS3 STARTUP TASK {}", wfs3Extension.getClass().getSimpleName());
+
+                wfs3StartupTasks.add(wfs3StartupTask);
+            }
         } catch (Throwable e) {
             LOGGER.error("E", e);
         }
@@ -131,6 +147,10 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
 
             if (wfs3Extension instanceof Wfs3EndpointExtension) {
                 wfs3Endpoints.remove(wfs3Extension);
+            }
+
+            if (wfs3Extension instanceof Wfs3StartupTask) {
+                wfs3StartupTasks.remove(wfs3Extension);
             }
         }
     }

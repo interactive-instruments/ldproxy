@@ -14,6 +14,7 @@ import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
 import org.immutables.value.Value;
 
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * @author zahnen
@@ -28,34 +29,25 @@ public abstract class FeatureTypeConfigurationWfs3 extends FeatureTypeConfigurat
 
     public abstract Map<String, FeatureTypeConfigurationExtension> getExtensions();
 
-    //TODO
-    public static class FeatureTypeExtent {
-        TemporalExtent temporal;
+    //TODO move to extensions
+    @Nullable
+    public abstract FeatureTypeTiles getTiles();
 
-        BoundingBox spatial;
 
-        public FeatureTypeExtent() {
-        }
+    @Value.Immutable
+    @Value.Modifiable
+    @JsonDeserialize(as = ModifiableFeatureTypeExtent.class)
+    public static abstract class FeatureTypeExtent {
 
-        public FeatureTypeExtent(TemporalExtent temporal, BoundingBox spatial) {
-            this.temporal = temporal;
-            this.spatial = spatial;
-        }
+        public abstract TemporalExtent getTemporal();
 
-        public TemporalExtent getTemporal() {
-            return temporal;
-        }
+        @Nullable
+        public abstract BoundingBox getSpatial();
 
-        public void setTemporal(TemporalExtent temporal) {
-            this.temporal = temporal;
-        }
+        @Value.Default
+        public boolean getSpatialComputed(){return false;}
 
-        public BoundingBox getSpatial() {
-            return spatial;
-        }
-
-        public void setSpatial(BoundingBox spatial) {
-            this.spatial = spatial;
-        }
     }
+
 }
+

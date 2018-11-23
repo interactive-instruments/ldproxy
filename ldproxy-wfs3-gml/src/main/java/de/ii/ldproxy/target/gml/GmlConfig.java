@@ -24,7 +24,7 @@ import static de.ii.ldproxy.target.gml.GmlConfig.ENABLED;
 @Provides(specifications = {GmlConfig.class})
 @Instantiate
 @LocalBundleConfig(bundleId = "ldproxy-target-gml", category = "GML Output Format", properties = {
-        @ConfigPropertyDescriptor(name = ENABLED, label = "Enable GML/XML output format?", defaultValue = "true")
+        @ConfigPropertyDescriptor(name = ENABLED, label = "Enable GML/XML output format?", defaultValue = "true",uiType = ConfigPropertyDescriptor.UI_TYPE.CHECKBOX)
 })
 public class GmlConfig extends BundleConfigDefault {
 
