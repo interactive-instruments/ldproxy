@@ -1,6 +1,6 @@
 /**
  * Copyright 2018 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -32,6 +32,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     private int geometryNestingDepth = 0;
     private boolean geometryOpen;
     private boolean hasGeometry;
+    private GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE currentGeometryType;
 
     @Override
     public int getSortPriority() {
@@ -75,11 +76,11 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
                                         .getCurrentValue()
                                         .isPresent()) {
 
-            GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE currentGeometryType = transformationContext.getState()
-                                                                                                     .getCurrentGeometryType()
-                                                                                                     .get();
+            this.currentGeometryType = transformationContext.getState()
+                                                            .getCurrentGeometryType()
+                                                            .get();
             int currentGeometryNestingChange = currentGeometryType == GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.LINE_STRING ? 0 : transformationContext.getState()
-                                                                    .getCurrentGeometryNestingChange();
+                                                                                                                                                           .getCurrentGeometryNestingChange();
 
             // handle nesting
             if (!geometryOpen) {
@@ -98,8 +99,10 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
                                      .writeStringField("type", currentGeometryType.toString());
                 transformationContext.getJson()
                                      .writeFieldName("coordinates");
-                transformationContext.getJson()
-                                     .writeStartArray();
+                if (currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.POINT) {
+                    transformationContext.getJson()
+                                         .writeStartArray();
+                }
 
                 // TODO
                 /*switch (currentGeometryType) {
@@ -180,8 +183,10 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
         }*/
 
             //close coordinates
-            transformationContext.getJson()
-                                 .writeEndArray();
+            if (currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.POINT) {
+                transformationContext.getJson()
+                                     .writeEndArray();
+            }
 
             //close geometry object
             transformationContext.getJson()
