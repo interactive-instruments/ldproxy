@@ -202,10 +202,10 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
             ImmutableList.Builder<NavigationDTO> metaPagination = new ImmutableList.Builder<>();
             if (page > 1) {
                 pagination
-                        .add(new NavigationDTO("«", "offset=0"))
-                        .add(new NavigationDTO("‹", "offset=" + String.valueOf(offset - pageSize)));
+                        .add(new NavigationDTO("«", String.format("limit=%d&offset=%d", pageSize, 0)))
+                        .add(new NavigationDTO("‹", String.format("limit=%d&offset=%d", pageSize, offset - pageSize)));
                 metaPagination
-                        .add(new NavigationDTO("prev", "offset=" + String.valueOf(offset - pageSize)));
+                        .add(new NavigationDTO("prev", String.format("limit=%d&offset=%d", pageSize, offset - pageSize)));
             } else {
                 pagination
                         .add(new NavigationDTO("«"))
@@ -222,16 +222,16 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                     if (i == page) {
                         pagination.add(new NavigationDTO(String.valueOf(i), true));
                     } else {
-                        pagination.add(new NavigationDTO(String.valueOf(i), "offset=" + String.valueOf((i - 1) * pageSize)));
+                        pagination.add(new NavigationDTO(String.valueOf(i), String.format("limit=%d&offset=%d", pageSize, (i - 1) * pageSize)));
                     }
                 }
 
                 if (page < pages) {
                     pagination
-                            .add(new NavigationDTO("›", "offset=" + String.valueOf(offset + pageSize)))
-                            .add(new NavigationDTO("»", "offset=" + String.valueOf((pages - 1) * pageSize)));
+                            .add(new NavigationDTO("›", String.format("limit=%d&offset=%d", pageSize, offset + pageSize)))
+                            .add(new NavigationDTO("»", String.format("limit=%d&offset=%d", pageSize, (pages - 1) * pageSize)));
                     metaPagination
-                            .add(new NavigationDTO("next", "offset=" + String.valueOf(offset + pageSize)));
+                            .add(new NavigationDTO("next", String.format("limit=%d&offset=%d", pageSize, offset + pageSize)));
                 } else {
                     pagination
                             .add(new NavigationDTO("›"))
@@ -244,14 +244,14 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                     if (i == page) {
                         pagination.add(new NavigationDTO(String.valueOf(i), true));
                     } else {
-                        pagination.add(new NavigationDTO(String.valueOf(i), "offset=" + String.valueOf((i - 1) * pageSize)));
+                        pagination.add(new NavigationDTO(String.valueOf(i), String.format("limit=%d&offset=%d", pageSize, (i - 1) * pageSize)));
                     }
                 }
                 if (returned >= pageSize) {
                     pagination
-                            .add(new NavigationDTO("›", "offset=" + String.valueOf(offset + pageSize)));
+                            .add(new NavigationDTO("›", String.format("limit=%d&offset=%d", pageSize, offset + pageSize)));
                     metaPagination
-                            .add(new NavigationDTO("next", "offset=" + String.valueOf(offset + pageSize)));
+                            .add(new NavigationDTO("next", String.format("limit=%d&offset=%d", pageSize, offset + pageSize)));
                 } else {
                     pagination
                             .add(new NavigationDTO("›"));

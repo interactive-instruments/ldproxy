@@ -51,7 +51,7 @@ public class FeatureCollectionView extends DatasetView {
 
     public String getQueryWithoutPage() {
         List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Charset.forName("utf-8")).stream()
-                .filter(kvp -> !kvp.getName().equals("page") && !kvp.getName().equals("startIndex") && !kvp.getName().equals("offset"))
+                .filter(kvp -> !kvp.getName().equals("page") && !kvp.getName().equals("startIndex") && !kvp.getName().equals("offset") && !kvp.getName().equals("limit"))
                 .collect(Collectors.toList());
 
         return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';
