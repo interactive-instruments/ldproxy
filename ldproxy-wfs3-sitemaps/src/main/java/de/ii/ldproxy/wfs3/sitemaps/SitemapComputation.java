@@ -21,6 +21,11 @@ import java.util.stream.Stream;
 
 public class SitemapComputation {
 
+    //TODO: don't pass sites, aggregate outside
+    //TODO: don't pass collectionId and serviceId, add to baseUrl on outside
+    //TODO: pass single featureCount and blockLength
+    //TODO: extract functions getSitemapUrl, getSiteUrl
+    //TODO: test happy case: is correct number of sites returned?
     public static List<Site> getSites(List<Site> sites, String baseUrl,Long from,Long to,boolean siteIndex,String collectionId,String serviceId,Map<String, Long> featureCounts,Map<String, Long> blockLengths){
 
         // split from-to into blocks of 10, add items site for each block
@@ -68,6 +73,9 @@ public class SitemapComputation {
         return sites;
     }
 
+    //TODO pass collectionId List instead of serviceData
+    //TODO test edge cases: zero total features, one collection with more than 22500000 features
+    //TODO test happy case: e.g. 10 collection with 250000 total features
     public static Map<String, Long>  getDynamicLength(Wfs3ServiceData serviceData, Map<String, Long> featureCounts) {
         AtomicLong siteMapsNumberCounter= new AtomicLong(1);
         Map<String, Long> blockLengths= new HashMap<>();
@@ -123,6 +131,7 @@ public class SitemapComputation {
         return blockLengths;
     }
 
+    //TODO move to Wfs3ServiceData
     public static Stream<String> getCollectionIdStream(Wfs3ServiceData serviceData) {
         return serviceData.getFeatureTypes()
                 .values()
@@ -133,6 +142,7 @@ public class SitemapComputation {
                 .map(FeatureTypeConfiguration::getId);
     }
 
+    //TODO: pass FeatureProvider instead of Service, inline featureCounts
     public static Map<String,Long> getFeatureCounts(Service service){
         Wfs3Service wfs3Service = (Wfs3Service)service;
 
