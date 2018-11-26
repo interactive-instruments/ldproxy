@@ -41,6 +41,8 @@ public class FeatureCollectionView extends DatasetView {
     public Map<String,String> bbox2;
     public TemporalExtent temporalExtent;
     public URICustomizer uriBuilder;
+    public boolean bare;
+    public List<FeaturePropertyDTO> additionalFeatures;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String urlPrefix, HtmlConfig htmlConfig) {
         super(template, uri, name, title, urlPrefix, htmlConfig);
@@ -49,7 +51,7 @@ public class FeatureCollectionView extends DatasetView {
 
     public String getQueryWithoutPage() {
         List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Charset.forName("utf-8")).stream()
-                .filter(kvp -> !kvp.getName().equals("page") && !kvp.getName().equals("startIndex"))
+                .filter(kvp -> !kvp.getName().equals("page") && !kvp.getName().equals("startIndex") && !kvp.getName().equals("offset") && !kvp.getName().equals("limit"))
                 .collect(Collectors.toList());
 
         return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';

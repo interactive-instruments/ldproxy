@@ -42,7 +42,7 @@ public class Wfs3CollectionXml {
 
     @XmlElement(name = "Description")
     public String getDescription() {
-        return wfs3Collection.getDescription();
+        return wfs3Collection.getDescription().orElse(null);
     }
 
     @XmlElement(name = "Extent")

@@ -72,13 +72,17 @@ subprojects {
         provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.5'
         // TODO: shouldn't we only be allowed to use api bundles here?
         provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.4'
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.21'
+        provided group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.26'
 
         // TODO: this is in bundles-runtime, but with transitive=false
         // TODO: we need the transitive dependencies in provided
         provided group: 'de.interactive_instruments', name: 'xtraplatform-dropwizard', version: '1.1.5'
 
         testCompile group: 'org.testng', name: 'testng', version: '6.8.5'
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+        testCompile 'com.greghaskins:spectrum:1.2.0'
+        testCompile "org.mockito:mockito-core:+"
+        testCompile("org.assertj:assertj-core:+")
     }
 
     compileJava {
@@ -96,8 +100,13 @@ subprojects {
         }
     }
 
+    task testSpectrum (type: Test) {
+        useJUnit()
+    }
+
     test {
         useTestNG()
+        dependsOn testSpectrum
         options {
             includeGroups 'default'
             /* if you want to run tests for debugging purposes that are not part

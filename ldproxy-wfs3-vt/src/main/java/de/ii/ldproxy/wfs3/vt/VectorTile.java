@@ -11,7 +11,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
-import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
+import de.ii.ldproxy.wfs3.ImmutableFeatureTransformationContextGeneric;
+import de.ii.ldproxy.wfs3.ImmutableWfs3RequestContextImpl;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.*;
@@ -28,6 +29,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
+
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
@@ -37,13 +39,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.target.geojson.Wfs3OutputFormatGeoJson.createJsonGenerator;
 import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
 
 
@@ -65,29 +67,32 @@ class VectorTile {
     private final TransformingFeatureProvider featureProvider;
     private final boolean temporary;
     private final String fileName;
+    private final Wfs3OutputFormatExtension wfs3OutputFormatGeoJson;
 
 
     /**
      * specify the vector tile
-     *
-     * @param collectionId   the id of the collection in which the tile belongs
-     * @param tilingSchemeId the local identifier of a specific tiling scheme
-     * @param level          the zoom level as a string
-     * @param row            the row number as a string
-     * @param col            the column number as a string
-     * @param serviceData    the wfs3 service Data
-     * @param temporary      the info, if this is a temporary or permanent vector tile
-     * @param cache          the tile cache
-     * @param featureProvider the wfs3 service feature provider
+     *  @param collectionId            the id of the collection in which the tile belongs
+     * @param tilingSchemeId          the local identifier of a specific tiling scheme
+     * @param level                   the zoom level as a string
+     * @param row                     the row number as a string
+     * @param col                     the column number as a string
+     * @param serviceData             the wfs3 service Data
+     * @param temporary               the info, if this is a temporary or permanent vector tile
+     * @param cache                   the tile cache
+     * @param featureProvider         the wfs3 service feature provider
+     * @param wfs3OutputFormatGeoJson
      */
 
-    VectorTile(String collectionId, String tilingSchemeId, String level, String row, String col, Wfs3ServiceData serviceData, boolean temporary, VectorTilesCache cache, TransformingFeatureProvider featureProvider) throws FileNotFoundException {
+    VectorTile(String collectionId, String tilingSchemeId, String level, String row, String col, Wfs3ServiceData serviceData, boolean temporary, VectorTilesCache cache, TransformingFeatureProvider featureProvider, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
+        this.wfs3OutputFormatGeoJson = wfs3OutputFormatGeoJson;
 
         // check and process parameters
 
         // check, if collectionId is valid
         if (collectionId != null) {
-            Set<String> collectionIds = serviceData.getFeatureTypes().keySet();
+            Set<String> collectionIds = serviceData.getFeatureTypes()
+                                                   .keySet();
             if (collectionId.isEmpty() || !collectionIds.contains(collectionId)) {
                 throw new NotFoundException();
             }
@@ -118,11 +123,12 @@ class VectorTile {
 
         this.serviceData = serviceData;
 
-        this.featureProvider=featureProvider;
+        this.featureProvider = featureProvider;
         this.temporary = temporary;
 
         if (this.temporary) {
-            fileName = UUID.randomUUID().toString();
+            fileName = UUID.randomUUID()
+                           .toString();
         } else {
             fileName = String.format("%s_%s_%s", Integer.toString(this.level), Integer.toString(this.row), Integer.toString(this.col));
         }
@@ -290,7 +296,10 @@ class VectorTile {
 
                     // read JTS geometry in WGS 84 lon/lat
                     try {
-                        if (jsonGeometry.get("type").equals("MultiLineString") && !(jsonGeometry.get("coordinates").toString().contains("],")))
+                        if (jsonGeometry.get("type")
+                                        .equals("MultiLineString") && !(jsonGeometry.get("coordinates")
+                                                                                    .toString()
+                                                                                    .contains("],")))
                             continue; // TODO: skip MultiLineStrings with a single LineString for now because of an issue with the JTS code
                         jtsGeom = reader.read(mapper.writeValueAsString(jsonGeometry));
 
@@ -305,9 +314,11 @@ class VectorTile {
                         e.printStackTrace();
                         return false;
                     }
-                    
-                    if(jsonGeometry.get("type").equals("Polygon")||jsonGeometry.get("type").equals("MultiPolygon"))
-                        jtsGeom=jtsGeom.reverse();
+
+                    if (jsonGeometry.get("type")
+                                    .equals("Polygon") || jsonGeometry.get("type")
+                                                                      .equals("MultiPolygon"))
+                        jtsGeom = jtsGeom.reverse();
                     jtsGeom.apply(transform);
                     // filter features
                     // TODO: this should be more sophisticated...
@@ -331,21 +342,31 @@ class VectorTile {
 
                     Map<String, Object> jsonProperties = (Map<String, Object>) jsonFeature.get("properties");
 
-                    // remove properties that have not been requested
-                    if (propertyNames != null) {
-                        jsonProperties.entrySet().removeIf(property -> !propertyNames.contains(property.getKey()));
+                    if(jsonProperties==null){
+                        jsonProperties=new HashMap<>();
                     }
+                    else{
+                        // remove properties that have not been requested
+                        if (propertyNames != null) {
+                            jsonProperties.entrySet()
+                                    .removeIf(property -> !propertyNames.contains(property.getKey()));
+                        }
 
-                    // remove null values
-                    jsonProperties.entrySet().removeIf(property -> property.getValue() == null);
-                    // TODO: these are temporary fixes for TDS data
-                    jsonProperties.entrySet().removeIf(property -> property.getValue() instanceof String && ((String) property.getValue()).toLowerCase().matches("^(no[ ]?information|\\-999999)$"));
-                    jsonProperties.entrySet().removeIf(property -> property.getValue() instanceof Number && ((Number) property.getValue()).intValue() == -999999);
+                        // remove null values
+                        jsonProperties.entrySet()
+                                .removeIf(property -> property.getValue() == null);
+                        // TODO: these are temporary fixes for TDS data
+                        jsonProperties.entrySet()
+                                .removeIf(property -> property.getValue() instanceof String && ((String) property.getValue()).toLowerCase()
+                                        .matches("^(no[ ]?information|\\-999999)$"));
+                        jsonProperties.entrySet()
+                                .removeIf(property -> property.getValue() instanceof Number && ((Number) property.getValue()).intValue() == -999999);
+                    }
 
                     // If we have an id that happens to be a long value, use it
                     Object ids = jsonFeature.get("id");
                     Long id = null;
-                    if (ids!=null && ids instanceof String) {
+                    if (ids != null && ids instanceof String) {
                         try {
                             id = Long.parseLong((String) ids);
                         } catch (Exception e) {
@@ -354,7 +375,7 @@ class VectorTile {
                     }
 
                     // Add the feature with the layer name, a Map with attributes and the JTS Geometry.
-                    if (id!=null)
+                    if (id != null)
                         encoder.addFeature(layerName, jsonProperties, jtsGeom, id);
                     else
                         encoder.addFeature(layerName, jsonProperties, jtsGeom);
@@ -428,18 +449,17 @@ class VectorTile {
         }
 
 
-
         ImmutableFeatureQuery.Builder queryBuilder;
-        if(uriInfo!=null) {
+        if (uriInfo != null) {
             MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 
             List<String> propertiesList = Wfs3EndpointCore.getPropertiesList(queryParameters);
 
             queryBuilder = ImmutableFeatureQuery.builder()
-                    .type(collectionId)
-                    .filter(filter)
-                    .maxAllowableOffset(maxAllowableOffsetNative)
-                    .fields(propertiesList);
+                                                .type(collectionId)
+                                                .filter(filter)
+                                                .maxAllowableOffset(maxAllowableOffsetNative)
+                                                .fields(propertiesList);
 
 
             if (filters != null && filterableFields != null) {
@@ -453,12 +473,11 @@ class VectorTile {
                             .fields(propertiesList);
                 }
             }
-        }
-        else{
-            queryBuilder= ImmutableFeatureQuery.builder()
-                    .type(collectionId)
-                    .filter(filter)
-                    .maxAllowableOffset(maxAllowableOffsetNative);
+        } else {
+            queryBuilder = ImmutableFeatureQuery.builder()
+                                                .type(collectionId)
+                                                .filter(filter)
+                                                .maxAllowableOffset(maxAllowableOffsetNative);
         }
         queryBuilder.build();
 
@@ -469,26 +488,46 @@ class VectorTile {
         if (isCollection) {
             Wfs3MediaType alternativeMediatype;
             alternativeMediatype = ImmutableWfs3MediaType.builder()
-                    .main(new MediaType("application", "vnd.mapbox-vector-tile"))
-                    .label("MVT")
-                    .build();
+                                                         .main(new MediaType("application", "vnd.mapbox-vector-tile"))
+                                                         .label("MVT")
+                                                         .build();
             final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
-            wfs3Links = wfs3LinksGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternativeMediatype, tilingScheme.getId(),Integer.toString(level), Integer.toString(row), Integer.toString(col),checkFormats(serviceData,collectionId,Wfs3MediaTypes.MVT,true),checkFormats(serviceData,collectionId,Wfs3MediaTypes.JSON,true));
+            wfs3Links = wfs3LinksGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), checkFormats(serviceData, collectionId, Wfs3MediaTypes.MVT, true), checkFormats(serviceData, collectionId, Wfs3MediaTypes.JSON, true));
         }
 
 
         FeatureStream<FeatureTransformer> featureTransformStream = featureProvider.getFeatureTransformStream(queryBuilder.build());
 
-
-
-        FeatureTransformerGeoJson featureTransformer = new FeatureTransformerGeoJson(createJsonGenerator(outputStream), true, crsTransformation.getTransformer(serviceData.getFeatureProvider().getNativeCrs(), DEFAULT_CRS), wfs3Links,
-                0, "", maxAllowableOffsetCrs84, FeatureTransformerGeoJson.NESTED_OBJECTS.NEST, FeatureTransformerGeoJson.MULTIPLICITY.ARRAY);
-
         try {
-            featureTransformStream.apply(featureTransformer)
-                    .toCompletableFuture()
-                    .join();
-        } catch (CompletionException e) {
+            FeatureTransformationContext transformationContext = ImmutableFeatureTransformationContextGeneric.builder()
+                                                                                                             .serviceData(serviceData)
+                                                                                                             .collectionName(collectionId)
+                                                                                                             .wfs3Request(ImmutableWfs3RequestContextImpl.builder()
+                                                                                                                                                         .requestUri(uriCustomizer.build())
+                                                                                                                                                         .mediaType(mediaType)
+                                                                                                                                                         .build())
+                                                                                                             .crsTransformer(crsTransformation.getTransformer(serviceData.getFeatureProvider()
+                                                                                                                                                                         .getNativeCrs(), DEFAULT_CRS))
+                                                                                                             .links(wfs3Links)
+                                                                                                             .isFeatureCollection(true)
+                                                                                                             .limit(0) //TODO
+                                                                                                             .offset(0)
+                                                                                                             .serviceUrl("")
+                                                                                                             .maxAllowableOffset(maxAllowableOffsetCrs84)
+                                                                                                             .outputStream(outputStream)
+                                                                                                             .build();
+
+            Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext);
+
+            if (featureTransformer.isPresent()) {
+                featureTransformStream.apply(featureTransformer.get())
+                                      .toCompletableFuture()
+                                      .join();
+            } else {
+                throw new IllegalStateException("Could not acquire FeatureTransformer");
+            }
+
+        } catch (CompletionException | URISyntaxException e) {
             if (e.getCause() instanceof WebApplicationException) {
                 throw (WebApplicationException) e.getCause();
             }
@@ -511,7 +550,8 @@ class VectorTile {
         // calculate bbox in the native CRS of the dataset
         BoundingBox bboxNativeCrs = getBoundingBoxNativeCrs(crsTransformation);
 
-        return String.format(Locale.US, "BBOX(%s, %.3f, %.3f, %.3f, %.3f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs().getAsSimple());
+        return String.format(Locale.US, "BBOX(%s, %.3f, %.3f, %.3f, %.3f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs()
+                                                                                                                                                                                                                  .getAsSimple());
     }
 
     /**
@@ -560,7 +600,8 @@ class VectorTile {
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
     private BoundingBox getBoundingBoxNativeCrs(CrsTransformation crsTransformation) throws CrsTransformationException {
-        EpsgCrs crs = serviceData.getFeatureProvider().getNativeCrs();
+        EpsgCrs crs = serviceData.getFeatureProvider()
+                                 .getNativeCrs();
         BoundingBox bboxTilingSchemeCrs = getBoundingBox();
         if (crs == tilingScheme.getCrs())
             return bboxTilingSchemeCrs;
@@ -587,38 +628,41 @@ class VectorTile {
 
     private String getCQLFromFilters(Map<String, String> filters, Map<String, String> filterableFields) {
         return filters.entrySet()
-                .stream()
-                .map(f -> {
-                    if (f.getKey()
-                            .equals("time")) {
-                        try {
-                            Interval fromIso8601Period = Interval.parse(f.getValue());
-                            return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);
-                        } catch (DateTimeParseException ignore) {
-                            try {
-                                Instant fromIso8601 = Instant.parse(f.getValue());
-                                return String.format("%s TEQUALS %s", filterableFields.get(f.getKey()), fromIso8601);
-                            } catch (DateTimeParseException e) {
-                                LOGGER.debug("TIME PARSER ERROR", e);
-                                throw new BadRequestException();
-                            }
-                        }
-                    }
-                    if (f.getValue()
-                            .contains("*")) {
-                        return String.format("%s LIKE '%s'", filterableFields.get(f.getKey()), f.getValue());
-                    }
+                      .stream()
+                      .map(f -> {
+                          if (f.getKey()
+                               .equals("time")) {
+                              try {
+                                  Interval fromIso8601Period = Interval.parse(f.getValue());
+                                  return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);
+                              } catch (DateTimeParseException ignore) {
+                                  try {
+                                      Instant fromIso8601 = Instant.parse(f.getValue());
+                                      return String.format("%s TEQUALS %s", filterableFields.get(f.getKey()), fromIso8601);
+                                  } catch (DateTimeParseException e) {
+                                      LOGGER.debug("TIME PARSER ERROR", e);
+                                      throw new BadRequestException();
+                                  }
+                              }
+                          }
+                          if (f.getValue()
+                               .contains("*")) {
+                              return String.format("%s LIKE '%s'", filterableFields.get(f.getKey()), f.getValue());
+                          }
 
-                    return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
-                })
-                .collect(Collectors.joining(" AND "));
+                          return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
+                      })
+                      .collect(Collectors.joining(" AND "));
     }
 
-    public static boolean checkFormats(Wfs3ServiceData serviceData, String collectionId, String mediaType,boolean forLinksOrDataset) {
+    public static boolean checkFormats(Wfs3ServiceData serviceData, String collectionId, String mediaType, boolean forLinksOrDataset) {
         try {
-            List<String> formats = serviceData.getFeatureTypes().get(collectionId).getTiles().getFormats();
-            if (!formats.contains(mediaType) && formats!= null) {
-                if(forLinksOrDataset)
+            List<String> formats = serviceData.getFeatureTypes()
+                                              .get(collectionId)
+                                              .getTiles()
+                                              .getFormats();
+            if (!formats.contains(mediaType) && formats != null) {
+                if (forLinksOrDataset)
                     return false;
                 else
                     throw new NotAcceptableException();
@@ -629,7 +673,7 @@ class VectorTile {
         return true;
     }
 
-    public static void checkZoomLevels(int zoomLevel, Wfs3Service wfsService, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache,VectorTilesCache cache,boolean isCollection, Wfs3RequestContext wfs3Request,CrsTransformation crsTransformation ) throws FileNotFoundException {
+    public static void checkZoomLevels(int zoomLevel, Wfs3Service wfsService, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache, VectorTilesCache cache, boolean isCollection, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation) throws FileNotFoundException {
         try {
             int maxZoom = 0;
             int minZoom = 0;
@@ -640,10 +684,11 @@ class VectorTile {
                     .getTiles()
                     .getZoomLevels();
             if (tilesZoomLevels.size() != 0) {
-                maxZoom = tilesZoomLevels.get(tilingSchemeId).getMax();
-                minZoom = tilesZoomLevels.get(tilingSchemeId).getMin();
-            }
-            else {
+                maxZoom = tilesZoomLevels.get(tilingSchemeId)
+                                         .getMax();
+                minZoom = tilesZoomLevels.get(tilingSchemeId)
+                                         .getMin();
+            } else {
                 //if there is no member "zoomLevels" in configuration
                 if (tilingSchemeId.equals("default")) {
                     TilingScheme tilingScheme = new DefaultTilingScheme();
@@ -663,31 +708,30 @@ class VectorTile {
             if (zoomLevel < minZoom || zoomLevel > maxZoom || minZoom > maxZoom) {
                 //generate empty Feature collection
                 if (mediaType.equals("application/json")) {
-                    VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
+                    VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
                     File tileFileJSON = tile.getFile(cache, "json");
                     if (!tileFileJSON.exists()) {
-                        generateEmptyJSON(tileFileJSON,new DefaultTilingScheme(),collectionId,isCollection,wfs3Request,zoomLevel,Integer.parseInt(row),Integer.parseInt(col),crsTransformation,wfsService);
+                        generateEmptyJSON(tileFileJSON, new DefaultTilingScheme(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService);
                     }
                 }
                 //generate empty MVT
                 if (mediaType.equals("application/vnd.mapbox-vector-tile")) {
-                    VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
+                    VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
                     File tileFileMvt = tile.getFile(cache, "pbf");
 
                     if (!tileFileMvt.exists()) {
-                        VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache,wfsService.getFeatureProvider());
+                        VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
                         File tileFileJSON = jsonTile.getFile(cache, "json");
                         if (!tileFileJSON.exists()) {
-                           generateEmptyJSON(tileFileJSON,new DefaultTilingScheme(),collectionId,isCollection,wfs3Request,zoomLevel,Integer.parseInt(row),Integer.parseInt(col),crsTransformation,wfsService);
+                            generateEmptyJSON(tileFileJSON, new DefaultTilingScheme(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService);
                         }
-                       generateEmptyMVT(tileFileMvt,new DefaultTilingScheme());
+                        generateEmptyMVT(tileFileMvt, new DefaultTilingScheme());
                     }
                 }
             }
-        } catch (NullPointerException ignored) { }
+        } catch (NullPointerException ignored) {
+        }
     }
-
-
 
 
     private static void generateEmptyMVT(File tileFileMvt, TilingScheme tilingScheme) {
@@ -702,7 +746,7 @@ class VectorTile {
         }
     }
 
-    private static boolean generateEmptyJSON(File tileFile, TilingScheme tilingScheme, String collectionId,boolean isCollection, Wfs3RequestContext wfs3Request, int level, int row, int col, CrsTransformation crsTransformation, Wfs3Service service){
+    private static boolean generateEmptyJSON(File tileFile, TilingScheme tilingScheme, Wfs3ServiceData serviceData, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, boolean isCollection, Wfs3RequestContext wfs3Request, int level, int row, int col, CrsTransformation crsTransformation, Wfs3Service service) {
 
         if (collectionId == null)
             return false;
@@ -734,39 +778,55 @@ class VectorTile {
         if (isCollection) {
             Wfs3MediaType alternativeMediatype;
             alternativeMediatype = ImmutableWfs3MediaType.builder()
-                    .main(new MediaType("application", "vnd.mapbox-vector-tile"))
-                    .label("MVT")
-                    .build();
+                                                         .main(new MediaType("application", "vnd.mapbox-vector-tile"))
+                                                         .label("MVT")
+                                                         .build();
             final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
-            wfs3Links = wfs3LinksGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype,tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), checkFormats(service.getData(),collectionId,Wfs3MediaTypes.MVT,true),checkFormats(service.getData(),collectionId,Wfs3MediaTypes.JSON,true));
+            wfs3Links = wfs3LinksGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), checkFormats(service.getData(), collectionId, Wfs3MediaTypes.MVT, true), checkFormats(service.getData(), collectionId, Wfs3MediaTypes.JSON, true));
         }
 
-        FeatureTransformerGeoJson featureTransformer = new FeatureTransformerGeoJson(createJsonGenerator(outputStream), true, service.getCrsTransformer(null), wfs3Links,
-                0, "", maxAllowableOffsetCrs84, FeatureTransformerGeoJson.NESTED_OBJECTS.NEST, FeatureTransformerGeoJson.MULTIPLICITY.ARRAY);
-        OptionalLong numRet = OptionalLong.of(0);
-        OptionalLong numMat = OptionalLong.of(0);
+        FeatureTransformationContext transformationContext = ImmutableFeatureTransformationContextGeneric.builder()
+                                                                                                         .serviceData(serviceData)
+                                                                                                         .collectionName(collectionId)
+                                                                                                         .wfs3Request(wfs3Request)
+                                                                                                         .links(wfs3Links)
+                                                                                                         .isFeatureCollection(true)
+                                                                                                         .maxAllowableOffset(maxAllowableOffsetCrs84)
+                                                                                                         .outputStream(outputStream)
+                                                                                                         .build();
 
-        try {
-            featureTransformer.onStart(numRet,numMat);
-            featureTransformer.onEnd();
+        Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext);
+
+        if (featureTransformer.isPresent()) {
+            OptionalLong numRet = OptionalLong.of(0);
+            OptionalLong numMat = OptionalLong.of(0);
+
+            try {
+                featureTransformer.get().onStart(numRet, numMat);
+                featureTransformer.get().onEnd();
 
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            } catch (Exception e) {
+                throw new IllegalStateException("Could not generate empty GeoJson");
+            }
+
+        } else {
+            throw new IllegalStateException("Could not acquire FeatureTransformer");
         }
 
         return true;
     }
 
-    public static boolean deleteJSON(File tileFileJson, VectorTile tile, CrsTransformation crsTransformation, UriInfo uriInfo, Map<String,String> filters, Map<String,String> filterableFields,URICustomizer uriCustomizer, Wfs3MediaType mediaType, VectorTilesCache cache) throws FileNotFoundException {
+    public static boolean deleteJSON(File tileFileJson, VectorTile tile, CrsTransformation crsTransformation, UriInfo uriInfo, Map<String, String> filters, Map<String, String> filterableFields, URICustomizer uriCustomizer, Wfs3MediaType mediaType, VectorTilesCache cache) throws FileNotFoundException {
         ObjectMapper mapper = new ObjectMapper();
-        Map<String,Object> jsonFeatureCollection;
+        Map<String, Object> jsonFeatureCollection;
         BufferedReader br = new BufferedReader(new FileReader(tileFileJson));
         try {
             if (br.readLine() == null) {
                 jsonFeatureCollection = null;
             } else {
-                jsonFeatureCollection =  mapper.readValue(tileFileJson, new TypeReference<LinkedHashMap>() {});
+                jsonFeatureCollection = mapper.readValue(tileFileJson, new TypeReference<LinkedHashMap>() {
+                });
             }
         } catch (IOException e) {
             tileFileJson.delete();
@@ -774,8 +834,6 @@ class VectorTile {
         }
         return false;
     }
-
-
 
 
 }

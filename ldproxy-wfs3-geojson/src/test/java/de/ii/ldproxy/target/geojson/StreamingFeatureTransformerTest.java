@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.target.geojson;
-
+/*
 import akka.Done;
 import akka.NotUsed;
 import akka.actor.ActorSystem;
@@ -74,9 +74,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-/**
- * @author zahnen
- */
+
 public class StreamingFeatureTransformerTest {
     static ActorSystem system;
     static ActorMaterializer materializer;
@@ -212,7 +210,7 @@ public class StreamingFeatureTransformerTest {
                         .via(writer)
                         .viaMat(new MetricsFlow<>("PARSER"), Keep.right())
                 //.watchTermination((start, isDone) -> isDone.thenRun(() -> logger.info("TOOK: {}", new Date().getTime() - start.getTime())))
-                //.map(t -> ByteString.fromString(/*t.toString() +*/ "."))
+                //.map(t -> ByteString.fromString("."))
                 //.buffer(32768, OverflowStrategy.backpressure())
                 //.via(transformer);
 
@@ -439,3 +437,4 @@ public class StreamingFeatureTransformerTest {
         }
     }
 }
+*/

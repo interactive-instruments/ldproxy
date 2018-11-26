@@ -44,7 +44,7 @@ public class GeoJsonConfig extends BundleConfigDefault {
         FeatureTransformerGeoJson.NESTED_OBJECTS nestedObjects;
         try {
             nestedObjects = FeatureTransformerGeoJson.NESTED_OBJECTS.valueOf(Strings.nullToEmpty(properties.get(NESTED_OBJECTS)));
-        } catch (IllegalArgumentException e) {
+        } catch (Throwable e) {
             nestedObjects = FeatureTransformerGeoJson.NESTED_OBJECTS.NEST;
         }
 
@@ -55,7 +55,7 @@ public class GeoJsonConfig extends BundleConfigDefault {
         FeatureTransformerGeoJson.MULTIPLICITY multiplicity;
         try {
             multiplicity = FeatureTransformerGeoJson.MULTIPLICITY.valueOf(Strings.nullToEmpty(properties.get(MULTIPLICITY)));
-        } catch (IllegalArgumentException e) {
+        } catch (Throwable e) {
             multiplicity = FeatureTransformerGeoJson.MULTIPLICITY.ARRAY;
         }
 

@@ -16,6 +16,7 @@ import java.util.List;
  * @author zahnen
  */
 @Value.Immutable
+@Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(as = ImmutableWfs3Collections.class)
 public abstract class Wfs3Collections {
 

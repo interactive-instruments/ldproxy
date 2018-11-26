@@ -1,5 +1,5 @@
 version = '1.3.0'
-//version += '-SNAPSHOT'
+version += '-SNAPSHOT'
 
 dependencies {
     compile project(":ldproxy-wfs3")
@@ -11,4 +11,12 @@ dependencies {
 
     testCompile group: 'com.typesafe.akka', name: 'akka-testkit_2.12', version: '2.5.9'
     testCompile group: 'com.lightbend.akka', name: 'akka-stream-alpakka-xml_2.12', version: '0.17'
+}
+
+jar {
+    manifest {
+        instructionFirst 'Import-Package', "!org.immutables.value"
+        instructionFirst 'Import-Package', "!javax.xml.bind.annotation"
+        //instruction 'Import-Package', "*"
+    }
 }

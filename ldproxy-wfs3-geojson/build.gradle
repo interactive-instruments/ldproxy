@@ -12,3 +12,10 @@ dependencies {
     testCompile group: 'com.typesafe.akka', name: 'akka-testkit_2.12', version: '2.5.9'
     testCompile group: 'com.lightbend.akka', name: 'akka-stream-alpakka-xml_2.12', version: '0.17'
 }
+
+jar {
+    manifest {
+        instructionFirst 'Import-Package', "!org.immutables.value"
+        instruction 'Import-Package', "*"
+    }
+}
