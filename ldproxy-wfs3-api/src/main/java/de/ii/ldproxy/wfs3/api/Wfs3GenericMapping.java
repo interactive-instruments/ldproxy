@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_TYPE;
 
+import java.util.List;
+
 /**
  * @author zahnen
  */
@@ -58,6 +60,17 @@ public class Wfs3GenericMapping extends AbstractWfs3GenericMapping<Wfs3GenericMa
         this.type = type;
     }
 
+
+    private List<String> referencedTypes;
+
+    public List<String> getReferencedTypes() {
+        return referencedTypes;
+    }
+
+    public void setReferencedTypes(List<String> referencedTypes) {
+        this.referencedTypes = referencedTypes;
+    }
+
     @Override
     public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
         return this;
@@ -81,6 +94,11 @@ public class Wfs3GenericMapping extends AbstractWfs3GenericMapping<Wfs3GenericMa
     @JsonIgnore
     public boolean isTemporal() {
         return type == GENERIC_TYPE.TEMPORAL;
+    }
+
+    @JsonIgnore
+    public boolean isReference() {
+        return type == GENERIC_TYPE.REFERENCE;
     }
 
 

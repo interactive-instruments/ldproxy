@@ -30,6 +30,7 @@ import java.util.OptionalInt;
 public abstract class AroundRelationConfiguration implements FeatureTypeConfigurationExtension {
 
     public static final String EXTENSION_KEY = "aroundRelations";
+    public static final String EXTENSION_TYPE = "AROUND_RELATIONS";
 
     public abstract List<Relation> getRelations();
 

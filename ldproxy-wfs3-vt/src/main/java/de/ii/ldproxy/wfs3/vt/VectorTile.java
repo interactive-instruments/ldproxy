@@ -533,8 +533,6 @@ class VectorTile {
                                                                                                                                                                          .getNativeCrs(), DEFAULT_CRS))
                                                                                                              .links(wfs3Links)
                                                                                                              .isFeatureCollection(true)
-                                                                                                             //TODO
-                                                                                                             .serviceUrl("")
                                                                                                              .maxAllowableOffset(maxAllowableOffsetCrs84)
                                                                                                              .outputStream(outputStream)
                                                                                                              .build();

@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.*;
-
 /**
  * @author zahnen
  */
@@ -23,7 +21,7 @@ public class FeatureTransformerHtmlTest {
     @Test
     public void testWriteField() {
     String input = "Abc|\n---|\n1|";
-    String actual = FeatureTransformerHtml.applyFilterMarkdown(input);
+    String actual = StringTemplateFilters.applyFilterMarkdown(input);
 
     LOGGER.info(actual);
     }

@@ -247,12 +247,6 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
                                                                                                                                  .isFeatureCollection(isCollection)
                                                                                                                                  .limit(query.getLimit())
                                                                                                                                  .offset(query.getOffset())
-                                                                                                                                 //TODO
-                                                                                                                                 .serviceUrl(wfs3Request.getUriCustomizer()
-                                                                                                                                                        .copy()
-                                                                                                                                                        .cutPathAfterSegments(getData().getId())
-                                                                                                                                                        .clearParameters()
-                                                                                                                                                        .toString())
                                                                                                                                  .maxAllowableOffset(query.getMaxAllowableOffset());
 
         StreamingOutput streamingOutput;
