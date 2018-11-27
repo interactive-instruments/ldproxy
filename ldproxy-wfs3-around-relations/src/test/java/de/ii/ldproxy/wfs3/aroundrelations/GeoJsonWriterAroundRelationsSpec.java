@@ -19,6 +19,7 @@ import de.ii.ldproxy.target.geojson.ImmutableFeatureTransformationContextGeoJson
 import de.ii.ldproxy.target.geojson.ModifiableStateGeoJson;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3Link;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
@@ -30,6 +31,7 @@ import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfo;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfo;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableFeatureProviderDataWfs;
 import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
@@ -91,6 +93,11 @@ public class GeoJsonWriterAroundRelationsSpec {
 
                         runTransformer(transformationContext, new GeoJsonWriter() {
                             @Override
+                            public GeoJsonWriter create() {
+                                return this;
+                            }
+
+                            @Override
                             public int getSortPriority() {
                                 return 10000;
                             }
@@ -101,7 +108,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                             }
                         }, new AroundRelationResolver() {
                             @Override
-                            public String resolve(AroundRelationConfiguration.Relation aroundRelationConfiguration, AroundRelationsQuery.AroundRelationQuery aroundRelationQuery) {
+                            public String resolve(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery) {
 
                                 assertThat(aroundRelationQuery.name).isEqualTo("test1");
 
@@ -109,10 +116,29 @@ public class GeoJsonWriterAroundRelationsSpec {
 
                                 assertThat(aroundRelationQuery.offset).isEqualTo(0);
 
-                                assertThat(aroundRelationQuery.bbox).isEqualTo("10.000000,50.000000,11.000000,51.000000");
+                                assertThat(aroundRelationQuery.getBbox()).isEqualTo("10.000000,50.000000,11.000000,51.000000");
 
 
                                 return expectedCollection;
+                            }
+
+                            @Override
+                            public String getUrl(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery, String additionalParameters) {
+                                assertThat(aroundRelationQuery.name).isEqualTo("test1");
+
+                                assertThat(aroundRelationQuery.limit).isEqualTo(5);
+
+                                assertThat(aroundRelationQuery.offset).isEqualTo(0);
+
+                                assertThat(aroundRelationQuery.getBbox()).isEqualTo("10.000000,50.000000,11.000000,51.000000");
+
+
+                                return "RELATION";
+                            }
+
+                            @Override
+                            public String resolve(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery, String additionalParameters) {
+                                return null;
                             }
                         });
 
@@ -120,7 +146,9 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                 .size() + 1;
 
                         Wfs3Link expectedLink = ImmutableWfs3Link.builder()
-                                                                 .rel("self")
+                                                                 .rel("test1")
+                                                                 .description("test1")
+                                                                 .type("application/geo+json")
                                                                  .href("RELATION")
                                                                  .build();
 
@@ -150,6 +178,11 @@ public class GeoJsonWriterAroundRelationsSpec {
 
                         runTransformer(transformationContext, new GeoJsonWriter() {
                             @Override
+                            public GeoJsonWriter create() {
+                                return this;
+                            }
+
+                            @Override
                             public int getSortPriority() {
                                 return 10000;
                             }
@@ -158,7 +191,22 @@ public class GeoJsonWriterAroundRelationsSpec {
                             public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
                                 nextTransformationContext[0] = transformationContext;
                             }
-                        }, (aroundRelationConfiguration, aroundRelationQuery) -> expectedCollection);
+                        }, new AroundRelationResolver() {
+                            @Override
+                            public String resolve(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery) {
+                                return expectedCollection;
+                            }
+
+                            @Override
+                            public String getUrl(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery, String additionalParameters) {
+                                return null;
+                            }
+
+                            @Override
+                            public String resolve(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery, String additionalParameters) {
+                                return expectedCollection;
+                            }
+                        });
 
                         assertThat(nextTransformationContext[0]).isEqualTo(transformationContext);
 
@@ -192,7 +240,7 @@ public class GeoJsonWriterAroundRelationsSpec {
     private void runTransformer(FeatureTransformationContextGeoJson transformationContext, GeoJsonWriter chainedWriter, AroundRelationResolver aroundRelationResolver) throws IOException, URISyntaxException {
 
 
-        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(GeoJsonWriterAroundRelations.create(aroundRelationResolver), chainedWriter));
+        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriterAroundRelations().create(aroundRelationResolver), chainedWriter));
 
         transformationContext.getJson()
                              .writeStartObject();
@@ -229,7 +277,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                                                 .featureTypes(ImmutableMap.of("ft", ImmutableFeatureTypeConfigurationWfs3.builder()
                                                                                                                                                                          .id("ft")
                                                                                                                                                                          .label("ft")
-                                                                                                                                                                         .extent(new FeatureTypeConfigurationWfs3.FeatureTypeExtent())
+                                                                                                                                                                         .extent(ImmutableFeatureTypeExtent.builder().temporal(new TemporalExtent(0,0)).build())
                                                                                                                                                                          .putExtensions(AroundRelationConfiguration.EXTENSION_KEY, ImmutableAroundRelationConfiguration.builder()
                                                                                                                                                                                                                                                                        .addRelations(ImmutableRelation.builder()
                                                                                                                                                                                                                                                                                                       .id("test1")
@@ -264,7 +312,6 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                            })
                                                            .limit(10)
                                                            .offset(20)
-                                                           .serviceUrl("")
                                                            .maxAllowableOffset(0)
                                                            .state(ModifiableStateGeoJson.create())
                                                            .geoJsonConfig(new GeoJsonConfig())

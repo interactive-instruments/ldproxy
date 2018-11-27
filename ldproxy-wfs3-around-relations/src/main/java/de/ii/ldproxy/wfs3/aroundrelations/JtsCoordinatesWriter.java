@@ -57,11 +57,11 @@ public class JtsCoordinatesWriter implements CoordinateFormatter {
 
     @Override
     public void value(char[] chars, int i, int i1) throws IOException {
-
+        values[count++] = Double.valueOf(String.copyValueOf(chars,i,i1));
     }
 
     @Override
     public void raw(char[] chars, int i, int i1) throws IOException {
-
+        values[count++] = Double.valueOf(String.copyValueOf(chars,i,i1));
     }
 }

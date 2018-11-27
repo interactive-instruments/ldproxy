@@ -41,6 +41,10 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
         return new GeoJsonWriterAroundRelations(new SimpleAroundRelationResolver(akkaHttp));
     }
 
+    public GeoJsonWriterAroundRelations create(AroundRelationResolver aroundRelationResolver) {
+        return new GeoJsonWriterAroundRelations(aroundRelationResolver);
+    }
+
     private AroundRelationsQuery aroundRelationsQuery;
     private ImmutableList.Builder<Wfs3Link> links;
 
