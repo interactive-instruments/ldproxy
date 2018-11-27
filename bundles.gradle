@@ -1,6 +1,7 @@
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'groovy'
     apply plugin: 'osgi-ipojo'
     //apply plugin: 'biz.aQute.bnd.builder'
     apply plugin: 'license'
@@ -83,6 +84,7 @@ subprojects {
         testCompile 'com.greghaskins:spectrum:1.2.0'
         testCompile "org.mockito:mockito-core:+"
         testCompile("org.assertj:assertj-core:+")
+        testCompile "org.spockframework:spock-core:1.2-groovy-2.4"
     }
 
     compileJava {
