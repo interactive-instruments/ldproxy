@@ -38,7 +38,7 @@ class SitemapComputation {
         final long lengthOfLastBlock = featureCount % safeBlockLength;
 
         return getRanges(safeBlockLength, numberOfCompleteBlocks, lengthOfLastBlock, 0, 0).stream()
-                                                                                          .map(range -> new Site(getSitemapUrl(baseUrl, range.lowerEndpoint(), range.upperEndpoint())))
+                                                                                          .map(range -> new Site(getSitemapUrl(baseUrl, range.lowerEndpoint(), range.upperEndpoint(), blockLength)))
                                                                                           .collect(Collectors.toList());
     }
 
@@ -50,7 +50,7 @@ class SitemapComputation {
         final long lengthOfLastBlock = (to - from) % blockLength;
 
         return getRanges(blockLength, numberOfCompleteBlocks, lengthOfLastBlock, from, to).stream()
-                                                                                          .map(range -> new Site(getSiteUrl(baseUrl, range.lowerEndpoint(), range.upperEndpoint())))
+                                                                                          .map(range -> new Site(getSiteUrl(baseUrl, range.lowerEndpoint(), range.upperEndpoint(), blockLength)))
                                                                                           .collect(Collectors.toList());
     }
 
@@ -76,12 +76,12 @@ class SitemapComputation {
         return ranges;
     }
 
-    static String getSitemapUrl(final String baseUrl, final long from, final long to) {
+    static String getSitemapUrl(final String baseUrl, final long from, final long to, final long blockLength) {
         return String.format("%s/sitemap_%d_%d.xml", baseUrl, from, to);
     }
 
-    static String getSiteUrl(final String baseUrl, final long from, final long to) {
-        return String.format("%s&limit=%d&offset=%d", baseUrl, to - from + 1, from);
+    static String getSiteUrl(final String baseUrl, final long from, final long to, final long blockLength) {
+        return String.format("%s&limit=%d&offset=%d", baseUrl, blockLength, from);
     }
 
     static List<Site> truncateToUpperLimit(List<Site> sites) {
