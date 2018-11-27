@@ -38,13 +38,7 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -67,6 +61,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 /**
@@ -354,24 +349,30 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
 
     static void checkTilesParameterDataset(Wfs3Service wfsService) {
+        List<Boolean> tilesEnabledList= new ArrayList<>();
 
-        Optional<FeatureTypeConfigurationWfs3> first = wfsService
-                .getData()
-                .getFeatureTypes()
+        wfsService.getData().getFeatureTypes()
                 .values()
                 .stream()
-                .filter(ft -> {
-                    try {
-                        return ft.getTiles()
-                                 .getEnabled();
-                    } catch (NullPointerException ignored) {
-                        return false;
-                    }
-                })
-                .findFirst();
+                .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
+                .filter(ft -> wfsService.getData().isFeatureTypeEnabled(ft.getId()))
+                .forEach(ft -> {
+                    if(ft.getExtensions().containsKey(EXTENSION_KEY)){
+                        final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
 
-        if (!first.isPresent())
-            throw new NotFoundException();
+                        ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
+                                .stream()
+                                .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
+
+                        Boolean tilesCollectionEnabled = tilesEnabled.values().asList().get(0);
+
+                        if(tilesCollectionEnabled)
+                            tilesEnabledList.add(tilesCollectionEnabled);
+                    }
+                    if(tilesEnabledList.size()==0){
+                        throw new NotFoundException();
+                    }
+                });
 
     }
 
@@ -395,31 +396,49 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
                 .filter(ft -> wfsServiceData.isFeatureTypeEnabled(ft.getId()))
                 .forEach(ft -> {
                     try {
-                        if (mvtEnabled && seeding) {
-                            if (ft.getTiles()
-                                  .getEnabled() && ft.getTiles()
-                                                     .getSeeding() != null && ft.getTiles()
-                                                                                .getFormats() == null || ft.getTiles()
-                                                                                                           .getFormats()
-                                                                                                           .contains(Wfs3MediaTypes.MVT)) {
-                                collectionIds.add(ft.getId());
+                        if(ft.getExtensions().containsKey(EXTENSION_KEY)) {
+                            final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
+                            ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
+                                    .stream()
+                                    .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
+
+                            Boolean tilesCollectionEnabled =tilesEnabled.values().asList().get(0);
+
+                            ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMaxTest>> seedingList = tilesConfiguration.getTiles()
+                                    .stream()
+                                    .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
+
+                            Map<String, TilesConfiguration.Tiles.MinMaxTest> seedingCollection = seedingList.values().asList().get(0);
+
+                            ImmutableMap<Integer, List<String>> formatsList = null;
+                            List<String> formatsCollection = null;
+
+                            try{
+                                formatsList = tilesConfiguration.getTiles()
+                                        .stream()
+                                        .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getFormats));
+                            }catch (NullPointerException e){
                             }
-                        } else if (onlyJSONenabled) {
-                            if (ft.getTiles()
-                                  .getEnabled() && ft.getTiles()
-                                                     .getFormats()
-                                                     .contains(Wfs3MediaTypes.JSON)) {
-                                collectionIds.add(ft.getId());
+
+                            if(formatsList!=null){
+                                formatsCollection=formatsList.values().asList().get(0);
                             }
-                        } else if (seeding) {
-                            if (ft.getTiles()
-                                  .getEnabled() && ft.getTiles()
-                                                     .getSeeding() != null)
-                                collectionIds.add(ft.getId());
-                        } else {
-                            if (ft.getTiles()
-                                  .getEnabled()) {
-                                collectionIds.add(ft.getId());
+
+                            if (mvtEnabled && seeding) {
+                                if (tilesCollectionEnabled && seedingCollection != null && formatsCollection == null || formatsCollection.contains(Wfs3MediaTypes.MVT)) {
+                                    collectionIds.add(ft.getId());
+                                }
+                            } else if (onlyJSONenabled) {
+                                if (tilesCollectionEnabled && formatsCollection.contains(Wfs3MediaTypes.JSON)) {
+                                    collectionIds.add(ft.getId());
+                                }
+                            } else if (seeding) {
+                                if (tilesCollectionEnabled && seedingCollection != null)
+                                    collectionIds.add(ft.getId());
+                            } else {
+                                if (tilesCollectionEnabled) {
+                                    collectionIds.add(ft.getId());
+                                }
                             }
                         }
                     } catch (NullPointerException ignored) {

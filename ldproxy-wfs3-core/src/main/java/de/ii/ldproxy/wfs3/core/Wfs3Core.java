@@ -8,19 +8,7 @@
 package de.ii.ldproxy.wfs3.core;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collection;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collections;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Collection;
-import de.ii.ldproxy.wfs3.api.Wfs3Collections;
-import de.ii.ldproxy.wfs3.api.Wfs3Extension;
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3Extent;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.wfs3.api.*;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -32,9 +20,11 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotFoundException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+
+
 
 /**
  * @author zahnen
@@ -174,12 +164,28 @@ public class Wfs3Core {
     }
 
     private static boolean checkTilesEnabled(Wfs3ServiceData serviceData){
-
+/*
         return serviceData
                 .getFeatureTypes()
                 .values()
                 .stream()
-                .anyMatch(ft -> { try{ return ft.getTiles().getEnabled(); } catch (Throwable ignored){return false;} });
+                .anyMatch(ft -> {
+                try{
+                    if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
+                        final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
+                        ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
+                                .stream()
+                                .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
+                        Boolean tilesCollectionEnabled = tilesEnabled.values().asList().get(0);
+
+                        if (tilesCollectionEnabled)
+                            return true;
+                    }
+                    return false;
+                } catch (Throwable ignored){return false;} }); //TODO
+        */
+
+return true;
     }
 
 }

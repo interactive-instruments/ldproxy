@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
@@ -24,6 +25,8 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import java.math.BigDecimal;
 import java.util.*;
+
+import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 
 /**
  * extend API definition with tile resources
@@ -55,7 +58,19 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                 .getFeatureTypes()
                 .values()
                 .stream()
-                .filter(ft -> { try{ return ft.getTiles().getEnabled(); } catch (NullPointerException ignored){return false;} })
+                .filter(ft -> { try {
+                    if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
+                        final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
+                        ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
+                                .stream()
+                                .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
+                        Boolean tilesCollectionEnabled = tilesEnabled.values().asList().get(0);
+
+                        if (tilesCollectionEnabled)
+                            return true;
+                    }
+                    return false;
+                } catch (NullPointerException ignored){return false;} })
                 .findFirst();
 
         if(firstCollectionWithTiles.isPresent())
@@ -452,8 +467,15 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                             boolean enableTilesCollectionInApi = true;
 
                             try{
-                                if(!ft.getTiles().getEnabled())
-                                    enableTilesCollectionInApi = false;
+                                if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
+                                    final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
+                                    ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
+                                            .stream()
+                                            .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
+                                    Boolean tilesCollectionEnabled = tilesEnabled.values().asList().get(0);
+                                    if (!tilesCollectionEnabled)
+                                        enableTilesCollectionInApi = false;
+                                }
                             }catch(NullPointerException e){
                                 enableTilesCollectionInApi = false;
                             }

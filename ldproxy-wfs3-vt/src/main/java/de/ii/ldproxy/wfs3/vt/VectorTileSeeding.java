@@ -8,8 +8,8 @@
 
 package de.ii.ldproxy.wfs3.vt;
 
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.target.geojson.Wfs3OutputFormatGeoJson;
-import de.ii.ldproxy.wfs3.api.FeatureTypeTiles;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
@@ -44,6 +44,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
+import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 @Component
@@ -88,13 +89,23 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
                 if (tilesDatasetEnabled) {
                     for (String collectionId : collectionIdsDataset) {
-                        if (wfs3ServiceData.getFeatureTypes()
-                                           .get(collectionId)
-                                           .getTiles()
-                                           .getSeeding() != null) {
-                            seedingDatasetEnabled = true;
-                            break;
+                        if(wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)){
+
+                            final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().get(EXTENSION_KEY);
+
+                            ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMaxTest>> seedingList = tilesConfiguration.getTiles()
+                                    .stream()
+                                    .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
+
+                            Map<String, TilesConfiguration.Tiles.MinMaxTest> seedingCollection = seedingList.values().asList().get(0);
+
+                            if (seedingCollection != null) {
+                                seedingDatasetEnabled = true;
+                                break;
+                            }
                         }
+
+
                     }
                 }
 
@@ -261,44 +272,49 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         List<Integer> maxZoomList = new ArrayList<>();
         Set<String> tilingSchemeIdsCollection = null;
         for (String collectionId : collectionIdsDataset) {
-            tilingSchemeIdsCollection = wfs3ServiceData.getFeatureTypes()
-                                                       .get(collectionId)
-                                                       .getTiles()
-                                                       .getSeeding()
-                                                       .keySet();
-            for (String tilingSchemeId : tilingSchemeIdsCollection) {
-                try {
-                    Map<String, FeatureTypeTiles.MinMax> seeding = wfs3ServiceData.getFeatureTypes()
-                                                                                  .get(collectionId)
-                                                                                  .getTiles()
-                                                                                  .getSeeding();
-                    BoundingBox spatial = wfs3ServiceData.getFeatureTypes()
-                                                         .get(collectionId)
-                                                         .getExtent()
-                                                         .getSpatial();
-                    if (spatial == null) {
+
+            if (wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
+
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().get(EXTENSION_KEY);
+
+                ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMaxTest>> seedingList = tilesConfiguration.getTiles()
+                        .stream()
+                        .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
+
+                Map<String, TilesConfiguration.Tiles.MinMaxTest> seeding = seedingList.values().asList().get(0);
+
+                tilingSchemeIdsCollection = seeding.keySet();
+
+                for (String tilingSchemeId : tilingSchemeIdsCollection) {
+                    try {
+                        BoundingBox spatial = wfs3ServiceData.getFeatureTypes()
+                                .get(collectionId)
+                                .getExtent()
+                                .getSpatial();
+                        if (spatial == null) {
+                        }
+                        if (seeding.size() != 0 && spatial != null) {
+                            int maxZoom = seeding.get(tilingSchemeId)
+                                    .getMax();
+                            int minZoom = seeding.get(tilingSchemeId)
+                                    .getMin();
+                            double xMin = spatial.getXmin();
+                            double xMax = spatial.getXmax();
+                            double yMin = spatial.getYmin();
+                            double yMax = spatial.getYmax();
+                            maxZoomList.add(maxZoom);
+                            minZoomList.add(minZoom);
+                            if (xMin != -180)
+                                xMinList.add(xMin);
+                            if (xMax != 180)
+                                xMaxList.add(xMax);
+                            if (yMin != -90)
+                                yMinList.add(yMin);
+                            if (yMax != 90)
+                                yMaxList.add(yMax);
+                        }
+                    } catch (Exception e) {
                     }
-                    if (seeding.size() != 0 && spatial != null) {
-                        int maxZoom = seeding.get(tilingSchemeId)
-                                             .getMax();
-                        int minZoom = seeding.get(tilingSchemeId)
-                                             .getMin();
-                        double xMin = spatial.getXmin();
-                        double xMax = spatial.getXmax();
-                        double yMin = spatial.getYmin();
-                        double yMax = spatial.getYmax();
-                        maxZoomList.add(maxZoom);
-                        minZoomList.add(minZoom);
-                        if (xMin != -180)
-                            xMinList.add(xMin);
-                        if (xMax != 180)
-                            xMaxList.add(xMax);
-                        if (yMin != -90)
-                            yMinList.add(yMin);
-                        if (yMax != 90)
-                            yMaxList.add(yMax);
-                    }
-                } catch (Exception e) {
                 }
             }
         }

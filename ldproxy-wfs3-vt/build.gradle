@@ -26,6 +26,9 @@ dependencies {
 
 jar {
     manifest {
+        instructionFirst 'Import-Package', "!org.immutables.value"
+        instruction 'Import-Package', "*"
+
         instruction 'Embed-Dependency',
                 'java-vector-tile',
                 'jts-core',

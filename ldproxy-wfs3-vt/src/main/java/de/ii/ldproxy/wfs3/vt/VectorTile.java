@@ -10,6 +10,8 @@ package de.ii.ldproxy.wfs3.vt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import de.ii.ldproxy.wfs3.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ldproxy.wfs3.ImmutableWfs3RequestContextImpl;
@@ -47,6 +49,7 @@ import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
+import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 
 
 /**
@@ -657,78 +660,101 @@ class VectorTile {
 
     public static boolean checkFormats(Wfs3ServiceData serviceData, String collectionId, String mediaType, boolean forLinksOrDataset) {
         try {
-            List<String> formats = serviceData.getFeatureTypes()
-                                              .get(collectionId)
-                                              .getTiles()
-                                              .getFormats();
-            if (!formats.contains(mediaType) && formats != null) {
-                if (forLinksOrDataset)
-                    return false;
-                else
-                    throw new NotAcceptableException();
-            }
-        } catch (NullPointerException ignored) {
 
+            if (serviceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) serviceData.getFeatureTypes()
+                        .get(collectionId)
+                        .getExtensions()
+                        .get(EXTENSION_KEY);
+
+                ImmutableMap<Integer, List<String>> formatsList = tilesConfiguration.getTiles()
+                        .stream()
+                        .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getFormats));
+                List<String> formats = formatsList.values().asList().get(0);
+                String s = "123";
+
+                if (!formats.contains(mediaType)) {
+                    if (forLinksOrDataset)
+                        return false;
+                    else
+                        throw new NotAcceptableException();
+                }
+
+
+            }
+        }catch(NullPointerException ignored){
+            return true;
         }
+
         return true;
     }
 
     public static void checkZoomLevels(int zoomLevel, Wfs3Service wfsService, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache, VectorTilesCache cache, boolean isCollection, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation) throws FileNotFoundException {
         try {
-            int maxZoom = 0;
-            int minZoom = 0;
-            Map<String, FeatureTypeTiles.MinMax> tilesZoomLevels = wfsService
-                    .getData()
-                    .getFeatureTypes()
-                    .get(collectionId)
-                    .getTiles()
-                    .getZoomLevels();
-            if (tilesZoomLevels.size() != 0) {
-                maxZoom = tilesZoomLevels.get(tilingSchemeId)
-                                         .getMax();
-                minZoom = tilesZoomLevels.get(tilingSchemeId)
-                                         .getMin();
-            } else {
-                //if there is no member "zoomLevels" in configuration
-                if (tilingSchemeId.equals("default")) {
-                    TilingScheme tilingScheme = new DefaultTilingScheme();
-                    minZoom = tilingScheme.getMinLevel();
-                    maxZoom = tilingScheme.getMaxLevel();
-                }
-            }
-            if (tilingSchemeId.equals("default")) { //TODO only default supported
-                TilingScheme tilingScheme = new DefaultTilingScheme();
-                //check if min or max zoom are valid values for the tiling scheme
-                if (minZoom > tilingScheme.getMaxLevel() || minZoom < tilingScheme.getMinLevel() || maxZoom > tilingScheme.getMaxLevel() || maxZoom < tilingScheme.getMinLevel()) {
-                    throw new NotFoundException();
-                }
-            }
 
-            //if zoom Level is not in range
-            if (zoomLevel < minZoom || zoomLevel > maxZoom || minZoom > maxZoom) {
-                //generate empty Feature collection
-                if (mediaType.equals("application/json")) {
-                    VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
-                    File tileFileJSON = tile.getFile(cache, "json");
-                    if (!tileFileJSON.exists()) {
-                        generateEmptyJSON(tileFileJSON, new DefaultTilingScheme(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService);
+            if(wfsService.getData().getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfsService.getData().getFeatureTypes()
+                        .get(collectionId)
+                        .getExtensions()
+                        .get(EXTENSION_KEY);
+
+                ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMaxTest>> minMaxList = tilesConfiguration.getTiles()
+                        .stream()
+                        .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getZoomLevels));
+
+                Map<String, TilesConfiguration.Tiles.MinMaxTest> tilesZoomLevels = minMaxList.values().asList().get(0);
+
+                int maxZoom = 0;
+                int minZoom = 0;
+
+                if (tilesZoomLevels.size() != 0) {
+                    maxZoom = tilesZoomLevels.get(tilingSchemeId)
+                            .getMax();
+                    minZoom = tilesZoomLevels.get(tilingSchemeId)
+                            .getMin();
+                } else {
+                    //if there is no member "zoomLevels" in configuration
+                    if (tilingSchemeId.equals("default")) {
+                        TilingScheme tilingScheme = new DefaultTilingScheme();
+                        minZoom = tilingScheme.getMinLevel();
+                        maxZoom = tilingScheme.getMaxLevel();
                     }
                 }
-                //generate empty MVT
-                if (mediaType.equals("application/vnd.mapbox-vector-tile")) {
-                    VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
-                    File tileFileMvt = tile.getFile(cache, "pbf");
+                if (tilingSchemeId.equals("default")) { //TODO only default supported
+                    TilingScheme tilingScheme = new DefaultTilingScheme();
+                    //check if min or max zoom are valid values for the tiling scheme
+                    if (minZoom > tilingScheme.getMaxLevel() || minZoom < tilingScheme.getMinLevel() || maxZoom > tilingScheme.getMaxLevel() || maxZoom < tilingScheme.getMinLevel()) {
+                        throw new NotFoundException();
+                    }
+                }
 
-                    if (!tileFileMvt.exists()) {
-                        VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
-                        File tileFileJSON = jsonTile.getFile(cache, "json");
+                //if zoom Level is not in range
+                if (zoomLevel < minZoom || zoomLevel > maxZoom || minZoom > maxZoom) {
+                    //generate empty Feature collection
+                    if (mediaType.equals("application/json")) {
+                        VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                        File tileFileJSON = tile.getFile(cache, "json");
                         if (!tileFileJSON.exists()) {
                             generateEmptyJSON(tileFileJSON, new DefaultTilingScheme(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService);
                         }
-                        generateEmptyMVT(tileFileMvt, new DefaultTilingScheme());
+                    }
+                    //generate empty MVT
+                    if (mediaType.equals("application/vnd.mapbox-vector-tile")) {
+                        VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                        File tileFileMvt = tile.getFile(cache, "pbf");
+
+                        if (!tileFileMvt.exists()) {
+                            VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                            File tileFileJSON = jsonTile.getFile(cache, "json");
+                            if (!tileFileJSON.exists()) {
+                                generateEmptyJSON(tileFileJSON, new DefaultTilingScheme(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService);
+                            }
+                            generateEmptyMVT(tileFileMvt, new DefaultTilingScheme());
+                        }
                     }
                 }
             }
+
         } catch (NullPointerException ignored) {
         }
     }

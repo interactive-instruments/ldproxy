@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.vt;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
@@ -65,7 +66,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 /**
@@ -364,20 +367,30 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
     }
 
     public static void checkTilesParameterCollection(Wfs3Service wfsService, String collectionId) {
-        FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3 = wfsService.getData()
-                                                                              .getFeatureTypes()
-                                                                              .get(collectionId);
 
-        try {
-            featureTypeConfigurationWfs3.getTiles();
-        } catch (NullPointerException e) {
+
+        if(wfsService.getData().getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
+            final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfsService.getData()
+                                                                                         .getFeatureTypes()
+                                                                                         .get(collectionId)
+                                                                                         .getExtensions()
+                                                                                         .get(EXTENSION_KEY);
+            ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
+                                                                            .stream()
+                                                                            .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
+
+            Boolean tilesEnabledCollection = tilesEnabled.values().asList().get(0);
+
+
+            if(!tilesEnabledCollection)
+                throw new NotFoundException();
+        }
+
+        else{
             throw new NotFoundException();
         }
 
-        if (!featureTypeConfigurationWfs3.getTiles()
-                                         .getEnabled()) {
-            throw new NotFoundException();
-        }
+
     }
 
     public static void generateTileCollection(String collectionId, File tileFileJson, File tileFileMvt, VectorTile tile, Set<String> requestedProperties, CrsTransformation crsTransformation) {

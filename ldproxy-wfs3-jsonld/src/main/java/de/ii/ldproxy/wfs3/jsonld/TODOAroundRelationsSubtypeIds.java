@@ -8,7 +8,10 @@
 package de.ii.ldproxy.wfs3.jsonld;
 
 import com.google.common.collect.ImmutableMap;
+
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration;
+import de.ii.ldproxy.wfs3.vt.TilesConfiguration;
+
 import de.ii.xsf.dropwizard.api.JacksonSubTypeIds;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -27,6 +30,7 @@ public class TODOAroundRelationsSubtypeIds implements JacksonSubTypeIds {
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
                 .put(AroundRelationConfiguration.class, "AROUND_RELATIONS")
+                .put(TilesConfiguration.class, "TILES")
                 .build();
     }
 }
