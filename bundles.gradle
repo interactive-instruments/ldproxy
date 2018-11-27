@@ -1,6 +1,7 @@
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'groovy'
     apply plugin: 'osgi-ipojo'
     //apply plugin: 'biz.aQute.bnd.builder'
     apply plugin: 'license'
@@ -72,7 +73,7 @@ subprojects {
         provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.5'
         // TODO: shouldn't we only be allowed to use api bundles here?
         provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.4'
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.27-SNAPSHOT'
+        provided group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.27'
 
         // TODO: this is in bundles-runtime, but with transitive=false
         // TODO: we need the transitive dependencies in provided
@@ -83,6 +84,7 @@ subprojects {
         testCompile 'com.greghaskins:spectrum:1.2.0'
         testCompile "org.mockito:mockito-core:+"
         testCompile("org.assertj:assertj-core:+")
+        testCompile "org.spockframework:spock-core:1.2-groovy-2.4"
     }
 
     compileJava {

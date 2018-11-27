@@ -17,7 +17,7 @@ import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import org.immutables.value.Value;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -95,8 +95,11 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     }
 
     public final void flushBuffer() throws IOException {
-        getJsonBuffer().serialize(getJsonGenerator());
-        getJsonBuffer().flush();
+        if(!Objects.isNull(getJsonBuffer())){
+            getJsonBuffer().serialize(getJsonGenerator());
+            getJsonBuffer().flush();
+
+        }
     }
 
     @Value.Modifiable

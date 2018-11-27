@@ -69,11 +69,11 @@ public class Wfs3EndpointSitemap implements Wfs3EndpointExtension {
         List<Site> sites = new ArrayList<>();
 
         String baseUrlItems = String.format("%s/%s/collections/%s/items?f=html", coreServerConfig.getExternalUrl(), serviceData.getId(), id);
+        List<Site> itemsSites = SitemapComputation.getSites(baseUrlItems,from,to);
+        sites.addAll(itemsSites);
+
         String baseUrlItem = String.format("%s/%s/collections/%s/items", coreServerConfig.getExternalUrl(), serviceData.getId(), id);
         ItemSitesReader itemSitesReader = new ItemSitesReader(baseUrlItem);
-
-        SitemapComputation.getSites(sites,baseUrlItems,from,to,false,null,null,null,null);
-
         FeatureQuery featureQuery= ImmutableFeatureQuery.builder()
                 .type(id)
                 .offset(from.intValue())
@@ -82,9 +82,10 @@ public class Wfs3EndpointSitemap implements Wfs3EndpointExtension {
                 .build();
         FeatureStream <FeatureTransformer> featureStream = ((Wfs3Service) service).getFeatureProvider().getFeatureTransformStream(featureQuery);
         featureStream.apply(itemSitesReader).toCompletableFuture().join();
+
         sites.addAll(itemSitesReader.getSites());
 
-        Sitemap sitemap = new Sitemap(sites);
+        Sitemap sitemap = new Sitemap(SitemapComputation.truncateToUpperLimit(sites));
 
         return Response.ok()
                        .entity(sitemap)
