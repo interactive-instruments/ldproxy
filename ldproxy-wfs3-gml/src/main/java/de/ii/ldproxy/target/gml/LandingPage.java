@@ -35,7 +35,7 @@ public class LandingPage implements Wfs3Xml {
 
         //TODO: create abstraction for loading live data from provider - new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()
         //TODO check links
-        this.links =  wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty(), mediaType, false, alternativeMediaTypes);
+        this.links =  wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty(), mediaType, alternativeMediaTypes);
     }
 
     public LandingPage(List<Wfs3Link> links) {

@@ -44,15 +44,15 @@ public abstract class TilesConfiguration implements FeatureTypeConfigurationExte
         @Value.Immutable
         @Value.Modifiable
         @Value.Style(deepImmutablesDetection = true)
-        @JsonDeserialize(as = ImmutableMinMaxTest.class)
-        public static abstract class MinMaxTest{
+        @JsonDeserialize(as = ImmutableMinMax.class)
+        public static abstract class MinMax{
             public abstract int getMin();
             public abstract int getMax();
         }
         @Nullable
-        public abstract Map<String,MinMaxTest> getSeeding();
+        public abstract Map<String,MinMax> getSeeding();
         @Nullable
-        public abstract Map<String,MinMaxTest> getZoomLevels();
+        public abstract Map<String,MinMax> getZoomLevels();
 
     }
 

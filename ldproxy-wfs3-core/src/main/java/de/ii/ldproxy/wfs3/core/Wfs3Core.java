@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.NotFoundException;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +55,13 @@ public class Wfs3Core {
                              .collect(Collectors.toList());
     }
 
+    private List<Wfs3DatasetMetadataExtension> getDatasetExtenders() {
+        return wfs3Extensions.stream()
+                .filter(wfs3Extension -> wfs3Extension instanceof Wfs3DatasetMetadataExtension)
+                .map(wfs3Extension -> (Wfs3DatasetMetadataExtension) wfs3Extension)
+                .collect(Collectors.toList());
+    }
+
     public Wfs3Collections createCollections(Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer) {
         final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
 
@@ -78,15 +86,23 @@ public class Wfs3Core {
                 .build();
 
 
-       boolean tilesEnabled= checkTilesEnabled(serviceData);
-       List<Wfs3Link> wfs3Links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, mediaType,tilesEnabled, alternativeMediaTypes);
+       List<Wfs3Link> wfs3Links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, mediaType, alternativeMediaTypes);
 
 
-        return ImmutableWfs3Collections.builder()
-                                       .collections(collections)
-                                       .crs(crs)
-                                       .links(wfs3Links)
-                                       .build();
+        ImmutableWfs3Collections.Builder dataset = ImmutableWfs3Collections.builder()
+                .collections(collections)
+                .crs(crs)
+                .links(wfs3Links);
+
+
+
+        for (Wfs3DatasetMetadataExtension wfs3DatasetMetadataExtension: getDatasetExtenders()) {
+            dataset = wfs3DatasetMetadataExtension.process(dataset,  uriCustomizer.copy(), serviceData.getFeatureTypes().values());
+        }
+
+
+        return dataset.build();
+
     }
 
     public Wfs3Collection createCollection(FeatureTypeConfigurationWfs3 featureType, Wfs3LinksGenerator wfs3LinksGenerator, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, boolean isNested) {
@@ -163,29 +179,6 @@ public class Wfs3Core {
         return collection.build();
     }
 
-    private static boolean checkTilesEnabled(Wfs3ServiceData serviceData){
-/*
-        return serviceData
-                .getFeatureTypes()
-                .values()
-                .stream()
-                .anyMatch(ft -> {
-                try{
-                    if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
-                        final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
-                        ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
-                                .stream()
-                                .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
-                        Boolean tilesCollectionEnabled = tilesEnabled.values().asList().get(0);
 
-                        if (tilesCollectionEnabled)
-                            return true;
-                    }
-                    return false;
-                } catch (Throwable ignored){return false;} }); //TODO
-        */
-
-return true;
-    }
 
 }

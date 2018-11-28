@@ -47,6 +47,12 @@ import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
 import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
+/**
+ * This class is responsible for a automatic generation of the Tiles.
+ * The range is specified in the config.
+ * The automatic generation is executed, when the server is started/restarted.
+ *
+ */
 @Component
 @Provides
 @Instantiate
@@ -72,6 +78,13 @@ public class VectorTileSeeding implements Wfs3StartupTask {
     }
 
 
+    /**
+     * The runnable Task which starts the seeding.
+     *
+     * @param wfs3ServiceData   the service data of the Wfs3 Service
+     * @param featureProvider   the featureProvider
+     * @return the runnable process
+     */
     @Override
     public Runnable getTask(Wfs3ServiceData wfs3ServiceData, TransformingFeatureProvider featureProvider) {
 
@@ -93,11 +106,11 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
                             final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().get(EXTENSION_KEY);
 
-                            ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMaxTest>> seedingList = tilesConfiguration.getTiles()
+                            ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMax>> seedingList = tilesConfiguration.getTiles()
                                     .stream()
                                     .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
 
-                            Map<String, TilesConfiguration.Tiles.MinMaxTest> seedingCollection = seedingList.values().asList().get(0);
+                            Map<String, TilesConfiguration.Tiles.MinMax> seedingCollection = seedingList.values().asList().get(0);
 
                             if (seedingCollection != null) {
                                 seedingDatasetEnabled = true;
@@ -127,16 +140,214 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
     }
 
+    /**
+     *
+     * @return a Map with all ongoing threads
+     */
     public Map<Thread, String> getThreadMap() {
         return threadMap;
     }
 
+    /**
+     * removes a specific thread from the threadMap.
+     *
+     * @param t   the thread which should be removed
+     */
     public void removeThreadMapEntry(Thread t) {
         threadMap.remove(t);
     }
 
+    /**
+     * Computes the minimum and maximum row and col values.
+     *
+     * Generates all JSON Tiles and MVT (if the format is enabled) for each collection (MVT support has to be enabled)
+     * for every tiling Scheme in the specified seeding range
+     *
+     *
+     * @param collectionIdsDataset      all ids of feature Types which have the tiles support enabled
+     * @param wfs3ServiceData           the service Data of the Wfs3 Service
+     * @param crsTransformation         the coordinate reference system transformation object to transform coordinates
+     * @param cache                     the vector tile cache
+     * @param featureProvider           the feature Provider
+     * @param coreServerConfig          the core server config with the external url
+     * @throws FileNotFoundException
+     */
+    private void seedingDataset(Set<String> collectionIdsDataset, Wfs3ServiceData wfs3ServiceData, CrsTransformation crsTransformation, VectorTilesCache cache, TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig) throws FileNotFoundException {
 
-    private File generateSeedingMVT(Wfs3ServiceData serviceData, String collectionId, String tilingSchemeId, int z, int x, int y, VectorTilesCache cache, CrsTransformation crsTransformation, TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig) {
+        /*Computation of the minimum and maximum values for x and y from the minimum/maximum spatial extent
+         * TODO: Maybe a spatial extent for the whole dataset in the config?*/
+        List<Double> xMinList = new ArrayList<>();
+        List<Double> xMaxList = new ArrayList<>();
+        List<Double> yMinList = new ArrayList<>();
+        List<Double> yMaxList = new ArrayList<>();
+        List<Integer> minZoomList = new ArrayList<>();
+        List<Integer> maxZoomList = new ArrayList<>();
+        Set<String> tilingSchemeIdsCollection = null;
+        for (String collectionId : collectionIdsDataset) {
+
+            if (wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
+
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().get(EXTENSION_KEY);
+
+                ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMax>> seedingList = tilesConfiguration.getTiles()
+                        .stream()
+                        .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
+
+                Map<String, TilesConfiguration.Tiles.MinMax> seeding = seedingList.values().asList().get(0);
+
+                tilingSchemeIdsCollection = seeding.keySet();
+
+                for (String tilingSchemeId : tilingSchemeIdsCollection) {
+                    try {
+                        BoundingBox spatial = wfs3ServiceData.getFeatureTypes()
+                                .get(collectionId)
+                                .getExtent()
+                                .getSpatial();
+                        if (spatial == null) {
+                        }
+                        if (seeding.size() != 0 && spatial != null) {
+                            int maxZoom = seeding.get(tilingSchemeId)
+                                    .getMax();
+                            int minZoom = seeding.get(tilingSchemeId)
+                                    .getMin();
+                            double xMin = spatial.getXmin();
+                            double xMax = spatial.getXmax();
+                            double yMin = spatial.getYmin();
+                            double yMax = spatial.getYmax();
+                            maxZoomList.add(maxZoom);
+                            minZoomList.add(minZoom);
+                            if (xMin != -180)
+                                xMinList.add(xMin);
+                            if (xMax != 180)
+                                xMaxList.add(xMax);
+                            if (yMin != -90)
+                                yMinList.add(yMin);
+                            if (yMax != 90)
+                                yMaxList.add(yMax);
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+            }
+        }
+        int minZoomDataset = minZoomList.stream()
+                .min(Comparator.comparing(Integer::intValue))
+                .orElseThrow(NoSuchElementException::new);
+        int maxZoomDataset = maxZoomList.stream()
+                .max(Comparator.comparing(Integer::intValue))
+                .orElseThrow(NoSuchElementException::new);
+        double xMinDataset = xMinList.stream()
+                .min(Comparator.comparing(Double::doubleValue))
+                .orElseThrow(NoSuchElementException::new);
+        double xMaxDataset = xMaxList.stream()
+                .max(Comparator.comparing(Double::doubleValue))
+                .orElseThrow(NoSuchElementException::new);
+        double yMinDataset = yMinList.stream()
+                .min(Comparator.comparing(Double::doubleValue))
+                .orElseThrow(NoSuchElementException::new);
+        double yMaxDataset = yMaxList.stream()
+                .max(Comparator.comparing(Double::doubleValue))
+                .orElseThrow(NoSuchElementException::new);
+        /*Comupation end*/
+
+        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
+
+        /*Begin seeding*/
+        for (int z = minZoomDataset; z <= maxZoomDataset; z++) {
+
+            Map<String, Integer> minMax = null;
+            try {
+                minMax = computeMinMax(z, new DefaultTilingScheme(), crsTransformation, xMinDataset, xMaxDataset, yMinDataset, yMaxDataset);
+            } catch (CrsTransformationException e) {
+                e.printStackTrace();
+            }
+
+            int rowMin = minMax.get("rowMin");
+            int rowMax = minMax.get("rowMax");
+            int colMin = minMax.get("colMin");
+            int colMax = minMax.get("colMax");
+
+            for (int x = rowMin; x <= rowMax; x++) {
+                for (int y = colMin; y <= colMax; y++) {
+                    for (String tilingSchemeId : tilingSchemeIdsCollection) {
+                        VectorTile tile = new VectorTile(null, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), wfs3ServiceData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+
+                        // generate tile
+                        File tileFileMvt = tile.getFile(cache, "pbf");
+                        if (!tileFileMvt.exists()) {
+
+                            Map<String, File> layers = new HashMap<String, File>();
+                            Set<String> collectionIdsMVTEnabled = Wfs3EndpointTiles.getCollectionIdsDataset(wfs3ServiceData, true, false, true);
+
+
+                            for (String collectionId : collectionIdsMVTEnabled) {
+                                // include only the requested layers / collections
+                                if (wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
+
+                                    final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().get(EXTENSION_KEY);
+
+                                    ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMax>> seedingList = tilesConfiguration.getTiles()
+                                            .stream()
+                                            .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
+
+                                    Map<String, TilesConfiguration.Tiles.MinMax> seeding = seedingList.values().asList().get(0);
+                                    int collectionMax = seeding.get(tilingSchemeId).getMax();
+                                    int collectionMin = seeding.get(tilingSchemeId).getMin();
+                                    if(collectionMin <= z && z <= collectionMax){
+                                        File tileFileMvtCollection = generateMVT(wfs3ServiceData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig);
+                                        layers.put(collectionId, tileFileMvtCollection);
+                                    }
+
+                                }
+                            }
+                            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation,tile);
+                            if (!success) {
+                                String msg = "Internal server error: could not generate protocol buffers for a tile.";
+                                LOGGER.error(msg);
+                                throw new InternalServerErrorException(msg);
+                            }
+                            Set<String> collectionIdsOnlyJSON = Wfs3EndpointTiles.getCollectionIdsDataset(wfs3ServiceData, false, true, false);
+
+                            for (String collectionId : collectionIdsOnlyJSON) {
+                                if (wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
+
+                                    final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().get(EXTENSION_KEY);
+
+                                    ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMax>> seedingList = tilesConfiguration.getTiles()
+                                            .stream()
+                                            .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
+
+                                    Map<String, TilesConfiguration.Tiles.MinMax> seeding = seedingList.values().asList().get(0);
+                                    int collectionMax = seeding.get(tilingSchemeId).getMax();
+                                    int collectionMin = seeding.get(tilingSchemeId).getMin();
+                                    if(collectionMin <= z && z <= collectionMax) {
+                                        generateJSON(wfs3ServiceData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * generates the MVT for the specified parameters
+     *
+     * @param serviceData       the service data of the Wfs3 Service
+     * @param collectionId      the id of the collection of the tile
+     * @param tilingSchemeId    the id of the tiling scheme of the tile
+     * @param z                 the zoom level of the tile
+     * @param x                 the row of the tile
+     * @param y                 the col of the tile
+     * @param cache             the vector tile cache
+     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @param featureProvider   the feature Provider
+     * @param coreServerConfig  the core server config with the external url
+     * @return the Json File. If the mvt already exists, return null
+     */
+    private File generateMVT(Wfs3ServiceData serviceData, String collectionId, String tilingSchemeId, int z, int x, int y, VectorTilesCache cache, CrsTransformation crsTransformation, TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig) {
 
         Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
 
@@ -145,10 +356,10 @@ public class VectorTileSeeding implements Wfs3StartupTask {
             VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), serviceData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
             File tileFileMvt = tile.getFile(cache, "pbf");
             if (!tileFileMvt.exists()) {
-                File tileFileJson = generateSeedingJSON(serviceData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig);
+                File tileFileJson = generateJSON(serviceData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig);
                 Map<String, File> layers = new HashMap<>();
                 layers.put(collectionId, tileFileJson);
-                boolean success = tile.generateTileMvt(tileFileMvt, layers, null, crsTransformation);
+                boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation,tile);
                 if (!success) {
                     String msg = "Internal server error: could not generate protocol buffers for a tile.";
                     LOGGER.error(msg);
@@ -162,7 +373,22 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         return null;
     }
 
-    private File generateSeedingJSON(Wfs3ServiceData serviceData, String collectionId, String tilingSchemeId, int z, int x, int y, VectorTilesCache cache, CrsTransformation crsTransformation, TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig) {
+    /**
+     * generates the JSON Tile for the specified parameters
+     *
+     * @param serviceData       the service data of the Wfs3 Service
+     * @param collectionId      the id of the collection of the tile
+     * @param tilingSchemeId    the id of the tiling scheme of the tile
+     * @param z                 the zoom level of the tile
+     * @param x                 the row of the tile
+     * @param y                 the col of the tile
+     * @param cache             the vector tile cache
+     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @param featureProvider   the feature Provider
+     * @param coreServerConfig  the core server config with the external url
+     * @return the json File, if it already exists return null
+     */
+    private File generateJSON(Wfs3ServiceData serviceData, String collectionId, String tilingSchemeId, int z, int x, int y, VectorTilesCache cache, CrsTransformation crsTransformation, TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig) {
         Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
 
         try {
@@ -187,7 +413,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
                                                   .main(new MediaType("application", "json"))
                                                   .label("JSON")
                                                   .build();
-                tile.generateTileJson(tileFileJson, crsTransformation, null, null, null, uriCustomizer, mediaType, true);
+                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, null, null, null, uriCustomizer, mediaType, true,tile);
             }
             return tileFileJson;
         } catch (FileNotFoundException e) {
@@ -196,22 +422,29 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         return null;
     }
 
+    /**
+     * compute the min and max row/col for the zoom level with the given spatial extent.
+     *
+     * @param zoomLevel         the zoom level you want to compute the values for
+     * @param tilingScheme      the id of the tiling Scheme
+     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @param xMin              the x coordinate of a the lower left corner of a bounding box, including the whole dataset you want to use the seeding for
+     * @param xMax              the x coordinate of a the lower upper right corner of a bounding box, including the whole dataset you want to use the seeding for
+     * @param yMin              the y coordinate of a the lower left corner of a bounding box, including the whole dataset you want to use the seeding for
+     * @param yMax              the y coordinate of a the lower upper right corner of a bounding box, including the whole dataset you want to use the seeding for
+     * @return a map with minimum and maximum values for row and col
+     * @throws CrsTransformationException
+     */
     public static Map<String, Integer> computeMinMax(int zoomLevel, TilingScheme tilingScheme, CrsTransformation crsTransformation, double xMin, double xMax, double yMin, double yMax) throws CrsTransformationException {
         int row = 0;
         int col = 0;
         Map<String, Integer> minMax = new HashMap<>();
-        double getXMax = crsTransformation.getTransformer(tilingScheme.getBoundingBox(zoomLevel, col, row)
-                                                                      .getEpsgCrs(), DEFAULT_CRS)
-                                          .transformBoundingBox(tilingScheme.getBoundingBox(zoomLevel, col, row))
-                                          .getXmin();
+        double getXMax;
         double getXMin = crsTransformation.getTransformer(tilingScheme.getBoundingBox(zoomLevel, col, row)
                                                                       .getEpsgCrs(), DEFAULT_CRS)
                                           .transformBoundingBox(tilingScheme.getBoundingBox(zoomLevel, col, row))
                                           .getXmax();
-        double getYMin = crsTransformation.getTransformer(tilingScheme.getBoundingBox(zoomLevel, col, row)
-                                                                      .getEpsgCrs(), DEFAULT_CRS)
-                                          .transformBoundingBox(tilingScheme.getBoundingBox(zoomLevel, col, row))
-                                          .getYmin();
+        double getYMin;
         double getYMax = crsTransformation.getTransformer(tilingScheme.getBoundingBox(zoomLevel, col, row)
                                                                       .getEpsgCrs(), DEFAULT_CRS)
                                           .transformBoundingBox(tilingScheme.getBoundingBox(zoomLevel, col, row))
@@ -260,134 +493,5 @@ public class VectorTileSeeding implements Wfs3StartupTask {
     }
 
 
-    private void seedingDataset(Set<String> collectionIdsDataset, Wfs3ServiceData wfs3ServiceData, CrsTransformation crsTransformation, VectorTilesCache cache, TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig) throws FileNotFoundException {
 
-        /*Computation of the minimum and maximum values for x and y from the minimum/maximum spatial extent
-         * TODO: Maybe a spatial extent for the whole dataset in the config?*/
-        List<Double> xMinList = new ArrayList<>();
-        List<Double> xMaxList = new ArrayList<>();
-        List<Double> yMinList = new ArrayList<>();
-        List<Double> yMaxList = new ArrayList<>();
-        List<Integer> minZoomList = new ArrayList<>();
-        List<Integer> maxZoomList = new ArrayList<>();
-        Set<String> tilingSchemeIdsCollection = null;
-        for (String collectionId : collectionIdsDataset) {
-
-            if (wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
-
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().get(EXTENSION_KEY);
-
-                ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMaxTest>> seedingList = tilesConfiguration.getTiles()
-                        .stream()
-                        .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
-
-                Map<String, TilesConfiguration.Tiles.MinMaxTest> seeding = seedingList.values().asList().get(0);
-
-                tilingSchemeIdsCollection = seeding.keySet();
-
-                for (String tilingSchemeId : tilingSchemeIdsCollection) {
-                    try {
-                        BoundingBox spatial = wfs3ServiceData.getFeatureTypes()
-                                .get(collectionId)
-                                .getExtent()
-                                .getSpatial();
-                        if (spatial == null) {
-                        }
-                        if (seeding.size() != 0 && spatial != null) {
-                            int maxZoom = seeding.get(tilingSchemeId)
-                                    .getMax();
-                            int minZoom = seeding.get(tilingSchemeId)
-                                    .getMin();
-                            double xMin = spatial.getXmin();
-                            double xMax = spatial.getXmax();
-                            double yMin = spatial.getYmin();
-                            double yMax = spatial.getYmax();
-                            maxZoomList.add(maxZoom);
-                            minZoomList.add(minZoom);
-                            if (xMin != -180)
-                                xMinList.add(xMin);
-                            if (xMax != 180)
-                                xMaxList.add(xMax);
-                            if (yMin != -90)
-                                yMinList.add(yMin);
-                            if (yMax != 90)
-                                yMaxList.add(yMax);
-                        }
-                    } catch (Exception e) {
-                    }
-                }
-            }
-        }
-        int minZoomDataset = minZoomList.stream()
-                                        .min(Comparator.comparing(Integer::intValue))
-                                        .orElseThrow(NoSuchElementException::new);
-        int maxZoomDataset = maxZoomList.stream()
-                                        .max(Comparator.comparing(Integer::intValue))
-                                        .orElseThrow(NoSuchElementException::new);
-        double xMinDataset = xMinList.stream()
-                                     .min(Comparator.comparing(Double::doubleValue))
-                                     .orElseThrow(NoSuchElementException::new);
-        double xMaxDataset = xMaxList.stream()
-                                     .max(Comparator.comparing(Double::doubleValue))
-                                     .orElseThrow(NoSuchElementException::new);
-        double yMinDataset = yMinList.stream()
-                                     .min(Comparator.comparing(Double::doubleValue))
-                                     .orElseThrow(NoSuchElementException::new);
-        double yMaxDataset = yMaxList.stream()
-                                     .max(Comparator.comparing(Double::doubleValue))
-                                     .orElseThrow(NoSuchElementException::new);
-        /*Comupation end*/
-
-        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = wfs3ExtensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
-
-        /*Begin seeding*/
-        for (int z = minZoomDataset; z <= maxZoomDataset; z++) {
-
-            Map<String, Integer> minMax = null;
-            try {
-                minMax = computeMinMax(z, new DefaultTilingScheme(), crsTransformation, xMinDataset, xMaxDataset, yMinDataset, yMaxDataset);
-            } catch (CrsTransformationException e) {
-                e.printStackTrace();
-            }
-
-            int rowMin = minMax.get("rowMin");
-            int rowMax = minMax.get("rowMax");
-            int colMin = minMax.get("colMin");
-            int colMax = minMax.get("colMax");
-
-            for (int x = rowMin; x <= rowMax; x++) {
-                for (int y = colMin; y <= colMax; y++) {
-                    for (String tilingSchemeId : tilingSchemeIdsCollection) {
-                        VectorTile tile = new VectorTile(null, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), wfs3ServiceData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
-
-                        // generate tile
-                        File tileFileMvt = tile.getFile(cache, "pbf");
-                        if (!tileFileMvt.exists()) {
-
-                            Map<String, File> layers = new HashMap<String, File>();
-                            Set<String> collectionIdsMVTEnabled = Wfs3EndpointTiles.getCollectionIdsDataset(wfs3ServiceData, true, false, true);
-
-
-                            for (String collectionId : collectionIdsMVTEnabled) {
-                                // include only the requested layers / collections
-                                File tileFileMvtCollection = generateSeedingMVT(wfs3ServiceData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig);
-                                layers.put(collectionId, tileFileMvtCollection);
-                            }
-                            boolean success = tile.generateTileMvt(tileFileMvt, layers, null, crsTransformation);
-                            if (!success) {
-                                String msg = "Internal server error: could not generate protocol buffers for a tile.";
-                                LOGGER.error(msg);
-                                throw new InternalServerErrorException(msg);
-                            }
-                            Set<String> collectionIdsOnlyJSON = Wfs3EndpointTiles.getCollectionIdsDataset(wfs3ServiceData, false, true, false);
-
-                            for (String collectionId : collectionIdsOnlyJSON) {
-                                generateSeedingJSON(wfs3ServiceData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 }

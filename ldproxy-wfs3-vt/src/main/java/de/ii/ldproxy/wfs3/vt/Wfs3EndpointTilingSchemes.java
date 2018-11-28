@@ -86,13 +86,13 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
         Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
         Wfs3EndpointTiles.checkTilesParameterDataset(wfsService);
 
-            final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
+            final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
             List<Map<String,Object>> wfs3LinksList = new ArrayList<>();
 
         for(Object tilingSchemeId : cache.getTilingSchemeIds().toArray()){
             Map<String,Object> wfs3LinksMap = new HashMap<>();
             wfs3LinksMap.put("identifier",tilingSchemeId);
-            wfs3LinksMap.put("links",wfs3LinksGenerator.generateTilingSchemesLinks(wfs3Request.getUriCustomizer(),tilingSchemeId.toString()));
+            wfs3LinksMap.put("links",vectorTilesLinkGenerator.generateTilingSchemesLinks(wfs3Request.getUriCustomizer(),tilingSchemeId.toString()));
             wfs3LinksList.add(wfs3LinksMap);
         }
 
