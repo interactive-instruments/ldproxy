@@ -77,6 +77,7 @@ export default class App extends Component {
         const query = qs.parse(window.location.search, {
             ignoreQueryPrefix: true
         });
+        delete query['offset'];
         Object.keys(spatialFields).forEach(field => {
             delete query[field];
             if (spatial[field] && spatial[field] !== '') {
@@ -107,7 +108,7 @@ export default class App extends Component {
         const query = qs.parse(window.location.search, {
             ignoreQueryPrefix: true
         });
-        delete query['page'];
+        delete query['offset'];
         Object.keys(fields).concat(['bbox', 'time']).forEach(field => {
             delete query[field];
             if (newFilters[field]) {
