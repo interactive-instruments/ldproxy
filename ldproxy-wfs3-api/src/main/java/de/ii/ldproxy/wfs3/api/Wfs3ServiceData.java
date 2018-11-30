@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.deser.BeanDeserializerFactory;
 import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
@@ -104,15 +105,15 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
                                   .entrySet()
                                   .stream()
                                   .filter(isFilterable(withoutSpatialAndTemporal))
-                                  .collect(Collectors.toMap(getParameterName(), mapping -> propertyPathsToCql(mapping.getKey()
-                                                                                                                     .substring(mapping.getKey()
-                                                                                                                                       .lastIndexOf(":") + 1))));
+                                  .collect(Collectors.toMap(getParameterName(), getParameterValue()));
     }
 
     //TODO: move to html module
     public Map<String, String> getHtmlNamesForFeatureType(String featureType) {
         FeatureTypeMapping featureTypeMapping = getFeatureProvider().getMappings()
                                                                     .get(featureType);
+
+        Map<String, TargetMapping> baseMappings = Objects.nonNull(featureTypeMapping) ? featureTypeMapping.findMappings(BASE_TYPE) : ImmutableMap.of();
 
         return Objects.isNull(featureTypeMapping) ? ImmutableMap.of() :
                 featureTypeMapping
@@ -121,21 +122,34 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
                         .stream()
                         .filter(mapping -> mapping.getValue()
                                                   .getName() != null && mapping.getValue()
-                                                                               .isEnabled())
-                        .map(mapping -> new AbstractMap.SimpleImmutableEntry<>(propertyPathsToCql(mapping.getKey()
-                                                                                                         .substring(mapping.getKey()
-                                                                                                                           .lastIndexOf(":") + 1)), mapping.getValue()
+                                                                               .isEnabled() && baseMappings.get(mapping.getKey()).getName() != null)
+                        .map(mapping -> new AbstractMap.SimpleImmutableEntry<>(/*TODO getParamterValue()*/baseMappings.get(mapping.getKey()).getName().replaceAll("\\[\\w+\\]", "")
+                                                                                                             .toLowerCase(), mapping.getValue()
                                                                                                                                                            .getName()))
                         .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue, (s, s2) -> s));
     }
 
     private String propertyPathsToCql(String propertyPath) {
-        return propertyPathsToShort(propertyPath).replace('/', '.');
+        List<String> path = splitPath(propertyPath);
+
+        List<String> shortPath = path.stream().map(s -> s.substring(s.lastIndexOf(":") + 1)).collect(Collectors.toList());
+
+        String joinedPath = shortPath.stream().collect(Collectors.joining("."));
+
+        return joinedPath;
+
+        //return propertyPathsToShort(propertyPath).replace('/', '.');
     }
 
     private String propertyPathsToShort(String propertyPath) {
 
         return propertyPath.replaceAll("(?:(?:(^| |\\()/)|(/))(?:\\[\\w+=\\w+\\])?(?:\\w+\\()*(\\w+)(?:\\)(?:,| |\\)))*", "$1$2$3");
+    }
+
+    private List<String> splitPath(String path) {
+        Splitter splitter = path.contains("http://") ? Splitter.onPattern("\\/(?=http)") : Splitter.on("/");
+        return splitter.omitEmptyStrings()
+                       .splitToList(path);
     }
 
     private Function<Map.Entry<String, TargetMapping>, String> getParameterName() {
@@ -148,11 +162,18 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
                          .toLowerCase();
     }
 
+    private Function<Map.Entry<String, TargetMapping>, String> getParameterValue() {
+        return mapping -> mapping.getValue()
+                         .getName()
+                         .replaceAll("\\[\\w+\\]", "")
+                         .toLowerCase();
+    }
+
     private Predicate<Map.Entry<String, TargetMapping>> isFilterable(boolean withoutSpatialAndTemporal) {
         return mapping -> ((Wfs3GenericMapping) mapping.getValue()).isFilterable() &&
                 (mapping.getValue()
-                        .getName() != null || mapping.getValue()
-                                                     .isSpatial()) &&
+                        .getName() != null /*TODO default name for GML geometries|| mapping.getValue()
+                                                     .isSpatial()*/) &&
                 mapping.getValue()
                        .isEnabled() &&
                 (!withoutSpatialAndTemporal || (!mapping.getValue()

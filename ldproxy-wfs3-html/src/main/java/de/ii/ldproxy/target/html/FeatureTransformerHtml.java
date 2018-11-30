@@ -609,6 +609,8 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
     public void onGeometryStart(TargetMapping mapping, SimpleFeatureGeometry type, Integer dimension) throws Exception {
         if (Objects.isNull(mapping)) return;
 
+        dataset.hideMap = false;
+
         final MicrodataGeometryMapping geometryMapping = (MicrodataGeometryMapping) mapping;
         if (isFeatureCollection && !((MicrodataGeometryMapping) mapping).isShowInCollection()) return;
 

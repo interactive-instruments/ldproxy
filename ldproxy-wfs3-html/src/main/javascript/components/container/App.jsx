@@ -9,6 +9,7 @@ import moment from 'moment';
 import LeafletBboxSelect from '../presentational/LeafletBboxSelect';
 import FieldFilter from '../presentational/FieldFilter';
 import BboxFilter from '../presentational/BboxFilter';
+import SpatialFilter from '../presentational/SpatialFilter';
 import FilterBadge from '../presentational/FilterBadge';
 import TimeFilter, { toTimeLabel } from '../presentational/TimeFilter';
 
@@ -20,6 +21,8 @@ export default class App extends Component {
         super(props);
 
         const {fields} = window['_ldproxy'];
+
+        const spatial = {locality: '', street: '', number: ''}
 
         const query = qs.parse(window.location.search, {
             ignoreQueryPrefix: true
@@ -36,10 +39,19 @@ export default class App extends Component {
             return filters;
         }, {})
 
+        const spatialSearch = Object.keys(spatial).reduce((filters, field) => {
+                    if (query[field]) {
+                        filters[field] = query[field]
+                    }
+                    return filters;
+                }, {})
+
         this.state = {
             isOpen: false,
             isShown: false,
-            filters: filters
+            filters: filters,
+            spatialSearch: spatialSearch,
+            spatial: spatial
         };
     }
 
@@ -57,6 +69,24 @@ export default class App extends Component {
                 }
             })
         }
+    }
+
+    _applySpatial = (spatial) => {
+        const spatialFields = {locality: '', street: '', number: ''}
+
+        const query = qs.parse(window.location.search, {
+            ignoreQueryPrefix: true
+        });
+        Object.keys(spatialFields).forEach(field => {
+            delete query[field];
+            if (spatial[field] && spatial[field] !== '') {
+                query[field] = spatial[field];
+            }
+        })
+
+        window.location.search = qs.stringify(query, {
+            addQueryPrefix: true
+        });
     }
 
     _apply = () => {
@@ -169,8 +199,20 @@ export default class App extends Component {
         const {field, value, filters, isOpen, isShown, lat, lng, zoom, bbox} = this.state;
         const {fields, map, time} = window['_ldproxy'];
 
+        const {spatial,spatialSearch} = this.state;
+
         return (
             <div>
+                <Row className="mb-1">
+                    <Col md="12" className="d-flex flex-row justify-content-start align-items-center flex-wrap">
+                    <span className="font-weight-bold">Räumliche Suche</span>
+                    </Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col md="12" className="d-flex flex-row justify-content-start align-items-center flex-wrap">
+                    <SpatialFilter onChange={this._applySpatial} {...spatialSearch}/>
+                    </Col>
+                </Row>
                 <Row className="mb-3">
                     <Col md="3" className="d-flex flex-row justify-content-start align-items-center flex-wrap">
                     <span className="mr-2 font-weight-bold" onClick={ this._toggle }>Filter</span>

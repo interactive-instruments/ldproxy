@@ -102,6 +102,11 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
     }
 
     @Override
+    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+        //TODO if NESTED_OBJECT -> write to buffer until onFeatureEnd, somehow catch id and save to map
+    }
+
+    @Override
     public void onProperty(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (!transformationContext.getState()
                                   .getCurrentMapping()
@@ -138,13 +143,16 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                                  .writeObjectFieldStart("properties");
         }
 
+        //TODO if REFERENCE and EMBED
+        // - extract id, write buffer from map
+
 
         writePropertyName(json, currentMapping.getName(), multiplicities, nestedObjectStrategy);
 
 
         if (currentMapping.getType() == GEO_JSON_TYPE.STRING && currentMapping.getFormat() != null && !currentMapping.getFormat()
                                                                                                                      .isEmpty()) {
-
+            //TODO serviceUrl to StringTemplateFilters, additionalSubstitutions
             boolean more = false;
             String formattedValue = "";
             if (currentFormatter == null) {

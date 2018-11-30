@@ -25,6 +25,8 @@ public class Wfs3GenericMapping extends AbstractWfs3GenericMapping<Wfs3GenericMa
         TEMPORAL(GML_TYPE.DATE, GML_TYPE.DATE_TIME),
         SPATIAL(),
         REFERENCE(),
+        OBJECT(),
+        NESTED_OBJECT(),
         NONE(GML_TYPE.NONE);
 
         private GML_TYPE[] gmlTypes;

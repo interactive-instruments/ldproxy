@@ -24,4 +24,6 @@ public interface Wfs3ExtensionRegistry {
     List<Wfs3EndpointExtension> getEndpoints();
 
     List<Wfs3StartupTask> getStartupTasks();
+
+    List<Wfs3ParameterExtension> getWfs3Parameters();
 }

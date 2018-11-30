@@ -453,7 +453,7 @@ class VectorTile {
         if (uriInfo != null) {
             MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 
-            List<String> propertiesList = Wfs3EndpointCore.getPropertiesList(queryParameters);
+            List<String> propertiesList = Wfs3EndpointCore.getPropertiesList(queryParameters.getFirst("properties"));
 
             queryBuilder = ImmutableFeatureQuery.builder()
                                                 .type(collectionId)

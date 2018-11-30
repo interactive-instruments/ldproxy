@@ -1,13 +1,15 @@
 /**
  * Copyright 2018 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.wfs3.core;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.api.Wfs3Collection;
 import de.ii.ldproxy.wfs3.api.Wfs3Collections;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
@@ -15,6 +17,7 @@ import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3Service2;
 import de.ii.xtraplatform.auth.api.User;
@@ -43,7 +46,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.lang.reflect.Array;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -66,10 +68,15 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     private Wfs3Core wfs3Core;
 
     private final Map<Wfs3MediaType, Wfs3OutputFormatExtension> wfs3OutputFormats;
+    private final List<Wfs3ParameterExtension> wfs3ParameterExtensions;
+    private final Wfs3ExtensionRegistry wfs3ExtensionRegistry;
 
     public Wfs3EndpointCore(@Requires Wfs3ExtensionRegistry wfs3ExtensionRegistry) {
+        this.wfs3ExtensionRegistry = wfs3ExtensionRegistry;
         this.wfs3OutputFormats = wfs3ExtensionRegistry.getOutputFormats();
+        this.wfs3ParameterExtensions = wfs3ExtensionRegistry.getWfs3Parameters();
     }
+
 
     @Override
     public String getPath() {
@@ -134,7 +141,7 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     public Response getItem(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @PathParam("featureid") final String featureId, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context UriInfo uriInfo) {
         checkAuthorization(((Wfs3Service2) service).getData(), optionalUser);
 
-        List<String> propertiesList = getPropertiesList(uriInfo.getQueryParameters());
+        List<String> propertiesList = getPropertiesList(uriInfo.getQueryParameters().getFirst("properties"));
 
         ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                           .type(id)
@@ -159,14 +166,22 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
         return ((Wfs3Service2) service).getItemsResponse(wfs3Request, id, queryBuilder.build());
     }
 
+    //TODO Wfs3Query class for parsing request and creating FeatureQuery
     private FeatureQuery getFeatureQuery(Wfs3Service2 service, String featureType, String range, String crs, String bboxCrs, String maxAllowableOffset, MultivaluedMap<String, String> queryParameters, boolean hitsOnly) {
+
         final Map<String, String> filterableFields = service.getData()
                                                             .getFilterableFieldsForFeatureType(featureType);
-        final Map<String, String> filters = getFiltersFromQuery(queryParameters, filterableFields);
 
-        List<String> propertiesList = getPropertiesList(queryParameters);
+        Map<String, String> parameters = toFlatMap(queryParameters);
+
+        for (Wfs3ParameterExtension parameterExtension : wfs3ExtensionRegistry.getWfs3Parameters()) {
+            parameters = parameterExtension.transformParameters(service.getData().getFeatureTypes().get(featureType), parameters);
+        }
 
 
+        final Map<String, String> filters = getFiltersFromQuery(parameters, filterableFields);
+
+        List<String> propertiesList = getPropertiesList(parameters.get("properties"));
 
 
         final int[] countFrom = RangeHeader.parseRange(range);
@@ -178,11 +193,17 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
                                                                                 .hitsOnly(hitsOnly)
                                                                                 .fields(propertiesList);
 
+        wfs3ExtensionRegistry.getWfs3Parameters().forEach(parameterExtension -> {
+            parameterExtension.transformQuery(service.getData().getFeatureTypes().get(featureType), queryBuilder);
+        });
+
+        //TODO to extension
         if (Objects.nonNull(crs) && !isDefaultCrs(crs)) {
             EpsgCrs targetCrs = new EpsgCrs(crs);
             queryBuilder.crs(targetCrs);
         }
 
+        //TODO to extension
         if (Objects.nonNull(maxAllowableOffset)) {
             try {
                 queryBuilder.maxAllowableOffset(Double.valueOf(maxAllowableOffset));
@@ -202,17 +223,26 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
         return queryBuilder.build();
     }
 
+    public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
+        return queryParameters.entrySet()
+                                                              .stream()
+                                                              .map(entry -> {
+                                                                  return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue().isEmpty() ? "" : entry.getValue().get(0));
+                                                              })
+                                                              .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
     private boolean isDefaultCrs(String crs) {
         return Objects.equals(crs, DEFAULT_CRS_URI);
     }
 
-    public static Map<String, String> getFiltersFromQuery(MultivaluedMap<String, String> query, Map<String, String> filterableFields) {
+    public static Map<String, String> getFiltersFromQuery(Map<String, String> query, Map<String, String> filterableFields) {
 
         Map<String, String> filters = new LinkedHashMap<>();
 
         for (String filterKey : query.keySet()) {
             if (filterableFields.containsKey(filterKey.toLowerCase())) {
-                String filterValue = query.getFirst(filterKey);
+                String filterValue = query.get(filterKey);
                 filters.put(filterKey.toLowerCase(), filterValue);
             }
         }
@@ -273,20 +303,11 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
                                 .toArray(Wfs3MediaType[]::new);
     }
 
-    public static List<String> getPropertiesList(MultivaluedMap<String, String> queryParameters){
-        List propertiesList = new ArrayList();
-        if(queryParameters.containsKey("properties")){
-            String propertiesString=queryParameters.get("properties").toString();
-            propertiesString=propertiesString.substring(1,propertiesString.length()-1);
-            String [] parts =propertiesString.split(",");
-            for (String part : parts){
-                propertiesList.add(part);
-            }
+    public static List<String> getPropertiesList(String properties) {
+       if (Objects.nonNull(properties)) {
+            return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(properties);
+        } else {
+            return ImmutableList.of("*");
         }
-        else{
-            propertiesList.add("*");
-        }
-        return propertiesList;
-
     }
 }

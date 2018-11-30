@@ -41,12 +41,12 @@ dependencies {
 
     bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.5'
 
-    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.4') {
+    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.5') {
         // TODO
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
 
-    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.27'
+    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.28'
 
     // activate for access to the Apache Felix console at /system/console
      bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.1'
