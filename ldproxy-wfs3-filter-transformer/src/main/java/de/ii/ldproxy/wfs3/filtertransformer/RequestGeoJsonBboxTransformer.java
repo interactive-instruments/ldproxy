@@ -82,7 +82,8 @@ public class RequestGeoJsonBboxTransformer implements FilterTransformer {
         GeoJsonReader geoJsonReader = new GeoJsonReader();
         Geometry geometry = geoJsonReader.read(response.toString());
         Envelope envelope = geometry.getEnvelopeInternal();
-        envelope.expandBy(0.001);
+        //TODO bufferInMeters
+        envelope.expandBy(0.0001);
 
         String bbox = String.format(Locale.US, "%f,%f,%f,%f", envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
 
