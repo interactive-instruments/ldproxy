@@ -18,6 +18,8 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -96,7 +98,7 @@ public class RequestGeoJsonBboxTransformer implements FilterTransformer {
 
         for (String parameter : configuration.getParameters()) {
             if (resolvableParameters.containsKey(parameter)) {
-                url = url.replaceAll("\\{\\{" + parameter + "}}", resolvableParameters.get(parameter));
+                url = url.replaceAll("\\{\\{" + parameter + "}}", URLEncoder.encode(resolvableParameters.get(parameter)));
             } else {
                 url = url.replaceAll("\\{\\{" + parameter + "}}", "''");
             }
