@@ -231,6 +231,7 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                                                           })
                                                           .collect(Collectors.toSet());
         featureTypeDataset.uriBuilder = uriBuilder;
+        featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
 
         return featureTypeDataset;
     }
@@ -270,6 +271,8 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                                                                                    .toUpperCase()))
                                           .map(wfs3Link -> new NavigationDTO(wfs3Link.getTypeLabel(), wfs3Link.getHref()))
                                           .collect(Collectors.toList());
+
+        featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
 
         /*new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("GeoJson", "f=json"))
