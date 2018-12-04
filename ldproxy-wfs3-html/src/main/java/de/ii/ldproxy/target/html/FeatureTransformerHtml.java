@@ -620,10 +620,12 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         }
 
         coordinatesOutput = new StringWriter();
-        coordinatesWriter = new HtmlTransformingCoordinatesWriter(coordinatesOutput, Objects.nonNull(dimension) ? dimension : 2, crsTransformer);
+        //coordinatesWriter = new HtmlTransformingCoordinatesWriter(coordinatesOutput, Objects.nonNull(dimension) ? dimension : 2, crsTransformer);
 
-        // for relations
+        // for around-relations
         this.cwBuilder = CoordinatesWriterType.builder();
+
+        cwBuilder.format(new MicrodataCoordinatesFormatter(coordinatesOutput));
 
         if (transformationContext.getCrsTransformer()
                                  .isPresent()) {
@@ -634,6 +636,8 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         if (dimension != null) {
             cwBuilder.dimension(dimension);
         }
+
+        coordinatesWriter = cwBuilder.build();
 
 
         currentGeometryParts = 0;

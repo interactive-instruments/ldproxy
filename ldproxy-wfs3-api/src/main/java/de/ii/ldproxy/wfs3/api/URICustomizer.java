@@ -233,4 +233,11 @@ public class URICustomizer extends URIBuilder {
         }
         return this;
     }
+
+    public URICustomizer ensureNoTrailingSlash() {
+        if (this.getPath().endsWith("/")) {
+            this.setPath(this.getPath().substring(0,getPath().length()-1));
+        }
+        return this;
+    }
 }

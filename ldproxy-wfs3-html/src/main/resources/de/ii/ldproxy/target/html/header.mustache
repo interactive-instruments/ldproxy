@@ -12,6 +12,13 @@
     {{/keywords}}
     <link rel="shortcut icon" type="image/x-icon" href="{{urlPrefix}}/app/img/favicon.ico">
 
+    {{#canonicalUrl}}
+    <link rel="canonical" href="{{.}}"/>
+    {{/canonicalUrl}}
+    {{^canonicalUrl}}
+    <meta name="robots" content="noindex">
+    {{/canonicalUrl}}
+
     {{#metaPagination}}
         {{#url}}
             <link rel="{{label}}" href="{{path}}{{#queryWithout}}page,startindex{{/queryWithout}}{{.}}"/>

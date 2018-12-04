@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
@@ -28,6 +27,8 @@ public abstract class Wfs3ServiceMetadata {
     public abstract Optional<String> getContactUrl();
 
     public abstract Optional<String> getContactEmail();
+
+    public abstract Optional<String> getContactPhone();
 
     public abstract Optional<String> getLicenseName();
 

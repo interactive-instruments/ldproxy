@@ -1,21 +1,31 @@
 {{> header}}
 
-<ul class="list-unstyled space-after">
-    {{#data}}
-    {{#uri}}
-    <li itemscope itemtype="http://schema.org/Dataset">
-        <h1>
-            <a itemprop="url" href="{{path}}{{id}}">
-                <span itemprop="name">{{label}}</span>
-            </a>
-        </h1>
-        <span itemprop="description">{{{description}}}</span>
-    </li>
-    {{/uri}}
-    {{/data}}
-    {{^data}}
-    <li>None</li>
-    {{/data}}
-</ul>
+<div itemscope itemtype="http://schema.org/DataCatalog">
+    <h1 itemprop="name">{{title}}</h1>
+    <p itemprop="description">{{description}}</p>
+    <p itemprop="url" class="d-none">{{canonicalUrl}}</p>
+    <br/>
+    <br/>
+    <br/>
+
+    <ul class="list-unstyled space-after">
+        {{#data}}
+        {{#uri}}
+        <li itemprop="dataset" itemscope itemtype="http://schema.org/Dataset">
+            <h2>
+                <a itemprop="url" href="{{path}}{{id}}">
+                    <span itemprop="name">{{label}}</span>
+                </a>
+            </h2>
+            <span itemprop="description">{{{description}}}</span>
+        </li>
+        {{/uri}}
+        {{/data}}
+        {{^data}}
+        <li>None</li>
+        {{/data}}
+    </ul>
+
+</div>
 
 {{> footer}}
