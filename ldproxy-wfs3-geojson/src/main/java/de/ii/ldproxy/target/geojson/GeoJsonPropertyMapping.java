@@ -27,6 +27,8 @@ public class GeoJsonPropertyMapping extends AbstractWfs3GenericMapping<GeoJsonMa
         this.type = mapping.type;
         this.format = mapping.format;
         this.codelist = mapping.codelist;
+        //TODO
+        this.baseMapping = mapping.baseMapping;
     }
 
     @Override
@@ -45,6 +47,8 @@ public class GeoJsonPropertyMapping extends AbstractWfs3GenericMapping<GeoJsonMa
 
     @Override
     public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        super.mergeCopyWithBase(targetMapping);
+
         GeoJsonPropertyMapping copy = new GeoJsonPropertyMapping(this);
         Wfs3GenericMapping baseMapping = (Wfs3GenericMapping) targetMapping;
 

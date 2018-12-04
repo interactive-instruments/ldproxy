@@ -35,6 +35,9 @@ public class MicrodataPropertyMapping extends AbstractWfs3GenericMapping<Microda
         this.sparqlQuery = mapping.sparqlQuery;
         this.format = mapping.format;
         this.codelist = mapping.codelist;
+
+        //TODO
+        this.baseMapping = mapping.baseMapping;
     }
 
     @Override
@@ -89,6 +92,8 @@ public class MicrodataPropertyMapping extends AbstractWfs3GenericMapping<Microda
 
     @Override
     public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        super.mergeCopyWithBase(targetMapping);
+
         MicrodataPropertyMapping copy = new MicrodataPropertyMapping(this);
         Wfs3GenericMapping baseMapping = (Wfs3GenericMapping) targetMapping;
 

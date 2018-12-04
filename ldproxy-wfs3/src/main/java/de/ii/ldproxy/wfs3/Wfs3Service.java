@@ -263,9 +263,6 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
                                                                                       .get());
         } else if (wfs3OutputFormats.get(wfs3Request.getMediaType())
                                     .canTransformFeatures()) {
-
-            //TODO
-            //FeatureStream<FeatureTransformer> featureTransformStream = getFeatureProvider().getFeatureTransformStream(query, ImmutableMap.of(new QName("http://inspire.ec.europa.eu/schemas/ad/4.0", "AdminUnitName"), ImmutableList.of("http://inspire.ec.europa.eu/schemas/ad/4.0:component", "http://inspire.ec.europa.eu/schemas/ad/4.0:AdminUnitName")));
             FeatureStream<FeatureTransformer> featureTransformStream = getFeatureProvider().getFeatureTransformStream(query);
 
             streamingOutput = stream(featureTransformStream, outputStream -> wfs3OutputFormats.get(wfs3Request.getMediaType())

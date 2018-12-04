@@ -12,6 +12,7 @@ import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_TYPE;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author zahnen
@@ -25,8 +26,7 @@ public class Wfs3GenericMapping extends AbstractWfs3GenericMapping<Wfs3GenericMa
         TEMPORAL(GML_TYPE.DATE, GML_TYPE.DATE_TIME),
         SPATIAL(),
         REFERENCE(),
-        OBJECT(),
-        NESTED_OBJECT(),
+        REFERENCE_EMBEDDED(),
         NONE(GML_TYPE.NONE);
 
         private GML_TYPE[] gmlTypes;
@@ -62,22 +62,6 @@ public class Wfs3GenericMapping extends AbstractWfs3GenericMapping<Wfs3GenericMa
         this.type = type;
     }
 
-
-    private List<String> referencedTypes;
-
-    public List<String> getReferencedTypes() {
-        return referencedTypes;
-    }
-
-    public void setReferencedTypes(List<String> referencedTypes) {
-        this.referencedTypes = referencedTypes;
-    }
-
-    @Override
-    public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
-        return this;
-    }
-
     @JsonIgnore
     public boolean isId() {
         return type == GENERIC_TYPE.ID;
@@ -103,5 +87,8 @@ public class Wfs3GenericMapping extends AbstractWfs3GenericMapping<Wfs3GenericMa
         return type == GENERIC_TYPE.REFERENCE;
     }
 
-
+    @Override
+    public boolean isReferenceEmbed() {
+        return type == GENERIC_TYPE.REFERENCE_EMBEDDED;
+    }
 }

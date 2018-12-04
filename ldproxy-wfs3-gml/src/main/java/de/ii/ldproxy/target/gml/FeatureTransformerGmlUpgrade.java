@@ -190,7 +190,7 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
     }
 
     @Override
-    public void onGmlAttribute(String namespace, String localName, List<String> path, String value) throws Exception {
+    public void onGmlAttribute(String namespace, String localName, List<String> path, String value, List<Integer> multiplicities) throws Exception {
         LOGGER.debug("ATTR {} {} {}", path, localName, value);
 
         String newValue = value;

@@ -102,6 +102,8 @@ public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
 
     @Override
     public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        super.mergeCopyWithBase(targetMapping);
+
         MicrodataGeometryMapping copy = new MicrodataGeometryMapping(this);
         Wfs3GenericMapping baseMapping = (Wfs3GenericMapping) targetMapping;
 

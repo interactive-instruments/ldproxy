@@ -125,6 +125,8 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
 
     @Override
     public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        super.mergeCopyWithBase(targetMapping);
+
         GeoJsonGeometryMapping copy = new GeoJsonGeometryMapping(this);
         Wfs3GenericMapping baseMapping = (Wfs3GenericMapping) targetMapping;
 

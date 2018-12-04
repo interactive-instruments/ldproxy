@@ -105,7 +105,7 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
                                   .entrySet()
                                   .stream()
                                   .filter(isFilterable(withoutSpatialAndTemporal))
-                                  .collect(Collectors.toMap(getParameterName(), getParameterValue()));
+                                  .collect(Collectors.toMap(getParameterName(), getParameterValue(), (key1,key2) -> key1));
     }
 
     //TODO: move to html module
