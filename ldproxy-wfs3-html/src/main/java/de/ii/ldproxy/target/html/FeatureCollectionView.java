@@ -48,6 +48,7 @@ public class FeatureCollectionView extends DatasetView {
     public boolean bare;
     public List<FeaturePropertyDTO> additionalFeatures;
     public boolean isCollection;
+    public boolean spatialSearch;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String urlPrefix, HtmlConfig htmlConfig) {
         super(template, uri, name, title, urlPrefix, htmlConfig);

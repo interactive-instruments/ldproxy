@@ -233,6 +233,9 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
         featureTypeDataset.uriBuilder = uriBuilder;
         featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
 
+        //TODO
+        featureTypeDataset.spatialSearch = featureType.getExtensions().containsKey("filterTransformer");
+
         return featureTypeDataset;
     }
 

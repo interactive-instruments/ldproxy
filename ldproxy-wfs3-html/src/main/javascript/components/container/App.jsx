@@ -198,12 +198,13 @@ export default class App extends Component {
 
     render() {
         const {field, value, filters, isOpen, isShown, lat, lng, zoom, bbox} = this.state;
-        const {fields, map, time} = window['_ldproxy'];
+        const {fields, map, time, extensions} = window['_ldproxy'];
 
         const {spatial,spatialSearch} = this.state;
 
         return (
-            <div>
+        <div>
+            { extensions && extensions.spatialSearch && <div>
                 <Row className="mb-1">
                     <Col md="12" className="d-flex flex-row justify-content-start align-items-center flex-wrap">
                     <span className="font-weight-bold">Räumliche Suche</span>
@@ -214,6 +215,8 @@ export default class App extends Component {
                     <SpatialFilter onChange={this._applySpatial} {...spatialSearch}/>
                     </Col>
                 </Row>
+            </div>}
+            <div>
                 <Row className="mb-3">
                     <Col md="3" className="d-flex flex-row justify-content-start align-items-center flex-wrap">
                     <span className="mr-2 font-weight-bold" onClick={ this._toggle }>Filter</span>
@@ -265,6 +268,7 @@ export default class App extends Component {
                         </Col>
                     </Row>
                 </Collapse>
+            </div>
             </div>
         );
     }
