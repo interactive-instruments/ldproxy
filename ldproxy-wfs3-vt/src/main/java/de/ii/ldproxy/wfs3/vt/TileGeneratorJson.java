@@ -145,7 +145,7 @@ public class TileGeneratorJson {
                     .label("MVT")
                     .build();
             final VectorTilesLinkGenerator vectorTilesLinkGenerator= new VectorTilesLinkGenerator();
-            wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), tile.checkFormat(serviceData, collectionId, Wfs3MediaTypes.MVT, true), tile.checkFormat(serviceData, collectionId, Wfs3MediaTypes.JSON, true));
+            wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(VectorTileMapGenerator.getFormatsMap(serviceData), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(VectorTileMapGenerator.getFormatsMap(serviceData), collectionId, Wfs3MediaTypes.JSON, true));
         }
 
 
@@ -243,7 +243,7 @@ public class TileGeneratorJson {
                     .label("MVT")
                     .build();
             final VectorTilesLinkGenerator vectorTilesLinkGenerator= new VectorTilesLinkGenerator();
-            wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(service.getData(), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(service.getData(), collectionId, Wfs3MediaTypes.JSON, true));
+            wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(VectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(VectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, Wfs3MediaTypes.JSON, true));
         }
 
         FeatureTransformationContext transformationContext = ImmutableFeatureTransformationContextGeneric.builder()

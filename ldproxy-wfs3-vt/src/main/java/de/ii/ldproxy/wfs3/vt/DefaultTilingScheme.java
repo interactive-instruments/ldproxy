@@ -56,7 +56,7 @@ public class DefaultTilingScheme implements TilingScheme {
      * @param level the zoom level
      * @param row the row number
      * @param col the column number
-     * @return the bounding box of th tiling scheme in the coordinate reference system EPSG 3857
+     * @return the bounding box of the tiling scheme in the coordinate reference system EPSG 3857
      */
     @Override
     public BoundingBox getBoundingBox(int level, int col, int row) {

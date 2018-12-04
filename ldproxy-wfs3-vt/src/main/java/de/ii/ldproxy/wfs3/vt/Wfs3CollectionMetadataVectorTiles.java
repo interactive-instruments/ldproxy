@@ -7,8 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import afu.org.checkerframework.checker.oigj.qual.O;
-import com.google.common.collect.ImmutableMap;
+
 import de.ii.ldproxy.wfs3.api.*;
 import de.ii.ldproxy.wfs3.core.Wfs3CollectionMetadataExtension;
 import org.apache.felix.ipojo.annotations.Component;
@@ -19,8 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 
 /**
  * add tiling information to the collection metadata (supported tiling schemes, links)

@@ -1,6 +1,5 @@
 package de.ii.ldproxy.wfs3.vt;
 
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.api.*;
 import de.ii.ldproxy.wfs3.core.Wfs3DatasetMetadataExtension;
 import org.apache.felix.ipojo.annotations.Component;
