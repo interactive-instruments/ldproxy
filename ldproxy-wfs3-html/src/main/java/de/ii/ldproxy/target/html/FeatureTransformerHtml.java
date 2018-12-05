@@ -55,6 +55,7 @@ import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMayThrow;
 
@@ -327,6 +328,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         if (!isFeatureCollection && aroundRelationsQuery.isReady()) {
 
             boolean[] started = {false};
+            int[] index = {0};
 
             aroundRelationsQuery.getQueries()
                                 .forEach(consumerMayThrow(query -> {
@@ -346,7 +348,18 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                                                                                     .apply("limit,offset");
 
                                             //TODO multiple relations
-                                            featurePropertyDTO.value = resolved.replaceAll("<a class=\"page-link\" href=\".*(&limit(?:=|(?:&#61;))[0-9]+)(?:.*(&offset(?:=|(?:&#61;))[0-9]+))?.*\">", "<a class=\"page-link\" href=\"" + url.substring(0, url.length() - 1) + "$1$2\">");
+                                            featurePropertyDTO.value = resolved.replaceAll("<a class=\"page-link\" href=\".*(&limit(?:=|(?:&#61;))[0-9]+)(?:.*?((?:&|&amp;)offset(?:=|(?:&#61;))[0-9]+))?.*\">", "<a class=\"page-link\" href=\"" + url.substring(0, url.length() - 1) + "$1$2\">");
+
+                                            if (index[0] > 0) {
+                                                String limits = IntStream.range(0, index[0])
+                                                                         .mapToObj(i -> "5")
+                                                                         .collect(Collectors.joining(",", "", ","));
+                                                String offsets = IntStream.range(0, index[0])
+                                                                          .mapToObj(i -> "0")
+                                                                          .collect(Collectors.joining(",", "", ","));
+                                                featurePropertyDTO.value = featurePropertyDTO.value.replaceAll("limit(?:=|(?:&#61;))([0-9]+)", "limit=" + limits + "$1");
+                                                featurePropertyDTO.value = featurePropertyDTO.value.replaceAll("offset(?:=|(?:&#61;))([0-9]+)", "offset=" + offsets + "$1");
+                                            }
                                         } else {
                                             featurePropertyDTO.value = "Keine";
                                         }
@@ -355,6 +368,8 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
 
                                         featurePropertyDTO.value = "<a href=\"" + url + "\" target=\"_blank\">Öffnen</a>";
                                     }
+
+                                    index[0]++;
                                 }));
         }
     }

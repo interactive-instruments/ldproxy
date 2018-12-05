@@ -98,6 +98,8 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
             Wfs3GenericMapping targetMapping = new Wfs3GenericMapping();
             targetMapping.setEnabled(true);
             targetMapping.setType(GENERIC_TYPE.SPATIAL);
+            //TODO needed for reverse filter lookup
+            targetMapping.setName("geometry");
 
             if (!hasSpatialField) {
                 targetMapping.setFilterable(true);
