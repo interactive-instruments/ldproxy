@@ -10,14 +10,28 @@ package de.ii.ldproxy.wfs3.vt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import de.ii.ldproxy.wfs3.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ldproxy.wfs3.ImmutableWfs3RequestContextImpl;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.*;
-import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
-import de.ii.xtraplatform.crs.api.*;
+import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
+import de.ii.ldproxy.wfs3.api.FeatureTypeTiles;
+import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
+import de.ii.ldproxy.wfs3.api.URICustomizer;
+import de.ii.ldproxy.wfs3.api.Wfs3Link;
+import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
+import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
+import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.query.api.FeatureStream;
 import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
@@ -38,11 +52,27 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
@@ -453,7 +483,7 @@ class VectorTile {
         if (uriInfo != null) {
             MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 
-            List<String> propertiesList = Wfs3EndpointCore.getPropertiesList(queryParameters.getFirst("properties"));
+            List<String> propertiesList = getPropertiesList(queryParameters.getFirst("properties"));
 
             queryBuilder = ImmutableFeatureQuery.builder()
                                                 .type(collectionId)
@@ -834,6 +864,13 @@ class VectorTile {
         return false;
     }
 
+    private List<String> getPropertiesList(String properties) {
+        if (Objects.nonNull(properties)) {
+            return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(properties);
+        } else {
+            return ImmutableList.of("*");
+        }
+    }
 
 }
 

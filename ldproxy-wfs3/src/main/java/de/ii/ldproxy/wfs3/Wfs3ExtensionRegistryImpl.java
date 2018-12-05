@@ -9,9 +9,9 @@ package de.ii.ldproxy.wfs3;
 
 import com.google.common.collect.Lists;
 import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
+import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3Extension;
 import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -173,5 +174,13 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
                 wfs3Parameters.remove(wfs3Extension);
             }
         }
+    }
+
+    @Override
+    public <T extends Wfs3Extension> List<T> getExtensionsForType(Class<T> extensionType) {
+        return getExtensions().stream()
+                                    .filter(wfs3Extension -> extensionType.isAssignableFrom(wfs3Extension.getClass()))
+                                    .map(extensionType::cast)
+                                    .collect(Collectors.toList());
     }
 }

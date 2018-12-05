@@ -32,11 +32,6 @@ public class Wfs3ParameterFilterTransformer implements Wfs3ParameterExtension {
     private AkkaHttp akkaHttp;
 
     @Override
-    public Map<String, String> getParameters() {
-        return null;
-    }
-
-    @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters) {
 
         if (featureTypeConfigurationWfs3.getExtensions()
@@ -58,10 +53,5 @@ public class Wfs3ParameterFilterTransformer implements Wfs3ParameterExtension {
             return nextParameters;
         }
         return parameters;
-    }
-
-    @Override
-    public void transformQuery(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, ImmutableFeatureQuery.Builder queryBuilder) {
-
     }
 }

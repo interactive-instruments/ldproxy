@@ -26,4 +26,6 @@ public interface Wfs3ExtensionRegistry {
     List<Wfs3StartupTask> getStartupTasks();
 
     List<Wfs3ParameterExtension> getWfs3Parameters();
+
+    <T extends Wfs3Extension> List<T> getExtensionsForType(Class<T> extensionType);
 }
