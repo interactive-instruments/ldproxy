@@ -469,6 +469,20 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         return minMax;
     }
 
+    /**
+     * Method to convert a specific tile into a bounding box in a desired CRS
+     *
+     * @param crsTransformation     the coordinate reference system transformation object to transform coordinates
+     * @param tilingScheme          the id of the tiling Scheme of the tile you want to convert
+     * @param zoomLevel             the zoom level of the tile you want to convert
+     * @param col                   the zoom col of the tile you want to convert
+     * @param row                   the zoom row of the tile you want to convert
+     * @param x                     x value or y value
+     * @param min                   min is bottom left corner, max is upper right corner
+     * @param targetCrs             the desired crs the values should be in
+     * @return a x or y value of a bounding box corner in the desired CRS
+     * @throws CrsTransformationException
+     */
     public static double getBoundingBoxCornerValue(CrsTransformation crsTransformation, TilingScheme tilingScheme, int zoomLevel, int col, int row, boolean x, boolean min,EpsgCrs targetCrs)throws CrsTransformationException{
         double cornerValue=0;
 
