@@ -104,6 +104,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
     private FeaturePropertyDTO currentGeometryPart;
     private int currentGeometryParts;
     private String currentFormatter;
+    private boolean currentGeometryWritten;
 
     private AroundRelationsQuery aroundRelationsQuery;
 
@@ -716,10 +717,11 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                 break;
             case LINE_STRING:
             case POLYGON:
-                if (currentGeometryParts == 1) {
+                if (!currentGeometryWritten) {
                     try {
                         coordinatesWriter.append(text);
                         coordinatesWriter.close();
+                        currentGeometryWritten = true;
                     } catch (IOException ex) {
                         // ignore
                     }
@@ -750,6 +752,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         }
 
         currentGeometryType = null;
+        currentGeometryWritten = false;
     }
 
     @Override
