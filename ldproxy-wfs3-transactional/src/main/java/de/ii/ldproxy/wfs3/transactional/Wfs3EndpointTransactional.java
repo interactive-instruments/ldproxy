@@ -48,6 +48,11 @@ public class Wfs3EndpointTransactional implements Wfs3EndpointExtension {
     }
 
     @Override
+    public String getSubPathRegex() {
+        return "^\\/(?:\\w+)\\/items\\/?.*$";
+    }
+
+    @Override
     public List<String> getMethods() {
         return ImmutableList.of("POST", "PUT", "DELETE");
     }

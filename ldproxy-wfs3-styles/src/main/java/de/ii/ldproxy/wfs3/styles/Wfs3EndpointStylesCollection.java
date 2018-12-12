@@ -44,7 +44,7 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
 
     @Override
     public String getPath() {
-        return "collection";
+        return "collections";
     }
 
     @Override
@@ -71,7 +71,7 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
     @Path("/{collectionId}/styles")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingSchemesCollection(@PathParam("collectionId") String collectionId, @Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException, KeyNotFoundException {
+    public Response getStylesCollection(@PathParam("collectionId") String collectionId, @Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException, KeyNotFoundException {
 
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(collectionId);
         List<String> keys = stylesStore.getKeys();
@@ -107,10 +107,10 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
      * @param styleId the local identifier of a specific style
      * @return the style in a json file
      */
-    @Path("{collectionId}/styles/{styleId}")
+    @Path("/{collectionId}/styles/{styleId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingScheme(@PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service) throws IOException, KeyNotFoundException {
+    public Response getStyle(@PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service) throws IOException, KeyNotFoundException {
 
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(collectionId);
         List<String> styles = stylesStore.getKeys();
