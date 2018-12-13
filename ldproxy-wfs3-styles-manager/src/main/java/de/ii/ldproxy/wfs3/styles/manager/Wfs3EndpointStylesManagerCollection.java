@@ -23,6 +23,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
+/**
+ * creates, updates and deletes a style from the collection
+ *
+ */
 @Component
 @Provides
 @Instantiate
@@ -60,12 +64,12 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(collectionId);
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
 
         List<String> styles = stylesStore.getKeys();
 
         Scanner s = new Scanner(requestBody).useDelimiter("\\A");
-        String requestBodyString = s.hasNext() ? s.next() : "";
+        String requestBodyString = s.hasNext() ? s.next() : ""; //TODO format string with \n
 
         if(!Wfs3EndpointStylesManager.validateRequestBody(requestBodyString))
             throw new BadRequestException();
@@ -89,7 +93,7 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(collectionId);
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
         List<String> styles = stylesStore.getKeys();
 
         Wfs3EndpointStylesManager.deleteProcess(stylesStore, styles, styleId);

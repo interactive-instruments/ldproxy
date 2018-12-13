@@ -6,7 +6,10 @@ import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3Link;
 
 import java.util.List;
-
+/**
+ * This class is responsible for generating the links to the styles.
+ *
+ */
 public class StylesLinkGenerator {
 
 

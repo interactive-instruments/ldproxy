@@ -30,9 +30,8 @@ import java.io.*;
 import java.util.*;
 
 /**
- * fetch tiling schemes / tile matrix sets that have been configured for this service
+ * fetch list of styles or a style for a collection
  *
- * @author portele
  */
 @Component
 @Provides
@@ -73,7 +72,7 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStylesCollection(@PathParam("collectionId") String collectionId, @Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException, KeyNotFoundException {
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(collectionId);
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
         List<String> keys = stylesStore.getKeys();
 
         List<Map<String,Object>> styles =new ArrayList<>();
@@ -112,7 +111,7 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStyle(@PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service) throws IOException, KeyNotFoundException {
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(collectionId);
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
         List<String> styles = stylesStore.getKeys();
 
         Map<String, Object> styleToDisplay = Wfs3EndpointStyles.getStyleToDisplay(stylesStore,styles,styleId);

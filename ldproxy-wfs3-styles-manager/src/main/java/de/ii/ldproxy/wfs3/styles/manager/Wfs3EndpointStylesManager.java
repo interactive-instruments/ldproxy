@@ -28,6 +28,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+/**
+ * creates, updates and deletes a style from the service
+ *
+ */
 @Component
 @Provides
 @Instantiate
@@ -59,7 +63,7 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles");
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
 
         List<String> styles = stylesStore.getKeys();
 
@@ -87,7 +91,7 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles");
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
         List<String> styles = stylesStore.getKeys();
 
         deleteProcess(stylesStore,styles,styleId);
@@ -95,12 +99,19 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
         return Response.noContent().build();
     }
 
-    public static void deleteProcess(KeyValueStore kvStore,List<String> styles,String styleId){
+    /**
+     * search for the style in the store and delete it
+     *
+     * @param stylesStore   the key value store
+     * @param styles        a list of all available Styles
+     * @param styleId       the id of the style, that should be deleted
+     */
+    public static void deleteProcess(KeyValueStore stylesStore,List<String> styles,String styleId){
         boolean styleFound=false;
         for(String style: styles){
             if(style.split("\\.")[0].equals(styleId)){
                 styleFound=true;
-                Transaction deleteTransaction = kvStore.openDeleteTransaction(style);
+                Transaction deleteTransaction = stylesStore.openDeleteTransaction(style);
                 try {
                     deleteTransaction.execute(); //TODO should throw exception
                     deleteTransaction.commit();
@@ -113,7 +124,7 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
                 }
             }
             //TODO workaround if delete process not successful
-            if(kvStore.containsKey(style)){
+            if(stylesStore.containsKey(style)){
                 throw new InternalError();
 
             }
@@ -123,13 +134,21 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
         }
     }
 
-    public static void putProcess(KeyValueStore stylesStore, List<String> styles, String styleId,String requestBody){
+    /**
+     * search for the style in the store and update it, or create a new one
+     *
+     * @param stylesStore   the key value store
+     * @param styles        a list of all available Styles
+     * @param styleId       the id of the style, that should be updated or created
+     * @param requestBodyString   the new Style as a String
+     */
+    public static void putProcess(KeyValueStore stylesStore, List<String> styles, String styleId,String requestBodyString){
         boolean styleFound=false;
         for(String style: styles){
             try {
                 if(style.split("\\.")[0].equals(styleId)){
                     WriteTransaction<String> transaction = stylesStore.openWriteTransaction(style);
-                    putTransaction(transaction,requestBody);
+                    putTransaction(transaction,requestBodyString);
                     styleFound=true;
                 }
             }catch(NullPointerException ignored){ }
@@ -137,23 +156,35 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
         }
         if(!styleFound){
             WriteTransaction<String> transaction = stylesStore.openWriteTransaction(styleId+".json");
-            putTransaction(transaction,requestBody);
+            putTransaction(transaction,requestBodyString);
         }
     }
 
-    public static void putTransaction(WriteTransaction<String> putTransaction,String requestBody){
+    /**
+     * a complete put transaction
+     *
+     * @param transaction    the write Transaction on the specific Style
+     * @param requestBodyString    the new Style as a String
+     */
+    public static void putTransaction(WriteTransaction<String> transaction, String requestBodyString){
         try {
-            putTransaction.write(requestBody);
-            putTransaction.execute();
-            putTransaction.commit();
+            transaction.write(requestBodyString);
+            transaction.execute();
+            transaction.commit();
         }catch(IOException e){
-            putTransaction.rollback();
+            transaction.rollback();
         }
         finally {
-            putTransaction.close();
+            transaction.close();
         }
     }
 
+    /**
+     * checks if the request body from the PUT-Request is valid
+     *
+     * @param requestBodyString     the new Style as a String
+     * @return true if json and content is valid
+     */
     public static boolean validateRequestBody(String requestBodyString){
 
         ObjectMapper objectMapper = new ObjectMapper();

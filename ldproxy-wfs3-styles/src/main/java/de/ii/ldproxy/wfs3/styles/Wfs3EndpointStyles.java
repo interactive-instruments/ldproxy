@@ -24,6 +24,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * fetch list of styles or a style for the service
+ *
+ */
 @Component
 @Provides
 @Instantiate
@@ -59,7 +63,7 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
 
         List<Map<String, Object>> styles = new ArrayList<>();
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles");
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
         List<String> keys = stylesStore.getKeys();
 
         for (String key : keys) {
@@ -99,7 +103,7 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStyle( @PathParam("styleId") String styleId, @Context Service service) throws IOException, KeyNotFoundException {
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles");
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
         List<String> styles = stylesStore.getKeys();
 
         Map<String, Object> styleToDisplay = getStyleToDisplay(stylesStore,styles,styleId);
