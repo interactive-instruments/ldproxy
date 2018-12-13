@@ -39,7 +39,7 @@ public class Wfs3CollectionMetadataStyles implements Wfs3CollectionMetadataExten
 
     @Override
     public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested) {
-
+/*
         final StylesLinkGenerator stylesLinkGenerator= new StylesLinkGenerator();
 
 
@@ -55,6 +55,7 @@ public class Wfs3CollectionMetadataStyles implements Wfs3CollectionMetadataExten
         wfs3StylesInCollections.put("links", stylesLinkGenerator.generateStylesLinksCollection(uriCustomizer,"daraa"));
         wfs3LinksList.add(wfs3StylesInCollections);
         collection.putExtensions("styles",wfs3LinksList);
+        */
 
         return collection;
     }
