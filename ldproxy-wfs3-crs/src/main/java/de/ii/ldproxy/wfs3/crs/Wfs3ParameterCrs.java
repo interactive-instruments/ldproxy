@@ -16,6 +16,7 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -36,7 +37,9 @@ public class Wfs3ParameterCrs implements Wfs3ParameterExtension {
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters) {
         if (parameters.containsKey(BBOX) && parameters.containsKey(BBOX_CRS) && !isDefaultCrs(parameters.get(BBOX_CRS))) {
-            return ImmutableMap.<String,String>builder().putAll(parameters).put(BBOX, parameters.get(BBOX) + "," + parameters.get(BBOX_CRS)).build();
+            Map<String, String> newParameters = new HashMap<>(parameters);
+            newParameters.put(BBOX, parameters.get(BBOX) + "," + parameters.get(BBOX_CRS));
+            return ImmutableMap.copyOf(newParameters);
         }
 
         return parameters;
