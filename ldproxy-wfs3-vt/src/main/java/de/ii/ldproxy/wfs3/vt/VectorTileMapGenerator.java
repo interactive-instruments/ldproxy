@@ -50,6 +50,7 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
                         .get(collectionId)
                         .getExtensions()
                         .get(EXTENSION_KEY);
+
                 ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
                         .stream()
                         .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));

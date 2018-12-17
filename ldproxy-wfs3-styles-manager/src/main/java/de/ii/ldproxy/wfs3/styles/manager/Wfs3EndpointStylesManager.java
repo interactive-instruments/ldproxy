@@ -47,7 +47,45 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
 
     @Override
     public List<String> getMethods() {
-        return ImmutableList.of("PUT", "DELETE");
+        return ImmutableList.of("POST","PUT", "DELETE");
+    }
+
+    /**
+     * creates one style for the dataset
+     *
+     * @return
+     */
+    @Path("/")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response postStyle(@Auth Optional<User> optionalUser, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpServletRequest request, InputStream requestBody) {
+
+        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
+
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+
+        List<String> styles = stylesStore.getKeys();
+
+        Scanner s = new Scanner(requestBody).useDelimiter("\\A");
+        String requestBodyString = s.hasNext() ? s.next() : "";
+
+        if(!validateRequestBody(requestBodyString))
+            throw new BadRequestException();
+
+        List <String> styleIds = new ArrayList<>();
+        for(String style: styles){
+               styleIds.add(style.split("\\.")[0]);
+        }
+
+        int id=0;
+
+        while(styleIds.contains(Integer.toString(id))){
+            id++;
+        }
+
+        putProcess(stylesStore,styles,Integer.toString(id),requestBodyString);
+
+        return Response.noContent().build();
     }
 
     /**

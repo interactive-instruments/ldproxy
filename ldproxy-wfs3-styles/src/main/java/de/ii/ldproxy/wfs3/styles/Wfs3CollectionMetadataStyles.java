@@ -34,28 +34,33 @@ import java.util.Map;
 public class Wfs3CollectionMetadataStyles implements Wfs3CollectionMetadataExtension {
 
     @Requires
-    private KeyValueStore keyValueStore; //maybe
+    private KeyValueStore keyValueStore;
 
 
     @Override
-    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested) {
-/*
+    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested,String serviceId) {
+
         final StylesLinkGenerator stylesLinkGenerator= new StylesLinkGenerator();
 
+        String collectionId=featureTypeConfigurationWfs3.getId();
 
+        KeyValueStore kvStoreCollection = keyValueStore.getChildStore("styles").getChildStore(serviceId).getChildStore(collectionId);
 
+        List<String> styles = kvStoreCollection.getKeys();
         List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
-        Map<String, Object> wfs3StylesInCollections = new HashMap<>();
 
-        //TODO get the data - only example
-        wfs3StylesInCollections.put("identifier","default");
-        wfs3StylesInCollections.put("description","... a description of the style...");
-        wfs3StylesInCollections.put("accept", ImmutableList.of("???","???"));
-        wfs3StylesInCollections.put("supports", ImmutableList.of("application/geo+json","application/vnd.mapbox-vector-tile"));
-        wfs3StylesInCollections.put("links", stylesLinkGenerator.generateStylesLinksCollection(uriCustomizer,"daraa"));
-        wfs3LinksList.add(wfs3StylesInCollections);
+
+        for(String key : styles){
+            Map<String, Object> wfs3StylesInCollections = new HashMap<>();
+            String styleId = key.split("\\.")[0];
+            wfs3StylesInCollections.put("id",styleId);
+            wfs3StylesInCollections.put("links", stylesLinkGenerator.generateStylesLinksCollectionMetadata(uriCustomizer,collectionId,styleId));
+            wfs3LinksList.add(wfs3StylesInCollections);
+        }
+
+
         collection.putExtensions("styles",wfs3LinksList);
-        */
+
 
         return collection;
     }

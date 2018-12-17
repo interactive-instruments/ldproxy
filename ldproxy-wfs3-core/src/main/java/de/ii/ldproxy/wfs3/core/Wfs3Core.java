@@ -173,7 +173,7 @@ public class Wfs3Core {
         }
 
         for (Wfs3CollectionMetadataExtension wfs3CollectionMetadataExtension : getCollectionExtenders()) {
-            collection = wfs3CollectionMetadataExtension.process(collection, featureType, uriCustomizer.copy(), isNested);
+            collection = wfs3CollectionMetadataExtension.process(collection, featureType, uriCustomizer.copy(), isNested,serviceData.getId());
         }
 
         return collection.build();

@@ -4,4 +4,6 @@ version += '-SNAPSHOT'
 dependencies {
     compile project(":ldproxy-wfs3-oas30")
     compile project(":ldproxy-wfs3-api")
+    testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+
 }

@@ -17,5 +17,5 @@ import de.ii.ldproxy.wfs3.api.Wfs3Extension;
  */
 public interface Wfs3CollectionMetadataExtension extends Wfs3Extension {
 
-    ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested);
+    ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested, String serviceId);
 }

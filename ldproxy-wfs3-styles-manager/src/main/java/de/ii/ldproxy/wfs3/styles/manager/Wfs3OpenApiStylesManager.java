@@ -6,9 +6,11 @@ import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -41,8 +43,12 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
 
         if (serviceData != null ) {
 
+            PathItem pathItem1 = openAPI.getPaths().get("/styles");
 
-            PathItem pathItem = openAPI.getPaths().get("/styles/{styleId}");
+
+
+
+            PathItem pathItem2 = openAPI.getPaths().get("/styles/{styleId}");
 
 
             RequestBody requestBody = new RequestBody().description("A single style.")
@@ -50,8 +56,23 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
             ApiResponse exception = new ApiResponse().description("An error occured.")
                     .content(new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception"))));
 
-            if (Objects.nonNull(pathItem)) {
-                pathItem
+            if (Objects.nonNull(pathItem1)) {
+                pathItem1
+                        .post(new Operation()
+                                .summary("add styles to the dataset ")
+                                //.description("")
+                                .operationId("addStyles" )
+                                .addTagsItem("Styles")
+                                .requestBody(requestBody)
+                                .responses(new ApiResponses().addApiResponse("201", new ApiResponse().description("Styles were created.")
+                                        .addHeaderObject("location", new Header().description("The URL of the first created style")
+                                                .schema(new StringSchema())))
+                                        .addApiResponse("default", exception))
+                        );
+            }
+
+            if (Objects.nonNull(pathItem2)) {
+                pathItem2
                         .put(new Operation()
                                 .summary("replace a style from the dataset")
                                 //.description("")
@@ -79,13 +100,31 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
                     .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
                     .forEach(ft -> {
 
-
-                        PathItem pathItem2 = openAPI.getPaths()
+                        PathItem pathItem3 = openAPI.getPaths()
+                                .get(String.format("/collections/%s/styles", ft.getId()));
+                        PathItem pathItem4 = openAPI.getPaths()
                                 .get(String.format("/collections/%s/styles/{styleId}", ft.getId()));
 
 
-                        if (Objects.nonNull(pathItem2)) {
-                            pathItem2
+
+                        if (Objects.nonNull(pathItem3)) {
+                            pathItem3
+                                    .post(new Operation()
+                                            .summary("add styles to the collection " + ft.getLabel())
+                                            //.description("")
+                                            .operationId("addStyle" +ft.getLabel() )
+                                            .addTagsItem("Styles")
+                                            .requestBody(requestBody)
+                                            .responses(new ApiResponses().addApiResponse("201", new ApiResponse().description("Style was created.")
+                                                    .addHeaderObject("location", new Header().description("The URL of the created style")
+                                                            .schema(new StringSchema())))
+                                                    .addApiResponse("default", exception))
+                                    );
+                        }
+
+
+                        if (Objects.nonNull(pathItem4)) {
+                            pathItem4
                                     .put(new Operation()
                                             .summary("replace a style from the collection " + ft.getLabel())
                                             //.description("")

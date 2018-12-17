@@ -14,10 +14,9 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 
 /**
  * add tiling information to the collection metadata (supported tiling schemes, links)
@@ -30,21 +29,20 @@ import java.util.Map;
 public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadataExtension {
 
     @Override
-    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested) {
+    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested,String serviceId) {
         // The hrefs are URI templates and not URIs, so the templates should not be percent encoded!
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        if (!isNested) {
-
+        if (!isNested && featureTypeConfigurationWfs3.getExtensions().containsKey(EXTENSION_KEY)) {
             List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
-            Map<String, Object> wfs3LinksMap = new HashMap<>();
-            //  for(Object tilingSchemeId : TODO tilingSchemeIDs) {
-
-            wfs3LinksMap.put("identifier", "default"); //TODO replace with tilingSchemeId
-            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTilesLinks(uriCustomizer, "default")); //TODO replace with tilingSchemeId
-            wfs3LinksList.add(wfs3LinksMap);
-
-            //    }
+            TilesConfiguration tiles = (TilesConfiguration) featureTypeConfigurationWfs3.getExtensions().get(EXTENSION_KEY);
+            Set<String> tilingSchemeIds=tiles.getTiles().get(0).getZoomLevels().keySet();
+                for(String tilingSchemeId : tilingSchemeIds) {
+                    Map<String, Object> tilingSchemeInCollection = new HashMap<>();
+                    tilingSchemeInCollection.put("identifier", tilingSchemeId);
+                    tilingSchemeInCollection.put("links", vectorTilesLinkGenerator.generateTilesLinks(uriCustomizer, tilingSchemeId));
+                    wfs3LinksList.add(tilingSchemeInCollection);
+                }
             collection.putExtensions("tilingSchemes",wfs3LinksList);
         }
 

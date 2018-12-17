@@ -19,6 +19,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -47,9 +48,46 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
 
     @Override
     public List<String> getMethods() {
-        return ImmutableList.of("PUT", "DELETE");
+        return ImmutableList.of("POST","PUT", "DELETE");
     }
 
+    /**
+     * creates one style for the dataset
+     *
+     * @return
+     */
+    @Path("/{collectionId}/styles/")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response postStyle(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpServletRequest request, InputStream requestBody) {
+
+        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
+
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
+
+        List<String> styles = stylesStore.getKeys();
+
+        Scanner s = new Scanner(requestBody).useDelimiter("\\A");
+        String requestBodyString = s.hasNext() ? s.next() : "";
+
+        if(!Wfs3EndpointStylesManager.validateRequestBody(requestBodyString))
+            throw new BadRequestException();
+
+        List <String> styleIds = new ArrayList<>();
+        for(String style: styles){
+            styleIds.add(style.split("\\.")[0]);
+        }
+
+        int id=0;
+
+        while(styleIds.contains(Integer.toString(id))){
+            id++;
+        }
+
+        Wfs3EndpointStylesManager.putProcess(stylesStore,styles,Integer.toString(id),requestBodyString);
+
+        return Response.noContent().build();
+    }
     /**
      * updates one specific style of the collection
      *

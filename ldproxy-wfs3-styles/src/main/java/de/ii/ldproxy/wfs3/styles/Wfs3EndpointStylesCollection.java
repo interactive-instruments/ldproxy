@@ -84,15 +84,16 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
                     Map<String,Object> styleInfo=new HashMap<>();
                     final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
                     String styleId = key.split("\\.")[0];
-                    styleInfo.put("identifier", styleId);
+                    styleInfo.put("id", styleId);
                     styleInfo.put("links",stylesLinkGenerator.generateStylesLinksCollection(wfs3Request.getUriCustomizer(), styleId));
                     styles.add(styleInfo);
                 }
 
             }
         }
+
         if(styles.size()==0){
-            throw new NotFoundException();
+            return Response.ok("{ \n \"styles\": [] \n }").build();
         }
 
 

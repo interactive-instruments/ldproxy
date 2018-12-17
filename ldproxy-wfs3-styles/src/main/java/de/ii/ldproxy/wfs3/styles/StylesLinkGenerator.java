@@ -57,7 +57,6 @@ public class StylesLinkGenerator {
                         )
                         .rel("style")
                         .type("application/json")
-                        .description(styleId)
                         .build())
                 ;
 
@@ -66,9 +65,38 @@ public class StylesLinkGenerator {
     }
 
     /**
-     * generates one link of a style on the page /serviceId/collections/{collectionId}/styles
+     * generates the collections styles link at /serviceid/collections and /servideid/collections/{collectionId}
      *
-     * and in the collections styles link at /serviceid/collections and /servideid/collections/{collectionId}
+     * @param uriBuilder     the URI, split in host, path and query
+     * @param collectionId   the id of the collection the style is part of
+     * @param styleId        the ids of the styles
+     * @return a list with links
+     */
+    public List<Wfs3Link> generateStylesLinksCollectionMetadata(URICustomizer uriBuilder, String collectionId,String styleId) {
+        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>();
+            String link="";
+        if(!uriBuilder.copy().isLastPathSegment(collectionId)) {
+            link = uriBuilder.copy()
+                    .ensureLastPathSegments("collections",collectionId, "styles", styleId)
+                    .setParameter("f", "json")
+                    .toString();
+        }else {
+            link = uriBuilder.copy()
+                    .ensureLastPathSegments("styles",styleId)
+                    .setParameter("f", "json")
+                    .toString();
+        }
+        builder.add(ImmutableWfs3Link.builder()
+                .href(link)
+                .rel("style")
+                .type("application/json")
+                .build());
+        return builder.build();
+    }
+
+
+    /**
+     * generates one link of a style on the page /serviceId/collections/{collectionId}/styles
      *
      * @param uriBuilder     the URI, split in host, path and query
      * @param styleId        the ids of the styles
@@ -86,7 +114,6 @@ public class StylesLinkGenerator {
                         )
                         .rel("style")
                         .type("application/json")
-                        .description(styleId)
                         .build())
                 ;
 
