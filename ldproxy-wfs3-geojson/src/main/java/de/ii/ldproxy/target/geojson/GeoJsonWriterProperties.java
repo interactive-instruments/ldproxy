@@ -9,6 +9,7 @@ package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson.MULTIPLICITY;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson.NESTED_OBJECTS;
@@ -226,7 +227,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         if (nestedObjectStrategy == NESTED_OBJECTS.NEST) {
             List<String> path = Splitter.on('.')
                                         .omitEmptyStrings()
-                                        .splitToList(name);
+                                        .splitToList(Strings.nullToEmpty(name));
             if (path.isEmpty() && lastPath.isEmpty()) {
                 return;
             }
