@@ -40,7 +40,7 @@ export default class SpatialFilter extends Component {
         const {locality, street, number} = this.state;
 
         return (
-            <Form onSubmit={ this._apply }>
+            <Form onSubmit={ this._apply } className="w-100">
                 <Row>
                     <Col md="3">
                     <FormGroup>
