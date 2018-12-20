@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Styles Representation of WFS {{serviceId}}</title>
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.2.0/css/ol.css" type="text/css">
+
+    <style>
+        #map {
+            position: relative;
+        }
+
+        #info {
+            z-index: 1;
+            opacity: 0;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            margin: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 0;
+            transition: opacity 100ms ease-in;
+        }
+
+        #layerSelector {
+            position: absolute;
+            top: 15px;
+            right: 75px;
+            color:white;
+            background: rgba(0, 0, 0, 0.7);
+
+        }
+        #roundButton {
+            background-color: #96D9FF;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 10px solid #0065A6;
+            outline: none;
+        }
+
+        #roundButton:hover {
+            background-color: #96D9FF;
+            cursor: pointer;
+            border-color: #003557;
+            transform: scale(1.2, 1.2);
+        }
+
+        #roundButton:active {
+            border-color: #003557;
+            background-color: #FFF;
+        }
+    </style>
+</head>
+<body>
+
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.2.0/build/ol.js"></script>
+    <script src="https://rawgit.com/boundlessgeo/ol-mapbox-style/v3.5.0/dist/olms.js"></script>
+
+
+    <div id="map-container">
+        <pre id="info" />
+    </div>
+    <button id="roundButton" onmousedown=showLayerSelector()></button>
+
+    <div id="layerSelector">
+
+    </div>
+    </body>
+
+
+    <script>
+        var styleUrlJs='{{styleUrl}}';
+        var tileUrlJs='{{tileUrl}}';
+        console.log(tileUrlJs);
+        var map = new ol.Map({
+            target: 'map-container',
+            view: new  ol.View({
+                center: [4020000, 3850000],
+                zoom: 11
+            })
+        });
+
+        var mapLayer =  new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                attributions: 'Base Map Ã‚Â© <a href="https://services.arcgisonline.com/ArcGIS/' +
+                        'rest/services/Canvas/World_Light_Gray_Base/MapServer">ArcGIS</a>',
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/' +
+                        'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+            })
+        });
+
+        map.addLayer(mapLayer);
+
+        var layer = new ol.layer.VectorTile({
+            source: new ol.source.VectorTile({
+
+                format: new ol.format.MVT(),
+                url: tileUrlJs,
+            })
+        });
+
+
+
+        var layerSelector = document.getElementById('layerSelector');
+        layerSelector.style.display="none";
+
+        function loadJSON(callback) {
+
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET',styleUrlJs, false);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    callback(xobj.responseText);
+                }
+            };
+            xobj.send(null);
+        }
+        var style;
+
+        loadJSON(function(response) {
+            // Parse JSON string into object
+            style = JSON.parse(response);
+        });
+
+        var layers=[];
+
+        for (var i = 0; i < style.layers.length; i++) {
+
+            var checkbox = document.createElement('input');
+            checkbox.type = "checkbox";
+            checkbox.name = style.layers[i]["source-layer"];
+            checkbox.checked = "true";
+
+            checkbox.id = style.layers[i]["source-layer"];
+
+            checkbox.addEventListener('change',onChange);
+
+
+            var label = document.createElement('label')
+            label.htmlFor = "id";
+            label.appendChild(document.createTextNode(style.layers[i]["source-layer"]));
+
+            var br = document.createElement("br");
+
+            if(!layers.includes(checkbox.name)){
+                layers.push(checkbox.name);
+                layerSelector.appendChild(checkbox);
+                layerSelector.appendChild(label);
+                layerSelector.appendChild(br);
+            }
+        }
+
+        function onChange(){
+            var layersToShow= [];
+            for (var i = 0; i < layers.length; i++) {
+                if(document.getElementById(layers[i]).checked===true){
+                    for(var j = 0; j < style.layers.length; j++){
+                        if(layers[i] === style.layers[j]["source-layer"]){
+                            layersToShow.push(style.layers[j].id)
+                        }
+                    }
+                }
+            }
+            fetch(styleUrlJs).then(function(response) {
+                response.json().then(function(glStyle) {
+                    olms.stylefunction(layer, glStyle,layersToShow);
+
+                });
+            });
+        }
+
+        map.addLayer(layer);
+
+        map.on('pointermove', showInfo);
+
+        var info = document.getElementById('info');
+        function showInfo(event) {
+            var features = map.getFeaturesAtPixel(event.pixel);
+            if (!features) {
+                info.innerText = '';
+                info.style.opacity = 0;
+                return;
+            }
+            var properties = features[0].getProperties();
+            info.innerText = JSON.stringify(properties, null, 2);
+            info.style.opacity = 1;
+        }
+
+        function showLayerSelector(){
+            var layerSelector = document.getElementById('layerSelector');
+            if(layerSelector.style.display==="none")
+                layerSelector.style.display="block";
+            else{
+                layerSelector.style.display="none";
+            }
+        }
+        document.onload=onChange();
+
+    </script>
+</html>

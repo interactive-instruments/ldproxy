@@ -55,7 +55,17 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
         styleIdSchema.setType("string");
         styleId.setSchema(styleIdSchema);
 
+
+        Parameter styleIdDataset = new Parameter();
+        styleIdDataset.setName("styleId");
+        styleIdDataset.in("path");
+        styleIdDataset.description("Local identifier of a specific style of the dataset. A list of all available styles for the dataset can be found under the /styles path.");
+        styleIdDataset.setRequired(true);
+        styleIdDataset.setSchema(styleIdSchema);
+
         openAPI.getComponents().addParameters("styleIdentifier", styleId);
+        openAPI.getComponents().addParameters("styleIdentifierDataset", styleIdDataset);
+
 
         List<String> requirementsId = new LinkedList<String>();
         requirementsId.add("id");
@@ -154,7 +164,7 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                                 .addTagsItem("Styles")
                                 .summary("retrieve a style of the dataset by id")
                                 .operationId("getStyle")
-                                .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
+                                .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifierDataset"))
                                 .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
 
                                 //.requestBody(requestBody)

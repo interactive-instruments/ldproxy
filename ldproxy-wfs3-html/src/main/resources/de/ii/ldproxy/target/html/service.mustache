@@ -29,6 +29,25 @@
             <a href="{{apiUrl}}">OpenAPI 3.0</a>
         </div>
     </div>
+
+    <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">Maps</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+
+
+                    {{#styles}}
+                         <li>
+                            <a itemprop="url" href="{{styleUrl}}" target="_blank">{{styleId}}</a>
+                        </li>
+                    {{/styles}}
+                    {{^styles}}
+                        <li>None</li>
+                    {{/styles}}
+                </ul>
+            </div>
+        </div>
+
         {{#dataSourceUrl}}
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">Data source</div>

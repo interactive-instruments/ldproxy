@@ -286,7 +286,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      * @throws FileNotFoundException an error occurred when searching for a file
      */
-
+/*
     @Path("/{tilingSchemeId}/{level}/{row}/{col}")
     @GET
     @Produces({Wfs3MediaTypes.GEO_JSON, MediaType.APPLICATION_JSON})
@@ -336,7 +336,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         return Response.ok(streamingOutput, Wfs3MediaTypes.GEO_JSON)
                        .build();
     }
-
+*/
     /**
      * checks if the tiles parameter is enabled in the dataset. If the tiles parameter is disabled in all collections, it throws a 404.
      *

@@ -23,6 +23,7 @@ import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.xsf.configstore.api.KeyValueStore;
 import de.ii.xsf.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.akka.http.AkkaHttp;
 import de.ii.xtraplatform.crs.api.BoundingBox;
@@ -90,6 +91,9 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
     @Requires
     private AkkaHttp akkaHttp;
 
+    @Requires
+    private KeyValueStore keyValueStore;
+
     @Override
     public String getConformanceClass() {
         return "http://www.opengis.net/spec/wfs-1/3.0/req/html";
@@ -135,7 +139,9 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                 .add(new NavigationDTO(serviceData.getLabel()))
                 .build();
 
-        Wfs3DatasetView wfs3DatasetView = new Wfs3DatasetView(serviceData, wfs3Collections, breadCrumbs, staticUrlPrefix, htmlConfig);
+        List<String> styles = keyValueStore.getChildStore("styles").getChildStore(serviceData.getId()).getKeys();
+
+        Wfs3DatasetView wfs3DatasetView = new Wfs3DatasetView(serviceData, wfs3Collections, breadCrumbs, staticUrlPrefix, htmlConfig, styles);
 
         return Response.ok()
                        .type(mediaType.metadata())

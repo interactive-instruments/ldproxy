@@ -120,18 +120,23 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
      * @throws IOException
      * @throws KeyNotFoundException
      */
-    public static Map<String,Object> getStyleJson(KeyValueStore stylesStore, String key) throws IOException, KeyNotFoundException {
-
+    public static Map<String,Object> getStyleJson(KeyValueStore stylesStore, String key)  {
         Map<String, Object> style;
-        final ObjectMapper mapper = new ObjectMapper();
-        BufferedReader br = new BufferedReader(stylesStore.getValueReader(key));
+        try{
+            final ObjectMapper mapper = new ObjectMapper();
+            BufferedReader br = new BufferedReader(stylesStore.getValueReader(key));
 
-        if (br.readLine() == null) {
-            style = null;
-        } else {
-            style = mapper.readValue(stylesStore.getValueReader(key), new TypeReference<LinkedHashMap>() {
-            });
+            if (br.readLine() == null) {
+                style = null;
+            } else {
+                style = mapper.readValue(stylesStore.getValueReader(key), new TypeReference<LinkedHashMap>() {
+                });
+            }
+
+        }catch(KeyNotFoundException|IOException e){
+            throw new NotFoundException();
         }
+
 
         return style;
     }
@@ -145,7 +150,7 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
      * @throws IOException
      * @throws KeyNotFoundException
      */
-    public static Map<String,Object> getStyleToDisplay(KeyValueStore stylesStore,List<String>styles, String styleId) throws IOException, KeyNotFoundException {
+    public static Map<String,Object> getStyleToDisplay(KeyValueStore stylesStore,List<String>styles, String styleId) {
 
         Map<String, Object> styleToDisplay=null;
         for(String key : styles){

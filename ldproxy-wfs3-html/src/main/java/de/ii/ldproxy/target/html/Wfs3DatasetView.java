@@ -16,11 +16,7 @@ import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import io.dropwizard.views.View;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -31,12 +27,13 @@ public class Wfs3DatasetView extends View {
     private final List<NavigationDTO> breadCrumbs;
     private final String urlPrefix;
     public final HtmlConfig htmlConfig;
+    private List<Style> styles;
     public String title;
     public String description;
     public String dataSourceUrl;
     public String keywords;
 
-    public Wfs3DatasetView(Wfs3ServiceData serviceData, Wfs3Collections wfs3Dataset, final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig) {
+    public Wfs3DatasetView(Wfs3ServiceData serviceData, Wfs3Collections wfs3Dataset, final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig, List<String> stylesList) {
         super("service.mustache", Charsets.UTF_8);
         this.wfs3Dataset = wfs3Dataset;
         this.breadCrumbs = breadCrumbs;
@@ -54,6 +51,15 @@ public class Wfs3DatasetView extends View {
         if (serviceData.getFeatureProvider().getDataSourceUrl().isPresent()) {
             this.dataSourceUrl = serviceData.getFeatureProvider().getDataSourceUrl().get();
         }
+        styles=new ArrayList<>();
+
+        for(String style : stylesList){
+            String styleId=style.split("\\.")[0];
+            styles.add(new Style(styleId,/*urlPrefix*/breadCrumbs.get(0).url + "/" + serviceData.getId()+"/maps/" + styleId));
+        }
+
+
+
     }
 
     public Wfs3Collections getWfs3Dataset() {
@@ -73,6 +79,9 @@ public class Wfs3DatasetView extends View {
                           .findFirst()
                           .orElse("");
     }
+    public List<Style> getStyles() {
+        return styles;
+    }
 
     public List<FeatureType> getFeatureTypes() {
         return wfs3Dataset.getCollections()
@@ -89,6 +98,7 @@ public class Wfs3DatasetView extends View {
                           .map(wfs3Link -> new NavigationDTO(wfs3Link.getTypeLabel(), wfs3Link.getHref()))
                           .collect(Collectors.toList());
     }
+
 
     static class FeatureType extends Wfs3Collection {
         private final Wfs3Collection collection;
@@ -144,6 +154,24 @@ public class Wfs3DatasetView extends View {
         @Override
         public Map<String, Object> getExtensions() {
             return collection.getExtensions();
+        }
+    }
+
+    static class Style{
+        private final String styleId;
+        private final String styleUrl;
+
+        public Style(String styleId, String styleUrl){
+            this.styleId = styleId;
+            this.styleUrl = styleUrl;
+        }
+
+        public String getStyleId(){
+            return styleId;
+        }
+
+        public String getStyleUrl(){
+            return styleUrl;
         }
     }
 
