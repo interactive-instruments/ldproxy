@@ -127,13 +127,12 @@
             // Parse JSON string into object
             style = JSON.parse(response);
         });
-        /*
         var spriteData;
 
         function loadJSONSprite(callback) {
 
             var xobj = new XMLHttpRequest();
-            xobj.open('GET', './sprites/sprites.json', false);
+            xobj.open('GET', 'https://vtp2018.s3-eu-west-1.amazonaws.com/static/mapstorestyle/sprites/sprites.json', false);
             xobj.onreadystatechange = function () {
                 if (xobj.readyState == 4 && xobj.status == "200") {
                     callback(xobj.responseText);
@@ -147,8 +146,7 @@
         });
 
         console.log(spriteData)
-        var spriteImage="http://vtp2018.s3-eu-west-1.amazonaws.com/static/mapstorestyle/sprites/sprites.png";
-        */
+        var spriteImage="https://vtp2018.s3-eu-west-1.amazonaws.com/static/mapstorestyle/sprites/sprites.png";
         var layers=[];
 
         for (var i = 0; i < style.layers.length; i++) {
@@ -190,7 +188,7 @@
             }
             fetch(styleUrlJs).then(function(response) {
                 response.json().then(function(glStyle) {
-                    olms.stylefunction(layer, glStyle,layersToShow/*,null,spriteData,spriteImage*/);
+                    olms.stylefunction(layer, glStyle,layersToShow,null,spriteData,spriteImage);
 
                 });
             });
