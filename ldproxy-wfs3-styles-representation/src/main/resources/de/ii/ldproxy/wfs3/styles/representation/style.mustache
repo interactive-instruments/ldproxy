@@ -88,9 +88,9 @@
         var mapLayer =  new ol.layer.Tile({
             source: new ol.source.XYZ({
                 attributions: 'Base Map Ã‚Â© <a href="https://services.arcgisonline.com/ArcGIS/' +
-                        'rest/services/Canvas/World_Light_Gray_Base/MapServer">ArcGIS</a>',
+                        'rest/services/Canvas/World_Dark_Gray_Base/MapServer">ArcGIS</a>',
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/' +
-                        'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+                        'Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
             })
         });
 
@@ -127,7 +127,26 @@
             // Parse JSON string into object
             style = JSON.parse(response);
         });
+        var spriteData;
 
+        function loadJSONSprite(callback) {
+
+            var xobj = new XMLHttpRequest();
+            xobj.open('GET', 'http://vtp2018.s3-eu-west-1.amazonaws.com/static/mapstorestyle/sprites/sprites.json', false);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    callback(xobj.responseText);
+                }
+            };
+            xobj.send(null);
+        }
+        loadJSONSprite(function(response) {
+            // Parse JSON string into object
+            spriteData= JSON.parse(response);
+        });
+
+        console.log(spriteData)
+        var spriteImage="http://vtp2018.s3-eu-west-1.amazonaws.com/static/mapstorestyle/sprites/sprites.png";
         var layers=[];
 
         for (var i = 0; i < style.layers.length; i++) {
@@ -169,7 +188,7 @@
             }
             fetch(styleUrlJs).then(function(response) {
                 response.json().then(function(glStyle) {
-                    olms.stylefunction(layer, glStyle,layersToShow);
+                    olms.stylefunction(layer, glStyle,layersToShow,null,spriteData,spriteImage);
 
                 });
             });
