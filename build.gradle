@@ -41,7 +41,7 @@ dependencies {
 
     bundlesRuntime group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.5'
 
-    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.7') {
+    bundles(group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.4') {
         // TODO
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
