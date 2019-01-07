@@ -41,7 +41,7 @@ public class Wfs3EndpointStylesRepresentation implements Wfs3EndpointExtension {
 
     @Override
     public String getSubPathRegex() {
-        return "^\\/(?:\\w+)";
+        return "^\\/?.*$";
     }
 
     @Override
@@ -54,7 +54,15 @@ public class Wfs3EndpointStylesRepresentation implements Wfs3EndpointExtension {
         return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
     }
 
-
+    /**
+     * creates a StyleView with the style.mustache template.
+     * This view is a Openlayers Client, which represents a style of a wfs in a map.
+     *
+     * @param service the service
+     * @param styleId the style which has to be represented in the client
+     * @param wfs3Request the request
+     * @return
+     */
     @Path("/{styleId}")
     @GET
     @Produces(MediaType.TEXT_HTML)

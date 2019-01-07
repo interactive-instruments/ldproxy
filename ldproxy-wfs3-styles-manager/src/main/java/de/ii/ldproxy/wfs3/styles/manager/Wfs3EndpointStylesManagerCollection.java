@@ -52,7 +52,7 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
     }
 
     /**
-     * creates one style for the dataset
+     * creates one style for the collection
      *
      * @return
      */

@@ -70,7 +70,16 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
         List<String> requirementsId = new LinkedList<String>();
         requirementsId.add("id");
         List<String> typeRequirements = new LinkedList<String>();
-        typeRequirements .add("type");
+        typeRequirements.add("type");
+
+        List<String> requirementsLayers = new LinkedList<String>();
+        requirementsLayers.add("id");
+        requirementsLayers.add("type");
+
+        List<String> requirementsStyle = new LinkedList<String>();
+        requirementsStyle.add("version");
+        requirementsStyle.add("sources");
+        requirementsStyle.add("layers");
 
         Schema stylesArray = new Schema();
         stylesArray.setType("object");
@@ -86,36 +95,43 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
 
 
 
-        Schema paint = new Schema();
-        paint.setType("object");
-        paint.setRequired(typeRequirements );
-        List<String> paintEnum = new ArrayList<String>();
-        paintEnum.add("Paint");
-        paint.addProperties("type", new StringSchema()._enum(paintEnum));
-        paint.addProperties("fill-opacity", new Schema().type("number").example(0.25));
-        List<Object> fillColor = new ArrayList<>();
-        fillColor.add("interpolate");
-        fillColor.add(ImmutableList.of("linear"));
-        fillColor.add(ImmutableList.of("zoom"));
-        fillColor.add(0);
-        fillColor.add(ImmutableList.of("hsl(239, 61%, 40%)"));
-        fillColor.add(22);
-        fillColor.add(ImmutableList.of("hsl(239, 61%, 40%)"));
-        paint.addProperties("fill-color",new Schema().type("array").example(fillColor));
+
+
+        Schema layersArray = new Schema();
+        layersArray.setType("object");
+        layersArray.setRequired(requirementsLayers);
+        List<String> typeEnum = new ArrayList<String>();
+        typeEnum.add("fill");
+        typeEnum.add("line");
+        typeEnum.add("symbol");
+        typeEnum.add("circle");
+        typeEnum.add("heatmap");
+        typeEnum.add("fill-extrusion");
+        typeEnum.add("raster");
+        typeEnum.add("hillshade");
+        typeEnum.add("background");
+
+        layersArray.addProperties("id", new Schema().type("string").example("1"));
+        layersArray.addProperties("type", new StringSchema()._enum(typeEnum).example("fill"));
+        layersArray.addProperties("source", new Schema().type("string").example("default"));
+        layersArray.addProperties("source-layer", new Schema().type("string").example("collectionId"));
+        layersArray.addProperties("layout", new Schema().type("string"));
+        layersArray.addProperties("paint", new Schema().type("object").addProperties("fill-color", new StringSchema().example("#11083b")));
 
         Schema style = new Schema();
         style.setType("object");
-        style.setRequired(requirementsId);
-        style.addProperties("id", new Schema().type("string").example("default"));
-        style.addProperties("type", new Schema().type("string").example("fill"));
-        style.addProperties("source", new Schema().type("string").example("composite"));
-        style.addProperties("source-layer", new Schema().type("string").example("collectionId"));
-        style.addProperties("layout", new Schema().type("string"));
-        style.addProperties("paint", new Schema().$ref("#/components/schemas/paint"));
+        style.setRequired(requirementsStyle);
+        style.addProperties("version", new Schema().type("number").example(8));
+        style.addProperties("name", new Schema().type("string").example("default"));
+        style.addProperties("sources", new Schema().type("object")
+                .addProperties("default", new Schema().type("object").addProperties("type",new Schema().type("String").example("vector"))));
+        style.addProperties("sprite", new Schema().type("string").example("mapbox://sprites/mapbox/bright-v8"));
+        style.addProperties("layers",  new ArraySchema().items(new Schema().$ref("#/components/schemas/layersArray")));
+
 
         openAPI.getComponents().addSchemas("stylesArray", stylesArray);
         openAPI.getComponents().addSchemas("styles", styles);
-        openAPI.getComponents().addSchemas("paint", paint);
+        openAPI.getComponents().addSchemas("layersArray", layersArray);
         openAPI.getComponents().addSchemas("style", style);
 
         openAPI.getTags().add(new Tag().name("Styles").description("Access to styles."));

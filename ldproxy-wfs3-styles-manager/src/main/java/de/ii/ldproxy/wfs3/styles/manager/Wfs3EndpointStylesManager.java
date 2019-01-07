@@ -2,6 +2,7 @@ package de.ii.ldproxy.wfs3.styles.manager;
 
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.wfs3.Wfs3Service;
@@ -27,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * creates, updates and deletes a style from the service
@@ -162,10 +164,6 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
                 }
             }
             //TODO workaround if delete process not successful
-            if(stylesStore.containsKey(style)){
-                throw new InternalError();
-
-            }
         }
         if(!styleFound){
             throw new NotFoundException();
@@ -228,12 +226,36 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
         try {
-            objectMapper.readTree(requestBodyString);
+            JsonNode requestBody = objectMapper.readTree(requestBodyString);
+            JsonNode version = requestBody.get("version");
+            JsonNode sources = requestBody.get("sources");
+            JsonNode layers = requestBody.get("layers");
+            if(layers!=null){
+                if(version == null || ( version.isInt() && version.intValue() != 8) || sources == null){
+                    return false;
+                }
+                int size = layers.size();
+                List<String> ids = new ArrayList<>();
+                List<String> types = ImmutableList.of("fill","line","symbol","circle","heatmap","fill-extrusion","raster","hillshade","background");
+
+                for(int i=0; i<size; i++){
+                    JsonNode idNode = layers.get(i).get("id");
+                    JsonNode typeNode = layers.get(i).get("type");
+                    if(idNode==null || typeNode==null || !typeNode.isTextual() || !idNode.isTextual()){
+                        return false;
+                    }
+                    String id = idNode.textValue();
+                    String type = typeNode.textValue();
+
+                    if(ids.contains(id) || !types.contains(type)){
+                        return false;
+                    }
+                    ids.add(id);
+                }
+            }
         } catch (Exception e) {
             return false;
         }
-        //TODO check content when specification is clear
-
 
         return true;
     }
