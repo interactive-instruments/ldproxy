@@ -75,39 +75,7 @@
 
     <script>
         var styleUrlJs='{{styleUrl}}';
-        var tileUrlJs='{{tileUrl}}';
-        console.log(tileUrlJs);
-        var map = new ol.Map({
-            target: 'map-container',
-            view: new  ol.View({
-                center: [4020000, 3850000],
-                zoom: 11
-            })
-        });
-
-        var mapLayer =  new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                attributions: 'Base Map Ã‚Â© <a href="https://services.arcgisonline.com/ArcGIS/' +
-                        'rest/services/Canvas/World_Light_Gray_Base/MapServer">ArcGIS</a>',
-                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/' +
-                        'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-            })
-        });
-
-        map.addLayer(mapLayer);
-
-        var layer = new ol.layer.VectorTile({
-            source: new ol.source.VectorTile({
-
-                format: new ol.format.MVT(),
-                url: tileUrlJs,
-            })
-        });
-
-
-
-        var layerSelector = document.getElementById('layerSelector');
-        layerSelector.style.display="none";
+        var tileUrlJs=""; //TODO - read from file
 
         function loadJSON(callback) {
 
@@ -147,6 +115,43 @@
 
         console.log(spriteData)
         var spriteImage="https://vtp2018.s3-eu-west-1.amazonaws.com/static/mapstorestyle/sprites/sprites.png";
+
+        tileUrlJs=style.sources[Object.keys(style.sources)[0]].url; //TODO automatically selects the first source, if there are more sources than one it ignores them
+
+
+        var map = new ol.Map({
+            target: 'map-container',
+            view: new  ol.View({
+                center: [4020000, 3850000],
+                zoom: 11
+            })
+        });
+
+        var mapLayer =  new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                attributions: 'Base Map Ã‚Â© <a href="https://services.arcgisonline.com/ArcGIS/' +
+                        'rest/services/Canvas/World_Light_Gray_Base/MapServer">ArcGIS</a>',
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/' +
+                        'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+            })
+        });
+
+        map.addLayer(mapLayer);
+
+        var layer = new ol.layer.VectorTile({
+            source: new ol.source.VectorTile({
+
+                format: new ol.format.MVT(),
+                url: tileUrlJs,
+            })
+        });
+
+
+
+        var layerSelector = document.getElementById('layerSelector');
+        layerSelector.style.display="none";
+
+
         var layers=[];
 
         for (var i = 0; i < style.layers.length; i++) {

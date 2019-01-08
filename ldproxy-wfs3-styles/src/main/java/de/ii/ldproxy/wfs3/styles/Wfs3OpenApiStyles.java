@@ -115,7 +115,7 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
         layersArray.addProperties("type", new StringSchema()._enum(typeEnum).example("fill"));
         layersArray.addProperties("source", new Schema().type("string").example("default"));
         layersArray.addProperties("source-layer", new Schema().type("string").example("collectionId"));
-        layersArray.addProperties("layout", new Schema().type("string"));
+        layersArray.addProperties("layout", new Schema().type("object"));
         layersArray.addProperties("paint", new Schema().type("object").addProperties("fill-color", new StringSchema().example("#11083b")));
 
         Schema style = new Schema();
@@ -123,8 +123,10 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
         style.setRequired(requirementsStyle);
         style.addProperties("version", new Schema().type("number").example(8));
         style.addProperties("name", new Schema().type("string").example("default"));
-        style.addProperties("sources", new Schema().type("object")
-                .addProperties("default", new Schema().type("object").addProperties("type",new Schema().type("String").example("vector"))));
+        style.addProperties("sources",
+                new Schema().type("object").addProperties("default",
+                        new Schema().type("object").addProperties("type",new Schema().type("String").example("vector"))
+                                .addProperties("url",new Schema().type("String").example("sourceUrl"))));
         style.addProperties("sprite", new Schema().type("string").example("mapbox://sprites/mapbox/bright-v8"));
         style.addProperties("layers",  new ArraySchema().items(new Schema().$ref("#/components/schemas/layersArray")));
 

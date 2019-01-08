@@ -74,9 +74,8 @@ public class Wfs3EndpointStylesRepresentation implements Wfs3EndpointExtension {
         String prefix = coreServerConfig.getExternalUrl();
 
         String styleUri = prefix + "/" + service.getData().getId() + "/" + "styles" + "/" + styleId ;
-        String tileUri = prefix + "/" + service.getData().getId() + "/tiles/default/{z}/{y}/{x}?f\\=mvt";
 
-        StyleView styleView = new StyleView(styleUri,tileUri,service.getData().getId());
+        StyleView styleView = new StyleView(styleUri,service.getData().getId());
 
         return Response.ok().entity(styleView).build();
     }

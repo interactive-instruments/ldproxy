@@ -9,10 +9,9 @@ public class StyleView extends GenericView {
     public String tileUrl;
     public String serviceId;
 
-    public StyleView(String styleUrl, String tileUrl, String serviceId) {
+    public StyleView(String styleUrl, String serviceId) {
         super("style", null);
         this.styleUrl = styleUrl;
-        this.tileUrl = tileUrl;
         this.serviceId = serviceId;
     }
 }

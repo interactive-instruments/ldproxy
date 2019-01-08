@@ -163,7 +163,6 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
                  deleteTransaction.close();
                 }
             }
-            //TODO workaround if delete process not successful
         }
         if(!styleFound){
             throw new NotFoundException();
