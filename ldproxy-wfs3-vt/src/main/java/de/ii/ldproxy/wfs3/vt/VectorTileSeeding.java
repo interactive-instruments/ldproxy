@@ -99,11 +99,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
                             final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().get(EXTENSION_KEY);
 
-                            ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMax>> seedingList = tilesConfiguration.getTiles()
-                                    .stream()
-                                    .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
-
-                            Map<String, TilesConfiguration.Tiles.MinMax> seedingCollection = seedingList.values().asList().get(0);
+                            Map<String, TilesConfiguration.Tiles.MinMax> seedingCollection = tilesConfiguration.getTiles().getSeeding();
 
                             if (seedingCollection != null) {
                                 seedingDatasetEnabled = true;

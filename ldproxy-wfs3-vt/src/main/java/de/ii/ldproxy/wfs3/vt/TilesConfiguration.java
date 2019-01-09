@@ -26,15 +26,13 @@ public abstract class TilesConfiguration implements FeatureTypeConfigurationExte
 
     public static final String EXTENSION_KEY = "tilesExtension";
 
-    public abstract List<Tiles> getTiles();
+    public abstract Tiles getTiles();
 
     @Value.Immutable
     @Value.Modifiable
     @JsonDeserialize(as = ModifiableTiles.class)
     public static abstract class Tiles {
-
-        public abstract int getId();
-
+        
         @Value.Default
         public boolean getEnabled(){return true;}
 

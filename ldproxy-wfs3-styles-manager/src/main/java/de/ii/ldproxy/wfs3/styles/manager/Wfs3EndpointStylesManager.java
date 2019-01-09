@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * creates, updates and deletes a style from the service
@@ -49,7 +51,7 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
 
     @Override
     public List<String> getMethods() {
-        return ImmutableList.of("POST","PUT", "DELETE");
+        return ImmutableList.of("POST","PUT","DELETE");
     }
 
     /**
@@ -71,7 +73,9 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
         Scanner s = new Scanner(requestBody).useDelimiter("\\A");
         String requestBodyString = s.hasNext() ? s.next() : "";
 
-        if(!validateRequestBody(requestBodyString))
+        JsonNode requestBodyJson = validateRequestBodyJSON(requestBodyString);
+
+        if(requestBodyJson == null || !validateRequestBody(requestBodyJson))
             throw new BadRequestException();
 
         List <String> styleIds = new ArrayList<>();
@@ -79,13 +83,21 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
                styleIds.add(style.split("\\.")[0]);
         }
 
-        int id=0;
+        String styleName = requestBodyJson.get("name").asText();
+        Pattern styleNamePattern = Pattern.compile("[^a-z0-9-_]", Pattern.CASE_INSENSITIVE);
+        Matcher styleNameMatcher = styleNamePattern.matcher(styleName);
+        if(styleIds.contains(styleName) || styleName.contains(" ") || styleNameMatcher.find()){
+            int id=0;
 
-        while(styleIds.contains(Integer.toString(id))){
-            id++;
+            while(styleIds.contains(Integer.toString(id))){
+                id++;
+            }
+            putProcess(stylesStore,styles,Integer.toString(id),requestBodyString);
+
         }
-
-        putProcess(stylesStore,styles,Integer.toString(id),requestBodyString);
+        else{
+            putProcess(stylesStore,styles,styleName,requestBodyString);
+        }
 
         return Response.noContent().build();
     }
@@ -110,7 +122,9 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
         Scanner s = new Scanner(requestBody).useDelimiter("\\A");
         String requestBodyString = s.hasNext() ? s.next() : "";
 
-        if(!validateRequestBody(requestBodyString))
+        JsonNode requestBodyJson = validateRequestBodyJSON(requestBodyString);
+
+        if(requestBodyJson == null || !validateRequestBody(requestBodyJson))
             throw new BadRequestException();
 
         putProcess(stylesStore,styles,styleId,requestBodyString);
@@ -215,47 +229,61 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
     }
 
     /**
-     * checks if the request body from the PUT-Request is valid
+     * checks if the request body from the PUT-Request has valid content
      *
-     * @param requestBodyString     the new Style as a String
-     * @return true if json and content is valid
+     * @param requestBody     the new Style as a JsonNode
+     * @return true if content is valid
      */
-    public static boolean validateRequestBody(String requestBodyString){
+    public static boolean validateRequestBody(JsonNode requestBody){ //TODO change tests
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
-        try {
-            JsonNode requestBody = objectMapper.readTree(requestBodyString);
-            JsonNode version = requestBody.get("version");
-            JsonNode sources = requestBody.get("sources");
-            JsonNode layers = requestBody.get("layers");
-            if(layers!=null){
-                if(version == null || ( version.isInt() && version.intValue() != 8) || sources == null){
-                    return false;
-                }
-                int size = layers.size();
-                List<String> ids = new ArrayList<>();
-                List<String> types = ImmutableList.of("fill","line","symbol","circle","heatmap","fill-extrusion","raster","hillshade","background");
+        JsonNode version = requestBody.get("version");
+        JsonNode sources = requestBody.get("sources");
+        JsonNode layers = requestBody.get("layers");
 
-                for(int i=0; i<size; i++){
-                    JsonNode idNode = layers.get(i).get("id");
-                    JsonNode typeNode = layers.get(i).get("type");
-                    if(idNode==null || typeNode==null || !typeNode.isTextual() || !idNode.isTextual()){
-                        return false;
-                    }
-                    String id = idNode.textValue();
-                    String type = typeNode.textValue();
 
-                    if(ids.contains(id) || !types.contains(type)){
-                        return false;
-                    }
-                    ids.add(id);
-                }
-            }
-        } catch (Exception e) {
+        if(layers==null||version == null || ( version.isInt() && version.intValue() != 8) || sources == null){
             return false;
+        }
+        int size = layers.size();
+        List<String> ids = new ArrayList<>();
+        List<String> types = ImmutableList.of("fill","line","symbol","circle","heatmap","fill-extrusion","raster","hillshade","background");
+
+        for(int i=0; i<size; i++){
+            JsonNode idNode = layers.get(i).get("id");
+            JsonNode typeNode = layers.get(i).get("type");
+            if(idNode==null || typeNode==null || !typeNode.isTextual() || !idNode.isTextual()){
+                return false;
+            }
+            String id = idNode.textValue();
+            String type = typeNode.textValue();
+
+            if(ids.contains(id) || !types.contains(type)){
+                return false;
+            }
+            ids.add(id);
         }
 
         return true;
+    }
+
+    /**
+     * checks if the request body from the PUT-Request is valid json
+     *
+     * @param requestBodyString     the new Style as a String
+     * @return the request body as Json Node, if json is valid
+     */
+    public static JsonNode validateRequestBodyJSON(String requestBodyString){ //TODO change tests
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+        JsonNode requestBody;
+        try {
+            requestBody = objectMapper.readTree(requestBodyString);
+
+        } catch (Exception e) {
+            return null;
+        }
+
+        return requestBody;
     }
 }

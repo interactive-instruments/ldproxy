@@ -1,5 +1,6 @@
 package de.ii.ldproxy.wfs3.styles.manager;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * creates, updates and deletes a style from the collection
@@ -48,7 +51,7 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
 
     @Override
     public List<String> getMethods() {
-        return ImmutableList.of("POST","PUT", "DELETE");
+        return ImmutableList.of("POST","PUT","DELETE");
     }
 
     /**
@@ -70,7 +73,9 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
         Scanner s = new Scanner(requestBody).useDelimiter("\\A");
         String requestBodyString = s.hasNext() ? s.next() : "";
 
-        if(!Wfs3EndpointStylesManager.validateRequestBody(requestBodyString))
+        JsonNode requestBodyJson = Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBodyString);
+
+        if(requestBodyJson == null || !Wfs3EndpointStylesManager.validateRequestBody(requestBodyJson))
             throw new BadRequestException();
 
         List <String> styleIds = new ArrayList<>();
@@ -78,13 +83,21 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
             styleIds.add(style.split("\\.")[0]);
         }
 
-        int id=0;
+        String styleName = requestBodyJson.get("name").asText();
+        Pattern styleNamePattern = Pattern.compile("[^a-z0-9-_]", Pattern.CASE_INSENSITIVE);
+        Matcher styleNameMatcher = styleNamePattern.matcher(styleName);
+        if(styleIds.contains(styleName) || styleName.contains(" ") || styleNameMatcher.find()){
+            int id=0;
 
-        while(styleIds.contains(Integer.toString(id))){
-            id++;
+            while(styleIds.contains(Integer.toString(id))){
+                id++;
+            }
+            Wfs3EndpointStylesManager.putProcess(stylesStore,styles,Integer.toString(id),requestBodyString);
+
         }
-
-        Wfs3EndpointStylesManager.putProcess(stylesStore,styles,Integer.toString(id),requestBodyString);
+        else{
+            Wfs3EndpointStylesManager.putProcess(stylesStore,styles,styleName,requestBodyString);
+        }
 
         return Response.noContent().build();
     }
@@ -107,9 +120,11 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
         List<String> styles = stylesStore.getKeys();
 
         Scanner s = new Scanner(requestBody).useDelimiter("\\A");
-        String requestBodyString = s.hasNext() ? s.next() : ""; //TODO format string with \n
+        String requestBodyString = s.hasNext() ? s.next() : "";
 
-        if(!Wfs3EndpointStylesManager.validateRequestBody(requestBodyString))
+        JsonNode requestBodyJson = Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBodyString);
+
+        if(requestBodyJson == null || !Wfs3EndpointStylesManager.validateRequestBody(requestBodyJson))
             throw new BadRequestException();
 
         Wfs3EndpointStylesManager.putProcess(stylesStore,styles,styleId,requestBodyString);

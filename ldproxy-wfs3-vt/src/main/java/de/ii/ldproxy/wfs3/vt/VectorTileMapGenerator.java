@@ -51,11 +51,10 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
                         .getExtensions()
                         .get(EXTENSION_KEY);
 
-                ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
-                        .stream()
-                        .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
 
-                enabledMap.put(collectionId,tilesEnabled.values().asList().get(0));
+                boolean tilesEnabled =tilesConfiguration.getTiles().getEnabled();
+
+                enabledMap.put(collectionId,tilesEnabled);
             }
         }
         return enabledMap;
@@ -79,14 +78,12 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
                         .getExtensions()
                         .get(EXTENSION_KEY);
 
-                try {
-                    ImmutableMap<Integer, List<String>> formatsList = tilesConfiguration.getTiles()
-                            .stream()
-                            .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getFormats));
-                    formatsMap.put(collectionId,formatsList.values().asList().get(0));
-                }catch(NullPointerException ignored){
-                    formatsMap.put(collectionId, ImmutableList.of("application/json","application/vnd.mapbox-vector-tile"));
+                List<String> formatsList=tilesConfiguration.getTiles().getFormats();
+                if(formatsList==null){
+                    formatsList=(ImmutableList.of("application/json","application/vnd.mapbox-vector-tile"));
                 }
+                formatsMap.put(collectionId,formatsList);
+
             }
         }
         return formatsMap;
@@ -109,13 +106,11 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
                         .get(collectionId)
                         .getExtensions()
                         .get(EXTENSION_KEY);
-                ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMax>> minMaxList =null;
+                Map<String,TilesConfiguration.Tiles.MinMax> minMax =null;
                 if(!seeding){
                     try{
-                        minMaxList = tilesConfiguration.getTiles()
-                                .stream()
-                                .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getZoomLevels));
-                        minMaxMap.put(collectionId,minMaxList.values().asList().get(0));
+                        minMax = tilesConfiguration.getTiles().getZoomLevels();
+                        minMaxMap.put(collectionId,minMax);
 
                     }catch (NullPointerException ignored){
                         minMaxMap.put(collectionId,null);
@@ -124,10 +119,8 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
                 }
                 if(seeding){
                     try{
-                        minMaxList = tilesConfiguration.getTiles()
-                                .stream()
-                                .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
-                        minMaxMap.put(collectionId,minMaxList.values().asList().get(0));
+                        minMax=tilesConfiguration.getTiles().getSeeding();
+                        minMaxMap.put(collectionId,minMax);
                     }catch (NullPointerException ignored){
 
                         minMaxMap.put(collectionId,null);

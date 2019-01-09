@@ -60,13 +60,9 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                 .stream()
                 .filter(ft -> { try {
                     if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
-                        final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
-                        ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
-                                .stream()
-                                .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
-                        Boolean tilesCollectionEnabled = tilesEnabled.values().asList().get(0);
+                        TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
 
-                        if (tilesCollectionEnabled)
+                        if(tilesConfiguration.getTiles().getEnabled())
                             return true;
                     }
                     return false;
@@ -462,10 +458,8 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                             try{
                                 if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
                                     final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
-                                    ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
-                                            .stream()
-                                            .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
-                                    Boolean tilesCollectionEnabled = tilesEnabled.values().asList().get(0);
+
+                                    boolean tilesCollectionEnabled = tilesConfiguration.getTiles().getEnabled();
                                     if (!tilesCollectionEnabled)
                                         enableTilesCollectionInApi = false;
                                 }
