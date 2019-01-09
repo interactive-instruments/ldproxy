@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,9 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
 import org.immutables.value.Value;
 
+import java.util.Map;
+import javax.annotation.Nullable;
+
 /**
  * @author zahnen
  */
@@ -22,39 +25,29 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ModifiableFeatureTypeConfigurationWfs3.class)
 public abstract class FeatureTypeConfigurationWfs3 extends FeatureTypeConfiguration {
 
-    //public abstract TemporalExtent getTemporalExtent();
-
-    //public abstract BoundingBox getSpatialExtent();
-
     public abstract FeatureTypeExtent getExtent();
-    //TODO
-    public static class FeatureTypeExtent {
-        TemporalExtent temporal;
 
-        BoundingBox spatial;
+    public abstract Map<String, FeatureTypeConfigurationExtension> getExtensions();
 
-        public FeatureTypeExtent() {
-        }
+    //TODO move to extensions
+    @Nullable
+    public abstract FeatureTypeTiles getTiles();
 
-        public FeatureTypeExtent(TemporalExtent temporal, BoundingBox spatial) {
-            this.temporal = temporal;
-            this.spatial = spatial;
-        }
 
-        public TemporalExtent getTemporal() {
-            return temporal;
-        }
+    @Value.Immutable
+    @Value.Modifiable
+    @JsonDeserialize(as = ModifiableFeatureTypeExtent.class)
+    public static abstract class FeatureTypeExtent {
 
-        public void setTemporal(TemporalExtent temporal) {
-            this.temporal = temporal;
-        }
+        public abstract TemporalExtent getTemporal();
 
-        public BoundingBox getSpatial() {
-            return spatial;
-        }
+        @Nullable
+        public abstract BoundingBox getSpatial();
 
-        public void setSpatial(BoundingBox spatial) {
-            this.spatial = spatial;
-        }
+        @Value.Default
+        public boolean getSpatialComputed(){return false;}
+
     }
+
 }
+

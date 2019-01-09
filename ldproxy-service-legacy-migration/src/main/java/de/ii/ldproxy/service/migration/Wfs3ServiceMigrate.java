@@ -20,6 +20,7 @@ import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
 import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
@@ -193,7 +194,9 @@ public class Wfs3ServiceMigrate {
                                             .label((String) ft.get("displayName"));
 
                                     if (temporal != null) {
-                                        featureTypeConfigurationWfs3.extent(new FeatureTypeConfigurationWfs3.FeatureTypeExtent(new TemporalExtent((Long) temporal.get("start"), (Integer) temporal.get("end")), new BoundingBox()));
+                                        featureTypeConfigurationWfs3.extent(ImmutableFeatureTypeExtent.builder()
+                                                                                                      .temporal(new TemporalExtent((Long) temporal.get("start"), (Integer) temporal.get("end")))
+                                                                                                      .build());
                                     }
 
                                     return new AbstractMap.SimpleImmutableEntry<>(fid, featureTypeConfigurationWfs3.build());

@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -98,6 +98,8 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
             Wfs3GenericMapping targetMapping = new Wfs3GenericMapping();
             targetMapping.setEnabled(true);
             targetMapping.setType(GENERIC_TYPE.SPATIAL);
+            //TODO needed for reverse filter lookup
+            targetMapping.setName("geometry");
 
             if (!hasSpatialField) {
                 targetMapping.setFilterable(true);

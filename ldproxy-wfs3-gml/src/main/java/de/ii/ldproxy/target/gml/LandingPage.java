@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,7 +35,7 @@ public class LandingPage implements Wfs3Xml {
 
         //TODO: create abstraction for loading live data from provider - new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()
         //TODO check links
-        this.links =  wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty(), mediaType, alternativeMediaTypes);
+        this.links =  wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty(), mediaType, false, alternativeMediaTypes);
     }
 
     public LandingPage(List<Wfs3Link> links) {

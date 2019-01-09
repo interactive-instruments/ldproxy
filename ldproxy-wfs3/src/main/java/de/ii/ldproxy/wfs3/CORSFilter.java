@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3;
 
+import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -36,7 +37,8 @@ public class CORSFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        if (wfs3Request.getMediaType().matches(MediaType.APPLICATION_JSON_TYPE)) {
+        Wfs3MediaType mediaType = wfs3Request.getMediaType();
+        if (mediaType.matches(MediaType.APPLICATION_JSON_TYPE)||mediaType.matches(new MediaType("application","vnd.mapbox-vector-tile"))) {
             responseContext.getHeaders()
                            .add(
                                    "Access-Control-Allow-Origin", "*");

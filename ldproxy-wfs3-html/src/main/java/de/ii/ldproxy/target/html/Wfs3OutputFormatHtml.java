@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import de.ii.ldproxy.codelists.Codelist;
+import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
@@ -23,8 +24,10 @@ import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xsf.dropwizard.api.Dropwizard;
+import de.ii.xtraplatform.akka.http.AkkaHttp;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.feature.provider.wfs.FeatureProviderDataWfs;
 import de.ii.xtraplatform.feature.query.api.FeatureQuery;
 import de.ii.xtraplatform.feature.query.api.FeatureStream;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
@@ -81,11 +84,11 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
     @Requires
     private Dropwizard dropwizard;
 
-    //@Requires
-    //private CodelistStore codelistStore;
-
     @Requires(optional = true)
     private Codelist[] codelists;
+
+    @Requires
+    private AkkaHttp akkaHttp;
 
     @Override
     public String getConformanceClass() {
@@ -150,30 +153,42 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
     }
 
     @Override
-    public Response getItemsResponse(Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String collectionName, FeatureQuery query, FeatureStream<FeatureTransformer> featureTransformStream, CrsTransformer crsTransformer, String staticUrlPrefix, FeatureStream<GmlConsumer> featureStream) {
-        final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
-        int pageSize = query.getLimit();
-        int page = pageSize > 0 ? (pageSize + query.getOffset()) / pageSize : 0;
-        boolean isCollection = uriCustomizer.isLastPathSegment("items");
+    public boolean canTransformFeatures() {
+        return true;
+    }
 
-        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(uriCustomizer.copy(), isCollection, page, pageSize, mediaType, alternativeMediaTypes);
-
+    @Override
+    public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext) {
+        Wfs3ServiceData serviceData = transformationContext.getServiceData();
+        String collectionName = transformationContext.getCollectionName();
+        String staticUrlPrefix = transformationContext.getWfs3Request().getStaticUrlPrefix();
+        URICustomizer uriCustomizer = transformationContext.getWfs3Request()
+                                                           .getUriCustomizer();
         FeatureCollectionView featureTypeDataset;
-        if (isCollection) {
+
+        boolean bare = transformationContext.getWfs3Request().getUriCustomizer().getQueryParams().stream().anyMatch(nameValuePair -> nameValuePair.getName().equals("bare") && nameValuePair.getValue().equals("true"));
+
+        if (transformationContext.isFeatureCollection()) {
             featureTypeDataset = createFeatureCollectionView(serviceData.getFeatureTypes()
-                                                                        .get(collectionName), uriCustomizer.copy(), serviceData.getFilterableFieldsForFeatureType(collectionName, true), serviceData.getHtmlNamesForFeatureType(collectionName), staticUrlPrefix);
+                                                                        .get(collectionName), uriCustomizer.copy(), serviceData.getFilterableFieldsForFeatureType(collectionName, true), serviceData.getHtmlNamesForFeatureType(collectionName), staticUrlPrefix, bare);
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getFeatureTypes()
                                                                                         .get(collectionName)
-                                                                                        .getLabel(), links, uriCustomizer.copy());
+                                                                                        .getLabel(), transformationContext.getLinks(), uriCustomizer.copy());
         } else {
             featureTypeDataset = createFeatureDetailsView(serviceData.getFeatureTypes()
-                                                                     .get(collectionName), uriCustomizer.copy(), links, serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix);
+                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix);
         }
-        return response(stream(featureTransformStream, outputStream -> new FeatureTransformerHtml(new OutputStreamWriter(outputStream), isCollection, crsTransformer, page, pageSize, featureTypeDataset, codelists, dropwizard.getMustacheRenderer(), uriCustomizer.copy()
-                                                                                                                                                                                                                                                                    .cutPathAfterSegments(serviceData.getId())
-                                                                                                                                                                                                                                                                    .clearParameters()
-                                                                                                                                                                                                                                                                    .toString())));
+
+        //TODO
+        featureTypeDataset.hideMap = true;
+
+        return Optional.of(new FeatureTransformerHtml(ImmutableFeatureTransformationContextHtml.builder()
+                                                                                              .from(transformationContext)
+                                                                                               .featureTypeDataset(featureTypeDataset)
+                                                                                               .codelists(codelists)
+                                                                                               .mustacheRenderer(dropwizard.getMustacheRenderer())
+                                                                                              .build(), akkaHttp));
     }
 
     @Override
@@ -181,24 +196,7 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
         return Optional.of(new Gml2MicrodataMappingProvider());
     }
 
-    public Response getFile(String file) {
-        try {
-            final URL url = file.endsWith("favicon.ico") ? bc.getBundle()
-                                                             .getResource("img/favicon.ico") : bc.getBundle()
-                                                                                                 .getResource(file);
-
-            MediaType mediaType = file.endsWith(".css") ? new MediaType("text", "css", "utf-8") : file.endsWith(".js") ? new MediaType("application", "javascript", "utf-8") : new MediaType("image", "x-icon");
-
-            return Response.ok((StreamingOutput) output -> Resources.asByteSource(url)
-                                                                    .copyTo(output))
-                           .type(mediaType)
-                           .build();
-        } catch (Exception e) {
-            throw new NotFoundException();
-        }
-    }
-
-    private FeatureCollectionView createFeatureCollectionView(FeatureTypeConfigurationWfs3 featureType, URICustomizer uriCustomizer, Map<String, String> filterableFields, Map<String, String> htmlNames, String staticUrlPrefix) {
+    private FeatureCollectionView createFeatureCollectionView(FeatureTypeConfigurationWfs3 featureType, URICustomizer uriCustomizer, Map<String, String> filterableFields, Map<String, String> htmlNames, String staticUrlPrefix, boolean bare) {
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
@@ -212,7 +210,7 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
 
         DatasetView dataset = new DatasetView("", requestUri, null, staticUrlPrefix, htmlConfig);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureCollection", requestUri, featureType.getId(), featureType.getLabel(), staticUrlPrefix, htmlConfig);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), staticUrlPrefix, htmlConfig);
 
         //TODO featureTypeDataset.uriBuilder = uriBuilder;
         dataset.featureTypes.add(featureTypeDataset);
@@ -233,6 +231,10 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                                                           })
                                                           .collect(Collectors.toSet());
         featureTypeDataset.uriBuilder = uriBuilder;
+        featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
+
+        //TODO
+        featureTypeDataset.spatialSearch = featureType.getExtensions().containsKey("filterTransformer");
 
         return featureTypeDataset;
     }
@@ -272,6 +274,8 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                                                                                    .toUpperCase()))
                                           .map(wfs3Link -> new NavigationDTO(wfs3Link.getTypeLabel(), wfs3Link.getHref()))
                                           .collect(Collectors.toList());
+
+        featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
 
         /*new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("GeoJson", "f=json"))
@@ -314,27 +318,5 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                 .build();*/
 
 
-    }
-
-    private Response response(Object entity) {
-        return Response.ok()
-                       .entity(entity)
-                       .build();
-    }
-
-    // TODO: same for every Wfs3OutputFormat, extract
-    private StreamingOutput stream(FeatureStream<FeatureTransformer> featureTransformStream, final Function<OutputStream, FeatureTransformer> featureTransformer) {
-        return outputStream -> {
-            try {
-                featureTransformStream.apply(featureTransformer.apply(outputStream))
-                                      .toCompletableFuture()
-                                      .join();
-            } catch (CompletionException e) {
-                if (e.getCause() instanceof WebApplicationException) {
-                    throw (WebApplicationException) e.getCause();
-                }
-                throw new IllegalStateException("Feature stream error", e.getCause());
-            }
-        };
     }
 }

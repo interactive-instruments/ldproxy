@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,9 +7,11 @@
  */
 package de.ii.ldproxy.target.geojson;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,8 +33,13 @@ public class JsonNestingTracker {
     private List<List<String>> currentOpenActions;
 
     //TODO provide JsonNestingStrategy, use for open and close
+    private final JsonNestingStrategy nestingStrategy;
 
-    public void track(List<String> path, List<Integer> multiplicities) {
+    public JsonNestingTracker(JsonNestingStrategy nestingStrategy) {
+        this.nestingStrategy = nestingStrategy;
+    }
+
+    public void track(List<String> path, List<Integer> multiplicities, JsonGenerator json, boolean doNotCloseValueArray) throws IOException {
         this.pathDiffersAt = getPathDiffIndex(path, lastPath);
         Map<String, Integer> nextMultiplicityLevels =  getMultiplicityLevels(path, multiplicities, lastMultiplicityLevels);
         this.multiplicityDiffersAt = getMultiplicityDiffIndex(path, nextMultiplicityLevels, lastMultiplicityLevels);
@@ -44,8 +51,8 @@ public class JsonNestingTracker {
             inArray = differsAt() == multiplicityDiffersAt && nextMultiplicityLevels.getOrDefault(fieldName, 1) > 1;
         }
 
-        this.currentCloseActions = getCloseActions(lastPath, differsAt(), inArray);
-        this.currentOpenActions = getOpenActions(path, differsAt(), inArray);
+        this.currentCloseActions = getCloseActions(lastPath, differsAt(), inArray, json, doNotCloseValueArray);
+        this.currentOpenActions = getOpenActions(path, differsAt(), inArray, json);
 
         this.lastMultiplicityLevels = nextMultiplicityLevels;
         this.lastPath = path;
@@ -67,7 +74,7 @@ public class JsonNestingTracker {
         return lastMultiplicityLevels.getOrDefault(multiplicityKey, 1);
     }
 
-    private List<String> getCloseActions(List<String> previousPath, int nextPathDiffersAt, boolean inArray) {
+    private List<String> getCloseActions(List<String> previousPath, int nextPathDiffersAt, boolean inArray, JsonGenerator json, boolean doNotCloseValueArray) throws IOException {
         List<String> actions = new ArrayList<>();
 
         for (int i = previousPath.size()-1; i >= nextPathDiffersAt; i--) {
@@ -78,12 +85,14 @@ public class JsonNestingTracker {
             boolean inValueArray = inArray && previousPath.size() -1 == nextPathDiffersAt;
             //omit when already inside of object array
             boolean inObjectArray = closeObject && inArray && i == nextPathDiffersAt;
-            boolean closeArray = element.contains("[") && !inValueArray && !inObjectArray;//(closeObject && i == nextPathDiffersAt && i > 0);
+            boolean closeArray = element.contains("[") && !inValueArray && !inObjectArray && !(doNotCloseValueArray && i == previousPath.size()-1);//(closeObject && i == nextPathDiffersAt && i > 0);
 
             if (closeObject) {
+                nestingStrategy.closeObject(json);
                 actions.add("OBJECT");
             }
             if (closeArray) {
+                nestingStrategy.closeArray(json);
                 actions.add("ARRAY");
             }
         }
@@ -91,7 +100,7 @@ public class JsonNestingTracker {
         return actions;
     }
 
-    private List<List<String>> getOpenActions(List<String> nextPath, int nextPathDiffersAt, boolean inArray) {
+    private List<List<String>> getOpenActions(List<String> nextPath, int nextPathDiffersAt, boolean inArray, JsonGenerator json) throws IOException {
         List<List<String>> actions = new ArrayList<>();
 
         for (int i = nextPathDiffersAt; i < nextPath.size(); i++) {
@@ -106,13 +115,28 @@ public class JsonNestingTracker {
 
             List<String> a = new ArrayList<>();
             if (openArray) {
+                if (element.contains("[")) {
+                    // array field
+                    nestingStrategy.openArray(json, element.substring(0, element.indexOf("[")));
+                } else {
+                    //TODO ever used?
+                    nestingStrategy.openArray(json);
+                }
                 a.add("ARRAY");
             }
             if (openObject) {
+                if (element.contains("[")) {
+                    // in object array
+                    nestingStrategy.openObjectInArray(json, element.substring(0, element.indexOf("[")));
+                } else {
+                    // object field
+                    nestingStrategy.openObject(json, element);
+                }
                 a.add("OBJECT");
             }
             actions.add(a);
         }
+        nestingStrategy.open(json);
 
         return actions;
     }

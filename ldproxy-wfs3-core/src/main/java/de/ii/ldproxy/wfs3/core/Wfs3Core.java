@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.core;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collection;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collections;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3Collection;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotFoundException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -85,7 +87,9 @@ public class Wfs3Core {
                                    .collect(Collectors.toList()))
                 .build();
 
-        List<Wfs3Link> wfs3Links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, mediaType, alternativeMediaTypes);
+
+       boolean tilesEnabled= checkTilesEnabled(serviceData);
+       List<Wfs3Link> wfs3Links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, mediaType,tilesEnabled, alternativeMediaTypes);
 
 
         return ImmutableWfs3Collections.builder()
@@ -96,21 +100,22 @@ public class Wfs3Core {
     }
 
     public Wfs3Collection createCollection(FeatureTypeConfigurationWfs3 featureType, Wfs3LinksGenerator wfs3LinksGenerator, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, boolean isNested) {
-        Wfs3Collection collection = new Wfs3Collection();
 
-        String qn = featureType.getLabel()/*service.getWfsAdapter()
+
+        final String qn = featureType.getLabel()/*service.getWfsAdapter()
                                                                .getNsStore()
                                                                .getNamespacePrefix(featureType.getNamespace()) + ":" + featureType.getName()*/;
 
-        collection.setName(featureType.getId());
-        collection.setTitle(featureType.getLabel());
-        collection.setPrefixedName(qn);
-        collection.setLinks(wfs3LinksGenerator.generateDatasetCollectionLinks(uriCustomizer.copy(), featureType.getId(), featureType.getLabel(), Optional.empty() /* new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType(ImmutableMap.of(featureType.getNamespace(), ImmutableList.of(featureType.getName())))).getAsUrl()*/, mediaType, alternativeMediaTypes));
+        ImmutableWfs3Collection.Builder collection = ImmutableWfs3Collection.builder()
+                                                                            .name(featureType.getId())
+                                                                            .title(featureType.getLabel())
+                                                                            .description(featureType.getDescription())
+                                                                            .prefixedName(qn)
+                                                                            .links(wfs3LinksGenerator.generateDatasetCollectionLinks(uriCustomizer.copy(), featureType.getId(), featureType.getLabel(), Optional.empty() /* new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType(ImmutableMap.of(featureType.getNamespace(), ImmutableList.of(featureType.getName())))).getAsUrl()*/, mediaType, alternativeMediaTypes));
 
-        collection.setExtent(new Wfs3Extent());
         if (serviceData.getFilterableFieldsForFeatureType(featureType.getId())
                        .containsKey("time")) {
-            collection.setExtent(new Wfs3Extent(
+            collection.extent(new Wfs3Extent(
                     featureType.getExtent()
                                .getTemporal()
                                .getStart(),
@@ -130,7 +135,7 @@ public class Wfs3Core {
                                .getSpatial()
                                .getYmax()));
         } else {
-            collection.setExtent(new Wfs3Extent(
+            collection.extent(new Wfs3Extent(
                     featureType.getExtent()
                                .getSpatial()
                                .getXmin(),
@@ -145,8 +150,9 @@ public class Wfs3Core {
                                .getYmax()));
         }
 
-        if (!isNested) {
-            collection.setCrs(
+        //TODO: to crs extension
+        if (isNested) {
+            collection.crs(
                     ImmutableList.<String>builder()
                             .add(serviceData.getFeatureProvider()
                                             .getNativeCrs()
@@ -160,11 +166,20 @@ public class Wfs3Core {
             );
         }
 
-        for (Wfs3CollectionMetadataExtension wfs3CollectionMetadataExtension: getCollectionExtenders()) {
-            collection = wfs3CollectionMetadataExtension.process(collection, uriCustomizer.copy(), isNested);
+        for (Wfs3CollectionMetadataExtension wfs3CollectionMetadataExtension : getCollectionExtenders()) {
+            collection = wfs3CollectionMetadataExtension.process(collection, featureType, uriCustomizer.copy(), isNested);
         }
 
-        return collection;
+        return collection.build();
+    }
+
+    private static boolean checkTilesEnabled(Wfs3ServiceData serviceData){
+
+        return serviceData
+                .getFeatureTypes()
+                .values()
+                .stream()
+                .anyMatch(ft -> { try{ return ft.getTiles().getEnabled(); } catch (Throwable ignored){return false;} });
     }
 
 }

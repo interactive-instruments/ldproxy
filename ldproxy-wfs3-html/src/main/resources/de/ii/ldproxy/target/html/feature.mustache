@@ -1,14 +1,11 @@
 <div {{{microdata}}}>
     {{#idAsUrl}}
         <h1 itemprop="name">{{name}}</h1>
-        <link href="{{path}}./" {{{id.microdata}}}/>
-        <link href="{{path}}./?f=html" itemprop="hasMap"/>
-        {{#requestUrl}}
-        <link href="{{.}}" itemprop="sameAs"/>
-        {{/requestUrl}}
+        <span class="d-none" {{{id.microdata}}}>{{canonicalUrl}}</span>
     {{/idAsUrl}}
     {{^idAsUrl}}
-        <h4 class="mt-3 mb-1"><a href="{{#currentUrlWithSegment}}{{id.value}}{{/currentUrlWithSegment}}" {{{id.microdata}}}><span itemprop="name">{{name}}</span></a></h4>
+        <h4 class="mt-3 mb-1"><a href="{{#currentUrlWithSegment}}{{id.value}}{{/currentUrlWithSegment}}{{additionalParams}}"><span itemprop="name">{{name}}</span></a></h4>
+        <span class="d-none" itemprop="sameAs">{{#currentUrlWithSegmentClearParams}}{{id.value}}{{/currentUrlWithSegmentClearParams}}</span>
     {{/idAsUrl}}
         {{#children}}
             {{> property}}

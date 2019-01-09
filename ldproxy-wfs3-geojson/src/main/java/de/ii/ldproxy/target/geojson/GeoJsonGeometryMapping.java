@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,13 +10,14 @@ package de.ii.ldproxy.target.geojson;
 import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
 import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.transformer.api.SimpleFeatureGeometryFrom;
 
 /**
  * @author zahnen
  */
 public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
 
-    public enum GEO_JSON_GEOMETRY_TYPE {
+    public enum GEO_JSON_GEOMETRY_TYPE implements SimpleFeatureGeometryFrom {
 
         POINT("Point", SimpleFeatureGeometry.POINT),
         MULTI_POINT("MultiPoint", SimpleFeatureGeometry.MULTI_POINT),
@@ -51,6 +52,42 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
             }
 
             return NONE;
+        }
+
+        @Override
+        public SimpleFeatureGeometry toSimpleFeatureGeometry() {
+            SimpleFeatureGeometry simpleFeatureGeometry = SimpleFeatureGeometry.NONE;
+
+            switch (this) {
+
+                case POINT:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.POINT;
+                    break;
+                case MULTI_POINT:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.MULTI_POINT;
+                    break;
+                case LINE_STRING:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.LINE_STRING;
+                    break;
+                case MULTI_LINE_STRING:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.MULTI_LINE_STRING;
+                    break;
+                case POLYGON:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.POLYGON;
+                    break;
+                case MULTI_POLYGON:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.MULTI_POLYGON;
+                    break;
+                case GEOMETRY_COLLECTION:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.GEOMETRY_COLLECTION;
+                    break;
+                case GENERIC:
+                    break;
+                case NONE:
+                    break;
+            }
+
+            return simpleFeatureGeometry;
         }
 
         public boolean isValid() {
@@ -88,6 +125,8 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
 
     @Override
     public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        super.mergeCopyWithBase(targetMapping);
+
         GeoJsonGeometryMapping copy = new GeoJsonGeometryMapping(this);
         Wfs3GenericMapping baseMapping = (Wfs3GenericMapping) targetMapping;
 

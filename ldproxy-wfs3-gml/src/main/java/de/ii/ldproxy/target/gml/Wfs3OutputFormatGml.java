@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 package de.ii.ldproxy.target.gml;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
 import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
@@ -99,16 +100,16 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
     }
 
     @Override
-    public Response getItemsResponse(Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String collectionName, FeatureQuery query, FeatureStream<FeatureTransformer> featureTransformStream, CrsTransformer crsTransformer, String staticUrlPrefix, FeatureStream<GmlConsumer> featureStream) {
-        final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
-        int pageSize = query.getLimit();
-        int page = pageSize > 0 ? (pageSize + query.getOffset()) / pageSize : 0;
-        boolean isCollection = uriCustomizer.isLastPathSegment("items");
+    public boolean canPassThroughFeatures() {
+        return true;
+    }
 
-        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(uriCustomizer, isCollection, page, pageSize, mediaType, alternativeMediaTypes);
-
-
-        return response(stream(featureStream, outputStream -> new FeatureTransformerGmlUpgrade(outputStream, isCollection, ((FeatureProviderDataWfs)serviceData.getFeatureProvider()).getConnectionInfo().getNamespaces(), crsTransformer, links, pageSize, query.getMaxAllowableOffset())));
+    @Override
+    public Optional<GmlConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
+        return Optional.of(new FeatureTransformerGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
+                                                                                                    .from(transformationContext)
+                                                                                                    .namespaces(((FeatureProviderDataWfs)transformationContext.getServiceData().getFeatureProvider()).getConnectionInfo().getNamespaces())
+                                                                                                    .build()));
     }
 
     @Override
@@ -128,21 +129,5 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
         }
 
         return response.build();
-    }
-
-    // TODO: same for every Wfs3OutputFormat, extract
-    private StreamingOutput stream(FeatureStream<GmlConsumer> featureTransformStream, final Function<OutputStream, GmlConsumer> featureTransformer) {
-        return outputStream -> {
-            try {
-                featureTransformStream.apply(featureTransformer.apply(outputStream))
-                                      .toCompletableFuture()
-                                      .join();
-            } catch (CompletionException e) {
-                if (e.getCause() instanceof WebApplicationException) {
-                    throw (WebApplicationException) e.getCause();
-                }
-                throw new IllegalStateException("Feature stream error", e.getCause());
-            }
-        };
     }
 }

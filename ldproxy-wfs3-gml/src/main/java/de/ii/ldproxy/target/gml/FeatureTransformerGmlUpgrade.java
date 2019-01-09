@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -68,16 +68,16 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
     private boolean isLastPage;
     private String locations;
 
-    public FeatureTransformerGmlUpgrade(OutputStream outputStream, boolean isFeatureCollection, Map<String, String> namespaces, CrsTransformer crsTransformer, List<Wfs3Link> links, int pageSize, double maxAllowableOffset) {
-        this.outputStream = outputStream;
-        this.isFeatureCollection = isFeatureCollection;
+    public FeatureTransformerGmlUpgrade(FeatureTransformationContextGml transformationContext) {
+        this.outputStream = transformationContext.getOutputStream();
+        this.isFeatureCollection = transformationContext.isFeatureCollection();
         this.writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
-        this.namespaces = new XMLNamespaceNormalizer(namespaces);
-        this.crsTransformer = crsTransformer;
-        this.links = links;
+        this.namespaces = new XMLNamespaceNormalizer(transformationContext.getNamespaces());
+        this.crsTransformer = transformationContext.getCrsTransformer().orElse(null);
+        this.links = transformationContext.getLinks();
         this.escaper = XmlEscapers.xmlAttributeEscaper();
-        this.pageSize  = pageSize;
-        this.maxAllowableOffset = maxAllowableOffset;
+        this.pageSize  = transformationContext.getLimit();
+        this.maxAllowableOffset = transformationContext.getMaxAllowableOffset();
         this.namespaces.addNamespace("wfs", "http://www.opengis.net/wfs/3.0", true);
         this.namespaces.addNamespace("atom", "http://www.w3.org/2005/Atom", true);
     }
@@ -190,7 +190,7 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
     }
 
     @Override
-    public void onGmlAttribute(String namespace, String localName, List<String> path, String value) throws Exception {
+    public void onGmlAttribute(String namespace, String localName, List<String> path, String value, List<Integer> multiplicities) throws Exception {
         LOGGER.debug("ATTR {} {} {}", path, localName, value);
 
         String newValue = value;

@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@ package de.ii.ldproxy.target.html;
 
 import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.base.Splitter;
+import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.xsf.core.views.GenericView;
 import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
@@ -19,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static de.ii.xtraplatform.util.functional.LambdaWithException.mayThrow;
 
 /**
  *

@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.generator;
 
 import com.google.common.base.Strings;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
 import de.ii.ldproxy.wfs3.api.ModifiableFeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ModifiableWfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.ModifiableWfs3ServiceMetadata;
@@ -102,7 +103,10 @@ public class Metadata2Wfs3 extends AbstractFeatureProviderMetadataConsumer {
 
     @Override
     public void analyzeFeatureTypeBoundingBox(String featureTypeName, String xmin, String ymin, String xmax, String ymax) {
-        currentFeatureType.setExtent(new FeatureTypeConfigurationWfs3.FeatureTypeExtent(new TemporalExtent(0, 0), new BoundingBox(Double.valueOf(xmin), Double.valueOf(ymin), Double.valueOf(xmax), Double.valueOf(ymax), new EpsgCrs(4326))));
+        currentFeatureType.setExtent(ImmutableFeatureTypeExtent.builder()
+                                                               .temporal(new TemporalExtent(0, 0))
+                                                               .spatial(new BoundingBox(Double.valueOf(xmin), Double.valueOf(ymin), Double.valueOf(xmax), Double.valueOf(ymax), new EpsgCrs(4326)))
+                                                               .build());
     }
 
     private String getFeatureTypeId(String featureTypeName) {

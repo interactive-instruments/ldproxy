@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,13 +10,14 @@ package de.ii.ldproxy.target.html;
 import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
 import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.transformer.api.SimpleFeatureGeometryFrom;
 
 /**
  * @author zahnen
  */
 public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
 
-    public enum MICRODATA_GEOMETRY_TYPE {
+    public enum MICRODATA_GEOMETRY_TYPE implements SimpleFeatureGeometryFrom {
 
         POINT(SimpleFeatureGeometry.POINT, SimpleFeatureGeometry.MULTI_POINT),
         LINE_STRING(SimpleFeatureGeometry.LINE_STRING, SimpleFeatureGeometry.MULTI_LINE_STRING),
@@ -40,6 +41,30 @@ public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
             }
 
             return NONE;
+        }
+
+        @Override
+        public SimpleFeatureGeometry toSimpleFeatureGeometry() {
+            SimpleFeatureGeometry simpleFeatureGeometry = SimpleFeatureGeometry.NONE;
+
+            switch (this) {
+
+                case POINT:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.POINT;
+                    break;
+                case LINE_STRING:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.LINE_STRING;
+                    break;
+                case POLYGON:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.POLYGON;
+                    break;
+                case GENERIC:
+                    break;
+                case NONE:
+                    break;
+            }
+
+            return simpleFeatureGeometry;
         }
 
         public boolean isValid() {
@@ -77,6 +102,8 @@ public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
 
     @Override
     public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        super.mergeCopyWithBase(targetMapping);
+
         MicrodataGeometryMapping copy = new MicrodataGeometryMapping(this);
         Wfs3GenericMapping baseMapping = (Wfs3GenericMapping) targetMapping;
 

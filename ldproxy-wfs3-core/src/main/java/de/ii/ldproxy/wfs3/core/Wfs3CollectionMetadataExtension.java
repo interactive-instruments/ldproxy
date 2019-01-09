@@ -7,8 +7,9 @@
  */
 package de.ii.ldproxy.wfs3.core;
 
+import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collection;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Collection;
 import de.ii.ldproxy.wfs3.api.Wfs3Extension;
 
 /**
@@ -16,5 +17,5 @@ import de.ii.ldproxy.wfs3.api.Wfs3Extension;
  */
 public interface Wfs3CollectionMetadataExtension extends Wfs3Extension {
 
-    Wfs3Collection process(Wfs3Collection collection, URICustomizer uriCustomizer, boolean isNested);
+    ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested);
 }

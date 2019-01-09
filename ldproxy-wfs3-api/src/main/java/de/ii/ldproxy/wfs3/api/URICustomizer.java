@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -230,6 +230,13 @@ public class URICustomizer extends URIBuilder {
     public URICustomizer ensureTrailingSlash() {
         if (!this.getPath().endsWith("/")) {
             this.setPath(this.getPath() + "/");
+        }
+        return this;
+    }
+
+    public URICustomizer ensureNoTrailingSlash() {
+        if (this.getPath().endsWith("/")) {
+            this.setPath(this.getPath().substring(0,getPath().length()-1));
         }
         return this;
     }

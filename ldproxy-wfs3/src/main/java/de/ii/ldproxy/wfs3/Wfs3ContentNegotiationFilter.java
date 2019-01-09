@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 package de.ii.ldproxy.wfs3;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.xsf.core.server.CoreServerConfig;
@@ -49,6 +50,7 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
             .put("yaml", new MediaType("application", "yaml"))
             .put("html", MediaType.TEXT_HTML_TYPE)
             .put("xml", MediaType.APPLICATION_XML_TYPE)
+            .put("mvt", new MediaType ("application","vnd.mapbox-vector-tile"))
             .build();
 
     @Requires
@@ -79,67 +81,73 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
                 .orElseThrow(NotAcceptableException::new);
 
         wfs3RequestContext.inject(requestContext, ImmutableWfs3RequestContextImpl.builder()
-                                                                                 .requestUri(requestContext.getUriInfo()
-                                                                                                           .getRequestUri())
-                                                                                 .externalUri(externalUri)
-                                                                                 .mediaType(wfs3MediaType)
-                                                                                 .build());
+                .requestUri(requestContext.getUriInfo()
+                        .getRequestUri())
+                .externalUri(externalUri)
+                .mediaType(wfs3MediaType)
+                .build());
     }
 
     private Optional<Wfs3MediaType> negotiateMediaType(Request request) {
-        MediaType[] supportedMediaTypes = wfs3ConformanceClassRegistry.getOutputFormats()
-                                                                      .keySet()
-                                                                      .stream()
-                                                                      .flatMap(this::toTypes)
-                                                                      .distinct()
-                                                                      .toArray(MediaType[]::new);
+        //TODO: mvt is added explicitely, adjust Wfs3ExtensionRegistry to support additional types
+        Stream<MediaType> mediaTypeStream = Stream.concat(wfs3ConformanceClassRegistry.getOutputFormats()
+                .keySet()
+                .stream()
+                .flatMap(this::toTypes)
+                .distinct(), Stream.of(MIME_TYPES.get("mvt")));
+
+        MediaType[] supportedMediaTypes = mediaTypeStream.toArray(MediaType[]::new);
 
         Variant variant = request.selectVariant(Variant.mediaTypes(supportedMediaTypes)
-                                                       .build());
+                .build());
 
 
         return Optional.ofNullable(variant)
-                       .map(this::findMatchingWfs3MediaType);
+                .map(this::findMatchingWfs3MediaType);
     }
 
     private Wfs3MediaType findMatchingWfs3MediaType(Variant variant) {
-        return wfs3ConformanceClassRegistry.getOutputFormats()
-                                           .keySet()
-                                           .stream()
-                                           .filter(wfs3MediaType -> wfs3MediaType.matches(variant.getMediaType()))
-                                           .findFirst()
-                                           .orElse(null);
+        //TODO: mvt is added explicitely, adjust Wfs3ExtensionRegistry to support additional types
+        Stream<Wfs3MediaType> wfs3MediaTypeStream = Stream.concat(wfs3ConformanceClassRegistry.getOutputFormats()
+                .keySet()
+                .stream(), Stream.of(ImmutableWfs3MediaType.builder()
+                .main(MIME_TYPES.get("mvt"))
+                .build()));
+
+        return wfs3MediaTypeStream.filter(wfs3MediaType -> wfs3MediaType.matches(variant.getMediaType()))
+                .findFirst()
+                .orElse(null);
     }
 
     private Stream<MediaType> toTypes(Wfs3MediaType wfs3MediaType) {
         return Stream.of(wfs3MediaType.main(), wfs3MediaType.metadata())
-                     .map(mediaType -> wfs3MediaType.qs() < 1000 ? new QualitySourceMediaType(mediaType.getType(), mediaType.getSubtype(), wfs3MediaType.qs(), mediaType.getParameters()) : mediaType);
+                .map(mediaType -> wfs3MediaType.qs() < 1000 ? new QualitySourceMediaType(mediaType.getType(), mediaType.getSubtype(), wfs3MediaType.qs(), mediaType.getParameters()) : mediaType);
     }
 
     //TODO: parameter values from outputformats
     private void evaluateFormatParameter(ContainerRequestContext requestContext) throws IOException {
         // Quick check for a 'f' parameter
         if (!requestContext.getUriInfo()
-                           .getQueryParameters()
-                           .containsKey(CONTENT_TYPE_PARAMETER)) {
+                .getQueryParameters()
+                .containsKey(CONTENT_TYPE_PARAMETER)) {
             // overwrite wildcard
             if (requestContext.getHeaderString(ACCEPT_HEADER) == null || requestContext.getHeaderString(ACCEPT_HEADER)
-                                                                                       .length() == 0 || requestContext.getHeaders()
-                                                                                                                       .getFirst(ACCEPT_HEADER)
-                                                                                                                       .trim()
-                                                                                                                       .equals("*/*")) {
+                    .length() == 0 || requestContext.getHeaders()
+                    .getFirst(ACCEPT_HEADER)
+                    .trim()
+                    .equals("*/*")) {
                 requestContext.getHeaders()
-                              .putSingle(ACCEPT_HEADER, MediaType.APPLICATION_JSON);
+                        .putSingle(ACCEPT_HEADER, MediaType.APPLICATION_JSON);
             }
         } else {
             String format = requestContext.getUriInfo()
-                                          .getQueryParameters()
-                                          .getFirst(CONTENT_TYPE_PARAMETER);
+                    .getQueryParameters()
+                    .getFirst(CONTENT_TYPE_PARAMETER);
 
             final MediaType accept = MIME_TYPES.get(format);
             if (accept != null) {
                 requestContext.getHeaders()
-                              .putSingle(ACCEPT_HEADER, accept.toString());
+                        .putSingle(ACCEPT_HEADER, accept.toString());
             }
         }
     }
