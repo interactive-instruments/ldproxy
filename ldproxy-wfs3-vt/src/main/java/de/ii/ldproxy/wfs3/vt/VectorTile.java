@@ -411,13 +411,13 @@ class VectorTile {
      * @param crsTransformation         the coordinate reference system transformation object to transform coordinates
      * @throws FileNotFoundException
      */
-    public static Map<String,String> checkZoomLevel(int zoomLevel, Map<String, Map<String, TilesConfiguration.Tiles.MinMax>> zoomLevelsMap, Wfs3Service wfsService, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache, VectorTilesCache cache, boolean isCollection, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation) throws FileNotFoundException {
+    public static Map<String,String> checkZoomLevel(int zoomLevel, Map<String, Map<String, TilesConfiguration.MinMax>> zoomLevelsMap, Wfs3Service wfsService, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache, VectorTilesCache cache, boolean isCollection, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation) throws FileNotFoundException {
         Map<String,String> zoomLevels=new HashMap<>();
 
         try {
             if(!Objects.isNull(zoomLevelsMap)&&zoomLevelsMap.containsKey(collectionId)) {
 
-                Map<String, TilesConfiguration.Tiles.MinMax> tilesZoomLevels = zoomLevelsMap.get(collectionId);
+                Map<String, TilesConfiguration.MinMax> tilesZoomLevels = zoomLevelsMap.get(collectionId);
 
                 int maxZoom = 0;
                 int minZoom = 0;

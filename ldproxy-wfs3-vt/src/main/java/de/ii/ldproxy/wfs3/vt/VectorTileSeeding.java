@@ -99,7 +99,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
                             final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().get(EXTENSION_KEY);
 
-                            Map<String, TilesConfiguration.Tiles.MinMax> seedingCollection = tilesConfiguration.getTiles().getSeeding();
+                            Map<String, TilesConfiguration.MinMax> seedingCollection = tilesConfiguration.getSeeding();
 
                             if (seedingCollection != null) {
                                 seedingDatasetEnabled = true;
@@ -172,13 +172,13 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         List<Integer> minZoomList = new ArrayList<>();
         List<Integer> maxZoomList = new ArrayList<>();
         Set<String> tilingSchemeIdsCollection = null;
-        Map<String, Map<String, TilesConfiguration.Tiles.MinMax>> seedingMap = VectorTileMapGenerator.getMinMaxMap(wfs3ServiceData, true);
+        Map<String, Map<String, TilesConfiguration.MinMax>> seedingMap = VectorTileMapGenerator.getMinMaxMap(wfs3ServiceData, true);
         for (String collectionId : collectionIdsDataset) {
 
             if (!Objects.isNull(seedingMap) && seedingMap.containsKey(collectionId)) {
 
 
-                Map<String, TilesConfiguration.Tiles.MinMax> seeding = seedingMap.get(collectionId);
+                Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
 
 
                 tilingSchemeIdsCollection = seeding.keySet();
@@ -270,7 +270,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
 
                             for (String collectionId : collectionIdsMVTEnabled) {
-                                Map<String, TilesConfiguration.Tiles.MinMax> seeding = seedingMap.get(collectionId);
+                                Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
                                 if(!Objects.isNull(seeding)){
                                     int collectionMax = seeding.get(tilingSchemeId).getMax();
                                     int collectionMin = seeding.get(tilingSchemeId).getMin();
@@ -292,7 +292,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
                                     VectorTileMapGenerator.getFormatsMap(wfs3ServiceData),VectorTileMapGenerator.getMinMaxMap(wfs3ServiceData,true), false, true, false);
 
                             for (String collectionId : collectionIdsOnlyJSON) {
-                                Map<String, TilesConfiguration.Tiles.MinMax> seeding = seedingMap.get(collectionId);
+                                Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
                                 if(!Objects.isNull(seeding)){
                                     int collectionMax = seeding.get(tilingSchemeId).getMax();
                                     int collectionMin = seeding.get(tilingSchemeId).getMin();

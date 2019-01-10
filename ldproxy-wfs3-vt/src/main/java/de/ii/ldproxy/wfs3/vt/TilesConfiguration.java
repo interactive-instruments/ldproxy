@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationExtension;
+import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationExtension2;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -26,33 +27,23 @@ public abstract class TilesConfiguration implements FeatureTypeConfigurationExte
 
     public static final String EXTENSION_KEY = "tilesExtension";
 
-    public abstract Tiles getTiles();
-
+    @JsonMerge(value = OptBoolean.FALSE)
+    @Nullable
+    public abstract List<String> getFormats();
     @Value.Immutable
     @Value.Modifiable
-    @JsonDeserialize(as = ModifiableTiles.class)
-    public static abstract class Tiles {
-        
-        @Value.Default
-        public boolean getEnabled(){return true;}
-
-        @JsonMerge(value = OptBoolean.FALSE)
-        @Nullable
-        public abstract List<String> getFormats();
-        @Value.Immutable
-        @Value.Modifiable
-        @Value.Style(deepImmutablesDetection = true)
-        @JsonDeserialize(as = ImmutableMinMax.class)
-        public static abstract class MinMax{
-            public abstract int getMin();
-            public abstract int getMax();
-        }
-        @Nullable
-        public abstract Map<String,MinMax> getSeeding();
-        @Nullable
-        public abstract Map<String,MinMax> getZoomLevels();
-
+    @Value.Style(deepImmutablesDetection = true)
+    @JsonDeserialize(as = ImmutableMinMax.class)
+    public static abstract class MinMax{
+        public abstract int getMin();
+        public abstract int getMax();
     }
+    @Nullable
+    public abstract Map<String,MinMax> getSeeding();
+    @Nullable
+    public abstract Map<String,MinMax> getZoomLevels();
+
+
 
 
 }

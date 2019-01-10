@@ -52,7 +52,7 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
                         .get(EXTENSION_KEY);
 
 
-                boolean tilesEnabled =tilesConfiguration.getTiles().getEnabled();
+                boolean tilesEnabled =tilesConfiguration.getEnabled();
 
                 enabledMap.put(collectionId,tilesEnabled);
             }
@@ -78,7 +78,7 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
                         .getExtensions()
                         .get(EXTENSION_KEY);
 
-                List<String> formatsList=tilesConfiguration.getTiles().getFormats();
+                List<String> formatsList=tilesConfiguration.getFormats();
                 if(formatsList==null){
                     formatsList=(ImmutableList.of("application/json","application/vnd.mapbox-vector-tile"));
                 }
@@ -96,8 +96,8 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
      * @param seeding           if seeding true, we observe seeding MinMax, if false zoomLevel MinMax
      * @return a map with all CollectionIds, which have the tiles Extension and the zoomLevel or seeding
      */
-    public static Map<String, Map<String, TilesConfiguration.Tiles.MinMax>> getMinMaxMap(Wfs3ServiceData serviceData,Boolean seeding){
-        Map<String, Map<String, TilesConfiguration.Tiles.MinMax>> minMaxMap = new HashMap<>();
+    public static Map<String, Map<String, TilesConfiguration.   MinMax>> getMinMaxMap(Wfs3ServiceData serviceData,Boolean seeding){
+        Map<String, Map<String, TilesConfiguration.MinMax>> minMaxMap = new HashMap<>();
 
         for(String collectionId: serviceData.getFeatureTypes().keySet()) {
             if (serviceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
@@ -106,10 +106,10 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
                         .get(collectionId)
                         .getExtensions()
                         .get(EXTENSION_KEY);
-                Map<String,TilesConfiguration.Tiles.MinMax> minMax =null;
+                Map<String,TilesConfiguration.MinMax> minMax =null;
                 if(!seeding){
                     try{
-                        minMax = tilesConfiguration.getTiles().getZoomLevels();
+                        minMax = tilesConfiguration.getZoomLevels();
                         minMaxMap.put(collectionId,minMax);
 
                     }catch (NullPointerException ignored){
@@ -119,7 +119,7 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
                 }
                 if(seeding){
                     try{
-                        minMax=tilesConfiguration.getTiles().getSeeding();
+                        minMax=tilesConfiguration.getSeeding();
                         minMaxMap.put(collectionId,minMax);
                     }catch (NullPointerException ignored){
 

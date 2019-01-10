@@ -62,7 +62,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                     if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
                         TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
 
-                        if(tilesConfiguration.getTiles().getEnabled())
+                        if(tilesConfiguration.getEnabled())
                             return true;
                     }
                     return false;
@@ -459,7 +459,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                                 if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
                                     final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
 
-                                    boolean tilesCollectionEnabled = tilesConfiguration.getTiles().getEnabled();
+                                    boolean tilesCollectionEnabled = tilesConfiguration.getEnabled();
                                     if (!tilesCollectionEnabled)
                                         enableTilesCollectionInApi = false;
                                 }

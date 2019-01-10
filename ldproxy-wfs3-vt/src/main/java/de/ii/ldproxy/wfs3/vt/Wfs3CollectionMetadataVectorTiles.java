@@ -36,7 +36,7 @@ public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadata
         if (!isNested && featureTypeConfigurationWfs3.getExtensions().containsKey(EXTENSION_KEY)) {
             List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
             TilesConfiguration tiles = (TilesConfiguration) featureTypeConfigurationWfs3.getExtensions().get(EXTENSION_KEY);
-            Set<String> tilingSchemeIds = tiles.getTiles().getZoomLevels().keySet();
+            Set<String> tilingSchemeIds = tiles.getZoomLevels().keySet();
                 for(String tilingSchemeId : tilingSchemeIds) {
                     Map<String, Object> tilingSchemeInCollection = new HashMap<>();
                     tilingSchemeInCollection.put("identifier", tilingSchemeId);

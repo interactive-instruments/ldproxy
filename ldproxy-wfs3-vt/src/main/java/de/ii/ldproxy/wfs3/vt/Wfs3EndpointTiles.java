@@ -381,7 +381,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
      * @param startSeeding           true if request came from the beginning of seeding
      * @return a set of all collection ids, which support tiles, seeding and the right format
      */
-    static Set<String> getCollectionIdsDataset(Set<String>allCollectionIds,Map<String,Boolean> enabledMap,Map<String,List<String>> formatsMap,Map<String, Map<String, TilesConfiguration.Tiles.MinMax>> seedingMap, boolean mvtEnabled, boolean onlyJSONenabled, boolean startSeeding) {
+    static Set<String> getCollectionIdsDataset(Set<String>allCollectionIds,Map<String,Boolean> enabledMap,Map<String,List<String>> formatsMap,Map<String, Map<String, TilesConfiguration.MinMax>> seedingMap, boolean mvtEnabled, boolean onlyJSONenabled, boolean startSeeding) {
 
         Set<String> collectionIdsFilter = new HashSet<>();
 
@@ -391,7 +391,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
                         && formatsMap.containsKey(collectionId) && !Objects.isNull(seedingMap) && seedingMap.containsKey(collectionId)) {
                     Boolean tilesCollectionEnabled = enabledMap.get(collectionId);
                     List<String> formatsCollection = formatsMap.get(collectionId);
-                    Map<String, TilesConfiguration.Tiles.MinMax> seedingCollection = seedingMap.get(collectionId);
+                    Map<String, TilesConfiguration.MinMax> seedingCollection = seedingMap.get(collectionId);
 
                     if (mvtEnabled) {
                         if (tilesCollectionEnabled && seedingCollection != null && formatsCollection.contains(Wfs3MediaTypes.MVT)) {
