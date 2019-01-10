@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,13 +8,13 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.json.JsonWriteContext;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson.MULTIPLICITY;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson.NESTED_OBJECTS;
 import de.ii.ldproxy.target.geojson.GeoJsonMapping.GEO_JSON_TYPE;
-import de.ii.ldproxy.wfs3.api.FeatureWriterGeoJson;
+import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -104,6 +103,11 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
     }
 
     @Override
+    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+        //TODO if NESTED_OBJECT -> write to buffer until onFeatureEnd, somehow catch id and save to map
+    }
+
+    @Override
     public void onProperty(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (!transformationContext.getState()
                                   .getCurrentMapping()
@@ -140,12 +144,45 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                                  .writeObjectFieldStart("properties");
         }
 
+        //TODO if REFERENCE and EMBED
+        // - extract id, write buffer from map
+
 
         writePropertyName(json, currentMapping.getName(), multiplicities, nestedObjectStrategy);
 
 
         if (currentMapping.getType() == GEO_JSON_TYPE.STRING && currentMapping.getFormat() != null && !currentMapping.getFormat()
                                                                                                                      .isEmpty()) {
+            //TODO serviceUrl to StringTemplateFilters, additionalSubstitutions
+            boolean more = false;
+            String formattedValue = "";
+            if (currentFormatter == null) {
+
+                formattedValue = StringTemplateFilters.applyTemplate(currentMapping.getFormat(), currentValue);
+
+                formattedValue = formattedValue
+                        .replace("{{serviceUrl}}", transformationContext.getServiceUrl());
+
+                int subst = formattedValue.indexOf("}}");
+                if (subst > -1) {
+                    formattedValue = formattedValue.substring(0, formattedValue.indexOf("{{")) + currentValue + formattedValue.substring(subst + 2);
+                    more = formattedValue.contains("}}");
+                }
+            } else {
+                int subst = currentFormatter.indexOf("}}");
+                if (subst > -1) {
+                    formattedValue = currentFormatter.substring(0, currentFormatter.indexOf("{{")) + currentValue + currentFormatter.substring(subst + 2);
+                    more = formattedValue.contains("}}");
+                }
+            }
+            if (more) {
+                this.currentFormatter = formattedValue;
+                return;
+            } /*else {
+                currentFormatter = null;
+            }
+
+
             boolean more = false;
             if (currentFormatter == null) {
                 currentFormatter = currentMapping.getFormat()
@@ -161,7 +198,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
 
             if (more) {
                 return;
-            } else {
+            }*/ else {
                 if (currentFieldName != null) {
                     json.writeFieldName(currentFieldName);
                     currentFieldName = null;
@@ -170,7 +207,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                         currentFieldMulti = false;
                     }
                 }
-                json.writeString(currentFormatter);
+                json.writeString(formattedValue);
                 currentFormatter = null;
             }
         } else {
@@ -190,7 +227,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         if (nestedObjectStrategy == NESTED_OBJECTS.NEST) {
             List<String> path = Splitter.on('.')
                                         .omitEmptyStrings()
-                                        .splitToList(name);
+                                        .splitToList(Strings.nullToEmpty(name));
             if (path.isEmpty() && lastPath.isEmpty()) {
                 return;
             }

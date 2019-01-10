@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,6 +22,7 @@ public abstract class AbstractWfs3GenericMapping<T extends Enum<T>> implements T
     protected String codelist;
     protected boolean filterable;
     private Integer sortPriority;
+    protected TargetMapping baseMapping;
 
     @Override
     public Integer getSortPriority() {
@@ -39,7 +40,7 @@ public abstract class AbstractWfs3GenericMapping<T extends Enum<T>> implements T
     }
 
     @Override
-    @JsonProperty(value="enabled")
+    @JsonProperty(value = "enabled")
     public Boolean getEnabled() {
         return enabled;
     }
@@ -82,5 +83,21 @@ public abstract class AbstractWfs3GenericMapping<T extends Enum<T>> implements T
 
     public void setFilterable(boolean filterable) {
         this.filterable = filterable;
+    }
+
+    @Override
+    public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
+        TargetMapping.super.mergeCopyWithBase(targetMapping);
+        return this;
+    }
+
+    @Override
+    public TargetMapping getBaseMapping() {
+        return baseMapping;
+    }
+
+    @Override
+    public void setBaseMapping(TargetMapping targetMapping) {
+        this.baseMapping = targetMapping;
     }
 }

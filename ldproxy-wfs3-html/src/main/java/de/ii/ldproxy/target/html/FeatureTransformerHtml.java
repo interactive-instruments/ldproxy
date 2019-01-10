@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,8 +7,6 @@
  */
 package de.ii.ldproxy.target.html;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.CodelistData;
@@ -18,6 +16,7 @@ import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationResolver;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsQuery;
 import de.ii.ldproxy.wfs3.aroundrelations.SimpleAroundRelationResolver;
+import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.akka.http.AkkaHttp;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
@@ -32,7 +31,6 @@ import io.dropwizard.views.ViewRenderer;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Link;
-import org.commonmark.node.Node;
 import org.commonmark.node.Paragraph;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.CoreHtmlNodeRenderer;
@@ -43,9 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -58,9 +54,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMayThrow;
 
@@ -109,6 +104,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
     private FeaturePropertyDTO currentGeometryPart;
     private int currentGeometryParts;
     private String currentFormatter;
+    private boolean currentGeometryWritten;
 
     private AroundRelationsQuery aroundRelationsQuery;
 
@@ -333,6 +329,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         if (!isFeatureCollection && aroundRelationsQuery.isReady()) {
 
             boolean[] started = {false};
+            int[] index = {0};
 
             aroundRelationsQuery.getQueries()
                                 .forEach(consumerMayThrow(query -> {
@@ -352,7 +349,18 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                                                                                     .apply("limit,offset");
 
                                             //TODO multiple relations
-                                            featurePropertyDTO.value = resolved.replaceAll("<a class=\"page-link\" href=\".*(&limit(?:=|(?:&#61;))[0-9]+)(?:.*(&offset(?:=|(?:&#61;))[0-9]+))?.*\">", "<a class=\"page-link\" href=\"" + url.substring(0, url.length() - 1) + "$1$2\">");
+                                            featurePropertyDTO.value = resolved.replaceAll("<a class=\"page-link\" href=\".*(&limit(?:=|(?:&#61;))[0-9]+)(?:.*?((?:&|&amp;)offset(?:=|(?:&#61;))[0-9]+))?.*\">", "<a class=\"page-link\" href=\"" + url.substring(0, url.length() - 1) + "$1$2\">");
+
+                                            if (index[0] > 0) {
+                                                String limits = IntStream.range(0, index[0])
+                                                                         .mapToObj(i -> "5")
+                                                                         .collect(Collectors.joining(",", "", ","));
+                                                String offsets = IntStream.range(0, index[0])
+                                                                          .mapToObj(i -> "0")
+                                                                          .collect(Collectors.joining(",", "", ","));
+                                                featurePropertyDTO.value = featurePropertyDTO.value.replaceAll("limit(?:=|(?:&#61;))([0-9]+)", "limit=" + limits + "$1");
+                                                featurePropertyDTO.value = featurePropertyDTO.value.replaceAll("offset(?:=|(?:&#61;))([0-9]+)", "offset=" + offsets + "$1");
+                                            }
                                         } else {
                                             featurePropertyDTO.value = "Keine";
                                         }
@@ -361,6 +369,8 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
 
                                         featurePropertyDTO.value = "<a href=\"" + url + "\" target=\"_blank\">Öffnen</a>";
                                     }
+
+                                    index[0]++;
                                 }));
         }
     }
@@ -532,7 +542,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
 
                                                if (cl.getData()
                                                      .getSourceType() == CodelistData.IMPORT_TYPE.TEMPLATES) {
-                                                   resolvedValue = applyFilterMarkdown(applyTemplate(property, resolvedValue));
+                                                   resolvedValue = StringTemplateFilters.applyFilterMarkdown(StringTemplateFilters.applyTemplate(resolvedValue, property.value));
                                                    property.isHtml = true;
                                                }
 
@@ -555,7 +565,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                     boolean more = false;
                     if (currentFormatter == null) {
 
-                        String formattedValue = applyTemplate(property, mapping.getFormat());
+                        String formattedValue = StringTemplateFilters.applyTemplate(mapping.getFormat(), property.value, isHtml -> property.isHtml = isHtml);
 
                         property.value = formattedValue
                                 .replace("{{serviceUrl}}", serviceUrl);
@@ -611,87 +621,11 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         }
     }
 
-    static final Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
-    static final Parser parser = Parser.builder()
-                                       .extensions(EXTENSIONS)
-                                       .build();
-
-    static final HtmlRenderer renderer = HtmlRenderer.builder()
-                                                     .extensions(EXTENSIONS)
-                                                     .nodeRendererFactory(context -> new CoreHtmlNodeRenderer(context) {
-                                                         @Override
-                                                         public void visit(Paragraph paragraph) {
-                                                             this.visitChildren(paragraph);
-                                                         }
-                                                     })
-                                                     .attributeProviderFactory(context -> (node, tagName, attributes) -> {
-                                                         if (node instanceof Link) {
-                                                             attributes.put("target", "_blank");
-                                                         }
-                                                     })
-                                                     .build();
-
-    static String applyFilterMarkdown(String value) {
-
-        Node document = parser.parse(value);
-        return renderer.render(document);
-    }
-
-    static String applyTemplate(FeaturePropertyDTO property, String template) {
-        Pattern valuePattern = Pattern.compile("\\{\\{value( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
-        Pattern filterPattern = Pattern.compile(" ?\\| ?([\\w]+)((?::'[^']*')*)");
-
-        String formattedValue = "";
-        Matcher matcher = valuePattern.matcher(template);
-
-        int lastMatch = 0;
-        while (matcher.find()) {
-            String filteredValue = property.value;
-            Matcher matcher2 = filterPattern.matcher(template.substring(matcher.start(), matcher.end()));
-            while (matcher2.find()) {
-                String filter = matcher2.group(1);
-                List<String> parameters = matcher2.groupCount() < 2
-                        ? ImmutableList.of()
-                        : Splitter.on(':')
-                                  .omitEmptyStrings()
-                                  .splitToList(matcher2.group(2))
-                                  .stream()
-                                  .map(s -> s.substring(1, s.length() - 1))
-                                  .collect(Collectors.toList());
-
-                if (filter.equals("markdown")) {
-                    filteredValue = applyFilterMarkdown(filteredValue);
-                    property.isHtml = true;
-                } else if (filter.equals("replace") && parameters.size() >= 2) {
-                    filteredValue = filteredValue.replaceAll(parameters.get(0), parameters.get(1));
-                } else if (filter.equals("prepend") && parameters.size() >= 1) {
-                    filteredValue = parameters.get(0) + filteredValue;
-                } else if (filter.equals("append") && parameters.size() >= 1) {
-                    filteredValue = filteredValue + parameters.get(0);
-                } else if (filter.equals("urlencode")) {
-                    try {
-                        filteredValue = URLEncoder.encode(filteredValue, Charsets.UTF_8.toString());
-                    } catch (UnsupportedEncodingException e) {
-                        //ignore
-                    }
-                } else {
-                    LOGGER.warn("Template filter '{}' not supported", filter);
-                }
-            }
-            //formattedValue = formattedValue.substring(lastMatch, matcher.start()) + filteredValue + formattedValue.substring(matcher.end());
-            //lastMatch = matcher.start();
-            formattedValue += template.substring(lastMatch, matcher.start()) + filteredValue;
-            lastMatch = matcher.end();
-        }
-        formattedValue += template.substring(lastMatch);
-
-        return formattedValue;
-    }
-
-
     @Override
     public void onGeometryStart(TargetMapping mapping, SimpleFeatureGeometry type, Integer dimension) throws Exception {
         if (Objects.isNull(mapping)) return;
+
+        dataset.hideMap = false;
 
         final MicrodataGeometryMapping geometryMapping = (MicrodataGeometryMapping) mapping;
         if (isFeatureCollection && !((MicrodataGeometryMapping) mapping).isShowInCollection()) return;
@@ -702,10 +636,12 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         }
 
         coordinatesOutput = new StringWriter();
-        coordinatesWriter = new HtmlTransformingCoordinatesWriter(coordinatesOutput, Objects.nonNull(dimension) ? dimension : 2, crsTransformer);
+        //coordinatesWriter = new HtmlTransformingCoordinatesWriter(coordinatesOutput, Objects.nonNull(dimension) ? dimension : 2, crsTransformer);
 
-        // for relations
+        // for around-relations
         this.cwBuilder = CoordinatesWriterType.builder();
+
+        cwBuilder.format(new MicrodataCoordinatesFormatter(coordinatesOutput));
 
         if (transformationContext.getCrsTransformer()
                                  .isPresent()) {
@@ -716,6 +652,8 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         if (dimension != null) {
             cwBuilder.dimension(dimension);
         }
+
+        coordinatesWriter = cwBuilder.build();
 
 
         currentGeometryParts = 0;
@@ -779,10 +717,11 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                 break;
             case LINE_STRING:
             case POLYGON:
-                if (currentGeometryParts == 1) {
+                if (!currentGeometryWritten) {
                     try {
                         coordinatesWriter.append(text);
                         coordinatesWriter.close();
+                        currentGeometryWritten = true;
                     } catch (IOException ex) {
                         // ignore
                     }
@@ -813,6 +752,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         }
 
         currentGeometryType = null;
+        currentGeometryWritten = false;
     }
 
     @Override

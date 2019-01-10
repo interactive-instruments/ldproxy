@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,11 +9,12 @@ package de.ii.ldproxy.wfs3;
 
 import com.google.common.collect.Lists;
 import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
+import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3Extension;
 import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3StartupTask;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
@@ -30,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -53,6 +55,7 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
     private final Map<Wfs3MediaType, Wfs3OutputFormatExtension> wfs3OutputFormats;
     private final List<Wfs3EndpointExtension> wfs3Endpoints;
     private final List<Wfs3StartupTask> wfs3StartupTasks;
+    private final List<Wfs3ParameterExtension> wfs3Parameters;
 
     Wfs3ExtensionRegistryImpl() {
         //TODO
@@ -61,6 +64,7 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
         this.wfs3OutputFormats = new LinkedHashMap<>();
         this.wfs3Endpoints = new ArrayList<>();
         this.wfs3StartupTasks = new ArrayList<>();
+        this.wfs3Parameters = new ArrayList<>();
     }
 
     @Override
@@ -86,6 +90,11 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
     @Override
     public List<Wfs3StartupTask> getStartupTasks() {
         return wfs3StartupTasks;
+    }
+
+    @Override
+    public List<Wfs3ParameterExtension> getWfs3Parameters() {
+        return wfs3Parameters;
     }
 
     private synchronized void onArrival(ServiceReference<Wfs3Extension> ref) {
@@ -125,6 +134,14 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
 
                 wfs3StartupTasks.add(wfs3StartupTask);
             }
+
+            if (wfs3Extension instanceof Wfs3ParameterExtension) {
+                final Wfs3ParameterExtension wfs3Parameter = (Wfs3ParameterExtension) wfs3Extension;
+
+                //LOGGER.debug("WFS3 ENDPOINT {} {}", wfs3Endpoint.getPath(), wfs3Endpoint.getMethods());
+
+                wfs3Parameters.add(wfs3Parameter);
+            }
         } catch (Throwable e) {
             LOGGER.error("E", e);
         }
@@ -152,6 +169,18 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
             if (wfs3Extension instanceof Wfs3StartupTask) {
                 wfs3StartupTasks.remove(wfs3Extension);
             }
+
+            if (wfs3Extension instanceof Wfs3ParameterExtension) {
+                wfs3Parameters.remove(wfs3Extension);
+            }
         }
+    }
+
+    @Override
+    public <T extends Wfs3Extension> List<T> getExtensionsForType(Class<T> extensionType) {
+        return getExtensions().stream()
+                                    .filter(wfs3Extension -> extensionType.isAssignableFrom(wfs3Extension.getClass()))
+                                    .map(extensionType::cast)
+                                    .collect(Collectors.toList());
     }
 }

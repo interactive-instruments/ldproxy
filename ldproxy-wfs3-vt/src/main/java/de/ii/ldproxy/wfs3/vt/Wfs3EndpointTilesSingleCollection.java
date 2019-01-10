@@ -217,7 +217,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         final Map<String, String> filterableFields = wfsService.getData()
                                                                .getFilterableFieldsForFeatureType(collectionId);
-        final Map<String, String> filters = Wfs3EndpointCore.getFiltersFromQuery(queryParameters, filterableFields);
+        final Map<String, String> filters = Wfs3EndpointCore.getFiltersFromQuery(Wfs3EndpointCore.toFlatMap(queryParameters), filterableFields);
         if (!filters.isEmpty() || queryParameters.containsKey("properties"))
             doNotCache = true;
 
@@ -317,7 +317,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         final Map<String, String> filterableFields = wfsService.getData()
                                                                .getFilterableFieldsForFeatureType(collectionId);
-        final Map<String, String> filters = Wfs3EndpointCore.getFiltersFromQuery(queryParameters, filterableFields);
+        final Map<String, String> filters = Wfs3EndpointCore.getFiltersFromQuery(Wfs3EndpointCore.toFlatMap(queryParameters), filterableFields);
 
         boolean doNotCache = false;
         if (!filters.isEmpty() || queryParameters.containsKey("properties"))

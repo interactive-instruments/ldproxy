@@ -4,7 +4,9 @@ version = '1.3.0'
 dependencies {
     compile project(":ldproxy-wfs3-api")
     compile project(":ldproxy-wfs3-html")
+    //TODO
     compile project(":ldproxy-wfs3-around-relations")
+    compile project(":ldproxy-wfs3-filter-transformer")
     compile (project(":ldproxy-wfs3-vt")) {
         exclude module: 'java-vector-tile'
     }

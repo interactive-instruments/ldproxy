@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -62,6 +62,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import javax.xml.namespace.QName;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
@@ -247,12 +248,6 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
                                                                                                                                  .isFeatureCollection(isCollection)
                                                                                                                                  .limit(query.getLimit())
                                                                                                                                  .offset(query.getOffset())
-                                                                                                                                 //TODO
-                                                                                                                                 .serviceUrl(wfs3Request.getUriCustomizer()
-                                                                                                                                                        .copy()
-                                                                                                                                                        .cutPathAfterSegments(getData().getId())
-                                                                                                                                                        .clearParameters()
-                                                                                                                                                        .toString())
                                                                                                                                  .maxAllowableOffset(query.getMaxAllowableOffset());
 
         StreamingOutput streamingOutput;

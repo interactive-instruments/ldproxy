@@ -326,7 +326,6 @@ public class GeoJsonWriterPropertiesSpec {
                                                            })
                                                            .limit(10)
                                                            .offset(20)
-                                                           .serviceUrl("")
                                                            .maxAllowableOffset(0)
                                                            .state(ModifiableStateGeoJson.create())
                                                            .geoJsonConfig(new GeoJsonConfig())

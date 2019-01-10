@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,9 @@ package de.ii.ldproxy.wfs3.api;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_TYPE;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author zahnen
@@ -23,6 +26,7 @@ public class Wfs3GenericMapping extends AbstractWfs3GenericMapping<Wfs3GenericMa
         TEMPORAL(GML_TYPE.DATE, GML_TYPE.DATE_TIME),
         SPATIAL(),
         REFERENCE(),
+        REFERENCE_EMBEDDED(),
         NONE(GML_TYPE.NONE);
 
         private GML_TYPE[] gmlTypes;
@@ -58,11 +62,6 @@ public class Wfs3GenericMapping extends AbstractWfs3GenericMapping<Wfs3GenericMa
         this.type = type;
     }
 
-    @Override
-    public TargetMapping mergeCopyWithBase(TargetMapping targetMapping) {
-        return this;
-    }
-
     @JsonIgnore
     public boolean isId() {
         return type == GENERIC_TYPE.ID;
@@ -83,5 +82,13 @@ public class Wfs3GenericMapping extends AbstractWfs3GenericMapping<Wfs3GenericMa
         return type == GENERIC_TYPE.TEMPORAL;
     }
 
+    @JsonIgnore
+    public boolean isReference() {
+        return type == GENERIC_TYPE.REFERENCE;
+    }
 
+    @Override
+    public boolean isReferenceEmbed() {
+        return type == GENERIC_TYPE.REFERENCE_EMBEDDED;
+    }
 }

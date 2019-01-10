@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,6 +39,10 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
     @Override
     public GeoJsonWriterAroundRelations create() {
         return new GeoJsonWriterAroundRelations(new SimpleAroundRelationResolver(akkaHttp));
+    }
+
+    public GeoJsonWriterAroundRelations create(AroundRelationResolver aroundRelationResolver) {
+        return new GeoJsonWriterAroundRelations(aroundRelationResolver);
     }
 
     private AroundRelationsQuery aroundRelationsQuery;

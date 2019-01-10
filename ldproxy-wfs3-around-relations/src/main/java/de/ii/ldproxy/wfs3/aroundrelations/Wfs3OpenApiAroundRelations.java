@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,9 +8,11 @@
 package de.ii.ldproxy.wfs3.aroundrelations;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -35,7 +37,9 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS_URI;
 import static de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration.EXTENSION_KEY;
 
 /**
@@ -121,8 +125,23 @@ public class Wfs3OpenApiAroundRelations implements Wfs3OpenApiExtension {
                                                        .get(String.format("/collections/%s/items/{featureId}", ft.getId()));
 
                            if (Objects.nonNull(pathItem2)) {
+
+                               ImmutableSet<String> relationSet = aroundRelationConfiguration.getRelations()
+                                                                                             .stream()
+                                                                                             .map(relation -> relation.getId())
+                                                                                             .collect(ImmutableSet.toImmutableSet());
+
+                               Parameter relationsForFeatureType = new Parameter().name("relations")
+                                                                                  .in("query")
+                                                                                  .required(false)
+                                                                                  .style(Parameter.StyleEnum.FORM)
+                                                                                  .explode(false)
+                                                                                  .description("Comma-separated list of related collections that should be shown for this feature")
+                                                                                  .schema(new ArraySchema().items(new StringSchema()._enum(relationSet.asList())));
+
                                pathItem2.getGet()
-                                        .addParametersItem(new Parameter().$ref(relations.getName()))
+                                        //.addParametersItem(new Parameter().$ref(relations.getName()))
+                                        .addParametersItem(relationsForFeatureType)
                                         .addParametersItem(new Parameter().$ref(resolve.getName()))
                                         .addParametersItem(new Parameter().$ref("limitList"))
                                         .addParametersItem(new Parameter().$ref("offsetList"));

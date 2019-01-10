@@ -83,7 +83,13 @@ public class FeatureTransformerGeoJsonTest {
         List<String> expectedValues = ImmutableList.of(value1, coordinates, value2);
 
         FeatureTransformationContextGeoJson transformationContext = createTransformationContext(new ByteArrayOutputStream(), false);
-        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new FeatureWriterGeoJson<FeatureTransformationContextGeoJson>() {
+        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriter() {
+
+            @Override
+            public GeoJsonWriter create() {
+                return this;
+            }
+
             @Override
             public int getSortPriority() {
                 return 0;
@@ -136,7 +142,12 @@ public class FeatureTransformerGeoJsonTest {
         List<Integer> actualNestingChanges = new ArrayList<>();
 
         FeatureTransformationContextGeoJson transformationContext = createTransformationContext(new ByteArrayOutputStream(), true);
-        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new FeatureWriterGeoJson<FeatureTransformationContextGeoJson>() {
+        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriter() {
+            @Override
+            public GeoJsonWriter create() {
+                return this;
+            }
+
             @Override
             public int getSortPriority() {
                 return 0;

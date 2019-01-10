@@ -5,7 +5,7 @@ dependencies {
     compile project(":ldproxy-wfs3-api")
     compile project(":ldproxy-wfs3-core")
 
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka', version: '1.1.2'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka', version: '1.1.5-SNAPSHOT'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api', version: '1.1.2-SNAPSHOT'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-geojson', version: '1.1.2-SNAPSHOT'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-scheduler-api', version: '1.0.0-SNAPSHOT'

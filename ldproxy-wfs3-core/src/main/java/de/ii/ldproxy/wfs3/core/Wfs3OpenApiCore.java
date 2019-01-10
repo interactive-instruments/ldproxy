@@ -82,99 +82,6 @@ public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
                                                       .operationId("getFeatures" + ft.getId())
                                    );
 
-                           //TODO: to crs module
-                           ImmutableSet<String> crs = ImmutableSet.<String>builder()
-                                   .add(serviceData.getFeatureProvider()
-                                                   .getNativeCrs()
-                                                   .getAsUri())
-                                   .add(DEFAULT_CRS_URI)
-                                   .addAll(serviceData.getAdditionalCrs()
-                                                      .stream()
-                                                      .map(EpsgCrs::getAsUri)
-                                                      .collect(Collectors.toList()))
-                                   .build();
-
-                           openAPI.getComponents().addParameters("crs",new Parameter()
-                                   .name("crs")
-                                   .in("query")
-                                   .description("The coordinate reference system of the response geometries. Default is WGS84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84).")
-                                   .required(false)
-                                   .style(Parameter.StyleEnum.FORM)
-                                   .schema(new StringSchema()
-                                           ._enum(crs.asList())
-                                           ._default(DEFAULT_CRS_URI))
-                                   .explode(false));
-
-                           clonedPathItem.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/crs"));
-
-                           openAPI.getComponents().addParameters("bbox-crs",new Parameter()
-                                   .name("bbox-crs")
-                                   .in("query")
-                                   .description("The coordinate reference system of the bbox parameter. Default is WGS84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84).")
-                                   .required(false)
-                                   .schema(new StringSchema()
-                                           ._enum(crs.asList())
-                                           ._default(DEFAULT_CRS_URI))
-                                   .style(Parameter.StyleEnum.FORM)
-                                   .explode(false)
-                           );
-
-                           clonedPathItem.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/bbox-crs"));
-
-
-                           openAPI.getComponents().addParameters("maxAllowableOffset",new Parameter()
-                                                   .name("maxAllowableOffset")
-                                                   .in("query")
-                                                   .description("This option can be used to specify the maxAllowableOffset to be used for generalizing the response geometries.\n \nThe maxAllowableOffset is in the units of the response coordinate reference system.")
-                                                   .required(false)
-                                                   .schema(new NumberSchema()._default(BigDecimal.valueOf(0)))
-                                                   .style(Parameter.StyleEnum.FORM)
-                                                   .explode(false)
-                                                   .example(0.05)
-                                   );
-                           clonedPathItem.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/maxAllowableOffset"));
-                           clonedPathItem.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/properties"));
-                           /*
-                           clonedPathItem.getGet()
-                                         .addParametersItem(
-                                                 new Parameter()
-                                                         .name("crs")
-                                                         .in("query")
-                                                         .description("The coordinate reference system of the response geometries. Default is WGS84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84).")
-                                                         .required(false)
-                                                         // TODO
-                                                         .schema(new StringSchema()._enum(crs)
-                                                                                   ._default(DEFAULT_CRS_URI))
-                                                         .style(Parameter.StyleEnum.FORM)
-                                                         .explode(false)
-                                         );
-                           clonedPathItem.getGet()
-                                         .addParametersItem(
-                                                 new Parameter()
-                                                         .name("bbox-crs")
-                                                         .in("query")
-                                                         .description("The coordinate reference system of the bbox parameter. Default is WGS84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84).")
-                                                         .required(false)
-                                                         // TODO
-                                                         .schema(new StringSchema()._enum(crs)
-                                                                                   ._default(DEFAULT_CRS_URI))
-                                                         .style(Parameter.StyleEnum.FORM)
-                                                         .explode(false)
-                                         );
-                           clonedPathItem.getGet()
-                                         .addParametersItem(
-                                                 new Parameter()
-                                                         .name("maxAllowableOffset")
-                                                         .in("query")
-                                                         .description("This option can be used to specify the maxAllowableOffset to be used for generalizing the response geometries.\n \nThe maxAllowableOffset is in the units of the response coordinate reference system.")
-                                                         .required(false)
-                                                         // TODO
-                                                         .schema(new NumberSchema()._default(BigDecimal.valueOf(0)))
-                                                         .style(Parameter.StyleEnum.FORM)
-                                                         .explode(false)
-                                                         .example(0.05)
-                                         );
-                            */
                            Map<String, String> filterableFields = serviceData.getFilterableFieldsForFeatureType(ft.getId(), true);
                            filterableFields.keySet()
                                            .forEach(field -> {
@@ -203,38 +110,6 @@ public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
                                                        //.description("")
                                                        .operationId("getFeature" + ft.getId())
                                    );
-
-                           //TODO: to crs module
-                           /*clonedPathItem2.getGet()
-                                          .addParametersItem(
-                                                  new Parameter()
-                                                          .name("crs")
-                                                          .in("query")
-                                                          .description("The coordinate reference system of the response geometries. Default is WGS84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84).")
-                                                          .required(false)
-                                                          // TODO
-                                                          .schema(new StringSchema()._enum(crs)
-                                                                                    ._default(DEFAULT_CRS_URI))
-                                                          .style(Parameter.StyleEnum.FORM)
-                                                          .explode(false)
-                                          );
-                           clonedPathItem2.getGet()
-                                          .addParametersItem(
-                                                  new Parameter()
-                                                          .name("maxAllowableOffset")
-                                                          .in("query")
-                                                          .description("This option can be used to specify the maxAllowableOffset to be used for generalizing the response geometries.\n \nThe maxAllowableOffset is in the units of the response coordinate reference system.")
-                                                          .required(false)
-                                                          // TODO
-                                                          .schema(new NumberSchema()._default(BigDecimal.valueOf(0)))
-                                                          .style(Parameter.StyleEnum.FORM)
-                                                          .explode(false)
-                                                          .example(0.05)
-                                          );*/
-                           clonedPathItem2.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/crs"));
-                           clonedPathItem2.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/maxAllowableOffset"));
-                           clonedPathItem2.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/properties"));
-
 
                            openAPI.getPaths()
                                   .addPathItem("/collections/" + ft.getId() + "/items/{featureId}", clonedPathItem2);

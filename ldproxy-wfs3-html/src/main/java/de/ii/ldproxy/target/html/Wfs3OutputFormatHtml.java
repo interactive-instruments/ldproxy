@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -186,6 +186,8 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                                                                      .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix);
         }
 
+        //TODO
+        featureTypeDataset.hideMap = true;
 
         return Optional.of(new FeatureTransformerHtml(ImmutableFeatureTransformationContextHtml.builder()
                                                                                               .from(transformationContext)
@@ -235,6 +237,10 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                                                           })
                                                           .collect(Collectors.toSet());
         featureTypeDataset.uriBuilder = uriBuilder;
+        featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
+
+        //TODO
+        featureTypeDataset.spatialSearch = featureType.getExtensions().containsKey("filterTransformer");
 
         return featureTypeDataset;
     }
@@ -274,6 +280,8 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                                                                                    .toUpperCase()))
                                           .map(wfs3Link -> new NavigationDTO(wfs3Link.getTypeLabel(), wfs3Link.getHref()))
                                           .collect(Collectors.toList());
+
+        featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
 
         /*new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("GeoJson", "f=json"))

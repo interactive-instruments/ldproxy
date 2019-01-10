@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@ import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.DefaultValue;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
@@ -59,10 +60,20 @@ public interface FeatureTransformationContext {
     State getState();
 
     // to ValueTransformerContext
-    String getServiceUrl();
+    @Value.Derived
+    default String getServiceUrl() {
+        return getWfs3Request().getUriCustomizer()
+                          .copy()
+                          .cutPathAfterSegments(getServiceData().getId())
+                          .clearParameters()
+                          .toString();
+    }
 
     // to generalization module
-    double getMaxAllowableOffset();
+    @Value.Default
+    default double getMaxAllowableOffset() {
+        return 0;
+    }
 
     //@Value.Modifiable
     abstract class State {
