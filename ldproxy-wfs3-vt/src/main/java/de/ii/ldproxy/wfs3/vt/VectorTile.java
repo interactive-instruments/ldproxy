@@ -19,6 +19,7 @@ import org.threeten.extra.Interval;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.*;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
@@ -502,6 +503,21 @@ class VectorTile {
             }
         }catch (NullPointerException ignored){}
     }
+    public static List<String> getPropertiesList(MultivaluedMap<String, String> queryParameters){
+        List propertiesList = new ArrayList();
+        if(queryParameters.containsKey("properties")){
+            String propertiesString=queryParameters.get("properties").toString();
+            propertiesString=propertiesString.substring(1,propertiesString.length()-1);
+            String [] parts =propertiesString.split(",");
+            for (String part : parts){
+                propertiesList.add(part);
+            }
+        }
+        else{
+            propertiesList.add("*");
+        }
+        return propertiesList;
 
+    }
 }
 

@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationExtension;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationExtension2;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -26,6 +25,7 @@ import java.util.Map;
 public abstract class TilesConfiguration implements FeatureTypeConfigurationExtension {
 
     public static final String EXTENSION_KEY = "tilesExtension";
+    public static final String EXTENSION_TYPE = "TILES";
 
     @JsonMerge(value = OptBoolean.FALSE)
     @Nullable

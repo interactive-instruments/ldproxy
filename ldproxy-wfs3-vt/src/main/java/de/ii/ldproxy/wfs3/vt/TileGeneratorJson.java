@@ -113,7 +113,7 @@ public class TileGeneratorJson {
         if (uriInfo != null) {
             MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 
-            List<String> propertiesList = Wfs3EndpointCore.getPropertiesList(queryParameters);
+            List<String> propertiesList = VectorTile.getPropertiesList(queryParameters);
 
             queryBuilder = ImmutableFeatureQuery.builder()
                     .type(collectionId)
@@ -172,7 +172,6 @@ public class TileGeneratorJson {
                     .isFeatureCollection(true)
                     .limit(0) //TODO
                     .offset(0)
-                    .serviceUrl("")
                     .maxAllowableOffset(maxAllowableOffsetCrs84)
                     .outputStream(outputStream)
                     .build();

@@ -19,6 +19,7 @@ import de.ii.ldproxy.wfs3.api.Wfs3ServiceMetadata;
 import io.dropwizard.views.View;
 import org.threeten.extra.Interval;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 

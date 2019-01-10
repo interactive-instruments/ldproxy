@@ -35,7 +35,7 @@ public class TODOAroundRelationsSubtypeIds implements JacksonSubTypeIds {
                 .put(AroundRelationConfiguration.class, AroundRelationConfiguration.EXTENSION_TYPE)
                 .put(FilterTransformersConfiguration.class, FilterTransformersConfiguration.EXTENSION_TYPE)
                 .put(RequestGeoJsonBboxConfiguration.class, RequestGeoJsonBboxConfiguration.TRANSFORMER_TYPE)
-                .put(TilesConfiguration.class, "TILES")
+                .put(TilesConfiguration.class, TilesConfiguration.EXTENSION_TYPE)
                 .build();
     }
 }
