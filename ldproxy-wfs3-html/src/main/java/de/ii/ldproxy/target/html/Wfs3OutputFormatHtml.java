@@ -139,9 +139,8 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                 .add(new NavigationDTO(serviceData.getLabel()))
                 .build();
 
-        List<String> styles = keyValueStore.getChildStore("styles").getChildStore(serviceData.getId()).getKeys();
 
-        Wfs3DatasetView wfs3DatasetView = new Wfs3DatasetView(serviceData, wfs3Collections, breadCrumbs, staticUrlPrefix, htmlConfig, styles);
+        Wfs3DatasetView wfs3DatasetView = new Wfs3DatasetView(serviceData, wfs3Collections, breadCrumbs, staticUrlPrefix, htmlConfig);
 
         return Response.ok()
                        .type(mediaType.metadata())

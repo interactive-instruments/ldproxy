@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collection;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.core.Wfs3CollectionMetadataExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -29,7 +30,7 @@ import static de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration.EXT
 @Instantiate
 public class Wfs3CollectionMetadataAroundRelation implements Wfs3CollectionMetadataExtension {
     @Override
-    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested,String serviceId) {
+    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested, Wfs3ServiceData serviceData) {
         if (featureTypeConfigurationWfs3.getExtensions()
                                         .containsKey(EXTENSION_KEY)) {
             final AroundRelationConfiguration aroundRelationConfiguration = (AroundRelationConfiguration) featureTypeConfigurationWfs3.getExtensions()

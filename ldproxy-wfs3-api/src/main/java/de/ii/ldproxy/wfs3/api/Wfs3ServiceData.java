@@ -54,7 +54,7 @@ import static de.ii.xtraplatform.feature.query.api.TargetMapping.BASE_TYPE;
         deepImmutablesDetection = true
 )
 @JsonDeserialize(as = ModifiableWfs3ServiceData.class)
-public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<FeatureTypeConfigurationWfs3> {
+public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<FeatureTypeConfigurationWfs3> implements ExtendableConfiguration {
 
     public static final String DEFAULT_CRS_URI = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
     public static final EpsgCrs DEFAULT_CRS = new EpsgCrs(4326, true);

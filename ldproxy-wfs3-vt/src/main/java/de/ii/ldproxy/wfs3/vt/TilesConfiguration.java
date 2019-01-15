@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationExtension;
+import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -22,7 +22,7 @@ import java.util.Map;
 @Value.Modifiable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(as = ModifiableTilesConfiguration.class)
-public abstract class TilesConfiguration implements FeatureTypeConfigurationExtension {
+public abstract class TilesConfiguration implements ExtensionConfiguration {
 
     public static final String EXTENSION_KEY = "tilesExtension";
     public static final String EXTENSION_TYPE = "TILES";
@@ -44,6 +44,14 @@ public abstract class TilesConfiguration implements FeatureTypeConfigurationExte
     public abstract Map<String,MinMax> getZoomLevels();
 
 
+    @Override
+    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
 
+        /*return ImmutableTilesConfiguration.builder()
+                .from(extensionConfigurationDefault)
+                .from(this)
+                .build();*/
 
+        return this; //TODO
+    }
 }

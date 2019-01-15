@@ -24,6 +24,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
 
+import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
+
 /**
  * fetch list of styles or a style for the service
  *
@@ -60,35 +62,42 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStyles(@Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException, KeyNotFoundException
     {
+        Wfs3Service wfs3Service = (Wfs3Service) service;
 
-        List<Map<String, Object>> styles = new ArrayList<>();
+        if(isExtensionEnabled(wfs3Service.getData(),EXTENSION_KEY)) {
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
-        List<String> keys = stylesStore.getKeys();
+            List<Map<String, Object>> styles = new ArrayList<>();
 
-        for (String key : keys) {
+            KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+            List<String> keys = stylesStore.getKeys();
 
-            if (stylesStore.containsKey(key)) {
+            for (String key : keys) {
 
-                Map<String, Object> styleJson = getStyleJson(stylesStore,key);
+                if (stylesStore.containsKey(key)) {
 
-                if (styleJson != null) {
-                    Map<String, Object> styleInfo = new HashMap<>();
-                    final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
-                    String styleId = key.split("\\.")[0];
+                    Map<String, Object> styleJson = getStyleJson(stylesStore, key);
 
-                    styleInfo.put("id", styleId);
-                    styleInfo.put("links", stylesLinkGenerator.generateStylesLinksDataset(wfs3Request.getUriCustomizer(), styleId));
-                    styles.add(styleInfo);
+                    if (styleJson != null) {
+                        Map<String, Object> styleInfo = new HashMap<>();
+                        final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
+                        String styleId = key.split("\\.")[0];
+
+                        styleInfo.put("id", styleId);
+                        styleInfo.put("links", stylesLinkGenerator.generateStylesLinksDataset(wfs3Request.getUriCustomizer(), styleId));
+                        styles.add(styleInfo);
+                    }
                 }
             }
-        }
 
-        if(styles.size()==0){
-            return Response.ok("{ \n \"styles\": [] \n }").build();
-        }
+            if (styles.size() == 0) {
+                return Response.ok("{ \n \"styles\": [] \n }").build();
+            }
 
-        return Response.ok(ImmutableMap.of("styles", styles)).build();
+            return Response.ok(ImmutableMap.of("styles", styles)).build();
+        }
+        else{
+            throw new NotFoundException();
+        }
     }
 
     /**
@@ -102,13 +111,21 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStyle( @PathParam("styleId") String styleId, @Context Service service) throws IOException, KeyNotFoundException {
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
-        List<String> styles = stylesStore.getKeys();
+        Wfs3Service wfs3Service = (Wfs3Service) service;
 
-        Map<String, Object> styleToDisplay = getStyleToDisplay(stylesStore,styles,styleId);
+        if(isExtensionEnabled(wfs3Service.getData(),EXTENSION_KEY)) {
+
+            KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+            List<String> styles = stylesStore.getKeys();
+
+            Map<String, Object> styleToDisplay = getStyleToDisplay(stylesStore, styles, styleId);
 
 
-        return Response.ok(styleToDisplay).build();
+            return Response.ok(styleToDisplay).build();
+        }
+        else{
+            throw new NotFoundException();
+        }
     }
 
     /**

@@ -6,6 +6,7 @@ dependencies {
     compile project(":ldproxy-wfs3-api")
     compile project(":ldproxy-wfs3-around-relations")
     compile project(":ldproxy-string-templates")
+    compile project(":ldproxy-wfs3-styles")
 
     //provided group: 'com.typesafe.akka', name: 'akka-stream_2.12', version: '2.5.9'
     //provided group: 'com.typesafe.akka', name: 'akka-http_2.12',   version: '10.1.0-RC2'

@@ -6,7 +6,6 @@ import java.net.URI;
 
 public class StyleView extends GenericView {
     public String styleUrl;
-    public String tileUrl;
     public String serviceId;
 
     public StyleView(String styleUrl, String serviceId) {

@@ -17,6 +17,7 @@ import org.immutables.value.Value;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "extensionType")
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
-public interface FeatureTypeConfigurationExtension {
+public interface ExtensionConfiguration {
     boolean getEnabled();
+    ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault);
 }

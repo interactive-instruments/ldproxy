@@ -9,13 +9,8 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Collection;
-import de.ii.ldproxy.wfs3.api.Wfs3Collections;
-import de.ii.ldproxy.wfs3.api.Wfs3Extent;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceMetadata;
+import de.ii.ldproxy.wfs3.api.*;
+import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import io.dropwizard.views.View;
 import org.threeten.extra.Interval;
 
@@ -23,6 +18,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
 import static de.ii.xtraplatform.util.functional.LambdaWithException.mayThrow;
 
 /**
@@ -33,15 +29,15 @@ public class Wfs3DatasetView extends View {
     private final List<NavigationDTO> breadCrumbs;
     private final String urlPrefix;
     public final HtmlConfig htmlConfig;
-    private List<Style> styles;
     public String title;
     public String description;
     public String dataSourceUrl;
     public String keywords;
     public Wfs3ServiceMetadata metadata;
     private final Wfs3ServiceData serviceData;
+    private List<Wfs3Style> styles;
 
-    public Wfs3DatasetView(Wfs3ServiceData serviceData, Wfs3Collections wfs3Dataset, final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig, List<String> stylesList) {
+    public Wfs3DatasetView(Wfs3ServiceData serviceData, Wfs3Collections wfs3Dataset, final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig) {
         super("service.mustache", Charsets.UTF_8);
         this.wfs3Dataset = wfs3Dataset;
         this.breadCrumbs = breadCrumbs;
@@ -79,14 +75,8 @@ public class Wfs3DatasetView extends View {
                                        .get();
         }
         this.serviceData = serviceData;
-        styles=new ArrayList<>();
 
-        for(String style : stylesList){
-            String styleId=style.split("\\.")[0];
-            styles.add(new Style(styleId,/*urlPrefix*/breadCrumbs.get(0).url + "/" + serviceData.getId()+"/maps/" + styleId));
-        }
-
-
+        this.styles=wfs3Dataset.getStyles();
 
     }
 
@@ -130,7 +120,7 @@ public class Wfs3DatasetView extends View {
                           .findFirst()
                           .orElse("");
     }
-    public List<Style> getStyles() {
+    public List<Wfs3Style> getStyles() {
         return styles;
     }
 
@@ -247,23 +237,6 @@ public class Wfs3DatasetView extends View {
         }
     }
 
-    static class Style{
-        private final String styleId;
-        private final String styleUrl;
-
-        public Style(String styleId, String styleUrl){
-            this.styleId = styleId;
-            this.styleUrl = styleUrl;
-        }
-
-        public String getStyleId(){
-            return styleId;
-        }
-
-        public String getStyleUrl(){
-            return styleUrl;
-        }
-    }
 
     public String getUrlPrefix() {
         return urlPrefix;

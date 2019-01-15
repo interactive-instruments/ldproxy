@@ -38,13 +38,13 @@ public class Wfs3CollectionMetadataStyles implements Wfs3CollectionMetadataExten
 
 
     @Override
-    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested,String serviceId) {
+    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested, Wfs3ServiceData serviceData) {
 
         final StylesLinkGenerator stylesLinkGenerator= new StylesLinkGenerator();
 
         String collectionId=featureTypeConfigurationWfs3.getId();
 
-        KeyValueStore kvStoreCollection = keyValueStore.getChildStore("styles").getChildStore(serviceId).getChildStore(collectionId);
+        KeyValueStore kvStoreCollection = keyValueStore.getChildStore("styles").getChildStore(serviceData.getId()).getChildStore(collectionId);
 
         List<String> styles = kvStoreCollection.getKeys();
         List<Map<String, Object>> wfs3LinksList = new ArrayList<>();

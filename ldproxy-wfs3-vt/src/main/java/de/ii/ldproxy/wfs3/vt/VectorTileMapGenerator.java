@@ -8,7 +8,8 @@
 package de.ii.ldproxy.wfs3.vt;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.wfs3.api.Wfs3Extension;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 
 import java.util.*;
@@ -19,17 +20,17 @@ import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
  * class, which creates Maps for easier access from the service Data
  *
  */
-public class VectorTileMapGenerator {
+public class VectorTileMapGenerator implements Wfs3Extension {
 
 /**
  * checks if the tiles extension is available and returns a Set with all collectionIds
  * @param serviceData       the service data of the Wfs3 Service
  * @return a set with all CollectionIds, which have the tiles Extension
  */
-public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData serviceData){
+public Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData serviceData){
     Set<String> collectionIds = new HashSet<String>();
     for(String collectionId: serviceData.getFeatureTypes().keySet())
-        if (serviceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
+        if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY)) {
             collectionIds.add(collectionId);
         }
     return collectionIds;
@@ -40,16 +41,11 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
      * @param serviceData       the service data of the Wfs3 Service
      * @return a map with all CollectionIds, which have the tiles Extension and the value of the tiles Parameter  "enabled"
      */
-    public static Map<String,Boolean> getEnabledMap(Wfs3ServiceData serviceData){
+    public Map<String,Boolean> getEnabledMap(Wfs3ServiceData serviceData){
         Map<String,Boolean> enabledMap = new HashMap<>();
-
         for(String collectionId: serviceData.getFeatureTypes().keySet()) {
-            if (serviceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) serviceData
-                        .getFeatureTypes()
-                        .get(collectionId)
-                        .getExtensions()
-                        .get(EXTENSION_KEY);
+            if (isExtensionEnabled(serviceData,serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY)) {
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData,serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY).get();
 
 
                 boolean tilesEnabled =tilesConfiguration.getEnabled();
@@ -65,18 +61,15 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
      * @param serviceData       the service data of the Wfs3 Service
      * @return a map with all CollectionIds, which have the tiles Extension and the supported formats
      */
-    public static Map<String, List<String>> getFormatsMap(Wfs3ServiceData serviceData){
+    public Map<String, List<String>> getFormatsMap(Wfs3ServiceData serviceData){
 
         Map<String,List<String>> formatsMap = new HashMap<>();
 
         for(String collectionId : serviceData.getFeatureTypes().keySet()) {
 
-            if (serviceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
+            if (isExtensionEnabled(serviceData,serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY)) {
 
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) serviceData.getFeatureTypes()
-                        .get(collectionId)
-                        .getExtensions()
-                        .get(EXTENSION_KEY);
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData,serviceData.getFeatureTypes().get(collectionId), EXTENSION_KEY).get();
 
                 List<String> formatsList=tilesConfiguration.getFormats();
                 if(formatsList==null){
@@ -96,16 +89,12 @@ public static Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData s
      * @param seeding           if seeding true, we observe seeding MinMax, if false zoomLevel MinMax
      * @return a map with all CollectionIds, which have the tiles Extension and the zoomLevel or seeding
      */
-    public static Map<String, Map<String, TilesConfiguration.   MinMax>> getMinMaxMap(Wfs3ServiceData serviceData,Boolean seeding){
+    public Map<String, Map<String, TilesConfiguration.   MinMax>> getMinMaxMap(Wfs3ServiceData serviceData,Boolean seeding){
         Map<String, Map<String, TilesConfiguration.MinMax>> minMaxMap = new HashMap<>();
 
         for(String collectionId: serviceData.getFeatureTypes().keySet()) {
-            if (serviceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)) {
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) serviceData
-                        .getFeatureTypes()
-                        .get(collectionId)
-                        .getExtensions()
-                        .get(EXTENSION_KEY);
+            if (isExtensionEnabled(serviceData,serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY)) {
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData,serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY).get();
                 Map<String,TilesConfiguration.MinMax> minMax =null;
                 if(!seeding){
                     try{

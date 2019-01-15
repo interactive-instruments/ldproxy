@@ -97,7 +97,7 @@ public class Wfs3Core {
 
 
         for (Wfs3DatasetMetadataExtension wfs3DatasetMetadataExtension: getDatasetExtenders()) {
-            dataset = wfs3DatasetMetadataExtension.process(dataset,  uriCustomizer.copy(), serviceData.getFeatureTypes().values());
+            dataset = wfs3DatasetMetadataExtension.process(dataset,  uriCustomizer.copy(), serviceData.getFeatureTypes().values(),serviceData);
         }
 
 
@@ -173,7 +173,7 @@ public class Wfs3Core {
         }
 
         for (Wfs3CollectionMetadataExtension wfs3CollectionMetadataExtension : getCollectionExtenders()) {
-            collection = wfs3CollectionMetadataExtension.process(collection, featureType, uriCustomizer.copy(), isNested,serviceData.getId());
+            collection = wfs3CollectionMetadataExtension.process(collection, featureType, uriCustomizer.copy(), isNested,serviceData);
         }
 
         return collection.build();

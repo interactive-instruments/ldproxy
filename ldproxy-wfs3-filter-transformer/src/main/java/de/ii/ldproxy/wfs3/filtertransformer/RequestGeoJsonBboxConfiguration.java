@@ -29,4 +29,5 @@ public abstract class RequestGeoJsonBboxConfiguration implements FilterTransform
     public abstract String getUrlTemplate();
 
     public abstract List<String> getParameters();
+
 }

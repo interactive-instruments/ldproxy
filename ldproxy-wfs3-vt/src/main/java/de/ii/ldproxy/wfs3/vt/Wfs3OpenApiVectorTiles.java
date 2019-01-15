@@ -59,8 +59,8 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                 .values()
                 .stream()
                 .filter(ft -> { try {
-                    if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
-                        TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
+                    if (isExtensionEnabled(serviceData,ft,EXTENSION_KEY)) {
+                        TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData,ft,EXTENSION_KEY).get();
 
                         if(tilesConfiguration.getEnabled())
                             return true;
@@ -453,19 +453,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                         .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
                         .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
                         .forEach(ft -> {
-                            boolean enableTilesCollectionInApi = true;
-
-                            try{
-                                if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
-                                    final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
-
-                                    boolean tilesCollectionEnabled = tilesConfiguration.getEnabled();
-                                    if (!tilesCollectionEnabled)
-                                        enableTilesCollectionInApi = false;
-                                }
-                            }catch(NullPointerException e){
-                                enableTilesCollectionInApi = false;
-                            }
+                            boolean enableTilesCollectionInApi = isExtensionEnabled(serviceData, ft, EXTENSION_KEY);
 
                             if(enableTilesCollectionInApi) {
                                 openAPI.getPaths().addPathItem("/collections/" + ft.getId() + "/tiles", new PathItem().description("something"));  //create a new path

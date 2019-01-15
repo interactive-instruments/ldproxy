@@ -29,13 +29,13 @@ import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadataExtension {
 
     @Override
-    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested,String serviceId) {
+    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested,Wfs3ServiceData serviceData) {
         // The hrefs are URI templates and not URIs, so the templates should not be percent encoded!
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        if (!isNested && featureTypeConfigurationWfs3.getExtensions().containsKey(EXTENSION_KEY)) {
+        if (!isNested && isExtensionEnabled(serviceData,featureTypeConfigurationWfs3, EXTENSION_KEY)) {
             List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
-            TilesConfiguration tiles = (TilesConfiguration) featureTypeConfigurationWfs3.getExtensions().get(EXTENSION_KEY);
+            TilesConfiguration tiles = (TilesConfiguration) getExtensionConfiguration(serviceData,featureTypeConfigurationWfs3, EXTENSION_KEY).get();
             Set<String> tilingSchemeIds = tiles.getZoomLevels().keySet();
                 for(String tilingSchemeId : tilingSchemeIds) {
                     Map<String, Object> tilingSchemeInCollection = new HashMap<>();

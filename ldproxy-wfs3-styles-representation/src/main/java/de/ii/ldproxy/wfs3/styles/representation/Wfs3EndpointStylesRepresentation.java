@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
+import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.ldproxy.wfs3.styles.Wfs3EndpointStyles;
 import de.ii.xsf.configstore.api.KeyValueStore;
 import de.ii.xsf.core.server.CoreServerConfig;
@@ -13,17 +14,13 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
 
 @Component
 @Provides
@@ -67,16 +64,28 @@ public class Wfs3EndpointStylesRepresentation implements Wfs3EndpointExtension {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response getStyles(@Context Service service, @PathParam("styleId") String styleId,@Context Wfs3RequestContext wfs3Request) {
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
-        List<String> styles = stylesStore.getKeys();
-        Wfs3EndpointStyles.getStyleToDisplay(stylesStore,styles,styleId);
+        Wfs3Service wfs3Service = (Wfs3Service)service;
+        if(isExtensionEnabled(wfs3Service.getData(),EXTENSION_KEY)) {
 
-        String prefix = coreServerConfig.getExternalUrl();
+            StylesConfiguration stylesExtension = (StylesConfiguration) getExtensionConfiguration(wfs3Service.getData(),EXTENSION_KEY).get();
+            if(!stylesExtension.getMapsEnabled()){
+                throw new NotFoundException();
+            }
 
-        String styleUri = prefix + "/" + service.getData().getId() + "/" + "styles" + "/" + styleId ;
+            KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+            List<String> styles = stylesStore.getKeys();
+            Wfs3EndpointStyles.getStyleToDisplay(stylesStore, styles, styleId);
 
-        StyleView styleView = new StyleView(styleUri,service.getData().getId());
+            String prefix = coreServerConfig.getExternalUrl();
 
-        return Response.ok().entity(styleView).build();
+            String styleUri = prefix + "/" + service.getData().getId() + "/" + "styles" + "/" + styleId;
+
+            StyleView styleView = new StyleView(styleUri, service.getData().getId());
+
+            return Response.ok().entity(styleView).build();
+        }
+        else{
+            throw new NotFoundException();
+        }
     }
 }

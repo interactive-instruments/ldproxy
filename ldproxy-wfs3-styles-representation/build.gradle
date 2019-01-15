@@ -14,7 +14,7 @@ dependencies {
 
 jar {
     manifest {
-        instructionFirst 'Import-Package', "!javax.xml.bind.annotation"
+        instructionFirst 'Import-Package', "!org.immutables.value"
         instruction 'Import-Package', "*"
     }
 }

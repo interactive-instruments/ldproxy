@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zahnen
@@ -25,4 +26,8 @@ public abstract class Wfs3Collections {
     public abstract List<String> getCrs();
 
     public abstract List<Wfs3Collection> getCollections();
+
+    public abstract List<Wfs3Style> getStyles();
+
+
 }
