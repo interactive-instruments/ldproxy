@@ -28,8 +28,7 @@ class SitemapComputation {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SitemapComputation.class);
 
-    //TODO: test happy case: is correct number of sites returned?
-    //TODO: test edge case: if featureCount and blockLength is zero, return empty sites
+
     static List<Site> getSitemaps(final String baseUrl, final long featureCount, final long blockLength) {
 
         // split from-to into blocks of 10, add items site for each block
@@ -94,39 +93,54 @@ class SitemapComputation {
         return sites;
     }
 
-    //TODO pass collectionId List instead of serviceData
-    //TODO test edge cases: zero total features, one collection with more than 22500000 features
-    //TODO test happy case: e.g. 10 collection with 250000 total features
-    static Map<String, Long> getDynamicLength(Wfs3ServiceData serviceData, Map<String, Long> featureCounts) {
+
+
+    static Map<String, Long> getDynamicRanges(Set<String> collectionIds, Map<String, Long> featureCounts) {
         AtomicLong siteMapsNumberCounter = new AtomicLong(1);
         Map<String, Long> blockLengths = new HashMap<>();
         Map<String, Long> collectionIdNumberOfSitemaps = new HashMap<>();
 
-        getCollectionIdStream(serviceData).forEach(collectionId -> {
+       // blockLengths = getSmallBlocks(collectionIds,featureCounts,blockLengths,collectionIdNumberOfSitemaps,siteMapsNumberCounter);
+
+
+        for(String collectionId: collectionIds){
             //split in little blocks
             long featureCount = featureCounts.get(collectionId);
-            long blockLength = featureCount;
-            while (blockLength > 2000) {
-                blockLength = blockLength >> 1;
-            }
-            if (blockLength == 0) {
-                blockLength = 1;
-            }
-
+            long blockLength = getDynamicBlockLength(featureCount);
             long numberOfSitemaps = featureCount / blockLength;
             siteMapsNumberCounter.addAndGet(numberOfSitemaps);
             collectionIdNumberOfSitemaps.put(collectionId, numberOfSitemaps);
             blockLengths.put(collectionId, blockLength);
-        });
+        }
+            getBiggerBlocks(featureCounts,blockLengths,collectionIdNumberOfSitemaps,siteMapsNumberCounter);
 
-        //check if the maximum number of sitemaps is reached
+
+        return blockLengths;
+    }
+
+
+    static long getDynamicBlockLength(long featureCount){
+
+        long blockLength = featureCount;
+        while (blockLength > 2000) {
+            blockLength = blockLength >> 1;
+        }
+        if (blockLength == 0) {
+            blockLength = 1;
+        }
+        return blockLength;
+    }
+
+
+    static Map<String, Long> getBiggerBlocks(Map<String,Long> featureCounts,Map<String, Long> blockLengths, Map<String, Long> collectionIdNumberOfSitemaps,AtomicLong siteMapsNumberCounter){
         while (siteMapsNumberCounter.longValue() > 50000) {
+
             // get collection id with highest number of sitemaps
             Map.Entry<String, Long> maxEntry = null;
 
             for (Map.Entry<String, Long> entry : collectionIdNumberOfSitemaps.entrySet()) {
                 if (maxEntry == null || entry.getValue()
-                                             .compareTo(maxEntry.getValue()) > 0) {
+                        .compareTo(maxEntry.getValue()) > 0) {
                     maxEntry = entry;
                 }
             }
@@ -147,7 +161,6 @@ class SitemapComputation {
             //update the siteMapsNumberCounter
             long difference = -(numberOfSitemaps);
             siteMapsNumberCounter.addAndGet(difference);
-
         }
         return blockLengths;
     }
@@ -163,32 +176,31 @@ class SitemapComputation {
                           .map(FeatureTypeConfiguration::getId);
     }
 
-    //TODO: pass collectionId List and FeatureProvider instead of Service
-    static Map<String, Long> getFeatureCounts(Service service) {
-        Wfs3Service wfs3Service = (Wfs3Service) service;
 
-        return SitemapComputation.getCollectionIdStream(wfs3Service.getData())
-                                 .map(collectionId -> {
+    static Map<String, Long> getFeatureCounts(Set<String> collectionIds,FeatureProvider featureProvider) {
 
-                                                                FeatureCountReader featureCountReader = new FeatureCountReader();
-                                                                FeatureQuery featureQuery = ImmutableFeatureQuery.builder()
-                                                                                                                 .type(collectionId)
-                                                                                                                 .hitsOnly(true)
-                                                                                                                 .limit(22500000) //TODO fix limit (without limit, the limit and count is 0)
-                                                                                                                 .build();
+        Map<String,Long> featureCounts=new HashMap<>();
 
-                                                                FeatureProvider featureProvider = wfs3Service.getFeatureProvider();
-                                                                FeatureStream<FeatureConsumer> featureStream = featureProvider.getFeatureStream(featureQuery);
-                                                                featureStream.apply(featureCountReader)
-                                                                             .toCompletableFuture()
-                                                                             .join();
+        for(String collectionId : collectionIds){
+            FeatureCountReader featureCountReader = new FeatureCountReader();
+            FeatureQuery featureQuery = ImmutableFeatureQuery.builder()
+                    .type(collectionId)
+                    .hitsOnly(true)
+                    .limit(22500000) //TODO fix limit (without limit, the limit and count is 0)
+                    .build();
+
+            FeatureStream<FeatureConsumer> featureStream = featureProvider.getFeatureStream(featureQuery);
+            featureStream.apply(featureCountReader)
+                    .toCompletableFuture()
+                    .join();
 
 
-                                                                long count = featureCountReader.getFeatureCount()
-                                                                                               .getAsLong();
+            long count = featureCountReader.getFeatureCount()
+                    .getAsLong();
+            featureCounts.put(collectionId,count);
+        }
 
-                                                                return new AbstractMap.SimpleImmutableEntry<>(collectionId, count);
-                                                            })
-                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+        return featureCounts;
+
     }
 }

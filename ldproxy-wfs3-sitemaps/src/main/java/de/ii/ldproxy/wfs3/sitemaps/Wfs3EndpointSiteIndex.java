@@ -25,10 +25,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author zahnen
@@ -50,8 +47,11 @@ public class Wfs3EndpointSiteIndex implements Wfs3EndpointExtension {
 
     @GET
     public Response getDatasetSiteIndex(@Auth Optional<User> optionalUser, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
+
         Wfs3ServiceData serviceData = ((Wfs3Service) service).getData();
-        Map<String, Long> featureCounts = SitemapComputation.getFeatureCounts(service);
+        Set<String> collectionIds = serviceData.getFeatureTypes().keySet();
+
+        Map<String, Long> featureCounts = SitemapComputation.getFeatureCounts(collectionIds,((Wfs3Service) service).getFeatureProvider());
         long totalFeatureCount = featureCounts.values()
                                               .stream()
                                               .mapToLong(i -> i)
@@ -68,7 +68,9 @@ public class Wfs3EndpointSiteIndex implements Wfs3EndpointExtension {
         sitemaps.add(new Site(landingPageUrl));
 
         //TODO duration with big blocks is too long, therefore the block length is dynamically generated
-        Map<String, Long> blockLengths = SitemapComputation.getDynamicLength(serviceData, featureCounts);
+
+
+        Map<String, Long> blockLengths = SitemapComputation.getDynamicRanges(collectionIds, featureCounts);
 
         SitemapComputation.getCollectionIdStream(serviceData)
                           .forEach(collectionId -> {

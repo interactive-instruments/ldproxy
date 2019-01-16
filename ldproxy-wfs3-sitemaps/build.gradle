@@ -5,6 +5,8 @@ dependencies {
     compile project(":ldproxy-wfs3")
     compile project(":ldproxy-wfs3-api")
     compile project(":ldproxy-wfs3-core")
+    testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+
 }
 
 jar {

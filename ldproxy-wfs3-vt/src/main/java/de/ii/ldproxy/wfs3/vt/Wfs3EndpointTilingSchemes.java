@@ -24,7 +24,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,15 +83,15 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
     public Response getTilingSchemes(@Context Service service, @Context Wfs3RequestContext wfs3Request) {
 
         Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
-        Wfs3EndpointTiles.checkTilesParameterDataset(wfsService);
+        Wfs3EndpointTiles.checkTilesParameterDataset(VectorTileMapGenerator.getEnabledMap(wfsService.getData()));
 
-            final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
+            final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
             List<Map<String,Object>> wfs3LinksList = new ArrayList<>();
 
         for(Object tilingSchemeId : cache.getTilingSchemeIds().toArray()){
             Map<String,Object> wfs3LinksMap = new HashMap<>();
             wfs3LinksMap.put("identifier",tilingSchemeId);
-            wfs3LinksMap.put("links",wfs3LinksGenerator.generateTilingSchemesLinks(wfs3Request.getUriCustomizer(),tilingSchemeId.toString()));
+            wfs3LinksMap.put("links",vectorTilesLinkGenerator.generateTilingSchemesLinks(wfs3Request.getUriCustomizer(),tilingSchemeId.toString()));
             wfs3LinksList.add(wfs3LinksMap);
         }
 
@@ -111,7 +110,7 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
     public Response getTilingScheme(@PathParam("tilingSchemeId") String tilingSchemeId,@Context Service service) {
 
         Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
-        Wfs3EndpointTiles.checkTilesParameterDataset(wfsService);
+        Wfs3EndpointTiles.checkTilesParameterDataset(VectorTileMapGenerator.getEnabledMap(wfsService.getData()));
 
 
         File file = cache.getTilingScheme(tilingSchemeId);

@@ -29,10 +29,6 @@ public abstract class FeatureTypeConfigurationWfs3 extends FeatureTypeConfigurat
 
     public abstract Map<String, FeatureTypeConfigurationExtension> getExtensions();
 
-    //TODO move to extensions
-    @Nullable
-    public abstract FeatureTypeTiles getTiles();
-
 
     @Value.Immutable
     @Value.Modifiable

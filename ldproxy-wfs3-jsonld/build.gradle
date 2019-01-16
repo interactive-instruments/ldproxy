@@ -7,4 +7,8 @@ dependencies {
     //TODO
     compile project(":ldproxy-wfs3-around-relations")
     compile project(":ldproxy-wfs3-filter-transformer")
+    compile (project(":ldproxy-wfs3-vt")) {
+        exclude module: 'java-vector-tile'
+    }
+
 }
