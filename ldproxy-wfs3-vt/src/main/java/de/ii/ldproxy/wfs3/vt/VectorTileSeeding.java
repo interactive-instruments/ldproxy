@@ -64,6 +64,8 @@ public class VectorTileSeeding implements Wfs3StartupTask {
     @Requires
     private Wfs3ExtensionRegistry wfs3ExtensionRegistry;
 
+    private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
+
     public VectorTileSeeding(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
         cache = new VectorTilesCache(dataDirectory);
@@ -83,8 +85,8 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
         Runnable startSeeding = () -> {
 
-            Set<String> collectionIdsDataset = Wfs3EndpointTiles.getCollectionIdsDataset(VectorTileMapGenerator.getAllCollectionIdsWithTileExtension(wfs3ServiceData),VectorTileMapGenerator.getEnabledMap(wfs3ServiceData),
-                    VectorTileMapGenerator.getFormatsMap(wfs3ServiceData),VectorTileMapGenerator.getMinMaxMap(wfs3ServiceData,true), false, false, true);
+            Set<String> collectionIdsDataset = Wfs3EndpointTiles.getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(wfs3ServiceData),vectorTileMapGenerator.getEnabledMap(wfs3ServiceData),
+                    vectorTileMapGenerator.getFormatsMap(wfs3ServiceData),vectorTileMapGenerator.getMinMaxMap(wfs3ServiceData,true), false, false, true);
             try {
                 boolean tilesDatasetEnabled = false;
                 boolean seedingDatasetEnabled = false;
@@ -95,15 +97,11 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
                 if (tilesDatasetEnabled) {
                     for (String collectionId : collectionIdsDataset) {
-                        if(wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().containsKey(EXTENSION_KEY)){
+                        if(isExtensionEnabled(wfs3ServiceData, wfs3ServiceData.getFeatureTypes().get(collectionId), EXTENSION_KEY)){
 
-                            final TilesConfiguration tilesConfiguration = (TilesConfiguration) wfs3ServiceData.getFeatureTypes().get(collectionId).getExtensions().get(EXTENSION_KEY);
+                            final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(wfs3ServiceData, wfs3ServiceData.getFeatureTypes().get(collectionId), EXTENSION_KEY).get();
 
-                            ImmutableMap<Integer, Map<String, TilesConfiguration.Tiles.MinMax>> seedingList = tilesConfiguration.getTiles()
-                                    .stream()
-                                    .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getSeeding));
-
-                            Map<String, TilesConfiguration.Tiles.MinMax> seedingCollection = seedingList.values().asList().get(0);
+                            Map<String, TilesConfiguration.MinMax> seedingCollection = tilesConfiguration.getSeeding();
 
                             if (seedingCollection != null) {
                                 seedingDatasetEnabled = true;
@@ -176,13 +174,13 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         List<Integer> minZoomList = new ArrayList<>();
         List<Integer> maxZoomList = new ArrayList<>();
         Set<String> tilingSchemeIdsCollection = null;
-        Map<String, Map<String, TilesConfiguration.Tiles.MinMax>> seedingMap = VectorTileMapGenerator.getMinMaxMap(wfs3ServiceData, true);
+        Map<String, Map<String, TilesConfiguration.MinMax>> seedingMap = vectorTileMapGenerator.getMinMaxMap(wfs3ServiceData, true);
         for (String collectionId : collectionIdsDataset) {
 
             if (!Objects.isNull(seedingMap) && seedingMap.containsKey(collectionId)) {
 
 
-                Map<String, TilesConfiguration.Tiles.MinMax> seeding = seedingMap.get(collectionId);
+                Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
 
 
                 tilingSchemeIdsCollection = seeding.keySet();
@@ -269,12 +267,12 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
                             Map<String, File> layers = new HashMap<String, File>();
 
-                            Set<String> collectionIdsMVTEnabled = Wfs3EndpointTiles.getCollectionIdsDataset(VectorTileMapGenerator.getAllCollectionIdsWithTileExtension(wfs3ServiceData),VectorTileMapGenerator.getEnabledMap(wfs3ServiceData),
-                                    VectorTileMapGenerator.getFormatsMap(wfs3ServiceData),VectorTileMapGenerator.getMinMaxMap(wfs3ServiceData,true), true, false, false);
+                            Set<String> collectionIdsMVTEnabled = Wfs3EndpointTiles.getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(wfs3ServiceData),vectorTileMapGenerator.getEnabledMap(wfs3ServiceData),
+                                    vectorTileMapGenerator.getFormatsMap(wfs3ServiceData),vectorTileMapGenerator.getMinMaxMap(wfs3ServiceData,true), true, false, false);
 
 
                             for (String collectionId : collectionIdsMVTEnabled) {
-                                Map<String, TilesConfiguration.Tiles.MinMax> seeding = seedingMap.get(collectionId);
+                                Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
                                 if(!Objects.isNull(seeding)){
                                     int collectionMax = seeding.get(tilingSchemeId).getMax();
                                     int collectionMin = seeding.get(tilingSchemeId).getMin();
@@ -292,11 +290,11 @@ public class VectorTileSeeding implements Wfs3StartupTask {
                                 throw new InternalServerErrorException(msg);
                             }
 
-                            Set<String> collectionIdsOnlyJSON = Wfs3EndpointTiles.getCollectionIdsDataset(VectorTileMapGenerator.getAllCollectionIdsWithTileExtension(wfs3ServiceData),VectorTileMapGenerator.getEnabledMap(wfs3ServiceData),
-                                    VectorTileMapGenerator.getFormatsMap(wfs3ServiceData),VectorTileMapGenerator.getMinMaxMap(wfs3ServiceData,true), false, true, false);
+                            Set<String> collectionIdsOnlyJSON = Wfs3EndpointTiles.getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(wfs3ServiceData),vectorTileMapGenerator.getEnabledMap(wfs3ServiceData),
+                                    vectorTileMapGenerator.getFormatsMap(wfs3ServiceData),vectorTileMapGenerator.getMinMaxMap(wfs3ServiceData,true), false, true, false);
 
                             for (String collectionId : collectionIdsOnlyJSON) {
-                                Map<String, TilesConfiguration.Tiles.MinMax> seeding = seedingMap.get(collectionId);
+                                Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
                                 if(!Objects.isNull(seeding)){
                                     int collectionMax = seeding.get(tilingSchemeId).getMax();
                                     int collectionMin = seeding.get(tilingSchemeId).getMin();
@@ -390,9 +388,9 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
                 Wfs3MediaType mediaType;
                 mediaType = ImmutableWfs3MediaType.builder()
-                                                  .main(new MediaType("application", "json"))
-                                                  .label("JSON")
-                                                  .build();
+                        .main(new MediaType("application", "json"))
+                        .label("JSON")
+                        .build();
                 TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, null, null, null, uriCustomizer, mediaType, true,tile);
             }
             return tileFileJson;

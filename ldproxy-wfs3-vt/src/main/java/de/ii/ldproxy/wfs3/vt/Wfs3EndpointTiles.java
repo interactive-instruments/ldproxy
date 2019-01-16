@@ -70,6 +70,9 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
     @Requires
     private Wfs3ExtensionRegistry wfs3ExtensionRegistry;
 
+    private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
+
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
 
     private final VectorTilesCache cache;
@@ -110,13 +113,13 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
     public Response getTilingSchemes(@Context Service service, @Context Wfs3RequestContext wfs3Request) {
 
         Wfs3Service wfsService = Wfs3EndpointTiles.wfs3ServiceCheck(service);
-        Wfs3EndpointTiles.checkTilesParameterDataset(VectorTileMapGenerator.getEnabledMap(wfsService.getData()));
+        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(wfsService.getData()));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator= new VectorTilesLinkGenerator();
         List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
 
         for (Object tilingSchemeId : cache.getTilingSchemeIds()
-                                          .toArray()) {
+                .toArray()) {
             Map<String, Object> wfs3LinksMap = new HashMap<>();
             wfs3LinksMap.put("identifier", tilingSchemeId);
             wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTilesLinks(wfs3Request.getUriCustomizer(), tilingSchemeId.toString()));
@@ -124,7 +127,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         }
 
         return Response.ok(ImmutableMap.of("tilingSchemes", wfs3LinksList))
-                       .build();
+                .build();
     }
 
     /**
@@ -139,7 +142,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTilingScheme(@Auth Optional<User> optionalUser, @PathParam("tilingSchemeId") String tilingSchemeId, @Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException {
         Wfs3Service wfsService = wfs3ServiceCheck(service);
-        checkTilesParameterDataset(VectorTileMapGenerator.getEnabledMap(wfsService.getData()));
+        checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(wfsService.getData()));
         File file = cache.getTilingScheme(tilingSchemeId);
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator= new VectorTilesLinkGenerator();
@@ -165,7 +168,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         jsonTilingScheme.put("links", wfs3Link);
 
         return Response.ok(jsonTilingScheme)
-                       .build();
+                .build();
     }
 
     /**
@@ -194,7 +197,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         // TODO support time
         // TODO support other filter parameters
         Wfs3Service wfsService = wfs3ServiceCheck(service);
-        checkTilesParameterDataset(VectorTileMapGenerator.getEnabledMap(wfsService.getData()));
+        checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(wfsService.getData()));
 
         LOGGER.debug("GET TILE MVT {} {} {} {} {} {}", service.getId(), "all", tilingSchemeId, level, row, col);
         cache.cleanup(); // TODO centralize this
@@ -202,9 +205,9 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         // check and process parameters
         Set<String> requestedProperties = null;
         if (properties != null && !properties.trim()
-                                             .isEmpty()) {
+                .isEmpty()) {
             String[] sa = properties.trim()
-                                    .split(",");
+                    .split(",");
             requestedProperties = new HashSet<>();
             for (String s : sa) {
                 requestedProperties.add(s.trim());
@@ -213,9 +216,9 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
         Set<String> requestedCollections = null;
         if (collections != null && !collections.trim()
-                                               .isEmpty()) {
+                .isEmpty()) {
             String[] sa = collections.trim()
-                                     .split(",");
+                    .split(",");
             requestedCollections = new HashSet<>();
             for (String s : sa) {
                 requestedCollections.add(s.trim());
@@ -237,8 +240,8 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         File tileFileMvt = tile.getFile(cache, "pbf");
 
         Map<String, File> layers = new HashMap<String, File>();
-        Set<String> collectionIds = getCollectionIdsDataset(VectorTileMapGenerator.getAllCollectionIdsWithTileExtension(wfsService.getData()),VectorTileMapGenerator.getEnabledMap(wfsService.getData()),
-                VectorTileMapGenerator.getFormatsMap(wfsService.getData()),VectorTileMapGenerator.getMinMaxMap(wfsService.getData(),true), false, false, false);
+        Set<String> collectionIds = getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(wfsService.getData()),vectorTileMapGenerator.getEnabledMap(wfsService.getData()),
+                vectorTileMapGenerator.getFormatsMap(wfsService.getData()),vectorTileMapGenerator.getMinMaxMap(wfsService.getData(),true), false, false, false);
         if (!tileFileMvt.exists()) {
             generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections, requestedProperties, wfsService, level, row, col, tilingSchemeId, doNotCache, cache, wfs3Request, crsTransformation, uriInfo, false);
         } else {
@@ -251,7 +254,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
                     if (TileGeneratorJson.deleteJSON(tileFileJson)) {
                         tileFileJson.delete();
                         layerTile.getFile(cache, "pbf")
-                                 .delete();
+                                .delete();
                         invalid = true;
                     }
                 } else {
@@ -269,7 +272,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         };
 
         return Response.ok(streamingOutput, Wfs3MediaTypes.MVT)
-                       .build();
+                .build();
     }
 
     /**
@@ -286,7 +289,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      * @throws FileNotFoundException an error occurred when searching for a file
      */
-
+/*
     @Path("/{tilingSchemeId}/{level}/{row}/{col}")
     @GET
     @Produces({Wfs3MediaTypes.GEO_JSON, MediaType.APPLICATION_JSON})
@@ -336,7 +339,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
         return Response.ok(streamingOutput, Wfs3MediaTypes.GEO_JSON)
                        .build();
     }
-
+*/
     /**
      * checks if the tiles parameter is enabled in the dataset. If the tiles parameter is disabled in all collections, it throws a 404.
      *
@@ -381,7 +384,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
      * @param startSeeding           true if request came from the beginning of seeding
      * @return a set of all collection ids, which support tiles, seeding and the right format
      */
-    static Set<String> getCollectionIdsDataset(Set<String>allCollectionIds,Map<String,Boolean> enabledMap,Map<String,List<String>> formatsMap,Map<String, Map<String, TilesConfiguration.Tiles.MinMax>> seedingMap, boolean mvtEnabled, boolean onlyJSONenabled, boolean startSeeding) {
+    static Set<String> getCollectionIdsDataset(Set<String>allCollectionIds,Map<String,Boolean> enabledMap,Map<String,List<String>> formatsMap,Map<String, Map<String, TilesConfiguration.MinMax>> seedingMap, boolean mvtEnabled, boolean onlyJSONenabled, boolean startSeeding) {
 
         Set<String> collectionIdsFilter = new HashSet<>();
 
@@ -391,7 +394,7 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
                         && formatsMap.containsKey(collectionId) && !Objects.isNull(seedingMap) && seedingMap.containsKey(collectionId)) {
                     Boolean tilesCollectionEnabled = enabledMap.get(collectionId);
                     List<String> formatsCollection = formatsMap.get(collectionId);
-                    Map<String, TilesConfiguration.Tiles.MinMax> seedingCollection = seedingMap.get(collectionId);
+                    Map<String, TilesConfiguration.MinMax> seedingCollection = seedingMap.get(collectionId);
 
                     if (mvtEnabled) {
                         if (tilesCollectionEnabled && seedingCollection != null && formatsCollection.contains(Wfs3MediaTypes.MVT)) {
@@ -424,8 +427,8 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
 
             if (requestedCollections != null && !requestedCollections.contains(collectionId))
                 continue;
-            if (VectorTile.checkFormat(VectorTileMapGenerator.getFormatsMap(wfsService.getData()), collectionId, Wfs3MediaTypes.MVT, true)) {
-                VectorTile.checkZoomLevel(Integer.parseInt(level), VectorTileMapGenerator.getMinMaxMap(wfsService.getData(),false), wfsService, wfs3OutputFormatGeoJson, collectionId, tilingSchemeId, Wfs3MediaTypes.MVT, row, col, doNotCache, cache, false, wfs3Request, crsTransformation);
+            if (VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(wfsService.getData()), collectionId, Wfs3MediaTypes.MVT, true)) {
+                VectorTile.checkZoomLevel(Integer.parseInt(level), vectorTileMapGenerator.getMinMaxMap(wfsService.getData(),false), wfsService, wfs3OutputFormatGeoJson, collectionId, tilingSchemeId, Wfs3MediaTypes.MVT, row, col, doNotCache, cache, false, wfs3Request, crsTransformation);
 
                 Map<String, File> layerCollection = new HashMap<String, File>();
 
@@ -442,10 +445,10 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
                     if (!tileFileJson.exists()) {
                         Wfs3MediaType geojsonMediaType;
                         geojsonMediaType = ImmutableWfs3MediaType.builder()
-                                                                 .main(new MediaType("application", "geo+json"))
-                                                                 .metadata(new MediaType("application", "json"))
-                                                                 .label("GeoJSON")
-                                                                 .build();
+                                .main(new MediaType("application", "geo+json"))
+                                .metadata(new MediaType("application", "json"))
+                                .label("GeoJSON")
+                                .build();
                         boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, wfs3Request.getUriCustomizer(), geojsonMediaType, false, layerTile);
                         if (!success) {
                             String msg = "Internal server error: could not generate GeoJSON for a tile.";

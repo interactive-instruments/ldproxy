@@ -59,14 +59,10 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                 .values()
                 .stream()
                 .filter(ft -> { try {
-                    if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
-                        final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
-                        ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
-                                .stream()
-                                .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
-                        Boolean tilesCollectionEnabled = tilesEnabled.values().asList().get(0);
+                    if (isExtensionEnabled(serviceData,ft,EXTENSION_KEY)) {
+                        TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData,ft,EXTENSION_KEY).get();
 
-                        if (tilesCollectionEnabled)
+                        if(tilesConfiguration.getEnabled())
                             return true;
                     }
                     return false;
@@ -218,16 +214,22 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
             openAPI.getComponents().addParameters("collections", collections);
             openAPI.getComponents().addParameters("properties", properties);
 
-
-            /*specify all new schemas. They are:
-             * boundingBox
-             * tileMatrix
-             * tilingScheme
-             * tilingSchemes
-             * mvt*/
-
             List<String> modelRequirements = new LinkedList<String>();
             modelRequirements.add("type");
+            List<String> tilingSchemeRequirements = new LinkedList<String>();
+            tilingSchemeRequirements.add("type");
+            tilingSchemeRequirements.add("identifier");
+
+            Schema tilingSchemesArray = new Schema();
+            tilingSchemesArray.setType("object");
+            tilingSchemesArray.setRequired(modelRequirements);
+            tilingSchemesArray.addProperties("identifier", new Schema().type("string").example("default"));
+            tilingSchemesArray.addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
+
+            Schema tilingSchemes = new Schema();
+            tilingSchemes.type("object");
+            tilingSchemes.setRequired(modelRequirements);
+            tilingSchemes.addProperties("tilingSchemes", new ArraySchema().items(new Schema().$ref("#/components/schemas/tilingSchemesArray")));
 
             Schema boundingBox = new Schema();
             boundingBox.setType("object");
@@ -236,12 +238,10 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
             boundingBoxEnum.add("BoundingBox");
             boundingBox.addProperties("type", new StringSchema()._enum(boundingBoxEnum));
             boundingBox.addProperties("crs", new Schema().type("string").example("http://www.opengis.net/def/crs/EPSG/0/3857"));
-
             List<Double> lowerCorner = new ArrayList<>();
             lowerCorner.add(-20037508.3427892);
             lowerCorner.add(-20037508.342789);
             boundingBox.addProperties("lowerCorner", new Schema().type("array").example(lowerCorner));
-
             List<Double> upperCorner = new ArrayList<>();
             upperCorner.add(20037508.3427892);
             upperCorner.add(20037508.3427892);
@@ -265,14 +265,9 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
             topLeftCorner.add(20037508.3427892);
             matrix.addProperties("topLeftCorner", new Schema().type("array").example(topLeftCorner));
 
-            List<String> tilingSchemeRequirements = new LinkedList<String>();
-            tilingSchemeRequirements.add("type");
-            tilingSchemeRequirements.add("identifier");
-
             Schema tilingScheme = new Schema();
             tilingScheme.setType("object");
             tilingScheme.setRequired(tilingSchemeRequirements);
-            Map<String, Schema> tilingSchemeProperties = new HashMap<String, Schema>();
             List<String> tileMatrixSetEnum = new ArrayList<String>();
             tileMatrixSetEnum.add("TileMatrixSet");
             List<String> tilingSchemeSupportedCrsEnum = new ArrayList<String>();
@@ -281,28 +276,22 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
             tilingSchemeWellKnownEnum.add("http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible");
             tilingScheme.addProperties("type", new StringSchema()._enum(tileMatrixSetEnum));
             tilingScheme.addProperties("identifier", new Schema().type("string").example("default"));
+            tilingScheme.addProperties("title", new Schema().type("string").example("Google Maps Compatible for the World"));
+            tilingScheme.addProperties("supportedCrs", new StringSchema()._enum(tilingSchemeSupportedCrsEnum).example("http://www.opengis.net/def/crs/EPSG/0/3857"));
+            tilingScheme.addProperties("wellKnownScaleSet", new StringSchema()._enum(tilingSchemeWellKnownEnum).example("http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible"));
             tilingScheme.addProperties("TileMatrix", new ArraySchema().items(new Schema().$ref("#/components/schemas/tileMatrix")));
             tilingScheme.addProperties("boundingBox", new ArraySchema().items(new Schema().$ref("#/components/schemas/boundingBox")));
-            tilingScheme.addProperties("supportedCrs", new StringSchema()._enum(tilingSchemeSupportedCrsEnum).example("http://www.opengis.net/def/crs/EPSG/0/3857"));
-            tilingScheme.addProperties("title", new Schema().type("string").example("Google Maps Compatible for the World"));
-            tilingScheme.addProperties("wellKnownScaleSet", new StringSchema()._enum(tilingSchemeWellKnownEnum).example("http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible"));
-
-            Schema tilingSchemes = new Schema();
-            tilingSchemes.type("object");
-            tilingSchemes.setRequired(modelRequirements);
-            HashMap<String, Schema> tilingSchemesProperties = new HashMap<>();
-            tilingSchemesProperties.put("tilingSchemes", new ArraySchema().items(new Schema().type("string").example("default")));
-            tilingSchemes.setProperties(tilingSchemesProperties);
 
             Schema mvt = new Schema();
             mvt.type("string");
             mvt.format("binary");
 
             /*Add the schemas to definition*/
+            openAPI.getComponents().addSchemas("tilingSchemesArray", tilingSchemesArray);
             openAPI.getComponents().addSchemas("tilingSchemes", tilingSchemes);
-            openAPI.getComponents().addSchemas("tilingScheme", tilingScheme);
-            openAPI.getComponents().addSchemas("tileMatrix", matrix);
             openAPI.getComponents().addSchemas("boundingBox", boundingBox);
+            openAPI.getComponents().addSchemas("tileMatrix", matrix);
+            openAPI.getComponents().addSchemas("tilingScheme", tilingScheme);
             openAPI.getComponents().addSchemas("mvt", mvt);
 
             /*create a new tag and add it to definition*/
@@ -464,21 +453,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                         .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
                         .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
                         .forEach(ft -> {
-                            boolean enableTilesCollectionInApi = true;
-
-                            try{
-                                if (ft.getExtensions().containsKey(EXTENSION_KEY)) {
-                                    final TilesConfiguration tilesConfiguration = (TilesConfiguration) ft.getExtensions().get(EXTENSION_KEY);
-                                    ImmutableMap<Integer, Boolean> tilesEnabled = tilesConfiguration.getTiles()
-                                            .stream()
-                                            .collect(ImmutableMap.toImmutableMap(TilesConfiguration.Tiles::getId, TilesConfiguration.Tiles::getEnabled));
-                                    Boolean tilesCollectionEnabled = tilesEnabled.values().asList().get(0);
-                                    if (!tilesCollectionEnabled)
-                                        enableTilesCollectionInApi = false;
-                                }
-                            }catch(NullPointerException e){
-                                enableTilesCollectionInApi = false;
-                            }
+                            boolean enableTilesCollectionInApi = isExtensionEnabled(serviceData, ft, EXTENSION_KEY);
 
                             if(enableTilesCollectionInApi) {
                                 openAPI.getPaths().addPathItem("/collections/" + ft.getId() + "/tiles", new PathItem().description("something"));  //create a new path

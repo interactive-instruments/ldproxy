@@ -43,6 +43,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
 
     private final VectorTilesCache cache;
+    private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
 
     Wfs3EndpointTilingSchemes(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
@@ -83,10 +84,10 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
     public Response getTilingSchemes(@Context Service service, @Context Wfs3RequestContext wfs3Request) {
 
         Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
-        Wfs3EndpointTiles.checkTilesParameterDataset(VectorTileMapGenerator.getEnabledMap(wfsService.getData()));
+        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(wfsService.getData()));
 
-            final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-            List<Map<String,Object>> wfs3LinksList = new ArrayList<>();
+        final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
+        List<Map<String,Object>> wfs3LinksList = new ArrayList<>();
 
         for(Object tilingSchemeId : cache.getTilingSchemeIds().toArray()){
             Map<String,Object> wfs3LinksMap = new HashMap<>();
@@ -110,7 +111,7 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
     public Response getTilingScheme(@PathParam("tilingSchemeId") String tilingSchemeId,@Context Service service) {
 
         Wfs3Service wfsService=Wfs3EndpointTiles.wfs3ServiceCheck(service);
-        Wfs3EndpointTiles.checkTilesParameterDataset(VectorTileMapGenerator.getEnabledMap(wfsService.getData()));
+        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(wfsService.getData()));
 
 
         File file = cache.getTilingScheme(tilingSchemeId);

@@ -19,6 +19,7 @@ import org.threeten.extra.Interval;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.*;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
@@ -71,7 +72,7 @@ class VectorTile {
         // check, if collectionId is valid
         if (collectionId != null) {
             Set<String> collectionIds = serviceData.getFeatureTypes()
-                                                   .keySet();
+                    .keySet();
             if (collectionId.isEmpty() || !collectionIds.contains(collectionId)) {
                 throw new NotFoundException();
             }
@@ -107,7 +108,7 @@ class VectorTile {
 
         if (this.temporary) {
             fileName = UUID.randomUUID()
-                           .toString();
+                    .toString();
         } else {
             fileName = String.format("%s_%s_%s", Integer.toString(this.level), Integer.toString(this.row), Integer.toString(this.col));
         }
@@ -260,7 +261,7 @@ class VectorTile {
         BoundingBox bboxNativeCrs = getBoundingBoxNativeCrs(crsTransformation);
 
         return String.format(Locale.US, "BBOX(%s, %.3f, %.3f, %.3f, %.3f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs()
-                                                                                                                                                                                                                  .getAsSimple());
+                .getAsSimple());
     }
 
     /**
@@ -304,7 +305,7 @@ class VectorTile {
      */
     private BoundingBox getBoundingBoxNativeCrs(CrsTransformation crsTransformation) throws CrsTransformationException {
         EpsgCrs crs = serviceData.getFeatureProvider()
-                                 .getNativeCrs();
+                .getNativeCrs();
         BoundingBox bboxTilingSchemeCrs = getBoundingBox();
         if (crs == tilingScheme.getCrs())
             return bboxTilingSchemeCrs;
@@ -335,31 +336,31 @@ class VectorTile {
      */
     public String getCQLFromFilters(Map<String, String> filters, Map<String, String> filterableFields) {
         return filters.entrySet()
-                      .stream()
-                      .map(f -> {
-                          if (f.getKey()
-                               .equals("time")) {
-                              try {
-                                  Interval fromIso8601Period = Interval.parse(f.getValue());
-                                  return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);
-                              } catch (DateTimeParseException ignore) {
-                                  try {
-                                      Instant fromIso8601 = Instant.parse(f.getValue());
-                                      return String.format("%s TEQUALS %s", filterableFields.get(f.getKey()), fromIso8601);
-                                  } catch (DateTimeParseException e) {
-                                      LOGGER.debug("TIME PARSER ERROR", e);
-                                      throw new BadRequestException();
-                                  }
-                              }
-                          }
-                          if (f.getValue()
-                               .contains("*")) {
-                              return String.format("%s LIKE '%s'", filterableFields.get(f.getKey()), f.getValue());
-                          }
+                .stream()
+                .map(f -> {
+                    if (f.getKey()
+                            .equals("time")) {
+                        try {
+                            Interval fromIso8601Period = Interval.parse(f.getValue());
+                            return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);
+                        } catch (DateTimeParseException ignore) {
+                            try {
+                                Instant fromIso8601 = Instant.parse(f.getValue());
+                                return String.format("%s TEQUALS %s", filterableFields.get(f.getKey()), fromIso8601);
+                            } catch (DateTimeParseException e) {
+                                LOGGER.debug("TIME PARSER ERROR", e);
+                                throw new BadRequestException();
+                            }
+                        }
+                    }
+                    if (f.getValue()
+                            .contains("*")) {
+                        return String.format("%s LIKE '%s'", filterableFields.get(f.getKey()), f.getValue());
+                    }
 
-                          return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
-                      })
-                      .collect(Collectors.joining(" AND "));
+                    return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
+                })
+                .collect(Collectors.joining(" AND "));
     }
 
 
@@ -411,13 +412,13 @@ class VectorTile {
      * @param crsTransformation         the coordinate reference system transformation object to transform coordinates
      * @throws FileNotFoundException
      */
-    public static Map<String,String> checkZoomLevel(int zoomLevel, Map<String, Map<String, TilesConfiguration.Tiles.MinMax>> zoomLevelsMap, Wfs3Service wfsService, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache, VectorTilesCache cache, boolean isCollection, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation) throws FileNotFoundException {
+    public static Map<String,String> checkZoomLevel(int zoomLevel, Map<String, Map<String, TilesConfiguration.MinMax>> zoomLevelsMap, Wfs3Service wfsService, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache, VectorTilesCache cache, boolean isCollection, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation) throws FileNotFoundException {
         Map<String,String> zoomLevels=new HashMap<>();
 
         try {
             if(!Objects.isNull(zoomLevelsMap)&&zoomLevelsMap.containsKey(collectionId)) {
 
-                Map<String, TilesConfiguration.Tiles.MinMax> tilesZoomLevels = zoomLevelsMap.get(collectionId);
+                Map<String, TilesConfiguration.MinMax> tilesZoomLevels = zoomLevelsMap.get(collectionId);
 
                 int maxZoom = 0;
                 int minZoom = 0;
@@ -502,6 +503,21 @@ class VectorTile {
             }
         }catch (NullPointerException ignored){}
     }
+    public static List<String> getPropertiesList(MultivaluedMap<String, String> queryParameters){
+        List propertiesList = new ArrayList();
+        if(queryParameters.containsKey("properties")){
+            String propertiesString=queryParameters.get("properties").toString();
+            propertiesString=propertiesString.substring(1,propertiesString.length()-1);
+            String [] parts =propertiesString.split(",");
+            for (String part : parts){
+                propertiesList.add(part);
+            }
+        }
+        else{
+            propertiesList.add("*");
+        }
+        return propertiesList;
 
+    }
 }
 

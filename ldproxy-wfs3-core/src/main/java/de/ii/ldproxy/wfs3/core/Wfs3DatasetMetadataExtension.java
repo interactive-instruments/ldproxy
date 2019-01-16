@@ -14,6 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface Wfs3DatasetMetadataExtension extends Wfs3Extension {
-    ImmutableWfs3Collections.Builder process(ImmutableWfs3Collections.Builder collections, URICustomizer uriCustomizer, Collection<FeatureTypeConfigurationWfs3> featureTypeConfigurationsWfs3);
+    ImmutableWfs3Collections.Builder process(ImmutableWfs3Collections.Builder collections, URICustomizer uriCustomizer, Collection<FeatureTypeConfigurationWfs3> featureTypeConfigurationsWfs3,Wfs3ServiceData serviceData);
 
 }

@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration;
 import de.ii.ldproxy.wfs3.filtertransformer.FilterTransformersConfiguration;
 import de.ii.ldproxy.wfs3.filtertransformer.RequestGeoJsonBboxConfiguration;
-import de.ii.ldproxy.wfs3.vt.TilesConfiguration;
 
+import de.ii.ldproxy.wfs3.vt.TilesConfiguration;
 import de.ii.xsf.dropwizard.api.JacksonSubTypeIds;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -36,7 +36,7 @@ public class TODOAroundRelationsSubtypeIds implements JacksonSubTypeIds {
                 .put(AroundRelationConfiguration.class, AroundRelationConfiguration.EXTENSION_TYPE)
                 .put(RequestGeoJsonBboxConfiguration.class, RequestGeoJsonBboxConfiguration.TRANSFORMER_TYPE)
                 .put(FilterTransformersConfiguration.class, FilterTransformersConfiguration.EXTENSION_TYPE)
-                .put(TilesConfiguration.class, "TILES")
+                .put(TilesConfiguration.class, TilesConfiguration.EXTENSION_TYPE)
                 .build();
     }
 }

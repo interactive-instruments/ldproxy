@@ -54,7 +54,7 @@ import static de.ii.xtraplatform.feature.query.api.TargetMapping.BASE_TYPE;
         deepImmutablesDetection = true
 )
 @JsonDeserialize(as = ModifiableWfs3ServiceData.class)
-public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<FeatureTypeConfigurationWfs3> {
+public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<FeatureTypeConfigurationWfs3> implements ExtendableConfiguration {
 
     public static final String DEFAULT_CRS_URI = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
     public static final EpsgCrs DEFAULT_CRS = new EpsgCrs(4326, true);
@@ -70,14 +70,14 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
     @Override
     public long getCreatedAt() {
         return Instant.now()
-                      .toEpochMilli();
+                .toEpochMilli();
     }
 
     @Value.Default
     @Override
     public long getLastModified() {
         return Instant.now()
-                      .toEpochMilli();
+                .toEpochMilli();
     }
 
     @JsonMerge
@@ -98,20 +98,20 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
 
     public Map<String, String> getFilterableFieldsForFeatureType(String featureType, boolean withoutSpatialAndTemporal) {
         FeatureTypeMapping featureTypeMapping = getFeatureProvider().getMappings()
-                                                                    .get(featureType);
+                .get(featureType);
 
         return Objects.isNull(featureTypeMapping) ? (withoutSpatialAndTemporal ? ImmutableMap.of() : ImmutableMap.of("bbox", "NOT_AVAILABLE")) :
                 featureTypeMapping.findMappings(BASE_TYPE)
-                                  .entrySet()
-                                  .stream()
-                                  .filter(isFilterable(withoutSpatialAndTemporal))
-                                  .collect(Collectors.toMap(getParameterName(), getParameterValue(), (key1,key2) -> key1));
+                        .entrySet()
+                        .stream()
+                        .filter(isFilterable(withoutSpatialAndTemporal))
+                        .collect(Collectors.toMap(getParameterName(), getParameterValue(), (key1,key2) -> key1));
     }
 
     //TODO: move to html module
     public Map<String, String> getHtmlNamesForFeatureType(String featureType) {
         FeatureTypeMapping featureTypeMapping = getFeatureProvider().getMappings()
-                                                                    .get(featureType);
+                .get(featureType);
 
         Map<String, TargetMapping> baseMappings = Objects.nonNull(featureTypeMapping) ? featureTypeMapping.findMappings(BASE_TYPE) : ImmutableMap.of();
 
@@ -121,11 +121,11 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
                         .entrySet()
                         .stream()
                         .filter(mapping -> mapping.getValue()
-                                                  .getName() != null && mapping.getValue()
-                                                                               .isEnabled() && baseMappings.get(mapping.getKey()).getName() != null)
+                                .getName() != null && mapping.getValue()
+                                .isEnabled() && baseMappings.get(mapping.getKey()).getName() != null)
                         .map(mapping -> new AbstractMap.SimpleImmutableEntry<>(/*TODO getParamterValue()*/baseMappings.get(mapping.getKey()).getName().replaceAll("\\[\\w+\\]", "")
-                                                                                                             .toLowerCase(), mapping.getValue()
-                                                                                                                                                           .getName()))
+                                .toLowerCase(), mapping.getValue()
+                                .getName()))
                         .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue, (s, s2) -> s));
     }
 
@@ -149,24 +149,24 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
     private List<String> splitPath(String path) {
         Splitter splitter = path.contains("http://") ? Splitter.onPattern("\\/(?=http)") : Splitter.on("/");
         return splitter.omitEmptyStrings()
-                       .splitToList(path);
+                .splitToList(path);
     }
 
     private Function<Map.Entry<String, TargetMapping>, String> getParameterName() {
         return mapping -> mapping.getValue()
-                                 .isSpatial() ? "bbox"
+                .isSpatial() ? "bbox"
                 : ((Wfs3GenericMapping) mapping.getValue()).isTemporal() ? "time"
                 : mapping.getValue()
-                         .getName()
-                         .replaceAll("\\[\\w+\\]", "")
-                         .toLowerCase();
+                .getName()
+                .replaceAll("\\[\\w+\\]", "")
+                .toLowerCase();
     }
 
     private Function<Map.Entry<String, TargetMapping>, String> getParameterValue() {
         return mapping -> mapping.getValue()
-                         .getName()
-                         .replaceAll("\\[\\w+\\]", "")
-                         .toLowerCase();
+                .getName()
+                .replaceAll("\\[\\w+\\]", "")
+                .toLowerCase();
     }
 
     private Predicate<Map.Entry<String, TargetMapping>> isFilterable(boolean withoutSpatialAndTemporal) {
@@ -175,9 +175,9 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
                         .getName() != null /*TODO default name for GML geometries|| mapping.getValue()
                                                      .isSpatial()*/) &&
                 mapping.getValue()
-                       .isEnabled() &&
+                        .isEnabled() &&
                 (!withoutSpatialAndTemporal || (!mapping.getValue()
-                                                        .isSpatial() && !((Wfs3GenericMapping) mapping.getValue()).isTemporal()));
+                        .isSpatial() && !((Wfs3GenericMapping) mapping.getValue()).isTemporal()));
     }
 
     static class ModifiableOptionalPropertyDeserializer extends StdDeserializer<Wfs3ServiceData> {
@@ -196,7 +196,7 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
 
             DeserializationConfig config = ctxt.getConfig();
             JavaType javaType = TypeFactory.defaultInstance()
-                                           .constructSimpleType(ModifiableWfs3ServiceData.class, new JavaType[0]);
+                    .constructSimpleType(ModifiableWfs3ServiceData.class, new JavaType[0]);
             JsonDeserializer<Object> defaultDeserializer = BeanDeserializerFactory.instance.buildBeanDeserializer(ctxt, javaType, config.introspect(javaType));
 
             if (defaultDeserializer instanceof ResolvableDeserializer) {

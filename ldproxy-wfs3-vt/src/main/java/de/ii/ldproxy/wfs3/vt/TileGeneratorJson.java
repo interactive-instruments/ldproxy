@@ -43,6 +43,7 @@ import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
 public class TileGeneratorJson {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
 
+    private static  final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
 
     /**
      * generate the GeoJSON tile file in the cache
@@ -113,7 +114,7 @@ public class TileGeneratorJson {
         if (uriInfo != null) {
             MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 
-            List<String> propertiesList = Wfs3EndpointCore.getPropertiesList(queryParameters);
+            List<String> propertiesList = VectorTile.getPropertiesList(queryParameters);
 
             queryBuilder = ImmutableFeatureQuery.builder()
                     .type(collectionId)
@@ -152,7 +153,7 @@ public class TileGeneratorJson {
                     .label("MVT")
                     .build();
             final VectorTilesLinkGenerator vectorTilesLinkGenerator= new VectorTilesLinkGenerator();
-            wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(VectorTileMapGenerator.getFormatsMap(serviceData), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(VectorTileMapGenerator.getFormatsMap(serviceData), collectionId, Wfs3MediaTypes.JSON, true));
+            wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, Wfs3MediaTypes.JSON, true));
         }
 
 
@@ -172,7 +173,6 @@ public class TileGeneratorJson {
                     .isFeatureCollection(true)
                     .limit(0) //TODO
                     .offset(0)
-                    .serviceUrl("")
                     .maxAllowableOffset(maxAllowableOffsetCrs84)
                     .outputStream(outputStream)
                     .build();
@@ -250,7 +250,7 @@ public class TileGeneratorJson {
                     .label("MVT")
                     .build();
             final VectorTilesLinkGenerator vectorTilesLinkGenerator= new VectorTilesLinkGenerator();
-            wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(VectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(VectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, Wfs3MediaTypes.JSON, true));
+            wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, Wfs3MediaTypes.JSON, true));
         }
 
         FeatureTransformationContext transformationContext = ImmutableFeatureTransformationContextGeneric.builder()

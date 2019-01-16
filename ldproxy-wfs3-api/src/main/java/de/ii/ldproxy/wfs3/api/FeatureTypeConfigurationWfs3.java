@@ -23,12 +23,9 @@ import javax.annotation.Nullable;
 @Value.Modifiable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(as = ModifiableFeatureTypeConfigurationWfs3.class)
-public abstract class FeatureTypeConfigurationWfs3 extends FeatureTypeConfiguration {
+public abstract class FeatureTypeConfigurationWfs3 extends FeatureTypeConfiguration implements ExtendableConfiguration {
 
     public abstract FeatureTypeExtent getExtent();
-
-    public abstract Map<String, FeatureTypeConfigurationExtension> getExtensions();
-
 
     @Value.Immutable
     @Value.Modifiable
