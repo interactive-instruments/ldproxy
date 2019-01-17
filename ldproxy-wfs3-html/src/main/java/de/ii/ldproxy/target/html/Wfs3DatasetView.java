@@ -90,8 +90,6 @@ public class Wfs3DatasetView extends View {
         if(serviceData.getExtensions().containsKey(Oas30Configuration.EXTENSION_KEY) && serviceData.getExtensions().get(Oas30Configuration.EXTENSION_KEY).getEnabled()){
             this.openApiUrl=breadCrumbs.get(0).url + "/" + serviceData.getId()+"/api";
         }
-
-            this.serviceData = serviceData;
     }
 
     public Wfs3Collections getWfs3Dataset() {

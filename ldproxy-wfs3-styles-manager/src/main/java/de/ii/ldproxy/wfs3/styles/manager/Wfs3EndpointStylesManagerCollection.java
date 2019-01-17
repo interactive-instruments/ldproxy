@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.xsf.configstore.api.KeyValueStore;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.service.api.Service;
@@ -26,6 +28,8 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
 
 /**
  * creates, updates and deletes a style from the collection
@@ -54,6 +58,20 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
         return ImmutableList.of("POST","PUT","DELETE");
     }
 
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+
+            throw new NotFoundException();
+        }
+        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            StylesConfiguration stylesExtension = (StylesConfiguration) serviceData.getExtensions().get(EXTENSION_KEY);
+            if(!stylesExtension.getManagerEnabled()){
+                throw new NotFoundException();
+            }
+        }
+        return true;
+    }
     /**
      * creates one style for the collection
      *

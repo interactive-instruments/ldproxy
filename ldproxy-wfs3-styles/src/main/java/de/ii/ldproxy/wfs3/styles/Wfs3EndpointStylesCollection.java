@@ -64,6 +64,13 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
         return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
     }
 
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            throw new NotFoundException();
+        }
+        return true;
+    }
     /**
      * retrieve all available styles of a specific collection with metadata and links to them
      *
@@ -76,38 +83,33 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
     public Response getStylesCollection(@PathParam("collectionId") String collectionId, @Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException, KeyNotFoundException {
         Wfs3Service wfs3Service = (Wfs3Service) service;
 
-        if(isExtensionEnabled(wfs3Service.getData(),EXTENSION_KEY)){
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
+        List<String> keys = stylesStore.getKeys();
 
-            KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
-            List<String> keys = stylesStore.getKeys();
+        List<Map<String,Object>> styles =new ArrayList<>();
+        for(String key: keys){
+            if(stylesStore.containsKey(key)){
+                Map<String, Object> styleJson = Wfs3EndpointStyles.getStyleJson(stylesStore,key);
 
-            List<Map<String,Object>> styles =new ArrayList<>();
-            for(String key: keys){
-                if(stylesStore.containsKey(key)){
-                    Map<String, Object> styleJson = Wfs3EndpointStyles.getStyleJson(stylesStore,key);
-
-                    if(styleJson!=null){
-                        Map<String,Object> styleInfo=new HashMap<>();
-                        final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
-                        String styleId = key.split("\\.")[0];
-                        styleInfo.put("id", styleId);
-                        styleInfo.put("links",stylesLinkGenerator.generateStylesLinksCollection(wfs3Request.getUriCustomizer(), styleId));
-                        styles.add(styleInfo);
-                    }
-
+                if(styleJson!=null){
+                    Map<String,Object> styleInfo=new HashMap<>();
+                    final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
+                    String styleId = key.split("\\.")[0];
+                    styleInfo.put("id", styleId);
+                    styleInfo.put("links",stylesLinkGenerator.generateStylesLinksCollection(wfs3Request.getUriCustomizer(), styleId));
+                    styles.add(styleInfo);
                 }
+
             }
-
-            if(styles.size()==0){
-                return Response.ok("{ \n \"styles\": [] \n }").build();
-            }
-
-
-            return Response.ok(ImmutableMap.of("styles", styles)).build();
         }
-        else{
-            throw new NotFoundException();
+
+        if(styles.size()==0){
+            return Response.ok("{ \n \"styles\": [] \n }").build();
         }
+
+
+        return Response.ok(ImmutableMap.of("styles", styles)).build();
+
     }
 
     /**
@@ -121,20 +123,14 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStyle(@PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service) throws IOException, KeyNotFoundException {
-        Wfs3Service wfs3Service = (Wfs3Service) service;
 
-        if(isExtensionEnabled(wfs3Service.getData(),EXTENSION_KEY)) {
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
+        List<String> styles = stylesStore.getKeys();
 
-            KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
-            List<String> styles = stylesStore.getKeys();
+        Map<String, Object> styleToDisplay = Wfs3EndpointStyles.getStyleToDisplay(stylesStore, styles, styleId);
 
-            Map<String, Object> styleToDisplay = Wfs3EndpointStyles.getStyleToDisplay(stylesStore, styles, styleId);
+        return Response.ok(styleToDisplay).build();
 
-            return Response.ok(styleToDisplay).build();
-        }
-        else{
-            throw new NotFoundException();
-        }
     }
 
 

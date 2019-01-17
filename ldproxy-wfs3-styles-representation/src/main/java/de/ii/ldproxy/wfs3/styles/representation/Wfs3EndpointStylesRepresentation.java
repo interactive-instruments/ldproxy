@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.ldproxy.wfs3.styles.Wfs3EndpointStyles;
 import de.ii.xsf.configstore.api.KeyValueStore;
@@ -50,7 +51,20 @@ public class Wfs3EndpointStylesRepresentation implements Wfs3EndpointExtension {
     public boolean matches(String firstPathSegment, String method, String subPath) {
         return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
     }
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
 
+            throw new NotFoundException();
+        }
+        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            StylesConfiguration stylesExtension = (StylesConfiguration) serviceData.getExtensions().get(EXTENSION_KEY);
+            if(!stylesExtension.getMapsEnabled()){
+                throw new NotFoundException();
+            }
+        }
+        return true;
+    }
     /**
      * creates a StyleView with the style.mustache template.
      * This view is a Openlayers Client, which represents a style of a wfs in a map.
@@ -65,27 +79,23 @@ public class Wfs3EndpointStylesRepresentation implements Wfs3EndpointExtension {
     @Produces(MediaType.TEXT_HTML)
     public Response getStyles(@Context Service service, @PathParam("styleId") String styleId,@Context Wfs3RequestContext wfs3Request) {
         Wfs3Service wfs3Service = (Wfs3Service)service;
-        if(isExtensionEnabled(wfs3Service.getData(),EXTENSION_KEY)) {
 
-            StylesConfiguration stylesExtension = (StylesConfiguration) getExtensionConfiguration(wfs3Service.getData(),EXTENSION_KEY).get();
-            if(!stylesExtension.getMapsEnabled()){
-                throw new NotFoundException();
-            }
-
-            KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
-            List<String> styles = stylesStore.getKeys();
-            Wfs3EndpointStyles.getStyleToDisplay(stylesStore, styles, styleId);
-
-            String prefix = coreServerConfig.getExternalUrl();
-
-            String styleUri = prefix + "/" + service.getData().getId() + "/" + "styles" + "/" + styleId;
-
-            StyleView styleView = new StyleView(styleUri, service.getData().getId());
-
-            return Response.ok().entity(styleView).build();
-        }
-        else{
+        StylesConfiguration stylesExtension = (StylesConfiguration) getExtensionConfiguration(wfs3Service.getData(),EXTENSION_KEY).get();
+        if(!stylesExtension.getMapsEnabled()){
             throw new NotFoundException();
         }
+
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+        List<String> styles = stylesStore.getKeys();
+        Wfs3EndpointStyles.getStyleToDisplay(stylesStore, styles, styleId);
+
+        String prefix = coreServerConfig.getExternalUrl();
+
+        String styleUri = prefix + "/" + service.getData().getId() + "/" + "styles" + "/" + styleId;
+
+        StyleView styleView = new StyleView(styleUri, service.getData().getId());
+
+        return Response.ok().entity(styleView).build();
+
     }
 }
