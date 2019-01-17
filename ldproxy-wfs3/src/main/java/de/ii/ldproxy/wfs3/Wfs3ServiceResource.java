@@ -133,12 +133,14 @@ public class Wfs3ServiceResource implements ServiceResource {
     @Path("/{path}")
     public Wfs3EndpointExtension dispatch(@PathParam("path") String path, @Context Service service, @Context HttpHeaders httpHeaders, @Context ContainerRequestContext request) {
 
+        Wfs3Service wfs3Service = (Wfs3Service) service;
         String subPath = ((UriRoutingContext) request.getUriInfo()).getFinalMatchingGroup();
 
         return wfs3Endpoints.stream()
                             .filter(wfs3Endpoint -> wfs3Endpoint.matches(path, request.getMethod(), subPath))
+                            .filter(wfs3Endpoint -> wfs3Endpoint.isEnabledForService(wfs3Service.getData()))
                             .findFirst()
-                            .orElseThrow(() -> new NotFoundException("catched " + path + " " + request.getMethod()));
+                            .orElseThrow(() -> new NotFoundException());
     }
 
 

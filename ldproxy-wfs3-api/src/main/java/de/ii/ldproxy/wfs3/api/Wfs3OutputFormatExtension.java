@@ -44,4 +44,7 @@ public interface Wfs3OutputFormatExtension extends Wfs3Extension {
     }
 
     Optional<TargetMappingProviderFromGml> getMappingGenerator();
+
+    default boolean isEnabledForService(Wfs3ServiceData serviceData){return true;}
+
 }

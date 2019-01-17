@@ -11,6 +11,7 @@ import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.wfs3.oas30.Oas30Configuration;
 import de.ii.xsf.core.server.CoreServerConfig;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.service.api.Service;
@@ -23,9 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.*;
+
+import static de.ii.ldproxy.wfs3.sitemaps.SitemapsConfiguration.EXTENSION_KEY;
 
 /**
  * @author zahnen
@@ -44,11 +48,19 @@ public class Wfs3EndpointSiteIndex implements Wfs3EndpointExtension {
     public String getPath() {
         return "sitemap_index.xml";
     }
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData, EXTENSION_KEY)){
+            throw new NotFoundException();
+        }
+        return true;
+    }
 
     @GET
     public Response getDatasetSiteIndex(@Auth Optional<User> optionalUser, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
 
         Wfs3ServiceData serviceData = ((Wfs3Service) service).getData();
+
         Set<String> collectionIds = serviceData.getFeatureTypes().keySet();
 
         Map<String, Long> featureCounts = SitemapComputation.getFeatureCounts(collectionIds,((Wfs3Service) service).getFeatureProvider());

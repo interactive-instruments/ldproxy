@@ -80,6 +80,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -109,7 +110,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
 
     private TransformingFeatureProvider featureProvider;
 
-    private final List<Wfs3ConformanceClass> wfs3ConformanceClasses;
+    private List<Wfs3ConformanceClass> wfs3ConformanceClasses;
     private final Map<Wfs3MediaType, Wfs3OutputFormatExtension> wfs3OutputFormats;
     private final List<Wfs3StartupTask> wfs3StartupTasks;
 
@@ -146,7 +147,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
 
         try {
             EpsgCrs sourceCrs = data.getFeatureProvider()
-                                    .getNativeCrs();
+                    .getNativeCrs();
             this.defaultTransformer = crsTransformation.getTransformer(sourceCrs, Wfs3ServiceData.DEFAULT_CRS);
             this.defaultReverseTransformer = crsTransformation.getTransformer(Wfs3ServiceData.DEFAULT_CRS, sourceCrs);
 
@@ -154,15 +155,15 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
             ImmutableMap<String, FeatureTypeConfigurationWfs3> featureTypesWithComputedBboxes = computeMissingBboxes(data.getFeatureTypes(), featureProvider, defaultTransformer);
 
             serviceData = ImmutableWfs3ServiceData.builder()
-                                                  .from(data)
-                                                  .featureTypes(featureTypesWithComputedBboxes)
-                                                  .build();
+                    .from(data)
+                    .featureTypes(featureTypesWithComputedBboxes)
+                    .build();
 
             data.getAdditionalCrs()
-                .forEach(crs -> {
-                    additonalTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(sourceCrs, crs));
-                    additonalReverseTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(crs, sourceCrs));
-                });
+                    .forEach(crs -> {
+                        additonalTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(sourceCrs, crs));
+                        additonalReverseTransformers.put(crs.getAsUri(), crsTransformation.getTransformer(crs, sourceCrs));
+                    });
 
             LOGGER.debug("TRANSFORMER {} {} -> {} {}", sourceCrs.getCode(), sourceCrs.isForceLongitudeFirst() ? "lonlat" : "latlon", Wfs3ServiceData.DEFAULT_CRS.getCode(), Wfs3ServiceData.DEFAULT_CRS.isForceLongitudeFirst() ? "lonlat" : "latlon");
         } catch (Throwable e) {
@@ -173,15 +174,15 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         ImmutableWfs3ServiceData finalServiceData = serviceData;
 
 
-        Map<Thread, String> threadMap=null;
+        Map<Thread, String> threadMap = null;
         for (Wfs3StartupTask startupTask : wfs3StartupTasks) {
-            threadMap= startupTask.getThreadMap();
+            threadMap = startupTask.getThreadMap();
         }
 
         if (threadMap != null) {
             for (Map.Entry<Thread, String> entry : threadMap.entrySet()) {
-                if(entry.getValue().equals(serviceData.getId())){
-                    if(entry.getKey().getState()!= Thread.State.TERMINATED) {
+                if (entry.getValue().equals(serviceData.getId())) {
+                    if (entry.getKey().getState() != Thread.State.TERMINATED) {
                         entry.getKey().interrupt();
                         wfs3StartupTasks.forEach(wfs3StartupTask -> wfs3StartupTask.removeThreadMapEntry(entry.getKey()));
                     }
@@ -189,7 +190,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
             }
         }
 
-        wfs3StartupTasks.forEach(wfs3StartupTask -> startupTaskExecutor.submit(wfs3StartupTask.getTask(finalServiceData,featureProvider)));
+        wfs3StartupTasks.forEach(wfs3StartupTask -> startupTaskExecutor.submit(wfs3StartupTask.getTask(finalServiceData, featureProvider)));
 
 
         return serviceData;
@@ -200,18 +201,40 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         return (Wfs3ServiceData) super.getData();
     }
 
+    private Wfs3OutputFormatExtension getOutputFormatForService(Wfs3MediaType mediaType,Wfs3ServiceData serviceData){
+
+        if(!wfs3OutputFormats.get(mediaType).isEnabledForService(serviceData)){
+            throw new NotAcceptableException();
+        }
+        return wfs3OutputFormats.get(mediaType);
+    }
+
+    private boolean isAlternativeMediaTypeEnabled(Wfs3MediaType mediaType,Wfs3ServiceData serviceData){
+
+        if(!wfs3OutputFormats.get(mediaType).isEnabledForService(serviceData)){
+            return false;
+        }
+        return true;
+    }
+    private boolean isConformanceEnabled(Wfs3ConformanceClass wfs3ConformanceClass,Wfs3ServiceData serviceData){
+
+       return wfs3ConformanceClass.isConformanceEnabledForService(serviceData);
+    }
+
     public Response getConformanceResponse(Wfs3RequestContext wfs3Request) {
         //Wfs3MediaType wfs3MediaType = checkMediaType(mediaType);
 
-        return wfs3OutputFormats.get(wfs3Request.getMediaType())
-                                .getConformanceResponse(wfs3ConformanceClasses, getData().getLabel(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), wfs3Request.getStaticUrlPrefix());
+        wfs3ConformanceClasses=wfs3ConformanceClasses.stream().filter(wfs3ConformanceClass -> isConformanceEnabled(wfs3ConformanceClass,getData())).collect(Collectors.toList());
+
+        return getOutputFormatForService(wfs3Request.getMediaType(), getData())
+                                .getConformanceResponse(wfs3ConformanceClasses, getData().getLabel(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType(),getData()), wfs3Request.getUriCustomizer(), wfs3Request.getStaticUrlPrefix());
     }
 
     public Response getDatasetResponse(Wfs3RequestContext wfs3Request, boolean isCollections) {
         //Wfs3MediaType wfs3MediaType = checkMediaType(mediaType);
 
-        return wfs3OutputFormats.get(wfs3Request.getMediaType())
-                                .getDatasetResponse(wfs3Core.createCollections(getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer()), getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), wfs3Request.getStaticUrlPrefix(), isCollections);
+        return getOutputFormatForService(wfs3Request.getMediaType(), getData())
+                                .getDatasetResponse(wfs3Core.createCollections(getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType(),getData()), wfs3Request.getUriCustomizer()), getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType(),getData()), wfs3Request.getUriCustomizer(), wfs3Request.getStaticUrlPrefix(), isCollections);
     }
 
     public Response getCollectionResponse(Wfs3RequestContext wfs3Request, String collectionName) {
@@ -219,10 +242,10 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         checkCollectionName(collectionName);
 
         Wfs3Collection wfs3Collection = wfs3Core.createCollection(getData().getFeatureTypes()
-                                                                           .get(collectionName), new Wfs3LinksGenerator(), getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), true);
+                                                                           .get(collectionName), new Wfs3LinksGenerator(), getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType(),getData()), wfs3Request.getUriCustomizer(), true);
 
-        return wfs3OutputFormats.get(wfs3Request.getMediaType())
-                                .getCollectionResponse(wfs3Collection, getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), collectionName);
+        return getOutputFormatForService(wfs3Request.getMediaType(), getData())
+                                .getCollectionResponse(wfs3Collection, getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType(),getData()), wfs3Request.getUriCustomizer(), collectionName);
     }
 
     @Override
@@ -237,7 +260,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         boolean isCollection = wfs3Request.getUriCustomizer()
                                           .isLastPathSegment("items");
 
-        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(wfs3Request.getUriCustomizer(), isCollection, page, pageSize, wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()));
+        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(wfs3Request.getUriCustomizer(), isCollection, page, pageSize, wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType(),getData()));
 
         ImmutableFeatureTransformationContextGeneric.Builder transformationContext = ImmutableFeatureTransformationContextGeneric.builder()
                                                                                                                                  .serviceData(getData())
@@ -253,19 +276,19 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         StreamingOutput streamingOutput;
         if (wfs3Request.getMediaType()
                        .matches(MediaType.valueOf(getFeatureProvider().getSourceFormat()))
-                && wfs3OutputFormats.get(wfs3Request.getMediaType())
+                && getOutputFormatForService(wfs3Request.getMediaType(), getData())
                                     .canPassThroughFeatures()) {
             FeatureStream<GmlConsumer> featureStream = getFeatureProvider().getFeatureStream(query);
 
-            streamingOutput = stream2(featureStream, outputStream -> wfs3OutputFormats.get(wfs3Request.getMediaType())
+            streamingOutput = stream2(featureStream, outputStream -> getOutputFormatForService(wfs3Request.getMediaType(), getData())
                                                                                       .getFeatureConsumer(transformationContext.outputStream(outputStream)
                                                                                                                                .build())
                                                                                       .get());
-        } else if (wfs3OutputFormats.get(wfs3Request.getMediaType())
+        } else if (getOutputFormatForService(wfs3Request.getMediaType(), getData())
                                     .canTransformFeatures()) {
             FeatureStream<FeatureTransformer> featureTransformStream = getFeatureProvider().getFeatureTransformStream(query);
 
-            streamingOutput = stream(featureTransformStream, outputStream -> wfs3OutputFormats.get(wfs3Request.getMediaType())
+            streamingOutput = stream(featureTransformStream, outputStream -> getOutputFormatForService(wfs3Request.getMediaType(), getData())
                                                                                               .getFeatureTransformer(transformationContext.outputStream(outputStream)
                                                                                                                                           .build())
                                                                                               .get());
@@ -277,7 +300,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
                                                     .main()
                                                     .toString());
 
-        //return wfs3OutputFormats.get(wfs3Request.getMediaType())
+        //return getOutputFormatForService(wfs3Request.getMediaType(), getData())
         //                        .getItemsResponse(getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), collectionName, query, featureTransformStream, crsTransformer, wfs3Request.getStaticUrlPrefix(), featureStream);
     }
 
@@ -329,10 +352,11 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
         };
     }
 
-    private Wfs3MediaType[] getAlternativeMediaTypes(Wfs3MediaType mediaType) {
+    private Wfs3MediaType[] getAlternativeMediaTypes(Wfs3MediaType mediaType, Wfs3ServiceData serviceData) {
         return wfs3OutputFormats.keySet()
                                 .stream()
                                 .filter(wfs3MediaType -> !wfs3MediaType.equals(mediaType))
+                                .filter(wfs3MediaType -> isAlternativeMediaTypeEnabled(wfs3MediaType,serviceData))
                                 .toArray(Wfs3MediaType[]::new);
     }
 

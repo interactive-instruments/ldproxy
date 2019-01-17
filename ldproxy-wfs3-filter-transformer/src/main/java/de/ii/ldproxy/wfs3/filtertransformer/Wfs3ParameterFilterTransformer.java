@@ -7,8 +7,10 @@
  */
 package de.ii.ldproxy.wfs3.filtertransformer;
 
+import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.akka.http.AkkaHttp;
 import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
@@ -32,7 +34,7 @@ public class Wfs3ParameterFilterTransformer implements Wfs3ParameterExtension {
     private AkkaHttp akkaHttp;
 
     @Override
-    public Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters) {
+    public Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters, Wfs3ServiceData serviceData) {
 
         if (featureTypeConfigurationWfs3.getExtensions()
                                         .containsKey(EXTENSION_KEY)) {

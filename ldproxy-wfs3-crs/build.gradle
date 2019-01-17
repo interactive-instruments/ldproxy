@@ -5,3 +5,9 @@ dependencies {
     compile project(":ldproxy-wfs3")
     compile project(":ldproxy-wfs3-api")
 }
+jar {
+    manifest {
+        instructionFirst 'Import-Package', "!org.immutables.value"
+        instruction 'Import-Package', "*"
+    }
+}

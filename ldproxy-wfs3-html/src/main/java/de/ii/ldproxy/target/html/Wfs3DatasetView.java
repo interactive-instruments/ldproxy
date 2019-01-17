@@ -16,16 +16,12 @@ import de.ii.ldproxy.wfs3.api.Wfs3Extent;
 import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceMetadata;
+import de.ii.ldproxy.wfs3.oas30.Oas30Configuration;
 import io.dropwizard.views.View;
 import org.threeten.extra.Interval;
 
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.util.functional.LambdaWithException.mayThrow;
@@ -42,6 +38,7 @@ public class Wfs3DatasetView extends View {
     public String description;
     public String dataSourceUrl;
     public String keywords;
+    public String openApiUrl;
     public Wfs3ServiceMetadata metadata;
     private final Wfs3ServiceData serviceData;
 
@@ -83,7 +80,11 @@ public class Wfs3DatasetView extends View {
             this.metadata = serviceData.getMetadata()
                                        .get();
         }
-        this.serviceData = serviceData;
+        if(serviceData.getExtensions().containsKey(Oas30Configuration.EXTENSION_KEY) && serviceData.getExtensions().get(Oas30Configuration.EXTENSION_KEY).getEnabled()){
+            this.openApiUrl=breadCrumbs.get(0).url + "/" + serviceData.getId()+"/api";
+        }
+
+            this.serviceData = serviceData;
     }
 
     public Wfs3Collections getWfs3Dataset() {

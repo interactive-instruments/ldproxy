@@ -12,4 +12,5 @@ package de.ii.ldproxy.wfs3.api;
  */
 public interface Wfs3ConformanceClass extends Wfs3Extension {
     String getConformanceClass();
+    default boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){return true;}
 }

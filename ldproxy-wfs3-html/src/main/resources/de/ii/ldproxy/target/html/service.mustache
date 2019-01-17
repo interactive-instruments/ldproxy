@@ -47,12 +47,16 @@
                 </ul>
             </div>
         </div>
-        <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">API Definition</div>
-            <div class="col-md-10">
-                <a href="{{apiUrl}}">OpenAPI 3.0</a>
+
+        {{#openApiUrl}}
+            <div class="row my-3">
+                <div class="col-md-2 font-weight-bold">API Definition</div>
+                <div class="col-md-10">
+                        <a itemprop="url" href="{{apiUrl}}">OpenAPI 3.0</a>
+                </div>
             </div>
-        </div>
+        {{/openApiUrl}}
+
         {{#dataSourceUrl}}
             <div class="row my-3">
                 <div class="col-md-2 font-weight-bold">Data source</div>

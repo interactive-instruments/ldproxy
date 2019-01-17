@@ -56,7 +56,7 @@ public class Wfs3Query {
         for (Wfs3ParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(Wfs3ParameterExtension.class)) {
             parameters = parameterExtension.transformParameters(service.getData()
                                                                        .getFeatureTypes()
-                                                                       .get(featureType), parameters);
+                                                                       .get(featureType), parameters,service.getData());
         }
 
         final String filter = String.format("IN ('%s')", featureId);
@@ -69,7 +69,7 @@ public class Wfs3Query {
         for (Wfs3ParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(Wfs3ParameterExtension.class)) {
             parameterExtension.transformQuery(service.getData()
                                                      .getFeatureTypes()
-                                                     .get(featureType), queryBuilder, parameters);
+                                                     .get(featureType), queryBuilder, parameters,service.getData());
         }
 
         return queryBuilder.build();
@@ -83,7 +83,7 @@ public class Wfs3Query {
         for (Wfs3ParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(Wfs3ParameterExtension.class)) {
             parameters = parameterExtension.transformParameters(service.getData()
                                                                        .getFeatureTypes()
-                                                                       .get(featureType), parameters);
+                                                                       .get(featureType), parameters,service.getData());
         }
 
 
@@ -105,7 +105,7 @@ public class Wfs3Query {
         for (Wfs3ParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(Wfs3ParameterExtension.class)) {
             parameterExtension.transformQuery(service.getData()
                                                      .getFeatureTypes()
-                                                     .get(featureType), queryBuilder, parameters);
+                                                     .get(featureType), queryBuilder, parameters,service.getData());
         }
 
 

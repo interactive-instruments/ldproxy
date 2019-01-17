@@ -15,13 +15,7 @@ import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.target.geojson.Wfs3OutputFormatGeoJson;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
+import de.ii.ldproxy.wfs3.api.*;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -50,6 +44,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 /**
@@ -101,7 +96,13 @@ public class Wfs3EndpointTiles implements Wfs3EndpointExtension {
     public boolean matches(String firstPathSegment, String method, String subPath) {
         return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
     }
-
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            throw new NotFoundException();
+        }
+        return true;
+    }
     /**
      * retrieve all available tiling schemes
      *

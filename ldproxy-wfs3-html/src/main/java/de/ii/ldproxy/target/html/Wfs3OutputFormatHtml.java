@@ -40,6 +40,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
 
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
@@ -60,6 +61,7 @@ import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static de.ii.ldproxy.target.html.HtmlConfiguration.EXTENSION_KEY;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 
 /**
@@ -94,11 +96,27 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
     public String getConformanceClass() {
         return "http://www.opengis.net/spec/wfs-1/3.0/req/html";
     }
+    @Override
+    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){
+        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public Wfs3MediaType getMediaType() {
         return MEDIA_TYPE;
     }
+
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            return false;
+        }
+        return true;
+    }
+
 
     @Override
     public Response getConformanceResponse(List<Wfs3ConformanceClass> wfs3ConformanceClasses, String serviceLabel, Wfs3MediaType wfs3MediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix) {

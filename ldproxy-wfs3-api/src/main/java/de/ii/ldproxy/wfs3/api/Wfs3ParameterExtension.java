@@ -16,11 +16,11 @@ import java.util.Map;
  */
 public interface Wfs3ParameterExtension extends Wfs3Extension {
 
-    default Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters) {
+    default Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters,Wfs3ServiceData serviceData) {
         return parameters;
     }
 
-    default ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, ImmutableFeatureQuery.Builder queryBuilder, Map<String, String> parameters) {
+    default ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, ImmutableFeatureQuery.Builder queryBuilder, Map<String, String> parameters,Wfs3ServiceData serviceData) {
         return queryBuilder;
     }
 }

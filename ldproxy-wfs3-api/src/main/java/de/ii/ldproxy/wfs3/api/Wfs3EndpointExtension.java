@@ -47,4 +47,6 @@ public interface Wfs3EndpointExtension extends Wfs3Extension {
             //throw new ClientErrorException(Response.Status.UNAUTHORIZED);
         }
     }
+
+    default boolean isEnabledForService(Wfs3ServiceData serviceData){return true;}
 }
