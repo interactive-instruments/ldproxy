@@ -26,6 +26,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Comparator;
@@ -33,6 +34,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static de.ii.ldproxy.target.geojson.GeoJsonConfiguration.EXTENSION_KEY;
 
 /**
  * @author zahnen
@@ -61,10 +64,24 @@ public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3Output
     }
 
     @Override
+    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){
+        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            return true;
+        }
+        return false;
+    }
+    @Override
     public Wfs3MediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            return false;
+        }
+        return true;
+    }
     @Override
     public Response getConformanceResponse(List<Wfs3ConformanceClass> wfs3ConformanceClasses, String serviceLabel, Wfs3MediaType wfs3MediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix) {
         return response(new Wfs3ConformanceClasses(wfs3ConformanceClasses.stream()

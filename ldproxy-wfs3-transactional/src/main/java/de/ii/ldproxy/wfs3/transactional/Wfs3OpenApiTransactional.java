@@ -29,6 +29,8 @@ import org.apache.felix.ipojo.annotations.Provides;
 import java.util.Comparator;
 import java.util.Objects;
 
+import static de.ii.ldproxy.wfs3.transactional.TransactionalConfiguration.EXTENSION_KEY;
+
 /**
  * @author zahnen
  */
@@ -43,7 +45,7 @@ public class Wfs3OpenApiTransactional implements Wfs3OpenApiExtension {
 
     @Override
     public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
-        if (serviceData != null && serviceData.getFeatureProvider().supportsTransactions()) {
+        if (serviceData != null     && serviceData.getFeatureProvider().supportsTransactions() && isExtensionEnabled(serviceData,EXTENSION_KEY)) {
 
             serviceData.getFeatureTypes()
                        .values()

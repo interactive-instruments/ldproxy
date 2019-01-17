@@ -32,14 +32,14 @@ public class Wfs3CollectionMetadataAroundRelation implements Wfs3CollectionMetad
     @Override
     public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested, Wfs3ServiceData serviceData) {
         if (featureTypeConfigurationWfs3.getExtensions()
-                                        .containsKey(EXTENSION_KEY)) {
+                .containsKey(EXTENSION_KEY)) {
             final AroundRelationConfiguration aroundRelationConfiguration = (AroundRelationConfiguration) featureTypeConfigurationWfs3.getExtensions()
-                                                                                                                                      .get(EXTENSION_KEY);
+                    .get(EXTENSION_KEY);
             if (!aroundRelationConfiguration.getRelations()
-                                            .isEmpty()) {
+                    .isEmpty()) {
                 collection.putExtensions("relations", aroundRelationConfiguration.getRelations()
-                                                                                 .stream()
-                                                                                 .collect(ImmutableMap.toImmutableMap(AroundRelationConfiguration.Relation::getId, AroundRelationConfiguration.Relation::getLabel)));
+                        .stream()
+                        .collect(ImmutableMap.toImmutableMap(AroundRelationConfiguration.Relation::getId, AroundRelationConfiguration.Relation::getLabel)));
             }
         }
         return collection;

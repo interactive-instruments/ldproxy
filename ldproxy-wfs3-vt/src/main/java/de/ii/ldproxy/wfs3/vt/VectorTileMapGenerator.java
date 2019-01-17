@@ -22,19 +22,19 @@ import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
  */
 public class VectorTileMapGenerator implements Wfs3Extension {
 
-/**
- * checks if the tiles extension is available and returns a Set with all collectionIds
- * @param serviceData       the service data of the Wfs3 Service
- * @return a set with all CollectionIds, which have the tiles Extension
- */
-public Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData serviceData){
-    Set<String> collectionIds = new HashSet<String>();
-    for(String collectionId: serviceData.getFeatureTypes().keySet())
-        if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY)) {
-            collectionIds.add(collectionId);
-        }
-    return collectionIds;
-}
+    /**
+     * checks if the tiles extension is available and returns a Set with all collectionIds
+     * @param serviceData       the service data of the Wfs3 Service
+     * @return a set with all CollectionIds, which have the tiles Extension
+     */
+    public Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData serviceData){
+        Set<String> collectionIds = new HashSet<String>();
+        for(String collectionId: serviceData.getFeatureTypes().keySet())
+            if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY)) {
+                collectionIds.add(collectionId);
+            }
+        return collectionIds;
+    }
     /**
      * checks if the tiles extension is available and returns a Map with all available collections and a boolean value if the tiles
      * support is currently enabled

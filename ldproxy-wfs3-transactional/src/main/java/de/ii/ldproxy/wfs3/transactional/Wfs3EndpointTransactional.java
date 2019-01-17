@@ -13,6 +13,7 @@ import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.service.api.Service;
 import io.dropwizard.auth.Auth;
@@ -33,6 +34,9 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+
+import static de.ii.ldproxy.wfs3.transactional.TransactionalConfiguration.EXTENSION_KEY;
+
 
 /**
  * @author zahnen
@@ -57,7 +61,13 @@ public class Wfs3EndpointTransactional implements Wfs3EndpointExtension {
         return ImmutableList.of("POST", "PUT", "DELETE");
     }
 
-
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            throw new NotFoundException();
+        }
+        return true;
+    }
 
     @Path("/{id}/items")
     @POST

@@ -72,7 +72,7 @@ class VectorTile {
         // check, if collectionId is valid
         if (collectionId != null) {
             Set<String> collectionIds = serviceData.getFeatureTypes()
-                                                   .keySet();
+                    .keySet();
             if (collectionId.isEmpty() || !collectionIds.contains(collectionId)) {
                 throw new NotFoundException();
             }
@@ -108,7 +108,7 @@ class VectorTile {
 
         if (this.temporary) {
             fileName = UUID.randomUUID()
-                           .toString();
+                    .toString();
         } else {
             fileName = String.format("%s_%s_%s", Integer.toString(this.level), Integer.toString(this.row), Integer.toString(this.col));
         }
@@ -261,7 +261,7 @@ class VectorTile {
         BoundingBox bboxNativeCrs = getBoundingBoxNativeCrs(crsTransformation);
 
         return String.format(Locale.US, "BBOX(%s, %.3f, %.3f, %.3f, %.3f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs()
-                                                                                                                                                                                                                  .getAsSimple());
+                .getAsSimple());
     }
 
     /**
@@ -305,7 +305,7 @@ class VectorTile {
      */
     private BoundingBox getBoundingBoxNativeCrs(CrsTransformation crsTransformation) throws CrsTransformationException {
         EpsgCrs crs = serviceData.getFeatureProvider()
-                                 .getNativeCrs();
+                .getNativeCrs();
         BoundingBox bboxTilingSchemeCrs = getBoundingBox();
         if (crs == tilingScheme.getCrs())
             return bboxTilingSchemeCrs;
@@ -336,31 +336,31 @@ class VectorTile {
      */
     public String getCQLFromFilters(Map<String, String> filters, Map<String, String> filterableFields) {
         return filters.entrySet()
-                      .stream()
-                      .map(f -> {
-                          if (f.getKey()
-                               .equals("time")) {
-                              try {
-                                  Interval fromIso8601Period = Interval.parse(f.getValue());
-                                  return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);
-                              } catch (DateTimeParseException ignore) {
-                                  try {
-                                      Instant fromIso8601 = Instant.parse(f.getValue());
-                                      return String.format("%s TEQUALS %s", filterableFields.get(f.getKey()), fromIso8601);
-                                  } catch (DateTimeParseException e) {
-                                      LOGGER.debug("TIME PARSER ERROR", e);
-                                      throw new BadRequestException();
-                                  }
-                              }
-                          }
-                          if (f.getValue()
-                               .contains("*")) {
-                              return String.format("%s LIKE '%s'", filterableFields.get(f.getKey()), f.getValue());
-                          }
+                .stream()
+                .map(f -> {
+                    if (f.getKey()
+                            .equals("time")) {
+                        try {
+                            Interval fromIso8601Period = Interval.parse(f.getValue());
+                            return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);
+                        } catch (DateTimeParseException ignore) {
+                            try {
+                                Instant fromIso8601 = Instant.parse(f.getValue());
+                                return String.format("%s TEQUALS %s", filterableFields.get(f.getKey()), fromIso8601);
+                            } catch (DateTimeParseException e) {
+                                LOGGER.debug("TIME PARSER ERROR", e);
+                                throw new BadRequestException();
+                            }
+                        }
+                    }
+                    if (f.getValue()
+                            .contains("*")) {
+                        return String.format("%s LIKE '%s'", filterableFields.get(f.getKey()), f.getValue());
+                    }
 
-                          return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
-                      })
-                      .collect(Collectors.joining(" AND "));
+                    return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
+                })
+                .collect(Collectors.joining(" AND "));
     }
 
 

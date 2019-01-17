@@ -388,9 +388,9 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
                 Wfs3MediaType mediaType;
                 mediaType = ImmutableWfs3MediaType.builder()
-                                                  .main(new MediaType("application", "json"))
-                                                  .label("JSON")
-                                                  .build();
+                        .main(new MediaType("application", "json"))
+                        .label("JSON")
+                        .build();
                 TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, null, null, null, uriCustomizer, mediaType, true,tile);
             }
             return tileFileJson;

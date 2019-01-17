@@ -11,6 +11,14 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import de.ii.ldproxy.wfs3.api.*;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
+import de.ii.ldproxy.wfs3.api.URICustomizer;
+import de.ii.ldproxy.wfs3.api.Wfs3Collection;
+import de.ii.ldproxy.wfs3.api.Wfs3Collections;
+import de.ii.ldproxy.wfs3.api.Wfs3Extent;
+import de.ii.ldproxy.wfs3.api.Wfs3Link;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceMetadata;
+import de.ii.ldproxy.wfs3.oas30.Oas30Configuration;
 import io.dropwizard.views.View;
 import org.threeten.extra.Interval;
 
@@ -33,6 +41,7 @@ public class Wfs3DatasetView extends View {
     public String description;
     public String dataSourceUrl;
     public String keywords;
+    public String openApiUrl;
     public Wfs3ServiceMetadata metadata;
     private final Wfs3ServiceData serviceData;
     private List<Wfs3Style> styles;
@@ -78,6 +87,11 @@ public class Wfs3DatasetView extends View {
 
         this.styles=wfs3Dataset.getStyles();
 
+        if(serviceData.getExtensions().containsKey(Oas30Configuration.EXTENSION_KEY) && serviceData.getExtensions().get(Oas30Configuration.EXTENSION_KEY).getEnabled()){
+            this.openApiUrl=breadCrumbs.get(0).url + "/" + serviceData.getId()+"/api";
+        }
+
+            this.serviceData = serviceData;
     }
 
     public Wfs3Collections getWfs3Dataset() {

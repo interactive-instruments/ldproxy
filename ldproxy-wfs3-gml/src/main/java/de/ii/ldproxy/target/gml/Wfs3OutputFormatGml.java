@@ -34,6 +34,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.felix.ipojo.annotations.ServiceController;
 import org.apache.felix.ipojo.annotations.Validate;
 
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -44,6 +45,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static de.ii.ldproxy.target.gml.GmlConfiguration.EXTENSION_KEY;
 
 /**
  * @author zahnen
@@ -76,8 +79,25 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
     }
 
     @Override
+    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){
+        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public Wfs3MediaType getMediaType() {
         return MEDIA_TYPE;
+    }
+
+
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            return false;
+        }
+        return true;
     }
 
     @Override

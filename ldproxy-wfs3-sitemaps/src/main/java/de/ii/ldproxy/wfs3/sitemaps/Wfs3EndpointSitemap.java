@@ -13,6 +13,7 @@ import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.core.Wfs3Core;
+import de.ii.ldproxy.wfs3.oas30.Oas30Configuration;
 import de.ii.xsf.core.server.CoreServerConfig;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.feature.query.api.FeatureQuery;
@@ -27,6 +28,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
@@ -34,6 +36,8 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static de.ii.ldproxy.wfs3.sitemaps.SitemapsConfiguration.EXTENSION_KEY;
 
 /**
  * @author zahnen
@@ -57,6 +61,14 @@ public class Wfs3EndpointSitemap implements Wfs3EndpointExtension {
     @Override
     public String getSubPathRegex() {
         return "^\\/?(?:\\/\\w+\\/sitemap[_0-9]+\\.xml)$";
+    }
+
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData, EXTENSION_KEY)){
+            throw new NotFoundException();
+        }
+        return true;
     }
 
     @Path("/{id}/sitemap_{from}_{to}.xml")

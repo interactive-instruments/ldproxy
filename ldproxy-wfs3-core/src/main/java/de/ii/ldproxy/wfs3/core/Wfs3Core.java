@@ -50,9 +50,9 @@ public class Wfs3Core {
 
     private List<Wfs3CollectionMetadataExtension> getCollectionExtenders() {
         return wfs3Extensions.stream()
-                             .filter(wfs3Extension -> wfs3Extension instanceof Wfs3CollectionMetadataExtension)
-                             .map(wfs3Extension -> (Wfs3CollectionMetadataExtension) wfs3Extension)
-                             .collect(Collectors.toList());
+                .filter(wfs3Extension -> wfs3Extension instanceof Wfs3CollectionMetadataExtension)
+                .map(wfs3Extension -> (Wfs3CollectionMetadataExtension) wfs3Extension)
+                .collect(Collectors.toList());
     }
 
     private List<Wfs3DatasetMetadataExtension> getDatasetExtenders() {
@@ -66,27 +66,27 @@ public class Wfs3Core {
         final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
 
         List<Wfs3Collection> collections = serviceData.getFeatureTypes()
-                                                      .values()
-                                                      .stream()
-                                                      //TODO
-                                                      .filter(featureType -> serviceData.isFeatureTypeEnabled(featureType.getId()))
-                                                      .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                                                      .map(featureType -> createCollection(featureType, wfs3LinksGenerator, serviceData, mediaType, alternativeMediaTypes, uriCustomizer, true))
-                                                      .collect(Collectors.toList());
+                .values()
+                .stream()
+                //TODO
+                .filter(featureType -> serviceData.isFeatureTypeEnabled(featureType.getId()))
+                .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
+                .map(featureType -> createCollection(featureType, wfs3LinksGenerator, serviceData, mediaType, alternativeMediaTypes, uriCustomizer, true))
+                .collect(Collectors.toList());
 
         ImmutableList<String> crs = ImmutableList.<String>builder()
                 .add(serviceData.getFeatureProvider()
-                                .getNativeCrs()
-                                .getAsUri())
+                        .getNativeCrs()
+                        .getAsUri())
                 .add(Wfs3ServiceData.DEFAULT_CRS_URI)
                 .addAll(serviceData.getAdditionalCrs()
-                                   .stream()
-                                   .map(EpsgCrs::getAsUri)
-                                   .collect(Collectors.toList()))
+                        .stream()
+                        .map(EpsgCrs::getAsUri)
+                        .collect(Collectors.toList()))
                 .build();
 
 
-       List<Wfs3Link> wfs3Links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, mediaType, alternativeMediaTypes);
+        List<Wfs3Link> wfs3Links = wfs3LinksGenerator.generateDatasetLinks(uriCustomizer.copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, mediaType, alternativeMediaTypes);
 
 
         ImmutableWfs3Collections.Builder dataset = ImmutableWfs3Collections.builder()
@@ -113,47 +113,47 @@ public class Wfs3Core {
                                                                .getNamespacePrefix(featureType.getNamespace()) + ":" + featureType.getName()*/;
 
         ImmutableWfs3Collection.Builder collection = ImmutableWfs3Collection.builder()
-                                                                            .name(featureType.getId())
-                                                                            .title(featureType.getLabel())
-                                                                            .description(featureType.getDescription())
-                                                                            .prefixedName(qn)
-                                                                            .links(wfs3LinksGenerator.generateDatasetCollectionLinks(uriCustomizer.copy(), featureType.getId(), featureType.getLabel(), Optional.empty() /* new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType(ImmutableMap.of(featureType.getNamespace(), ImmutableList.of(featureType.getName())))).getAsUrl()*/, mediaType, alternativeMediaTypes));
+                .name(featureType.getId())
+                .title(featureType.getLabel())
+                .description(featureType.getDescription())
+                .prefixedName(qn)
+                .links(wfs3LinksGenerator.generateDatasetCollectionLinks(uriCustomizer.copy(), featureType.getId(), featureType.getLabel(), Optional.empty() /* new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType(ImmutableMap.of(featureType.getNamespace(), ImmutableList.of(featureType.getName())))).getAsUrl()*/, mediaType, alternativeMediaTypes));
 
         if (serviceData.getFilterableFieldsForFeatureType(featureType.getId())
-                       .containsKey("time")) {
+                .containsKey("time")) {
             collection.extent(new Wfs3Extent(
                     featureType.getExtent()
-                               .getTemporal()
-                               .getStart(),
+                            .getTemporal()
+                            .getStart(),
                     featureType.getExtent()
-                               .getTemporal()
-                               .getComputedEnd(),
+                            .getTemporal()
+                            .getComputedEnd(),
                     featureType.getExtent()
-                               .getSpatial()
-                               .getXmin(),
+                            .getSpatial()
+                            .getXmin(),
                     featureType.getExtent()
-                               .getSpatial()
-                               .getYmin(),
+                            .getSpatial()
+                            .getYmin(),
                     featureType.getExtent()
-                               .getSpatial()
-                               .getXmax(),
+                            .getSpatial()
+                            .getXmax(),
                     featureType.getExtent()
-                               .getSpatial()
-                               .getYmax()));
+                            .getSpatial()
+                            .getYmax()));
         } else {
             collection.extent(new Wfs3Extent(
                     featureType.getExtent()
-                               .getSpatial()
-                               .getXmin(),
+                            .getSpatial()
+                            .getXmin(),
                     featureType.getExtent()
-                               .getSpatial()
-                               .getYmin(),
+                            .getSpatial()
+                            .getYmin(),
                     featureType.getExtent()
-                               .getSpatial()
-                               .getXmax(),
+                            .getSpatial()
+                            .getXmax(),
                     featureType.getExtent()
-                               .getSpatial()
-                               .getYmax()));
+                            .getSpatial()
+                            .getYmax()));
         }
 
         //TODO: to crs extension
@@ -161,13 +161,13 @@ public class Wfs3Core {
             collection.crs(
                     ImmutableList.<String>builder()
                             .add(serviceData.getFeatureProvider()
-                                            .getNativeCrs()
-                                            .getAsUri())
+                                    .getNativeCrs()
+                                    .getAsUri())
                             .add(Wfs3ServiceData.DEFAULT_CRS_URI)
                             .addAll(serviceData.getAdditionalCrs()
-                                               .stream()
-                                               .map(EpsgCrs::getAsUri)
-                                               .collect(Collectors.toList()))
+                                    .stream()
+                                    .map(EpsgCrs::getAsUri)
+                                    .collect(Collectors.toList()))
                             .build()
             );
         }

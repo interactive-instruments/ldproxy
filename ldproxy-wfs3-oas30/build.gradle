@@ -6,3 +6,9 @@ dependencies {
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi', version: '1.1.1-SNAPSHOT'
 }
+jar {
+    manifest {
+        instructionFirst 'Import-Package', "!org.immutables.value"
+        instruction 'Import-Package', "*"
+    }
+}

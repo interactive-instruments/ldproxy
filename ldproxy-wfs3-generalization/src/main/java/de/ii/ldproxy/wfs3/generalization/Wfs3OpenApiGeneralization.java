@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Objects;
 
+import static de.ii.ldproxy.wfs3.generalization.GeneralizationConfiguration.EXTENSION_KEY;
+
 /**
  * @author zahnen
  */
@@ -36,45 +38,46 @@ public class Wfs3OpenApiGeneralization implements Wfs3OpenApiExtension {
 
     @Override
     public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
+        if(isExtensionEnabled(serviceData, EXTENSION_KEY)) {
 
-        openAPI.getComponents()
-               .addParameters("maxAllowableOffset", new Parameter()
-                       .name("maxAllowableOffset")
-                       .in("query")
-                       .description("This option can be used to specify the maxAllowableOffset to be used for generalizing the response geometries.\n \nThe maxAllowableOffset is in the units of the response coordinate reference system.")
-                       .required(false)
-                       .schema(new NumberSchema()._default(BigDecimal.valueOf(0)))
-                       .style(Parameter.StyleEnum.FORM)
-                       .explode(false)
-                       .example(0.05)
-               );
+            openAPI.getComponents()
+                    .addParameters("maxAllowableOffset", new Parameter()
+                            .name("maxAllowableOffset")
+                            .in("query")
+                            .description("This option can be used to specify the maxAllowableOffset to be used for generalizing the response geometries.\n \nThe maxAllowableOffset is in the units of the response coordinate reference system.")
+                            .required(false)
+                            .schema(new NumberSchema()._default(BigDecimal.valueOf(0)))
+                            .style(Parameter.StyleEnum.FORM)
+                            .explode(false)
+                            .example(0.05)
+                    );
 
-        serviceData.getFeatureTypes()
-                   .values()
-                   .stream()
-                   .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                   .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
-                   .forEach(ft -> {
+            serviceData.getFeatureTypes()
+                    .values()
+                    .stream()
+                    .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
+                    .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                    .forEach(ft -> {
 
-                       PathItem pathItem = openAPI.getPaths()
-                                                  .get(String.format("/collections/%s/items", ft.getId()));
+                        PathItem pathItem = openAPI.getPaths()
+                                .get(String.format("/collections/%s/items", ft.getId()));
 
-                       if (Objects.nonNull(pathItem)) {
-                           pathItem.getGet()
-                                   .addParametersItem(new Parameter().$ref("#/components/parameters/maxAllowableOffset"));
-                       }
+                        if (Objects.nonNull(pathItem)) {
+                            pathItem.getGet()
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/maxAllowableOffset"));
+                        }
 
-                       PathItem pathItem2 = openAPI.getPaths()
-                                                  .get(String.format("/collections/%s/items/{featureId}", ft.getId()));
+                        PathItem pathItem2 = openAPI.getPaths()
+                                .get(String.format("/collections/%s/items/{featureId}", ft.getId()));
 
-                       if (Objects.nonNull(pathItem2)) {
-                           pathItem2.getGet()
-                                   .addParametersItem(new Parameter().$ref("#/components/parameters/maxAllowableOffset"));
-                       }
+                        if (Objects.nonNull(pathItem2)) {
+                            pathItem2.getGet()
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/maxAllowableOffset"));
+                        }
 
 
-                   });
-
+                    });
+        }
         return openAPI;
     }
 }

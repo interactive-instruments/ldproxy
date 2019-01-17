@@ -10,6 +10,7 @@ package de.ii.ldproxy.wfs3.crs;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS_URI;
+import static de.ii.ldproxy.wfs3.crs.CrsConfiguration.EXTENSION_KEY;
 
 /**
  * @author zahnen
@@ -35,7 +37,12 @@ public class Wfs3ParameterCrs implements Wfs3ParameterExtension {
     public static final String CRS = "crs";
 
     @Override
-    public Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters) {
+    public Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters, Wfs3ServiceData serviceData) {
+
+        if (!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            return parameters;
+        }
+
         if (parameters.containsKey(BBOX) && parameters.containsKey(BBOX_CRS) && !isDefaultCrs(parameters.get(BBOX_CRS))) {
             Map<String, String> newParameters = new HashMap<>(parameters);
             newParameters.put(BBOX, parameters.get(BBOX) + "," + parameters.get(BBOX_CRS));
@@ -46,7 +53,11 @@ public class Wfs3ParameterCrs implements Wfs3ParameterExtension {
     }
 
     @Override
-    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, ImmutableFeatureQuery.Builder queryBuilder, Map<String, String> parameters) {
+    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, ImmutableFeatureQuery.Builder queryBuilder, Map<String, String> parameters, Wfs3ServiceData serviceData) {
+
+        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            return queryBuilder;
+        }
 
         if (parameters.containsKey(CRS) && !isDefaultCrs(parameters.get(CRS))) {
             EpsgCrs targetCrs = new EpsgCrs(parameters.get(CRS));

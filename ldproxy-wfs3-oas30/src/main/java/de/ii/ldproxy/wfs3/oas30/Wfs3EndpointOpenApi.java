@@ -35,6 +35,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import static de.ii.ldproxy.wfs3.oas30.Oas30Configuration.EXTENSION_KEY;
+
 /**
  * @author zahnen
  */
@@ -55,15 +57,30 @@ public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointEx
     public String getConformanceClass() {
         return "http://www.opengis.net/spec/wfs-1/3.0/req/oas30";
     }
+    @Override
+    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){
+        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public String getPath() {
         return "api";
     }
 
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData){
+        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+            throw new NotFoundException();
+        }
+        return true;
+    }
+
     @GET
     @Produces({MediaType.TEXT_HTML})
-    public Response getApiDescription(@Context Wfs3RequestContext wfs3Request, @Context HttpHeaders headers) throws Exception {
+    public Response getApiDescription(@Context Service service,@Context Wfs3RequestContext wfs3Request, @Context HttpHeaders headers) throws Exception {
         if (!wfs3Request.getUriCustomizer().getPath().endsWith("/")) {
             return Response
                     .status(Response.Status.MOVED_PERMANENTLY)

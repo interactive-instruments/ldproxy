@@ -10,7 +10,6 @@ package de.ii.ldproxy.wfs3.api;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import de.ii.xsf.dropwizard.cfg.JacksonProvider;
-import org.immutables.value.Value;
 
 /**
  * @author zahnen
@@ -20,4 +19,5 @@ import org.immutables.value.Value;
 public interface ExtensionConfiguration {
     boolean getEnabled();
     ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault);
+
 }
