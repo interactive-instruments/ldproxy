@@ -16,6 +16,9 @@ subprojects {
         header rootProject.file('gradle/license-header')
         strictCheck true
         excludes([
+                "**/Modifiable*.java",
+                "**/Immutable*.java",
+                "**/node_modules/**/*",
                 "**/*.mustache",
                 "**/*.png",
                 "**/*.ico",

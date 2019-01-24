@@ -29,7 +29,8 @@ To set up a local development environment, follow these steps:
 ```bash
 git clone https://github.com/interactive-instruments/ldproxy.git
 cd ldproxy
-./gradlew build
+git submodule update --init
+./gradlew -PdownloadNode=true assemble
 ./gradlew run
 ```
 
