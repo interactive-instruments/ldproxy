@@ -90,8 +90,10 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
             namespaces.getNamespaces()
                       .keySet()
                       .forEach(consumerMayThrow(prefix -> {
-                          writer.append(" ");
-                          writer.append(namespaces.generateNamespaceDeclaration(prefix));
+                          if (!Strings.isNullOrEmpty(prefix)) {
+                              writer.append(" ");
+                              writer.append(namespaces.generateNamespaceDeclaration(prefix));
+                          }
                       }));
 
             if (numberReturned.isPresent()) {
