@@ -1,0 +1,15 @@
+task installGitHooks(type: Copy) {
+    from file('.pre-commit')
+    into { file('.git/hooks') }
+    rename { f -> 'pre-commit'}
+}
+
+task chmodGitHooks(type: Exec) {
+    commandLine 'chmod', '-R', '+x', '.git/hooks/'
+}
+
+assemble.dependsOn installGitHooks
+
+if (!System.getProperty('os.name').toLowerCase().contains('windows')) {
+    installGitHooks.finalizedBy chmodGitHooks
+}
