@@ -4,9 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3Extension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xsf.configstore.api.KeyNotFoundException;
@@ -17,24 +15,31 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
 
 /**
  * fetch list of styles or a style for the service
- *
  */
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
+public class Wfs3EndpointStyles implements Wfs3EndpointExtension {
 
     @Requires
     private KeyValueStore keyValueStore;
@@ -45,22 +50,18 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
     }
 
     @Override
-    public String getSubPathRegex() {
-        return "^\\/?.*$";
-    }
-
-    @Override
     public List<String> getMethods() {
         return ImmutableList.of("GET");
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        if (!isExtensionEnabled(serviceData, EXTENSION_KEY)) {
             throw new NotFoundException();
         }
         return true;
     }
+
     /**
      * retrieve all available styles of the dataset with metadata and links to them
      *
@@ -69,11 +70,11 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
     @Path("/")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStyles(@Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException, KeyNotFoundException
-    {
+    public Response getStyles(@Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException, KeyNotFoundException {
         List<Map<String, Object>> styles = new ArrayList<>();
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
+                                                 .getChildStore(service.getId());
         List<String> keys = stylesStore.getKeys();
 
         for (String key : keys) {
@@ -95,10 +96,12 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
         }
 
         if (styles.size() == 0) {
-            return Response.ok("{ \n \"styles\": [] \n }").build();
+            return Response.ok("{ \n \"styles\": [] \n }")
+                           .build();
         }
 
-        return Response.ok(ImmutableMap.of("styles", styles)).build();
+        return Response.ok(ImmutableMap.of("styles", styles))
+                       .build();
     }
 
     /**
@@ -110,30 +113,32 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
     @Path("/{styleId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStyle( @PathParam("styleId") String styleId, @Context Service service) throws IOException, KeyNotFoundException {
+    public Response getStyle(@PathParam("styleId") String styleId, @Context Service service) throws IOException, KeyNotFoundException {
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
+                                                 .getChildStore(service.getId());
         List<String> styles = stylesStore.getKeys();
 
         Map<String, Object> styleToDisplay = getStyleToDisplay(stylesStore, styles, styleId);
 
 
-        return Response.ok(styleToDisplay).build();
+        return Response.ok(styleToDisplay)
+                       .build();
 
     }
 
     /**
      * converts the file into a Map and returns the style
      *
-     * @param stylesStore   the styles Store of the dataset with all styles for the dataset
-     * @param key           the name of one file in the collection folder
+     * @param stylesStore the styles Store of the dataset with all styles for the dataset
+     * @param key         the name of one file in the collection folder
      * @return a map with the complete info of the style
      * @throws IOException
      * @throws KeyNotFoundException
      */
-    public static Map<String,Object> getStyleJson(KeyValueStore stylesStore, String key)  {
+    public static Map<String, Object> getStyleJson(KeyValueStore stylesStore, String key) {
         Map<String, Object> style;
-        try{
+        try {
             final ObjectMapper mapper = new ObjectMapper();
             BufferedReader br = new BufferedReader(stylesStore.getValueReader(key));
 
@@ -144,7 +149,7 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
                 });
             }
 
-        }catch(KeyNotFoundException|IOException e){
+        } catch (KeyNotFoundException | IOException e) {
             throw new NotFoundException();
         }
 
@@ -155,27 +160,27 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension{
     /**
      * search the List of available styles for the collection/dataset for a specific style. return that specific style, if no style is found returns null
      *
-     * @param stylesStore   the styles Store of the dataset with all styles for the dataset
-     * @param styles        a list with all the available Styles in the dataset store
-     * @param styleId       the style you want to display
+     * @param stylesStore the styles Store of the dataset with all styles for the dataset
+     * @param styles      a list with all the available Styles in the dataset store
+     * @param styleId     the style you want to display
      * @throws IOException
      * @throws KeyNotFoundException
      */
-    public static Map<String,Object> getStyleToDisplay(KeyValueStore stylesStore,List<String>styles, String styleId) {
+    public static Map<String, Object> getStyleToDisplay(KeyValueStore stylesStore, List<String> styles, String styleId) {
 
-        Map<String, Object> styleToDisplay=null;
-        for(String key : styles){
-            if(stylesStore.containsKey(key)){
-                Map<String, Object> styleJson = Wfs3EndpointStyles.getStyleJson(stylesStore,key);
-                if(styleJson!=null){
-                    if(key.split("\\.")[0].equals(styleId)){
+        Map<String, Object> styleToDisplay = null;
+        for (String key : styles) {
+            if (stylesStore.containsKey(key)) {
+                Map<String, Object> styleJson = Wfs3EndpointStyles.getStyleJson(stylesStore, key);
+                if (styleJson != null) {
+                    if (key.split("\\.")[0].equals(styleId)) {
                         styleToDisplay = styleJson;
                         break;
                     }
                 }
             }
         }
-        if(styleToDisplay==null){
+        if (styleToDisplay == null) {
             throw new NotFoundException();
         }
         return styleToDisplay;
