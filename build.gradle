@@ -132,6 +132,7 @@ apply from: 'license-report.gradle'
 
 //apply plugin: 'xtraplatform-docs'
 
+apply from: 'git-hooks.gradle'
 
 /*
 
