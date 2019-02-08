@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@ package de.ii.ldproxy.wfs3.vt
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ldproxy.wfs3.vt.TilesConfiguration.Tiles.MinMax
+import de.ii.ldproxy.wfs3.vt.TilesConfiguration.MinMax
 import spock.lang.Specification
 
 import javax.ws.rs.NotFoundException

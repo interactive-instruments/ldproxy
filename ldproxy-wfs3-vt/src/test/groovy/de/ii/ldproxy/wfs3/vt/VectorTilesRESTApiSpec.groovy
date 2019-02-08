@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 interactive instruments GmbH
+ * Copyright 2019 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,22 +10,24 @@ package de.ii.ldproxy.wfs3.vt
 import groovyx.net.http.ContentType
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
+import spock.lang.Requires
 import spock.lang.Specification
 
+@Requires({env['SUT_URL'] != null})
 class VectorTilesRESTApiSpec extends Specification{
 
-    static String testURL = "http://localhost:7080"
-    static String testPath = "/rest/services/daraa"
-    static String testTilingScheme = "default"
-    static String testCollection = "aeronauticcrv"
+    static final String SUT_URL = System.getenv('SUT_URL')
+    static final String SUT_PATH = "/rest/services/daraa"
+    static final String SUT_TILING_SCHEME = "default"
+    static final String SUT_COLLECTION = "aeronauticcrv"
 
-    RESTClient restClient = new RESTClient(testURL)
+    RESTClient restClient = new RESTClient(SUT_URL)
 
     //TODO - delete tilingSchemes Test if "tilingSchemes" is replaced with "tiles"
     def 'GET Request for the tiling Schemes Page'(){
 
         when:
-        def response = restClient.get( path: testPath + '/tilingSchemes')
+        def response = restClient.get( path: SUT_PATH + '/tilingSchemes')
 
         then:
         response.status == 200
@@ -38,7 +40,7 @@ class VectorTilesRESTApiSpec extends Specification{
     def 'GET Request for a tiling Scheme Page from tilingSchemes'(){
 
         when:
-        def response = restClient.get( path: testPath + '/tilingSchemes/'+ testTilingScheme)
+        def response = restClient.get( path: SUT_PATH + '/tilingSchemes/'+ SUT_TILING_SCHEME)
 
         then:
         response.status == 200
@@ -57,7 +59,7 @@ class VectorTilesRESTApiSpec extends Specification{
     def 'GET Request for the tiles Page'(){
 
         when:
-        def response = restClient.get( path: testPath + '/tiles')
+        def response = restClient.get( path: SUT_PATH + '/tiles')
 
         then:
         response.status == 200
@@ -70,7 +72,7 @@ class VectorTilesRESTApiSpec extends Specification{
     def 'GET Request for a tiling Scheme Page from tiles'(){
 
         when:
-        def response = restClient.get( path: testPath + '/tiles/'+ testTilingScheme)
+        def response = restClient.get( path: SUT_PATH + '/tiles/'+ SUT_TILING_SCHEME)
 
         then:
         response.status == 200
@@ -89,8 +91,8 @@ class VectorTilesRESTApiSpec extends Specification{
     def 'GET Request for a empty tile of the dataset'(){
 
         when:
-        def response=restClient.request(testURL, Method.GET, ContentType.JSON,{ req ->
-            uri.path = testPath + '/tiles/'+ testTilingScheme + '/10/413/618'
+        def response=restClient.request(SUT_URL, Method.GET, ContentType.JSON,{ req ->
+            uri.path = SUT_PATH + '/tiles/'+ SUT_TILING_SCHEME + '/10/413/618'
             headers.Accept = 'application/vnd.mapbox-vector-tile'
         })
 
@@ -106,8 +108,8 @@ class VectorTilesRESTApiSpec extends Specification{
         def status = 404
 
         when:
-        restClient.request(testURL, Method.GET, ContentType.JSON,{ req ->
-            uri.path = testPath + '/tiles/'+ testTilingScheme + '/10/413/614'
+        restClient.request(SUT_URL, Method.GET, ContentType.JSON,{ req ->
+            uri.path = SUT_PATH + '/tiles/'+ SUT_TILING_SCHEME + '/10/413/614'
             headers.Accept = 'application/vnd.mapbox-vector-tile'
 
             response.success = { resp ->
@@ -123,7 +125,7 @@ class VectorTilesRESTApiSpec extends Specification{
     def 'GET Request for a tiling Scheme Page from a collection'(){
 
         when:
-        def response = restClient.get( path: testPath + '/collections/'+ testCollection +"/tiles")
+        def response = restClient.get( path: SUT_PATH + '/collections/'+ SUT_COLLECTION +"/tiles")
 
         then:
         response.status == 200
@@ -136,8 +138,8 @@ class VectorTilesRESTApiSpec extends Specification{
     def 'GET Request for a tile of a collection in json format'(){
 
         when:
-        def response = restClient.request(testURL, Method.GET, ContentType.JSON, { req ->
-            uri.path = testPath + '/collections/' + testCollection + "/tiles/" + testTilingScheme + "/10/413/614"
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/" + SUT_TILING_SCHEME + "/10/413/614"
             headers.Accept = 'application/json'
         })
 
@@ -159,8 +161,8 @@ class VectorTilesRESTApiSpec extends Specification{
         def status = 404
 
         when:
-        restClient.request(testURL, Method.GET, ContentType.JSON, { req ->
-            uri.path = testPath + '/collections/' + testCollection + "/tiles/" + testTilingScheme + "/10/413/614"
+        restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/" + SUT_TILING_SCHEME + "/10/413/614"
             headers.Accept = 'application/vnd.mapbox-vector-tile'
 
             response.success = { resp ->

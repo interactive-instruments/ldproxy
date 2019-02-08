@@ -1,23 +1,32 @@
+/*
+ * Copyright 2019 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.wfs3.styles
 
 import groovyx.net.http.RESTClient
+import spock.lang.Requires
 import spock.lang.Specification
 
+@Requires({env['SUT_URL'] != null})
 class StylesRESTApiSpec extends Specification{
 
-    static String testURL = "http://localhost:7080"
-    static String testPath = "/rest/services/daraa"
-    static String testCollection = "aeronauticcrv"
-    static String testStyle = "daraa"
+    static final String SUT_URL = System.getenv('SUT_URL')
+    static final String SUT_PATH = "/rest/services/daraa"
+    static final String SUT_COLLECTION = "aeronauticcrv"
+    static final String SUT_STYLE = "daraa"
 
 
-    RESTClient restClient = new RESTClient(testURL)
+    RESTClient restClient = new RESTClient(SUT_URL)
 
 
     def 'GET Request for the styles Page of the dataset'(){
 
         when:
-        def response = restClient.get( path: testPath + '/styles')
+        def response = restClient.get( path: SUT_PATH + '/styles')
 
         then:
         response.status == 200
@@ -31,7 +40,7 @@ class StylesRESTApiSpec extends Specification{
     def 'GET Request for the styles Page of a Collection'(){
 
         when:
-        def response = restClient.get( path: testPath + '/collections/' + testCollection + '/styles')
+        def response = restClient.get( path: SUT_PATH + '/collections/' + SUT_COLLECTION + '/styles')
 
         then:
         response.status == 200
@@ -45,7 +54,7 @@ class StylesRESTApiSpec extends Specification{
     def 'GET Request for a style Page'(){
 
         when:
-        def response = restClient.get( path: testPath + '/collections/' + testCollection + '/styles/' + testStyle)
+        def response = restClient.get( path: SUT_PATH + '/collections/' + SUT_COLLECTION + '/styles/' + SUT_STYLE)
 
         then:
         response.status == 200

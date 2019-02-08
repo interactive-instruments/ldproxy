@@ -1,17 +1,26 @@
+/*
+ * Copyright 2019 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.wfs3.transactional
 
 
 import groovyx.net.http.*
+import spock.lang.Requires
 import spock.lang.Specification
 
+@Requires({env['SUT_URL'] != null})
 class TransactionalRESTApiSpec extends Specification{
 
-    static String testURL = "http://localhost:7080"
-    static String testPath = "/rest/services/daraa"
-    static String testCollection = "aeronauticcrv"
-    static String testFeatureId2= "21"
+    static String SUT_URL = System.getenv('SUT_URL')
+    static String SUT_PATH = "/rest/services/daraa"
+    static String SUT_COLLECTION = "aeronauticcrv"
+    static String SUT_ID = "21"
 
-    RESTClient restClient = new RESTClient(testURL)
+    RESTClient restClient = new RESTClient(SUT_URL)
 
     def 'POST Request for one feature of a collection'(){
 
@@ -20,7 +29,7 @@ class TransactionalRESTApiSpec extends Specification{
         restClient.encoder.'application/geo+json' = restClient.encoder."application/json"
 
         def response = restClient.post(
-                path:  testPath + '/collections/' + testCollection + "/items/",
+                path:  SUT_PATH + '/collections/' + SUT_COLLECTION + "/items/",
                 body : "{\"type\": \"Feature\",\"geometry\": {\"type\": \"Point\"},\"properties\": {}}",
                 requestContentType : "application/geo+json"
         )
@@ -40,7 +49,7 @@ class TransactionalRESTApiSpec extends Specification{
 
 
         def response = restClient.put(
-                path:  testPath + '/collections/' + testCollection + "/items/" + testFeatureId2,
+                path:  SUT_PATH + '/collections/' + SUT_COLLECTION + "/items/" + SUT_ID,
                 body : "{\"type\": \"Feature\",\"geometry\": {\"type\": \"Point\"},\"properties\": {}}",
                 requestContentType : "application/geo+json"
         )

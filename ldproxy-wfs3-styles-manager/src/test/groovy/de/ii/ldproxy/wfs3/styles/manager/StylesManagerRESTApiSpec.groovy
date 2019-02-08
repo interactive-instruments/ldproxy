@@ -1,25 +1,34 @@
+/*
+ * Copyright 2019 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.wfs3.styles.manager
 
 import groovyx.net.http.ContentType
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
+import spock.lang.Requires
 import spock.lang.Specification
 
+@Requires({env['SUT_URL'] != null})
 class StylesManagerRESTApiSpec extends Specification {
 
-    static String testURL = "http://localhost:7080"
-    static String testPath = "/rest/services/daraa"
-    static String testCollection = "aeronauticcrv"
-    static String testStyle1 = "default"
+    static final String SUT_URL = System.getenv('SUT_URL')
+    static final String SUT_PATH = "/rest/services/daraa"
+    static final String SUT_COLLECTION = "aeronauticcrv"
+    static final String SUT_STYLE = "default"
 
 
-    RESTClient restClient = new RESTClient(testURL)
+    RESTClient restClient = new RESTClient(SUT_URL)
 
     def 'PUT Request for a style of the dataset'(){
 
         when:
-        def response=restClient.request(testURL, Method.PUT, ContentType.JSON,{ req ->
-            uri.path = testPath + '/styles/'+ testStyle1
+        def response=restClient.request(SUT_URL, Method.PUT, ContentType.JSON,{ req ->
+            uri.path = SUT_PATH + '/styles/'+ SUT_STYLE
             headers.Accept = 'application/json'
             body="{\"id\": \"default\"}"
         })
@@ -35,8 +44,8 @@ class StylesManagerRESTApiSpec extends Specification {
     def 'PUT Request for a style of a collection'(){
 
         when:
-        def response=restClient.request(testURL, Method.PUT, ContentType.JSON,{ req ->
-            uri.path = testPath +'/collections/' +testCollection + '/styles/'+ testStyle1
+        def response=restClient.request(SUT_URL, Method.PUT, ContentType.JSON,{ req ->
+            uri.path = SUT_PATH +'/collections/' +SUT_COLLECTION + '/styles/'+ SUT_STYLE
             headers.Accept = 'application/json'
             body="{\"id\": \"default\"}"
         })

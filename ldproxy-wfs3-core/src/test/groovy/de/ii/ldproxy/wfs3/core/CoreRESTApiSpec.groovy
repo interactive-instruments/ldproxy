@@ -1,26 +1,35 @@
+/*
+ * Copyright 2019 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.wfs3.core
 
 import groovyx.net.http.ContentType
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
+import spock.lang.Requires
 import spock.lang.Specification
 
+@Requires({env['SUT_URL'] != null})
 class CoreRESTApiSpec extends Specification {
 
-    static String testURL = "http://localhost:7080"
-    static String testPath = "/rest/services/daraa"
-    static String testCollection = "aeronauticcrv"
-    static String testFeatureId= "1"
+    static final String SUT_URL = System.getenv('SUT_URL')
+    static final String SUT_PATH = "/rest/services/daraa"
+    static final String SUT_COLLECTION = "aeronauticcrv"
+    static final String SUT_ID = "1"
 
 
 
-    RESTClient restClient = new RESTClient(testURL)
+    RESTClient restClient = new RESTClient(SUT_URL)
 
 
     def 'GET request for the landing Page'(){
 
         when:
-        def response= restClient.get(path: testPath)
+        def response= restClient.get(path: SUT_PATH)
 
         then:
         response.status == 200
@@ -35,7 +44,7 @@ class CoreRESTApiSpec extends Specification {
     def 'GET request for the api Page'(){
 
         when:
-        def response= restClient.get(path: testPath +"/api")
+        def response= restClient.get(path: SUT_PATH +"/api")
 
         then:
         response.status == 200
@@ -45,7 +54,7 @@ class CoreRESTApiSpec extends Specification {
     def 'GET request for the conformance Page'(){
 
         when:
-        def response= restClient.get(path: testPath +"/conformance")
+        def response= restClient.get(path: SUT_PATH +"/conformance")
 
         then:
         response.status == 200
@@ -59,7 +68,7 @@ class CoreRESTApiSpec extends Specification {
     def 'GET request for the collections Page'(){
 
         when:
-        def response= restClient.get(path: testPath + "/collections")
+        def response= restClient.get(path: SUT_PATH + "/collections")
 
         then:
         response.status == 200
@@ -74,7 +83,7 @@ class CoreRESTApiSpec extends Specification {
     def 'GET request for one collection Page'(){
 
         when:
-        def response= restClient.get(path: testPath + "/collections/" + testCollection)
+        def response= restClient.get(path: SUT_PATH + "/collections/" + SUT_COLLECTION)
 
         then:
         response.status == 200
@@ -90,8 +99,8 @@ class CoreRESTApiSpec extends Specification {
     def 'GET request for one collections items Page'(){
 
         when:
-        def response = restClient.request(testURL, Method.GET, ContentType.JSON, { req ->
-            uri.path = testPath + '/collections/' + testCollection + "/items"
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/items"
             headers.Accept = 'application/json'
         })
         then:
@@ -108,8 +117,8 @@ class CoreRESTApiSpec extends Specification {
     def 'GET request for one feature in a collection'(){
 
         when:
-        def response = restClient.request(testURL, Method.GET, ContentType.JSON, { req ->
-            uri.path = testPath + '/collections/' + testCollection + "/items/" + testFeatureId
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/items/" + SUT_ID
             headers.Accept = 'application/json'
         })
 
@@ -124,6 +133,6 @@ class CoreRESTApiSpec extends Specification {
         response.responseData.get("geometry").containsKey("coordinates")
         response.responseData.containsKey("properties")
         response.responseData.containsKey("id")
-        response.responseData.get("id") == testFeatureId
+        response.responseData.get("id") == SUT_ID
     }
 }
