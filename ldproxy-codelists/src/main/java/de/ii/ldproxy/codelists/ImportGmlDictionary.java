@@ -8,8 +8,8 @@
 package de.ii.ldproxy.codelists;
 
 import com.google.common.net.UrlEscapers;
-import de.ii.xtraplatform.ogc.api.gml.parser.GMLDictionaryAnalyzer;
-import de.ii.xtraplatform.ogc.api.gml.parser.GMLDictionaryParser;
+import de.ii.xtraplatform.ogc.parser.GMLDictionaryAnalyzer;
+import de.ii.xtraplatform.ogc.parser.GMLDictionaryParser;
 import org.apache.http.HttpEntity;
 import org.codehaus.staxmate.SMInputFactory;
 import org.codehaus.staxmate.in.SMInputCursor;

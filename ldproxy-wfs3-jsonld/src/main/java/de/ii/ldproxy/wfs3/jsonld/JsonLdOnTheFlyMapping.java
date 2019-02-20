@@ -10,8 +10,7 @@ package de.ii.ldproxy.wfs3.jsonld;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping;
 import de.ii.ldproxy.target.html.MicrodataMapping;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_GEOMETRY_TYPE;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 
@@ -21,14 +20,13 @@ import java.util.List;
 /**
  * @author zahnen
  */
-public class JsonLdOnTheFlyMapping implements WfsProxyOnTheFlyMapping {
+public class JsonLdOnTheFlyMapping  {
     private List<String> paths;
 
     JsonLdOnTheFlyMapping() {
         this.paths = new ArrayList<>();
     }
 
-    @Override
     public TargetMapping getTargetMappingForFeatureType(XMLPathTracker path, String nsuri, String localName) {
         MicrodataPropertyMapping targetMapping = new MicrodataPropertyMapping();
         targetMapping.setEnabled(true);
@@ -37,7 +35,6 @@ public class JsonLdOnTheFlyMapping implements WfsProxyOnTheFlyMapping {
         return targetMapping;
     }
 
-    @Override
     public TargetMapping getTargetMappingForAttribute(XMLPathTracker path, String nsuri, String localName, String value) {
         if (!path.toFieldName().contains(".") && (localName.equals("id")  || localName.equals("fid"))) {
 
@@ -53,7 +50,6 @@ public class JsonLdOnTheFlyMapping implements WfsProxyOnTheFlyMapping {
         return null;
     }
 
-    @Override
     public TargetMapping getTargetMappingForProperty(XMLPathTracker path, String nsuri, String localName, String value) {
 
         // TODO: parse value to detect type
@@ -73,7 +69,6 @@ public class JsonLdOnTheFlyMapping implements WfsProxyOnTheFlyMapping {
         return null;
     }
 
-    @Override
     public TargetMapping getTargetMappingForGeometry(XMLPathTracker path, String nsuri, String localName) {
         MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE geoType = MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE.forGmlType(GML_GEOMETRY_TYPE.fromString(localName).toSimpleFeatureGeometry());
 

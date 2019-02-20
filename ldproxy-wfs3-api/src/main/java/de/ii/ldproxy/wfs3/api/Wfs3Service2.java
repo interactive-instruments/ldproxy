@@ -7,11 +7,9 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.feature.query.api.FeatureQuery;
+import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 
 import javax.ws.rs.core.Response;
 

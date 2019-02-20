@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerServiceData;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import org.immutables.value.Value;
@@ -42,7 +42,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static de.ii.xtraplatform.feature.query.api.TargetMapping.BASE_TYPE;
+import static de.ii.xtraplatform.feature.provider.api.TargetMapping.BASE_TYPE;
 
 /**
  * @author zahnen

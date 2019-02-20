@@ -8,8 +8,8 @@
 package de.ii.ldproxy.target.html;
 
 import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
-import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.SimpleFeatureGeometryFrom;
 
 /**

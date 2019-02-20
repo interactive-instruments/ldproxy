@@ -21,7 +21,7 @@ import de.ii.ldproxy.wfs3.jsonld.WktGeometryMapping.WKT_GEOMETRY_TYPE;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_GEOMETRY_TYPE;
 import org.codehaus.staxmate.in.SMEvent;
@@ -53,7 +53,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
     private String vocab;
 
     public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, FeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, URI requestUri, FeatureCollectionView dataset, Map<String, String> rewrites, String vocab) {
-        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer, new JsonLdOnTheFlyMapping());
+        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer/*, new JsonLdOnTheFlyMapping()*/);
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
         this.objectDepth = 0;

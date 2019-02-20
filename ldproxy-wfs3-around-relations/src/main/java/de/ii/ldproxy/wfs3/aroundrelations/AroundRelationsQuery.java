@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
-import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import org.apache.http.NameValuePair;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;

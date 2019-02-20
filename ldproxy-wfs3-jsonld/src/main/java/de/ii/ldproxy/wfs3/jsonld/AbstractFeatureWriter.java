@@ -11,13 +11,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import de.ii.ldproxy.wfs3.api.AbstractWfs3GenericMapping;
-import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.ogc.api.exceptions.GMLAnalyzeFailed;
-import de.ii.xtraplatform.ogc.api.gml.parser.GMLAnalyzer;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import org.codehaus.staxmate.in.SMInputCursor;
 import org.slf4j.Logger;
@@ -35,7 +33,7 @@ import java.util.concurrent.Future;
  *
  * @author zahnen
  */
-public abstract class AbstractFeatureWriter implements GMLAnalyzer {
+public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeatureWriter.class);
     protected JsonGenerator json;
@@ -60,10 +58,10 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
     // properties
     // geometry
 
-    protected WfsProxyOnTheFlyMapping onTheFlyMapping;
+    //protected WfsProxyOnTheFlyMapping onTheFlyMapping;
 
 
-    public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/, CrsTransformer crsTransformer, WfsProxyOnTheFlyMapping onTheFlyMapping) {
+    public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/, CrsTransformer crsTransformer/*, WfsProxyOnTheFlyMapping onTheFlyMapping*/) {
         this.jsonOut = jsonOut;
         this.json = jsonOut;
         this.jsonMapper = jsonMapper;
@@ -86,21 +84,21 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         this.maxAllowableOffset = layerQueryParams.getMaxAllowableOffset();
         */
         this.crsTransformer = crsTransformer;
-        this.onTheFlyMapping = onTheFlyMapping;
+        //this.onTheFlyMapping = onTheFlyMapping;
     }
 
-    @Override
+    //@Override
     public final void analyzeFailed(Exception ex) {
         LOGGER.error("AbstractFeatureWriter -> analyzeFailed", ex);
         throw new GMLAnalyzeFailed("AbstractFeatureWriter -> analyzeFailed");
     }
 
-    @Override
+    //@Override
     public boolean analyzeNamespaceRewrite(String oldNamespace, String newNamespace, String featureTypeName) {
         return false;
     }
 
-    @Override
+    //@Override
     public final void analyzeStart(Future<SMInputCursor> rootFuture) {
         try {
             writeStart(rootFuture);
@@ -110,7 +108,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         }
     }
 
-    @Override
+    //@Override
     public void analyzeFeatureStart(String id, String nsuri, String localName) {
         fieldCounter = new HashMap<>();
         currentPath.clear();
@@ -118,7 +116,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         TargetMapping featureMapping = null;
 
         if (featureTypeMapping.isEmpty()) {
-            featureMapping = onTheFlyMapping.getTargetMappingForFeatureType(currentPath, nsuri, localName);
+            //featureMapping = onTheFlyMapping.getTargetMappingForFeatureType(currentPath, nsuri, localName);
         }
 
         Optional<TargetMapping> mapping = featureTypeMapping.findMappings(nsuri + ":" + localName, outputFormat);
@@ -136,19 +134,19 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         }
     }
 
-    @Override
+    //@Override
     public final void analyzeAttribute(String nsuri, String localName, String value) {
         currentPath.track(nsuri, "@" + localName);
         String path = currentPath.toString();
         //LOGGER.debug(" - attribute {}", path);
 
-        if (featureTypeMapping.isEmpty()) {
+        /*if (featureTypeMapping.isEmpty()) {
             TargetMapping mapping = onTheFlyMapping.getTargetMappingForAttribute(currentPath, nsuri, localName, value);
             if (mapping != null) {
                 writeField(mapping, value, 1);
             }
             return;
-        }
+        }*/
 
         Optional<TargetMapping> mapping = featureTypeMapping.findMappings(path, outputFormat);
             if (mapping.isPresent() && mapping.get().isEnabled()) {
@@ -158,21 +156,21 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
     }
 
-    @Override
+    //@Override
     public final void analyzePropertyStart(String nsuri, String localName, int depth, SMInputCursor feature, boolean nil) {
         currentPath.track(nsuri, localName, depth);
         String path = currentPath.toString();
         String value = "";
         fieldCounter.compute(path, (k, v) -> (v == null) ? 1 : v+1);
 
-        if (featureTypeMapping.isEmpty()) {
+        /*if (featureTypeMapping.isEmpty()) {
             TargetMapping mapping = onTheFlyMapping.getTargetMappingForGeometry(currentPath, nsuri, localName);
 
             if (mapping != null) {
                 writeGeometry(mapping, feature);
             }
             return;
-        }
+        }*/
 
         Optional<TargetMapping> mapping = featureTypeMapping.findMappings(path, outputFormat);
         if (mapping.isPresent() && mapping.get().isEnabled()) {
@@ -199,21 +197,21 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
 
     }
 
-    @Override
+    //@Override
     public void analyzePropertyText(String nsuri, String localName, int depth, String text) {
-        if (featureTypeMapping.isEmpty()) {
+        /*if (featureTypeMapping.isEmpty()) {
             TargetMapping mapping = onTheFlyMapping.getTargetMappingForProperty(currentPath, nsuri, localName, text);
             if (mapping != null) {
                 writeField(mapping, text, fieldCounter.get(currentPath.toString()));
             }
-        }
+        }*/
     }
 
-    @Override
+    //@Override
     public void analyzePropertyEnd(String nsuri, String localName, int depth) {
     }
 
-    @Override
+    //@Override
     public final void analyzeFeatureEnd() {
 
         try {
@@ -231,7 +229,7 @@ public abstract class AbstractFeatureWriter implements GMLAnalyzer {
         }
     }
 
-    @Override
+    //@Override
     public final void analyzeEnd() {
         try {
             writeEnd();
