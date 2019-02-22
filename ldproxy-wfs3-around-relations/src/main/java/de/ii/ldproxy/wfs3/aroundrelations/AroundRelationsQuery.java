@@ -39,11 +39,11 @@ public class AroundRelationsQuery {
     private final boolean resolve;
     private final List<List<Coordinate>> coordinateSequences;
     private final GeometryFactory geometryFactory;
-    private final AroundRelationConfiguration aroundRelationConfiguration;
+    private final AroundRelationsConfiguration aroundRelationConfiguration;
     private Envelope currentBbox;
 
     public AroundRelationsQuery(FeatureTransformationContext transformationContext) {
-        Optional<AroundRelationConfiguration> aroundRelationConfiguration = getAroundRelationConfiguration(transformationContext);
+        Optional<AroundRelationsConfiguration> aroundRelationConfiguration = getAroundRelationConfiguration(transformationContext);
 
         if (aroundRelationConfiguration.isPresent()) {
             this.aroundRelationConfiguration = aroundRelationConfiguration.get();
@@ -75,12 +75,12 @@ public class AroundRelationsQuery {
                 final String name = names.get(i);
 
                 //match with config
-                Optional<AroundRelationConfiguration.Relation> configuration = aroundRelationConfiguration.get()
-                                                                                                          .getRelations()
-                                                                                                          .stream()
-                                                                                                          .filter(relation -> relation.getId()
+                Optional<AroundRelationsConfiguration.Relation> configuration = aroundRelationConfiguration.get()
+                                                                                                           .getRelations()
+                                                                                                           .stream()
+                                                                                                           .filter(relation -> relation.getId()
                                                                                                                                       .equals(name))
-                                                                                                          .findFirst();
+                                                                                                           .findFirst();
 
                 if (configuration.isPresent()) {
                     int limit = limits.size() > i ? limits.get(i) : 5;
@@ -116,7 +116,7 @@ public class AroundRelationsQuery {
         return relations;
     }
 
-    public List<AroundRelationConfiguration.Relation> getRelations() {
+    public List<AroundRelationsConfiguration.Relation> getRelations() {
         return Objects.nonNull(aroundRelationConfiguration) ? aroundRelationConfiguration.getRelations() : ImmutableList.of();
     }
 
@@ -192,13 +192,12 @@ public class AroundRelationsQuery {
                 : ImmutableList.of();
     }
 
-    private Optional<AroundRelationConfiguration> getAroundRelationConfiguration(FeatureTransformationContext transformationContext) {
+    private Optional<AroundRelationsConfiguration> getAroundRelationConfiguration(FeatureTransformationContext transformationContext) {
         try {
-            return Optional.ofNullable((AroundRelationConfiguration) transformationContext.getServiceData()
-                                                                                          .getFeatureTypes()
-                                                                                          .get(transformationContext.getCollectionName())
-                                                                                          .getExtensions()
-                                                                                          .get(AroundRelationConfiguration.EXTENSION_KEY));
+            return transformationContext.getServiceData()
+                                        .getFeatureTypes()
+                                        .get(transformationContext.getCollectionName())
+                                        .getExtension(AroundRelationsConfiguration.class);
         } catch (Throwable e) {
             return Optional.empty();
         }
@@ -208,10 +207,10 @@ public class AroundRelationsQuery {
         final String name;
         final int limit;
         final int offset;
-        final AroundRelationConfiguration.Relation configuration;
+        final AroundRelationsConfiguration.Relation configuration;
         final double expandFactor;
 
-        AroundRelationQuery(String name, int limit, int offset, AroundRelationConfiguration.Relation relation, double factor) {
+        AroundRelationQuery(String name, int limit, int offset, AroundRelationsConfiguration.Relation relation, double factor) {
             this.name = name;
             this.limit = limit;
             this.offset = offset;
@@ -219,15 +218,17 @@ public class AroundRelationsQuery {
             this.expandFactor = factor;
         }
 
-        public AroundRelationConfiguration.Relation getConfiguration() {
+        public AroundRelationsConfiguration.Relation getConfiguration() {
             return configuration;
         }
 
         public String getBbox() {
             Envelope bbox = currentBbox;
 
-            if (configuration.getBufferInMeters().isPresent()) {
-                double expand = configuration.getBufferInMeters().getAsDouble() / expandFactor;
+            if (configuration.getBufferInMeters()
+                             .isPresent()) {
+                double expand = configuration.getBufferInMeters()
+                                             .getAsDouble() / expandFactor;
 
                 bbox = new Envelope(currentBbox);
                 bbox.expandBy(expand);

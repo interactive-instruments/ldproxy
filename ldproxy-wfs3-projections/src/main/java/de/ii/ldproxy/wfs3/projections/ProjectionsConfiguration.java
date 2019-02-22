@@ -16,11 +16,10 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(as = ModifiableProjectionsConfiguration.class)
 public abstract class ProjectionsConfiguration implements ExtensionConfiguration {
-    public static final String EXTENSION_KEY = "projectionsExtension";
-    public static final String EXTENSION_TYPE = "PROJECTIONS";
 
+    @Value.Default
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return this;
+    public boolean getEnabled() {
+        return true;
     }
 }

@@ -29,8 +29,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import java.util.Comparator;
 import java.util.Objects;
 
-import static de.ii.ldproxy.wfs3.transactional.TransactionalConfiguration.EXTENSION_KEY;
-
 /**
  * @author zahnen
  */
@@ -45,7 +43,8 @@ public class Wfs3OpenApiTransactional implements Wfs3OpenApiExtension {
 
     @Override
     public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
-        if (serviceData != null     && serviceData.getFeatureProvider().supportsTransactions() && isExtensionEnabled(serviceData,EXTENSION_KEY)) {
+        if (serviceData != null && serviceData.getFeatureProvider()
+                                              .supportsTransactions() && isExtensionEnabled(serviceData, TransactionalConfiguration.class)) {
 
             serviceData.getFeatureTypes()
                        .values()
@@ -58,9 +57,9 @@ public class Wfs3OpenApiTransactional implements Wfs3OpenApiExtension {
                                                       .get(String.format("/collections/%s/items", ft.getId()));
 
                            RequestBody requestBody = new RequestBody().description("A single feature.")
-                                                                  .content(new Content().addMediaType("application/geo+json", new MediaType().schema(new Schema().$ref("#/components/schemas/featureGeoJSON"))));
+                                                                      .content(new Content().addMediaType("application/geo+json", new MediaType().schema(new Schema().$ref("#/components/schemas/featureGeoJSON"))));
                            ApiResponse exception = new ApiResponse().description("An error occured.")
-                                                                  .content(new Content().addMediaType("application/geo+json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception"))));
+                                                                    .content(new Content().addMediaType("application/geo+json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception"))));
 
                            if (Objects.nonNull(pathItem)) {
                                pathItem

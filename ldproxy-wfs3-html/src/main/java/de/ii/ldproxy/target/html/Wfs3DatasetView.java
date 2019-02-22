@@ -9,8 +9,6 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import de.ii.ldproxy.wfs3.api.*;
-import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3Collection;
 import de.ii.ldproxy.wfs3.api.Wfs3Collections;
@@ -18,15 +16,18 @@ import de.ii.ldproxy.wfs3.api.Wfs3Extent;
 import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceMetadata;
-import de.ii.ldproxy.wfs3.oas30.Oas30Configuration;
 import io.dropwizard.views.View;
 import org.threeten.extra.Interval;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
 import static de.ii.xtraplatform.util.functional.LambdaWithException.mayThrow;
 
 /**
@@ -41,10 +42,8 @@ public class Wfs3DatasetView extends View {
     public String description;
     public String dataSourceUrl;
     public String keywords;
-    public String openApiUrl;
     public Wfs3ServiceMetadata metadata;
     private final Wfs3ServiceData serviceData;
-    private List<Wfs3Style> styles;
 
     public Wfs3DatasetView(Wfs3ServiceData serviceData, Wfs3Collections wfs3Dataset, final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig) {
         super("service.mustache", Charsets.UTF_8);
@@ -84,12 +83,6 @@ public class Wfs3DatasetView extends View {
                                        .get();
         }
         this.serviceData = serviceData;
-
-        this.styles=wfs3Dataset.getStyles();
-
-        if(serviceData.getExtensions().containsKey(Oas30Configuration.EXTENSION_KEY) && serviceData.getExtensions().get(Oas30Configuration.EXTENSION_KEY).getEnabled()){
-            this.openApiUrl=breadCrumbs.get(0).url + "/" + serviceData.getId()+"/api";
-        }
     }
 
     public Wfs3Collections getWfs3Dataset() {
@@ -131,9 +124,6 @@ public class Wfs3DatasetView extends View {
                           .map(Wfs3Link::getHref)
                           .findFirst()
                           .orElse("");
-    }
-    public List<Wfs3Style> getStyles() {
-        return styles;
     }
 
     public List<FeatureType> getFeatureTypes() {

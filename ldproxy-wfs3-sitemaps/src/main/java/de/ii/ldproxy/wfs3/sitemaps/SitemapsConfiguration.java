@@ -17,11 +17,9 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ModifiableSitemapsConfiguration.class)
 public abstract class SitemapsConfiguration implements ExtensionConfiguration {
 
-    public static final String EXTENSION_KEY = "sitemapsExtension";
-    public static final String EXTENSION_TYPE = "SITEMAPS";
-
+    @Value.Default
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return this;
+    public boolean getEnabled() {
+        return false;
     }
 }

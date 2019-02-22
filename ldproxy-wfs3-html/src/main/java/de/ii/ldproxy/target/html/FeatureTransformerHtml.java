@@ -12,7 +12,7 @@ import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.CodelistData;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.target.html.MicrodataMapping.MICRODATA_TYPE;
-import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration;
+import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsConfiguration;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationResolver;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsQuery;
 import de.ii.ldproxy.wfs3.aroundrelations.SimpleAroundRelationResolver;
@@ -285,7 +285,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                                  .isEmpty()) {
             currentFeature.additionalParams = "&relations=" + aroundRelationsQuery.getRelations()
                                                                   .stream()
-                                                                  .map(AroundRelationConfiguration.Relation::getId)
+                                                                  .map(AroundRelationsConfiguration.Relation::getId)
                                                                   .collect(Collectors.joining(",")) + "&resolve=true";
         }
     }

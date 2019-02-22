@@ -5,7 +5,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-
 /**
  * Copyright 2018 interactive instruments GmbH
  * <p>
@@ -43,8 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
-
 /**
  * fetch list of styles or a style for a collection
  *
@@ -74,7 +71,7 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
 
     @Override
     public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, EXTENSION_KEY)) {
+        if (!isExtensionEnabled(serviceData, StylesConfiguration.class)) {
             throw new NotFoundException();
         }
         return true;

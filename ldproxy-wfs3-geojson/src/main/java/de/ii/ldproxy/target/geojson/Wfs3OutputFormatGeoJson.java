@@ -9,7 +9,6 @@ package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.wfs3.api.FeatureWriterGeoJson;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3Collection;
@@ -26,16 +25,12 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static de.ii.ldproxy.target.geojson.GeoJsonConfiguration.EXTENSION_KEY;
 
 /**
  * @author zahnen
@@ -46,10 +41,10 @@ import static de.ii.ldproxy.target.geojson.GeoJsonConfiguration.EXTENSION_KEY;
 public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3OutputFormatExtension {
 
     public static final Wfs3MediaType MEDIA_TYPE = ImmutableWfs3MediaType.builder()
-                                                                          .main(new MediaType("application", "geo+json"))
-                                                                          .label("GeoJSON")
-                                                                          .metadata(MediaType.APPLICATION_JSON_TYPE)
-                                                                          .build();
+                                                                         .main(new MediaType("application", "geo+json"))
+                                                                         .label("GeoJSON")
+                                                                         .metadata(MediaType.APPLICATION_JSON_TYPE)
+                                                                         .build();
 
     @Requires
     private GeoJsonConfig geoJsonConfig;
@@ -64,24 +59,26 @@ public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3Output
     }
 
     @Override
-    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){
-        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData) {
+        if (isExtensionEnabled(serviceData, GeoJsonConfiguration.class)) {
             return true;
         }
         return false;
     }
+
     @Override
     public Wfs3MediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        if (!isExtensionEnabled(serviceData, GeoJsonConfiguration.class)) {
             return false;
         }
         return true;
     }
+
     @Override
     public Response getConformanceResponse(List<Wfs3ConformanceClass> wfs3ConformanceClasses, String serviceLabel, Wfs3MediaType wfs3MediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix) {
         return response(new Wfs3ConformanceClasses(wfs3ConformanceClasses.stream()

@@ -17,8 +17,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.Map;
-
-import static de.ii.ldproxy.wfs3.filtertransformer.FilterTransformersConfiguration.EXTENSION_KEY;
+import java.util.Optional;
 
 /**
  * @author zahnen
@@ -33,15 +32,14 @@ public class Wfs3ParameterFilterTransformer implements Wfs3ParameterExtension {
 
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters, Wfs3ServiceData serviceData) {
+        final Optional<FilterTransformersConfiguration> filterTransformersConfiguration = featureTypeConfigurationWfs3.getExtension(FilterTransformersConfiguration.class);
 
-        if (featureTypeConfigurationWfs3.getExtensions()
-                                        .containsKey(EXTENSION_KEY)) {
-            final FilterTransformersConfiguration filterTransformersConfiguration = (FilterTransformersConfiguration) featureTypeConfigurationWfs3.getExtensions()
-                                                                                                                                                 .get(EXTENSION_KEY);
+        if (filterTransformersConfiguration.isPresent()) {
 
             Map<String, String> nextParameters = parameters;
 
-            for (FilterTransformerConfiguration filterTransformerConfiguration : filterTransformersConfiguration.getTransformers()) {
+            for (FilterTransformerConfiguration filterTransformerConfiguration : filterTransformersConfiguration.get()
+                                                                                                                .getTransformers()) {
                 //TODO
                 if (filterTransformerConfiguration instanceof RequestGeoJsonBboxConfiguration) {
                     RequestGeoJsonBboxTransformer requestGeoJsonBboxTransformer = new RequestGeoJsonBboxTransformer((RequestGeoJsonBboxConfiguration) filterTransformerConfiguration, akkaHttp);

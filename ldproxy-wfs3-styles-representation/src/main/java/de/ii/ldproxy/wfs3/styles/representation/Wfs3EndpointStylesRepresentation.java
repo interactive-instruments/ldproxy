@@ -22,13 +22,16 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
-
-import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -58,51 +61,56 @@ public class Wfs3EndpointStylesRepresentation implements Wfs3EndpointExtension {
     public boolean matches(String firstPathSegment, String method, String subPath) {
         return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
     }
-    @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
 
+    @Override
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        Optional<StylesConfiguration> stylesExtension = serviceData.getExtension(StylesConfiguration.class);
+
+        if (!stylesExtension.isPresent() || !stylesExtension.get()
+                                                            .getMapsEnabled()) {
             throw new NotFoundException();
         }
-        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
-            StylesConfiguration stylesExtension = (StylesConfiguration) serviceData.getExtensions().get(EXTENSION_KEY);
-            if(!stylesExtension.getMapsEnabled()){
-                throw new NotFoundException();
-            }
-        }
+
         return true;
     }
+
     /**
      * creates a StyleView with the style.mustache template.
      * This view is a Openlayers Client, which represents a style of a wfs in a map.
      *
-     * @param service the service
-     * @param styleId the style which has to be represented in the client
+     * @param service     the service
+     * @param styleId     the style which has to be represented in the client
      * @param wfs3Request the request
      * @return
      */
     @Path("/{styleId}")
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response getStyles(@Context Service service, @PathParam("styleId") String styleId,@Context Wfs3RequestContext wfs3Request) {
-        Wfs3Service wfs3Service = (Wfs3Service)service;
+    public Response getStyles(@Context Service service, @PathParam("styleId") String styleId, @Context Wfs3RequestContext wfs3Request) {
+        Wfs3Service wfs3Service = (Wfs3Service) service;
 
-        StylesConfiguration stylesExtension = (StylesConfiguration) getExtensionConfiguration(wfs3Service.getData(),EXTENSION_KEY).get();
-        if(!stylesExtension.getMapsEnabled()){
+        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(wfs3Service.getData(), StylesConfiguration.class);
+        if (!stylesExtension.isPresent() || !stylesExtension.get()
+                                                            .getMapsEnabled()) {
             throw new NotFoundException();
         }
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
+                                                 .getChildStore(service.getId());
         List<String> styles = stylesStore.getKeys();
         Wfs3EndpointStyles.getStyleToDisplay(stylesStore, styles, styleId);
 
         String prefix = coreServerConfig.getExternalUrl();
 
-        String styleUri = prefix + "/" + service.getData().getId() + "/" + "styles" + "/" + styleId;
+        String styleUri = prefix + "/" + service.getData()
+                                                .getId() + "/" + "styles" + "/" + styleId;
 
-        StyleView styleView = new StyleView(styleUri, service.getData().getId());
+        StyleView styleView = new StyleView(styleUri, service.getData()
+                                                             .getId());
 
-        return Response.ok().entity(styleView).build();
+        return Response.ok()
+                       .entity(styleView)
+                       .build();
 
     }
 }

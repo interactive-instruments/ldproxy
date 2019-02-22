@@ -19,11 +19,8 @@ import java.util.OptionalDouble;
  */
 @Value.Immutable
 @Value.Modifiable
-@JsonDeserialize(as = ModifiableAroundRelationConfiguration.class)
-public abstract class AroundRelationConfiguration implements ExtensionConfiguration {
-
-    public static final String EXTENSION_KEY = "aroundRelations";
-    public static final String EXTENSION_TYPE = "AROUND_RELATIONS";
+@JsonDeserialize(as = ModifiableAroundRelationsConfiguration.class)
+public abstract class AroundRelationsConfiguration implements ExtensionConfiguration {
 
     public abstract List<Relation> getRelations();
 
@@ -46,7 +43,7 @@ public abstract class AroundRelationConfiguration implements ExtensionConfigurat
     }
     @Override
     public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return ImmutableAroundRelationConfiguration.builder().from(extensionConfigurationDefault).from(this).build(); //TODO
+        return ImmutableAroundRelationsConfiguration.builder().from(extensionConfigurationDefault).from(this).build(); //TODO
     }
 
 

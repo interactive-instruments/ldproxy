@@ -10,7 +10,6 @@ package de.ii.ldproxy.wfs3.transactional;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
@@ -34,8 +33,6 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
-
-import static de.ii.ldproxy.wfs3.transactional.TransactionalConfiguration.EXTENSION_KEY;
 
 
 /**
@@ -62,8 +59,8 @@ public class Wfs3EndpointTransactional implements Wfs3EndpointExtension {
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        if (!isExtensionEnabled(serviceData, TransactionalConfiguration.class)) {
             throw new NotFoundException();
         }
         return true;
@@ -73,36 +70,39 @@ public class Wfs3EndpointTransactional implements Wfs3EndpointExtension {
     @POST
     @Consumes(Wfs3MediaTypes.GEO_JSON)
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpServletRequest request, InputStream requestBody) {
-        checkTransactional((Wfs3Service)service);
+        checkTransactional((Wfs3Service) service);
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        return ((Wfs3Service)service).postItemsResponse(wfs3Request.getMediaType(), wfs3Request.getUriCustomizer().copy(), id, requestBody);
+        return ((Wfs3Service) service).postItemsResponse(wfs3Request.getMediaType(), wfs3Request.getUriCustomizer()
+                                                                                                .copy(), id, requestBody);
     }
 
     @Path("/{id}/items/{featureid}")
     @PUT
     @Consumes(Wfs3MediaTypes.GEO_JSON)
     public Response putItem(@Auth Optional<User> optionalUser, @PathParam("id") String id, @PathParam("featureid") final String featureId, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpServletRequest request, InputStream requestBody) {
-        checkTransactional((Wfs3Service)service);
+        checkTransactional((Wfs3Service) service);
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        return ((Wfs3Service)service).putItemResponse(wfs3Request.getMediaType(), id, featureId, requestBody);
+        return ((Wfs3Service) service).putItemResponse(wfs3Request.getMediaType(), id, featureId, requestBody);
     }
 
     @Path("/{id}/items/{featureid}")
     @DELETE
     public Response deleteItem(@Auth Optional<User> optionalUser, @Context Service service, @PathParam("id") String id, @PathParam("featureid") final String featureId) {
-        checkTransactional((Wfs3Service)service);
+        checkTransactional((Wfs3Service) service);
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        return ((Wfs3Service)service).deleteItemResponse(id, featureId);
+        return ((Wfs3Service) service).deleteItemResponse(id, featureId);
     }
 
     private void checkTransactional(Wfs3Service wfs3Service) {
-        if (!wfs3Service.getData().getFeatureProvider().supportsTransactions()) {
+        if (!wfs3Service.getData()
+                        .getFeatureProvider()
+                        .supportsTransactions()) {
             throw new NotFoundException();
         }
     }

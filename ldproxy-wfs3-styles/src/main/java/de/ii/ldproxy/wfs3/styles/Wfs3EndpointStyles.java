@@ -38,8 +38,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
-
 /**
  * fetch list of styles or a style for the service
  */
@@ -63,7 +61,7 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension {
 
     @Override
     public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, EXTENSION_KEY)) {
+        if (!isExtensionEnabled(serviceData, StylesConfiguration.class)) {
             throw new NotFoundException();
         }
         return true;

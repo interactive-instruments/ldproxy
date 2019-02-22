@@ -12,7 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
 import de.ii.ldproxy.target.gml.GmlConfiguration;
 import de.ii.ldproxy.target.html.HtmlConfiguration;
-import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration;
+import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsConfiguration;
 import de.ii.ldproxy.wfs3.crs.CrsConfiguration;
 import de.ii.ldproxy.wfs3.filtertransformer.FilterTransformersConfiguration;
 import de.ii.ldproxy.wfs3.filtertransformer.RequestGeoJsonBboxConfiguration;
@@ -42,21 +43,20 @@ public class TODOAroundRelationsSubtypeIds implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(AroundRelationConfiguration.class, AroundRelationConfiguration.EXTENSION_TYPE)
-                .put(CrsConfiguration.class, CrsConfiguration.EXTENSION_TYPE)
-                .put(FilterTransformersConfiguration.class, FilterTransformersConfiguration.EXTENSION_TYPE)
-                .put(GeneralizationConfiguration.class, GeneralizationConfiguration.EXTENSION_TYPE)
-                .put(GeoJsonConfiguration.class, GeoJsonConfiguration.EXTENSION_TYPE)
-                .put(GmlConfiguration.class, GmlConfiguration.EXTENSION_TYPE)
-                .put(HtmlConfiguration.class, HtmlConfiguration.EXTENSION_TYPE)
-                .put(Oas30Configuration.class, Oas30Configuration.EXTENSION_TYPE)
-                .put(ProjectionsConfiguration.class, ProjectionsConfiguration.EXTENSION_TYPE)
+                .put(AroundRelationsConfiguration.class, ExtensionConfiguration.getExtensionType(AroundRelationsConfiguration.class))
+                .put(CrsConfiguration.class, ExtensionConfiguration.getExtensionType(CrsConfiguration.class))
+                .put(FilterTransformersConfiguration.class, ExtensionConfiguration.getExtensionType(FilterTransformersConfiguration.class))
+                .put(GeneralizationConfiguration.class, ExtensionConfiguration.getExtensionType(GeneralizationConfiguration.class))
+                .put(GeoJsonConfiguration.class, ExtensionConfiguration.getExtensionType(GeoJsonConfiguration.class))
+                .put(GmlConfiguration.class, ExtensionConfiguration.getExtensionType(GmlConfiguration.class))
+                .put(HtmlConfiguration.class, ExtensionConfiguration.getExtensionType(HtmlConfiguration.class))
+                .put(Oas30Configuration.class, ExtensionConfiguration.getExtensionType(Oas30Configuration.class))
+                .put(ProjectionsConfiguration.class, ExtensionConfiguration.getExtensionType(ProjectionsConfiguration.class))
+                .put(SitemapsConfiguration.class, ExtensionConfiguration.getExtensionType(SitemapsConfiguration.class))
+                .put(TilesConfiguration.class, ExtensionConfiguration.getExtensionType(TilesConfiguration.class))
+                .put(TransactionalConfiguration.class, ExtensionConfiguration.getExtensionType(TransactionalConfiguration.class))
+                .put(StylesConfiguration.class, ExtensionConfiguration.getExtensionType(StylesConfiguration.class))
                 .put(RequestGeoJsonBboxConfiguration.class, RequestGeoJsonBboxConfiguration.TRANSFORMER_TYPE)
-                .put(SitemapsConfiguration.class, SitemapsConfiguration.EXTENSION_TYPE)
-                .put(TilesConfiguration.class, TilesConfiguration.EXTENSION_TYPE)
-                .put(TransactionalConfiguration.class, TransactionalConfiguration.EXTENSION_TYPE)
-
-                .put(StylesConfiguration.class, StylesConfiguration.EXTENSION_TYPE)
                 .build();
     }
 }

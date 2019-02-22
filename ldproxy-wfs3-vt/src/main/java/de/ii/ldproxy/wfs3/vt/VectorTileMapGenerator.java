@@ -8,13 +8,14 @@
 package de.ii.ldproxy.wfs3.vt;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
 import de.ii.ldproxy.wfs3.api.Wfs3Extension;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 
-import java.util.*;
-
-import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * class, which creates Maps for easier access from the service Data
@@ -27,30 +28,36 @@ public class VectorTileMapGenerator implements Wfs3Extension {
      * @param serviceData       the service data of the Wfs3 Service
      * @return a set with all CollectionIds, which have the tiles Extension
      */
-    public Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData serviceData){
+    public Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData serviceData) {
         Set<String> collectionIds = new HashSet<String>();
-        for(String collectionId: serviceData.getFeatureTypes().keySet())
-            if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY)) {
+        for (String collectionId : serviceData.getFeatureTypes()
+                                              .keySet())
+            if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes()
+                                                           .get(collectionId), TilesConfiguration.class)) {
                 collectionIds.add(collectionId);
             }
         return collectionIds;
     }
+
     /**
      * checks if the tiles extension is available and returns a Map with all available collections and a boolean value if the tiles
      * support is currently enabled
      * @param serviceData       the service data of the Wfs3 Service
      * @return a map with all CollectionIds, which have the tiles Extension and the value of the tiles Parameter  "enabled"
      */
-    public Map<String,Boolean> getEnabledMap(Wfs3ServiceData serviceData){
-        Map<String,Boolean> enabledMap = new HashMap<>();
-        for(String collectionId: serviceData.getFeatureTypes().keySet()) {
-            if (isExtensionEnabled(serviceData,serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY)) {
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData,serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY).get();
+    public Map<String, Boolean> getEnabledMap(Wfs3ServiceData serviceData) {
+        Map<String, Boolean> enabledMap = new HashMap<>();
+        for (String collectionId : serviceData.getFeatureTypes()
+                                              .keySet()) {
+            if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes()
+                                                           .get(collectionId), TilesConfiguration.class)) {
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData, serviceData.getFeatureTypes()
+                                                                                                                                     .get(collectionId), TilesConfiguration.class).get();
 
 
-                boolean tilesEnabled =tilesConfiguration.getEnabled();
+                boolean tilesEnabled = tilesConfiguration.getEnabled();
 
-                enabledMap.put(collectionId,tilesEnabled);
+                enabledMap.put(collectionId, tilesEnabled);
             }
         }
         return enabledMap;
@@ -61,21 +68,24 @@ public class VectorTileMapGenerator implements Wfs3Extension {
      * @param serviceData       the service data of the Wfs3 Service
      * @return a map with all CollectionIds, which have the tiles Extension and the supported formats
      */
-    public Map<String, List<String>> getFormatsMap(Wfs3ServiceData serviceData){
+    public Map<String, List<String>> getFormatsMap(Wfs3ServiceData serviceData) {
 
-        Map<String,List<String>> formatsMap = new HashMap<>();
+        Map<String, List<String>> formatsMap = new HashMap<>();
 
-        for(String collectionId : serviceData.getFeatureTypes().keySet()) {
+        for (String collectionId : serviceData.getFeatureTypes()
+                                              .keySet()) {
 
-            if (isExtensionEnabled(serviceData,serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY)) {
+            if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes()
+                                                           .get(collectionId), TilesConfiguration.class)) {
 
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData,serviceData.getFeatureTypes().get(collectionId), EXTENSION_KEY).get();
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData, serviceData.getFeatureTypes()
+                                                                                                                                     .get(collectionId), TilesConfiguration.class).get();
 
-                List<String> formatsList=tilesConfiguration.getFormats();
-                if(formatsList==null){
-                    formatsList=(ImmutableList.of("application/json","application/vnd.mapbox-vector-tile"));
+                List<String> formatsList = tilesConfiguration.getFormats();
+                if (formatsList == null) {
+                    formatsList = (ImmutableList.of("application/json", "application/vnd.mapbox-vector-tile"));
                 }
-                formatsMap.put(collectionId,formatsList);
+                formatsMap.put(collectionId, formatsList);
 
             }
         }
@@ -89,30 +99,33 @@ public class VectorTileMapGenerator implements Wfs3Extension {
      * @param seeding           if seeding true, we observe seeding MinMax, if false zoomLevel MinMax
      * @return a map with all CollectionIds, which have the tiles Extension and the zoomLevel or seeding
      */
-    public Map<String, Map<String, TilesConfiguration.   MinMax>> getMinMaxMap(Wfs3ServiceData serviceData,Boolean seeding){
+    public Map<String, Map<String, TilesConfiguration.MinMax>> getMinMaxMap(Wfs3ServiceData serviceData, Boolean seeding) {
         Map<String, Map<String, TilesConfiguration.MinMax>> minMaxMap = new HashMap<>();
 
-        for(String collectionId: serviceData.getFeatureTypes().keySet()) {
-            if (isExtensionEnabled(serviceData,serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY)) {
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData,serviceData.getFeatureTypes().get(collectionId),EXTENSION_KEY).get();
-                Map<String,TilesConfiguration.MinMax> minMax =null;
-                if(!seeding){
-                    try{
+        for (String collectionId : serviceData.getFeatureTypes()
+                                              .keySet()) {
+            if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes()
+                                                           .get(collectionId), TilesConfiguration.class)) {
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData, serviceData.getFeatureTypes()
+                                                                                                                                     .get(collectionId), TilesConfiguration.class).get();
+                Map<String, TilesConfiguration.MinMax> minMax = null;
+                if (!seeding) {
+                    try {
                         minMax = tilesConfiguration.getZoomLevels();
-                        minMaxMap.put(collectionId,minMax);
+                        minMaxMap.put(collectionId, minMax);
 
-                    }catch (NullPointerException ignored){
-                        minMaxMap.put(collectionId,null);
+                    } catch (NullPointerException ignored) {
+                        minMaxMap.put(collectionId, null);
                     }
 
                 }
-                if(seeding){
-                    try{
-                        minMax=tilesConfiguration.getSeeding();
-                        minMaxMap.put(collectionId,minMax);
-                    }catch (NullPointerException ignored){
+                if (seeding) {
+                    try {
+                        minMax = tilesConfiguration.getSeeding();
+                        minMaxMap.put(collectionId, minMax);
+                    } catch (NullPointerException ignored) {
 
-                        minMaxMap.put(collectionId,null);
+                        minMaxMap.put(collectionId, null);
                     }
 
                 }

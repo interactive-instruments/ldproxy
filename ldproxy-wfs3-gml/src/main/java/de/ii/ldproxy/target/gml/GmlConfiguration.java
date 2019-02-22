@@ -17,11 +17,9 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ModifiableGmlConfiguration.class)
 public abstract class GmlConfiguration implements ExtensionConfiguration {
 
-    public static final String EXTENSION_KEY = "gmlExtension";
-    public static final String EXTENSION_TYPE = "GML";
-
+    @Value.Default
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return this;
+    public boolean getEnabled() {
+        return true;
     }
 }

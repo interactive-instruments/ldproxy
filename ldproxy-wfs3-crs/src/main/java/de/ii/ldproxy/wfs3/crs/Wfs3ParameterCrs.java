@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS_URI;
-import static de.ii.ldproxy.wfs3.crs.CrsConfiguration.EXTENSION_KEY;
 
 /**
  * @author zahnen
@@ -39,7 +38,7 @@ public class Wfs3ParameterCrs implements Wfs3ParameterExtension {
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters, Wfs3ServiceData serviceData) {
 
-        if (!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+        if (!isExtensionEnabled(serviceData, CrsConfiguration.class)) {
             return parameters;
         }
 
@@ -55,7 +54,7 @@ public class Wfs3ParameterCrs implements Wfs3ParameterExtension {
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, ImmutableFeatureQuery.Builder queryBuilder, Map<String, String> parameters, Wfs3ServiceData serviceData) {
 
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+        if (!isExtensionEnabled(serviceData, CrsConfiguration.class)) {
             return queryBuilder;
         }
 

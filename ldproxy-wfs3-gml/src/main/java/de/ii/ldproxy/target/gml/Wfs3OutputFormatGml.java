@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.target.gml.GmlConfiguration.EXTENSION_KEY;
-
 /**
  * @author zahnen
  */
@@ -67,8 +65,8 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
     }
 
     @Override
-    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){
-        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData) {
+        if (isExtensionEnabled(serviceData, GmlConfiguration.class)) {
             return true;
         }
         return false;
@@ -81,8 +79,8 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
 
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        if (!isExtensionEnabled(serviceData, GmlConfiguration.class)) {
             return false;
         }
         return true;
@@ -90,7 +88,9 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
 
     @Override
     public Response getConformanceResponse(List<Wfs3ConformanceClass> wfs3ConformanceClasses, String serviceLabel, Wfs3MediaType wfs3MediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix) {
-        return response(new Wfs3ConformanceClassesXml(new Wfs3ConformanceClasses(wfs3ConformanceClasses.stream().map(Wfs3ConformanceClass::getConformanceClass).collect(Collectors.toList()))));
+        return response(new Wfs3ConformanceClassesXml(new Wfs3ConformanceClasses(wfs3ConformanceClasses.stream()
+                                                                                                       .map(Wfs3ConformanceClass::getConformanceClass)
+                                                                                                       .collect(Collectors.toList()))));
     }
 
     @Override
@@ -116,7 +116,9 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
     public Optional<GmlConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
         return Optional.of(new FeatureTransformerGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
                                                                                                     .from(transformationContext)
-                                                                                                    .namespaces(((FeatureProviderDataWfs)transformationContext.getServiceData().getFeatureProvider()).getConnectionInfo().getNamespaces())
+                                                                                                    .namespaces(((FeatureProviderDataWfs) transformationContext.getServiceData()
+                                                                                                                                                               .getFeatureProvider()).getConnectionInfo()
+                                                                                                                                                                                     .getNamespaces())
                                                                                                     .build()));
     }
 

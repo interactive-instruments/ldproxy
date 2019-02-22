@@ -36,8 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static de.ii.ldproxy.wfs3.sitemaps.SitemapsConfiguration.EXTENSION_KEY;
-
 /**
  * @author zahnen
  */
@@ -63,8 +61,8 @@ public class Wfs3EndpointSitemap implements Wfs3EndpointExtension {
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData, EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        if (!isExtensionEnabled(serviceData, SitemapsConfiguration.class)) {
             throw new NotFoundException();
         }
         return true;
@@ -80,19 +78,22 @@ public class Wfs3EndpointSitemap implements Wfs3EndpointExtension {
         List<Site> sites = new ArrayList<>();
 
         String baseUrlItems = String.format("%s/%s/collections/%s/items?f=html", coreServerConfig.getExternalUrl(), serviceData.getId(), id);
-        List<Site> itemsSites = SitemapComputation.getSites(baseUrlItems,from,to);
+        List<Site> itemsSites = SitemapComputation.getSites(baseUrlItems, from, to);
         sites.addAll(itemsSites);
 
         String baseUrlItem = String.format("%s/%s/collections/%s/items", coreServerConfig.getExternalUrl(), serviceData.getId(), id);
         ItemSitesReader itemSitesReader = new ItemSitesReader(baseUrlItem);
-        FeatureQuery featureQuery= ImmutableFeatureQuery.builder()
-                .type(id)
-                .offset(from.intValue())
-                .limit(to.intValue() - from.intValue() + 1)
-                .fields(ImmutableList.of("ID")) //TODO only get id field
-                .build();
-        FeatureStream <FeatureTransformer> featureStream = ((Wfs3Service) service).getFeatureProvider().getFeatureTransformStream(featureQuery);
-        featureStream.apply(itemSitesReader).toCompletableFuture().join();
+        FeatureQuery featureQuery = ImmutableFeatureQuery.builder()
+                                                         .type(id)
+                                                         .offset(from.intValue())
+                                                         .limit(to.intValue() - from.intValue() + 1)
+                                                         .fields(ImmutableList.of("ID")) //TODO only get id field
+                                                         .build();
+        FeatureStream<FeatureTransformer> featureStream = ((Wfs3Service) service).getFeatureProvider()
+                                                                                 .getFeatureTransformStream(featureQuery);
+        featureStream.apply(itemSitesReader)
+                     .toCompletableFuture()
+                     .join();
 
         sites.addAll(itemSitesReader.getSites());
 

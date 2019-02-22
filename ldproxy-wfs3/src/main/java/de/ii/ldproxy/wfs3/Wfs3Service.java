@@ -145,7 +145,15 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
     protected ImmutableWfs3ServiceData dataToImmutable(Wfs3ServiceData data) {
 
         //TODO
-        this.featureProvider = (TransformingFeatureProvider) featureProviderRegistry.createFeatureProvider(data.getFeatureProvider());
+        try {
+            this.featureProvider = (TransformingFeatureProvider) featureProviderRegistry.createFeatureProvider(data.getFeatureProvider());
+        } catch (IllegalStateException e) {
+            LOGGER.error("Service with id '{}' could not be created: {}", data.getId(), e.getMessage());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Exception:", e);
+            }
+        }
+
 
         ImmutableWfs3ServiceData serviceData;
 

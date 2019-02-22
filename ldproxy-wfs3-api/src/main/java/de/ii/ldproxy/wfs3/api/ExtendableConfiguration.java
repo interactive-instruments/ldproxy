@@ -10,9 +10,19 @@ package de.ii.ldproxy.wfs3.api;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public interface ExtendableConfiguration {
+
     @JsonMerge(value = OptBoolean.FALSE)
-    Map<String, ExtensionConfiguration> getExtensions();
+    List<ExtensionConfiguration> getCapabilities();
+
+    default <T extends ExtensionConfiguration> Optional<T> getExtension(Class<T> clazz) {
+        return getCapabilities().stream()
+                                .filter(extensionConfiguration -> Objects.equals(extensionConfiguration.getExtensionType(), ExtensionConfiguration.getExtensionType(clazz)))
+                                .findFirst()
+                                .map(extensionConfiguration -> (T) extensionConfiguration);
+    }
 }

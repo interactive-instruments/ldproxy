@@ -20,8 +20,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import java.util.List;
 import java.util.Map;
 
-import static de.ii.ldproxy.wfs3.projections.ProjectionsConfiguration.EXTENSION_KEY;
-
 /**
  * @author zahnen
  */
@@ -33,7 +31,7 @@ public class Wfs3ParameterProjections implements Wfs3ParameterExtension {
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, ImmutableFeatureQuery.Builder queryBuilder, Map<String, String> parameters, Wfs3ServiceData serviceData) {
 
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)) {
+        if (!isExtensionEnabled(serviceData, ProjectionsConfiguration.class)) {
             return queryBuilder;
         }
         List<String> propertiesList = getPropertiesList(parameters);
@@ -45,7 +43,10 @@ public class Wfs3ParameterProjections implements Wfs3ParameterExtension {
 
     private List<String> getPropertiesList(Map<String, String> parameters) {
         if (parameters.containsKey("properties")) {
-            return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(parameters.get("properties"));
+            return Splitter.on(',')
+                           .omitEmptyStrings()
+                           .trimResults()
+                           .splitToList(parameters.get("properties"));
         } else {
             return ImmutableList.of("*");
         }

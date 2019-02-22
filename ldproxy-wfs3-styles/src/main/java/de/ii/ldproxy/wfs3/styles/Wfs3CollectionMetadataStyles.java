@@ -8,11 +8,9 @@
 package de.ii.ldproxy.wfs3.styles;
 
 
-import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.wfs3.api.*;
-import de.ii.ldproxy.wfs3.core.Wfs3CollectionMetadataExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3CollectionMetadataExtension;
 import de.ii.xsf.configstore.api.KeyValueStore;
-import de.ii.xsf.configstore.file.FileConfigStore;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

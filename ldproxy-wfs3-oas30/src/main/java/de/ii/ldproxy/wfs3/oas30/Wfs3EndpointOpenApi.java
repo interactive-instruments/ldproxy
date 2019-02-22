@@ -11,9 +11,6 @@ import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.xsf.dropwizard.api.Dropwizard;
-import de.ii.xsf.dropwizard.api.Jackson;
-import de.ii.xtraplatform.auth.api.AuthConfig;
 import de.ii.xtraplatform.openapi.DynamicOpenApi;
 import de.ii.xtraplatform.openapi.OpenApiViewerResource;
 import de.ii.xtraplatform.service.api.Service;
@@ -35,8 +32,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static de.ii.ldproxy.wfs3.oas30.Oas30Configuration.EXTENSION_KEY;
-
 /**
  * @author zahnen
  */
@@ -57,9 +52,10 @@ public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointEx
     public String getConformanceClass() {
         return "http://www.opengis.net/spec/wfs-1/3.0/req/oas30";
     }
+
     @Override
-    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){
-        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData) {
+        if (isExtensionEnabled(serviceData, Oas30Configuration.class)) {
             return true;
         }
         return false;
@@ -71,8 +67,8 @@ public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointEx
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        if (!isExtensionEnabled(serviceData, Oas30Configuration.class)) {
             throw new NotFoundException();
         }
         return true;
@@ -80,11 +76,16 @@ public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointEx
 
     @GET
     @Produces({MediaType.TEXT_HTML})
-    public Response getApiDescription(@Context Service service,@Context Wfs3RequestContext wfs3Request, @Context HttpHeaders headers) throws Exception {
-        if (!wfs3Request.getUriCustomizer().getPath().endsWith("/")) {
+    public Response getApiDescription(@Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpHeaders headers) throws Exception {
+        if (!wfs3Request.getUriCustomizer()
+                        .getPath()
+                        .endsWith("/")) {
             return Response
                     .status(Response.Status.MOVED_PERMANENTLY)
-                    .location(wfs3Request.getUriCustomizer().copy().ensureTrailingSlash().build())
+                    .location(wfs3Request.getUriCustomizer()
+                                         .copy()
+                                         .ensureTrailingSlash()
+                                         .build())
                     .build();
         }
 
@@ -97,7 +98,8 @@ public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointEx
     //@Operation(summary = "the API description - this document", tags = {"Capabilities"}, parameters = {@Parameter(name = "f")})
     public Response getApiDescriptionJson(@Context Service service, @Context Wfs3RequestContext wfs3Request) throws Exception {
         LOGGER.debug("MIME {})", "JSON");
-        return openApiDefinition.getOpenApi("json", wfs3Request.getUriCustomizer().copy(), (Wfs3ServiceData) service.getData());
+        return openApiDefinition.getOpenApi("json", wfs3Request.getUriCustomizer()
+                                                               .copy(), (Wfs3ServiceData) service.getData());
     }
 
 
@@ -106,7 +108,8 @@ public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointEx
     //@Operation(summary = "the API description - this document", tags = {"Capabilities"}, parameters = {@Parameter(name = "f")})
     public Response getApiDescriptionYaml(@Context Service service, @Context Wfs3RequestContext wfs3Request) throws Exception {
         LOGGER.debug("MIME {})", "YAML");
-        return openApiDefinition.getOpenApi("yaml", wfs3Request.getUriCustomizer().copy(), (Wfs3ServiceData) service.getData());
+        return openApiDefinition.getOpenApi("yaml", wfs3Request.getUriCustomizer()
+                                                               .copy(), (Wfs3ServiceData) service.getData());
     }
 
     @GET

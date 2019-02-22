@@ -29,23 +29,28 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
-
 /**
  * creates, updates and deletes a style from the service
- *
  */
 @Component
 @Provides
@@ -62,23 +67,21 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
 
     @Override
     public List<String> getMethods() {
-        return ImmutableList.of("POST","PUT","DELETE");
+        return ImmutableList.of("POST", "PUT", "DELETE");
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        Optional<StylesConfiguration> stylesExtension = serviceData.getExtension(StylesConfiguration.class);
 
+        if (!stylesExtension.isPresent() || !stylesExtension.get()
+                                                            .getManagerEnabled()) {
             throw new NotFoundException();
         }
-        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
-            StylesConfiguration stylesExtension = (StylesConfiguration) serviceData.getExtensions().get(EXTENSION_KEY);
-            if(!stylesExtension.getManagerEnabled()){
-                throw new NotFoundException();
-            }
-        }
+
         return true;
     }
+
     /**
      * creates one style for the dataset
      *
@@ -91,7 +94,8 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
+                                                 .getChildStore(service.getId());
 
         List<String> styles = stylesStore.getKeys();
 
@@ -100,31 +104,32 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
 
         JsonNode requestBodyJson = validateRequestBodyJSON(requestBodyString);
 
-        if(requestBodyJson == null || !validateRequestBody(requestBodyJson))
+        if (requestBodyJson == null || !validateRequestBody(requestBodyJson))
             throw new BadRequestException();
 
-        List <String> styleIds = new ArrayList<>();
-        for(String style: styles){
-               styleIds.add(style.split("\\.")[0]);
+        List<String> styleIds = new ArrayList<>();
+        for (String style : styles) {
+            styleIds.add(style.split("\\.")[0]);
         }
 
-        String styleName = requestBodyJson.get("name").asText();
+        String styleName = requestBodyJson.get("name")
+                                          .asText();
         Pattern styleNamePattern = Pattern.compile("[^a-z0-9-_]", Pattern.CASE_INSENSITIVE);
         Matcher styleNameMatcher = styleNamePattern.matcher(styleName);
-        if(styleIds.contains(styleName) || styleName.contains(" ") || styleNameMatcher.find()){
-            int id=0;
+        if (styleIds.contains(styleName) || styleName.contains(" ") || styleNameMatcher.find()) {
+            int id = 0;
 
-            while(styleIds.contains(Integer.toString(id))){
+            while (styleIds.contains(Integer.toString(id))) {
                 id++;
             }
-            putProcess(stylesStore,styles,Integer.toString(id),requestBodyString);
+            putProcess(stylesStore, styles, Integer.toString(id), requestBodyString);
 
-        }
-        else{
-            putProcess(stylesStore,styles,styleName,requestBodyString);
+        } else {
+            putProcess(stylesStore, styles, styleName, requestBodyString);
         }
 
-        return Response.noContent().build();
+        return Response.noContent()
+                       .build();
     }
 
     /**
@@ -140,7 +145,8 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
+                                                 .getChildStore(service.getId());
 
         List<String> styles = stylesStore.getKeys();
 
@@ -149,12 +155,13 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
 
         JsonNode requestBodyJson = validateRequestBodyJSON(requestBodyString);
 
-        if(requestBodyJson == null || !validateRequestBody(requestBodyJson))
+        if (requestBodyJson == null || !validateRequestBody(requestBodyJson))
             throw new BadRequestException();
 
-        putProcess(stylesStore,styles,styleId,requestBodyString);
+        putProcess(stylesStore, styles, styleId, requestBodyString);
 
-        return Response.noContent().build();
+        return Response.noContent()
+                       .build();
     }
 
 
@@ -166,44 +173,44 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
      */
     @Path("/{styleId}")
     @DELETE
-    public Response deleteStyle(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId, @Context Service service){
+    public Response deleteStyle(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId, @Context Service service) {
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId());
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
+                                                 .getChildStore(service.getId());
         List<String> styles = stylesStore.getKeys();
 
-        deleteProcess(stylesStore,styles,styleId);
+        deleteProcess(stylesStore, styles, styleId);
 
-        return Response.noContent().build();
+        return Response.noContent()
+                       .build();
     }
 
     /**
      * search for the style in the store and delete it
      *
-     * @param stylesStore   the key value store
-     * @param styles        a list of all available Styles
-     * @param styleId       the id of the style, that should be deleted
+     * @param stylesStore the key value store
+     * @param styles      a list of all available Styles
+     * @param styleId     the id of the style, that should be deleted
      */
-    public static void deleteProcess(KeyValueStore stylesStore,List<String> styles,String styleId){
-        boolean styleFound=false;
-        for(String style: styles){
-            if(style.split("\\.")[0].equals(styleId)){
-                styleFound=true;
+    public static void deleteProcess(KeyValueStore stylesStore, List<String> styles, String styleId) {
+        boolean styleFound = false;
+        for (String style : styles) {
+            if (style.split("\\.")[0].equals(styleId)) {
+                styleFound = true;
                 Transaction deleteTransaction = stylesStore.openDeleteTransaction(style);
                 try {
                     deleteTransaction.execute(); //TODO should throw exception
                     deleteTransaction.commit();
-                }
-                catch(IOException e){
+                } catch (IOException e) {
                     deleteTransaction.rollback();
-                }
-                finally {
-                 deleteTransaction.close();
+                } finally {
+                    deleteTransaction.close();
                 }
             }
         }
-        if(!styleFound){
+        if (!styleFound) {
             throw new NotFoundException();
         }
     }
@@ -211,44 +218,44 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
     /**
      * search for the style in the store and update it, or create a new one
      *
-     * @param stylesStore   the key value store
-     * @param styles        a list of all available Styles
-     * @param styleId       the id of the style, that should be updated or created
-     * @param requestBodyString   the new Style as a String
+     * @param stylesStore       the key value store
+     * @param styles            a list of all available Styles
+     * @param styleId           the id of the style, that should be updated or created
+     * @param requestBodyString the new Style as a String
      */
-    public static void putProcess(KeyValueStore stylesStore, List<String> styles, String styleId,String requestBodyString){
-        boolean styleFound=false;
-        for(String style: styles){
+    public static void putProcess(KeyValueStore stylesStore, List<String> styles, String styleId, String requestBodyString) {
+        boolean styleFound = false;
+        for (String style : styles) {
             try {
-                if(style.split("\\.")[0].equals(styleId)){
+                if (style.split("\\.")[0].equals(styleId)) {
                     WriteTransaction<String> transaction = stylesStore.openWriteTransaction(style);
-                    putTransaction(transaction,requestBodyString);
-                    styleFound=true;
+                    putTransaction(transaction, requestBodyString);
+                    styleFound = true;
                 }
-            }catch(NullPointerException ignored){ }
+            } catch (NullPointerException ignored) {
+            }
 
         }
-        if(!styleFound){
-            WriteTransaction<String> transaction = stylesStore.openWriteTransaction(styleId+".json");
-            putTransaction(transaction,requestBodyString);
+        if (!styleFound) {
+            WriteTransaction<String> transaction = stylesStore.openWriteTransaction(styleId + ".json");
+            putTransaction(transaction, requestBodyString);
         }
     }
 
     /**
      * a complete put transaction
      *
-     * @param transaction    the write Transaction on the specific Style
-     * @param requestBodyString    the new Style as a String
+     * @param transaction       the write Transaction on the specific Style
+     * @param requestBodyString the new Style as a String
      */
-    public static void putTransaction(WriteTransaction<String> transaction, String requestBodyString){
+    public static void putTransaction(WriteTransaction<String> transaction, String requestBodyString) {
         try {
             transaction.write(requestBodyString);
             transaction.execute();
             transaction.commit();
-        }catch(IOException e){
+        } catch (IOException e) {
             transaction.rollback();
-        }
-        finally {
+        } finally {
             transaction.close();
         }
     }
@@ -256,33 +263,35 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
     /**
      * checks if the request body from the PUT-Request has valid content
      *
-     * @param requestBody     the new Style as a JsonNode
+     * @param requestBody the new Style as a JsonNode
      * @return true if content is valid
      */
-    public static boolean validateRequestBody(JsonNode requestBody){ //TODO change tests
+    public static boolean validateRequestBody(JsonNode requestBody) { //TODO change tests
 
         JsonNode version = requestBody.get("version");
         JsonNode sources = requestBody.get("sources");
         JsonNode layers = requestBody.get("layers");
 
 
-        if(layers==null||version == null || ( version.isInt() && version.intValue() != 8) || sources == null){
+        if (layers == null || version == null || (version.isInt() && version.intValue() != 8) || sources == null) {
             return false;
         }
         int size = layers.size();
         List<String> ids = new ArrayList<>();
-        List<String> types = ImmutableList.of("fill","line","symbol","circle","heatmap","fill-extrusion","raster","hillshade","background");
+        List<String> types = ImmutableList.of("fill", "line", "symbol", "circle", "heatmap", "fill-extrusion", "raster", "hillshade", "background");
 
-        for(int i=0; i<size; i++){
-            JsonNode idNode = layers.get(i).get("id");
-            JsonNode typeNode = layers.get(i).get("type");
-            if(idNode==null || typeNode==null || !typeNode.isTextual() || !idNode.isTextual()){
+        for (int i = 0; i < size; i++) {
+            JsonNode idNode = layers.get(i)
+                                    .get("id");
+            JsonNode typeNode = layers.get(i)
+                                      .get("type");
+            if (idNode == null || typeNode == null || !typeNode.isTextual() || !idNode.isTextual()) {
                 return false;
             }
             String id = idNode.textValue();
             String type = typeNode.textValue();
 
-            if(ids.contains(id) || !types.contains(type)){
+            if (ids.contains(id) || !types.contains(type)) {
                 return false;
             }
             ids.add(id);
@@ -294,10 +303,10 @@ public class Wfs3EndpointStylesManager implements Wfs3EndpointExtension {
     /**
      * checks if the request body from the PUT-Request is valid json
      *
-     * @param requestBodyString     the new Style as a String
+     * @param requestBodyString the new Style as a String
      * @return the request body as Json Node, if json is valid
      */
-    public static JsonNode validateRequestBodyJSON(String requestBodyString){ //TODO change tests
+    public static JsonNode validateRequestBodyJSON(String requestBodyString) { //TODO change tests
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);

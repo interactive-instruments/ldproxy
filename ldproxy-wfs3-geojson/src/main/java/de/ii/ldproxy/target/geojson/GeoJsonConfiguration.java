@@ -17,11 +17,9 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ModifiableGeoJsonConfiguration.class)
 public abstract class GeoJsonConfiguration implements ExtensionConfiguration {
 
-    public static final String EXTENSION_KEY = "geoJsonExtension";
-    public static final String EXTENSION_TYPE = "GEOJSON";
-
+    @Value.Default
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return this;
+    public boolean getEnabled() {
+        return true;
     }
 }

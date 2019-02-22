@@ -17,11 +17,9 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ModifiableTransactionalConfiguration.class)
 public abstract class TransactionalConfiguration implements ExtensionConfiguration {
 
-    public static final String EXTENSION_KEY = "transactionalExtension";
-    public static final String EXTENSION_TYPE = "TRANSACTIONAL";
-
+    @Value.Default
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return this;
+    public boolean getEnabled() {
+        return false;
     }
 }

@@ -7,40 +7,25 @@
  */
 package de.ii.ldproxy.wfs3.aroundrelations;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.BooleanSchema;
-import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.IntegerSchema;
-import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
-import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import io.swagger.v3.oas.models.parameters.RequestBody;
-import io.swagger.v3.oas.models.responses.ApiResponse;
-import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS_URI;
-import static de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration.EXTENSION_KEY;
 
 /**
  * @author zahnen
@@ -111,12 +96,12 @@ public class Wfs3OpenApiAroundRelations implements Wfs3OpenApiExtension {
                    .values()
                    .stream()
                    .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                   .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()) && ft.getExtensions()
-                                                                                   .containsKey(EXTENSION_KEY))
+                   .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()) && ft.getExtension(AroundRelationsConfiguration.class)
+                                                                                   .isPresent())
                    .forEach(ft -> {
 
-                       final AroundRelationConfiguration aroundRelationConfiguration = (AroundRelationConfiguration) ft.getExtensions()
-                                                                                                                       .get(EXTENSION_KEY);
+                       final AroundRelationsConfiguration aroundRelationConfiguration = ft.getExtension(AroundRelationsConfiguration.class)
+                                                                                          .get();
                        if (!aroundRelationConfiguration.getRelations()
                                                        .isEmpty()) {
 

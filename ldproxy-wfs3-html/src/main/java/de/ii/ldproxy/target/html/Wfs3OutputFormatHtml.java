@@ -47,7 +47,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.target.html.HtmlConfiguration.EXTENSION_KEY;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 
 /**
@@ -85,9 +84,10 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
     public String getConformanceClass() {
         return "http://www.opengis.net/spec/wfs-1/3.0/req/html";
     }
+
     @Override
-    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){
-        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData) {
+        if (isExtensionEnabled(serviceData, HtmlConfiguration.class)) {
             return true;
         }
         return false;
@@ -99,8 +99,8 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        if (!isExtensionEnabled(serviceData, HtmlConfiguration.class)) {
             return false;
         }
         return true;
@@ -137,8 +137,8 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("Datasets", uriCustomizer.copy()
-                                                                  .removeLastPathSegments(uriCustomizer.isLastPathSegment("collections") ? 2 : 1)
-                                                                  .toString()))
+                                                                .removeLastPathSegments(uriCustomizer.isLastPathSegment("collections") ? 2 : 1)
+                                                                .toString()))
                 .add(new NavigationDTO(serviceData.getLabel()))
                 .build();
 
@@ -169,12 +169,19 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
     public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext) {
         Wfs3ServiceData serviceData = transformationContext.getServiceData();
         String collectionName = transformationContext.getCollectionName();
-        String staticUrlPrefix = transformationContext.getWfs3Request().getStaticUrlPrefix();
+        String staticUrlPrefix = transformationContext.getWfs3Request()
+                                                      .getStaticUrlPrefix();
         URICustomizer uriCustomizer = transformationContext.getWfs3Request()
                                                            .getUriCustomizer();
         FeatureCollectionView featureTypeDataset;
 
-        boolean bare = transformationContext.getWfs3Request().getUriCustomizer().getQueryParams().stream().anyMatch(nameValuePair -> nameValuePair.getName().equals("bare") && nameValuePair.getValue().equals("true"));
+        boolean bare = transformationContext.getWfs3Request()
+                                            .getUriCustomizer()
+                                            .getQueryParams()
+                                            .stream()
+                                            .anyMatch(nameValuePair -> nameValuePair.getName()
+                                                                                    .equals("bare") && nameValuePair.getValue()
+                                                                                                                    .equals("true"));
 
         if (transformationContext.isFeatureCollection()) {
             featureTypeDataset = createFeatureCollectionView(serviceData.getFeatureTypes()
@@ -192,11 +199,11 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
         featureTypeDataset.hideMap = true;
 
         return Optional.of(new FeatureTransformerHtml(ImmutableFeatureTransformationContextHtml.builder()
-                                                                                              .from(transformationContext)
+                                                                                               .from(transformationContext)
                                                                                                .featureTypeDataset(featureTypeDataset)
                                                                                                .codelists(codelists)
                                                                                                .mustacheRenderer(dropwizard.getMustacheRenderer())
-                                                                                              .build(), akkaHttp));
+                                                                                               .build(), akkaHttp));
     }
 
     @Override
@@ -241,8 +248,9 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
         featureTypeDataset.uriBuilder = uriBuilder;
         featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
 
-        //TODO
-        featureTypeDataset.spatialSearch = featureType.getExtensions().containsKey("filterTransformer");
+        //TODO: refactor all views, use extendable Wfs3Collection(s) as base, move this to Wfs3CollectionMetadataExtension
+        featureTypeDataset.spatialSearch = featureType.getCapabilities()
+                                                      .stream().anyMatch(extensionConfiguration -> Objects.equals(extensionConfiguration.getExtensionType(), "FILTER_TRANSFORMERS"));
 
         return featureTypeDataset;
     }
@@ -265,13 +273,13 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
 
         featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("Datasets", uriBuilder.copy()
-                                                                                       .removePathSegment("collections", -3)
-                                                                                       .removeLastPathSegments(3)
-                                                                                       .toString()))
+                                                             .removePathSegment("collections", -3)
+                                                             .removeLastPathSegments(3)
+                                                             .toString()))
                 .add(new NavigationDTO(serviceLabel, uriBuilder.copy()
-                                                                                         .removePathSegment("collections", -3)
-                                                                                         .removeLastPathSegments(2)
-                                                                                         .toString()))
+                                                               .removePathSegment("collections", -3)
+                                                               .removeLastPathSegments(2)
+                                                               .toString()))
                 .add(new NavigationDTO(featureType.getLabel(), uriBuilder.toString()))
                 .add(new NavigationDTO(featureId))
                 .build();
@@ -303,11 +311,11 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
 
         featureCollectionView.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO("Datasets", uriBuilder.copy()
-                                                                                       .removeLastPathSegments(2)
-                                                                                       .toString()))
+                                                             .removeLastPathSegments(2)
+                                                             .toString()))
                 .add(new NavigationDTO(serviceLabel, uriBuilder.copy()
-                                                                                         .removeLastPathSegments(1)
-                                                                                         .toString()))
+                                                               .removeLastPathSegments(1)
+                                                               .toString()))
                 .add(new NavigationDTO(collectionLabel))
                 .build();
 

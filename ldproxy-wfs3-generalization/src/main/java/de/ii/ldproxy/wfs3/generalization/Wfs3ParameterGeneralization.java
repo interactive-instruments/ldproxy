@@ -17,8 +17,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import java.util.Map;
 
-import static de.ii.ldproxy.wfs3.generalization.GeneralizationConfiguration.EXTENSION_KEY;
-
 /**
  * @author zahnen
  */
@@ -29,7 +27,7 @@ public class Wfs3ParameterGeneralization implements Wfs3ParameterExtension {
 
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, ImmutableFeatureQuery.Builder queryBuilder, Map<String, String> parameters, Wfs3ServiceData serviceData) {
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+        if (!isExtensionEnabled(serviceData, GeneralizationConfiguration.class)) {
             return queryBuilder;
         }
         if (parameters.containsKey("maxAllowableOffset")) {
