@@ -5,11 +5,11 @@ subprojects {
     apply plugin: 'osgi-ipojo'
     //apply plugin: 'biz.aQute.bnd.builder'
     apply plugin: 'license'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.bintray'
 
     sourceCompatibility = 1.8
-
-    version = '1.2.0'
-    //version += '-SNAPSHOT'
+    
     group = 'de.interactive_instruments'
 
     license {
@@ -76,7 +76,7 @@ subprojects {
         provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-runtime', version: '1.1.5'
         // TODO: shouldn't we only be allowed to use api bundles here?
         provided group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.6'
-        provided group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.31'
+        provided group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.1.0'
 
         // TODO: this is in bundles-runtime, but with transitive=false
         // TODO: we need the transitive dependencies in provided
@@ -148,11 +148,70 @@ subprojects {
             */
         }
     }
-    afterEvaluate {
+
+    task sourceJar(type: Jar) {
+        from sourceSets.main.allSource
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.java
+
+                artifact sourceJar {
+                    classifier "sources"
+                }
+
+                pom.withXml{
+                    asNode().remove(asNode().get('dependencies'))
+                    def dependenciesNode = asNode().appendNode('dependencies')
+
+                    configurations.provided.allDependencies.each {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                        dependencyNode.appendNode('scope', 'runtime')
+
+                        def exclusionsNode = dependencyNode.appendNode('exclusions')
+                        def exclusionNode = exclusionsNode.appendNode('exclusion')
+                        exclusionNode.appendNode('groupId', '*')
+                        exclusionNode.appendNode('artifactId', '*')
+                    }
+                }
+            }
+        }
+    }
+
+    afterEvaluate { project ->
+        bintray {
+            user = project.bintrayUser
+            key = project.bintrayApiKey
+            publications = ['maven']
+            publish = true
+            pkg {
+                repo = 'maven'
+                name = project.name
+                userOrg = 'iide'
+                licenses = ['MPL-2.0']
+                websiteUrl = 'https://github.com/interactive-instruments/ldproxy'
+                issueTrackerUrl = 'https://github.com/interactive-instruments/ldproxy/issues'
+                vcsUrl = 'https://github.com/interactive-instruments/ldproxy.git'
+                githubRepo = 'interactive-instruments/ldproxy'
+                githubReleaseNotesFile = 'README.md'
+                version {
+                    name = project.version
+                }
+            }
+        }
+    }
+
+
+    /*afterEvaluate {
         task hotDeploy(type: Copy) {
             dependsOn jar
             from jar
             into new File(rootProject.tasks.installDist.destinationDir, 'bundles/platform')
         }
-    }
+    }*/
 }

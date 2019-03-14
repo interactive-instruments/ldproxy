@@ -1,0 +1,68 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath group: 'de.interactive_instruments', name: 'gradle-plugin-osgi-ipojo', version: '1.12.1.32'
+        classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0"
+        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.5.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+    }
+}
+
+version = '1.4.0'
+group = 'de.interactive_instruments'
+
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+apply from: '../bundles.gradle'
+
+
+publishing {
+    publications {
+        mavenRoot(MavenPublication) {
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+
+                subprojects.each {
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', it.group)
+                    dependencyNode.appendNode('artifactId', it.name)
+                    dependencyNode.appendNode('version', it.version)
+                    dependencyNode.appendNode('scope', 'runtime')
+
+                    def exclusionsNode = dependencyNode.appendNode('exclusions')
+                    def exclusionNode = exclusionsNode.appendNode('exclusion')
+                    exclusionNode.appendNode('groupId', '*')
+                    exclusionNode.appendNode('artifactId', '*')
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    user = project.bintrayUser
+    key = project.bintrayApiKey
+    publications = ['mavenRoot']
+    publish = true
+    pkg {
+        repo = 'maven'
+        name = project.name
+        userOrg = 'iide'
+        licenses = ['MPL-2.0']
+        websiteUrl = 'https://github.com/interactive-instruments/ldproxy'
+        issueTrackerUrl = 'https://github.com/interactive-instruments/ldproxy/issues'
+        vcsUrl = 'https://github.com/interactive-instruments/ldproxy.git'
+        githubRepo = 'interactive-instruments/ldproxy'
+        githubReleaseNotesFile = 'README.md'
+        version {
+            name = project.version
+        }
+    }
+}

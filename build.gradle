@@ -12,6 +12,7 @@ buildscript {
         classpath 'com.netflix.nebula:nebula-ospackage-plugin:3.+'
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.5.0'
         classpath files('buildSrc/build/libs/buildSrc-all.jar')
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
     }
 }
 
@@ -46,7 +47,7 @@ dependencies {
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
 
-    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.31'
+    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.1.0'
 
     // activate for access to the Apache Felix console at /system/console
     //bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.1'

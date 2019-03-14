@@ -1,0 +1,8 @@
+rootProject.name = 'xtraplatform-wfs3'
+
+rootDir.parentFile.listFiles().each { file ->
+    if (file.isDirectory() && (file.name.startsWith('ldproxy-'))) {
+    	includeFlat file.name
+    }
+    
+}
