@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import de.ii.xsf.dropwizard.api.JacksonSubTypeIds;
+import de.ii.xtraplatform.dropwizard.api.JacksonSubTypeIds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
