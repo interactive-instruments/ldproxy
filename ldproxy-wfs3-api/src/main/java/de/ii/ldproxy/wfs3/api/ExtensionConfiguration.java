@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.google.common.base.CaseFormat;
-import de.ii.xsf.dropwizard.cfg.JacksonProvider;
+import de.ii.xtraplatform.dropwizard.cfg.JacksonProvider;
 
 /**
  * @author zahnen

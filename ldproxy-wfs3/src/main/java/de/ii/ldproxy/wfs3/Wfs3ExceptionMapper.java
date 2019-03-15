@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.ii.xsf.dropwizard.api.Jackson;
+import de.ii.xtraplatform.dropwizard.api.Jackson;
 import io.dropwizard.jersey.errors.ErrorMessage;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import org.apache.felix.ipojo.annotations.Component;

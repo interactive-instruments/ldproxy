@@ -8,24 +8,22 @@
 package de.ii.ldproxy.codelists;
 
 import com.fasterxml.aalto.stax.InputFactoryImpl;
-import de.ii.xsf.configstore.api.KeyValueStore;
-import de.ii.xsf.configstore.api.rest.AbstractGenericResourceStore;
-import de.ii.xsf.core.api.exceptions.BadRequest;
-import de.ii.xsf.dropwizard.api.HttpClients;
-import de.ii.xsf.dropwizard.api.Jackson;
+import de.ii.xtraplatform.akka.http.AkkaHttp;
+import de.ii.xtraplatform.api.exceptions.BadRequest;
+import de.ii.xtraplatform.dropwizard.api.Jackson;
+import de.ii.xtraplatform.kvstore.api.KeyValueStore;
+import de.ii.xtraplatform.kvstore.api.rest.AbstractGenericResourceStore;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.felix.ipojo.annotations.Validate;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.codehaus.staxmate.SMInputFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author zahnen
@@ -36,19 +34,16 @@ import java.io.IOException;
 public class CodelistStoreDefault extends AbstractGenericResourceStore<CodelistOld, CodelistStore> implements CodelistStore {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CodelistStoreDefault.class);
-    public static final String STORE_ID = "ldproxy-codelists";
+    private static final String STORE_ID = "ldproxy-codelists";
 
-    private HttpClient httpClient;
-    private HttpClient sslHttpClient;
-    private SMInputFactory staxFactory;
+    private final AkkaHttp akkaHttp;
+    private final SMInputFactory staxFactory;
 
-    public CodelistStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires HttpClients httpClients) {
+    public CodelistStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires AkkaHttp akkaHttp) {
         super(rootConfigStore, STORE_ID, jackson.getDefaultObjectMapper(), true);
 
+        this.akkaHttp = akkaHttp;
         this.staxFactory = new SMInputFactory(new InputFactoryImpl());
-
-        this.httpClient = httpClients.getDefaultHttpClient();
-        this.sslHttpClient = httpClients.getUntrustedSslHttpClient("clssl");
     }
 
     // TODO
@@ -81,14 +76,9 @@ public class CodelistStoreDefault extends AbstractGenericResourceStore<CodelistO
         CodelistOld codelist = new CodelistOld(sourceUrl, sourceType);
 
         if (sourceType == IMPORT_TYPE.GML_DICTIONARY) {
-            HttpClient client = httpClient;
-            if (sourceUrl.startsWith("https")) {
-                client = sslHttpClient;
-            }
+            InputStream response = akkaHttp.getAsInputStream(sourceUrl);
 
-            HttpResponse response = client.execute(new HttpGet(sourceUrl));
-
-            new ImportGmlDictionary(staxFactory).parse(response.getEntity(), codelist);
+            new ImportGmlDictionary(staxFactory).parse(response, codelist);
         } else {
             throw new BadRequest("Import type " + sourceType + " is not supported.");
         }

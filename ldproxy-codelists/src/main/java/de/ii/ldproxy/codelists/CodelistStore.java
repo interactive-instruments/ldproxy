@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.codelists;
 
-import de.ii.xsf.configstore.api.rest.ResourceStore;
+import de.ii.xtraplatform.kvstore.api.rest.ResourceStore;
 
 import java.io.IOException;
 

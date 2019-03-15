@@ -1,17 +1,12 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.wfs3.filtertransformer;
 
-import akka.NotUsed;
-import akka.japi.function.Function2;
-import akka.stream.javadsl.Sink;
-import akka.stream.javadsl.Source;
-import akka.util.ByteString;
 import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.akka.http.AkkaHttp;
 import org.locationtech.jts.geom.Envelope;
@@ -19,7 +14,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -67,22 +61,14 @@ public class RequestGeoJsonBboxTransformer implements FilterTransformer {
 
     private Map<String, String> resolve(Map<String, String> resolvableParameters) throws ParseException {
 
-        //TODO get json see SimpleAroundRelationResolver
-        //TODO parse bbox JTS GeoJsonReader??? or https://github.com/bjornharrtell/jts2geojson???
         //TODO expand with explicit if given
 
         String url = getUrl(resolvableParameters);
 
-        StringBuilder response = new StringBuilder();
-
-        Source<ByteString, NotUsed> source = akkaHttp.get(url);
-
-        source.runWith(Sink.fold(response, (Function2<StringBuilder, ByteString, StringBuilder>) (stringBuilder, byteString) -> stringBuilder.append(byteString.utf8String())), akkaHttp.getMaterializer())
-              .toCompletableFuture()
-              .join();
+        String response = akkaHttp.getAsString(url);
 
         GeoJsonReader geoJsonReader = new GeoJsonReader();
-        Geometry geometry = geoJsonReader.read(response.toString());
+        Geometry geometry = geoJsonReader.read(response);
         Envelope envelope = geometry.getEnvelopeInternal();
         //TODO bufferInMeters
         envelope.expandBy(0.0001);

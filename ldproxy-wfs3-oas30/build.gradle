@@ -1,14 +1,8 @@
+
 version = '1.4.0'
-//version += '-SNAPSHOT'
 
 dependencies {
-    compile project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-wfs3-api")
 
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi', version: '1.1.1-SNAPSHOT'
-}
-jar {
-    manifest {
-        instructionFirst 'Import-Package', "!org.immutables.value"
-        instruction 'Import-Package', "*"
-    }
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
 }

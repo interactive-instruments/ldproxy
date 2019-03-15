@@ -1,34 +1,23 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.wfs3.oas30;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceMetadata;
-import de.ii.xsf.dropwizard.api.Dropwizard;
-import de.ii.xsf.dropwizard.api.Jackson;
 import de.ii.xtraplatform.auth.api.AuthConfig;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.media.NumberSchema;
-import io.swagger.v3.oas.models.media.StringSchema;
-import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
@@ -46,16 +35,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS_URI;
 
 /**
  * @author zahnen
@@ -74,17 +57,24 @@ public class ExtendableOpenApiDefinition {
     @Context
     private BundleContext bundleContext;
 
-    private final ObjectMapper objectMapper;
-    private final String externalUrl;
+    //private final ObjectMapper objectMapper;
+    //private final String externalUrl;
     private final AuthConfig authConfig;
-    private final Set<Wfs3OpenApiExtension> openApiExtensions;
+    private Set<Wfs3OpenApiExtension> openApiExtensions;
 
-    public ExtendableOpenApiDefinition(@Requires Jackson jackson, @Requires Dropwizard dropwizard, @Requires AuthConfig authConfig) {
+    public ExtendableOpenApiDefinition(/*@Requires Jackson jackson, @Requires Dropwizard dropwizard,*/ @Requires AuthConfig authConfig) {
         super();
-        this.objectMapper = jackson.getDefaultObjectMapper();
-        this.externalUrl = dropwizard.getExternalUrl();
+        //this.objectMapper = jackson.getDefaultObjectMapper();
+        //this.externalUrl = dropwizard.getExternalUrl();
         this.authConfig = authConfig;
-        this.openApiExtensions = new TreeSet<>(Comparator.comparingInt(Wfs3OpenApiExtension::getSortPriority));
+        //this.openApiExtensions = new TreeSet<>(Comparator.comparingInt(Wfs3OpenApiExtension::getSortPriority));
+    }
+
+    private Set<Wfs3OpenApiExtension> getOpenApiExtensions() {
+        if (Objects.isNull(openApiExtensions)) {
+            this.openApiExtensions = new TreeSet<>(Comparator.comparingInt(Wfs3OpenApiExtension::getSortPriority));
+        }
+        return openApiExtensions;
     }
 
     public Response getOpenApi(String type, URICustomizer requestUriCustomizer, Wfs3ServiceData serviceData) {
@@ -151,8 +141,7 @@ public class ExtendableOpenApiDefinition {
                 }
             }
 
-            openApiExtensions.forEach(openApiExtension -> openApiExtension.process(openAPI, serviceData));
-
+            getOpenApiExtensions().forEach(openApiExtension -> openApiExtension.process(openAPI, serviceData));
 
 
             if (StringUtils.isNotBlank(type) && type.trim()
@@ -181,7 +170,7 @@ public class ExtendableOpenApiDefinition {
         try {
             final Wfs3OpenApiExtension wfs3OpenApiExtension = bundleContext.getService(ref);
 
-            openApiExtensions.add(wfs3OpenApiExtension);
+            getOpenApiExtensions().add(wfs3OpenApiExtension);
         } catch (Throwable e) {
             LOGGER.error("E", e);
         }
@@ -191,7 +180,7 @@ public class ExtendableOpenApiDefinition {
         final Wfs3OpenApiExtension wfs3OpenApiExtension = bundleContext.getService(ref);
 
         if (Objects.nonNull(wfs3OpenApiExtension)) {
-            openApiExtensions.remove(wfs3OpenApiExtension);
+            getOpenApiExtensions().remove(wfs3OpenApiExtension);
         }
     }
 

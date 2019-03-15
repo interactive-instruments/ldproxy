@@ -58,7 +58,7 @@ public class DynamicTypeIdResolverMock  implements TypeIdResolver {
 
             @Override
             public TypeIdResolver typeIdResolverInstance(MapperConfig<?> config, Annotated annotated, Class<?> resolverClass) {
-                return new DynamicTypeIdResolverMock(new GeoJsonTargetMappingSubTypeIds() /*TODO , new Wfs3GenericMappingSubTypeIds(), new MicrodataMappingSubTypeIds(), new JsonLdMappingSubTypeIds()*/);
+                return new DynamicTypeIdResolverMock(new JacksonSubTypeIdsGeoJson() /*TODO , new Wfs3GenericMappingSubTypeIds(), new MicrodataMappingSubTypeIds(), new JsonLdMappingSubTypeIds()*/);
             }
         };
     }

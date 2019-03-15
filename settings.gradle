@@ -6,3 +6,11 @@ rootDir.listFiles().each { file ->
     }
     
 }
+
+includeBuild '../xtraplatform/xtraplatform-gradle-plugins'
+includeBuild '../xtraplatform/xtraplatform-base'
+includeBuild '../xtraplatform/xtraplatform-store'
+includeBuild '../xtraplatform/xtraplatform-web'
+includeBuild '../xtraplatform/xtraplatform-admin'
+includeBuild '../xtraplatform/xtraplatform-dev'
+includeBuild '../xtraplatform-sdi-tools'

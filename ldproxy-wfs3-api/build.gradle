@@ -1,12 +1,5 @@
+
 version = '1.4.0'
-//version += '-SNAPSHOT'
 
 dependencies {
-}
-
-jar {
-    manifest {
-        instructionFirst 'Import-Package', "!org.immutables.value"
-        instruction 'Import-Package', "*"
-    }
 }

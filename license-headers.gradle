@@ -1,0 +1,43 @@
+subprojects {
+    apply plugin: 'license'
+
+    license {
+        header rootProject.file('gradle/license-header')
+        strictCheck true
+        excludes([
+                "**/Modifiable*.java",
+                "**/Immutable*.java",
+                "**/node_modules/**/*",
+                "**/*.mustache",
+                "**/*.png",
+                "**/*.ico",
+                "**/*.xcf",
+                "**/*.js",
+                "**/*.css",
+                "**/template.html",
+                "**/*.json"])
+        ext.year = Calendar.getInstance().get(Calendar.YEAR)
+        ext.name = "interactive instruments GmbH"
+
+        //ext.name = "European Union, interactive instruments GmbH"
+        //includes([
+        excludes([
+            "**/LdProxyAdminServiceResource.java",
+            "**/CatalogResource.java",
+            "**/LdProxyServiceResource.java",
+            "**/AbstractFeatureWriter.java",
+            "**/GeoJsonFeatureWriter.java",
+            "**/GeoJsonOnTheFlyMapping.java",
+            "**/GetCapabilities2Dataset.java",
+            "**/MicrodataFeatureWriter.java",
+            "**/JsonLdOnTheFlyMapping.java",
+            "**/JsonLdOutputWriter.java",
+            "**/IndexValueWriter.java",
+            "**/LdProxyModule.java",
+            "**/LdProxyService.java",
+            "**/LdProxyServiceSerializer.java",
+            "**/LdProxyServiceStore.java",
+            "**/LdProxyServiceStoreDefault.java"
+        ])
+    }
+}

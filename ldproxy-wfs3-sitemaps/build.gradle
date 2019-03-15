@@ -1,18 +1,18 @@
+
 version = '1.4.0'
-//version += '-SNAPSHOT'
 
 dependencies {
-    compile project(":ldproxy-wfs3")
-    compile project(":ldproxy-wfs3-api")
-    compile project(":ldproxy-wfs3-core")
-    testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+    provided project(":ldproxy-wfs3")
+    provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-wfs3-core")
 
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
+    
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }
 
 jar {
     manifest {
-        instructionFirst 'Import-Package', "!javax.xml.bind.annotation"
-        instructionFirst 'Import-Package', "!org.immutables.value"
-        instruction 'Import-Package', "*"
+        //instructionFirst 'Import-Package', "!javax.xml.bind.annotation"
     }
 }

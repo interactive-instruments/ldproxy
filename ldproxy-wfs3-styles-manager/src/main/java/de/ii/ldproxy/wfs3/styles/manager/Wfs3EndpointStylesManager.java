@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -17,10 +17,10 @@ import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
-import de.ii.xsf.configstore.api.KeyValueStore;
-import de.ii.xsf.configstore.api.Transaction;
-import de.ii.xsf.configstore.api.WriteTransaction;
 import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.kvstore.api.KeyValueStore;
+import de.ii.xtraplatform.kvstore.api.Transaction;
+import de.ii.xtraplatform.kvstore.api.WriteTransaction;
 import de.ii.xtraplatform.service.api.Service;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;

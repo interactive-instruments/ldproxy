@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,8 +9,7 @@ package de.ii.ldproxy.target.html;
 
 import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.base.Splitter;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.xsf.core.views.GenericView;
+import de.ii.xtraplatform.rest.views.GenericView;
 import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -20,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static de.ii.xtraplatform.util.functional.LambdaWithException.mayThrow;
 
 /**
  *
@@ -81,11 +78,16 @@ public class DatasetView extends GenericView {
 
     public Function<String, String> getQueryWithout() {
         return without -> {
-            List<String> ignore = Splitter.on(',').trimResults().omitEmptyStrings().splitToList(without);
+            List<String> ignore = Splitter.on(',')
+                                          .trimResults()
+                                          .omitEmptyStrings()
+                                          .splitToList(without);
 
-            List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Consts.ISO_8859_1).stream()
-                    .filter(kvp -> !ignore.contains(kvp.getName().toLowerCase()))
-                    .collect(Collectors.toList());
+            List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Consts.ISO_8859_1)
+                                                       .stream()
+                                                       .filter(kvp -> !ignore.contains(kvp.getName()
+                                                                                          .toLowerCase()))
+                                                       .collect(Collectors.toList());
 
             return '?' + URLEncodedUtils.format(query, '&', Consts.UTF_8) + (!query.isEmpty() ? '&' : "");
         };

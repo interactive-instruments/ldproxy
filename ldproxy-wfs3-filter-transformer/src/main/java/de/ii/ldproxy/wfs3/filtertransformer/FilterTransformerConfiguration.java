@@ -9,7 +9,7 @@ package de.ii.ldproxy.wfs3.filtertransformer;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
-import de.ii.xsf.dropwizard.cfg.JacksonProvider;
+import de.ii.xtraplatform.dropwizard.cfg.JacksonProvider;
 
 /**
  * @author zahnen

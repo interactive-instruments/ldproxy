@@ -1,29 +1,21 @@
+
 version = '1.4.0'
-//version += '-SNAPSHOT'
 
 dependencies {
-    compile project(":ldproxy-codelists")
-    compile project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-codelists")
+    provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-wfs3-around-relations")
+    provided project(":ldproxy-string-templates")
+    provided project(":ldproxy-wfs3-styles")
+    provided project(":ldproxy-wfs3-oas30")
 
-    compile project(":ldproxy-wfs3-around-relations")
-    compile project(":ldproxy-string-templates")
-    compile project(":ldproxy-wfs3-styles")
-
-    compile project(":ldproxy-wfs3-oas30")
-
-    //provided group: 'com.typesafe.akka', name: 'akka-stream_2.12', version: '2.5.9'
-    //provided group: 'com.typesafe.akka', name: 'akka-http_2.12',   version: '10.1.0-RC2'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka', version: '1.1.5-SNAPSHOT'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api', version: '1.1.2-SNAPSHOT'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
 }
 
 jar {
     manifest {
         attributes('X-Web-Resource-Version': '1.1')
         attributes('X-Web-Resource': '/app/js;/app/js, /app/css;/app/css, /app/img;/app/img')
-
-
-
-        instructionFirst 'Import-Package', "!org.immutables.value"
     }
 }

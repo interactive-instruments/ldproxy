@@ -8,9 +8,12 @@
 package de.ii.ldproxy.wfs3.styles;
 
 
-import de.ii.ldproxy.wfs3.api.*;
+import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collection;
+import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3CollectionMetadataExtension;
-import de.ii.xsf.configstore.api.KeyValueStore;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

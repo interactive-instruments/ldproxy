@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -15,8 +15,8 @@ import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3DatasetMetadataExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.xsf.configstore.api.KeyValueStore;
-import de.ii.xsf.core.server.CoreServerConfig;
+import de.ii.xtraplatform.kvstore.api.KeyValueStore;
+import de.ii.xtraplatform.server.CoreServerConfig;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -59,11 +59,12 @@ public class Wfs3DatasetMetdataStyles implements Wfs3DatasetMetadataExtension {
 
         if (stylesExtension.isPresent() && stylesExtension.get()
                                                           .getMapsEnabled()) {
-            ImmutableList.Builder<Map<String,String>> mapLinks = ImmutableList.builder();
+            ImmutableList.Builder<Map<String, String>> mapLinks = ImmutableList.builder();
 
             for (String style : stylesList) {
                 String styleId = style.split("\\.")[0];
-                mapLinks.add(ImmutableMap.of("title", styleId, "url", uriCustomizer.ensureLastPathSegments("maps", styleId).toString(), "target", "_blank"));
+                mapLinks.add(ImmutableMap.of("title", styleId, "url", uriCustomizer.ensureLastPathSegments("maps", styleId)
+                                                                                   .toString(), "target", "_blank"));
             }
 
             collections.addSections(ImmutableMap.of("title", "Maps", "links", mapLinks.build()));

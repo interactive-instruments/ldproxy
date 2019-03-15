@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,14 +9,10 @@ package de.ii.ldproxy.admin.rest;
 
 import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.CodelistData;
-import de.ii.ldproxy.codelists.CodelistOld;
-import de.ii.ldproxy.codelists.CodelistStore;
-import de.ii.xsf.core.api.MediaTypeCharset;
-import de.ii.xsf.dropwizard.api.Jackson;
+import de.ii.xtraplatform.api.MediaTypeCharset;
+import de.ii.xtraplatform.dropwizard.api.Jackson;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
-import de.ii.xtraplatform.ogc.api.exceptions.ParseError;
-import de.ii.xtraplatform.service.api.Service;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -76,8 +72,8 @@ public class CodelistResource {
 
         try {
             //TODO: codelist generator
-            return  (CodelistData) entityRepository.generateEntity(request);
-        }  catch (IOException e) {
+            return (CodelistData) entityRepository.generateEntity(request);
+        } catch (IOException e) {
             LOGGER.error("Error adding codelist", e);
             throw new BadRequestException();
         }

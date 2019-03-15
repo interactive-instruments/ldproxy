@@ -1,20 +1,11 @@
+
 version = '1.4.0'
-//version += '-SNAPSHOT'
 
 dependencies {
-    compile project(":ldproxy-wfs3")
-    compile project(":ldproxy-wfs3-api")
-    compile project(":ldproxy-wfs3-core")
-    compile project(":ldproxy-wfs3-styles")
+    provided project(":ldproxy-wfs3")
+    provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-wfs3-core")
+    provided project(":ldproxy-wfs3-styles")
 
-    testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
-
-
-}
-
-jar {
-    manifest {
-        instructionFirst 'Import-Package', "!org.immutables.value"
-        instruction 'Import-Package', "*"
-    }
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }
