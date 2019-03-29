@@ -23,6 +23,7 @@ public class Wfs3MediaTypes {
     public static final String GEO_JSON = "application/geo+json";
     public static final String GML = "application/gml+xml;version=3.2;profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf2";
     public static final String MVT = "application/vnd.mapbox-vector-tile";
+    public static final String JSONP = "application/javascript";
 
     public static final Map<String, String> NAMES = new ImmutableMap.Builder<String, String>()
             .put(JSON, "JSON")

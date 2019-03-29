@@ -45,6 +45,8 @@ public interface FeatureTransformationContext {
 
     boolean isFeatureCollection();
 
+    boolean isHitsOnly();
+
     Wfs3RequestContext getWfs3Request();
 
     int getLimit();

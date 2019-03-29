@@ -29,7 +29,6 @@ import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3Service2;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.Wfs3StartupTask;
 import de.ii.ldproxy.wfs3.core.Wfs3Core;
@@ -44,7 +43,6 @@ import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService2;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
@@ -97,7 +95,7 @@ import java.util.stream.Collectors;
 // needed to register the ConfigurationHandler when no other properties are set
 @HandlerDeclaration("<properties></properties>")
 
-public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements FeatureTransformerService2, Wfs3Service2 {
+public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements de.ii.ldproxy.wfs3.api.Wfs3Service {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3Service.class);
 
@@ -281,6 +279,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
                                                                                                                                  .crsTransformer(crsTransformer)
                                                                                                                                  .links(links)
                                                                                                                                  .isFeatureCollection(isCollection)
+                                                                                                                                 .isHitsOnly(query.hitsOnly())
                                                                                                                                  .limit(query.getLimit())
                                                                                                                                  .offset(query.getOffset())
                                                                                                                                  .maxAllowableOffset(query.getMaxAllowableOffset());
