@@ -13,3 +13,4 @@ out/
 buildSrc/
 artillery/
 packaging/
+gradle.properties

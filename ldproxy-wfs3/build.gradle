@@ -6,9 +6,13 @@ dependencies {
     provided project(":ldproxy-wfs3-core")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-geojson'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-rest'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-scheduler-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
 
 }
 

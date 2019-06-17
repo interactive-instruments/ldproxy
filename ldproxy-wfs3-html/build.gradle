@@ -9,8 +9,14 @@ dependencies {
     provided project(":ldproxy-wfs3-styles")
     provided project(":ldproxy-wfs3-oas30")
 
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-rest'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
 }
 
 jar {

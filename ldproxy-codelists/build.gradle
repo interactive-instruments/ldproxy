@@ -2,6 +2,7 @@
 version = '1.4.0'
 
 dependencies {
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'

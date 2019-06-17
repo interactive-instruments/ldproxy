@@ -8,4 +8,7 @@ dependencies {
     provided project(":ldproxy-wfs3-html")
     provided project(":ldproxy-wfs3-gml")
     provided project(":ldproxy-wfs3-jsonld")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
 }

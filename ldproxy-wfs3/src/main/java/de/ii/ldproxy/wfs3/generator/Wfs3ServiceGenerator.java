@@ -9,7 +9,6 @@ package de.ii.ldproxy.wfs3.generator;
 
 import de.ii.ldproxy.wfs3.Gml2Wfs3GenericMappingProvider;
 import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
 import de.ii.ldproxy.wfs3.api.ModifiableWfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.Wfs3CapabilityExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
@@ -22,10 +21,8 @@ import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderMetadataConsumer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
 import de.ii.xtraplatform.feature.provider.api.MultiFeatureProviderMetadataConsumer;
-import de.ii.xtraplatform.feature.provider.wfs.ModifiableFeatureProviderDataWfs;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService2;
 import de.ii.xtraplatform.feature.transformer.api.MappingStatus;
-import de.ii.xtraplatform.feature.transformer.api.ModifiableMappingStatus;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.scheduler.api.Scheduler;
@@ -106,11 +103,11 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
             wfs3ServiceData.setCreatedAt(now);
             wfs3ServiceData.setLastModified(now);
             wfs3ServiceData.setShouldStart(true);
-            if (!((ModifiableFeatureProviderDataWfs) wfs3ServiceData.getFeatureProvider()).mappingStatusIsSet()) {
+            /*TODO if (!((ModifiableFeatureProviderDataWfs) wfs3ServiceData.getFeatureProvider()).mappingStatusIsSet()) {
                 ((ModifiableFeatureProviderDataWfs) wfs3ServiceData.getFeatureProvider()).setMappingStatus(ModifiableMappingStatus.create()
                                                                                                                                   .setEnabled(true)
                                                                                                                                   .setSupported(false));
-            }
+            }*/
 
             wfs3ConformanceClassRegistry.getExtensions()
                                         .stream()

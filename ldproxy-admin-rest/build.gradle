@@ -7,6 +7,8 @@ dependencies {
     provided project(':ldproxy-wfs3')
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-admin-rest'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-csw-client'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-scheduler-api'
 }
  

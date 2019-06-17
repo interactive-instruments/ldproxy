@@ -9,6 +9,7 @@ dependencies {
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
 
     //TODO: to unit-tests.gradle or e2e-tests.gradle???
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
