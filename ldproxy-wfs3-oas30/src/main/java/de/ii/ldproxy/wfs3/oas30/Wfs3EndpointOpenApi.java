@@ -55,7 +55,7 @@ public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointEx
 
     @Override
     public String getConformanceClass() {
-        return "http://www.opengis.net/spec/wfs-1/3.0/req/oas30";
+        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/req/oas30";
     }
     @Override
     public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){
