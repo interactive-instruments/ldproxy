@@ -1,16 +1,12 @@
-version = '1.3.0'
-//version += '-SNAPSHOT'
+
+version = '1.4.0'
 
 dependencies {
-    compile project(":ldproxy-wfs3")
-    compile project(":ldproxy-wfs3-oas30")
-    compile project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-wfs3")
+    provided project(":ldproxy-wfs3-oas30")
+    provided project(":ldproxy-wfs3-api")
 
-    testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
-}
-jar {
-    manifest {
-        instructionFirst 'Import-Package', "!org.immutables.value"
-        instruction 'Import-Package', "*"
-    }
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }

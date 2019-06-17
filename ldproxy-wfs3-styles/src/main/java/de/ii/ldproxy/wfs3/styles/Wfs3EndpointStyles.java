@@ -14,8 +14,8 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.xsf.configstore.api.KeyNotFoundException;
-import de.ii.xsf.configstore.api.KeyValueStore;
+import de.ii.xtraplatform.kvstore.api.KeyNotFoundException;
+import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.service.api.Service;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -37,8 +37,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
 
 /**
  * fetch list of styles or a style for the service
@@ -63,7 +61,7 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension {
 
     @Override
     public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, EXTENSION_KEY)) {
+        if (!isExtensionEnabled(serviceData, StylesConfiguration.class)) {
             throw new NotFoundException();
         }
         return true;

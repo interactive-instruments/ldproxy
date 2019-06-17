@@ -8,7 +8,7 @@
 package de.ii.ldproxy.codelists;
 
 import de.ii.ldproxy.codelists.CodelistStore.IMPORT_TYPE;
-import de.ii.xsf.core.api.Resource;
+import de.ii.xtraplatform.api.Resource;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

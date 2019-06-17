@@ -1,5 +1,5 @@
-version = '1.3.0'
-//version += '-SNAPSHOT'
+
+version = '1.4.0'
 
 dependencies {
     embedded group: 'com.atlassian.commonmark', name: 'commonmark', version: '0.11.0'
@@ -8,10 +8,6 @@ dependencies {
 
 jar {
     manifest {
-        instruction 'Embed-Dependency',
-                'commonmark', 'commonmark-ext-gfm-tables'
-
-        instruction 'Embed-Transitive', 'true'
         instruction 'Embed-Export', 'false'
         instruction 'Embed-Import', 'false'
     }

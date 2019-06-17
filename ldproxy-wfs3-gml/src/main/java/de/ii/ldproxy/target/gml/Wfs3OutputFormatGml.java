@@ -9,22 +9,16 @@ package de.ii.ldproxy.target.gml;
 
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3Collection;
 import de.ii.ldproxy.wfs3.api.Wfs3Collections;
 import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
 import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClasses;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.feature.provider.wfs.FeatureProviderDataWfs;
-import de.ii.xtraplatform.feature.query.api.FeatureQuery;
-import de.ii.xtraplatform.feature.query.api.FeatureStream;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.apache.felix.ipojo.annotations.Component;
@@ -34,19 +28,11 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.felix.ipojo.annotations.ServiceController;
 import org.apache.felix.ipojo.annotations.Validate;
 
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.target.gml.GmlConfiguration.EXTENSION_KEY;
 
 /**
  * @author zahnen
@@ -79,8 +65,8 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
     }
 
     @Override
-    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData){
-        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData) {
+        if (isExtensionEnabled(serviceData, GmlConfiguration.class)) {
             return true;
         }
         return false;
@@ -93,8 +79,8 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
 
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        if (!isExtensionEnabled(serviceData, GmlConfiguration.class)) {
             return false;
         }
         return true;
@@ -102,7 +88,9 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
 
     @Override
     public Response getConformanceResponse(List<Wfs3ConformanceClass> wfs3ConformanceClasses, String serviceLabel, Wfs3MediaType wfs3MediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix) {
-        return response(new Wfs3ConformanceClassesXml(new Wfs3ConformanceClasses(wfs3ConformanceClasses.stream().map(Wfs3ConformanceClass::getConformanceClass).collect(Collectors.toList()))));
+        return response(new Wfs3ConformanceClassesXml(new Wfs3ConformanceClasses(wfs3ConformanceClasses.stream()
+                                                                                                       .map(Wfs3ConformanceClass::getConformanceClass)
+                                                                                                       .collect(Collectors.toList()))));
     }
 
     @Override
@@ -128,7 +116,9 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
     public Optional<GmlConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
         return Optional.of(new FeatureTransformerGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
                                                                                                     .from(transformationContext)
-                                                                                                    .namespaces(((FeatureProviderDataWfs)transformationContext.getServiceData().getFeatureProvider()).getConnectionInfo().getNamespaces())
+                                                                                                    .namespaces(((FeatureProviderDataWfs) transformationContext.getServiceData()
+                                                                                                                                                               .getFeatureProvider()).getConnectionInfo()
+                                                                                                                                                                                     .getNamespaces())
                                                                                                     .build()));
     }
 

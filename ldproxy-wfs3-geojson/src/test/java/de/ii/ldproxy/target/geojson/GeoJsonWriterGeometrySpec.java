@@ -9,7 +9,7 @@ package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
 import com.greghaskins.spectrum.Spectrum;
-import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;

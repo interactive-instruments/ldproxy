@@ -10,20 +10,19 @@ package de.ii.ldproxy.wfs3.generator;
 import de.ii.ldproxy.wfs3.Gml2Wfs3GenericMappingProvider;
 import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.ModifiableWfs3ServiceData;
+import de.ii.ldproxy.wfs3.api.Wfs3CapabilityExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.entity.api.EntityDataGenerator;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
-import de.ii.xtraplatform.feature.provider.wfs.ModifiableFeatureProviderDataWfs;
-import de.ii.xtraplatform.feature.query.api.FeatureProvider;
-import de.ii.xtraplatform.feature.query.api.FeatureProviderMetadataConsumer;
-import de.ii.xtraplatform.feature.query.api.FeatureProviderRegistry;
-import de.ii.xtraplatform.feature.query.api.MultiFeatureProviderMetadataConsumer;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
+import de.ii.xtraplatform.feature.provider.api.FeatureProviderMetadataConsumer;
+import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
+import de.ii.xtraplatform.feature.provider.api.MultiFeatureProviderMetadataConsumer;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService2;
 import de.ii.xtraplatform.feature.transformer.api.MappingStatus;
-import de.ii.xtraplatform.feature.transformer.api.ModifiableMappingStatus;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.scheduler.api.Scheduler;
@@ -46,12 +45,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -105,11 +103,20 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
             wfs3ServiceData.setCreatedAt(now);
             wfs3ServiceData.setLastModified(now);
             wfs3ServiceData.setShouldStart(true);
-            if (!((ModifiableFeatureProviderDataWfs)wfs3ServiceData.getFeatureProvider()).mappingStatusIsSet()) {
+            /*TODO if (!((ModifiableFeatureProviderDataWfs) wfs3ServiceData.getFeatureProvider()).mappingStatusIsSet()) {
                 ((ModifiableFeatureProviderDataWfs) wfs3ServiceData.getFeatureProvider()).setMappingStatus(ModifiableMappingStatus.create()
                                                                                                                                   .setEnabled(true)
                                                                                                                                   .setSupported(false));
-            }
+            }*/
+
+            wfs3ConformanceClassRegistry.getExtensions()
+                                        .stream()
+                                        .filter(wfs3Extension -> wfs3Extension instanceof Wfs3CapabilityExtension)
+                                        .sorted(Comparator.comparing(wfs3Extension -> wfs3Extension.getClass().getSimpleName()))
+                                        .map(wfs3Extension -> (Wfs3CapabilityExtension) wfs3Extension)
+                                        .forEach(wfs3Capability -> {
+                                            wfs3ServiceData.addCapabilities(wfs3Capability.getDefaultConfiguration());
+                                        });
 
 
             FeatureProvider featureProvider = featureProviderRegistry.createFeatureProvider(wfs3ServiceData.getFeatureProvider());
@@ -118,7 +125,9 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
                 throw new IllegalArgumentException("feature provider not metadata aware");
             }
 
-            LOGGER.debug("GENERATING {} {}", Wfs3ServiceData.class, partialData.getId());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Generating service of type {} with id {}", Wfs3ServiceData.class, partialData.getId());
+            }
 
             FeatureProvider.MetadataAware metadataAware = (FeatureProvider.MetadataAware) featureProvider;
             FeatureProvider.DataGenerator dataGenerator = (TransformingFeatureProvider.DataGenerator) featureProvider;
@@ -213,8 +222,15 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
 
     private boolean shouldGenerateMapping(MappingStatus mappingStatus, String id) {
         return mappingStatus.getLoading()
-                && !getCurrentTask().filter(task -> task.getId().equals(id) && task.getLabel().equals(GENERATE_LABEL)).isPresent()
-                && taskQueue.getFutureTasks().stream().noneMatch(task -> task.getId().equals(id) && task.getLabel().equals(GENERATE_LABEL));
+                && !getCurrentTask().filter(task -> task.getId()
+                                                        .equals(id) && task.getLabel()
+                                                                           .equals(GENERATE_LABEL))
+                                    .isPresent()
+                && taskQueue.getFutureTasks()
+                            .stream()
+                            .noneMatch(task -> task.getId()
+                                                   .equals(id) && task.getLabel()
+                                                                      .equals(GENERATE_LABEL));
     }
 
 

@@ -12,8 +12,8 @@ import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.xsf.core.api.permission.AuthorizationProvider;
-import de.ii.xsf.core.server.CoreServerConfig;
+import de.ii.xtraplatform.api.permission.AuthorizationProvider;
+import de.ii.xtraplatform.server.CoreServerConfig;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.service.api.Service;
@@ -104,12 +104,12 @@ public class Wfs3ServiceResource implements ServiceResource {
     }
 
     @Override
-    public void init(ObjectMapper defaultObjectMapper, EntityRepository entityRepository, AuthorizationProvider permProvider) {
+    public void setMustacheRenderer(ViewRenderer mustacheRenderer) {
 
     }
 
     @Override
-    public void setMustacheRenderer(ViewRenderer mustacheRenderer) {
+    public void init(ObjectMapper defaultObjectMapper, EntityRepository entityRepository, AuthorizationProvider permProvider) {
 
     }
 

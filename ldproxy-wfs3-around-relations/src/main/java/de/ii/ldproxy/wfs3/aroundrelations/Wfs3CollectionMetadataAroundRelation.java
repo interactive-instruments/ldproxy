@@ -12,14 +12,12 @@ import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collection;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.ldproxy.wfs3.core.Wfs3CollectionMetadataExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3CollectionMetadataExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration.EXTENSION_KEY;
+import java.util.Optional;
 
 /**
  * @author zahnen
@@ -29,17 +27,18 @@ import static de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration.EXT
 @Provides
 @Instantiate
 public class Wfs3CollectionMetadataAroundRelation implements Wfs3CollectionMetadataExtension {
+
     @Override
     public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested, Wfs3ServiceData serviceData) {
-        if (featureTypeConfigurationWfs3.getExtensions()
-                .containsKey(EXTENSION_KEY)) {
-            final AroundRelationConfiguration aroundRelationConfiguration = (AroundRelationConfiguration) featureTypeConfigurationWfs3.getExtensions()
-                    .get(EXTENSION_KEY);
-            if (!aroundRelationConfiguration.getRelations()
-                    .isEmpty()) {
-                collection.putExtensions("relations", aroundRelationConfiguration.getRelations()
-                        .stream()
-                        .collect(ImmutableMap.toImmutableMap(AroundRelationConfiguration.Relation::getId, AroundRelationConfiguration.Relation::getLabel)));
+        final Optional<AroundRelationsConfiguration> aroundRelationConfiguration = featureTypeConfigurationWfs3.getExtension(AroundRelationsConfiguration.class);
+        if (aroundRelationConfiguration.isPresent()) {
+            if (!aroundRelationConfiguration.get()
+                                            .getRelations()
+                                            .isEmpty()) {
+                collection.putExtensions("relations", aroundRelationConfiguration.get()
+                                                                                 .getRelations()
+                                                                                 .stream()
+                                                                                 .collect(ImmutableMap.toImmutableMap(AroundRelationsConfiguration.Relation::getId, AroundRelationsConfiguration.Relation::getLabel)));
             }
         }
         return collection;

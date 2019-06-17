@@ -1,0 +1,19 @@
+rootProject.name = 'ldproxy-composite'
+
+def siblingDirectories = rootDir.parentFile.parentFile.listFiles()
+def xtraplatform = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform') })
+def xtraplatformSdiTools = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-sdi-tools') })
+
+if (xtraplatform) {
+    includeBuild "../../${xtraplatform.name}/xtraplatform-gradle-plugins"
+    includeBuild "../../${xtraplatform.name}/xtraplatform-base"
+    includeBuild "../../${xtraplatform.name}/xtraplatform-store"
+    includeBuild "../../${xtraplatform.name}/xtraplatform-web"
+    includeBuild "../../${xtraplatform.name}/xtraplatform-admin"
+    includeBuild "../../${xtraplatform.name}/xtraplatform-dev"
+}
+if (xtraplatformSdiTools) {
+    includeBuild "../../${xtraplatformSdiTools.name}"
+}
+
+includeBuild '../'

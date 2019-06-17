@@ -9,7 +9,7 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.io.Resources;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.xsf.core.server.CoreServerConfig;
+import de.ii.xtraplatform.server.CoreServerConfig;
 import de.ii.xtraplatform.service.api.Service;
 import de.ii.xtraplatform.service.api.ServiceData;
 import de.ii.xtraplatform.service.api.ServiceListingProvider;

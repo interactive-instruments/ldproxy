@@ -7,9 +7,11 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
-import de.ii.xsf.dropwizard.cfg.JacksonProvider;
+import com.google.common.base.CaseFormat;
+import de.ii.xtraplatform.dropwizard.cfg.JacksonProvider;
 
 /**
  * @author zahnen
@@ -17,7 +19,21 @@ import de.ii.xsf.dropwizard.cfg.JacksonProvider;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "extensionType")
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
 public interface ExtensionConfiguration {
-    boolean getEnabled();
-    ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault);
 
+    static String getExtensionType(Class<? extends ExtensionConfiguration> clazz) {
+        return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, clazz.getSimpleName()
+                                                                           .replace("Configuration", ""));
+    }
+
+    @JsonIgnore
+    default String getExtensionType() {
+        return getExtensionType((Class<? extends ExtensionConfiguration>) this.getClass()
+                                                                              .getSuperclass());
+    }
+
+    boolean getEnabled();
+
+    default <T extends ExtensionConfiguration> T mergeDefaults(T extensionConfigurationDefault) {
+        return (T) this;
+    }
 }

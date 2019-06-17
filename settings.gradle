@@ -1,8 +1,16 @@
+pluginManagement {
+    repositories {
+        maven {
+            url 'https://dl.bintray.com/iide/maven'
+        }
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = 'ldproxy'
 
 rootDir.listFiles().each { file ->
     if (file.isDirectory() && (file.name.startsWith('ldproxy-'))) {
     	include file.name
-    }
-    
+    }    
 }

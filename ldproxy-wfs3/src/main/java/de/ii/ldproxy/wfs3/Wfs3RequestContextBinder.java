@@ -19,6 +19,8 @@ import org.glassfish.jersey.server.internal.inject.AbstractContainerRequestValue
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.ext.Provider;
 
+import static de.ii.xtraplatform.rest.ServiceContextBinder.SERVICE_CONTEXT_KEY;
+
 /**
  * @author zahnen
  */
@@ -41,6 +43,11 @@ public class Wfs3RequestContextBinder extends AbstractBinder implements Binder, 
                                              .proxyForSameScope(false)
                                              .to(Wfs3RequestContext.class)
                                              .in(RequestScoped.class);
+
+        bindFactory(Wfs3ServiceFactory.class).proxy(true)
+                                             .proxyForSameScope(false)
+                                             .to(de.ii.ldproxy.wfs3.api.Wfs3Service.class)
+                                             .in(RequestScoped.class);
     }
 
     public static class Wfs3RequestFactory extends AbstractContainerRequestValueFactory<Wfs3RequestContext> {
@@ -49,6 +56,15 @@ public class Wfs3RequestContextBinder extends AbstractBinder implements Binder, 
         @RequestScoped
         public Wfs3RequestContext provide() {
             return (Wfs3RequestContext) getContainerRequest().getProperty(WFS3_REQUEST_CONTEXT_KEY);
+        }
+    }
+
+    public static class Wfs3ServiceFactory extends AbstractContainerRequestValueFactory<de.ii.ldproxy.wfs3.api.Wfs3Service> {
+
+        @Override
+        @RequestScoped
+        public de.ii.ldproxy.wfs3.api.Wfs3Service provide() {
+            return (de.ii.ldproxy.wfs3.api.Wfs3Service) getContainerRequest().getProperty(SERVICE_CONTEXT_KEY);
         }
     }
 }

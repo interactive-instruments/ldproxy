@@ -16,11 +16,10 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(as = ModifiableOas30Configuration.class)
 public abstract class Oas30Configuration implements ExtensionConfiguration {
-    public static final String EXTENSION_KEY = "oas30Extension";
-    public static final String EXTENSION_TYPE = "OAS30";
 
+    @Value.Default
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return this;
+    public boolean getEnabled() {
+        return true;
     }
 }

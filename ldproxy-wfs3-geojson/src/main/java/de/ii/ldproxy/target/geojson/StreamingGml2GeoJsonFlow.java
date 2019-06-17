@@ -16,12 +16,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.target.geojson.GeoJsonMapping.GEO_JSON_TYPE;
-import de.ii.ogc.wfs.proxy.WfsProxyOnTheFlyMapping;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
-import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.GmlStreamParserFlow;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
@@ -70,7 +69,7 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
     protected FeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
 
 
-    protected WfsProxyOnTheFlyMapping onTheFlyMapping;
+    //protected WfsProxyOnTheFlyMapping onTheFlyMapping;
 
     GEO_JSON_GEOMETRY_TYPE currentGeometryType;
     boolean currentGeometryNested;

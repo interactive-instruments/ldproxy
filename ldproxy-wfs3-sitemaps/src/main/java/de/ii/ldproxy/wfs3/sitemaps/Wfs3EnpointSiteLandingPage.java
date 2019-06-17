@@ -11,8 +11,7 @@ import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.ldproxy.wfs3.oas30.Oas30Configuration;
-import de.ii.xsf.core.server.CoreServerConfig;
+import de.ii.xtraplatform.server.CoreServerConfig;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.service.api.Service;
 import io.dropwizard.auth.Auth;
@@ -30,12 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static de.ii.ldproxy.wfs3.sitemaps.SitemapsConfiguration.EXTENSION_KEY;
-
 @Component
 @Provides
 @Instantiate
-public class Wfs3EnpointSiteLandingPage implements Wfs3EndpointExtension{
+public class Wfs3EnpointSiteLandingPage implements Wfs3EndpointExtension {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointSiteIndex.class);
     @Requires
     private CoreServerConfig coreServerConfig;
@@ -46,8 +43,8 @@ public class Wfs3EnpointSiteLandingPage implements Wfs3EndpointExtension{
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData, EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        if (!isExtensionEnabled(serviceData, SitemapsConfiguration.class)) {
             throw new NotFoundException();
         }
         return true;
@@ -58,12 +55,12 @@ public class Wfs3EnpointSiteLandingPage implements Wfs3EndpointExtension{
         Wfs3ServiceData serviceData = ((Wfs3Service) service).getData();
 
         List<Site> sites = new ArrayList<>();
-        sites.add(new Site( String.format("%s/%s?f=html", coreServerConfig.getExternalUrl(), serviceData.getId())));
+        sites.add(new Site(String.format("%s/%s?f=html", coreServerConfig.getExternalUrl(), serviceData.getId())));
         Sitemap sitemap = new Sitemap(sites);
 
         return Response.ok()
-                .entity(sitemap)
-                .build();
+                       .entity(sitemap)
+                       .build();
     }
 
 }

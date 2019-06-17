@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
-import de.ii.xsf.core.server.CoreServerConfig;
+import de.ii.xtraplatform.server.CoreServerConfig;
 import org.apache.felix.ipojo.annotations.Bind;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -51,6 +51,7 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
             .put("html", MediaType.TEXT_HTML_TYPE)
             .put("xml", MediaType.APPLICATION_XML_TYPE)
             .put("mvt", new MediaType ("application","vnd.mapbox-vector-tile"))
+            .put("jsonp", new MediaType ("application","javascript"))
             .build();
 
     @Requires
@@ -94,7 +95,7 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
                 .keySet()
                 .stream()
                 .flatMap(this::toTypes)
-                .distinct(), Stream.of(MIME_TYPES.get("mvt")));
+                .distinct(), Stream.of(MIME_TYPES.get("mvt"), MIME_TYPES.get("jsonp")));
 
         MediaType[] supportedMediaTypes = mediaTypeStream.toArray(MediaType[]::new);
 
@@ -112,7 +113,10 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
                 .keySet()
                 .stream(), Stream.of(ImmutableWfs3MediaType.builder()
                 .main(MIME_TYPES.get("mvt"))
-                .build()));
+                .build(),
+                ImmutableWfs3MediaType.builder()
+                                      .main(MIME_TYPES.get("jsonp"))
+                                      .build()));
 
         return wfs3MediaTypeStream.filter(wfs3MediaType -> wfs3MediaType.matches(variant.getMediaType()))
                 .findFirst()
@@ -136,18 +140,27 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
                     .getFirst(ACCEPT_HEADER)
                     .trim()
                     .equals("*/*")) {
+
                 requestContext.getHeaders()
-                        .putSingle(ACCEPT_HEADER, MediaType.APPLICATION_JSON);
+                                  .putSingle(ACCEPT_HEADER, MediaType.APPLICATION_JSON);
             }
         } else {
             String format = requestContext.getUriInfo()
                     .getQueryParameters()
                     .getFirst(CONTENT_TYPE_PARAMETER);
 
-            final MediaType accept = MIME_TYPES.get(format);
-            if (accept != null) {
+            if (format.equals("json") && requestContext.getUriInfo()
+                              .getQueryParameters()
+                              .containsKey("callback")) {
                 requestContext.getHeaders()
-                        .putSingle(ACCEPT_HEADER, accept.toString());
+                              .putSingle(ACCEPT_HEADER, MIME_TYPES.get("jsonp").toString());
+            } else {
+
+                final MediaType accept = MIME_TYPES.get(format);
+                if (accept != null) {
+                    requestContext.getHeaders()
+                                  .putSingle(ACCEPT_HEADER, accept.toString());
+                }
             }
         }
     }

@@ -30,8 +30,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import java.util.Comparator;
 import java.util.Objects;
 
-import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
-
 /**
  * extend API definition with styles
  *
@@ -51,21 +49,23 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
     public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
 
 
-        if (serviceData != null && isExtensionEnabled(serviceData,EXTENSION_KEY)) {
+        if (serviceData != null && isExtensionEnabled(serviceData, StylesConfiguration.class)) {
 
-            StylesConfiguration stylesExtension = (StylesConfiguration) getExtensionConfiguration(serviceData,EXTENSION_KEY).get();
+            StylesConfiguration stylesExtension = getExtensionConfiguration(serviceData, StylesConfiguration.class).get();
 
             if (stylesExtension.getManagerEnabled()) {
-                PathItem pathItem1 = openAPI.getPaths().get("/styles");
+                PathItem pathItem1 = openAPI.getPaths()
+                                            .get("/styles");
 
 
-                PathItem pathItem2 = openAPI.getPaths().get("/styles/{styleId}");
+                PathItem pathItem2 = openAPI.getPaths()
+                                            .get("/styles/{styleId}");
 
 
                 RequestBody requestBody = new RequestBody().description("A single style.")
-                        .content(new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/style"))));
+                                                           .content(new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/style"))));
                 ApiResponse exception = new ApiResponse().description("An error occured.")
-                        .content(new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception"))));
+                                                         .content(new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception"))));
 
                 if (Objects.nonNull(pathItem1)) {
                     pathItem1
@@ -76,9 +76,9 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
                                     .addTagsItem("Styles")
                                     .requestBody(requestBody)
                                     .responses(new ApiResponses().addApiResponse("201", new ApiResponse().description("Styles were created.")
-                                            .addHeaderObject("location", new Header().description("The URL of the first created style")
-                                                    .schema(new StringSchema())))
-                                            .addApiResponse("default", exception))
+                                                                                                         .addHeaderObject("location", new Header().description("The URL of the first created style")
+                                                                                                                                                  .schema(new StringSchema())))
+                                                                 .addApiResponse("default", exception))
                             );
                 }
 
@@ -92,7 +92,7 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
                                     .requestBody(requestBody)
                                     .responses(new ApiResponses().addApiResponse("204", new ApiResponse().description("Style was replaced."))
-                                            .addApiResponse("default", exception))
+                                                                 .addApiResponse("default", exception))
                             )
                             .delete(new Operation()
                                     .summary("delete a Style from the dataset")
@@ -100,62 +100,62 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
                                     .addTagsItem("Styles")
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
                                     .responses(new ApiResponses().addApiResponse("204", new ApiResponse().description("Style was deleted."))
-                                            .addApiResponse("default", exception))
+                                                                 .addApiResponse("default", exception))
                             );
                 }
 
                 serviceData.getFeatureTypes()
-                        .values()
-                        .stream()
-                        .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                        .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
-                        .forEach(ft -> {
+                           .values()
+                           .stream()
+                           .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
+                           .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                           .forEach(ft -> {
 
-                            PathItem pathItem3 = openAPI.getPaths()
-                                    .get(String.format("/collections/%s/styles", ft.getId()));
-                            PathItem pathItem4 = openAPI.getPaths()
-                                    .get(String.format("/collections/%s/styles/{styleId}", ft.getId()));
-
-
-                            if (Objects.nonNull(pathItem3)) {
-                                pathItem3
-                                        .post(new Operation()
-                                                .summary("add styles to the collection " + ft.getLabel())
-                                                //.description("")
-                                                .operationId("addStyle" + ft.getLabel())
-                                                .addTagsItem("Styles")
-                                                .requestBody(requestBody)
-                                                .responses(new ApiResponses().addApiResponse("201", new ApiResponse().description("Style was created.")
-                                                        .addHeaderObject("location", new Header().description("The URL of the created style")
-                                                                .schema(new StringSchema())))
-                                                        .addApiResponse("default", exception))
-                                        );
-                            }
+                               PathItem pathItem3 = openAPI.getPaths()
+                                                           .get(String.format("/collections/%s/styles", ft.getId()));
+                               PathItem pathItem4 = openAPI.getPaths()
+                                                           .get(String.format("/collections/%s/styles/{styleId}", ft.getId()));
 
 
-                            if (Objects.nonNull(pathItem4)) {
-                                pathItem4
-                                        .put(new Operation()
-                                                .summary("replace a style from the collection " + ft.getLabel())
-                                                //.description("")
-                                                .operationId("replaceStyle" + ft.getId())
-                                                .addTagsItem("Styles")
-                                                .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
-                                                .requestBody(requestBody)
-                                                .responses(new ApiResponses().addApiResponse("204", new ApiResponse().description("Style was replaced."))
-                                                        .addApiResponse("default", exception))
-                                        )
-                                        .delete(new Operation()
-                                                .summary("delete a Style from the collection  " + ft.getLabel())
-                                                .operationId("deleteStyle" + ft.getId())
-                                                .addTagsItem("Styles")
-                                                .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
-                                                .responses(new ApiResponses().addApiResponse("204", new ApiResponse().description("Style was deleted."))
-                                                        .addApiResponse("default", exception))
-                                        );
-                            }
+                               if (Objects.nonNull(pathItem3)) {
+                                   pathItem3
+                                           .post(new Operation()
+                                                   .summary("add styles to the collection " + ft.getLabel())
+                                                   //.description("")
+                                                   .operationId("addStyle" + ft.getLabel())
+                                                   .addTagsItem("Styles")
+                                                   .requestBody(requestBody)
+                                                   .responses(new ApiResponses().addApiResponse("201", new ApiResponse().description("Style was created.")
+                                                                                                                        .addHeaderObject("location", new Header().description("The URL of the created style")
+                                                                                                                                                                 .schema(new StringSchema())))
+                                                                                .addApiResponse("default", exception))
+                                           );
+                               }
 
-                        });
+
+                               if (Objects.nonNull(pathItem4)) {
+                                   pathItem4
+                                           .put(new Operation()
+                                                   .summary("replace a style from the collection " + ft.getLabel())
+                                                   //.description("")
+                                                   .operationId("replaceStyle" + ft.getId())
+                                                   .addTagsItem("Styles")
+                                                   .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
+                                                   .requestBody(requestBody)
+                                                   .responses(new ApiResponses().addApiResponse("204", new ApiResponse().description("Style was replaced."))
+                                                                                .addApiResponse("default", exception))
+                                           )
+                                           .delete(new Operation()
+                                                   .summary("delete a Style from the collection  " + ft.getLabel())
+                                                   .operationId("deleteStyle" + ft.getId())
+                                                   .addTagsItem("Styles")
+                                                   .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
+                                                   .responses(new ApiResponses().addApiResponse("204", new ApiResponse().description("Style was deleted."))
+                                                                                .addApiResponse("default", exception))
+                                           );
+                               }
+
+                           });
             }
         }
 

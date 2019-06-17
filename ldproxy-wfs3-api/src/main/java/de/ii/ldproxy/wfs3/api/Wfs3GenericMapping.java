@@ -8,11 +8,7 @@
 package de.ii.ldproxy.wfs3.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_TYPE;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * @author zahnen

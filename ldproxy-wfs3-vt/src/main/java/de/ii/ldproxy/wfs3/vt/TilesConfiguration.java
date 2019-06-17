@@ -24,28 +24,24 @@ import java.util.Map;
 @JsonDeserialize(as = ModifiableTilesConfiguration.class)
 public abstract class TilesConfiguration implements ExtensionConfiguration {
 
-    public static final String EXTENSION_KEY = "tilesExtension";
-    public static final String EXTENSION_TYPE = "TILES";
+    @Value.Default
+    @Override
+    public boolean getEnabled() {
+        return false;
+    }
 
     @JsonMerge(value = OptBoolean.FALSE)
     @Nullable
     public abstract List<String> getFormats();
-    @Value.Immutable
-    @Value.Modifiable
-    @Value.Style(deepImmutablesDetection = true)
-    @JsonDeserialize(as = ImmutableMinMax.class)
-    public static abstract class MinMax{
-        public abstract int getMin();
-        public abstract int getMax();
-    }
+
     @Nullable
     public abstract Map<String,MinMax> getSeeding();
+
     @Nullable
     public abstract Map<String,MinMax> getZoomLevels();
 
-
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+    public TilesConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
 
         /*return ImmutableTilesConfiguration.builder()
                 .from(extensionConfigurationDefault)
@@ -54,4 +50,14 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
 
         return this; //TODO
     }
+
+    @Value.Immutable
+    @Value.Modifiable
+    @Value.Style(deepImmutablesDetection = true)
+    @JsonDeserialize(as = ImmutableMinMax.class)
+    public static abstract class MinMax{
+        public abstract int getMin();
+        public abstract int getMax();
+    }
+
 }

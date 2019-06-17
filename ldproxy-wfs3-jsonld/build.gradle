@@ -1,24 +1,9 @@
-version = '1.3.0'
-//version += '-SNAPSHOT'
+
+version = '1.4.0'
 
 dependencies {
-    compile project(":ldproxy-wfs3-api")
-    compile project(":ldproxy-wfs3-html")
-    //TODO
-    compile project(":ldproxy-wfs3-around-relations")
-    compile project(":ldproxy-wfs3-crs")
-    compile project(":ldproxy-wfs3-filter-transformer")
-    compile project(":ldproxy-wfs3-generalization")
-    compile project(":ldproxy-wfs3-geojson")
-    compile project(":ldproxy-wfs3-gml")
-    compile project(":ldproxy-wfs3-html")
-    compile project(":ldproxy-wfs3-oas30")
-    compile project(":ldproxy-wfs3-projections")
-    compile project(":ldproxy-wfs3-sitemaps")
-    compile project(":ldproxy-wfs3-transactional")
-    compile project(":ldproxy-wfs3-styles")
-    compile (project(":ldproxy-wfs3-vt")) {
-        exclude module: 'java-vector-tile'
-    }
+    provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-wfs3-html")
 
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
 }

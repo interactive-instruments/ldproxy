@@ -7,9 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.styles.representation;
 
-import de.ii.xsf.core.views.GenericView;
-
-import java.net.URI;
+import de.ii.xtraplatform.rest.views.GenericView;
 
 public class StyleView extends GenericView {
     public String styleUrl;

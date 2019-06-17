@@ -1,12 +1,11 @@
-version = '1.3.2'
-//version += '-SNAPSHOT'
+
+version = '1.4.0'
 
 dependencies {
-}
-
-jar {
-    manifest {
-        instructionFirst 'Import-Package', "!org.immutables.value"
-        instruction 'Import-Package', "*"
-    }
+    api group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-service-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-crs-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
 }

@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3.api;
 
 import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -44,6 +44,8 @@ public interface FeatureTransformationContext {
     List<Wfs3Link> getLinks();
 
     boolean isFeatureCollection();
+
+    boolean isHitsOnly();
 
     Wfs3RequestContext getWfs3Request();
 

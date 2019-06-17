@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -107,6 +108,11 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         //TODO if NESTED_OBJECT -> write to buffer until onFeatureEnd, somehow catch id and save to map
     }
 
+    protected String getPropertiesFieldName() {
+        return "properties";
+    }
+    protected int currentId = 1;
+
     @Override
     public void onProperty(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (!transformationContext.getState()
@@ -141,7 +147,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
             this.currentStarted = true;
 
             transformationContext.getJson()
-                                 .writeObjectFieldStart("properties");
+                                 .writeObjectFieldStart(getPropertiesFieldName());
         }
 
         //TODO if REFERENCE and EMBED
@@ -219,7 +225,12 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                     currentFieldMulti = false;
                 }
             }
-            writeValue(json, currentValue, currentMapping.getType());
+
+            //TODO
+            if (Objects.equals(currentMapping.getName(), "objectId")) {
+                json.writeNumber(currentId++);
+            }else
+                writeValue(json, currentValue, currentMapping.getType());
         }
     }
 
@@ -231,7 +242,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
             if (path.isEmpty() && lastPath.isEmpty()) {
                 return;
             }
-            LOGGER.debug("PATH {} {}", lastPath, path);
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("PATH {} {}", lastPath, path);
+            }
 
             /*final int[] increasedMultiplicityLevel = {0};
             final int[] current = {0};
@@ -295,7 +308,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                     multi = nestingTracker.getCurrentMultiplicityLevel(multiplicityKey);
                 }
                 if (!isMulti || multi == 1) {
-                    LOGGER.debug("FIELD {}", field);
+                    if (LOGGER.isTraceEnabled()) {
+                        LOGGER.trace("FIELD {}", field);
+                    }
                     //json.writeFieldName(field);
                     currentFieldName = field;
                 }

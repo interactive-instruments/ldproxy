@@ -8,13 +8,14 @@
 package de.ii.ldproxy.codelists;
 
 import com.google.common.net.UrlEscapers;
-import de.ii.xtraplatform.ogc.api.gml.parser.GMLDictionaryAnalyzer;
-import de.ii.xtraplatform.ogc.api.gml.parser.GMLDictionaryParser;
-import org.apache.http.HttpEntity;
+import de.ii.xtraplatform.ogc.parser.GMLDictionaryAnalyzer;
+import de.ii.xtraplatform.ogc.parser.GMLDictionaryParser;
 import org.codehaus.staxmate.SMInputFactory;
 import org.codehaus.staxmate.in.SMInputCursor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
 
 /**
  * @author zahnen
@@ -31,9 +32,9 @@ public class ImportGmlDictionary implements GMLDictionaryAnalyzer {
         this.gmlDictionaryParser = new GMLDictionaryParser(this, staxFactory);
     }
 
-    public void parse(HttpEntity entity, CodelistOld codelist) {
+    public void parse(InputStream inputStream, CodelistOld codelist) {
         this.codelist = codelist;
-        gmlDictionaryParser.parse(entity);
+        gmlDictionaryParser.parse(inputStream);
     }
 
     @Override

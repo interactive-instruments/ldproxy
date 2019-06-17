@@ -18,13 +18,9 @@ import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3Service2;
+import de.ii.ldproxy.wfs3.api.Wfs3Service;
 import de.ii.xtraplatform.auth.api.User;
-import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
-import de.ii.xtraplatform.feature.query.api.FeatureQuery;
-import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
+import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.service.api.Service;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -33,25 +29,20 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.threeten.extra.Interval;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.time.Instant;
-import java.time.format.DateTimeParseException;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
-import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS_URI;
+import java.util.AbstractMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author zahnen
@@ -98,7 +89,7 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     @Path("/")
     @GET
     public Response getCollections(@Auth Optional<User> optionalUser, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
-        Wfs3Service2 wfs3Service = (Wfs3Service2) service;
+        Wfs3Service wfs3Service = (Wfs3Service) service;
 
         checkAuthorization(wfs3Service.getData(), optionalUser);
 
@@ -111,7 +102,7 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     @Path("/{id}")
     @GET
     public Response getCollectionInfo(@Auth Optional<User> optionalUser, @PathParam("id") String id, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
-        Wfs3Service2 wfs3Service = (Wfs3Service2) service;
+        Wfs3Service wfs3Service = (Wfs3Service) service;
 
         checkAuthorization(wfs3Service.getData(), optionalUser);
 
@@ -130,21 +121,21 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     @Path("/{id}/items")
     @GET
     public Response getItems(@Auth Optional<User> optionalUser, @PathParam("id") String id, @HeaderParam("Range") String range, @Context Service service, @Context UriInfo uriInfo, @Context Wfs3RequestContext wfs3Request) {
-        checkAuthorization(((Wfs3Service2) service).getData(), optionalUser);
+        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        FeatureQuery query = wfs3Query.requestToFeatureQuery(((Wfs3Service2) service), id, range, toFlatMap(uriInfo.getQueryParameters()));
+        FeatureQuery query = wfs3Query.requestToFeatureQuery(((Wfs3Service) service), id, range, toFlatMap(uriInfo.getQueryParameters()));
 
-        return ((Wfs3Service2) service).getItemsResponse(wfs3Request, id, query);
+        return ((Wfs3Service) service).getItemsResponse(wfs3Request, id, query);
     }
 
     @Path("/{id}/items/{featureid}")
     @GET
     public Response getItem(@Auth Optional<User> optionalUser, @PathParam("id") String id, @PathParam("featureid") final String featureId, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context UriInfo uriInfo) {
-        checkAuthorization(((Wfs3Service2) service).getData(), optionalUser);
+        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        FeatureQuery query = wfs3Query.requestToFeatureQuery(((Wfs3Service2) service), id, toFlatMap(uriInfo.getQueryParameters()), featureId);
+        FeatureQuery query = wfs3Query.requestToFeatureQuery(((Wfs3Service) service), id, toFlatMap(uriInfo.getQueryParameters()), featureId);
 
-        return ((Wfs3Service2) service).getItemsResponse(wfs3Request, id, query);
+        return ((Wfs3Service) service).getItemsResponse(wfs3Request, id, query);
     }
 
     public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {

@@ -14,19 +14,17 @@ import java.util.Optional;
  */
 public interface Wfs3Extension {
 
-    default Optional<ExtensionConfiguration> getExtensionConfiguration(ExtendableConfiguration extendableConfiguration, String extensionKey) {
+    default <T extends ExtensionConfiguration> Optional<T> getExtensionConfiguration(ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
 
-        return Optional.ofNullable(extendableConfiguration.getExtensions()
-                .get(extensionKey));
+        return extendableConfiguration.getExtension(clazz);
     }
 
-    default Optional<ExtensionConfiguration> getExtensionConfiguration(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, String extensionKey) {
+    default <T extends ExtensionConfiguration> Optional<T> getExtensionConfiguration(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
 
-        Optional<ExtensionConfiguration> defaultExtensionConfiguration = Optional.ofNullable(defaultExtendableConfiguration.getExtensions()
-                .get(extensionKey));
+        Optional<T> defaultExtensionConfiguration = defaultExtendableConfiguration.getExtension(clazz);
 
-        Optional<ExtensionConfiguration> extensionConfiguration = Optional.ofNullable(extendableConfiguration.getExtensions()
-                .get(extensionKey));
+        Optional<T> extensionConfiguration = extendableConfiguration.getExtension(clazz);
+
         if (defaultExtensionConfiguration.isPresent() && !extensionConfiguration.isPresent()) {
             return defaultExtensionConfiguration;
         } else if (!defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
@@ -38,14 +36,13 @@ public interface Wfs3Extension {
         return Optional.empty();
     }
 
-    default boolean isExtensionEnabled(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, String extensionKey) {
+    default boolean isExtensionEnabled(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {
 
-        return getExtensionConfiguration(defaultExtendableConfiguration, extendableConfiguration, extensionKey).filter(ExtensionConfiguration::getEnabled).isPresent();
+        return getExtensionConfiguration(defaultExtendableConfiguration, extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
     }
 
-    default boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, String extensionKey) {
+    default boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {
 
-        return getExtensionConfiguration(extendableConfiguration, extensionKey).filter(ExtensionConfiguration::getEnabled).isPresent();
+        return getExtensionConfiguration(extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
     }
-
 }

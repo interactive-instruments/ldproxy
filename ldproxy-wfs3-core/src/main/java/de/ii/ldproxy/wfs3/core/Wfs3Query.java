@@ -9,12 +9,12 @@ package de.ii.ldproxy.wfs3.core;
 
 import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3Service2;
+import de.ii.ldproxy.wfs3.api.Wfs3Service;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
-import de.ii.xtraplatform.feature.query.api.FeatureQuery;
-import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
+import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -51,7 +51,7 @@ public class Wfs3Query {
         this.wfs3ExtensionRegistry = wfs3ExtensionRegistry;
     }
 
-    public FeatureQuery requestToFeatureQuery(Wfs3Service2 service, String featureType, Map<String, String> parameters, String featureId) {
+    public FeatureQuery requestToFeatureQuery(Wfs3Service service, String featureType, Map<String, String> parameters, String featureId) {
 
         for (Wfs3ParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(Wfs3ParameterExtension.class)) {
             parameters = parameterExtension.transformParameters(service.getData()
@@ -75,7 +75,7 @@ public class Wfs3Query {
         return queryBuilder.build();
     }
 
-    public FeatureQuery requestToFeatureQuery(Wfs3Service2 service, String featureType, String range, Map<String, String> parameters) {
+    public FeatureQuery requestToFeatureQuery(Wfs3Service service, String featureType, String range, Map<String, String> parameters) {
 
         final Map<String, String> filterableFields = service.getData()
                                                             .getFilterableFieldsForFeatureType(featureType);
@@ -133,7 +133,7 @@ public class Wfs3Query {
         return filters;
     }
 
-    private String getCQLFromFilters(Wfs3Service2 service, Map<String, String> filters, Map<String, String> filterableFields) {
+    private String getCQLFromFilters(Wfs3Service service, Map<String, String> filters, Map<String, String> filterableFields) {
         return filters.entrySet()
                       .stream()
                       .map(f -> {
@@ -155,7 +155,7 @@ public class Wfs3Query {
                       .collect(Collectors.joining(" AND "));
     }
 
-    private String bboxToCql(Wfs3Service2 service, String geometryField, String bboxValue) {
+    private String bboxToCql(Wfs3Service service, String geometryField, String bboxValue) {
         String[] bboxArray = bboxValue.split(",");
 
         String bboxCrs = bboxArray.length > 4 ? bboxArray[4] : null;

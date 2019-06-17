@@ -1,0 +1,86 @@
+
+configurations {
+    testBundles {
+        transitive = false
+    }
+}
+
+dependencies {
+    testBundles 'org.ow2.chameleon.testing:osgi-helpers:0.6.2'
+    testBundles 'com.google.code.findbugs:jsr305:3.0.2'
+
+    testImplementation group: 'de.interactive_instruments', name: 'xtraplatform-bundles-core', version: '1.2.5'
+    testImplementation subprojects
+
+    testImplementation group: 'org.testng', name: 'testng', version: '6.8.5'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '1.9.5'
+    testImplementation 'org.ow2.chameleon.testing:osgi-helpers:0.6.2'
+
+    testImplementation 'org.ops4j.pax.exam:pax-exam-container-native:4.11.0'
+    testImplementation 'org.ops4j.pax.exam:pax-exam-junit4:4.11.0'
+    testImplementation 'org.ops4j.pax.exam:pax-exam-link-mvn:4.11.0'
+    testImplementation 'org.ops4j.pax.exam:pax-exam-link-assembly:4.11.0'
+    testImplementation 'javax.inject:javax.inject:1'
+    testImplementation group: 'org.osgi', name: 'org.osgi.compendium', version: '5.0.0'
+    testImplementation group: 'org.apache.felix', name: 'org.apache.felix.framework', version: '5.6.8'
+}
+
+test {
+    //useTestNG()
+    options {
+        //includeGroups 'default'
+        /* if you want to run tests for debugging purposes that are not part
+        of the continuous integration, put them in the "debug"-group and
+        uncomment the following line just in your local working copy
+         */
+        //includeGroups 'debug'
+        //includeGroups 'performance'
+        //includeGroups 'integration'
+    }
+    testLogging.showStandardStreams = true
+    reports.html.enabled = true
+
+}
+
+task generateDependsFile {
+    // This is useful for the org.ops4j.pax.exam.CoreOptions.maven() stuff
+    File outputFileDir = project.file( 'build/classes/test/META-INF/maven/' )
+    File outputFile = new File( outputFileDir, 'dependencies.properties' )
+    outputs.file outputFile
+
+    doFirst {
+        outputFileDir.mkdirs()
+        Properties properties = new Properties();
+        String files = ""
+
+        // then for all our deps
+        project.configurations.bundles.resolvedConfiguration.resolvedArtifacts.each {
+            files += "${it.file.toURI().toString()},"
+        }
+        project.configurations.testBundles.resolvedConfiguration.resolvedArtifacts.each {
+            files += "${it.file.toURI().toString()},"
+        }
+        project.configurations.features.resolvedConfiguration.resolvedArtifacts.each {
+            files += "${it.file.toURI().toString()},"
+        }
+
+        properties.setProperty("bundles", files )
+
+        FileOutputStream outputStream = new FileOutputStream( outputFile );
+        try {
+            properties.store( outputStream, "Generated from Gradle for PaxExam testing" )
+        }
+        finally {
+            outputStream.close()
+        }
+    }
+}
+
+task copyTestResources(type: Copy) {
+    from "${projectDir}/src/test/resources"
+    into "${buildDir}/classes/test"
+}
+
+processTestResources.dependsOn copyTestResources
+tasks.test.dependsOn tasks.generateDependsFile

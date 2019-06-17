@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import de.ii.xsf.dropwizard.api.JacksonSubTypeIds;
+import de.ii.xtraplatform.dropwizard.api.JacksonSubTypeIds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +58,7 @@ public class DynamicTypeIdResolverMock  implements TypeIdResolver {
 
             @Override
             public TypeIdResolver typeIdResolverInstance(MapperConfig<?> config, Annotated annotated, Class<?> resolverClass) {
-                return new DynamicTypeIdResolverMock(new GeoJsonTargetMappingSubTypeIds() /*TODO , new Wfs3GenericMappingSubTypeIds(), new MicrodataMappingSubTypeIds(), new JsonLdMappingSubTypeIds()*/);
+                return new DynamicTypeIdResolverMock(new JacksonSubTypeIdsGeoJson() /*TODO , new Wfs3GenericMappingSubTypeIds(), new MicrodataMappingSubTypeIds(), new JsonLdMappingSubTypeIds()*/);
             }
         };
     }

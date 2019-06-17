@@ -14,8 +14,8 @@ import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
-import de.ii.xsf.configstore.api.KeyValueStore;
 import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.service.api.Service;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -24,7 +24,14 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -35,8 +42,6 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static de.ii.ldproxy.wfs3.styles.StylesConfiguration.EXTENSION_KEY;
 
 /**
  * creates, updates and deletes a style from the collection
@@ -62,23 +67,21 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
 
     @Override
     public List<String> getMethods() {
-        return ImmutableList.of("POST","PUT","DELETE");
+        return ImmutableList.of("POST", "PUT", "DELETE");
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        Optional<StylesConfiguration> stylesExtension = serviceData.getExtension(StylesConfiguration.class);
 
+        if (!stylesExtension.isPresent() || !stylesExtension.get()
+                                                            .getManagerEnabled()) {
             throw new NotFoundException();
         }
-        if(isExtensionEnabled(serviceData,EXTENSION_KEY)){
-            StylesConfiguration stylesExtension = (StylesConfiguration) serviceData.getExtensions().get(EXTENSION_KEY);
-            if(!stylesExtension.getManagerEnabled()){
-                throw new NotFoundException();
-            }
-        }
+
         return true;
     }
+
     /**
      * creates one style for the collection
      *
@@ -91,7 +94,9 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
+                                                 .getChildStore(service.getId())
+                                                 .getChildStore(collectionId);
 
         List<String> styles = stylesStore.getKeys();
 
@@ -100,32 +105,34 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
 
         JsonNode requestBodyJson = Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBodyString);
 
-        if(requestBodyJson == null || !Wfs3EndpointStylesManager.validateRequestBody(requestBodyJson))
+        if (requestBodyJson == null || !Wfs3EndpointStylesManager.validateRequestBody(requestBodyJson))
             throw new BadRequestException();
 
-        List <String> styleIds = new ArrayList<>();
-        for(String style: styles){
+        List<String> styleIds = new ArrayList<>();
+        for (String style : styles) {
             styleIds.add(style.split("\\.")[0]);
         }
 
-        String styleName = requestBodyJson.get("name").asText();
+        String styleName = requestBodyJson.get("name")
+                                          .asText();
         Pattern styleNamePattern = Pattern.compile("[^a-z0-9-_]", Pattern.CASE_INSENSITIVE);
         Matcher styleNameMatcher = styleNamePattern.matcher(styleName);
-        if(styleIds.contains(styleName) || styleName.contains(" ") || styleNameMatcher.find()){
-            int id=0;
+        if (styleIds.contains(styleName) || styleName.contains(" ") || styleNameMatcher.find()) {
+            int id = 0;
 
-            while(styleIds.contains(Integer.toString(id))){
+            while (styleIds.contains(Integer.toString(id))) {
                 id++;
             }
-            Wfs3EndpointStylesManager.putProcess(stylesStore,styles,Integer.toString(id),requestBodyString);
+            Wfs3EndpointStylesManager.putProcess(stylesStore, styles, Integer.toString(id), requestBodyString);
 
-        }
-        else{
-            Wfs3EndpointStylesManager.putProcess(stylesStore,styles,styleName,requestBodyString);
+        } else {
+            Wfs3EndpointStylesManager.putProcess(stylesStore, styles, styleName, requestBodyString);
         }
 
-        return Response.noContent().build();
+        return Response.noContent()
+                       .build();
     }
+
     /**
      * updates one specific style of the collection
      *
@@ -136,11 +143,13 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
     @Path("/{collectionId}/styles/{styleId}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response putStyleCollection(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpServletRequest request, InputStream requestBody){
+    public Response putStyleCollection(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpServletRequest request, InputStream requestBody) {
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
+                                                 .getChildStore(service.getId())
+                                                 .getChildStore(collectionId);
 
         List<String> styles = stylesStore.getKeys();
 
@@ -149,12 +158,13 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
 
         JsonNode requestBodyJson = Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBodyString);
 
-        if(requestBodyJson == null || !Wfs3EndpointStylesManager.validateRequestBody(requestBodyJson))
+        if (requestBodyJson == null || !Wfs3EndpointStylesManager.validateRequestBody(requestBodyJson))
             throw new BadRequestException();
 
-        Wfs3EndpointStylesManager.putProcess(stylesStore,styles,styleId,requestBodyString);
+        Wfs3EndpointStylesManager.putProcess(stylesStore, styles, styleId, requestBodyString);
 
-        return Response.noContent().build();
+        return Response.noContent()
+                       .build();
     }
 
 
@@ -167,16 +177,19 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
      */
     @Path("/{collectionId}/styles/{styleId}")
     @DELETE
-    public Response deleteStyleCollection(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service){
+    public Response deleteStyleCollection(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service) {
 
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles").getChildStore(service.getId()).getChildStore(collectionId);
+        KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
+                                                 .getChildStore(service.getId())
+                                                 .getChildStore(collectionId);
         List<String> styles = stylesStore.getKeys();
 
         Wfs3EndpointStylesManager.deleteProcess(stylesStore, styles, styleId);
 
-        return Response.noContent().build();
+        return Response.noContent()
+                       .build();
     }
 
 }

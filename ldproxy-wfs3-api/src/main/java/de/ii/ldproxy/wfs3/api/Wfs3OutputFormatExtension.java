@@ -18,14 +18,9 @@ import java.util.Optional;
 /**
  * @author zahnen
  */
-public interface Wfs3OutputFormatExtension extends Wfs3Extension {
+//TODO: split into metadata and features; might mean to also split Wfs3MediaType
+public interface Wfs3OutputFormatExtension extends Wfs3Extension, Wfs3FormatMetadataExtension {
     Wfs3MediaType getMediaType();
-
-    Response getConformanceResponse(List<Wfs3ConformanceClass> wfs3ConformanceClasses, String serviceLabel, Wfs3MediaType wfs3MediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix);
-
-    Response getDatasetResponse(Wfs3Collections wfs3Collections, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix, boolean isCollections);
-
-    Response getCollectionResponse(Wfs3Collection wfs3Collection, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String collectionName);
 
     default boolean canPassThroughFeatures() {
         return false;
@@ -43,7 +38,9 @@ public interface Wfs3OutputFormatExtension extends Wfs3Extension {
         return Optional.empty();
     }
 
-    Optional<TargetMappingProviderFromGml> getMappingGenerator();
+    default Optional<TargetMappingProviderFromGml> getMappingGenerator() {
+        return Optional.empty();
+    }
 
     default boolean isEnabledForService(Wfs3ServiceData serviceData){return true;}
 

@@ -14,6 +14,11 @@ import akka.stream.javadsl.RunnableGraph;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.StreamConverters;
 import akka.util.ByteString;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.MoreExecutors;
+import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.URICustomizer;
 import de.ii.ldproxy.wfs3.api.Wfs3Collection;
@@ -24,8 +29,8 @@ import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3Service2;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.wfs3.api.Wfs3StartupTask;
 import de.ii.ldproxy.wfs3.core.Wfs3Core;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
@@ -33,25 +38,23 @@ import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.entity.api.handler.Entity;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.MoreExecutors;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.*;
-import de.ii.xtraplatform.crs.api.*;
-import de.ii.xtraplatform.entity.api.handler.Entity;
-import de.ii.xtraplatform.feature.provider.wfs.FeatureProviderWfs;
-import de.ii.xtraplatform.feature.query.api.FeatureProvider;
-import de.ii.xtraplatform.feature.query.api.FeatureProviderRegistry;
-import de.ii.xtraplatform.feature.query.api.FeatureQuery;
-import de.ii.xtraplatform.feature.query.api.FeatureStream;
-import de.ii.xtraplatform.feature.transformer.api.*;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
+import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
+import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
+import de.ii.xtraplatform.feature.provider.api.FeatureStream;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
+import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
+import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.feature.transformer.geojson.GeoJsonStreamParser;
 import de.ii.xtraplatform.feature.transformer.geojson.MappingSwapper;
 import de.ii.xtraplatform.service.api.AbstractService;
 import de.ii.xtraplatform.service.api.Service;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.HandlerDeclaration;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,11 +65,11 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import javax.xml.namespace.QName;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,11 +77,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -93,7 +95,7 @@ import java.util.stream.Collectors;
 // needed to register the ConfigurationHandler when no other properties are set
 @HandlerDeclaration("<properties></properties>")
 
-public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements FeatureTransformerService2, Wfs3Service2 {
+public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements de.ii.ldproxy.wfs3.api.Wfs3Service {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3Service.class);
 
@@ -141,7 +143,15 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
     protected ImmutableWfs3ServiceData dataToImmutable(Wfs3ServiceData data) {
 
         //TODO
-        this.featureProvider = (TransformingFeatureProvider) featureProviderRegistry.createFeatureProvider(data.getFeatureProvider());
+        try {
+            this.featureProvider = (TransformingFeatureProvider) featureProviderRegistry.createFeatureProvider(data.getFeatureProvider());
+        } catch (IllegalStateException e) {
+            LOGGER.error("Service with id '{}' could not be created: {}", data.getId(), e.getMessage());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Exception:", e);
+            }
+        }
+
 
         ImmutableWfs3ServiceData serviceData;
 
@@ -269,6 +279,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
                                                                                                                                  .crsTransformer(crsTransformer)
                                                                                                                                  .links(links)
                                                                                                                                  .isFeatureCollection(isCollection)
+                                                                                                                                 .isHitsOnly(query.hitsOnly())
                                                                                                                                  .limit(query.getLimit())
                                                                                                                                  .offset(query.getOffset())
                                                                                                                                  .maxAllowableOffset(query.getMaxAllowableOffset());

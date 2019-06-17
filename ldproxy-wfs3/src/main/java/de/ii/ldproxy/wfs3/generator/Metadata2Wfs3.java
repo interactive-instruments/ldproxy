@@ -15,7 +15,7 @@ import de.ii.ldproxy.wfs3.api.ModifiableWfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.ModifiableWfs3ServiceMetadata;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
-import de.ii.xtraplatform.feature.query.api.AbstractFeatureProviderMetadataConsumer;
+import de.ii.xtraplatform.feature.provider.api.AbstractFeatureProviderMetadataConsumer;
 import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
 
 /**

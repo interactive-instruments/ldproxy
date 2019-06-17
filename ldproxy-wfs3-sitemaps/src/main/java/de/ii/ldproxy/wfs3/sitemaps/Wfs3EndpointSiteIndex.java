@@ -11,8 +11,7 @@ import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.ldproxy.wfs3.oas30.Oas30Configuration;
-import de.ii.xsf.core.server.CoreServerConfig;
+import de.ii.xtraplatform.server.CoreServerConfig;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.service.api.Service;
 import io.dropwizard.auth.Auth;
@@ -27,9 +26,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.*;
-
-import static de.ii.ldproxy.wfs3.sitemaps.SitemapsConfiguration.EXTENSION_KEY;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author zahnen
@@ -48,9 +49,10 @@ public class Wfs3EndpointSiteIndex implements Wfs3EndpointExtension {
     public String getPath() {
         return "sitemap_index.xml";
     }
+
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData){
-        if(!isExtensionEnabled(serviceData, EXTENSION_KEY)){
+    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+        if (!isExtensionEnabled(serviceData, SitemapsConfiguration.class)) {
             throw new NotFoundException();
         }
         return true;
@@ -61,9 +63,10 @@ public class Wfs3EndpointSiteIndex implements Wfs3EndpointExtension {
 
         Wfs3ServiceData serviceData = ((Wfs3Service) service).getData();
 
-        Set<String> collectionIds = serviceData.getFeatureTypes().keySet();
+        Set<String> collectionIds = serviceData.getFeatureTypes()
+                                               .keySet();
 
-        Map<String, Long> featureCounts = SitemapComputation.getFeatureCounts(collectionIds,((Wfs3Service) service).getFeatureProvider());
+        Map<String, Long> featureCounts = SitemapComputation.getFeatureCounts(collectionIds, ((Wfs3Service) service).getFeatureProvider());
         long totalFeatureCount = featureCounts.values()
                                               .stream()
                                               .mapToLong(i -> i)

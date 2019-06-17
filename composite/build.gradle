@@ -1,0 +1,4 @@
+task run {
+    dependsOn gradle.includedBuild('ldproxy').task(':run')
+}
+

@@ -16,11 +16,10 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(as = ModifiableGeneralizationConfiguration.class)
 public abstract class GeneralizationConfiguration implements ExtensionConfiguration {
-    public static final String EXTENSION_KEY = "generalizationExtension";
-    public static final String EXTENSION_TYPE = "GENERALIZATION";
 
+    @Value.Default
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return this;
+    public boolean getEnabled() {
+        return true;
     }
 }

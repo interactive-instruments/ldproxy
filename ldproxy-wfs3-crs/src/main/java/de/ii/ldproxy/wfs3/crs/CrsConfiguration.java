@@ -17,11 +17,9 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ModifiableCrsConfiguration.class)
 public abstract class CrsConfiguration implements ExtensionConfiguration {
 
-    public static final String EXTENSION_KEY = "crsExtension";
-    public static final String EXTENSION_TYPE = "CRS";
-
+    @Value.Default
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return this;
+    public boolean getEnabled() {
+        return true;
     }
 }

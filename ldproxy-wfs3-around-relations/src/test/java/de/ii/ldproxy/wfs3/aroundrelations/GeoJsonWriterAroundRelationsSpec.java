@@ -17,7 +17,6 @@ import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonWriter;
 import de.ii.ldproxy.target.geojson.ImmutableFeatureTransformationContextGeoJson;
 import de.ii.ldproxy.target.geojson.ModifiableStateGeoJson;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3Link;
@@ -27,10 +26,10 @@ import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfo;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfo;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableFeatureProviderDataWfs;
-import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
 import org.junit.runner.RunWith;
 
@@ -265,7 +264,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                            .serviceData(ImmutableWfs3ServiceData.builder()
                                                                                                 .id("s")
                                                                                                 .serviceType("WFS3")
-                                                                                                .featureProvider(ImmutableFeatureProviderDataWfs.builder()
+                                                                                                .featureProvider(new ImmutableFeatureProviderDataWfs.Builder()
                                                                                                                                                 .connectionInfo(ImmutableConnectionInfo.builder()
                                                                                                                                                                                        .uri(new URI("http://localhost"))
                                                                                                                                                                                        .method(ConnectionInfo.METHOD.GET)
@@ -277,16 +276,19 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                                                 .featureTypes(ImmutableMap.of("ft", ImmutableFeatureTypeConfigurationWfs3.builder()
                                                                                                                                                                          .id("ft")
                                                                                                                                                                          .label("ft")
-                                                                                                                                                                         .extent(ImmutableFeatureTypeExtent.builder().temporal(new TemporalExtent(0,0)).build())
-                                                                                                                                                                         .putExtensions(AroundRelationConfiguration.EXTENSION_KEY, ImmutableAroundRelationConfiguration.builder()
-                                                                                                                                                                                                                                                                       .addRelations(ImmutableRelation.builder()
-                                                                                                                                                                                                                                                                                                      .id("test1")
-                                                                                                                                                                                                                                                                                                      .label("test1")
-                                                                                                                                                                                                                                                                                                      .responseType("application/geo+json")
-                                                                                                                                                                                                                                                                                                      .urlTemplate("")
-                                                                                                                                                                                                                                                                                                      .build())
-                                                                                                                                                                                                                                                                       .enabled(true)
-                                                                                                                                                                                                                                                                       .build())
+                                                                                                                                                                         .extent(ImmutableFeatureTypeExtent.builder()
+                                                                                                                                                                                                           .temporal(new TemporalExtent(0, 0))
+                                                                                                                                                                                                           .build())
+                                                                                                                                                                         .addCapabilities(ImmutableAroundRelationsConfiguration.builder()
+                                                                                                                                                                                                                                    .enabled(true)
+                                                                                                                                                                                                                                    .addRelations(ImmutableRelation.builder()
+                                                                                                                                                                                                                                                                   .id("test1")
+                                                                                                                                                                                                                                                                   .label("test1")
+                                                                                                                                                                                                                                                                   .responseType("application/geo+json")
+                                                                                                                                                                                                                                                                   .urlTemplate("")
+                                                                                                                                                                                                                                                                   .build())
+                                                                                                                                                                                                                                    .enabled(true)
+                                                                                                                                                                                                                                    .build())
                                                                                                                                                                          .build()))
                                                                                                 .build())
                                                            .collectionName("ft")
@@ -314,6 +316,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                            .limit(10)
                                                            .offset(20)
                                                            .maxAllowableOffset(0)
+                                                           .isHitsOnly(false)
                                                            .state(ModifiableStateGeoJson.create())
                                                            .geoJsonConfig(new GeoJsonConfig())
                                                            .build();

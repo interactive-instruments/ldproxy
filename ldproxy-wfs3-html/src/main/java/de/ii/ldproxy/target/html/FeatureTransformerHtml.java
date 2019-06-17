@@ -12,7 +12,7 @@ import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.CodelistData;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.target.html.MicrodataMapping.MICRODATA_TYPE;
-import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationConfiguration;
+import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsConfiguration;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationResolver;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsQuery;
 import de.ii.ldproxy.wfs3.aroundrelations.SimpleAroundRelationResolver;
@@ -22,19 +22,12 @@ import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
-import de.ii.xtraplatform.feature.query.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import io.dropwizard.views.ViewRenderer;
-import org.commonmark.Extension;
-import org.commonmark.ext.gfm.tables.TablesExtension;
-import org.commonmark.node.Link;
-import org.commonmark.node.Paragraph;
-import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.CoreHtmlNodeRenderer;
-import org.commonmark.renderer.html.HtmlRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,11 +42,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalLong;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -294,7 +285,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                                  .isEmpty()) {
             currentFeature.additionalParams = "&relations=" + aroundRelationsQuery.getRelations()
                                                                   .stream()
-                                                                  .map(AroundRelationConfiguration.Relation::getId)
+                                                                  .map(AroundRelationsConfiguration.Relation::getId)
                                                                   .collect(Collectors.joining(",")) + "&resolve=true";
         }
     }

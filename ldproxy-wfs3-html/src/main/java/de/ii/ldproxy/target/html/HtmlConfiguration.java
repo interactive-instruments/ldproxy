@@ -16,11 +16,10 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(as = ModifiableHtmlConfiguration.class)
 public abstract class HtmlConfiguration implements ExtensionConfiguration {
-    public static final String EXTENSION_KEY = "htmlExtension";
-    public static final String EXTENSION_TYPE = "HTML";
 
+    @Value.Default
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return this;
+    public boolean getEnabled() {
+        return true;
     }
 }

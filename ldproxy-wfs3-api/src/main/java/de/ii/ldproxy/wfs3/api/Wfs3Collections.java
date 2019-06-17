@@ -27,7 +27,5 @@ public abstract class Wfs3Collections {
 
     public abstract List<Wfs3Collection> getCollections();
 
-    public abstract List<Wfs3Style> getStyles();
-
-
+    public abstract List<Map<String, Object>> getSections();
 }

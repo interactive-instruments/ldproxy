@@ -9,7 +9,6 @@ package de.ii.ldproxy.codelists;
 
 import de.ii.xtraplatform.entity.api.AbstractPersistentEntity;
 import de.ii.xtraplatform.entity.api.handler.Entity;
-import de.ii.xtraplatform.service.api.Service;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.HandlerDeclaration;
 import org.apache.felix.ipojo.annotations.Provides;

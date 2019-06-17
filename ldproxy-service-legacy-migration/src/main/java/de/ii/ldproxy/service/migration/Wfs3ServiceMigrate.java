@@ -18,29 +18,27 @@ import de.ii.ldproxy.target.html.MicrodataGeometryMapping;
 import de.ii.ldproxy.target.html.MicrodataMapping;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
 import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceData;
 import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.jsonld.Gml2JsonLdMappingProvider;
-import de.ii.xsf.configstore.api.KeyNotFoundException;
-import de.ii.xsf.configstore.api.KeyValueStore;
-import de.ii.xsf.dropwizard.api.Jackson;
-import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.dropwizard.api.Jackson;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfo;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfo;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableFeatureProviderDataWfs;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
+import de.ii.xtraplatform.kvstore.api.KeyNotFoundException;
+import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Requires;
@@ -205,7 +203,7 @@ public class Wfs3ServiceMigrate {
                 )
                 .featureProvider(
                         //TODO: providerType
-                        ImmutableFeatureProviderDataWfs.builder()
+                        new ImmutableFeatureProviderDataWfs.Builder()
                                                        .nativeCrs(new EpsgCrs((Integer) defaultCrs.get("code"), (Boolean) defaultCrs.get("longitudeFirst")))
                                                        .connectionInfo(
                                                                ImmutableConnectionInfo.builder()

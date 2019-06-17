@@ -294,7 +294,7 @@ public class GeoJsonWriterPropertiesSpec {
                                                            .serviceData(ImmutableWfs3ServiceData.builder()
                                                                                                 .id("s")
                                                                                                 .serviceType("WFS3")
-                                                                                                .featureProvider(ImmutableFeatureProviderDataWfs.builder()
+                                                                                                .featureProvider(new ImmutableFeatureProviderDataWfs.Builder()
                                                                                                                                                 .connectionInfo(ImmutableConnectionInfo.builder()
                                                                                                                                                                                        .uri(new URI("http://localhost"))
                                                                                                                                                                                        .method(ConnectionInfo.METHOD.GET)
@@ -327,6 +327,7 @@ public class GeoJsonWriterPropertiesSpec {
                                                            .limit(10)
                                                            .offset(20)
                                                            .maxAllowableOffset(0)
+                                                           .isHitsOnly(false)
                                                            .state(ModifiableStateGeoJson.create())
                                                            .geoJsonConfig(new GeoJsonConfig())
                                                            .build();

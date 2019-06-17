@@ -1,20 +1,16 @@
-version = '1.3.0'
-//version += '-SNAPSHOT'
+
+version = '1.4.0'
 
 dependencies {
-    compile project(":ldproxy-wfs3")
-    compile project(":ldproxy-wfs3-api")
-    compile project(":ldproxy-wfs3-core")
+    provided project(":ldproxy-wfs3")
+    provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-wfs3-core")
+    provided project(":ldproxy-wfs3-oas30")
 
-    testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
 
-    //provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-file', version: '1.1.2' api statt file
-
-}
-//
-jar {
-    manifest {
-        instructionFirst 'Import-Package', "!org.immutables.value"
-        instruction 'Import-Package', "*"
-    }
+    //TODO: to unit-tests.gradle or e2e-tests.gradle???
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }

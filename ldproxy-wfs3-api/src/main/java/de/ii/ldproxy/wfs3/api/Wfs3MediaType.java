@@ -10,6 +10,7 @@ package de.ii.ldproxy.wfs3.api;
 import org.immutables.value.Value;
 
 import javax.ws.rs.core.MediaType;
+import java.util.Optional;
 
 /**
  * @author zahnen
@@ -18,6 +19,8 @@ import javax.ws.rs.core.MediaType;
 public abstract class Wfs3MediaType {
 
     public abstract MediaType main();
+
+    public abstract Optional<MediaType> alternative();
 
     @Value.Default
     public MediaType metadata() {
@@ -45,7 +48,7 @@ public abstract class Wfs3MediaType {
     }
 
     public boolean matches(MediaType mediaType) {
-        return main().isCompatible(mediaType) || metadata().isCompatible(mediaType);
+        return main().isCompatible(mediaType) || metadata().isCompatible(mediaType) || alternative().map(mediaType1 -> mediaType1.isCompatible(mediaType)).orElse(false);
     }
 
 }

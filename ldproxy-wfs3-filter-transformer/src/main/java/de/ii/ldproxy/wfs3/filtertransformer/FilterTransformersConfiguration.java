@@ -23,14 +23,13 @@ import java.util.List;
 //TODO: also allow on global level (could we just use the same configuration there?)
 public abstract class FilterTransformersConfiguration implements ExtensionConfiguration {
 
-    public static final String EXTENSION_KEY = "filterTransformer";
-    public static final String EXTENSION_TYPE = "FILTER_TRANSFORMER";
-
-
     public abstract List<FilterTransformerConfiguration> getTransformers();
 
     @Override
     public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return ImmutableFilterTransformersConfiguration.builder().from(extensionConfigurationDefault).from(this).build(); //TODO
+        return ImmutableFilterTransformersConfiguration.builder()
+                                                       .from(extensionConfigurationDefault)
+                                                       .from(this)
+                                                       .build(); //TODO
     }
 }

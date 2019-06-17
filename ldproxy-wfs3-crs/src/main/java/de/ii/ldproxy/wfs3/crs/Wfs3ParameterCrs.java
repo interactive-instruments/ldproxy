@@ -12,7 +12,7 @@ import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
-import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS_URI;
-import static de.ii.ldproxy.wfs3.crs.CrsConfiguration.EXTENSION_KEY;
 
 /**
  * @author zahnen
@@ -39,7 +38,7 @@ public class Wfs3ParameterCrs implements Wfs3ParameterExtension {
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters, Wfs3ServiceData serviceData) {
 
-        if (!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+        if (!isExtensionEnabled(serviceData, CrsConfiguration.class)) {
             return parameters;
         }
 
@@ -55,7 +54,7 @@ public class Wfs3ParameterCrs implements Wfs3ParameterExtension {
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, ImmutableFeatureQuery.Builder queryBuilder, Map<String, String> parameters, Wfs3ServiceData serviceData) {
 
-        if(!isExtensionEnabled(serviceData,EXTENSION_KEY)){
+        if (!isExtensionEnabled(serviceData, CrsConfiguration.class)) {
             return queryBuilder;
         }
 

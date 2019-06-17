@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
-import de.ii.xtraplatform.feature.query.api.ImmutableFeatureQuery;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 
 import java.util.Map;
 

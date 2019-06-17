@@ -8,9 +8,9 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.google.common.base.Strings;
-import de.ii.xsf.cfgstore.api.BundleConfigDefault;
-import de.ii.xsf.cfgstore.api.ConfigPropertyDescriptor;
-import de.ii.xsf.cfgstore.api.handler.LocalBundleConfig;
+import de.ii.xtraplatform.cfgstore.api.BundleConfigDefault;
+import de.ii.xtraplatform.cfgstore.api.ConfigPropertyDescriptor;
+import de.ii.xtraplatform.cfgstore.api.handler.LocalBundleConfig;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -37,7 +37,9 @@ public class GeoJsonConfig extends BundleConfigDefault {
     static final String MULTIPLICITY = "multiplicity";
 
     public boolean isEnabled() {
-        return Strings.nullToEmpty(properties.get(ENABLED)).toLowerCase().equals("true");
+        return Strings.nullToEmpty(properties.get(ENABLED))
+                      .toLowerCase()
+                      .equals("true");
     }
 
     public FeatureTransformerGeoJson.NESTED_OBJECTS getNestedObjectStrategy() {

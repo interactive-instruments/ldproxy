@@ -48,34 +48,23 @@
             </div>
         </div>
 
-        {{#openApiUrl}}
+        {{#sections}}
             <div class="row my-3">
-                <div class="col-md-2 font-weight-bold">API Definition</div>
+                <div class="col-md-2 font-weight-bold">{{title}}</div>
                 <div class="col-md-10">
-                        <a itemprop="url" href="{{apiUrl}}">OpenAPI 3.0</a>
+                    <ul class="list-unstyled">
+                        {{#links}}
+                            <li>
+                                <a itemprop="url" href="{{url}}" {{#target}}target="{{.}}"{{/target}}>{{title}}</a>
+                            </li>
+                        {{/links}}
+                        {{^links}}
+                            <li>None</li>
+                        {{/links}}
+                    </ul>
                 </div>
             </div>
-        {{/openApiUrl}}
-
-
-
-    <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">Maps</div>
-            <div class="col-md-10">
-                <ul class="list-unstyled">
-
-
-                    {{#styles}}
-                         <li>
-                            <a itemprop="url" href="{{styleUrl}}" target="_blank">{{styleId}}</a>
-                        </li>
-                    {{/styles}}
-                    {{^styles}}
-                        <li>None</li>
-                    {{/styles}}
-                </ul>
-            </div>
-    </div>
+        {{/sections}}
 
         {{#dataSourceUrl}}
             <div class="row my-3">

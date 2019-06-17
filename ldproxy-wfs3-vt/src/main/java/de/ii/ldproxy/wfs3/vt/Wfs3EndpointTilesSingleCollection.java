@@ -50,7 +50,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -66,7 +65,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 /**
@@ -121,7 +119,7 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
 
     @Override
     public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, EXTENSION_KEY)) {
+        if (!isExtensionEnabled(serviceData, TilesConfiguration.class)) {
             throw new NotFoundException();
         }
         return true;
@@ -181,13 +179,13 @@ public class Wfs3EndpointTilesSingleCollection implements Wfs3EndpointExtension 
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> jsonTilingScheme = null;
         try {
-                jsonTilingScheme = mapper.readValue(new FileReader(file), new TypeReference<LinkedHashMap>() {
-                });
+            jsonTilingScheme = mapper.readValue(new FileReader(file), new TypeReference<LinkedHashMap>() {
+            });
 
-                jsonTilingScheme.put("links", wfs3Link);
+            jsonTilingScheme.put("links", wfs3Link);
 
-                return Response.ok(jsonTilingScheme)
-                               .build();
+            return Response.ok(jsonTilingScheme)
+                           .build();
         } catch (IOException e) {
             throw new NotFoundException();
         }

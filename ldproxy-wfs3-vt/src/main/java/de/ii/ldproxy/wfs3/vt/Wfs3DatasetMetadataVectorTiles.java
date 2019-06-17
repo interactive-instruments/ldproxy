@@ -7,16 +7,18 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import de.ii.ldproxy.wfs3.api.*;
-import de.ii.ldproxy.wfs3.core.Wfs3DatasetMetadataExtension;
+import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collections;
+import de.ii.ldproxy.wfs3.api.URICustomizer;
+import de.ii.ldproxy.wfs3.api.Wfs3Link;
+import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.wfs3.api.Wfs3DatasetMetadataExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.util.Collection;
 import java.util.List;
-
-import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 
 /**
  * add tiling information to the dataset metadata
@@ -25,15 +27,15 @@ import static de.ii.ldproxy.wfs3.vt.TilesConfiguration.EXTENSION_KEY;
 @Component
 @Provides
 @Instantiate
-public class Wfs3DatasetMetadataVectorTiles implements Wfs3DatasetMetadataExtension{
+public class Wfs3DatasetMetadataVectorTiles implements Wfs3DatasetMetadataExtension {
 
 
     @Override
-    public ImmutableWfs3Collections.Builder process(ImmutableWfs3Collections.Builder collections, URICustomizer uriCustomizer, Collection<FeatureTypeConfigurationWfs3> featureTypeConfigurationsWfs3, Wfs3ServiceData serviceData){
+    public ImmutableWfs3Collections.Builder process(ImmutableWfs3Collections.Builder collections, URICustomizer uriCustomizer, Collection<FeatureTypeConfigurationWfs3> featureTypeConfigurationsWfs3, Wfs3ServiceData serviceData) {
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        if(checkTilesEnabled(featureTypeConfigurationsWfs3,serviceData)){
-            List<Wfs3Link> wfs3Links=vectorTilesLinkGenerator.generateDatasetLinks(uriCustomizer);
+        if (checkTilesEnabled(featureTypeConfigurationsWfs3, serviceData)) {
+            List<Wfs3Link> wfs3Links = vectorTilesLinkGenerator.generateDatasetLinks(uriCustomizer);
             collections.addLinks(wfs3Links.get(0));
             collections.addLinks(wfs3Links.get(1));
         }
@@ -47,8 +49,8 @@ public class Wfs3DatasetMetadataVectorTiles implements Wfs3DatasetMetadataExtens
      * @return true if tiles extension enabled
      */
     private boolean checkTilesEnabled(Collection<FeatureTypeConfigurationWfs3> featureTypeConfigurationsWfs3, Wfs3ServiceData serviceData) { //check if endpoint is enabled
-        for(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3:featureTypeConfigurationsWfs3){
-            if(isExtensionEnabled(serviceData,featureTypeConfigurationWfs3, EXTENSION_KEY)){
+        for (FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3 : featureTypeConfigurationsWfs3) {
+            if (isExtensionEnabled(serviceData, featureTypeConfigurationWfs3, TilesConfiguration.class)) {
                 return true;
             }
         }
