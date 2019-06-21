@@ -227,7 +227,7 @@ public class Wfs3LinksGenerator {
                                              .href(uriBuilder
                                                      .setParameter("f", mediaType.parameter())
                                                      .toString())
-                                             .rel("item")
+                                             .rel("items")
                                              .type(mediaType.main()
                                                             .toString())
                                              .description(collectionName)

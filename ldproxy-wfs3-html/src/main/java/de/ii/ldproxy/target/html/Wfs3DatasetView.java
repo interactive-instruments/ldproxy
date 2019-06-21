@@ -138,7 +138,7 @@ public class Wfs3DatasetView extends View {
                           .stream()
                           .flatMap(wfs3Collection -> wfs3Collection.getLinks()
                                                                    .stream())
-                          .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "item") && !Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
+                          .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "items") && !Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
                                                                                                                                                              .toString()))
                           .map(wfs3Link -> new Distribution(wfs3Link.getTitle(), wfs3Link.getType(), wfs3Link.getHref()))
                           .collect(Collectors.toList());
@@ -191,7 +191,7 @@ public class Wfs3DatasetView extends View {
         public String getUrl() {
             return this.getLinks()
                        .stream()
-                       .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "item") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
+                       .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "items") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
                                                                                                                                                           .toString()))
                        .map(Wfs3Link::getHref)
                        .findFirst()

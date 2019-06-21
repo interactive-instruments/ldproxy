@@ -64,6 +64,11 @@ public class Wfs3Core {
     public Wfs3Collections createCollections(Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer) {
         final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
 
+        String title = serviceData.getLabel();
+
+        String description = serviceData.getDescription()
+                                        .orElse("");
+
         List<Wfs3Collection> collections = serviceData.getFeatureTypes()
                 .values()
                 .stream()
@@ -91,14 +96,13 @@ public class Wfs3Core {
         ImmutableWfs3Collections.Builder dataset = ImmutableWfs3Collections.builder()
                 .collections(collections)
                 .crs(crs)
+                .title(title)
+                .description(description)
                 .links(wfs3Links);
-
-
 
         for (Wfs3DatasetMetadataExtension wfs3DatasetMetadataExtension: getDatasetExtenders()) {
             dataset = wfs3DatasetMetadataExtension.process(dataset,  uriCustomizer.copy(), serviceData.getFeatureTypes().values(),serviceData);
         }
-
 
         return dataset.build();
 

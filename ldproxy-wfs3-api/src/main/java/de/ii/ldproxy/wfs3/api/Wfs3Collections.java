@@ -23,6 +23,10 @@ public abstract class Wfs3Collections {
 
     public abstract List<Wfs3Link> getLinks();
 
+    public abstract String getTitle();
+
+    public abstract String getDescription();
+
     public abstract List<String> getCrs();
 
     public abstract List<Wfs3Collection> getCollections();

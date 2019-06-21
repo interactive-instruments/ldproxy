@@ -611,7 +611,7 @@
                         "example": [
                             {
                                 "href": "http://data.example.org/collections/buildings/items",
-                                "rel": "item",
+                                "rel": "items",
                                 "type": "application/geo+json",
                                 "title": "Buildings"
                             },
