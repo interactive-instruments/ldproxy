@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -21,7 +21,9 @@ import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderMetadataConsumer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
 import de.ii.xtraplatform.feature.provider.api.MultiFeatureProviderMetadataConsumer;
+import de.ii.xtraplatform.feature.provider.wfs.ModifiableFeatureProviderDataWfs;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService2;
+import de.ii.xtraplatform.feature.transformer.api.ImmutableMappingStatus;
 import de.ii.xtraplatform.feature.transformer.api.MappingStatus;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
@@ -112,7 +114,8 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
             wfs3ConformanceClassRegistry.getExtensions()
                                         .stream()
                                         .filter(wfs3Extension -> wfs3Extension instanceof Wfs3CapabilityExtension)
-                                        .sorted(Comparator.comparing(wfs3Extension -> wfs3Extension.getClass().getSimpleName()))
+                                        .sorted(Comparator.comparing(wfs3Extension -> wfs3Extension.getClass()
+                                                                                                   .getSimpleName()))
                                         .map(wfs3Extension -> (Wfs3CapabilityExtension) wfs3Extension)
                                         .forEach(wfs3Capability -> {
                                             wfs3ServiceData.addCapabilities(wfs3Capability.getDefaultConfiguration());
@@ -204,6 +207,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
                         //TODO: getSchema(partialData.getFeatureProvider(), getMappingProviders(), FeatureProviderSchemaConsumer... additionalConsumers)
                         schemaAware.getSchema(((TransformingFeatureProvider.DataGenerator) dataGenerator).getMappingGenerator(partialData.getFeatureProvider(), getMappingProviders()), partialData.getFeatureProvider()
                                                                                                                                                                                                    .getFeatureTypes(), taskContext);
+
 
                         try {
                             new EntityRepositoryForType(entityRepository, Service.ENTITY_TYPE).replaceEntity(partialData);

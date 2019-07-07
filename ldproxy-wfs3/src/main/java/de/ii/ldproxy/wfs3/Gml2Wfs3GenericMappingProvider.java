@@ -66,7 +66,8 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
     }
 
     @Override
-    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, GML_TYPE type) {
+    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, GML_TYPE type,
+                                                     boolean isMultiple) {
 
         GENERIC_TYPE dataType = GENERIC_TYPE.forGmlType(type);
 

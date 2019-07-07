@@ -64,7 +64,8 @@ public class Gml2MicrodataMappingProvider implements TargetMappingProviderFromGm
     }
 
     @Override
-    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, GML_TYPE type) {
+    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, GML_TYPE type,
+                                                     boolean isMultiple) {
 
         MICRODATA_TYPE dataType = MICRODATA_TYPE.forGmlType(type);
 

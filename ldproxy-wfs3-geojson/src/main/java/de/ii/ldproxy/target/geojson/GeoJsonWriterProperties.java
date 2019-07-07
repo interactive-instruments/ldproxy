@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeoJsonWriterProperties.class);
 
-    private final JsonNestingStrategy nestingStrategy;
+    private JsonNestingStrategy nestingStrategy;
     private final StringBuilder stringBuilder = new StringBuilder();
     private List<String> lastPath = new ArrayList<>();
     private Map<String, Integer> currentMultiplicities = new HashMap<>();
@@ -50,8 +51,8 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
     private JsonNestingTracker nestingTracker;
 
     public GeoJsonWriterProperties() {
-        this.nestingStrategy = new JsonNestingStrategyNestArray();
-        this.nestingTracker = new JsonNestingTracker(nestingStrategy);
+        //this.nestingStrategy = JsonNestingStrategyFactory.getNestingStrategy();
+        //this.nestingTracker = new JsonNestingTracker(nestingStrategy);
     }
 
     @Override
@@ -75,16 +76,25 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
     }*/
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onStart(FeatureTransformationContextGeoJson transformationContext,
+                        Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         //reset();
+
+        this.nestingStrategy = JsonNestingStrategyFactory.getNestingStrategy(transformationContext.getGeoJsonConfig()
+                                                                                                  .getNestedObjectStrategy(), transformationContext.getGeoJsonConfig()
+                                                                                                                                                   .getMultiplicityStrategy());
+        this.nestingTracker = new JsonNestingTracker(nestingStrategy);
 
         next.accept(transformationContext);
     }
 
     @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
+                             Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
 
-        writePropertyName(transformationContext.getJson(), "", ImmutableList.of(), NESTED_OBJECTS.NEST);
+        writePropertyName(transformationContext.getJson(), "", ImmutableList.of(), transformationContext.getGeoJsonConfig()
+                                                                                                        .getNestedObjectStrategy(), transformationContext.getGeoJsonConfig()
+                                                                                                                                                         .getMultiplicityStrategy());
         this.currentMultiplicities = new HashMap<>();
         this.nestingTracker = new JsonNestingTracker(nestingStrategy);
 
@@ -98,33 +108,64 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         }
 
 
-
         // next chain for extensions
         next.accept(transformationContext);
     }
 
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
+                               Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         //TODO if NESTED_OBJECT -> write to buffer until onFeatureEnd, somehow catch id and save to map
     }
 
     protected String getPropertiesFieldName() {
         return "properties";
     }
-    protected int currentId = 1;
 
-    @Override
-    public void onProperty(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (!transformationContext.getState()
-                                  .getCurrentMapping()
-                                  .isPresent()
+    protected boolean shouldSkipProperty(FeatureTransformationContextGeoJson transformationContext) {
+        return !hasMappingAndValue(transformationContext)
+                || !propertyIsInFields(transformationContext, transformationContext.getState()
+                                                                                   .getCurrentMapping()
+                                                                                   .get()
+                                                                                   .getName())
                 || transformationContext.getState()
                                         .getCurrentMapping()
                                         .get()
-                                        .getType() == GEO_JSON_TYPE.ID
-                || !transformationContext.getState()
-                                         .getCurrentValue()
-                                         .isPresent()) return;
+                                        .getType() == GEO_JSON_TYPE.ID;
+    }
+
+    protected boolean hasMappingAndValue(FeatureTransformationContextGeoJson transformationContext) {
+        return transformationContext.getState()
+                                    .getCurrentMapping()
+                                    .isPresent()
+                && transformationContext.getState()
+                                        .getCurrentValue()
+                                        .isPresent();
+    }
+
+    protected boolean propertyIsInFields(FeatureTransformationContextGeoJson transformationContext,
+                                         String... properties) {
+        return transformationContext.getFields()
+                                    .isEmpty()
+                || transformationContext.getFields()
+                                        .contains("*")
+                || transformationContext.getFields()
+                                        .stream()
+                                        .anyMatch(field -> Arrays.asList(properties)
+                                                                 .contains(field));
+    }
+
+    protected void triggerAdditionalIdHandling(JsonGenerator json, String currentValue) throws IOException {
+    }
+
+    protected String getIdFieldName(String name) {
+        return name;
+    }
+
+    @Override
+    public void onProperty(FeatureTransformationContextGeoJson transformationContext,
+                           Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+        if (shouldSkipProperty(transformationContext)) return;
 
         final GeoJsonPropertyMapping currentMapping = (GeoJsonPropertyMapping) transformationContext.getState()
                                                                                                     .getCurrentMapping()
@@ -153,10 +194,6 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         //TODO if REFERENCE and EMBED
         // - extract id, write buffer from map
 
-
-        writePropertyName(json, currentMapping.getName(), multiplicities, nestedObjectStrategy);
-
-
         if (currentMapping.getType() == GEO_JSON_TYPE.STRING && currentMapping.getFormat() != null && !currentMapping.getFormat()
                                                                                                                      .isEmpty()) {
             //TODO serviceUrl to StringTemplateFilters, additionalSubstitutions
@@ -184,148 +221,83 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
             if (more) {
                 this.currentFormatter = formattedValue;
                 return;
-            } /*else {
-                currentFormatter = null;
+            } else {
+                currentValue = formattedValue;
+                this.currentFormatter = null;
             }
-
-
-            boolean more = false;
-            if (currentFormatter == null) {
-                currentFormatter = currentMapping.getFormat()
-                                                 .replace("{{serviceUrl}}", transformationContext.getServiceUrl());
-            }
-
-            //TODO: shouldn't we replace {{currentFieldName}} with current value?
-            int subst = currentFormatter.indexOf("}}");
-            if (subst > -1) {
-                currentFormatter = currentFormatter.substring(0, currentFormatter.indexOf("{{")) + currentValue + currentFormatter.substring(subst + 2);
-                more = currentFormatter.contains("}}");
-            }
-
-            if (more) {
-                return;
-            }*/ else {
-                if (currentFieldName != null) {
-                    json.writeFieldName(currentFieldName);
-                    currentFieldName = null;
-                    if (currentFieldMulti) {
-                        json.writeStartArray();
-                        currentFieldMulti = false;
-                    }
-                }
-                json.writeString(formattedValue);
-                currentFormatter = null;
-            }
-        } else {
-            if (currentFieldName != null) {
-                json.writeFieldName(currentFieldName);
-                currentFieldName = null;
-                if (currentFieldMulti) {
-                    json.writeStartArray();
-                    currentFieldMulti = false;
-                }
-            }
-
-            //TODO
-            if (Objects.equals(currentMapping.getName(), "objectId")) {
-                json.writeNumber(currentId++);
-            }else
-                writeValue(json, currentValue, currentMapping.getType());
         }
+
+        if (currentMapping.getType() == GEO_JSON_TYPE.ID) {
+            triggerAdditionalIdHandling(json, currentValue);
+            writePropertyName(json, getIdFieldName(currentMapping.getName()), multiplicities, nestedObjectStrategy, multiplicityStrategy);
+        } else {
+            writePropertyName(json, currentMapping.getName(), multiplicities, nestedObjectStrategy, multiplicityStrategy);
+        }
+
+
+        writeValue(json, currentValue, currentMapping.getType());
     }
 
-    private void writePropertyName(JsonGenerator json, String name, List<Integer> multiplicities, NESTED_OBJECTS nestedObjectStrategy) throws IOException {
+    private void writePropertyName(JsonGenerator json, String name, List<Integer> multiplicities,
+                                   NESTED_OBJECTS nestedObjectStrategy,
+                                   MULTIPLICITY multiplicityStrategy) throws IOException {
+
+        List<String> path = Splitter.on('.')
+                                    .omitEmptyStrings()
+                                    .splitToList(Strings.nullToEmpty(name));
+        if (path.isEmpty() && lastPath.isEmpty()) {
+            return;
+        }
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("PATH {} {}", lastPath, path);
+        }
+
+        boolean doNotCloseValueArray = currentFieldMulti;
+        nestingTracker.track(path, multiplicities, json, doNotCloseValueArray);
+        currentFieldMulti = false;
+
         if (nestedObjectStrategy == NESTED_OBJECTS.NEST) {
-            List<String> path = Splitter.on('.')
-                                        .omitEmptyStrings()
-                                        .splitToList(Strings.nullToEmpty(name));
-            if (path.isEmpty() && lastPath.isEmpty()) {
-                return;
-            }
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("PATH {} {}", lastPath, path);
-            }
-
-            /*final int[] increasedMultiplicityLevel = {0};
-            final int[] current = {0};
-            path.stream()
-                .filter(element -> element.contains("[")) //&& !(path.indexOf(element) == path.size() - 1)
-                //.map(element -> element.substring(element.indexOf("[") + 1, element.indexOf("]")))
-
-                .forEach(element -> {
-                    String multiplicity = element.substring(element.indexOf("[") + 1, element.indexOf("]"));
-                    boolean isObject = !(path.indexOf(element) == path.size() - 1);
-
-                    int currentMultiplicity = multiplicities.size() > current[0] ? multiplicities.get(current[0]) : 1;
-                    currentMultiplicities.putIfAbsent(multiplicity, currentMultiplicity);
-                    LOGGER.debug("{} {} {}", multiplicity, currentMultiplicity, currentMultiplicities.get(multiplicity));
-                    if (!Objects.equals(currentMultiplicities.get(multiplicity), currentMultiplicity)) {
-                        if (isObject) {
-                            increasedMultiplicityLevel[0]++;
-                        }
-                        currentMultiplicities.put(multiplicity, currentMultiplicity);
-                    }
-                    current[0]++;
-                });*/
-
-            boolean doNotCloseValueArray = currentFieldMulti;
-            nestingTracker.track(path, multiplicities, json, doNotCloseValueArray);
-            currentFieldMulti = false;
-
-            // find index where lastPath and path start to differ
-            /*int i;
-            for (i = 0; i < lastPath.size() && i < path.size(); i++) {
-                if (!Objects.equals(lastPath.get(i), path.get(i))) break;
-            }
-
-            //close nested objects as well as arrays for multiplicities
-            for (int j = lastPath.size() - 1; j >= i; j--) {
-                closeArrayAndOrObject(json, lastPath.get(j), j < lastPath.size() - 1, lastPath.get(j)
-                                                                                              .contains("["));
-            }
-
-            // open nested objects as well as arrays for multiplicities
-            for (int j = i; j < path.size() - 1; j++) {
-                openArrayAndOrObject(json, path.get(j));
-            }
-
-            //TODO: multilevel
-            // close and open on changed multiplicities
-            for (int j = 0; j < increasedMultiplicityLevel[0]; j++) {
-                LOGGER.debug("MULTI {}", j);
-                json.writeEndObject();
-                json.writeStartObject();
-            }*/
 
             // write field name
-            if (!path.isEmpty()) {
-                String field = path.get(path.size() - 1);
-                boolean isMulti = field.contains("[");
-                int multi = 0;
-                if (isMulti) {
-                    String multiplicityKey = field.substring(field.indexOf("[") + 1, field.indexOf("]"));
-                    field = field.substring(0, field.indexOf("["));
-                    multi = nestingTracker.getCurrentMultiplicityLevel(multiplicityKey);
-                }
-                if (!isMulti || multi == 1) {
-                    if (LOGGER.isTraceEnabled()) {
-                        LOGGER.trace("FIELD {}", field);
-                    }
-                    //json.writeFieldName(field);
-                    currentFieldName = field;
-                }
-                if (isMulti && multi == 1) {
-                    //json.writeStartArray();
-                    currentFieldMulti = true;
-                }
+            /*String field = path.get(path.size() - 1);
+            boolean isMulti = field.contains("[");
+            int multi = 0;
+            if (isMulti) {
+                String multiplicityKey = field.substring(field.indexOf("[") + 1, field.indexOf("]"));
+                field = field.substring(0, field.indexOf("["));
+                multi = nestingTracker.getCurrentMultiplicityLevel(multiplicityKey);
             }
+            if (!isMulti || multi == 1) {
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("FIELD {}", field);
+                }
+                //json.writeFieldName(field);
+                currentFieldName = field;
+            }
+            if (isMulti && multi == 1) {
+                //json.writeStartArray();
+                currentFieldMulti = true;
+            }*/
 
             lastPath = path; //path.size() > 0 ? path.subList(0, path.size() - 1) : path;
             //currentPath2 = path;
         } else {
-            //json.writeFieldName(field);
-            currentFieldName = name;
+            if (name.contains("[")) {
+                currentFieldMulti = true;
+            }
+            currentFieldName = name.replaceAll("\\[\\]", "");
         }
+
+        /*if (currentFieldName != null) {
+            json.writeFieldName(currentFieldName);
+            currentFieldName = null;
+            if (currentFieldMulti) {
+                if (multiplicityStrategy == MULTIPLICITY.ARRAY) {
+                    json.writeStartArray();
+                }
+                currentFieldMulti = false;
+            }
+        }*/
     }
 
     private void openArrayAndOrObject(JsonGenerator json, String name) throws IOException {
@@ -338,7 +310,8 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         }
     }
 
-    private void closeArrayAndOrObject(JsonGenerator json, String name, boolean isObject, boolean isMulti) throws IOException {
+    private void closeArrayAndOrObject(JsonGenerator json, String name, boolean isObject,
+                                       boolean isMulti) throws IOException {
         LOGGER.debug("CLOSE {} isObject={} isMulti={}", name, isObject, isMulti);
         if (isObject) {
             json.writeEndObject();
@@ -356,6 +329,20 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                                        .equals("t") || value.toLowerCase()
                                                             .equals("true") || value.equals("1"));
                 break;
+            case INTEGER:
+                try {
+                    json.writeNumber(Long.parseLong(value));
+                    break;
+                } catch (NumberFormatException e) {
+                    //ignore
+                }
+            case DOUBLE:
+                try {
+                    json.writeNumber(Double.parseDouble(value));
+                    break;
+                } catch (NumberFormatException e2) {
+                    //ignore
+                }
             case NUMBER:
                 try {
                     json.writeNumber(Long.parseLong(value));

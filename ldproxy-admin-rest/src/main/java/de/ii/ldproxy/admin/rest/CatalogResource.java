@@ -39,8 +39,6 @@ package de.ii.ldproxy.admin.rest;
 
 import com.fasterxml.aalto.stax.InputFactoryImpl;
 import de.ii.xtraplatform.api.MediaTypeCharset;
-import de.ii.xtraplatform.api.permission.Auth;
-import de.ii.xtraplatform.api.permission.AuthenticatedUser;
 import de.ii.xtraplatform.ogc.csw.parser.ExtractWFSUrlsFromCSW;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -71,7 +69,7 @@ public class CatalogResource {
 
 
     @GET
-    public Collection<String> parseCatalogPost(@Auth(required = false) AuthenticatedUser user, @QueryParam("url") String url) {
+    public Collection<String> parseCatalogPost(/*@Auth(required = false) AuthenticatedUser user,*/ @QueryParam("url") String url) {
         LOGGER.debug("CATALOG {}", url);
         ExtractWFSUrlsFromCSW urlsFromCSW = new ExtractWFSUrlsFromCSW(new DefaultHttpClient(), new SMInputFactory(new InputFactoryImpl()));
 

@@ -121,6 +121,7 @@ public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3Output
         return Optional.of(new FeatureTransformerGeoJson(ImmutableFeatureTransformationContextGeoJson.builder()
                                                                                                      .from(transformationContext)
                                                                                                      .geoJsonConfig(geoJsonConfig)
+                                                                                                     .debugJson(true)
                                                                                                      .build(), geoJsonWriters));
     }
 

@@ -22,7 +22,7 @@ public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
         POINT(SimpleFeatureGeometry.POINT, SimpleFeatureGeometry.MULTI_POINT),
         LINE_STRING(SimpleFeatureGeometry.LINE_STRING, SimpleFeatureGeometry.MULTI_LINE_STRING),
         POLYGON(SimpleFeatureGeometry.POLYGON, SimpleFeatureGeometry.MULTI_POLYGON),
-        GENERIC(/*GML_GEOMETRY_TYPE.GEOMETRY, GML_GEOMETRY_TYPE.ABSTRACT_GEOMETRY*/),
+        GENERIC(SimpleFeatureGeometry.ANY),
         NONE();
 
         private SimpleFeatureGeometry[] gmlTypes;
@@ -59,6 +59,7 @@ public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
                     simpleFeatureGeometry = SimpleFeatureGeometry.POLYGON;
                     break;
                 case GENERIC:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.ANY;
                     break;
                 case NONE:
                     break;

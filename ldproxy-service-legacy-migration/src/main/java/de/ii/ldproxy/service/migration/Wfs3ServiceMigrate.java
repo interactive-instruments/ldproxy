@@ -227,7 +227,7 @@ public class Wfs3ServiceMigrate {
 
                                                                            FeatureTypeMapping oldFt = wfs3ServiceData != null ? wfs3ServiceData.getFeatureProvider().getMappings().get(fid) : null;
 
-                                                                           ImmutableFeatureTypeMapping newMappings = ImmutableFeatureTypeMapping.builder()
+                                                                           ImmutableFeatureTypeMapping newMappings = new ImmutableFeatureTypeMapping.Builder()
                                                                                                                                                 .mappings(
                                                                                                                                                         mappings
                                                                                                                                                                 .entrySet()

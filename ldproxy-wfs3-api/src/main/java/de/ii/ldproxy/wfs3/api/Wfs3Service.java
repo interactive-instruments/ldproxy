@@ -14,6 +14,7 @@ import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService2;
 
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 /**
  * @author zahnen
@@ -23,5 +24,11 @@ public interface Wfs3Service extends FeatureTransformerService2 {
 
     Response getItemsResponse(Wfs3RequestContext wfs3Request, String collectionName, FeatureQuery query);
 
+    Response getItemsResponse(Wfs3RequestContext wfs3Request, String collectionName, FeatureQuery query,
+                              Wfs3OutputFormatExtension outputFormat);
+
     BoundingBox transformBoundingBox(BoundingBox bbox) throws CrsTransformationException;
+
+    List<List<Double>> transformCoordinates(List<List<Double>> coordinates,
+                                            EpsgCrs crs) throws CrsTransformationException;
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,57 +8,120 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.google.common.base.Joiner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author zahnen
  */
 public class JsonNestingStrategyFlattenSuffix implements JsonNestingStrategy {
 
-    private List<String> currentPath = new ArrayList<>();
-    private List<Integer> currentArraySuffix = new ArrayList<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonNestingStrategyFlattenSuffix.class);
+    private static final Joiner JOINER = Joiner.on('.')
+                                               .skipNulls();
+
+    private Map<String, Integer> currentMultiplicities = new HashMap<>();
+    private final List<String> currentFieldName;
+    private final List<String> lastFieldName;
+
+    public JsonNestingStrategyFlattenSuffix() {
+        this.currentFieldName = new ArrayList<>();
+        this.lastFieldName = new ArrayList<>();
+    }
 
     //biotoptyp.1.zusatzbezeichnung.2.zusatzcode.1
 
     @Override
+    public void openField(JsonGenerator json, String key) throws IOException {
+        saveFieldName(key);
+    }
+
+    @Override
     public void openObjectInArray(JsonGenerator json, String key) throws IOException {
-        json.writeStartObject();
-        Integer count = currentArraySuffix.remove(currentArraySuffix.size() - 1);
-        currentArraySuffix.add(count+1);
+
     }
 
     @Override
     public void openArray(JsonGenerator json) throws IOException {
-        json.writeStartArray();
+        if (!currentFieldName.isEmpty()) {
+            currentMultiplicities.compute(currentFieldName.get(currentFieldName.size() - 1), (k, v) -> (v == null) ? 1 : v + 1);
+        }
     }
 
     @Override
     public void openObject(JsonGenerator json, String key) throws IOException {
-        json.writeObjectFieldStart(key);
+        saveFieldName(key);
     }
 
     @Override
     public void openArray(JsonGenerator json, String key) throws IOException {
-        json.writeArrayFieldStart(key);
-        currentPath.add(key);
-        currentArraySuffix.add(0);
+        saveFieldName(key);
+        currentMultiplicities.compute(key, (k, v) -> (v == null) ? 1 : v + 1);
     }
 
     @Override
     public void closeObject(JsonGenerator json) throws IOException {
-        json.writeEndObject();
     }
 
     @Override
     public void closeArray(JsonGenerator json) throws IOException {
-        json.writeEndArray();
     }
 
     @Override
-    public void open(JsonGenerator json) throws IOException {
+    public void open(JsonGenerator json, int nextPathDiffersAt) throws IOException {
 
+        if (currentFieldName.isEmpty() && lastFieldName.size() - 1 == nextPathDiffersAt) {
+            //value multiplicity change
+            currentMultiplicities.compute(lastFieldName.get(lastFieldName.size() - 1), (k, v) -> (v == null) ? 1 : v + 1);
+        } else {
+            //reset multiplicities for closed elements
+            for (int i = nextPathDiffersAt; i < lastFieldName.size(); i++) {
+                currentMultiplicities.remove(lastFieldName.get(i));
+            }
+        }
+
+        writeFieldName(json, nextPathDiffersAt);
+
+        lastFieldName.clear();
+        lastFieldName.addAll(currentFieldName);
+        currentFieldName.clear();
+    }
+
+    private void saveFieldName(String element) {
+        if (Objects.nonNull(element)) {
+            currentFieldName.add(element);
+        }
+    }
+
+    private void writeFieldName(JsonGenerator json, int nextPathDiffersAt) throws IOException {
+        if (currentFieldName.isEmpty() && lastFieldName.size() - 1 == nextPathDiffersAt) {
+            //value multiplicity change
+            currentFieldName.addAll(lastFieldName);
+        } else if (!lastFieldName.isEmpty() && lastFieldName.size() > nextPathDiffersAt) {
+            // prepend with unchanged elements
+            currentFieldName.addAll(0, lastFieldName.subList(0, nextPathDiffersAt));
+        }
+
+
+        json.writeFieldName(JOINER.join(currentFieldName.stream()
+                                                        .flatMap(element -> {
+
+                                                            if (currentMultiplicities.containsKey(element)) {
+                                                                return Stream.of(element, String.valueOf(currentMultiplicities.get(element)));
+                                                            }
+
+                                                            return Stream.of(element);
+                                                        })
+                                                        .collect(Collectors.toList())));
     }
 }

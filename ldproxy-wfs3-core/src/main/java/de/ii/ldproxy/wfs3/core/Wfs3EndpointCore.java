@@ -139,12 +139,17 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
     }
 
     public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
+        return toFlatMap(queryParameters, false);
+    }
+
+    public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters, boolean keysToLowerCase) {
         return queryParameters.entrySet()
-                                                              .stream()
-                                                              .map(entry -> {
-                                                                  return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue().isEmpty() ? "" : entry.getValue().get(0));
-                                                              })
-                                                              .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+                              .stream()
+                              .map(entry -> {
+                                  String key = keysToLowerCase ? entry.getKey().toLowerCase() : entry.getKey();
+                                  return new AbstractMap.SimpleImmutableEntry<>(key, entry.getValue().isEmpty() ? "" : entry.getValue().get(0));
+                              })
+                              .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public static Map<String, String> getFiltersFromQuery(Map<String, String> query, Map<String, String> filterableFields) {

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import org.immutables.value.Value;
@@ -45,7 +46,14 @@ public interface FeatureTransformationContext {
 
     boolean isFeatureCollection();
 
-    boolean isHitsOnly();
+    @Value.Default
+    default boolean isHitsOnly() {return false;}
+
+    @Value.Default
+    default boolean isPropertyOnly() {return false;}
+
+    @Value.Default
+    default List<String> getFields() {return ImmutableList.of("*");}
 
     Wfs3RequestContext getWfs3Request();
 

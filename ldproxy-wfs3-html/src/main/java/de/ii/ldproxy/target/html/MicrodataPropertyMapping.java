@@ -101,7 +101,7 @@ public class MicrodataPropertyMapping extends AbstractWfs3GenericMapping<Microda
             copy.enabled = baseMapping.isEnabled();
         }
         if ((copy.name == null || copy.name.isEmpty()) && baseMapping.getName() != null) {
-            copy.name = baseMapping.getName();
+            copy.name = baseMapping.getName().replaceAll("\\[\\]", "");
         }
         if ((copy.format == null || copy.format.isEmpty()) && baseMapping.getFormat() != null) {
             copy.format = baseMapping.getFormat();

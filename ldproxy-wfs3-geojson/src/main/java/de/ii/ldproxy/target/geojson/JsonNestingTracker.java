@@ -56,6 +56,8 @@ public class JsonNestingTracker {
 
         this.lastMultiplicityLevels = nextMultiplicityLevels;
         this.lastPath = path;
+
+        LOGGER.debug("TRACKER {} {} {} {} {} {}", path, pathDiffersAt, multiplicityDiffersAt, inArray, currentOpenActions, currentCloseActions);
     }
 
     public int differsAt() {
@@ -107,11 +109,9 @@ public class JsonNestingTracker {
             String element = nextPath.get(i);
 
             boolean openObject = i < nextPath.size() - 1;
-            // omit when value array (end of path array)
-            boolean beforeOrInValueArray = i == nextPath.size()-1;
             //omit when already inside of object array
             boolean inObjectArray = openObject && inArray && i == nextPathDiffersAt;
-            boolean openArray = element.contains("[") && !beforeOrInValueArray && !inObjectArray;
+            boolean openArray = element.contains("[") && !inArray && !inObjectArray;
 
             List<String> a = new ArrayList<>();
             if (openArray) {
@@ -134,9 +134,14 @@ public class JsonNestingTracker {
                 }
                 a.add("OBJECT");
             }
+            if (!openObject &&!openArray && !inArray) {
+                nestingStrategy.openField(json, element);
+                a.add("VALUE");
+            }
+
             actions.add(a);
         }
-        nestingStrategy.open(json);
+        nestingStrategy.open(json, nextPathDiffersAt);
 
         return actions;
     }

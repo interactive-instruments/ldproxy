@@ -21,6 +21,11 @@ public class JsonNestingStrategyNestArray implements JsonNestingStrategy {
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonNestingStrategyNestArray.class);
 
     @Override
+    public void openField(JsonGenerator json, String key) throws IOException {
+        json.writeFieldName(key);
+    }
+
+    @Override
     public void openObjectInArray(JsonGenerator json, String key) throws IOException {
         json.writeStartObject();
         LOGGER.debug("OPEN OBJECT IN ARRAY");

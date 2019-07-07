@@ -66,6 +66,11 @@ public class Wfs3ServiceListingProvider implements ServiceListingProvider {
         this.externalUri = Optional.ofNullable(externalUri);
     }
 
+    @Override
+    public MediaType getMediaType() {
+        return MediaType.TEXT_HTML_TYPE;
+    }
+
     private void customizeUri(final URICustomizer uriCustomizer) {
         if (externalUri.isPresent()) {
             uriCustomizer.setScheme(externalUri.get()

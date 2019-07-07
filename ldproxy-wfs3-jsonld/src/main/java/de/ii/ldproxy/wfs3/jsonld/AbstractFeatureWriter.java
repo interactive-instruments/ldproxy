@@ -136,7 +136,7 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
 
     //@Override
     public final void analyzeAttribute(String nsuri, String localName, String value) {
-        currentPath.track(nsuri, "@" + localName);
+        currentPath.track(nsuri, "@" + localName, false);
         String path = currentPath.toString();
         //LOGGER.debug(" - attribute {}", path);
 
@@ -158,7 +158,7 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
 
     //@Override
     public final void analyzePropertyStart(String nsuri, String localName, int depth, SMInputCursor feature, boolean nil) {
-        currentPath.track(nsuri, localName, depth);
+        currentPath.track(nsuri, localName, depth, false);
         String path = currentPath.toString();
         String value = "";
         fieldCounter.compute(path, (k, v) -> (v == null) ? 1 : v+1);

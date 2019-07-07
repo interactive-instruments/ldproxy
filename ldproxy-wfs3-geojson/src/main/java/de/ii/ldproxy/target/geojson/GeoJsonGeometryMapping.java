@@ -26,7 +26,7 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
         POLYGON("Polygon", SimpleFeatureGeometry.POLYGON),
         MULTI_POLYGON("MultiPolygon", SimpleFeatureGeometry.MULTI_POLYGON),
         GEOMETRY_COLLECTION("GeometryCollection"),
-        GENERIC(""),
+        GENERIC("Generic", SimpleFeatureGeometry.ANY),
         NONE("");
 
         private String stringRepresentation;
@@ -82,6 +82,7 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
                     simpleFeatureGeometry = SimpleFeatureGeometry.GEOMETRY_COLLECTION;
                     break;
                 case GENERIC:
+                    simpleFeatureGeometry = SimpleFeatureGeometry.ANY;
                     break;
                 case NONE:
                     break;

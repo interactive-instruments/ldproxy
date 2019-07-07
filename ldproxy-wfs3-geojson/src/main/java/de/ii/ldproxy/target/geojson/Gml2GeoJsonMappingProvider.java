@@ -57,7 +57,7 @@ public class Gml2GeoJsonMappingProvider implements TargetMappingProviderFromGml 
     }
 
     @Override
-    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, GML_TYPE type) {
+    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, GML_TYPE type, boolean isMultiple) {
 
         GEO_JSON_TYPE dataType = GEO_JSON_TYPE.forGmlType(type);
 
