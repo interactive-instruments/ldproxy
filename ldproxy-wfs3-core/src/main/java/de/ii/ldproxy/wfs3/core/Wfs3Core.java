@@ -22,8 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-
+import java.util.stream.Stream;
 
 
 /**
@@ -78,14 +77,18 @@ public class Wfs3Core {
                 .map(featureType -> createCollection(featureType, wfs3LinksGenerator, serviceData, mediaType, alternativeMediaTypes, uriCustomizer, true))
                 .collect(Collectors.toList());
 
+        //TODO: to crs extension
         ImmutableList<String> crs = ImmutableList.<String>builder()
-                .add(serviceData.getFeatureProvider()
-                        .getNativeCrs()
-                        .getAsUri())
+                .addAll(Stream.of(serviceData.getFeatureProvider()
+                            .getNativeCrs()
+                            .getAsUri())
+                        .filter(crsUri -> !crsUri.equalsIgnoreCase(Wfs3ServiceData.DEFAULT_CRS_URI))
+                        .collect(Collectors.toList()))
                 .add(Wfs3ServiceData.DEFAULT_CRS_URI)
                 .addAll(serviceData.getAdditionalCrs()
                         .stream()
                         .map(EpsgCrs::getAsUri)
+                        .filter(crsUri -> !crsUri.equalsIgnoreCase(Wfs3ServiceData.DEFAULT_CRS_URI))
                         .collect(Collectors.toList()))
                 .build();
 
@@ -163,13 +166,16 @@ public class Wfs3Core {
         if (isNested) {
             collection.crs(
                     ImmutableList.<String>builder()
-                            .add(serviceData.getFeatureProvider()
+                            .addAll(Stream.of(serviceData.getFeatureProvider()
                                     .getNativeCrs()
                                     .getAsUri())
+                                    .filter(crsUri -> !crsUri.equalsIgnoreCase(Wfs3ServiceData.DEFAULT_CRS_URI))
+                                    .collect(Collectors.toList()))
                             .add(Wfs3ServiceData.DEFAULT_CRS_URI)
                             .addAll(serviceData.getAdditionalCrs()
                                     .stream()
                                     .map(EpsgCrs::getAsUri)
+                                    .filter(crsUri -> !crsUri.equalsIgnoreCase(Wfs3ServiceData.DEFAULT_CRS_URI))
                                     .collect(Collectors.toList()))
                             .build()
             );
@@ -181,7 +187,5 @@ public class Wfs3Core {
 
         return collection.build();
     }
-
-
 
 }
