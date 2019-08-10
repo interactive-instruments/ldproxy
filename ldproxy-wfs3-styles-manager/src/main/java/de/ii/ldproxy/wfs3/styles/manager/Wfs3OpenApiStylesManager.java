@@ -70,9 +70,9 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
                 if (Objects.nonNull(pathItem1)) {
                     pathItem1
                             .post(new Operation()
-                                    .summary("add styles to the dataset ")
+                                    .summary("add a style")
                                     //.description("")
-                                    .operationId("addStyles")
+                                    .operationId("addStyle")
                                     .addTagsItem("Styles")
                                     .requestBody(requestBody)
                                     .responses(new ApiResponses().addApiResponse("201", new ApiResponse().description("Styles were created.")
@@ -85,7 +85,7 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
                 if (Objects.nonNull(pathItem2)) {
                     pathItem2
                             .put(new Operation()
-                                    .summary("replace a style from the dataset")
+                                    .summary("replace a style")
                                     //.description("")
                                     .operationId("replaceStyle")
                                     .addTagsItem("Styles")
@@ -95,7 +95,7 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
                                                                  .addApiResponse("default", exception))
                             )
                             .delete(new Operation()
-                                    .summary("delete a Style from the dataset")
+                                    .summary("delete a style")
                                     .operationId("deleteStyle")
                                     .addTagsItem("Styles")
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
@@ -103,59 +103,6 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
                                                                  .addApiResponse("default", exception))
                             );
                 }
-
-                serviceData.getFeatureTypes()
-                           .values()
-                           .stream()
-                           .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                           .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
-                           .forEach(ft -> {
-
-                               PathItem pathItem3 = openAPI.getPaths()
-                                                           .get(String.format("/collections/%s/styles", ft.getId()));
-                               PathItem pathItem4 = openAPI.getPaths()
-                                                           .get(String.format("/collections/%s/styles/{styleId}", ft.getId()));
-
-
-                               if (Objects.nonNull(pathItem3)) {
-                                   pathItem3
-                                           .post(new Operation()
-                                                   .summary("add styles to the collection " + ft.getLabel())
-                                                   //.description("")
-                                                   .operationId("addStyle" + ft.getLabel())
-                                                   .addTagsItem("Styles")
-                                                   .requestBody(requestBody)
-                                                   .responses(new ApiResponses().addApiResponse("201", new ApiResponse().description("Style was created.")
-                                                                                                                        .addHeaderObject("location", new Header().description("The URL of the created style")
-                                                                                                                                                                 .schema(new StringSchema())))
-                                                                                .addApiResponse("default", exception))
-                                           );
-                               }
-
-
-                               if (Objects.nonNull(pathItem4)) {
-                                   pathItem4
-                                           .put(new Operation()
-                                                   .summary("replace a style from the collection " + ft.getLabel())
-                                                   //.description("")
-                                                   .operationId("replaceStyle" + ft.getId())
-                                                   .addTagsItem("Styles")
-                                                   .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
-                                                   .requestBody(requestBody)
-                                                   .responses(new ApiResponses().addApiResponse("204", new ApiResponse().description("Style was replaced."))
-                                                                                .addApiResponse("default", exception))
-                                           )
-                                           .delete(new Operation()
-                                                   .summary("delete a Style from the collection  " + ft.getLabel())
-                                                   .operationId("deleteStyle" + ft.getId())
-                                                   .addTagsItem("Styles")
-                                                   .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
-                                                   .responses(new ApiResponses().addApiResponse("204", new ApiResponse().description("Style was deleted."))
-                                                                                .addApiResponse("default", exception))
-                                           );
-                               }
-
-                           });
             }
         }
 

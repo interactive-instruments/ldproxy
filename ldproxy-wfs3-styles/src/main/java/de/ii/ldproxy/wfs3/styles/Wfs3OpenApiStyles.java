@@ -51,29 +51,17 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
 
         if (serviceData != null && isExtensionEnabled(serviceData, StylesConfiguration.class)) {
 
-
             Parameter styleId = new Parameter();
             styleId.setName("styleId");
             styleId.in("path");
-            styleId.description("Local identifier of a specific style of the collection. A list of all available styles for the collection can be found under the /styles path.");
+            styleId.description("Local identifier of a style. A list of all available styles can be found under the /styles path.");
             styleId.setRequired(true);
             Schema styleIdSchema = new Schema();
             styleIdSchema.setType("string");
             styleId.setSchema(styleIdSchema);
 
-
-            Parameter styleIdDataset = new Parameter();
-            styleIdDataset.setName("styleId");
-            styleIdDataset.in("path");
-            styleIdDataset.description("Local identifier of a specific style of the dataset. A list of all available styles for the dataset can be found under the /styles path.");
-            styleIdDataset.setRequired(true);
-            styleIdDataset.setSchema(styleIdSchema);
-
             openAPI.getComponents()
                    .addParameters("styleIdentifier", styleId);
-            openAPI.getComponents()
-                   .addParameters("styleIdentifierDataset", styleIdDataset);
-
 
             List<String> requirementsId = new LinkedList<String>();
             requirementsId.add("id");
@@ -164,10 +152,10 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
             if (serviceData != null) {
 
                 openAPI.getPaths()
-                       .addPathItem("/styles", new PathItem().description("something"));  //create a new path
+                       .addPathItem("/styles", new PathItem().description("The Styles resource."));  //create a new path
                 PathItem pathItem = openAPI.getPaths()
                                            .get("/styles");
-                ApiResponse success = new ApiResponse().description("A list of styles for the dataset")
+                ApiResponse success = new ApiResponse().description("A list of styles.")
                                                        .content(new Content()
                                                                .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/styles")))
                                                        );
@@ -179,7 +167,7 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                     pathItem
                             .get(new Operation()
                                     .addTagsItem("Styles")
-                                    .summary("retrieve all available styles from the dataset")
+                                    .summary("retrieve all available styles")
                                     .operationId("getStyles")
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
                                     //.requestBody(requestBody)
@@ -192,10 +180,10 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                        .addPathItem("/styles", pathItem); //save to Path
 
                 openAPI.getPaths()
-                       .addPathItem("/styles/{styleId}", new PathItem().description("something"));
+                       .addPathItem("/styles/{styleId}", new PathItem().description("A Style resource."));
                 pathItem = openAPI.getPaths()
                                   .get("/styles/{styleId}");
-                success = new ApiResponse().description("A style of the dataset")
+                success = new ApiResponse().description("A style.")
                                            .content(new Content()
                                                    .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/style")))
                                            );
@@ -207,9 +195,9 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                     pathItem
                             .get(new Operation()
                                     .addTagsItem("Styles")
-                                    .summary("retrieve a style of the dataset by id")
+                                    .summary("retrieve a style by id")
                                     .operationId("getStyle")
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifierDataset"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
 
                                     //.requestBody(requestBody)
@@ -222,75 +210,6 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                 openAPI.getPaths()
                        .addPathItem("/styles/{styleId}", pathItem);
 
-
-                serviceData.getFeatureTypes()
-                           .values()
-                           .stream()
-                           .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                           .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
-                           .forEach(ft -> {
-
-                               openAPI.getPaths()
-                                      .addPathItem("/collections/" + ft.getId() + "/styles", new PathItem().description("something"));
-                               PathItem pathItem2 = openAPI.getPaths()
-                                                           .get("/collections/" + ft.getId() + "/styles");
-                               ApiResponse success2 = new ApiResponse().description("A list of styles for the collection " + ft.getLabel())
-                                                                       .content(new Content()
-                                                                               .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/styles")))
-                                                                       );
-                               ApiResponse exception2 = new ApiResponse().description("An error occured.")
-                                                                         .content(new Content()
-                                                                                 .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
-                                                                         );
-                               if (Objects.nonNull(pathItem2)) {
-                                   pathItem2
-                                           .get(new Operation()
-                                                   .addTagsItem("Styles")
-                                                   .summary("retrieve all available styles from the collection " + ft.getLabel())
-                                                   .operationId("getStyles" + ft.getId())
-                                                   .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
-                                                   //.requestBody(requestBody)
-                                                   .responses(new ApiResponses()
-                                                           .addApiResponse("200", success2)
-                                                           .addApiResponse("default", exception2))
-                                           );
-                               }
-
-                               openAPI.getPaths()
-                                      .addPathItem("/collections/" + ft.getId() + "/styles/{styleId}", pathItem2);
-
-                               openAPI.getPaths()
-                                      .addPathItem("/collections/" + ft.getId() + "/styles/{styleId}", new PathItem().description("something"));
-                               pathItem2 = openAPI.getPaths()
-                                                  .get("/collections/" + ft.getId() + "/styles/{styleId}");
-                               success2 = new ApiResponse().description("A style of the collection " + ft.getLabel())
-                                                           .content(new Content()
-                                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/style")))
-                                                           );
-                               exception2 = new ApiResponse().description("An error occured.")
-                                                             .content(new Content()
-                                                                     .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
-                                                             );
-                               if (Objects.nonNull(pathItem2)) {
-                                   pathItem2
-                                           .get(new Operation()
-                                                   .addTagsItem("Styles")
-                                                   .summary("retrieve a style of the collection " + ft.getLabel() + " by id")
-                                                   .operationId("getStyle" + ft.getId())
-                                                   .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
-                                                   .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
-
-                                                   //.requestBody(requestBody)
-                                                   .responses(new ApiResponses()
-                                                           .addApiResponse("200", success2)
-                                                           .addApiResponse("default", exception2))
-                                           );
-                               }
-
-                               openAPI.getPaths()
-                                      .addPathItem("/collections/" + ft.getId() + "/styles/{styleId}", pathItem2);
-
-                           });
             }
         }
         return openAPI;
