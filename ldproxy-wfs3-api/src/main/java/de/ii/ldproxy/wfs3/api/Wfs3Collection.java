@@ -25,7 +25,7 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableWfs3Collection.class)
 public abstract class Wfs3Collection {
 
-    public abstract String getName();
+    public abstract String getId();
 
     public abstract String getTitle();
 

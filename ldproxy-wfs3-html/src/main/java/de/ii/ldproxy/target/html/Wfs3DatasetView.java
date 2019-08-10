@@ -199,8 +199,8 @@ public class Wfs3DatasetView extends View {
         }
 
         @Override
-        public String getName() {
-            return collection.getName();
+        public String getId() {
+            return collection.getId();
         }
 
         @Override

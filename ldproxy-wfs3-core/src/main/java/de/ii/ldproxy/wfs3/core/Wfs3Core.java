@@ -119,7 +119,7 @@ public class Wfs3Core {
                                                                .getNamespacePrefix(featureType.getNamespace()) + ":" + featureType.getName()*/;
 
         ImmutableWfs3Collection.Builder collection = ImmutableWfs3Collection.builder()
-                .name(featureType.getId())
+                .id(featureType.getId())
                 .title(featureType.getLabel())
                 .description(featureType.getDescription())
                 .prefixedName(qn)
