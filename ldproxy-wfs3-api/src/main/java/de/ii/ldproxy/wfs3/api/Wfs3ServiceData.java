@@ -155,7 +155,7 @@ public abstract class Wfs3ServiceData extends FeatureTransformerServiceData<Feat
     private Function<Map.Entry<String, TargetMapping>, String> getParameterName() {
         return mapping -> mapping.getValue()
                 .isSpatial() ? "bbox"
-                : ((Wfs3GenericMapping) mapping.getValue()).isTemporal() ? "time"
+                : ((Wfs3GenericMapping) mapping.getValue()).isTemporal() ? "datetime"
                 : mapping.getValue()
                 .getName()
                 .replaceAll("\\[\\w+\\]", "")

@@ -339,7 +339,7 @@ class VectorTile {
                 .stream()
                 .map(f -> {
                     if (f.getKey()
-                            .equals("time")) {
+                            .equals("datetime")) {
                         try {
                             Interval fromIso8601Period = Interval.parse(f.getValue());
                             return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);

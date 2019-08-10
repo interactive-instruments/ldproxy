@@ -142,7 +142,7 @@ public class Wfs3Query {
                               return bboxToCql(service, filterableFields.get(f.getKey()), f.getValue());
                           }
                           if (f.getKey()
-                               .equals("time")) {
+                               .equals("datetime")) {
                               return timeToCql(filterableFields.get(f.getKey()), f.getValue());
                           }
                           if (f.getValue()
