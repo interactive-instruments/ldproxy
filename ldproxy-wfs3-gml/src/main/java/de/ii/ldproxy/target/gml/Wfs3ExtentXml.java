@@ -8,6 +8,8 @@
 package de.ii.ldproxy.target.gml;
 
 import de.ii.ldproxy.wfs3.api.Wfs3Extent;
+import de.ii.ldproxy.wfs3.api.Wfs3ExtentSpatial;
+import de.ii.ldproxy.wfs3.api.Wfs3ExtentTemporal;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -19,19 +21,23 @@ import java.util.Objects;
  */
 public class Wfs3ExtentXml {
     private final Wfs3Extent extent;
+    private final Wfs3ExtentSpatial spatial;
+    private final Wfs3ExtentTemporal temporal;
 
     public Wfs3ExtentXml(Wfs3Extent extent) {
         this.extent = extent;
+        this.spatial = extent.getSpatial();
+        this.temporal = extent.getTemporal();
     }
 
     @XmlElement(name = "Spatial")
     public SpatialExtent getSpatial() {
-        return new SpatialExtent(String.format(Locale.US, "%f %f",extent.getSpatial()[0], extent.getSpatial()[1]), String.format(Locale.US, "%f %f", extent.getSpatial()[2], extent.getSpatial()[3]));
+        return new SpatialExtent(String.format(Locale.US, "%f %f",spatial.getBbox()[0][0], spatial.getBbox()[0][1]), String.format(Locale.US, "%f %f", spatial.getBbox()[0][2], spatial.getBbox()[0][3]));
     }
 
     @XmlElement(name = "Temporal")
     public TemporalExtent getTemporal() {
-        return Objects.nonNull(extent.getTemporal()) ? new TemporalExtent(extent.getTemporal()[0], extent.getTemporal()[1]) : null;
+        return Objects.nonNull(temporal) ? new TemporalExtent(temporal.getInterval()[0][0], temporal.getInterval()[0][1]) : null;
     }
 
     public static class SpatialExtent {
@@ -47,6 +53,12 @@ public class Wfs3ExtentXml {
             this.LowerCorner = lowerCorner;
             this.UpperCorner = upperCorner;
         }
+
+        public SpatialExtent(String lowerCorner, String upperCorner, String crs) {
+            this.LowerCorner = lowerCorner;
+            this.UpperCorner = upperCorner;
+            this.crs = crs;
+        }
     }
 
     public static class TemporalExtent {
@@ -61,6 +73,12 @@ public class Wfs3ExtentXml {
         public TemporalExtent(String begin, String end) {
             this.begin = begin;
             this.end = end;
+        }
+
+        public TemporalExtent(String begin, String end, String trs) {
+            this.begin = begin;
+            this.end = end;
+            this.trs = trs;
         }
     }
 }
