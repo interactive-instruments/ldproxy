@@ -25,8 +25,8 @@ public class Wfs3ExtentTemporal {
 
     public Wfs3ExtentTemporal(long begin, long end) {
         this.interval = new String[][]{{
-                                Instant.ofEpochMilli(begin).truncatedTo(ChronoUnit.SECONDS).toString(),
-                                Instant.ofEpochMilli(end).truncatedTo(ChronoUnit.SECONDS).toString()
+                                begin>=0 ? Instant.ofEpochMilli(begin).truncatedTo(ChronoUnit.SECONDS).toString() : null,
+                                end>=0 ? Instant.ofEpochMilli(end).truncatedTo(ChronoUnit.SECONDS).toString() : null
                             }};
         this.trs = "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian";
     }

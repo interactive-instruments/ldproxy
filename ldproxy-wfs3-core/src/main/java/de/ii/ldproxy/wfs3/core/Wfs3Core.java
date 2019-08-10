@@ -10,6 +10,7 @@ package de.ii.ldproxy.wfs3.core;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.wfs3.api.*;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -127,13 +128,11 @@ public class Wfs3Core {
 
         if (serviceData.getFilterableFieldsForFeatureType(featureType.getId())
                 .containsKey("time")) {
+            TemporalExtent temporal = featureType.getExtent()
+                    .getTemporal();
             collection.extent(new Wfs3Extent(
-                    featureType.getExtent()
-                            .getTemporal()
-                            .getStart(),
-                    featureType.getExtent()
-                            .getTemporal()
-                            .getComputedEnd(),
+                    temporal.getStart()==0 ? -1 : temporal.getStart(),
+                    temporal.getEnd()==0 ? -1 : temporal.getComputedEnd(),
                     featureType.getExtent()
                             .getSpatial()
                             .getXmin(),

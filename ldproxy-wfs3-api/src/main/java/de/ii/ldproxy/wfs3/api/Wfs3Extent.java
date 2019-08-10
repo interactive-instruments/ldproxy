@@ -20,14 +20,27 @@ public class Wfs3Extent {
     private Wfs3ExtentTemporal temporal;
 
     public Wfs3Extent() {
-
+        this.spatial = new Wfs3ExtentSpatial(-180, -90, 180, 90);
+        this.temporal = new Wfs3ExtentTemporal(null, null);
     }
 
     public Wfs3Extent(String xmin, String ymin, String xmax, String ymax) {
         this.spatial = new Wfs3ExtentSpatial(xmin, ymin, xmax, ymax);
+        this.temporal = new Wfs3ExtentTemporal(null, null);
+    }
+
+    public Wfs3Extent(double xmin, double ymin, double xmax, double ymax) {
+        this.spatial = new Wfs3ExtentSpatial(xmin, ymin, xmax, ymax);
+        this.temporal = new Wfs3ExtentTemporal(null, null);
+    }
+
+    public Wfs3Extent(String begin, String end) {
+        this.spatial = new Wfs3ExtentSpatial(-180, -90, 180, 90);
+        this.temporal = new Wfs3ExtentTemporal(begin, end);
     }
 
     public Wfs3Extent(long begin, long end) {
+        this.spatial = new Wfs3ExtentSpatial(-180, -90, 180, 90);
         this.temporal = new Wfs3ExtentTemporal(begin, end);
     }
 
@@ -36,8 +49,9 @@ public class Wfs3Extent {
         this.temporal = new Wfs3ExtentTemporal(begin, end);
     }
 
-    public Wfs3Extent(double xmin, double ymin, double xmax, double ymax) {
+    public Wfs3Extent(String begin, String end, String xmin, String ymin, String xmax, String ymax) {
         this.spatial = new Wfs3ExtentSpatial(xmin, ymin, xmax, ymax);
+        this.temporal = new Wfs3ExtentTemporal(begin, end);
     }
 
     public Wfs3ExtentSpatial getSpatial() {
