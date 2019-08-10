@@ -188,7 +188,7 @@ public class Wfs3LinksGenerator {
         } else {
             links.add(ImmutableWfs3Link.builder()
                                        .href(uriBuilder.copy()
-                                                       .removeLastPathSegments(1)
+                                                       .removeLastPathSegments(2)
                                                        .clearParameters()
                                                        .setParameter("f", mediaType.parameter())
                                                        .toString())
