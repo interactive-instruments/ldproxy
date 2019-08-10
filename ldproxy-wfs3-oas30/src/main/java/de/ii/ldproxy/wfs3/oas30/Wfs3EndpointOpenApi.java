@@ -94,7 +94,7 @@ public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointEx
     }
 
     @GET
-    @Produces({"application/openapi+json;version=3.0", MediaType.APPLICATION_JSON})
+    @Produces({"application/vnd.oai.openapi+json;version=3.0", MediaType.APPLICATION_JSON})
     //@Operation(summary = "the API description - this document", tags = {"Capabilities"}, parameters = {@Parameter(name = "f")})
     public Response getApiDescriptionJson(@Context Service service, @Context Wfs3RequestContext wfs3Request) throws Exception {
         LOGGER.debug("MIME {})", "JSON");

@@ -49,7 +49,7 @@ public class Wfs3LinksGenerator {
                                 .setParameter("f", "json")
                                 .toString())
                         .rel("service")
-                        .type("application/openapi+json;version=3.0")
+                        .type("application/vnd.oai.openapi+json;version=3.0")
                         .description("the OpenAPI definition")
                         .typeLabel("JSON")
                         .build())

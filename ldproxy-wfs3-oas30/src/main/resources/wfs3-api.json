@@ -68,7 +68,7 @@
                     "200": {
                         "description": "The formal documentation of this API according to the OpenAPI specification, version 3.0. I.e., this document.",
                         "content": {
-                            "application/openapi+json;version=3.0": {
+                            "application/vnd.oai.openapi+json;version=3.0": {
                                 "schema": {
                                     "type": "object"
                                 }
@@ -477,7 +477,7 @@
                             {
                                 "href": "http://data.example.org/api",
                                 "rel": "service",
-                                "type": "application/openapi+json;version=3.0",
+                                "type": "application/vnd.oai.openapi+json;version=3.0",
                                 "title": "the API definition"
                             },
                             {
