@@ -127,9 +127,9 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                     new Schema().type("object")
                                 .addProperties("default",
                                         new Schema().type("object")
-                                                    .addProperties("type", new Schema().type("String")
+                                                    .addProperties("type", new Schema().type("string")
                                                                                        .example("vector"))
-                                                    .addProperties("url", new Schema().type("String")
+                                                    .addProperties("url", new Schema().type("string")
                                                                                       .example("sourceUrl"))));
             style.addProperties("sprite", new Schema().type("string")
                                                       .example("mapbox://sprites/mapbox/bright-v8"));
@@ -151,6 +151,25 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
 
             if (serviceData != null) {
 
+                Parameter f = new Parameter();
+                f.setName("f");
+                f.in("query");
+                f.description("\\\n" +
+                        "        The format of the response. If no value is provided, the standard http rules apply, i.e., the accept header shall be used to determine the format.\\\n" +
+                        "        Pre-defined values are \"mbs\" (Mapbox Style), \"sld10\" and \"sld11\" (OGC Styled Layer Descriptor 1.0 and 1.1). The response to other values is determined by the server.");
+                f.setRequired(false);
+                f.setStyle(Parameter.StyleEnum.FORM);
+                f.setExplode(false);
+                List<String> fEnum = new ArrayList<String>();
+                fEnum.add("mbs");
+                fEnum.add("sld10");
+                fEnum.add("sld11");
+                f.setSchema(new StringSchema()._enum(fEnum));
+                f.example("mbs");
+
+                openAPI.getComponents()
+                       .addParameters("f-mbs-sld10-sld11", f);
+
                 openAPI.getPaths()
                        .addPathItem("/styles", new PathItem().description("The Styles resource."));  //create a new path
                 PathItem pathItem = openAPI.getPaths()
@@ -159,7 +178,7 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                                                        .content(new Content()
                                                                .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/styles")))
                                                        );
-                ApiResponse exception = new ApiResponse().description("An error occured.")
+                ApiResponse exception = new ApiResponse().description("An error occurred.")
                                                          .content(new Content()
                                                                  .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
                                                          );
@@ -169,7 +188,7 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                                     .addTagsItem("Styles")
                                     .summary("retrieve all available styles")
                                     .operationId("getStyles")
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f-mbs-sld10-sld11"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -187,7 +206,7 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                                            .content(new Content()
                                                    .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/style")))
                                            );
-                exception = new ApiResponse().description("An error occured.")
+                exception = new ApiResponse().description("An error occurred.")
                                              .content(new Content()
                                                      .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
                                              );
@@ -198,7 +217,7 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                                     .summary("retrieve a style by id")
                                     .operationId("getStyle")
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/styleIdentifier"))
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f-mbs-sld10-sld11"))
 
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
