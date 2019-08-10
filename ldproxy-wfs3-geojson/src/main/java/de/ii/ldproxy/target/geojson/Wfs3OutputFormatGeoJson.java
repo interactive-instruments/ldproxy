@@ -55,7 +55,7 @@ public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3Output
 
     @Override
     public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/req/geojson";
+        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson";
     }
 
     @Override

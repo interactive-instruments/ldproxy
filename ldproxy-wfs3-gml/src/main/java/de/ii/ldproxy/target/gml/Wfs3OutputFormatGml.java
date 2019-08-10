@@ -61,7 +61,7 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
 
     @Override
     public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/req/gmlsf2";
+        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2";
     }
 
     @Override

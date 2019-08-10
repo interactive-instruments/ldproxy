@@ -60,7 +60,7 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
     Wfs3ExtensionRegistryImpl() {
         //TODO
         this.wfs3Extensions = new ArrayList<>();
-        this.wfs3ConformanceClasses = Lists.newArrayList(() -> "http://www.opengis.net/spec/ogcapi-features-1/1.0/req/core");
+        this.wfs3ConformanceClasses = Lists.newArrayList(() -> "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core");
         this.wfs3OutputFormats = new LinkedHashMap<>();
         this.wfs3Endpoints = new ArrayList<>();
         this.wfs3StartupTasks = new ArrayList<>();

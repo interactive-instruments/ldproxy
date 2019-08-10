@@ -82,7 +82,7 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
 
     @Override
     public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/req/html";
+        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html";
     }
 
     @Override

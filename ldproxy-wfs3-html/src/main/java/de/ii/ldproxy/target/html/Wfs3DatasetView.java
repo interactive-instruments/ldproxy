@@ -119,7 +119,7 @@ public class Wfs3DatasetView extends View {
     public String getApiUrl() {
         return wfs3Dataset.getLinks()
                           .stream()
-                          .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "service") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
+                          .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "service-doc") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
                                                                                                                                                                 .toString()))
                           .map(Wfs3Link::getHref)
                           .findFirst()
