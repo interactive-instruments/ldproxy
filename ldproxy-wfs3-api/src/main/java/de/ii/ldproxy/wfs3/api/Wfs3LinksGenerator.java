@@ -8,10 +8,6 @@
 package de.ii.ldproxy.wfs3.api;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3Link;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.util.Arrays;
@@ -135,7 +131,7 @@ public class Wfs3LinksGenerator {
 
         ImmutableList.Builder<Wfs3Link> links = new ImmutableList.Builder<Wfs3Link>()
                 .addAll(Stream.concat(Stream.of(mediaType), Arrays.stream(alternativeMediaTypes))
-                              .map(generateItemLink(uriBuilder.copy(), collectionName))
+                              .map(generateItemsLink(uriBuilder.copy(), collectionName))
                               .collect(Collectors.toList()))
                 .addAll(Stream.concat(Stream.of(mediaType), Arrays.stream(alternativeMediaTypes))
                         .map(generateCollectionsLink(uriBuilder.copy(), collectionName,collectionId,isCollection))
@@ -222,7 +218,7 @@ public class Wfs3LinksGenerator {
                                              .build();
     }
 
-    private Function<Wfs3MediaType, Wfs3Link> generateItemLink(final URIBuilder uriBuilder, final String collectionName) {
+    private Function<Wfs3MediaType, Wfs3Link> generateItemsLink(final URIBuilder uriBuilder, final String collectionName) {
         return mediaType -> ImmutableWfs3Link.builder()
                                              .href(uriBuilder
                                                      .setParameter("f", mediaType.parameter())
