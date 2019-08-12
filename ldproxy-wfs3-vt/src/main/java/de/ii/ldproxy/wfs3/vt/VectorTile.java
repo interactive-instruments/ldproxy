@@ -36,6 +36,11 @@ import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
  */
 class VectorTile {
 
+    private static final String TIMESTAMP_REGEX = "([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))";
+    private static final String OPEN_REGEX = "(\\.\\.)?";
+    private static final String OPEN_START = "0001-01-01T00:00:00Z";
+    private static final String OPEN_END = "2999-12-31T23:59:59Z";
+
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
 
     private final int level;
@@ -340,17 +345,41 @@ class VectorTile {
                 .map(f -> {
                     if (f.getKey()
                             .equals("datetime")) {
+                        // TODO: define constants and filtering rules only once
+                        // valid values: timestamp or time interval;
+                        // this includes open intervals indicated by ".." (see ISO 8601-2);
+                        // accept also unknown ("") with the same interpretation
+                        String timeField = filterableFields.get(f.getKey());
+                        String timeValue = f.getValue();
                         try {
-                            Interval fromIso8601Period = Interval.parse(f.getValue());
-                            return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);
-                        } catch (DateTimeParseException ignore) {
-                            try {
-                                Instant fromIso8601 = Instant.parse(f.getValue());
-                                return String.format("%s TEQUALS %s", filterableFields.get(f.getKey()), fromIso8601);
-                            } catch (DateTimeParseException e) {
-                                LOGGER.debug("TIME PARSER ERROR", e);
+                            if (timeValue.matches("^"+TIMESTAMP_REGEX+"\\/"+TIMESTAMP_REGEX+"$")) {
+                                // the following parse accepts fully specified time intervals
+                                Interval fromIso8601Period = Interval.parse(timeValue);
+                                return String.format("%s DURING %s", timeField, fromIso8601Period);
+                            } else if (timeValue.matches("^"+TIMESTAMP_REGEX+"$")) {
+                                // a time instant
+                                Instant fromIso8601 = Instant.parse(timeValue);
+                                return String.format("%s TEQUALS %s", timeField, fromIso8601);
+                            } else if (timeValue.matches("^"+OPEN_REGEX+"\\/"+OPEN_REGEX+"$")) {
+                                // open start and end, nothing to do, all values match
+                                return null;
+                            } else if (timeValue.matches("^"+TIMESTAMP_REGEX+"\\/"+OPEN_REGEX+"$")) {
+                                // open end
+                                // TODO: use AFTER, requires a fix in xtraplatform
+                                Instant fromIso8601 = Instant.parse(timeValue.substring(0,timeValue.indexOf("/")));
+                                return String.format("%s DURING %s/"+OPEN_END, timeField, fromIso8601);
+                            } else if (timeValue.matches("^"+OPEN_REGEX+"\\/"+TIMESTAMP_REGEX+"$")) {
+                                // open start
+                                // TODO: use BEFORE, requires a fix in xtraplatform
+                                Instant fromIso8601 = Instant.parse(timeValue.substring(timeValue.indexOf("/")+1));
+                                return String.format("%s DURING "+OPEN_START+"/%s", timeField, fromIso8601);
+                            } else {
+                                LOGGER.error("TIME PARSER ERROR " + timeValue);
                                 throw new BadRequestException();
                             }
+                        } catch (DateTimeParseException e) {
+                            LOGGER.debug("TIME PARSER ERROR", e);
+                            throw new BadRequestException();
                         }
                     }
                     if (f.getValue()
@@ -360,6 +389,7 @@ class VectorTile {
 
                     return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
                 })
+                .filter(pred -> pred!=null)
                 .collect(Collectors.joining(" AND "));
     }
 
