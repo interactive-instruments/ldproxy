@@ -9,16 +9,7 @@ package de.ii.ldproxy.wfs3.core;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.api.Wfs3Collection;
-import de.ii.ldproxy.wfs3.api.Wfs3Collections;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3Service;
+import de.ii.ldproxy.wfs3.api.*;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.service.api.Service;
@@ -93,10 +84,10 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
 
         checkAuthorization(wfs3Service.getData(), optionalUser);
 
-        Wfs3Collections collections = wfs3Core.createCollections(wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer());
+        Wfs3Collections collections = wfs3Core.createCollections(wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType(),wfs3Service.getData()), wfs3Request.getUriCustomizer());
 
         return wfs3OutputFormats.get(wfs3Request.getMediaType())
-                                .getDatasetResponse(collections, wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), wfs3Request.getStaticUrlPrefix(), true);
+                                .getDatasetResponse(collections, wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType(),wfs3Service.getData()), wfs3Request.getUriCustomizer(), wfs3Request.getStaticUrlPrefix(), true);
     }
 
     @Path("/{id}")
@@ -110,10 +101,10 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
 
         Wfs3Collection wfs3Collection = wfs3Core.createCollection(wfs3Service.getData()
                                                                              .getFeatureTypes()
-                                                                             .get(id), new Wfs3LinksGenerator(), wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), false);
+                                                                             .get(id), new Wfs3LinksGenerator(), wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType(),wfs3Service.getData()), wfs3Request.getUriCustomizer(), false);
 
         return wfs3OutputFormats.get(wfs3Request.getMediaType())
-                                .getCollectionResponse(wfs3Collection, wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), id);
+                                .getCollectionResponse(wfs3Collection, wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType(),wfs3Service.getData()), wfs3Request.getUriCustomizer(), id);
 
 
     }
@@ -161,10 +152,11 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
         return filters;
     }
 
-    public Wfs3MediaType[] getAlternativeMediaTypes(Wfs3MediaType mediaType) {
+    public Wfs3MediaType[] getAlternativeMediaTypes(Wfs3MediaType mediaType, Wfs3ServiceData serviceData) {
         return wfs3OutputFormats.keySet()
                                 .stream()
                                 .filter(wfs3MediaType -> !wfs3MediaType.equals(mediaType))
+                                .filter(wfs3MediaType -> wfs3OutputFormats.get(wfs3MediaType).isEnabledForService(serviceData))
                                 .toArray(Wfs3MediaType[]::new);
     }
 
