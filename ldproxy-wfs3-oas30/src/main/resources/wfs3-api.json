@@ -249,7 +249,7 @@
                         "$ref": "#/components/parameters/bbox"
                     },
                     {
-                        "$ref": "#/components/parameters/time"
+                        "$ref": "#/components/parameters/datetime"
                     },
                     {
                         "$ref": "#/components/parameters/resultType"
@@ -700,7 +700,7 @@
                     },
                     "timeStamp": {
                         "type": "string",
-                        "format": "dateTime"
+                        "format": "date-time"
                     },
                     "numberMatched": {
                         "type": "integer",
