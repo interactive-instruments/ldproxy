@@ -23,11 +23,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ui from 'redux-ui';
 
-import TextInputUi from 'xtraplatform-manager/src/components/common/TextInputUi';
-import CheckboxUi from 'xtraplatform-manager/src/components/common/CheckboxUi';
-import SelectUi from 'xtraplatform-manager/src/components/common/SelectUi';
 import MappingEdit from 'xtraplatform-manager-wfs-proxy/src/components/presentational/MappingEdit'
-import { shallowDiffers } from 'xtraplatform-manager/src/util';
 
 const initState = {
     type: (props) => props.mapping.type || 'NONE'

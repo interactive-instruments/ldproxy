@@ -23,13 +23,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ui from 'redux-ui';
 
-import FormField from 'grommet/components/FormField';
+import { FormField, Box } from 'grommet';
 
 import TextInputUi from 'xtraplatform-manager/src/components/common/TextInputUi';
 import CheckboxUi from 'xtraplatform-manager/src/components/common/CheckboxUi';
-import SelectUi from 'xtraplatform-manager/src/components/common/SelectUi';
 import MappingEdit from 'xtraplatform-manager-wfs-proxy/src/components/presentational/MappingEdit'
-import { shallowDiffers } from 'xtraplatform-manager/src/util';
 
 const initState = {
     type: (props) => props.mapping.type || 'NONE',
@@ -67,7 +65,7 @@ export default class MappingEditHtml extends Component {
     }*/
 
     render() {
-        const {ui, updateUI, mapping, baseMapping, mimeType, isFeatureType, isSaving, onChange} = this.props;
+        const { ui, updateUI, mapping, baseMapping, mimeType, isFeatureType, isSaving, onChange } = this.props;
         const isSpatial = baseMapping.type === 'SPATIAL';
         const isTemporal = baseMapping.type === 'TEMPORAL';
         const isValue = baseMapping.type === 'VALUE';
@@ -82,34 +80,36 @@ export default class MappingEditHtml extends Component {
         }
 
         return (
-            <MappingEdit title={ mimeType }
-                mimeType={ mimeType }
-                mapping={ mapping }
-                baseMapping={ baseMapping }
-                isFeatureType={ isFeatureType }
-                showName={ show.name }
-                isSaving={ isSaving }
-                onChange={ onChange }
-                initStateExt={ initState }>
-                { show.format && <FormField label="Format">
-                                     <TextInputUi name="format"
-                                         placeHolder={ baseMapping.format }
-                                         value={ ui.format }
-                                         onChange={ updateUI } />
-                                 </FormField> }
-                { show.itemProp && <FormField label={ isJsonLd ? "Value type" : "Microdata itemprop" }>
-                                       <TextInputUi name="itemProp" value={ ui.itemProp } onChange={ updateUI } />
-                                   </FormField> }
-                { show.itemType && <FormField label={ isJsonLd ? "Node type" : "Microdata itemtype" }>
-                                       <TextInputUi name="itemType" value={ ui.itemType } onChange={ updateUI } />
-                                   </FormField> }
-                { show.showInCollection && <FormField label="Show in collection">
-                                               <CheckboxUi name="showInCollection"
-                                                   checked={ ui.showInCollection }
-                                                   toggle={ false }
-                                                   reverse={ false }
-                                                   onChange={ updateUI } />
-                                           </FormField> }
+            <MappingEdit title={mimeType}
+                mimeType={mimeType}
+                mapping={mapping}
+                baseMapping={baseMapping}
+                isFeatureType={isFeatureType}
+                showName={show.name}
+                isSaving={isSaving}
+                onChange={onChange}
+                initStateExt={initState}>
+                {show.format && <FormField label="Format">
+                    <TextInputUi name="format"
+                        placeHolder={baseMapping.format}
+                        value={ui.format}
+                        onChange={updateUI} />
+                </FormField>}
+                {show.itemProp && <FormField label={isJsonLd ? "Value type" : "Microdata itemprop"}>
+                    <TextInputUi name="itemProp" value={ui.itemProp} onChange={updateUI} />
+                </FormField>}
+                {show.itemType && <FormField label={isJsonLd ? "Node type" : "Microdata itemtype"}>
+                    <TextInputUi name="itemType" value={ui.itemType} onChange={updateUI} />
+                </FormField>}
+                {show.showInCollection && <FormField label="Show in collection">
+                    <Box pad={{ left: 'small', bottom: 'small' }}>
+                        <CheckboxUi name="showInCollection"
+                            checked={ui.showInCollection}
+                            toggle={false}
+                            reverse={false}
+                            onChange={updateUI} />
+                    </Box>
+                </FormField>}
             </MappingEdit>
         );
     }

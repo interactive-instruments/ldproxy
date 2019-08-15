@@ -1,22 +1,13 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { push } from 'redux-little-router'
 import { mutateAsync, requestAsync } from 'redux-query';
 import ui from 'redux-ui';
 
-import Section from 'grommet/components/Section';
-import Box from 'grommet/components/Box';
-import Header from 'grommet/components/Header';
-import Heading from 'grommet/components/Heading';
-import Footer from 'grommet/components/Footer';
-import Button from 'grommet/components/Button';
-import Select from 'grommet/components/Select';
-import Form from 'grommet/components/Form';
-import FormFields from 'grommet/components/FormFields';
-import FormField from 'grommet/components/FormField';
-import LinkPreviousIcon from 'grommet/components/icons/base/LinkPrevious';
+import {Box, Heading, Button, Select, Form, FormField} from 'grommet';
+import Header from 'xtraplatform-manager/src/components/common/Header';
+
+import {LinkPrevious as LinkPreviousIcon} from 'grommet-icons';
 
 import CodelistApi from '../../apis/CodelistApi'
 import TextInputUi from 'xtraplatform-manager/src/components/common/TextInputUi';
@@ -76,8 +67,6 @@ export default class CodelistAdd extends Component {
                     { /*sidebarControl*/ }
                 </Header>
                 <Form compact={ false } plain={ true } pad={ { horizontal: 'large', vertical: 'medium' } }>
-                    <FormFields>
-                        <fieldset>
                             <FormField label="URL" style={ { width: '100%' } }>
                                 <TextInputUi name="sourceUrl"
                                     autoFocus
@@ -92,11 +81,9 @@ export default class CodelistAdd extends Component {
                                                } } />
                             </FormField>
                             { children }
-                        </fieldset>
-                    </FormFields>
-                    <Footer pad={ { "vertical": "medium" } }>
+                    <Box as='footer' pad={ { "vertical": "medium" } }>
                         <Button label='Add' primary={ true } onClick={ (ui.sourceUrl.length < 11) ? null : this._addCodelist } />
-                    </Footer>
+                    </Box>
                 </Form>
             </div>
         );

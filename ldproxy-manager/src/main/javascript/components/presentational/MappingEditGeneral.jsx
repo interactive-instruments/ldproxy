@@ -23,7 +23,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ui from 'redux-ui';
 
-import FormField from 'grommet/components/FormField';
+import { FormField, Box } from 'grommet';
 
 import Codelists from '../container/Codelists'
 
@@ -47,7 +47,7 @@ const initState = {
 class MappingEditGeneral extends Component {
 
     render() {
-        let {ui, updateUI, title, mimeType, mapping, isFeatureType, isSaving, onChange, codelists} = this.props;
+        let { ui, updateUI, title, mimeType, mapping, isFeatureType, isSaving, onChange, codelists } = this.props;
         const isSpatial = mapping.type === 'SPATIAL';
         const isTemporal = mapping.type === 'TEMPORAL';
         const isValue = mapping.type === 'VALUE';
@@ -79,33 +79,35 @@ class MappingEditGeneral extends Component {
         }
 
         return (
-            <MappingEdit title={ title }
+            <MappingEdit title={title}
                 heading="h3"
-                smaller={ false }
-                mimeType={ mimeType }
-                mapping={ mapping }
-                isFeatureType={ isFeatureType }
-                showName={ show.name }
-                isSaving={ isSaving }
-                onChange={ onChange }
-                initStateExt={ initState }>
-                { show.codelist && <FormField label="Codelist">
-                                       <SelectUi name="codelist"
-                                           placeHolder='None'
-                                           options={ options }
-                                           value={ value }
-                                           onChange={ updateUI } />
-                                   </FormField> }
-                { show.format && <FormField label="Format">
-                                     <TextInputUi name="format" value={ ui.format } onChange={ updateUI } />
-                                 </FormField> }
-                { show.filterable && <FormField label={ isSpatial ? "Use for bbox filters" : isTemporal ? "Use for time filters" : "Usable in filters" }>
-                                         <CheckboxUi name="filterable"
-                                             checked={ ui.filterable }
-                                             toggle={ false }
-                                             reverse={ false }
-                                             onChange={ updateUI } />
-                                     </FormField> }
+                smaller={false}
+                mimeType={mimeType}
+                mapping={mapping}
+                isFeatureType={isFeatureType}
+                showName={show.name}
+                isSaving={isSaving}
+                onChange={onChange}
+                initStateExt={initState}>
+                {/*show.codelist && <FormField label="Codelist">
+                    <SelectUi name="codelist"
+                        placeHolder='None'
+                        options={options}
+                        value={value}
+                        onChange={updateUI} />
+                </FormField>}
+                {show.format && <FormField label="Format">
+                    <TextInputUi name="format" value={ui.format} onChange={updateUI} />
+                </FormField>}
+                {show.filterable && <FormField label={isSpatial ? "Use for bbox filters" : isTemporal ? "Use for time filters" : "Usable in filters"}>
+                    <Box pad={{ left: 'small', bottom: 'small' }}>
+                        <CheckboxUi name="filterable"
+                            checked={ui.filterable}
+                            toggle={false}
+                            reverse={false}
+                            onChange={updateUI} />
+                    </Box>
+        </FormField>*/}
             </MappingEdit>
         );
     }
