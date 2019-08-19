@@ -28,15 +28,13 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * add styles information to the dataset metadata
+ * add styles information to the landing page
  *
  */
-
-
 @Component
 @Provides
 @Instantiate
-public class Wfs3DatasetMetdataStyles implements Wfs3DatasetMetadataExtension {
+public class StylesOnLandingPage implements Wfs3DatasetMetadataExtension {
 
     @Requires
     private KeyValueStore keyValueStore;
@@ -48,23 +46,26 @@ public class Wfs3DatasetMetdataStyles implements Wfs3DatasetMetadataExtension {
     public ImmutableWfs3Collections.Builder process(ImmutableWfs3Collections.Builder collections, URICustomizer uriCustomizer, Collection<FeatureTypeConfigurationWfs3> featureTypeConfigurationsWfs3, Wfs3ServiceData serviceData) {
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
-        List<Wfs3Link> wfs3Links = stylesLinkGenerator.generateDatasetLinks(uriCustomizer);
+        List<Wfs3Link> wfs3Links = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer);
         collections.addLinks(wfs3Links.get(0));
 
-        List<String> stylesList = keyValueStore.getChildStore("styles")
+        List<String> styleDocumentList = keyValueStore.getChildStore("styles")
                                                .getChildStore(serviceData.getId())
                                                .getKeys();
 
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(serviceData, StylesConfiguration.class);
 
+        // TODO: review maps
         if (stylesExtension.isPresent() && stylesExtension.get()
                                                           .getMapsEnabled()) {
             ImmutableList.Builder<Map<String, String>> mapLinks = ImmutableList.builder();
 
-            for (String style : stylesList) {
-                String styleId = style.split("\\.")[0];
-                mapLinks.add(ImmutableMap.of("title", styleId, "url", uriCustomizer.ensureLastPathSegments("maps", styleId)
-                                                                                   .toString(), "target", "_blank"));
+            for (String styleDoc : styleDocumentList) {
+                String styleId = styleDoc.substring(0,styleDoc.lastIndexOf("."));
+                mapLinks.add(ImmutableMap.of("title", styleId,
+                        "url", uriCustomizer.ensureLastPathSegments("maps", styleId)
+                                                .toString(),
+                        "target", "_blank"));
             }
 
             collections.addSections(ImmutableMap.of("title", "Maps", "links", mapLinks.build()));

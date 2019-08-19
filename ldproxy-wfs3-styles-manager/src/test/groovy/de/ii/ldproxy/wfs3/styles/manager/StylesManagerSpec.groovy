@@ -20,7 +20,7 @@ class StylesManagerSpec extends Specification{
 
         when: "validateRequestBodyJSON is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         then:'it should return null'
 
@@ -36,7 +36,7 @@ class StylesManagerSpec extends Specification{
 
         when: "validateRequestBodyJSON is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         then:'it should return null'
 
@@ -53,7 +53,7 @@ class StylesManagerSpec extends Specification{
 
         when: "validateRequestBodyJSON is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         then:'it should return null'
 
@@ -69,7 +69,7 @@ class StylesManagerSpec extends Specification{
 
         when: "validateRequestBodyJSON is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         then:'it should not return null'
 
@@ -103,11 +103,11 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         when: "validateRequestBody is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
 
         then:'it should return false'
 
@@ -144,11 +144,11 @@ class StylesManagerSpec extends Specification{
 
 
 
-        def requestBodyJsonNode= Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         when: "validateRequestBody is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
 
         then:'it should return false'
 
@@ -179,11 +179,11 @@ class StylesManagerSpec extends Specification{
                 "}"
 
 
-        def requestBodyJsonNode= Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         when: "validateRequestBody is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
 
         then:'it should return false'
 
@@ -206,12 +206,12 @@ class StylesManagerSpec extends Specification{
                 "  \"sprite\": \"mapbox://sprites/mapbox/bright-v8\"\n" +
                 "}"
 
-        def requestBodyJsonNode = Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode = EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         when: "validateRequestBody is called"
 
 
-        def result = Wfs3EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
 
         then:'it should return false'
 
@@ -245,11 +245,11 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         when: "validateRequestBody is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
 
         then:'it should return false'
 
@@ -282,11 +282,11 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         when: "validateRequestBody is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
 
         then:'it should return false'
 
@@ -330,11 +330,11 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         when: "validateRequestBody is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
 
         then:'it should return false'
 
@@ -380,11 +380,11 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= Wfs3EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
 
         when: "validateRequestBody is called"
 
-        def result = Wfs3EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
 
         then:'it should return true'
 

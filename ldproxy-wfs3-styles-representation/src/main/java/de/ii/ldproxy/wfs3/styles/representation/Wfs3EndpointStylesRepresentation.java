@@ -13,7 +13,6 @@ import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
-import de.ii.ldproxy.wfs3.styles.Wfs3EndpointStyles;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.server.CoreServerConfig;
 import de.ii.xtraplatform.service.api.Service;
@@ -98,7 +97,7 @@ public class Wfs3EndpointStylesRepresentation implements Wfs3EndpointExtension {
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
                                                  .getChildStore(service.getId());
         List<String> styles = stylesStore.getKeys();
-        Wfs3EndpointStyles.getStyleToDisplay(stylesStore, styles, styleId);
+        // TODO EndpointStyles.getStyleDocument(stylesStore, styleId, "mbs");
 
         String prefix = coreServerConfig.getExternalUrl();
 

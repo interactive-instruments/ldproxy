@@ -8,6 +8,8 @@
 package de.ii.ldproxy.wfs3.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -20,6 +22,8 @@ import java.awt.*;
  * @author zahnen
  */
 @Value.Immutable
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonDeserialize(as = ImmutableWfs3Link.class)
 @XmlType(propOrder={"rel","type","title", "href","templated"})
 public abstract class Wfs3Link {
 

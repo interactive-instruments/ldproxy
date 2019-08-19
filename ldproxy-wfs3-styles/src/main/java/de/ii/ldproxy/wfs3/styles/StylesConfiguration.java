@@ -32,4 +32,39 @@ public abstract class StylesConfiguration implements ExtensionConfiguration {
     public boolean getMapsEnabled() {
         return false;
     }
+
+    @Value.Default
+    public boolean getValidationEnabled() {
+        return false;
+    }
+
+    @Value.Default
+    public boolean getResourcesEnabled() {
+        return false;
+    }
+
+    @Value.Default
+    public boolean getResourceManagerEnabled() {
+        return false;
+    }
+
+    @Value.Default
+    public boolean getHtmlEnabled() {
+        return false;
+    }
+
+    @Value.Default
+    public boolean getMbStyleEnabled() {
+        return false;
+    }
+
+    @Value.Default
+    public boolean getSld10Enabled() {
+        return false;
+    }
+
+    @Value.Default
+    public boolean getSld11Enabled() {
+        return false;
+    }
 }
