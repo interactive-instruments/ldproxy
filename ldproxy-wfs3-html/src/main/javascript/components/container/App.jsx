@@ -28,7 +28,7 @@ export default class App extends Component {
             ignoreQueryPrefix: true
         });
 
-        const filters = Object.keys(fields).concat(['bbox', 'time']).reduce((filters, field) => {
+        const filters = Object.keys(fields).concat(['bbox', 'datetime']).reduce((filters, field) => {
             if (query[field]) {
                 filters[field] = {
                     value: field === 'bbox'
@@ -109,7 +109,7 @@ export default class App extends Component {
             ignoreQueryPrefix: true
         });
         delete query['offset'];
-        Object.keys(fields).concat(['bbox', 'time']).forEach(field => {
+        Object.keys(fields).concat(['bbox', 'datetime']).forEach(field => {
             delete query[field];
             if (newFilters[field]) {
                 query[field] = field === 'bbox'
@@ -185,7 +185,7 @@ export default class App extends Component {
             return `bbox≈${parseFloat(filters[field].value[0]).toFixed(2)},${parseFloat(filters[field].value[1]).toFixed(2)},${parseFloat(filters[field].value[2]).toFixed(2)},${parseFloat(filters[field].value[3]).toFixed(2)}`
         }
 
-        if (field === 'time') {
+        if (field === 'datetime') {
             return toTimeLabel(filters[field].value);
         }
 
@@ -252,9 +252,9 @@ export default class App extends Component {
                                                   [k]: fields[k]
                                               }), {}) } onChange={ this._addFilter } />
                         <BboxFilter bbox={ bbox } onChange={ this._addFilter } />
-                        <TimeFilter start={ time.start }
-                            end={ time.end }
-                            filter={ filters.time ? filters.time.value : null }
+                        <TimeFilter start={ datetime.start }
+                            end={ datetime.end }
+                            filter={ filters.datetime ? filters.datetime.value : null }
                             onChange={ this._addFilter } />
                         </Col>
                         <Col md="6">

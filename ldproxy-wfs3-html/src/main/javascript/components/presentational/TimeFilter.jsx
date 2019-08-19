@@ -22,12 +22,12 @@ const fromFilterString = (filter) => {
 }
 
 export const toTimeLabel = (filter) => {
-    const time = fromFilterString(filter);
+    const datetime = fromFilterString(filter);
 
-    if (!time.end) {
-        return `time=${moment.utc(time.start).format('DD.MM.YY HH:mm:ss')}`;
+    if (!datetime.end) {
+        return `datetime=${moment.utc(datetime.start).format('DD.MM.YY HH:mm:ss')}`;
     }
-    return `time=${moment.utc(time.start).format('DD.MM.YY HH:mm:ss')} - ${moment.utc(time.end).format('DD.MM.YY HH:mm:ss')}`;
+    return `datetime=${moment.utc(datetime.start).format('DD.MM.YY HH:mm:ss')} - ${moment.utc(datetime.end).format('DD.MM.YY HH:mm:ss')}`;
 }
 
 export default class TimeFilter extends Component {
@@ -57,7 +57,7 @@ export default class TimeFilter extends Component {
         event.stopPropagation();
 
         onChange({
-            field: 'time',
+            field: 'datetime',
             value: this._getTimeString()
         });
     }
@@ -79,7 +79,7 @@ export default class TimeFilter extends Component {
         return (
             <Form onSubmit={ this._apply }>
                 <p className="text-muted text-uppercase">
-                    time
+                    date/time
                 </p>
                 <ButtonGroup className="mb-3">
                     <Button color="primary"
