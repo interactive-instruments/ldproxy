@@ -51,6 +51,9 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
             .put("html", MediaType.TEXT_HTML_TYPE)
             .put("xml", MediaType.APPLICATION_XML_TYPE)
             .put("mvt", new MediaType ("application","vnd.mapbox-vector-tile"))
+            .put("mbs", new MediaType ("application","vnd.mapbox.style+json"))
+            .put("sld10", new MediaType ("application","vnd.ogc.sld+xml;version=1.0"))
+            .put("sld11", new MediaType ("application","vnd.ogc.sld+xml;version=1.1"))
             .put("jsonp", new MediaType ("application","javascript"))
             .build();
 
@@ -91,11 +94,18 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
 
     private Optional<Wfs3MediaType> negotiateMediaType(Request request) {
         //TODO: mvt is added explicitely, adjust Wfs3ExtensionRegistry to support additional types
-        Stream<MediaType> mediaTypeStream = Stream.concat(wfs3ConformanceClassRegistry.getOutputFormats()
-                .keySet()
-                .stream()
-                .flatMap(this::toTypes)
-                .distinct(), Stream.of(MIME_TYPES.get("mvt"), MIME_TYPES.get("jsonp")));
+        Stream<MediaType> mediaTypeStream =
+                Stream.concat(
+                        Stream.concat(
+                                wfs3ConformanceClassRegistry.getOutputFormats()
+                                        .keySet()
+                                        .stream(),
+                                wfs3ConformanceClassRegistry.getStyleFormats()
+                                        .keySet()
+                                        .stream())
+                                .flatMap(this::toTypes)
+                                .distinct(),
+                        Stream.of(MIME_TYPES.get("mvt"), MIME_TYPES.get("jsonp")));
 
         MediaType[] supportedMediaTypes = mediaTypeStream.toArray(MediaType[]::new);
 
@@ -109,14 +119,22 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
 
     private Wfs3MediaType findMatchingWfs3MediaType(Variant variant) {
         //TODO: mvt is added explicitely, adjust Wfs3ExtensionRegistry to support additional types
-        Stream<Wfs3MediaType> wfs3MediaTypeStream = Stream.concat(wfs3ConformanceClassRegistry.getOutputFormats()
-                .keySet()
-                .stream(), Stream.of(ImmutableWfs3MediaType.builder()
-                .main(MIME_TYPES.get("mvt"))
-                .build(),
-                ImmutableWfs3MediaType.builder()
-                                      .main(MIME_TYPES.get("jsonp"))
-                                      .build()));
+        Stream<Wfs3MediaType> wfs3MediaTypeStream =
+                Stream.concat(
+                    Stream.concat(
+                        wfs3ConformanceClassRegistry.getOutputFormats()
+                            .keySet()
+                            .stream(),
+                        wfs3ConformanceClassRegistry.getStyleFormats()
+                            .keySet()
+                            .stream()),
+                    Stream.of(
+                            ImmutableWfs3MediaType.builder()
+                                .main(MIME_TYPES.get("mvt"))
+                                .build(),
+                            ImmutableWfs3MediaType.builder()
+                                .main(MIME_TYPES.get("jsonp"))
+                                .build()));
 
         return wfs3MediaTypeStream.filter(wfs3MediaType -> wfs3MediaType.matches(variant.getMediaType()))
                 .findFirst()

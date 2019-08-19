@@ -16,21 +16,7 @@ import akka.stream.javadsl.StreamConverters;
 import akka.util.ByteString;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Collection;
-import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.Wfs3StartupTask;
+import de.ii.ldproxy.wfs3.api.*;
 import de.ii.ldproxy.wfs3.core.Wfs3Core;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
@@ -114,6 +100,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements de.
 
     private List<Wfs3ConformanceClass> wfs3ConformanceClasses;
     private final Map<Wfs3MediaType, Wfs3OutputFormatExtension> wfs3OutputFormats;
+    private final Map<Wfs3MediaType, StyleFormatExtension> styleFormats;
     private final List<Wfs3StartupTask> wfs3StartupTasks;
 
     private CrsTransformer defaultTransformer;
@@ -126,6 +113,8 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements de.
         super();
         this.wfs3ConformanceClasses = wfs3ConformanceClassRegistry.getConformanceClasses();
         this.wfs3OutputFormats = wfs3ConformanceClassRegistry.getOutputFormats();
+        // TODO: move out of feature service, once xtraplatform has been updated
+        this.styleFormats = wfs3ConformanceClassRegistry.getStyleFormats();
         this.wfs3StartupTasks = wfs3ConformanceClassRegistry.getStartupTasks();
 
         this.additonalTransformers = new LinkedHashMap<>();
@@ -211,6 +200,25 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements de.
         return (Wfs3ServiceData) super.getData();
     }
 
+    // TODO: move out of feature service, once xtraplatform has been updated
+    public StyleFormatExtension getStyleFormatForService(Wfs3MediaType mediaType,Wfs3ServiceData serviceData){
+
+        StyleFormatExtension ext = styleFormats.get(mediaType);
+        if(ext==null || !ext.isEnabledForService(serviceData)){
+            throw new NotAcceptableException();
+        }
+        return ext;
+    }
+
+    // TODO: move out of feature service, once xtraplatform has been updated
+    public boolean isAlternativeStyleMediaTypeEnabled(Wfs3MediaType mediaType,Wfs3ServiceData serviceData){
+
+        StyleFormatExtension ext = styleFormats.get(mediaType);
+        if(ext==null || !ext.isEnabledForService(serviceData)){
+            return false;
+        }
+        return true;
+    }
     private Wfs3OutputFormatExtension getOutputFormatForService(Wfs3MediaType mediaType,Wfs3ServiceData serviceData){
 
         if(!wfs3OutputFormats.get(mediaType).isEnabledForService(serviceData)){
@@ -377,6 +385,24 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements de.
                                 .filter(wfs3MediaType -> wfs3MediaType.matches(mediaType))
                                 .findFirst()
                                 .orElseThrow(NotAcceptableException::new);
+    }
+
+    // TODO: move out of feature service, once xtraplatform has been updated
+    private Wfs3MediaType[] getAlternativeStyleMediaTypes(Wfs3MediaType mediaType, Wfs3ServiceData serviceData) {
+        return styleFormats.keySet()
+                .stream()
+                .filter(wfs3MediaType -> !wfs3MediaType.equals(mediaType))
+                .filter(wfs3MediaType -> isAlternativeStyleMediaTypeEnabled(wfs3MediaType,serviceData))
+                .toArray(Wfs3MediaType[]::new);
+    }
+
+    // TODO: move out of feature service, once xtraplatform has been updated
+    private Wfs3MediaType checkStyleMediaType(MediaType mediaType) {
+        return styleFormats.keySet()
+                .stream()
+                .filter(wfs3MediaType -> wfs3MediaType.matches(mediaType))
+                .findFirst()
+                .orElseThrow(NotAcceptableException::new);
     }
 
     private void checkCollectionName(String collectionName) {

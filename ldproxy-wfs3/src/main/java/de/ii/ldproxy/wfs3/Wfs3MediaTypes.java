@@ -17,6 +17,7 @@ import java.util.Map;
  */
 public class Wfs3MediaTypes {
 
+    // TODO: change so that always only the acceptable media types per resource are checked
     public static final String JSON = MediaType.APPLICATION_JSON;
     public static final String XML = MediaType.APPLICATION_XML;
     public static final String HTML = MediaType.TEXT_HTML;
@@ -24,6 +25,9 @@ public class Wfs3MediaTypes {
     public static final String GML = "application/gml+xml;version=3.2;profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf2";
     public static final String MVT = "application/vnd.mapbox-vector-tile";
     public static final String JSONP = "application/javascript";
+    public static final String MBS = "application/vnd.mapbox.style+json";
+    public static final String SLD10 = "application/vnd.ogc.sld+xml;version=1.0";
+    // public static final String SLD11 = "application/vnd.ogc.sld+xml;version=1.1";
 
     public static final Map<String, String> NAMES = new ImmutableMap.Builder<String, String>()
             .put(JSON, "JSON")
@@ -32,6 +36,9 @@ public class Wfs3MediaTypes {
             .put(GEO_JSON, "GeoJSON")
             .put(GML, "GML")
             .put(MVT, "Mapbox Vector Tile")
+            .put(MBS, "Mapbox Style")
+            .put(SLD10, "OGC SLD 1.0")
+            // .put(SLD11, "OGC SLD 1.1")
             .build();
 
     public static final Map<String, String> FORMATS = new ImmutableMap.Builder<String, String>()
@@ -41,6 +48,9 @@ public class Wfs3MediaTypes {
             .put(GEO_JSON, "json")
             .put(GML, "xml")
             .put(MVT, "mvt")
+            .put(MBS, "mbs")
+            .put(SLD10, "mld10")
+            // .put(SLD11, "sld11")
             .build();
 
     public static final Map<String, String> FEATURE = new ImmutableMap.Builder<String, String>()

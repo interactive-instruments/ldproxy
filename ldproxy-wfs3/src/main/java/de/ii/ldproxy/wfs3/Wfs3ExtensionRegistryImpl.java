@@ -8,14 +8,7 @@
 package de.ii.ldproxy.wfs3;
 
 import com.google.common.collect.Lists;
-import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3Extension;
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3StartupTask;
+import de.ii.ldproxy.wfs3.api.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -53,6 +46,7 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
     private final List<Wfs3Extension> wfs3Extensions;
     private final List<Wfs3ConformanceClass> wfs3ConformanceClasses;
     private final Map<Wfs3MediaType, Wfs3OutputFormatExtension> wfs3OutputFormats;
+    private final Map<Wfs3MediaType, StyleFormatExtension> styleFormats;
     private final List<Wfs3EndpointExtension> wfs3Endpoints;
     private final List<Wfs3StartupTask> wfs3StartupTasks;
     private final List<Wfs3ParameterExtension> wfs3Parameters;
@@ -62,6 +56,7 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
         this.wfs3Extensions = new ArrayList<>();
         this.wfs3ConformanceClasses = Lists.newArrayList(() -> "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core");
         this.wfs3OutputFormats = new LinkedHashMap<>();
+        this.styleFormats = new LinkedHashMap<>();
         this.wfs3Endpoints = new ArrayList<>();
         this.wfs3StartupTasks = new ArrayList<>();
         this.wfs3Parameters = new ArrayList<>();
@@ -80,6 +75,11 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
     @Override
     public Map<Wfs3MediaType, Wfs3OutputFormatExtension> getOutputFormats() {
         return wfs3OutputFormats;
+    }
+
+    @Override
+    public Map<Wfs3MediaType, StyleFormatExtension> getStyleFormats() {
+        return styleFormats;
     }
 
     @Override
@@ -117,6 +117,15 @@ public class Wfs3ExtensionRegistryImpl implements Wfs3ExtensionRegistry {
                 LOGGER.debug("WFS3 OUTPUT FORMAT {}", wfs3OutputFormat.getMediaType());
 
                 wfs3OutputFormats.put(wfs3OutputFormat.getMediaType(), wfs3OutputFormat);
+            }
+
+            if (wfs3Extension instanceof StyleFormatExtension) {
+                final StyleFormatExtension styleFormat = (StyleFormatExtension) wfs3Extension;
+
+                LOGGER.debug("WFS3 STYLE FORMAT {}", styleFormat.getMediaType());
+                LOGGER.debug("WFS3 STYLE FILE_EXTENSION {}", styleFormat.getFileExtension());
+
+                styleFormats.put(styleFormat.getMediaType(), styleFormat);
             }
 
             if (wfs3Extension instanceof Wfs3EndpointExtension) {

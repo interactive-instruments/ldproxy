@@ -21,6 +21,8 @@ public interface Wfs3ExtensionRegistry {
 
     Map<Wfs3MediaType, Wfs3OutputFormatExtension> getOutputFormats();
 
+    Map<Wfs3MediaType, StyleFormatExtension> getStyleFormats();
+
     List<Wfs3EndpointExtension> getEndpoints();
 
     List<Wfs3StartupTask> getStartupTasks();
