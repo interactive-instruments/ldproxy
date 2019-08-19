@@ -14,3 +14,4 @@ buildSrc/
 artillery/
 packaging/
 gradle.properties
+.DS_Store
