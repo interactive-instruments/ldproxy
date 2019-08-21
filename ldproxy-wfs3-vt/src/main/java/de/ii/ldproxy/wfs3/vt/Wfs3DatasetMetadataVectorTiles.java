@@ -7,53 +7,43 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collections;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.Wfs3DatasetMetadataExtension;
+import de.ii.ldproxy.ogcapi.domain.ImmutableDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.Wfs3DatasetMetadataExtension;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
  * add tiling information to the dataset metadata
- *
  */
 @Component
 @Provides
 @Instantiate
 public class Wfs3DatasetMetadataVectorTiles implements Wfs3DatasetMetadataExtension {
 
-
     @Override
-    public ImmutableWfs3Collections.Builder process(ImmutableWfs3Collections.Builder collections, URICustomizer uriCustomizer, Collection<FeatureTypeConfigurationWfs3> featureTypeConfigurationsWfs3, Wfs3ServiceData serviceData) {
-        final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
+    public ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData datasetData,
+                                            URICustomizer uriCustomizer, OgcApiMediaType mediaType,
+                                            List<OgcApiMediaType> alternativeMediaTypes) {
 
-        if (checkTilesEnabled(featureTypeConfigurationsWfs3, serviceData)) {
+        if (checkTilesEnabled(datasetData)) {
+            final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
             List<Wfs3Link> wfs3Links = vectorTilesLinkGenerator.generateDatasetLinks(uriCustomizer);
-            collections.addLinks(wfs3Links.get(0));
-            collections.addLinks(wfs3Links.get(1));
+            datasetBuilder.addAllLinks(wfs3Links);
         }
-        return collections;
+        return datasetBuilder;
     }
 
-    /**
-     * Check if the Tiles Extension is at least enabled in one collection
-     *
-     * @param featureTypeConfigurationsWfs3     feature type Configuration of all feature Types of the dataset
-     * @return true if tiles extension enabled
-     */
-    private boolean checkTilesEnabled(Collection<FeatureTypeConfigurationWfs3> featureTypeConfigurationsWfs3, Wfs3ServiceData serviceData) { //check if endpoint is enabled
-        for (FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3 : featureTypeConfigurationsWfs3) {
-            if (isExtensionEnabled(serviceData, featureTypeConfigurationWfs3, TilesConfiguration.class)) {
-                return true;
-            }
-        }
-        return false;
+    private boolean checkTilesEnabled(OgcApiDatasetData datasetData) {
+        return datasetData.getFeatureTypes()
+                          .values()
+                          .stream()
+                          .anyMatch(featureTypeConfigurationOgcApi -> isExtensionEnabled(datasetData, featureTypeConfigurationOgcApi, TilesConfiguration.class));
     }
 }

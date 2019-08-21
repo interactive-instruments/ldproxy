@@ -7,20 +7,22 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.xtraplatform.service.api.Service;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -43,7 +45,16 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
+public class Wfs3EndpointTilingSchemes implements OgcApiEndpointExtension {
+
+    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
+            .apiEntrypoint("tilingSchemes")
+            .build();
+    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.APPLICATION_JSON_TYPE)
+                    .build()
+    );
 
     private final VectorTilesCache cache;
     private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
@@ -55,33 +66,19 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
         // TODO: populate tiling scheme registry with default tiling scheme(s)
     }
 
-
     @Override
-    public String getPath() {
-        return "tilingSchemes";
+    public OgcApiContext getApiContext() {
+        return API_CONTEXT;
     }
 
     @Override
-    public String getSubPathRegex() {
-        return "^\\/?.*$";
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
+        return API_MEDIA_TYPES;
     }
 
     @Override
-    public List<String> getMethods() {
-        return ImmutableList.of("GET");
-    }
-
-    @Override
-    public boolean matches(String firstPathSegment, String method, String subPath) {
-        return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
-    }
-
-    @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, TilesConfiguration.class)) {
-            throw new NotFoundException();
-        }
-        return true;
+    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+        return isExtensionEnabled(datasetData, TilesConfiguration.class);
     }
 
     /**
@@ -92,10 +89,9 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
     @Path("/")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingSchemes(@Context Service service, @Context Wfs3RequestContext wfs3Request) {
+    public Response getTilingSchemes(@Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
 
-        Wfs3Service wfsService = Wfs3EndpointTiles.wfs3ServiceCheck(service);
-        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(wfsService.getData()));
+        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
         List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
@@ -121,10 +117,10 @@ public class Wfs3EndpointTilingSchemes implements Wfs3EndpointExtension {
     @Path("/{tilingSchemeId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingScheme(@PathParam("tilingSchemeId") String tilingSchemeId, @Context Service service) {
+    public Response getTilingScheme(@PathParam("tilingSchemeId") String tilingSchemeId,
+                                    @Context OgcApiDataset service) {
 
-        Wfs3Service wfsService = Wfs3EndpointTiles.wfs3ServiceCheck(service);
-        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(wfsService.getData()));
+        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
 
 
         File file = cache.getTilingScheme(tilingSchemeId);

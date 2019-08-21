@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.target.gml;
 
-import de.ii.ldproxy.wfs3.api.Wfs3Extent;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Extent;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;

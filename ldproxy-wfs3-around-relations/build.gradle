@@ -1,8 +1,9 @@
 
-version = '1.4.0'
+version = '1.4.1'
 
 dependencies {
     provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-ogcapi")
     provided project(":ldproxy-wfs3-core")
     provided project(":ldproxy-wfs3-geojson")
     provided project(":ldproxy-wfs3-oas30")
@@ -15,6 +16,7 @@ dependencies {
     embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.15.1')
 
     testImplementation group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
+    testImplementation group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
     testImplementation group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
 }
 

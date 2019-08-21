@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3.api;
 
 import de.ii.xtraplatform.service.api.ServiceData;
-import de.ii.xtraplatform.service.api.ServiceDataWithStatus;
+import de.ii.xtraplatform.service.api.ServiceStatus;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -18,9 +18,9 @@ import javax.annotation.Nullable;
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-public abstract class Wfs3ServiceStatus extends ServiceData {
+public abstract class Wfs3ServiceStatus implements ServiceData {
 
-    public abstract ServiceDataWithStatus.STATUS getStatus();
+    public abstract ServiceStatus.STATUS getStatus();
 
     @Value.Default
     public boolean getHasBackgroundTask() {

@@ -8,15 +8,16 @@
 package de.ii.ldproxy.wfs3.api;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.DefaultValue;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
 
@@ -34,7 +35,7 @@ public interface FeatureTransformationContext {
         GEOMETRY_END
     }
 
-    Wfs3ServiceData getServiceData();
+    OgcApiDatasetData getServiceData();
 
     String getCollectionName();
 
@@ -47,15 +48,26 @@ public interface FeatureTransformationContext {
     boolean isFeatureCollection();
 
     @Value.Default
-    default boolean isHitsOnly() {return false;}
+    default boolean isHitsOnly() {
+        return false;
+    }
 
     @Value.Default
-    default boolean isPropertyOnly() {return false;}
+    default boolean isHitsOnlyIfMore() {
+        return false;
+    }
 
     @Value.Default
-    default List<String> getFields() {return ImmutableList.of("*");}
+    default boolean isPropertyOnly() {
+        return false;
+    }
 
-    Wfs3RequestContext getWfs3Request();
+    @Value.Default
+    default List<String> getFields() {
+        return ImmutableList.of("*");
+    }
+
+    OgcApiRequestContext getWfs3Request();
 
     int getLimit();
 
@@ -73,10 +85,10 @@ public interface FeatureTransformationContext {
     @Value.Derived
     default String getServiceUrl() {
         return getWfs3Request().getUriCustomizer()
-                          .copy()
-                          .cutPathAfterSegments(getServiceData().getId())
-                          .clearParameters()
-                          .toString();
+                               .copy()
+                               .cutPathAfterSegments(getServiceData().getId())
+                               .clearParameters()
+                               .toString();
     }
 
     // to generalization module
@@ -85,13 +97,28 @@ public interface FeatureTransformationContext {
         return 0;
     }
 
+    @Value.Default
+    default boolean shouldSwapCoordinates() {
+        return false;
+    }
+
+    @Value.Default
+    default int getGeometryPrecision() {
+        return 0;
+    }
+
     //@Value.Modifiable
     abstract class State {
         public abstract Event getEvent();
+
         public abstract OptionalLong getNumberReturned();
+
         public abstract OptionalLong getNumberMatched();
+
         public abstract Optional<TargetMapping> getCurrentMapping();
+
         public abstract List<Integer> getCurrentMultiplicity();
+
         public abstract Optional<String> getCurrentValue();
     }
 }

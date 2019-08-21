@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.target.html;
 
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 
@@ -40,9 +40,9 @@ public class FeatureCollectionView extends DatasetView {
     public boolean hideMetadata;
     public boolean showFooterText = true;
     public FeaturePropertyDTO links;
-    public Set<Map.Entry<String,String>> filterFields;
-    public Map<String,String> bbox2;
-    public TemporalExtent temporalExtent;
+    public Set<Map.Entry<String, String>> filterFields;
+    public Map<String, String> bbox2;
+    public FeatureTypeConfigurationOgcApi.TemporalExtent temporalExtent;
     public URICustomizer uriBuilder;
     public URICustomizer uriBuilder2;
     public boolean bare;
@@ -50,37 +50,56 @@ public class FeatureCollectionView extends DatasetView {
     public boolean isCollection;
     public boolean spatialSearch;
 
-    public FeatureCollectionView(String template, URI uri, String name, String title, String urlPrefix, HtmlConfig htmlConfig) {
+    public FeatureCollectionView(String template, URI uri, String name, String title, String urlPrefix,
+                                 HtmlConfig htmlConfig) {
         super(template, uri, name, title, urlPrefix, htmlConfig);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
     }
 
     public Optional<String> getCanonicalUrl() throws URISyntaxException {
-        String bla = uriBuilder2.copy().clearParameters().toString() + "?";
-        String bla2 = uriBuilder2.copy().removeParameters("f").toString();
+        String bla = uriBuilder2.copy()
+                                .clearParameters()
+                                .toString() + "?";
+        String bla2 = uriBuilder2.copy()
+                                 .removeParameters("f")
+                                 .toString();
 
         boolean hasOtherParams = !bla.equals(bla2);
-        boolean hasPrevLink = Objects.nonNull(metaPagination) && metaPagination.stream().anyMatch(navigationDTO -> "prev".equals(navigationDTO.label));
+        boolean hasPrevLink = Objects.nonNull(metaPagination) && metaPagination.stream()
+                                                                               .anyMatch(navigationDTO -> "prev".equals(navigationDTO.label));
 
         return !hasOtherParams && (!isCollection || !hasPrevLink)
-                ? Optional.of(uriBuilder2.copy().clearParameters().ensureNoTrailingSlash().toString())
+                ? Optional.of(uriBuilder2.copy()
+                                         .clearParameters()
+                                         .ensureNoTrailingSlash()
+                                         .toString())
                 : Optional.empty();
     }
 
     public String getQueryWithoutPage() {
-        List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Charset.forName("utf-8")).stream()
-                .filter(kvp -> !kvp.getName().equals("page") && !kvp.getName().equals("startIndex") && !kvp.getName().equals("offset") && !kvp.getName().equals("limit"))
-                .collect(Collectors.toList());
+        List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Charset.forName("utf-8"))
+                                                   .stream()
+                                                   .filter(kvp -> !kvp.getName()
+                                                                      .equals("page") && !kvp.getName()
+                                                                                             .equals("startIndex") && !kvp.getName()
+                                                                                                                          .equals("offset") && !kvp.getName()
+                                                                                                                                                   .equals("limit"))
+                                                   .collect(Collectors.toList());
 
         return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';
     }
 
     public Function<String, String> getCurrentUrlWithSegment() {
-        return segment -> uriBuilder.copy().ensureLastPathSegment(segment).toString();
+        return segment -> uriBuilder.copy()
+                                    .ensureLastPathSegment(segment)
+                                    .toString();
     }
 
     public Function<String, String> getCurrentUrlWithSegmentClearParams() {
-        return segment -> uriBuilder.copy().ensureLastPathSegment(segment).clearParameters().toString();
+        return segment -> uriBuilder.copy()
+                                    .ensureLastPathSegment(segment)
+                                    .clearParameters()
+                                    .toString();
     }
 }

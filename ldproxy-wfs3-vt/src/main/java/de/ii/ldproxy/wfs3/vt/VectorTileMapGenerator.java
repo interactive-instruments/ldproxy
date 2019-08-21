@@ -8,8 +8,8 @@
 package de.ii.ldproxy.wfs3.vt;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.wfs3.api.Wfs3Extension;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,18 +21,19 @@ import java.util.Set;
  * class, which creates Maps for easier access from the service Data
  *
  */
-public class VectorTileMapGenerator implements Wfs3Extension {
+//TODO: this is not an extension, misused to have access to isExtensionEnabled and getExtensionConfiguration
+public class VectorTileMapGenerator implements OgcApiExtension {
 
     /**
      * checks if the tiles extension is available and returns a Set with all collectionIds
-     * @param serviceData       the service data of the Wfs3 Service
+     * @param datasetData       the service data of the Wfs3 Service
      * @return a set with all CollectionIds, which have the tiles Extension
      */
-    public Set<String> getAllCollectionIdsWithTileExtension(Wfs3ServiceData serviceData) {
+    public Set<String> getAllCollectionIdsWithTileExtension(OgcApiDatasetData datasetData) {
         Set<String> collectionIds = new HashSet<String>();
-        for (String collectionId : serviceData.getFeatureTypes()
+        for (String collectionId : datasetData.getFeatureTypes()
                                               .keySet())
-            if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes()
+            if (isExtensionEnabled(datasetData, datasetData.getFeatureTypes()
                                                            .get(collectionId), TilesConfiguration.class)) {
                 collectionIds.add(collectionId);
             }
@@ -42,16 +43,16 @@ public class VectorTileMapGenerator implements Wfs3Extension {
     /**
      * checks if the tiles extension is available and returns a Map with all available collections and a boolean value if the tiles
      * support is currently enabled
-     * @param serviceData       the service data of the Wfs3 Service
+     * @param datasetData       the service data of the Wfs3 Service
      * @return a map with all CollectionIds, which have the tiles Extension and the value of the tiles Parameter  "enabled"
      */
-    public Map<String, Boolean> getEnabledMap(Wfs3ServiceData serviceData) {
+    public Map<String, Boolean> getEnabledMap(OgcApiDatasetData datasetData) {
         Map<String, Boolean> enabledMap = new HashMap<>();
-        for (String collectionId : serviceData.getFeatureTypes()
+        for (String collectionId : datasetData.getFeatureTypes()
                                               .keySet()) {
-            if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes()
+            if (isExtensionEnabled(datasetData, datasetData.getFeatureTypes()
                                                            .get(collectionId), TilesConfiguration.class)) {
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData, serviceData.getFeatureTypes()
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(datasetData, datasetData.getFeatureTypes()
                                                                                                                                      .get(collectionId), TilesConfiguration.class).get();
 
 
@@ -65,20 +66,20 @@ public class VectorTileMapGenerator implements Wfs3Extension {
 
     /**
      * checks if the tiles extension is available and returns a Map with all available collections and the supported formats
-     * @param serviceData       the service data of the Wfs3 Service
+     * @param datasetData       the service data of the Wfs3 Service
      * @return a map with all CollectionIds, which have the tiles Extension and the supported formats
      */
-    public Map<String, List<String>> getFormatsMap(Wfs3ServiceData serviceData) {
+    public Map<String, List<String>> getFormatsMap(OgcApiDatasetData datasetData) {
 
         Map<String, List<String>> formatsMap = new HashMap<>();
 
-        for (String collectionId : serviceData.getFeatureTypes()
+        for (String collectionId : datasetData.getFeatureTypes()
                                               .keySet()) {
 
-            if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes()
+            if (isExtensionEnabled(datasetData, datasetData.getFeatureTypes()
                                                            .get(collectionId), TilesConfiguration.class)) {
 
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData, serviceData.getFeatureTypes()
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(datasetData, datasetData.getFeatureTypes()
                                                                                                                                      .get(collectionId), TilesConfiguration.class).get();
 
                 List<String> formatsList = tilesConfiguration.getFormats();
@@ -95,18 +96,19 @@ public class VectorTileMapGenerator implements Wfs3Extension {
 
     /**
      * checks if the tiles extension is available and returns a Map with entrys for each collection and their zoomLevel or seeding
-     * @param serviceData       the service data of the Wfs3 Service
+     * @param datasetData       the service data of the Wfs3 Service
      * @param seeding           if seeding true, we observe seeding MinMax, if false zoomLevel MinMax
      * @return a map with all CollectionIds, which have the tiles Extension and the zoomLevel or seeding
      */
-    public Map<String, Map<String, TilesConfiguration.MinMax>> getMinMaxMap(Wfs3ServiceData serviceData, Boolean seeding) {
+    public Map<String, Map<String, TilesConfiguration.MinMax>> getMinMaxMap(OgcApiDatasetData datasetData,
+                                                                            Boolean seeding) {
         Map<String, Map<String, TilesConfiguration.MinMax>> minMaxMap = new HashMap<>();
 
-        for (String collectionId : serviceData.getFeatureTypes()
+        for (String collectionId : datasetData.getFeatureTypes()
                                               .keySet()) {
-            if (isExtensionEnabled(serviceData, serviceData.getFeatureTypes()
+            if (isExtensionEnabled(datasetData, datasetData.getFeatureTypes()
                                                            .get(collectionId), TilesConfiguration.class)) {
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(serviceData, serviceData.getFeatureTypes()
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(datasetData, datasetData.getFeatureTypes()
                                                                                                                                      .get(collectionId), TilesConfiguration.class).get();
                 Map<String, TilesConfiguration.MinMax> minMax = null;
                 if (!seeding) {

@@ -1,9 +1,10 @@
 
-version = '1.4.0'
+version = '1.4.1'
 
 dependencies {
     provided project(":ldproxy-codelists")
     provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-ogcapi")
     provided project(":ldproxy-wfs3-around-relations")
     provided project(":ldproxy-string-templates")
     provided project(":ldproxy-wfs3-styles")

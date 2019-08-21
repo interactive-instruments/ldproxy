@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3.filtertransformer;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 import java.util.List;

@@ -8,11 +8,11 @@
 package de.ii.ldproxy.wfs3.aroundrelations;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collection;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.Wfs3CollectionMetadataExtension;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Collection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.Wfs3CollectionMetadataExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -29,8 +29,11 @@ import java.util.Optional;
 public class Wfs3CollectionMetadataAroundRelation implements Wfs3CollectionMetadataExtension {
 
     @Override
-    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested, Wfs3ServiceData serviceData) {
-        final Optional<AroundRelationsConfiguration> aroundRelationConfiguration = featureTypeConfigurationWfs3.getExtension(AroundRelationsConfiguration.class);
+    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection,
+                                                   FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+                                                   URICustomizer uriCustomizer, boolean isNested,
+                                                   OgcApiDatasetData datasetData) {
+        final Optional<AroundRelationsConfiguration> aroundRelationConfiguration = featureTypeConfiguration.getExtension(AroundRelationsConfiguration.class);
         if (aroundRelationConfiguration.isPresent()) {
             if (!aroundRelationConfiguration.get()
                                             .getRelations()

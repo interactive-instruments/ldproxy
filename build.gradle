@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '2.0.1'
+    id 'de.interactive_instruments.xtraplatform-application' version '2.0.2'
     id 'com.jfrog.bintray' version '1.8.4' apply false
     id 'com.github.hierynomus.license-report' version '0.15.0' apply false
 }
@@ -12,11 +12,11 @@ version = '1.4.0'
 
 dependencies {
     // features to include in this application
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.0.0'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.0.0'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.0.0'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.0.0'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.2.0'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.0.1'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.0.2'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.0.1'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.0.1'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.2.1'
     featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '2.0.0'
 
     // bundles to include in this application
@@ -86,3 +86,7 @@ xpdocs {
 task allDependencies {
     dependsOn allprojects.collect { "$it.path:dependencies" }
 }
+tasks.run {
+    debug = true
+}
+

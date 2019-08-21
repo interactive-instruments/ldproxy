@@ -8,13 +8,12 @@
 package de.ii.ldproxy.target.html;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Modifiable
-@Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(as = ModifiableHtmlConfiguration.class)
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableHtmlConfiguration.Builder.class)
 public abstract class HtmlConfiguration implements ExtensionConfiguration {
 
     @Value.Default

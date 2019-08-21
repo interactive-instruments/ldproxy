@@ -57,7 +57,9 @@ public class JsonNestingTracker {
         this.lastMultiplicityLevels = nextMultiplicityLevels;
         this.lastPath = path;
 
-        LOGGER.debug("TRACKER {} {} {} {} {} {}", path, pathDiffersAt, multiplicityDiffersAt, inArray, currentOpenActions, currentCloseActions);
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("TRACKER {} {} {} {} {} {}", path, pathDiffersAt, multiplicityDiffersAt, inArray, currentOpenActions, currentCloseActions);
+        }
     }
 
     public int differsAt() {
@@ -169,7 +171,8 @@ public class JsonNestingTracker {
                 nextMultiplicityLevels.putIfAbsent(multiplicityKey, currentMultiplicityLevel);
                 int lastMultiplicityLevel = previousMultiplicityLevels.getOrDefault(multiplicityKey, 1);
 
-                LOGGER.debug("{} {} {}", multiplicityKey, currentMultiplicityLevel, lastMultiplicityLevel);
+                if(LOGGER.isTraceEnabled())
+                LOGGER.trace("{} {} {}", multiplicityKey, currentMultiplicityLevel, lastMultiplicityLevel);
 
                 if (!Objects.equals(lastMultiplicityLevel, currentMultiplicityLevel)) {
                     nextMultiplicityLevels.put(multiplicityKey, currentMultiplicityLevel);

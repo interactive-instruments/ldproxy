@@ -9,9 +9,9 @@ package de.ii.ldproxy.wfs3.projections;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -29,9 +29,11 @@ import java.util.Map;
 public class Wfs3ParameterProjections implements Wfs3ParameterExtension {
 
     @Override
-    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, ImmutableFeatureQuery.Builder queryBuilder, Map<String, String> parameters, Wfs3ServiceData serviceData) {
+    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+                                                        ImmutableFeatureQuery.Builder queryBuilder,
+                                                        Map<String, String> parameters, OgcApiDatasetData datasetData) {
 
-        if (!isExtensionEnabled(serviceData, ProjectionsConfiguration.class)) {
+        if (!isExtensionEnabled(datasetData, ProjectionsConfiguration.class)) {
             return queryBuilder;
         }
         List<String> propertiesList = getPropertiesList(parameters);

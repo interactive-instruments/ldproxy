@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -53,22 +53,22 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
      * extend the openAPI definition with necessary parameters and schemas. Add paths with parameters and responses to the OpenAPI definition.
      *
      * @param openAPI     the openAPI definition
-     * @param serviceData the data from the Wfs3 Service
+     * @param datasetData the data from the Wfs3 Service
      * @return the extended OpenAPI definition
      */
     @Override
-    public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
 
         boolean enableTilesInAPI = false;
 
-        Optional<FeatureTypeConfigurationWfs3> firstCollectionWithTiles = serviceData
+        Optional<FeatureTypeConfigurationOgcApi> firstCollectionWithTiles = datasetData
                 .getFeatureTypes()
                 .values()
                 .stream()
                 .filter(ft -> {
                     try {
-                        if (isExtensionEnabled(serviceData, ft, TilesConfiguration.class)) {
-                            TilesConfiguration tilesConfiguration = getExtensionConfiguration(serviceData, ft, TilesConfiguration.class).get();
+                        if (isExtensionEnabled(datasetData, ft, TilesConfiguration.class)) {
+                            TilesConfiguration tilesConfiguration = getExtensionConfiguration(datasetData, ft, TilesConfiguration.class).get();
 
                             if (tilesConfiguration.getEnabled())
                                 return true;
@@ -193,11 +193,11 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
             collections.setStyle(Parameter.StyleEnum.FORM);
             collections.setExplode(false);
             List<String> collectionsEnum = new ArrayList<String>();
-            serviceData.getFeatureTypes()
+            datasetData.getFeatureTypes()
                        .values()
                        .stream()
-                       .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                       .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                       .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+                       .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                        .forEach(ft -> collectionsEnum.add(ft.getId()));
             Schema collectionsArrayItems = new Schema().type("string");
             collectionsArrayItems.setEnum(collectionsEnum);
@@ -345,7 +345,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                                  .description("Access to data (features), partitioned into a hierarchy of tiles."));
 
 
-            if (serviceData != null && serviceData.getFeatureProvider()
+            if (datasetData != null && datasetData.getFeatureProvider()
                                                   .supportsTransactions()) {
 
                 openAPI.getPaths()
@@ -505,13 +505,13 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                        .addPathItem("/tiles/{tilingSchemeId}/{level}/{row}/{col}", pathItem);
 
                 //do for every feature type
-                serviceData.getFeatureTypes()
+                datasetData.getFeatureTypes()
                            .values()
                            .stream()
-                           .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                           .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                           .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+                           .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                            .forEach(ft -> {
-                               boolean enableTilesCollectionInApi = isExtensionEnabled(serviceData, ft, TilesConfiguration.class);
+                               boolean enableTilesCollectionInApi = isExtensionEnabled(datasetData, ft, TilesConfiguration.class);
 
                                if (enableTilesCollectionInApi) {
                                    openAPI.getPaths()
@@ -608,7 +608,7 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
                                                                .addApiResponse("200", success2)
                                                                .addApiResponse("default", exception2))
                                                );
-                                       Map<String, String> filterableFields = serviceData.getFilterableFieldsForFeatureType(ft.getId(), true);
+                                       Map<String, String> filterableFields = datasetData.getFilterableFieldsForFeatureType(ft.getId(), true);
                                        PathItem finalPathItem = pathItem2;
                                        filterableFields.keySet()
                                                        .forEach(field -> {

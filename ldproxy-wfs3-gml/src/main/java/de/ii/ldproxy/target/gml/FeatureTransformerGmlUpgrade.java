@@ -12,7 +12,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.escape.Escaper;
 import com.google.common.xml.XmlEscapers;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;

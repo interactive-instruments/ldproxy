@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.target.geojson;
 
+import com.google.common.collect.ImmutableCollection;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
@@ -34,7 +35,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerGeoJson.class);
 
-    private final List<GeoJsonWriter> featureWriters;
+    private final ImmutableCollection<GeoJsonWriter> featureWriters;
     private final FeatureTransformationContextGeoJson transformationContext;
     private final StringBuilder stringBuilder;
 
@@ -48,10 +49,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
     public enum MULTIPLICITY {ARRAY, SUFFIX}
 
 
-
-
-
-    public FeatureTransformerGeoJson(FeatureTransformationContextGeoJson transformationContext, List<GeoJsonWriter> featureWriters) {
+    public FeatureTransformerGeoJson(FeatureTransformationContextGeoJson transformationContext,
+                                     ImmutableCollection<GeoJsonWriter> featureWriters) {
         this.transformationContext = transformationContext;
         this.featureWriters = featureWriters;
         this.stringBuilder = new StringBuilder();
@@ -62,26 +61,32 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
         return Gml2GeoJsonMappingProvider.MIME_TYPE;
     }
 
-    private Consumer<FeatureTransformationContextGeoJson> executePipeline(final Iterator<GeoJsonWriter> featureWriterIterator) {
+    private Consumer<FeatureTransformationContextGeoJson> executePipeline(
+            final Iterator<GeoJsonWriter> featureWriterIterator) {
         return consumerMayThrow(nextTransformationContext -> {
             if (featureWriterIterator.hasNext()) {
-                featureWriterIterator.next().onEvent(nextTransformationContext, this.executePipeline(featureWriterIterator));
+                featureWriterIterator.next()
+                                     .onEvent(nextTransformationContext, this.executePipeline(featureWriterIterator));
             }
         });
     }
 
     @Override
     public void onStart(OptionalLong numberReturned, OptionalLong numberMatched) throws IOException {
-        transformationContext.getState().setNumberReturned(numberReturned);
-        transformationContext.getState().setNumberMatched(numberMatched);
+        transformationContext.getState()
+                             .setNumberReturned(numberReturned);
+        transformationContext.getState()
+                             .setNumberMatched(numberMatched);
 
-        transformationContext.getState().setEvent(FeatureTransformationContext.Event.START);
+        transformationContext.getState()
+                             .setEvent(FeatureTransformationContext.Event.START);
         executePipeline(featureWriters.iterator()).accept(transformationContext);
     }
 
     @Override
     public void onEnd() throws IOException {
-        transformationContext.getState().setEvent(FeatureTransformationContext.Event.END);
+        transformationContext.getState()
+                             .setEvent(FeatureTransformationContext.Event.END);
         executePipeline(featureWriters.iterator()).accept(transformationContext);
 
         transformationContext.getJson()
@@ -90,18 +95,22 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
 
     @Override
     public void onFeatureStart(TargetMapping mapping) throws IOException {
-        transformationContext.getState().setCurrentMapping(Optional.ofNullable(mapping));
+        transformationContext.getState()
+                             .setCurrentMapping(Optional.ofNullable(mapping));
 
-        transformationContext.getState().setEvent(FeatureTransformationContext.Event.FEATURE_START);
+        transformationContext.getState()
+                             .setEvent(FeatureTransformationContext.Event.FEATURE_START);
         executePipeline(featureWriters.iterator()).accept(transformationContext);
 
-        transformationContext.getState().setCurrentMapping(Optional.empty());
+        transformationContext.getState()
+                             .setCurrentMapping(Optional.empty());
     }
 
     @Override
     public void onFeatureEnd() throws IOException {
 
-        transformationContext.getState().setEvent(FeatureTransformationContext.Event.FEATURE_END);
+        transformationContext.getState()
+                             .setEvent(FeatureTransformationContext.Event.FEATURE_END);
         executePipeline(featureWriters.iterator()).accept(transformationContext);
     }
 
@@ -116,8 +125,10 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
                 return;
             }*/
 
-            transformationContext.getState().setCurrentMapping(Optional.ofNullable(mapping));
-            transformationContext.getState().setCurrentMultiplicity(multiplicities);
+            transformationContext.getState()
+                                 .setCurrentMapping(Optional.ofNullable(mapping));
+            transformationContext.getState()
+                                 .setCurrentMultiplicity(multiplicities);
             //this.currentMapping = (GeoJsonPropertyMapping) mapping;
 
 
@@ -126,21 +137,27 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
 
     @Override
     public void onPropertyText(String text) {
-        if (transformationContext.getState().getCurrentMapping().isPresent()) stringBuilder.append(text);
+        if (transformationContext.getState()
+                                 .getCurrentMapping()
+                                 .isPresent()) stringBuilder.append(text);
     }
 
     @Override
     public void onPropertyEnd() throws IOException {
         if (stringBuilder.length() > 0) {
-            transformationContext.getState().setCurrentValue(stringBuilder.toString());
+            transformationContext.getState()
+                                 .setCurrentValue(stringBuilder.toString());
             stringBuilder.setLength(0);
 
-            transformationContext.getState().setEvent(FeatureTransformationContext.Event.PROPERTY);
+            transformationContext.getState()
+                                 .setEvent(FeatureTransformationContext.Event.PROPERTY);
             executePipeline(featureWriters.iterator()).accept(transformationContext);
         }
 
-        transformationContext.getState().setCurrentMapping(Optional.empty());
-        transformationContext.getState().setCurrentValue(Optional.empty());
+        transformationContext.getState()
+                             .setCurrentMapping(Optional.empty());
+        transformationContext.getState()
+                             .setCurrentValue(Optional.empty());
     }
 
     @Override
@@ -160,8 +177,10 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
             CoordinatesWriterType.Builder cwBuilder = CoordinatesWriterType.builder();
             //cwBuilder.format(new JsonCoordinateFormatter(transformationContext.getJson()));
 
-            if (transformationContext.getCrsTransformer().isPresent()) {
-                cwBuilder.transformer(transformationContext.getCrsTransformer().get());
+            if (transformationContext.getCrsTransformer()
+                                     .isPresent()) {
+                cwBuilder.transformer(transformationContext.getCrsTransformer()
+                                                           .get());
             }
 
             if (dimension != null) {
@@ -174,44 +193,69 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
                 cwBuilder.simplifier(transformationContext.getMaxAllowableOffset(), minPoints);
             }
 
-            transformationContext.getState().setCurrentMapping(Optional.ofNullable(mapping));
-            transformationContext.getState().setCurrentGeometryType(currentGeometryType);
-            transformationContext.getState().setCoordinatesWriterBuilder(cwBuilder);
+            if (transformationContext.shouldSwapCoordinates()) {
+                cwBuilder.swap();
+            }
+
+            if (transformationContext.getGeometryPrecision() > 0) {
+                cwBuilder.precision(transformationContext.getGeometryPrecision());
+            }
+
+            transformationContext.getState()
+                                 .setCurrentMapping(Optional.ofNullable(mapping));
+            transformationContext.getState()
+                                 .setCurrentGeometryType(currentGeometryType);
+            transformationContext.getState()
+                                 .setCoordinatesWriterBuilder(cwBuilder);
         }
     }
 
     @Override
     public void onGeometryNestedStart() throws IOException {
-        if (!transformationContext.getState().getCurrentGeometryType().isPresent()) return;
+        if (!transformationContext.getState()
+                                  .getCurrentGeometryType()
+                                  .isPresent()) return;
 
-        transformationContext.getState().setCurrentGeometryNestingChange(transformationContext.getState().getCurrentGeometryNestingChange()+1);
+        transformationContext.getState()
+                             .setCurrentGeometryNestingChange(transformationContext.getState()
+                                                                                   .getCurrentGeometryNestingChange() + 1);
     }
 
     @Override
     public void onGeometryCoordinates(String text) throws IOException {
-        if (!transformationContext.getState().getCurrentGeometryType().isPresent()) return;
+        if (!transformationContext.getState()
+                                  .getCurrentGeometryType()
+                                  .isPresent()) return;
 
-        transformationContext.getState().setCurrentValue(text);
+        transformationContext.getState()
+                             .setCurrentValue(text);
 
-        transformationContext.getState().setEvent(FeatureTransformationContext.Event.COORDINATES);
+        transformationContext.getState()
+                             .setEvent(FeatureTransformationContext.Event.COORDINATES);
         executePipeline(featureWriters.iterator()).accept(transformationContext);
 
-        transformationContext.getState().setCurrentGeometryNestingChange(0);
+        transformationContext.getState()
+                             .setCurrentGeometryNestingChange(0);
     }
 
     @Override
     public void onGeometryNestedEnd() throws IOException {
-        if (!transformationContext.getState().getCurrentGeometryType().isPresent()) return;
-
+        if (!transformationContext.getState()
+                                  .getCurrentGeometryType()
+                                  .isPresent()) return;
     }
 
     @Override
     public void onGeometryEnd() throws IOException {
-        transformationContext.getState().setEvent(FeatureTransformationContext.Event.GEOMETRY_END);
+        transformationContext.getState()
+                             .setEvent(FeatureTransformationContext.Event.GEOMETRY_END);
         executePipeline(featureWriters.iterator()).accept(transformationContext);
 
-        transformationContext.getState().setCurrentMapping(Optional.empty());
-        transformationContext.getState().setCurrentValue(Optional.empty());
-        transformationContext.getState().setCurrentGeometryType(Optional.empty());
+        transformationContext.getState()
+                             .setCurrentMapping(Optional.empty());
+        transformationContext.getState()
+                             .setCurrentValue(Optional.empty());
+        transformationContext.getState()
+                             .setCurrentGeometryType(Optional.empty());
     }
 }

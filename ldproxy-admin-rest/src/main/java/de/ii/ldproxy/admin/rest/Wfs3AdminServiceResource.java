@@ -8,8 +8,8 @@
 package de.ii.ldproxy.admin.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceStatus;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.api.MediaTypeCharset;
 import de.ii.xtraplatform.api.exceptions.BadRequest;
 import de.ii.xtraplatform.api.permission.AuthenticatedUser;
@@ -19,12 +19,12 @@ import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
 import de.ii.xtraplatform.scheduler.api.TaskStatus;
 import de.ii.xtraplatform.service.api.AbstractAdminServiceResource;
-import de.ii.xtraplatform.service.api.ImmutableServiceDataWithStatus;
+import de.ii.xtraplatform.service.api.ImmutableServiceStatus;
 import de.ii.xtraplatform.service.api.Service;
 import de.ii.xtraplatform.service.api.ServiceData;
-import de.ii.xtraplatform.service.api.ServiceDataWithStatus;
+import de.ii.xtraplatform.service.api.ServiceStatus;
 import de.ii.xtraplatform.service.api.ServiceResource;
-import de.ii.xtraplatform.service.api.ServiceTasks;
+import de.ii.xtraplatform.service.api.ServiceBackgroundTasks;
 import io.dropwizard.jersey.caching.CacheControl;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -67,7 +67,7 @@ public class Wfs3AdminServiceResource extends AbstractAdminServiceResource {
     private Jackson jackson;
 
     @Requires
-    private ServiceTasks serviceTasks;
+    private ServiceBackgroundTasks serviceBackgroundTasks;
 
     @Context
     HttpServletRequest request;
@@ -85,25 +85,25 @@ public class Wfs3AdminServiceResource extends AbstractAdminServiceResource {
     public String getAdminService(/*@Auth AuthenticatedUser user*/@Context ServiceData serviceData) {
         //TODO: have a TaskStatus list for each service somewhere, get TaskStatus for service if any here and set progress (maybe generic TaskQueues)
 
-        boolean started = entityRegistry.getEntity(Service.class, Service.ENTITY_TYPE, serviceData.getId())
+        boolean started = entityRegistry.getEntity(Service.class, serviceData.getId())
                                         .isPresent();
 
-        ServiceDataWithStatus serviceDataWithStatus = ImmutableServiceDataWithStatus.builder()
-                                                                                    .from(serviceData)
-                                                                                    .status(started ? ServiceDataWithStatus.STATUS.STARTED : ServiceDataWithStatus.STATUS.STOPPED)
-                                                                                    .build();
+        ServiceStatus serviceStatus = ImmutableServiceStatus.builder()
+                                                            .from(serviceData)
+                                                            .status(started ? ServiceStatus.STATUS.STARTED : ServiceStatus.STATUS.STOPPED)
+                                                            .build();
 
-        Optional<TaskStatus> currentTaskForService = serviceTasks.getCurrentTaskForService(serviceData.getId());
+        Optional<TaskStatus> currentTaskForService = serviceBackgroundTasks.getCurrentTaskForService(serviceData.getId());
 
-        boolean loading = ((Wfs3ServiceData) serviceData).getFeatureProvider()
-                                                         .getMappingStatus()
-                                                         .getLoading();
+        boolean loading = ((OgcApiDatasetData) serviceData).getFeatureProvider()
+                                                           .getMappingStatus()
+                                                           .getLoading();
 
         String s = "";
         try {
             ImmutableWfs3ServiceStatus.Builder wfs3ServiceStatus = ImmutableWfs3ServiceStatus.builder()
-                                                                                             .from(serviceDataWithStatus)
-                                                                                             .status(serviceDataWithStatus.getStatus());
+                                                                                             .from(serviceStatus)
+                                                                                             .status(serviceStatus.getStatus());
             if (currentTaskForService.isPresent()) {
                 wfs3ServiceStatus.hasBackgroundTask(true)
                         .progress((int) Math.round(currentTaskForService.get()
@@ -136,7 +136,7 @@ public class Wfs3AdminServiceResource extends AbstractAdminServiceResource {
 
         String s = "";
         try {
-            s = jsonMapper.writerFor(Wfs3ServiceData.class)
+            s = jsonMapper.writerFor(OgcApiDatasetData.class)
                           .writeValueAsString(serviceData);
             //LOGGER.debug("GET SERVICE CONFIG {}", s);
         } catch (JsonProcessingException e) {

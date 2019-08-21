@@ -7,9 +7,9 @@
  */
 package de.ii.ldproxy.target.gml;
 
-import de.ii.ldproxy.wfs3.api.Wfs3Collection;
-import de.ii.ldproxy.wfs3.api.Wfs3Collections;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.Dataset;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -24,13 +24,13 @@ import java.util.stream.Collectors;
 @XmlType(propOrder = {"links", "crs", "collections"})
 public class Wfs3CollectionsXml implements Wfs3Xml {
 
-    private final Wfs3Collections wfs3Collections;
+    private final Dataset wfs3Collections;
 
     public Wfs3CollectionsXml() {
         this.wfs3Collections = null;
     }
 
-    public Wfs3CollectionsXml(Wfs3Collections wfs3Collections) {
+    public Wfs3CollectionsXml(Dataset wfs3Collections) {
         this.wfs3Collections = wfs3Collections;
     }
 
@@ -46,6 +46,12 @@ public class Wfs3CollectionsXml implements Wfs3Xml {
 
     @XmlElement(name = "Collection")
     public List<Wfs3CollectionXml> getCollections() {
-        return wfs3Collections.getCollections().stream().map(wfs3Collection -> new Wfs3CollectionXml(wfs3Collection)).collect(Collectors.toList());
+        //TODO
+        return wfs3Collections.getSections()
+                              .stream()
+                              .filter(stringObjectMap -> stringObjectMap.containsKey("collections"))
+                              .flatMap(stringObjectMap -> ((List<Wfs3Collection>) stringObjectMap.get("collections")).stream())
+                              .map(Wfs3CollectionXml::new)
+                              .collect(Collectors.toList());
     }
 }

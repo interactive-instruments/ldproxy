@@ -7,7 +7,8 @@
  */
 package de.ii.ldproxy.target.html;
 
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
 import de.ii.ldproxy.wfs3.api.Wfs3CapabilityExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -21,7 +22,16 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Instantiate
 public class Wfs3CapabilityHtml implements Wfs3CapabilityExtension {
     @Override
-    public ExtensionConfiguration getDefaultConfiguration() {
-        return ImmutableHtmlConfiguration.builder().build();
+    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
+        ImmutableHtmlConfiguration.Builder config = new ImmutableHtmlConfiguration.Builder();
+
+        switch (preset) {
+            case WFS3:
+            case GSFS:
+                config.enabled(true);
+                break;
+        }
+
+        return config.build();
     }
 }

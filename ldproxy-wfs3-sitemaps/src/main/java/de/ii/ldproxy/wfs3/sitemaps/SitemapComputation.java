@@ -8,8 +8,8 @@
 package de.ii.ldproxy.wfs3.sitemaps;
 
 import com.google.common.collect.Range;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
@@ -58,7 +58,8 @@ class SitemapComputation {
                                                                                           .collect(Collectors.toList());
     }
 
-    static List<Range<Long>> getRanges(final long blockLength, final long numberOfCompleteBlocks, final long lengthOfLastBlock, final long initialFrom, final long initialTo) {
+    static List<Range<Long>> getRanges(final long blockLength, final long numberOfCompleteBlocks,
+                                       final long lengthOfLastBlock, final long initialFrom, final long initialTo) {
         List<Range<Long>> ranges = new ArrayList<>();
 
         long from = initialFrom;
@@ -99,16 +100,15 @@ class SitemapComputation {
     }
 
 
-
     static Map<String, Long> getDynamicRanges(Set<String> collectionIds, Map<String, Long> featureCounts) {
         AtomicLong siteMapsNumberCounter = new AtomicLong(1);
         Map<String, Long> blockLengths = new HashMap<>();
         Map<String, Long> collectionIdNumberOfSitemaps = new HashMap<>();
 
-       // blockLengths = getSmallBlocks(collectionIds,featureCounts,blockLengths,collectionIdNumberOfSitemaps,siteMapsNumberCounter);
+        // blockLengths = getSmallBlocks(collectionIds,featureCounts,blockLengths,collectionIdNumberOfSitemaps,siteMapsNumberCounter);
 
 
-        for(String collectionId: collectionIds){
+        for (String collectionId : collectionIds) {
             //split in little blocks
             long featureCount = featureCounts.get(collectionId);
             long blockLength = getDynamicBlockLength(featureCount);
@@ -117,14 +117,14 @@ class SitemapComputation {
             collectionIdNumberOfSitemaps.put(collectionId, numberOfSitemaps);
             blockLengths.put(collectionId, blockLength);
         }
-            getBiggerBlocks(featureCounts,blockLengths,collectionIdNumberOfSitemaps,siteMapsNumberCounter);
+        getBiggerBlocks(featureCounts, blockLengths, collectionIdNumberOfSitemaps, siteMapsNumberCounter);
 
 
         return blockLengths;
     }
 
 
-    static long getDynamicBlockLength(long featureCount){
+    static long getDynamicBlockLength(long featureCount) {
 
         long blockLength = featureCount;
         while (blockLength > 2000) {
@@ -137,7 +137,9 @@ class SitemapComputation {
     }
 
 
-    static Map<String, Long> getBiggerBlocks(Map<String,Long> featureCounts,Map<String, Long> blockLengths, Map<String, Long> collectionIdNumberOfSitemaps,AtomicLong siteMapsNumberCounter){
+    static Map<String, Long> getBiggerBlocks(Map<String, Long> featureCounts, Map<String, Long> blockLengths,
+                                             Map<String, Long> collectionIdNumberOfSitemaps,
+                                             AtomicLong siteMapsNumberCounter) {
         while (siteMapsNumberCounter.longValue() > 50000) {
 
             // get collection id with highest number of sitemaps
@@ -145,7 +147,7 @@ class SitemapComputation {
 
             for (Map.Entry<String, Long> entry : collectionIdNumberOfSitemaps.entrySet()) {
                 if (maxEntry == null || entry.getValue()
-                        .compareTo(maxEntry.getValue()) > 0) {
+                                             .compareTo(maxEntry.getValue()) > 0) {
                     maxEntry = entry;
                 }
             }
@@ -171,38 +173,38 @@ class SitemapComputation {
     }
 
     //TODO move to Wfs3ServiceData
-    static Stream<String> getCollectionIdStream(Wfs3ServiceData serviceData) {
-        return serviceData.getFeatureTypes()
+    static Stream<String> getCollectionIdStream(OgcApiDatasetData datasetData) {
+        return datasetData.getFeatureTypes()
                           .values()
                           .stream()
                           //TODO
-                          .filter(featureType -> serviceData.isFeatureTypeEnabled(featureType.getId()))
-                          .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
+                          .filter(featureType -> datasetData.isFeatureTypeEnabled(featureType.getId()))
+                          .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
                           .map(FeatureTypeConfiguration::getId);
     }
 
 
-    static Map<String, Long> getFeatureCounts(Set<String> collectionIds,FeatureProvider featureProvider) {
+    static Map<String, Long> getFeatureCounts(Set<String> collectionIds, FeatureProvider featureProvider) {
 
-        Map<String,Long> featureCounts=new HashMap<>();
+        Map<String, Long> featureCounts = new HashMap<>();
 
-        for(String collectionId : collectionIds){
+        for (String collectionId : collectionIds) {
             FeatureCountReader featureCountReader = new FeatureCountReader();
             FeatureQuery featureQuery = ImmutableFeatureQuery.builder()
-                    .type(collectionId)
-                    .hitsOnly(true)
-                    .limit(22500000) //TODO fix limit (without limit, the limit and count is 0)
-                    .build();
+                                                             .type(collectionId)
+                                                             .hitsOnly(true)
+                                                             .limit(22500000) //TODO fix limit (without limit, the limit and count is 0)
+                                                             .build();
 
             FeatureStream<FeatureConsumer> featureStream = featureProvider.getFeatureStream(featureQuery);
-            featureStream.apply(featureCountReader)
-                    .toCompletableFuture()
-                    .join();
+            featureStream.apply(featureCountReader, null)
+                         .toCompletableFuture()
+                         .join();
 
 
             long count = featureCountReader.getFeatureCount()
-                    .getAsLong();
-            featureCounts.put(collectionId,count);
+                                           .getAsLong();
+            featureCounts.put(collectionId, count);
         }
 
         return featureCounts;

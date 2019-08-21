@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.target.geojson;
 
-import de.ii.ldproxy.wfs3.api.AbstractWfs3GenericMapping;
-import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.AbstractWfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 
 /**

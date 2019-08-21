@@ -7,9 +7,9 @@
  */
 package de.ii.ldproxy.wfs3.filtertransformer;
 
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.akka.http.AkkaHttp;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -31,8 +31,9 @@ public class Wfs3ParameterFilterTransformer implements Wfs3ParameterExtension {
     private AkkaHttp akkaHttp;
 
     @Override
-    public Map<String, String> transformParameters(FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, Map<String, String> parameters, Wfs3ServiceData serviceData) {
-        final Optional<FilterTransformersConfiguration> filterTransformersConfiguration = featureTypeConfigurationWfs3.getExtension(FilterTransformersConfiguration.class);
+    public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+                                                   Map<String, String> parameters, OgcApiDatasetData datasetData) {
+        final Optional<FilterTransformersConfiguration> filterTransformersConfiguration = featureTypeConfiguration.getExtension(FilterTransformersConfiguration.class);
 
         if (filterTransformersConfiguration.isPresent()) {
 

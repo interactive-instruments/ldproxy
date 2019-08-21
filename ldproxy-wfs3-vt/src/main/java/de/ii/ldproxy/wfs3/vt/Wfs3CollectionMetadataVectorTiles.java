@@ -8,11 +8,11 @@
 package de.ii.ldproxy.wfs3.vt;
 
 
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collection;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.Wfs3CollectionMetadataExtension;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Collection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.Wfs3CollectionMetadataExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -34,13 +34,16 @@ import java.util.Set;
 public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadataExtension {
 
     @Override
-    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested, Wfs3ServiceData serviceData) {
+    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection,
+                                                   FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+                                                   URICustomizer uriCustomizer, boolean isNested,
+                                                   OgcApiDatasetData datasetData) {
         // The hrefs are URI templates and not URIs, so the templates should not be percent encoded!
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        if (!isNested && isExtensionEnabled(serviceData, featureTypeConfigurationWfs3, TilesConfiguration.class)) {
+        if (!isNested && isExtensionEnabled(datasetData, featureTypeConfiguration, TilesConfiguration.class)) {
             List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
-            TilesConfiguration tiles = getExtensionConfiguration(serviceData, featureTypeConfigurationWfs3, TilesConfiguration.class).get();
+            TilesConfiguration tiles = getExtensionConfiguration(datasetData, featureTypeConfiguration, TilesConfiguration.class).get();
             Set<String> tilingSchemeIds = tiles.getZoomLevels()
                                                .keySet();
             for (String tilingSchemeId : tilingSchemeIds) {

@@ -10,8 +10,7 @@ package de.ii.ldproxy.wfs3.vt;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -19,9 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 @Value.Immutable
-@Value.Modifiable
-@Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(as = ModifiableTilesConfiguration.class)
+@Value.Style(deepImmutablesDetection = true, builder = "new")
+@JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public abstract class TilesConfiguration implements ExtensionConfiguration {
 
     @Value.Default
@@ -35,29 +33,29 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
     public abstract List<String> getFormats();
 
     @Nullable
-    public abstract Map<String,MinMax> getSeeding();
+    public abstract Map<String, MinMax> getSeeding();
 
     @Nullable
-    public abstract Map<String,MinMax> getZoomLevels();
+    public abstract Map<String, MinMax> getZoomLevels();
 
     @Override
     public TilesConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
 
+        //TODO
         /*return ImmutableTilesConfiguration.builder()
                 .from(extensionConfigurationDefault)
                 .from(this)
                 .build();*/
 
-        return this; //TODO
+        return this;
     }
 
     @Value.Immutable
-    @Value.Modifiable
-    @Value.Style(deepImmutablesDetection = true)
-    @JsonDeserialize(as = ImmutableMinMax.class)
-    public static abstract class MinMax{
-        public abstract int getMin();
-        public abstract int getMax();
+    @JsonDeserialize(builder = ImmutableMinMax.Builder.class)
+    interface MinMax {
+        int getMin();
+
+        int getMax();
     }
 
 }

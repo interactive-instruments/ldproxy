@@ -7,8 +7,6 @@
  */
 package de.ii.ldproxy.wfs3;
 
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -18,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 
@@ -31,28 +28,39 @@ import java.io.IOException;
 public class CORSFilter implements ContainerResponseFilter {
     private static final Logger LOGGER = LoggerFactory.getLogger(CORSFilter.class);
 
-    @Context
-    private Wfs3RequestContext wfs3Request;
-
+    //@Context
+    //private Wfs3RequestContext wfs3Request;
 
     @Override
-    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        Wfs3MediaType mediaType = wfs3Request.getMediaType();
-        if (mediaType.matches(MediaType.APPLICATION_JSON_TYPE)||mediaType.matches(new MediaType("application","vnd.mapbox-vector-tile"))) {
-            responseContext.getHeaders()
-                           .add(
-                                   "Access-Control-Allow-Origin", "*");
-            responseContext.getHeaders()
-                           .add(
-                                   "Access-Control-Allow-Credentials", "true");
-            responseContext.getHeaders()
-                           .add(
-                                   "Access-Control-Allow-Headers",
-                                   "origin, content-type, accept, authorization");
-            responseContext.getHeaders()
-                           .add(
-                                   "Access-Control-Allow-Methods",
-                                   "GET, OPTIONS, HEAD");
+    public void filter(ContainerRequestContext requestContext,
+                       ContainerResponseContext responseContext) throws IOException {
+        if (!requestContext.getUriInfo()
+                           .getPath()
+                           .startsWith("admin")) {
+            //Wfs3MediaType mediaType = wfs3Request.getMediaType();
+            //if (mediaType.matches(MediaType.APPLICATION_JSON_TYPE) || mediaType.matches(new MediaType("application", "vnd.mapbox-vector-tile"))) {
+            //TODO
+            if (requestContext.getAcceptableMediaTypes()
+                              .get(0)
+                              .isCompatible(MediaType.APPLICATION_JSON_TYPE)
+                    || requestContext.getAcceptableMediaTypes()
+                                     .get(0)
+                                     .isCompatible(new MediaType("application", "vnd.mapbox-vector-tile"))) {
+                responseContext.getHeaders()
+                               .add(
+                                       "Access-Control-Allow-Origin", "*");
+                responseContext.getHeaders()
+                               .add(
+                                       "Access-Control-Allow-Credentials", "true");
+                responseContext.getHeaders()
+                               .add(
+                                       "Access-Control-Allow-Headers",
+                                       "origin, content-type, accept, authorization");
+                responseContext.getHeaders()
+                               .add(
+                                       "Access-Control-Allow-Methods",
+                                       "GET, OPTIONS, HEAD");
+            }
         }
     }
 }

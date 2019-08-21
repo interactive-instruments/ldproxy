@@ -8,25 +8,37 @@
 package de.ii.ldproxy.wfs3.vt;
 
 
-
-import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.*;
-import de.ii.xtraplatform.crs.api.*;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
+import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
+
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MultivaluedMap;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
 
 
 /**
@@ -43,7 +55,7 @@ class VectorTile {
     private final int col;
     private final String collectionId;
     private final TilingScheme tilingScheme;
-    private final Wfs3ServiceData serviceData;
+    private final OgcApiDatasetData datasetData;
     private final TransformingFeatureProvider featureProvider;
     private final boolean temporary;
     private final String fileName;
@@ -57,22 +69,25 @@ class VectorTile {
      * @param level                   the zoom level as a string
      * @param row                     the row number as a string
      * @param col                     the column number as a string
-     * @param serviceData             the wfs3 service Data
+     * @param datasetData             the wfs3 service Data
      * @param temporary               the info, if this is a temporary or permanent vector tile
      * @param cache                   the tile cache
      * @param featureProvider         the wfs3 service feature provider
      * @param wfs3OutputFormatGeoJson
      */
 
-    VectorTile(String collectionId, String tilingSchemeId, String level, String row, String col, Wfs3ServiceData serviceData, boolean temporary, VectorTilesCache cache, TransformingFeatureProvider featureProvider, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
+    VectorTile(String collectionId, String tilingSchemeId, String level, String row, String col,
+               OgcApiDatasetData datasetData, boolean temporary, VectorTilesCache cache,
+               TransformingFeatureProvider featureProvider,
+               Wfs3OutputFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
         this.wfs3OutputFormatGeoJson = wfs3OutputFormatGeoJson;
 
         // check and process parameters
 
         // check, if collectionId is valid
         if (collectionId != null) {
-            Set<String> collectionIds = serviceData.getFeatureTypes()
-                    .keySet();
+            Set<String> collectionIds = datasetData.getFeatureTypes()
+                                                   .keySet();
             if (collectionId.isEmpty() || !collectionIds.contains(collectionId)) {
                 throw new NotFoundException();
             }
@@ -101,37 +116,37 @@ class VectorTile {
         if (this.col == -1)
             throw new FileNotFoundException();
 
-        this.serviceData = serviceData;
+        this.datasetData = datasetData;
 
         this.featureProvider = featureProvider;
         this.temporary = temporary;
 
         if (this.temporary) {
             fileName = UUID.randomUUID()
-                    .toString();
+                           .toString();
         } else {
             fileName = String.format("%s_%s_%s", Integer.toString(this.level), Integer.toString(this.row), Integer.toString(this.col));
         }
     }
 
-    public int getLevel(){
+    public int getLevel() {
         return level;
     }
 
-    public int getRow(){
+    public int getRow() {
         return row;
     }
 
-    public int getCol(){
+    public int getCol() {
         return col;
     }
 
-    public String getCollectionId(){
+    public String getCollectionId() {
         return collectionId;
     }
 
 
-    public Wfs3OutputFormatExtension getWfs3OutputFormatGeoJson(){
+    public Wfs3OutputFormatExtension getWfs3OutputFormatGeoJson() {
         return wfs3OutputFormatGeoJson;
     }
 
@@ -142,16 +157,16 @@ class VectorTile {
         return tilingScheme;
     }
 
-    public Wfs3ServiceData getServiceData(){
-        return serviceData;
+    public OgcApiDatasetData getDatasetData() {
+        return datasetData;
     }
 
-    public TransformingFeatureProvider getFeatureProvider(){
+    public TransformingFeatureProvider getFeatureProvider() {
         return featureProvider;
     }
 
-    public boolean getTemporary(){
-        return  temporary;
+    public boolean getTemporary() {
+        return temporary;
     }
 
 
@@ -237,14 +252,13 @@ class VectorTile {
         if (temporary)
             subDir = cache.getTmpDirectory();
         else
-            subDir = new File(new File(new File(cache.getTilesDirectory(), serviceData.getId()), (collectionId == null ? "__all__" : collectionId)), tilingScheme.getId());
+            subDir = new File(new File(new File(cache.getTilesDirectory(), datasetData.getId()), (collectionId == null ? "__all__" : collectionId)), tilingScheme.getId());
 
         if (!subDir.exists()) {
             subDir.mkdirs();
         }
         return subDir;
     }
-
 
 
     /**
@@ -255,13 +269,14 @@ class VectorTile {
      * @return the spatial filter in CQL
      * @throws CrsTransformationException if the bounding box could not be converted
      */
-    public String getSpatialFilter(String geometryField, CrsTransformation crsTransformation) throws CrsTransformationException {
+    public String getSpatialFilter(String geometryField,
+                                   CrsTransformation crsTransformation) throws CrsTransformationException {
 
         // calculate bbox in the native CRS of the dataset
         BoundingBox bboxNativeCrs = getBoundingBoxNativeCrs(crsTransformation);
 
         return String.format(Locale.US, "BBOX(%s, %.3f, %.3f, %.3f, %.3f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs()
-                .getAsSimple());
+                                                                                                                                                                                                                  .getAsSimple());
     }
 
     /**
@@ -271,9 +286,10 @@ class VectorTile {
      * @return the transform
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
-    public AffineTransformation createTransformLonLatToTile(CrsTransformation crsTransformation) throws CrsTransformationException {
+    public AffineTransformation createTransformLonLatToTile(
+            CrsTransformation crsTransformation) throws CrsTransformationException {
 
-        BoundingBox bbox = getBoundingBox(DEFAULT_CRS, crsTransformation);
+        BoundingBox bbox = getBoundingBox(OgcApiDatasetData.DEFAULT_CRS, crsTransformation);
 
         double lonMin = bbox.getXmin();
         double lonMax = bbox.getXmax();
@@ -304,8 +320,8 @@ class VectorTile {
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
     private BoundingBox getBoundingBoxNativeCrs(CrsTransformation crsTransformation) throws CrsTransformationException {
-        EpsgCrs crs = serviceData.getFeatureProvider()
-                .getNativeCrs();
+        EpsgCrs crs = datasetData.getFeatureProvider()
+                                 .getNativeCrs();
         BoundingBox bboxTilingSchemeCrs = getBoundingBox();
         if (crs == tilingScheme.getCrs())
             return bboxTilingSchemeCrs;
@@ -320,7 +336,8 @@ class VectorTile {
      * @return the bounding box of the tiling scheme in the form of the target crs
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
-    private BoundingBox getBoundingBox(EpsgCrs crs, CrsTransformation crsTransformation) throws CrsTransformationException {
+    private BoundingBox getBoundingBox(EpsgCrs crs,
+                                       CrsTransformation crsTransformation) throws CrsTransformationException {
         BoundingBox bboxTilingSchemeCrs = getBoundingBox();
         if (crs == tilingScheme.getCrs())
             return bboxTilingSchemeCrs;
@@ -336,31 +353,31 @@ class VectorTile {
      */
     public String getCQLFromFilters(Map<String, String> filters, Map<String, String> filterableFields) {
         return filters.entrySet()
-                .stream()
-                .map(f -> {
-                    if (f.getKey()
-                            .equals("time")) {
-                        try {
-                            Interval fromIso8601Period = Interval.parse(f.getValue());
-                            return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);
-                        } catch (DateTimeParseException ignore) {
-                            try {
-                                Instant fromIso8601 = Instant.parse(f.getValue());
-                                return String.format("%s TEQUALS %s", filterableFields.get(f.getKey()), fromIso8601);
-                            } catch (DateTimeParseException e) {
-                                LOGGER.debug("TIME PARSER ERROR", e);
-                                throw new BadRequestException();
-                            }
-                        }
-                    }
-                    if (f.getValue()
-                            .contains("*")) {
-                        return String.format("%s LIKE '%s'", filterableFields.get(f.getKey()), f.getValue());
-                    }
+                      .stream()
+                      .map(f -> {
+                          if (f.getKey()
+                               .equals("time")) {
+                              try {
+                                  Interval fromIso8601Period = Interval.parse(f.getValue());
+                                  return String.format("%s DURING %s", filterableFields.get(f.getKey()), fromIso8601Period);
+                              } catch (DateTimeParseException ignore) {
+                                  try {
+                                      Instant fromIso8601 = Instant.parse(f.getValue());
+                                      return String.format("%s TEQUALS %s", filterableFields.get(f.getKey()), fromIso8601);
+                                  } catch (DateTimeParseException e) {
+                                      LOGGER.debug("TIME PARSER ERROR", e);
+                                      throw new BadRequestException();
+                                  }
+                              }
+                          }
+                          if (f.getValue()
+                               .contains("*")) {
+                              return String.format("%s LIKE '%s'", filterableFields.get(f.getKey()), f.getValue());
+                          }
 
-                    return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
-                })
-                .collect(Collectors.joining(" AND "));
+                          return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
+                      })
+                      .collect(Collectors.joining(" AND "));
     }
 
 
@@ -375,9 +392,10 @@ class VectorTile {
      *         NotAcceptableException if forLinksOrDataset is false and the format is not supported
      *         true if the format is supported
      */
-    public static boolean checkFormat(Map<String,List<String>> formatsMap, String collectionId, String mediaType, boolean forLinksOrDataset) {
+    public static boolean checkFormat(Map<String, List<String>> formatsMap, String collectionId, String mediaType,
+                                      boolean forLinksOrDataset) {
 
-        if(!Objects.isNull(formatsMap) && formatsMap.containsKey(collectionId)) {
+        if (!Objects.isNull(formatsMap) && formatsMap.containsKey(collectionId)) {
             List<String> formats = formatsMap.get(collectionId);
 
             if (!formats.contains(mediaType)) {
@@ -412,11 +430,18 @@ class VectorTile {
      * @param crsTransformation         the coordinate reference system transformation object to transform coordinates
      * @throws FileNotFoundException
      */
-    public static Map<String,String> checkZoomLevel(int zoomLevel, Map<String, Map<String, TilesConfiguration.MinMax>> zoomLevelsMap, Wfs3Service wfsService, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, String tilingSchemeId, String mediaType, String row, String col, boolean doNotCache, VectorTilesCache cache, boolean isCollection, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation) throws FileNotFoundException {
-        Map<String,String> zoomLevels=new HashMap<>();
+    public static Map<String, String> checkZoomLevel(int zoomLevel,
+                                                     Map<String, Map<String, TilesConfiguration.MinMax>> zoomLevelsMap,
+                                                     OgcApiDataset wfsService,
+                                                     Wfs3OutputFormatExtension wfs3OutputFormatGeoJson,
+                                                     String collectionId, String tilingSchemeId, String mediaType,
+                                                     String row, String col, boolean doNotCache, VectorTilesCache cache,
+                                                     boolean isCollection, OgcApiRequestContext wfs3Request,
+                                                     CrsTransformation crsTransformation) throws FileNotFoundException {
+        Map<String, String> zoomLevels = new HashMap<>();
 
         try {
-            if(!Objects.isNull(zoomLevelsMap)&&zoomLevelsMap.containsKey(collectionId)) {
+            if (!Objects.isNull(zoomLevelsMap) && zoomLevelsMap.containsKey(collectionId)) {
 
                 Map<String, TilesConfiguration.MinMax> tilesZoomLevels = zoomLevelsMap.get(collectionId);
 
@@ -425,19 +450,19 @@ class VectorTile {
 
                 if (tilesZoomLevels != null) {
                     maxZoom = tilesZoomLevels.get(tilingSchemeId)
-                            .getMax();
+                                             .getMax();
                     minZoom = tilesZoomLevels.get(tilingSchemeId)
-                            .getMin();
-                    zoomLevels.put("max",Integer.toString(maxZoom));
-                    zoomLevels.put("min",Integer.toString(minZoom));
+                                             .getMin();
+                    zoomLevels.put("max", Integer.toString(maxZoom));
+                    zoomLevels.put("min", Integer.toString(minZoom));
                 } else {
                     //if there is no member "zoomLevels" in configuration
                     if (tilingSchemeId.equals("default")) {
                         TilingScheme tilingScheme = new DefaultTilingScheme();
                         minZoom = tilingScheme.getMinLevel();
                         maxZoom = tilingScheme.getMaxLevel();
-                        zoomLevels.put("max",Integer.toString(maxZoom));
-                        zoomLevels.put("min",Integer.toString(minZoom));
+                        zoomLevels.put("max", Integer.toString(maxZoom));
+                        zoomLevels.put("min", Integer.toString(minZoom));
                     }
                 }
                 if (tilingSchemeId.equals("default")) { //TODO only default supported
@@ -450,14 +475,14 @@ class VectorTile {
 
                 //if requested zoom Level is not in range
                 if (zoomLevel < minZoom || zoomLevel > maxZoom || minZoom > maxZoom) {
-                    zoomLevels.put(collectionId,"false");
-                    generateEmptyTile(collectionId,tilingSchemeId,zoomLevel,wfsService,wfs3OutputFormatGeoJson,mediaType,row,col,doNotCache,cache,isCollection,wfs3Request,crsTransformation);
-                }
-                else{
-                    zoomLevels.put(collectionId,"true");
+                    zoomLevels.put(collectionId, "false");
+                    generateEmptyTile(collectionId, tilingSchemeId, zoomLevel, wfsService, wfs3OutputFormatGeoJson, mediaType, row, col, doNotCache, cache, isCollection, wfs3Request, crsTransformation);
+                } else {
+                    zoomLevels.put(collectionId, "true");
                 }
             }
-        } catch (NullPointerException ignored) {}
+        } catch (NullPointerException ignored) {
+        }
         return zoomLevels;
     }
 
@@ -478,7 +503,11 @@ class VectorTile {
      * @param crsTransformation         the coordinate reference system transformation object to transform coordinates
      * @throws FileNotFoundException
      */
-    public static void generateEmptyTile(String collectionId, String tilingSchemeId, int zoomLevel,Wfs3Service wfsService,Wfs3OutputFormatExtension wfs3OutputFormatGeoJson,String mediaType, String row, String col, boolean doNotCache, VectorTilesCache cache, boolean isCollection, Wfs3RequestContext wfs3Request, CrsTransformation crsTransformation)throws FileNotFoundException{
+    public static void generateEmptyTile(String collectionId, String tilingSchemeId, int zoomLevel,
+                                         OgcApiDataset wfsService, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson,
+                                         String mediaType, String row, String col, boolean doNotCache,
+                                         VectorTilesCache cache, boolean isCollection, OgcApiRequestContext wfs3Request,
+                                         CrsTransformation crsTransformation) throws FileNotFoundException {
         try {
             if (mediaType.equals("application/json")) {
                 VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
@@ -501,19 +530,21 @@ class VectorTile {
                     TileGeneratorMvt.generateEmptyMVT(tileFileMvt, new DefaultTilingScheme());
                 }
             }
-        }catch (NullPointerException ignored){}
+        } catch (NullPointerException ignored) {
+        }
     }
-    public static List<String> getPropertiesList(MultivaluedMap<String, String> queryParameters){
+
+    public static List<String> getPropertiesList(MultivaluedMap<String, String> queryParameters) {
         List propertiesList = new ArrayList();
-        if(queryParameters.containsKey("properties")){
-            String propertiesString=queryParameters.get("properties").toString();
-            propertiesString=propertiesString.substring(1,propertiesString.length()-1);
-            String [] parts =propertiesString.split(",");
-            for (String part : parts){
+        if (queryParameters.containsKey("properties")) {
+            String propertiesString = queryParameters.get("properties")
+                                                     .toString();
+            propertiesString = propertiesString.substring(1, propertiesString.length() - 1);
+            String[] parts = propertiesString.split(",");
+            for (String part : parts) {
                 propertiesList.add(part);
             }
-        }
-        else{
+        } else {
             propertiesList.add("*");
         }
         return propertiesList;

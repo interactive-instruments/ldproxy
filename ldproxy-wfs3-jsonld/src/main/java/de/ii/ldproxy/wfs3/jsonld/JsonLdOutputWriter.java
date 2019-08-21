@@ -1,6 +1,6 @@
 /**
  * Copyright 2017 European Union, interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,13 +10,13 @@ package de.ii.ldproxy.wfs3.jsonld;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+import de.ii.ldproxy.ogcapi.domain.AbstractWfs3GenericMapping;
 import de.ii.ldproxy.target.html.FeatureCollectionView;
 import de.ii.ldproxy.target.html.FeaturePropertyDTO;
 import de.ii.ldproxy.target.html.HtmlTransformingCoordinatesWriter;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
-import de.ii.ldproxy.wfs3.api.AbstractWfs3GenericMapping;
 import de.ii.ldproxy.wfs3.jsonld.WktGeometryMapping.WKT_GEOMETRY_TYPE;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
@@ -52,18 +52,23 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
     private FeatureCollectionView dataset;
     private String vocab;
 
-    public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection, FeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer, URI requestUri, FeatureCollectionView dataset, Map<String, String> rewrites, String vocab) {
+    public JsonLdOutputWriter(JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection,
+                              FeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer,
+                              URI requestUri, FeatureCollectionView dataset, Map<String, String> rewrites,
+                              String vocab) {
         super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer/*, new JsonLdOnTheFlyMapping()*/);
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
         this.objectDepth = 0;
         // TODO
-        this.requestUrl = requestUri.toString().split("\\?")[0];
+        this.requestUrl = requestUri.toString()
+                                    .split("\\?")[0];
         for (Map.Entry<String, String> rewrite : rewrites.entrySet()) {
             this.requestUrl = requestUrl.replaceFirst(rewrite.getKey(), rewrite.getValue());
         }
         if (!isFeatureCollection) {
-            int sl = requestUrl.substring(0, requestUrl.length() - 2).lastIndexOf('/');
+            int sl = requestUrl.substring(0, requestUrl.length() - 2)
+                               .lastIndexOf('/');
             this.requestUrl = requestUrl.substring(0, sl + 1);
         }
         this.dataset = dataset;
@@ -120,11 +125,13 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                 //jsonOut.writeObjectFieldStart("features");
                 //jsonOut.writeStringField("@container", "@set");
                 //jsonOut.writeEndObject();
-                for (TargetMapping mapping : featureTypeMapping.findMappings(outputFormat).values()) {
+                for (TargetMapping mapping : featureTypeMapping.findMappings(outputFormat)
+                                                               .values()) {
                     //for (TargetMapping mapping : mappings) {
-                        if (((MicrodataPropertyMapping) mapping).getItemProp() == null && mapping.isEnabled() && mapping.getName() != null && !mapping.getName().startsWith("@") && ((MicrodataPropertyMapping) mapping).isShowInCollection() && !((AbstractWfs3GenericMapping)mapping).isSpatial()) {
-                            json.writeNullField(mapping.getName());
-                        }
+                    if (((MicrodataPropertyMapping) mapping).getItemProp() == null && mapping.isEnabled() && mapping.getName() != null && !mapping.getName()
+                                                                                                                                                  .startsWith("@") && ((MicrodataPropertyMapping) mapping).isShowInCollection() && !((AbstractWfs3GenericMapping) mapping).isSpatial()) {
+                        json.writeNullField(mapping.getName());
+                    }
                     //}
                 }
                 json.writeEndObject();
@@ -139,7 +146,8 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                 }
                 String parentUrl = requestUrl;
                 if (dataset.indexValue == null) {
-                    parentUrl = requestUrl.substring(0, requestUrl.substring(0, requestUrl.length() - 2).lastIndexOf('/') + 1);
+                    parentUrl = requestUrl.substring(0, requestUrl.substring(0, requestUrl.length() - 2)
+                                                                  .lastIndexOf('/') + 1);
                 }
 
 
@@ -153,7 +161,8 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                 json.writeStringField("url", parentUrl);
                 json.writeEndObject();
                 if (!dataset.hideMetadata) {
-                    json.writeStringField("keywords", Joiner.on(',').join(dataset.keywords));
+                    json.writeStringField("keywords", Joiner.on(',')
+                                                            .join(dataset.keywords));
                     json.writeObjectFieldStart("spatial");
                     json.writeStringField("@type", "Place");
                     json.writeObjectFieldStart("geo");
@@ -235,11 +244,13 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                 //jsonOut.writeStringField("@container", "@set");
                 //jsonOut.writeEndObject();
                 if (!type.contains("demo.bp4mc2.org")) {
-                    for (TargetMapping m : featureTypeMapping.findMappings(outputFormat).values()) {
+                    for (TargetMapping m : featureTypeMapping.findMappings(outputFormat)
+                                                             .values()) {
                         //for (TargetMapping m : mappings) {
-                            if (((MicrodataPropertyMapping) m).getItemProp() == null && m.isEnabled() && m.getName() != null && !m.getName().startsWith("@") && !((AbstractWfs3GenericMapping)m).isSpatial()) {
-                                json.writeNullField(m.getName());
-                            }
+                        if (((MicrodataPropertyMapping) m).getItemProp() == null && m.isEnabled() && m.getName() != null && !m.getName()
+                                                                                                                              .startsWith("@") && !((AbstractWfs3GenericMapping) m).isSpatial()) {
+                            json.writeNullField(m.getName());
+                        }
                         //}
                     }
                 }
@@ -274,8 +285,10 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
         MicrodataPropertyMapping mdMapping = (MicrodataPropertyMapping) mapping;
 
         try {
-            if (mdMapping.getItemProp() != null && !mdMapping.getItemProp().isEmpty()) {
-                String[] path = mdMapping.getItemProp().split("::");
+            if (mdMapping.getItemProp() != null && !mdMapping.getItemProp()
+                                                             .isEmpty()) {
+                String[] path = mdMapping.getItemProp()
+                                         .split("::");
 
                 for (int i = 0; i < path.length; i++) {
                     String itemProp = path[i];
@@ -405,7 +418,8 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
             Writer coordinatesWriter = new HtmlTransformingCoordinatesWriter(output, 2, crsTransformer);
 
             // TODO: MultiPolygon needs one more bracket
-            SMInputCursor geo = feature.descendantElementCursor().advance();
+            SMInputCursor geo = feature.descendantElementCursor()
+                                       .advance();
             while (geo.readerAccessible()) {
                 // TODO: does not work, GML_GEOMETRY_TYPE can only parse schema, not instance
                 if (!gmlType.isValid()) {
@@ -420,7 +434,8 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                     }
                 }
 
-                if (geo.getCurrEvent().equals(SMEvent.START_ELEMENT)
+                if (geo.getCurrEvent()
+                       .equals(SMEvent.START_ELEMENT)
                         && (geo.hasLocalName("exterior") || geo.hasLocalName("interior")
                         || geo.hasLocalName("outerBoundaryIs") || geo.hasLocalName("innerBoundaryIs")
                         || geo.hasLocalName("LineString"))) {
@@ -438,7 +453,8 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                         }
                     }
 
-                } else if (geo.getCurrEvent().equals(SMEvent.END_ELEMENT)
+                } else if (geo.getCurrEvent()
+                              .equals(SMEvent.END_ELEMENT)
                         && (geo.hasLocalName("exterior") || geo.hasLocalName("interior")
                         || geo.hasLocalName("outerBoundaryIs") || geo.hasLocalName("innerBoundaryIs")
                         || geo.hasLocalName("LineString"))) {
@@ -452,7 +468,8 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                         case POINT:
                             json.writeStringField("@type", "GeoCoordinates");
 
-                            String[] coordinates = geo.getElemStringValue().split(" ");
+                            String[] coordinates = geo.getElemStringValue()
+                                                      .split(" ");
                             CoordinateTuple point = new CoordinateTuple(coordinates[0], coordinates[1]);
 
                             if (crsTransformer != null) {
@@ -525,7 +542,8 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
             Writer coordinatesWriter = null;
 
             // TODO: MultiPolygon needs one more bracket
-            SMInputCursor geo = feature.descendantElementCursor().advance();
+            SMInputCursor geo = feature.descendantElementCursor()
+                                       .advance();
             while (geo.readerAccessible()) {
                 // TODO: does not work, GML_GEOMETRY_TYPE can only parse schema, not instance
                 if (!gmlType.isValid()) {
@@ -557,13 +575,15 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                     }
                 }
 
-                if (geo.getCurrEvent().equals(SMEvent.START_ELEMENT)
+                if (geo.getCurrEvent()
+                       .equals(SMEvent.START_ELEMENT)
                         && (geo.hasLocalName("exterior") || geo.hasLocalName("interior")
                         || geo.hasLocalName("outerBoundaryIs") || geo.hasLocalName("innerBoundaryIs")
                         || geo.hasLocalName("LineString"))) {
 
 
-                } else if (geo.getCurrEvent().equals(SMEvent.END_ELEMENT)
+                } else if (geo.getCurrEvent()
+                              .equals(SMEvent.END_ELEMENT)
                         && (geo.hasLocalName("exterior") || geo.hasLocalName("interior")
                         || geo.hasLocalName("outerBoundaryIs") || geo.hasLocalName("innerBoundaryIs")
                         || geo.hasLocalName("LineString"))) {
@@ -571,7 +591,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
 
                 } else if (geo.hasLocalName("posList") || geo.hasLocalName("pos") || geo.hasLocalName("coordinates")) {
                     //if (coordinatesWriter == null) {
-                        coordinatesWriter = cwBuilder.build();
+                    coordinatesWriter = cwBuilder.build();
                     //}
                     switch (type) {
                         case POINT:

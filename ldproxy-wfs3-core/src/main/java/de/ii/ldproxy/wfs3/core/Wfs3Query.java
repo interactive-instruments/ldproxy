@@ -7,9 +7,10 @@
  */
 package de.ii.ldproxy.wfs3.core;
 
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3Service;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
@@ -32,8 +33,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
-
 
 /**
  * @author zahnen
@@ -45,13 +44,13 @@ public class Wfs3Query {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3Query.class);
 
-    private final Wfs3ExtensionRegistry wfs3ExtensionRegistry;
+    private final OgcApiExtensionRegistry wfs3ExtensionRegistry;
 
-    public Wfs3Query(@Requires Wfs3ExtensionRegistry wfs3ExtensionRegistry) {
+    public Wfs3Query(@Requires OgcApiExtensionRegistry wfs3ExtensionRegistry) {
         this.wfs3ExtensionRegistry = wfs3ExtensionRegistry;
     }
 
-    public FeatureQuery requestToFeatureQuery(Wfs3Service service, String featureType, Map<String, String> parameters, String featureId) {
+    public FeatureQuery requestToFeatureQuery(OgcApiDataset service, String featureType, Map<String, String> parameters, String featureId) {
 
         for (Wfs3ParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(Wfs3ParameterExtension.class)) {
             parameters = parameterExtension.transformParameters(service.getData()
@@ -75,7 +74,7 @@ public class Wfs3Query {
         return queryBuilder.build();
     }
 
-    public FeatureQuery requestToFeatureQuery(Wfs3Service service, String featureType, String range, Map<String, String> parameters) {
+    public FeatureQuery requestToFeatureQuery(OgcApiDataset service, String featureType, String range, Map<String, String> parameters) {
 
         final Map<String, String> filterableFields = service.getData()
                                                             .getFilterableFieldsForFeatureType(featureType);
@@ -133,7 +132,7 @@ public class Wfs3Query {
         return filters;
     }
 
-    private String getCQLFromFilters(Wfs3Service service, Map<String, String> filters, Map<String, String> filterableFields) {
+    private String getCQLFromFilters(OgcApiDataset service, Map<String, String> filters, Map<String, String> filterableFields) {
         return filters.entrySet()
                       .stream()
                       .map(f -> {
@@ -155,13 +154,13 @@ public class Wfs3Query {
                       .collect(Collectors.joining(" AND "));
     }
 
-    private String bboxToCql(Wfs3Service service, String geometryField, String bboxValue) {
+    private String bboxToCql(OgcApiDataset service, String geometryField, String bboxValue) {
         String[] bboxArray = bboxValue.split(",");
 
         String bboxCrs = bboxArray.length > 4 ? bboxArray[4] : null;
         EpsgCrs crs = Optional.ofNullable(bboxCrs)
                               .map(EpsgCrs::new)
-                              .orElse(DEFAULT_CRS);
+                              .orElse(OgcApiDatasetData.DEFAULT_CRS);
 
         BoundingBox bbox = new BoundingBox(Double.valueOf(bboxArray[0]), Double.valueOf(bboxArray[1]), Double.valueOf(bboxArray[2]), Double.valueOf(bboxArray[3]), crs);
         BoundingBox transformedBbox = null;

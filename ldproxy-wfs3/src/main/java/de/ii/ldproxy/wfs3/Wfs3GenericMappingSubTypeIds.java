@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
 import de.ii.xtraplatform.dropwizard.api.JacksonSubTypeIds;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

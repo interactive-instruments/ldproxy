@@ -8,19 +8,18 @@
 package de.ii.ldproxy.wfs3.styles;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Modifiable
-@Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(as = ModifiableStylesConfiguration.class)
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableStylesConfiguration.Builder.class)
 public abstract class StylesConfiguration implements ExtensionConfiguration {
 
     @Value.Default
     @Override
     public boolean getEnabled() {
-        return false;
+        return true;
     }
 
     @Value.Default

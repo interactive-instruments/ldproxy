@@ -8,13 +8,12 @@
 package de.ii.ldproxy.wfs3.transactional;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Modifiable
-@Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(as = ModifiableTransactionalConfiguration.class)
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableTransactionalConfiguration.Builder.class)
 public abstract class TransactionalConfiguration implements ExtensionConfiguration {
 
     @Value.Default

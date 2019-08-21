@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.projections;
 
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -35,8 +35,8 @@ public class Wfs3OpenApiProjections implements Wfs3OpenApiExtension {
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
-        if (isExtensionEnabled(serviceData, ProjectionsConfiguration.class)) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+        if (isExtensionEnabled(datasetData, ProjectionsConfiguration.class)) {
             openAPI.getComponents()
                    .addParameters("properties", new Parameter()
                            .name("properties")
@@ -48,11 +48,11 @@ public class Wfs3OpenApiProjections implements Wfs3OpenApiExtension {
                            .explode(false)
                    );
 
-            serviceData.getFeatureTypes()
+            datasetData.getFeatureTypes()
                        .values()
                        .stream()
-                       .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                       .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                       .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+                       .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                        .forEach(ft -> {
 
                            PathItem pathItem = openAPI.getPaths()

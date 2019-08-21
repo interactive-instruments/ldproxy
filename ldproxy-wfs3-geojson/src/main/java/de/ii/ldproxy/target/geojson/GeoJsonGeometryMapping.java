@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.target.geojson;
 
-import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.SimpleFeatureGeometryFrom;

@@ -7,23 +7,28 @@
  */
 package de.ii.ldproxy.wfs3.sitemaps;
 
-import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.auth.api.User;
-import de.ii.xtraplatform.service.api.Service;
+import de.ii.xtraplatform.server.CoreServerConfig;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,30 +37,42 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EnpointSiteLandingPage implements Wfs3EndpointExtension {
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointSiteIndex.class);
+public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EnpointSiteLandingPage.class);
+    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
+            .apiEntrypoint("sitemap_landingPage.xml")
+            .build();
+    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.TEXT_HTML_TYPE)
+                    .build()
+    );
+
     @Requires
     private CoreServerConfig coreServerConfig;
 
     @Override
-    public String getPath() {
-        return "sitemap_landingPage.xml";
+    public OgcApiContext getApiContext() {
+        return API_CONTEXT;
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, SitemapsConfiguration.class)) {
-            throw new NotFoundException();
-        }
-        return true;
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
+        return API_MEDIA_TYPES;
+    }
+
+    @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+        return isExtensionEnabled(datasetData, SitemapsConfiguration.class);
     }
 
     @GET
-    public Response getLandingPageSitemap(@Auth Optional<User> optionalUser, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
-        Wfs3ServiceData serviceData = ((Wfs3Service) service).getData();
+    public Response getLandingPageSitemap(@Auth Optional<User> optionalUser, @Context OgcApiDataset service,
+                                          @Context OgcApiRequestContext wfs3Request) {
 
         List<Site> sites = new ArrayList<>();
-        sites.add(new Site(String.format("%s/%s?f=html", coreServerConfig.getExternalUrl(), serviceData.getId())));
+        sites.add(new Site(String.format("%s/%s?f=html", coreServerConfig.getExternalUrl(), service.getId())));
         Sitemap sitemap = new Sitemap(sites);
 
         return Response.ok()

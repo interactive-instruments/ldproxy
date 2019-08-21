@@ -8,13 +8,12 @@
 package de.ii.ldproxy.wfs3.sitemaps;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Modifiable
-@Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(as = ModifiableSitemapsConfiguration.class)
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableSitemapsConfiguration.Builder.class)
 public abstract class SitemapsConfiguration implements ExtensionConfiguration {
 
     @Value.Default

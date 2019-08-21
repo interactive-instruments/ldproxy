@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.target.geojson;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +44,8 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-        json.setCodec(new ObjectMapper());
+
+        json.setCodec(new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL));
         //if (useFormattedJsonOutput) {
         json.useDefaultPrettyPrinter();
         //}
@@ -116,6 +118,11 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
 
         @Value.Default
         public boolean isBuffering() {
+            return false;
+        }
+
+        @Value.Default
+        public boolean hasMore() {
             return false;
         }
     }

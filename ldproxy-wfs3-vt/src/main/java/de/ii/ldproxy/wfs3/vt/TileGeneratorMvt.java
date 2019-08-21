@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import no.ecc.vectortile.VectorTileEncoder;
@@ -19,21 +19,26 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
  * This class is responsible for generation and deletion of Mapbox Vector Tiles.
- *
  */
 public class TileGeneratorMvt {
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TileGeneratorMvt.class);
 
     /**
      * generate the Mapbox Vector Tile file in the cache
@@ -44,16 +49,16 @@ public class TileGeneratorMvt {
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @param tile              the tile which should be generated
      * @return true, if the file was generated successfully, false, if an error occurred
-
      */
-    static boolean generateTileMvt(File tileFileMvt, Map<String, File> layers, Set<String> propertyNames, CrsTransformation crsTransformation, VectorTile tile) {
+    static boolean generateTileMvt(File tileFileMvt, Map<String, File> layers, Set<String> propertyNames,
+                                   CrsTransformation crsTransformation, VectorTile tile) {
 
         // Prepare MVT output
-        TilingScheme tilingScheme=tile.getTilingScheme();
-        Wfs3ServiceData serviceData=tile.getServiceData();
-        int level=tile.getLevel();
-        int row=tile.getRow();
-        int col=tile.getCol();
+        TilingScheme tilingScheme = tile.getTilingScheme();
+        OgcApiDatasetData serviceData = tile.getDatasetData();
+        int level = tile.getLevel();
+        int row = tile.getRow();
+        int col = tile.getCol();
         //checkZoomLevels(level, service,collectionId,tilingScheme.getId());
 
         VectorTileEncoder encoder = new VectorTileEncoder(tilingScheme.getTileExtent());
@@ -115,9 +120,9 @@ public class TileGeneratorMvt {
                     // read JTS geometry in WGS 84 lon/lat
                     try {
                         if (jsonGeometry.get("type")
-                                .equals("MultiLineString") && !(jsonGeometry.get("coordinates")
-                                .toString()
-                                .contains("],")))
+                                        .equals("MultiLineString") && !(jsonGeometry.get("coordinates")
+                                                                                    .toString()
+                                                                                    .contains("],")))
                             continue; // TODO: skip MultiLineStrings with a single LineString for now because of an issue with the JTS code
                         jtsGeom = reader.read(mapper.writeValueAsString(jsonGeometry));
 
@@ -134,8 +139,8 @@ public class TileGeneratorMvt {
                     }
 
                     if (jsonGeometry.get("type")
-                            .equals("Polygon") || jsonGeometry.get("type")
-                            .equals("MultiPolygon"))
+                                    .equals("Polygon") || jsonGeometry.get("type")
+                                                                      .equals("MultiPolygon"))
                         jtsGeom = jtsGeom.reverse();
                     jtsGeom.apply(transform);
                     // filter features
@@ -160,25 +165,24 @@ public class TileGeneratorMvt {
 
                     Map<String, Object> jsonProperties = (Map<String, Object>) jsonFeature.get("properties");
 
-                    if(jsonProperties==null){
-                        jsonProperties=new HashMap<>();
-                    }
-                    else{
+                    if (jsonProperties == null) {
+                        jsonProperties = new HashMap<>();
+                    } else {
                         // remove properties that have not been requested
                         if (propertyNames != null) {
                             jsonProperties.entrySet()
-                                    .removeIf(property -> !propertyNames.contains(property.getKey()));
+                                          .removeIf(property -> !propertyNames.contains(property.getKey()));
                         }
 
                         // remove null values
                         jsonProperties.entrySet()
-                                .removeIf(property -> property.getValue() == null);
+                                      .removeIf(property -> property.getValue() == null);
                         // TODO: these are temporary fixes for TDS data
                         jsonProperties.entrySet()
-                                .removeIf(property -> property.getValue() instanceof String && ((String) property.getValue()).toLowerCase()
-                                        .matches("^(no[ ]?information|\\-999999)$"));
+                                      .removeIf(property -> property.getValue() instanceof String && ((String) property.getValue()).toLowerCase()
+                                                                                                                                   .matches("^(no[ ]?information|\\-999999)$"));
                         jsonProperties.entrySet()
-                                .removeIf(property -> property.getValue() instanceof Number && ((Number) property.getValue()).intValue() == -999999);
+                                      .removeIf(property -> property.getValue() instanceof Number && ((Number) property.getValue()).intValue() == -999999);
                     }
 
                     // If we have an id that happens to be a long value, use it
@@ -222,8 +226,8 @@ public class TileGeneratorMvt {
     /**
      * generates an empty MVT.
      *
-     * @param tileFileMvt       the file object of the tile in the cache
-     * @param tilingScheme      the tilingScheme the MVT should have
+     * @param tileFileMvt  the file object of the tile in the cache
+     * @param tilingScheme the tilingScheme the MVT should have
      */
     public static void generateEmptyMVT(File tileFileMvt, TilingScheme tilingScheme) {
         VectorTileEncoder encoder = new VectorTileEncoder(tilingScheme.getTileExtent());

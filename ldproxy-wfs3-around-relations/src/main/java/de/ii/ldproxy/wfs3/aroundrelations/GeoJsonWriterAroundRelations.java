@@ -8,11 +8,11 @@
 package de.ii.ldproxy.wfs3.aroundrelations;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Link;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import de.ii.ldproxy.target.geojson.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.target.geojson.GeoJsonWriter;
 import de.ii.ldproxy.target.geojson.ImmutableFeatureTransformationContextGeoJson;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
 import de.ii.xtraplatform.akka.http.AkkaHttp;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -81,7 +81,8 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
     }
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onStart(FeatureTransformationContextGeoJson transformationContext,
+                        Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         reset();
 
         this.aroundRelationsQuery = new AroundRelationsQuery(transformationContext);
@@ -90,14 +91,16 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
     }
 
     @Override
-    public void onEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onEnd(FeatureTransformationContextGeoJson transformationContext,
+                      Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         this.aroundRelationsQuery = null;
 
         next.accept(transformationContext);
     }
 
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
+                               Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         // if resolve=false, clear context links
 
         FeatureTransformationContextGeoJson nextTransformationContext = transformationContext;
@@ -115,7 +118,8 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
     }
 
     @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
+                             Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         // send request with bbox
         // if resolve=false, write links (parse response, extract)
         // if resolve=true, write additionalFeatures (pass through response)
@@ -156,12 +160,12 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
                                     } else {
                                         String url = aroundRelationResolver.getUrl(query, "&f=json");
 
-                                        links.add(ImmutableWfs3Link.builder()
-                                                                   .href(url)
-                                                                   .rel(query.configuration.getId())
-                                                                   .type(query.configuration.getResponseType())
-                                                                   .description(query.configuration.getLabel())
-                                                                   .build());
+                                        links.add(new ImmutableWfs3Link.Builder()
+                                                .href(url)
+                                                .rel(query.configuration.getId())
+                                                .type(query.configuration.getResponseType())
+                                                .description(query.configuration.getLabel())
+                                                .build());
                                     }
                                 }));
 
@@ -183,7 +187,8 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
     }
 
     @Override
-    public void onCoordinates(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onCoordinates(FeatureTransformationContextGeoJson transformationContext,
+                              Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (aroundRelationsQuery.isActive()) {
             transformationContext.getState()
                                  .getCurrentValue()
@@ -198,7 +203,8 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
     }
 
     @Override
-    public void onGeometryEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onGeometryEnd(FeatureTransformationContextGeoJson transformationContext,
+                              Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (aroundRelationsQuery.isActive()) {
 
             transformationContext.getState()

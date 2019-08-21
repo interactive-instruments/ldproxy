@@ -8,8 +8,8 @@
 package de.ii.ldproxy.wfs3.core;
 
 import com.google.common.collect.Lists;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -37,8 +37,8 @@ public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
-        if (serviceData != null) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+        if (datasetData != null) {
 
             PathItem featuresPathItem = openAPI.getPaths()
                                                .remove("/collections/{featureType}");
@@ -47,11 +47,11 @@ public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
             PathItem featurePathItem = openAPI.getPaths()
                                               .remove("/collections/{featureType}/items/{featureId}");
 
-            serviceData.getFeatureTypes()
+            datasetData.getFeatureTypes()
                        .values()
                        .stream()
-                       .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                       .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                       .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+                       .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                        .forEach(ft -> {
 
                            PathItem clonedPathItem1 = clonePathItem(featuresPathItem);
@@ -73,7 +73,7 @@ public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
                                                       .operationId("getFeatures" + ft.getId())
                                    );
 
-                           Map<String, String> filterableFields = serviceData.getFilterableFieldsForFeatureType(ft.getId(), true);
+                           Map<String, String> filterableFields = datasetData.getFilterableFieldsForFeatureType(ft.getId(), true);
                            filterableFields.keySet()
                                            .forEach(field -> {
                                                clonedPathItem.getGet()

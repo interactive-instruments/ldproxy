@@ -9,6 +9,13 @@ package de.ii.ldproxy.service.migration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
+import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonPropertyMapping;
@@ -17,26 +24,19 @@ import de.ii.ldproxy.target.html.Gml2MicrodataMappingProvider;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping;
 import de.ii.ldproxy.target.html.MicrodataMapping;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
-import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.ldproxy.wfs3.jsonld.Gml2JsonLdMappingProvider;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Jackson;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
-import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfo;
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfo;
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableFeatureProviderDataWfs;
+import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
+import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
-import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
 import de.ii.xtraplatform.kvstore.api.KeyNotFoundException;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import org.apache.felix.ipojo.annotations.Component;
@@ -83,7 +83,7 @@ public class Wfs3ServiceMigrate {
     private void onStart() {
         KeyValueStore serviceStore = rootConfigStore.getChildStore(PATH);
 
-        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, Wfs3Service.ENTITY_TYPE);
+        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, OgcApiDataset.ENTITY_TYPE);
 
         executorService.schedule(() -> {
 
@@ -101,7 +101,7 @@ public class Wfs3ServiceMigrate {
                                                                      .readValue(serviceStore.getValueReader(id), new TypeReference<LinkedHashMap>() {
                                                                      });
 
-                                Wfs3ServiceData wfs3ServiceData = createServiceData(service, null);
+                                OgcApiDatasetData datasetData = createServiceData(service, null);
 
 
                                 try {
@@ -110,19 +110,19 @@ public class Wfs3ServiceMigrate {
                                                                                                          .getValueReader(id), new TypeReference<LinkedHashMap>() {
                                                                                   });
 
-                                    wfs3ServiceData = createServiceData(serviceOverrides, wfs3ServiceData);
+                                    datasetData = createServiceData(serviceOverrides, datasetData);
 
                                 } catch (KeyNotFoundException e) {
                                     //ignore
                                 }
 
 
-                                try {
-                                    serviceRepository.createEntity(wfs3ServiceData);
+                                /*TODO try {
+                                    serviceRepository.createEntity(datasetData);
                                     LOGGER.debug("MIGRATED");
                                 } catch (IOException e) {
                                     LOGGER.error("ERROR", e);
-                                }
+                                }*/
 
                             } catch (Throwable e) {
                                 LOGGER.error("ERROR", e);
@@ -149,17 +149,18 @@ public class Wfs3ServiceMigrate {
         }, 10, TimeUnit.SECONDS);
     }
 
-    private Wfs3ServiceData createServiceData(Map<String, Object> service, Wfs3ServiceData wfs3ServiceData) throws URISyntaxException {
+    private OgcApiDatasetData createServiceData(Map<String, Object> service,
+                                                OgcApiDatasetData datasetData) throws URISyntaxException {
         Map<String, Object> wfs = (Map<String, Object>) service.get("wfsAdapter");
         Map<String, Object> defaultCrs = (Map<String, Object>) wfs.get("defaultCrs");
         String url = (String) ((Map<String, Object>) ((Map<String, Object>) wfs.get("urls"))
                 .get("GetFeature")).get("GET");
         URI uri = new URI(url);
 
-        ImmutableWfs3ServiceData.Builder builder = ImmutableWfs3ServiceData.builder();
+        ImmutableOgcApiDatasetData.Builder builder = new ImmutableOgcApiDatasetData.Builder();
 
-        if (wfs3ServiceData != null) {
-            builder.from(wfs3ServiceData);
+        if (datasetData != null) {
+            builder.from(datasetData);
         } else {
             builder
                     .id((String) service.get("id"))
@@ -181,20 +182,22 @@ public class Wfs3ServiceMigrate {
                                     Map<String, Object> temporal = (Map<String, Object>) ft.get("temporalExtent");
                                     String fid = ((String) ft.get("name")).toLowerCase();
 
-                                    ImmutableFeatureTypeConfigurationWfs3.Builder featureTypeConfigurationWfs3 = ImmutableFeatureTypeConfigurationWfs3.builder();
+                                    ImmutableFeatureTypeConfigurationOgcApi.Builder featureTypeConfigurationWfs3 = new ImmutableFeatureTypeConfigurationOgcApi.Builder();
 
-                                    if (wfs3ServiceData != null) {
-                                        featureTypeConfigurationWfs3.from(wfs3ServiceData.getFeatureTypes()
-                                                                                         .get(fid));
+                                    if (datasetData != null) {
+                                        featureTypeConfigurationWfs3.from(datasetData.getFeatureTypes()
+                                                                                     .get(fid));
                                     }
                                     featureTypeConfigurationWfs3
                                             .id(fid)
                                             .label((String) ft.get("displayName"));
 
                                     if (temporal != null) {
-                                        featureTypeConfigurationWfs3.extent(ImmutableFeatureTypeExtent.builder()
-                                                                                                      .temporal(new TemporalExtent((Long) temporal.get("start"), (Integer) temporal.get("end")))
-                                                                                                      .build());
+                                        featureTypeConfigurationWfs3.extent(new ImmutableCollectionExtent.Builder()
+                                                .temporal(new ImmutableTemporalExtent.Builder().start((Long) temporal.get("start"))
+                                                                                               .end((Integer) temporal.get("end"))
+                                                                                               .build())
+                                                .build());
                                     }
 
                                     return new AbstractMap.SimpleImmutableEntry<>(fid, featureTypeConfigurationWfs3.build());
@@ -203,75 +206,79 @@ public class Wfs3ServiceMigrate {
                 )
                 .featureProvider(
                         //TODO: providerType
-                        new ImmutableFeatureProviderDataWfs.Builder()
-                                                       .nativeCrs(new EpsgCrs((Integer) defaultCrs.get("code"), (Boolean) defaultCrs.get("longitudeFirst")))
-                                                       .connectionInfo(
-                                                               ImmutableConnectionInfo.builder()
-                                                                                      .uri(uri)
-                                                                                      .version((String) wfs.get("version"))
-                                                                                      .gmlVersion((String) wfs.get("gmlVersion"))
-                                                                                      .method(wfs.get("httpMethod")
-                                                                                                 .equals("GET") ? ConnectionInfo.METHOD.GET : ConnectionInfo.METHOD.POST)
-                                                                                      .namespaces((Map<String, String>) ((Map<String, Object>) wfs.get("nsStore"))
-                                                                                              .get("namespaces"))
-                                                                                      .build()
-                                                       )
-                                                       .mappings(
-                                                               ((Map<String, Object>) service.get("featureTypes"))
-                                                                       .entrySet()
-                                                                       .stream()
-                                                                       .map(entry -> {
-                                                                           Map<String, Object> ft = (Map<String, Object>) entry.getValue();
-                                                                           Map<String, Object> mappings = (Map<String, Object>) ((Map<String, Object>) ft.get("mappings")).get("mappings");
-                                                                           String fid = ((String) ft.get("name")).toLowerCase();
+                        new ImmutableFeatureProviderDataTransformer.Builder()
+                                .nativeCrs(new EpsgCrs((Integer) defaultCrs.get("code"), (Boolean) defaultCrs.get("longitudeFirst")))
+                                .connectionInfo(
+                                        new ImmutableConnectionInfoWfsHttp.Builder()
+                                                .uri(uri)
+                                                .version((String) wfs.get("version"))
+                                                .gmlVersion((String) wfs.get("gmlVersion"))
+                                                .method(wfs.get("httpMethod")
+                                                           .equals("GET") ? ConnectionInfoWfsHttp.METHOD.GET : ConnectionInfoWfsHttp.METHOD.POST)
+                                                .namespaces((Map<String, String>) ((Map<String, Object>) wfs.get("nsStore"))
+                                                        .get("namespaces"))
+                                                .build()
+                                )
+                                .mappings(
+                                        ((Map<String, Object>) service.get("featureTypes"))
+                                                .entrySet()
+                                                .stream()
+                                                .map(entry -> {
+                                                    Map<String, Object> ft = (Map<String, Object>) entry.getValue();
+                                                    Map<String, Object> mappings = (Map<String, Object>) ((Map<String, Object>) ft.get("mappings")).get("mappings");
+                                                    String fid = ((String) ft.get("name")).toLowerCase();
 
-                                                                           FeatureTypeMapping oldFt = wfs3ServiceData != null ? wfs3ServiceData.getFeatureProvider().getMappings().get(fid) : null;
+                                                    FeatureTypeMapping oldFt = datasetData != null ? datasetData.getFeatureProvider()
+                                                                                                                .getMappings()
+                                                                                                                .get(fid) : null;
 
-                                                                           ImmutableFeatureTypeMapping newMappings = new ImmutableFeatureTypeMapping.Builder()
-                                                                                                                                                .mappings(
-                                                                                                                                                        mappings
-                                                                                                                                                                .entrySet()
-                                                                                                                                                                .stream()
-                                                                                                                                                                .map(entry2 -> {
-                                                                                                                                                                    Map<String, Object> mappings2 = (Map<String, Object>) entry2.getValue();
+                                                    ImmutableFeatureTypeMapping newMappings = new ImmutableFeatureTypeMapping.Builder()
+                                                            .mappings(
+                                                                    mappings
+                                                                            .entrySet()
+                                                                            .stream()
+                                                                            .map(entry2 -> {
+                                                                                Map<String, Object> mappings2 = (Map<String, Object>) entry2.getValue();
 
-                                                                                                                                                                    SourcePathMapping oldSourcePathMapping = oldFt != null ? oldFt.getMappings()
-                                                                                                                                                                                                                   .get(entry2.getKey()) : null;
+                                                                                SourcePathMapping oldSourcePathMapping = oldFt != null ? oldFt.getMappings()
+                                                                                                                                              .get(entry2.getKey()) : null;
 
-                                                                                                                                                                    ImmutableSourcePathMapping newMappings2 = ImmutableSourcePathMapping.builder()
-                                                                                                                                                                                                                                        .mappings(
-                                                                                                                                                                                                                                                mappings2
-                                                                                                                                                                                                                                                        .entrySet()
-                                                                                                                                                                                                                                                        .stream()
-                                                                                                                                                                                                                                                        .map(entry3 -> {
-                                                                                                                                                                                                                                                            List<Map<String, Object>> targetMapping = (List<Map<String, Object>>) entry3.getValue();
+                                                                                ImmutableSourcePathMapping newMappings2 = new ImmutableSourcePathMapping.Builder()
+                                                                                                                                                    .mappings(
+                                                                                                                                                            mappings2
+                                                                                                                                                                    .entrySet()
+                                                                                                                                                                    .stream()
+                                                                                                                                                                    .map(entry3 -> {
+                                                                                                                                                                        List<Map<String, Object>> targetMapping = (List<Map<String, Object>>) entry3.getValue();
 
-                                                                                                                                                                                                                                                            TargetMapping oldTargetMapping = oldSourcePathMapping != null ? oldSourcePathMapping.getMappings().get(entry3.getKey()) : null;
-                                                                                                                                                                                                                                                            TargetMapping newTargetMappings = createTargetMapping(entry3.getKey(), targetMapping, oldTargetMapping);
+                                                                                                                                                                        TargetMapping oldTargetMapping = oldSourcePathMapping != null ? oldSourcePathMapping.getMappings()
+                                                                                                                                                                                                                                                            .get(entry3.getKey()) : null;
+                                                                                                                                                                        TargetMapping newTargetMappings = createTargetMapping(entry3.getKey(), targetMapping, oldTargetMapping);
 
 
-                                                                                                                                                                                                                                                            return new AbstractMap.SimpleImmutableEntry<>(entry3.getKey(), newTargetMappings);
-                                                                                                                                                                                                                                                        })
-                                                                                                                                                                                                                                                        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
-                                                                                                                                                                                                                                        )
-                                                                                                                                                                                                                                        .build();
+                                                                                                                                                                        return new AbstractMap.SimpleImmutableEntry<>(entry3.getKey(), newTargetMappings);
+                                                                                                                                                                    })
+                                                                                                                                                                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
+                                                                                                                                                    )
+                                                                                                                                                    .build();
 
-                                                                                                                                                                    return new AbstractMap.SimpleImmutableEntry<>(entry2.getKey(), newMappings2);
-                                                                                                                                                                })
-                                                                                                                                                                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
-                                                                                                                                                )
-                                                                                                                                                .build();
+                                                                                return new AbstractMap.SimpleImmutableEntry<>(entry2.getKey(), newMappings2);
+                                                                            })
+                                                                            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
+                                                            )
+                                                            .build();
 
-                                                                           return new AbstractMap.SimpleImmutableEntry<>(fid, newMappings);
-                                                                       })
-                                                                       .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
-                                                       )
-                                                       .build()
+                                                    return new AbstractMap.SimpleImmutableEntry<>(fid, newMappings);
+                                                })
+                                                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
+                                )
+                                .build()
                 )
                 .build();
     }
 
-    private TargetMapping createTargetMapping(String mimeType, List<Map<String, Object>> mappings, TargetMapping oldTargetMapping) {
+    private TargetMapping createTargetMapping(String mimeType, List<Map<String, Object>> mappings,
+                                              TargetMapping oldTargetMapping) {
         if (mappings.isEmpty()) return null;
 
         Map<String, Object> mapping = mappings.get(0);
@@ -290,7 +297,8 @@ public class Wfs3ServiceMigrate {
         return null;
     }
 
-    private Wfs3GenericMapping createGenericMapping(String mappingType, Map<String, Object> mapping, Wfs3GenericMapping oldTargetMapping) {
+    private Wfs3GenericMapping createGenericMapping(String mappingType, Map<String, Object> mapping,
+                                                    Wfs3GenericMapping oldTargetMapping) {
         switch (mappingType) {
             case "GENERIC_PROPERTY":
                 Wfs3GenericMapping targetMapping = oldTargetMapping != null ? oldTargetMapping : new Wfs3GenericMapping();
@@ -308,7 +316,8 @@ public class Wfs3ServiceMigrate {
         return null;
     }
 
-    private GeoJsonPropertyMapping createGeoJsonMapping(String mappingType, Map<String, Object> mapping, GeoJsonPropertyMapping oldTargetMapping) {
+    private GeoJsonPropertyMapping createGeoJsonMapping(String mappingType, Map<String, Object> mapping,
+                                                        GeoJsonPropertyMapping oldTargetMapping) {
         GeoJsonPropertyMapping targetMapping = null;
         switch (mappingType) {
             case "GEO_JSON_PROPERTY":
@@ -330,7 +339,8 @@ public class Wfs3ServiceMigrate {
         return targetMapping;
     }
 
-    private MicrodataPropertyMapping createMicrodataMapping(String mappingType, Map<String, Object> mapping, MicrodataPropertyMapping oldTargetMapping) {
+    private MicrodataPropertyMapping createMicrodataMapping(String mappingType, Map<String, Object> mapping,
+                                                            MicrodataPropertyMapping oldTargetMapping) {
         MicrodataPropertyMapping targetMapping = null;
         switch (mappingType) {
             case "MICRODATA_PROPERTY":

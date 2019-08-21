@@ -5,11 +5,11 @@ import { css } from 'styled-components';
 export const customTheme = deepMerge(xtraplatformTheme, {
     global: {
         colors: {
-            active: "#417baa",
+            /*active: "brand",
             brand: "#326499",
             menu: "light-6",
             'light-6': "#9296a0",
-            'dark-6': "#383f51"
+            'dark-6': "#383f51"*/
         }
     }
 });

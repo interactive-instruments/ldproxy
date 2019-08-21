@@ -9,9 +9,9 @@ package de.ii.ldproxy.wfs3.vt
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ldproxy.wfs3.Wfs3Service
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext
 import de.ii.xtraplatform.crs.api.CrsTransformation
 import spock.lang.Specification
 
@@ -126,7 +126,7 @@ class VectorTileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(Wfs3Service),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(Wfs3RequestContext),Mock(CrsTransformation))
+        def result=VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(OgcApiDataset),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(OgcApiRequestContext),Mock(CrsTransformation))
 
         then: "it should return an empty map"
 
@@ -145,7 +145,7 @@ class VectorTileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(Wfs3Service),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(Wfs3RequestContext),Mock(CrsTransformation))
+        def result=VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(OgcApiDataset),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(OgcApiRequestContext),Mock(CrsTransformation))
 
         then: "it should return an empty map"
 
@@ -170,7 +170,7 @@ class VectorTileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(Wfs3Service),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(Wfs3RequestContext),Mock(CrsTransformation))
+        def result=VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(OgcApiDataset),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(OgcApiRequestContext),Mock(CrsTransformation))
 
         then: "it should return a map with the max and min zoom level of the tiling scheme from the requested collection and an entry with the key \'collection1\' and the value \'true\'"
 
@@ -188,15 +188,15 @@ class VectorTileSpec extends Specification{
         def collectionId='collection2'
         def tilingSchemeId= 'default'
         def zoomLevelsMap =  new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", ImmutableMinMax.builder().max(15).min(4).build()),
-                "collection1", ImmutableMap.of("default", ImmutableMinMax.builder().max(21).min(3).build()),
-                "collection2", ImmutableMap.of("default", ImmutableMinMax.builder().max(18).min(6).build()),
-                "collection3", ImmutableMap.of("default", ImmutableMinMax.builder().max(24).min(13).build())))
+                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(15).min(4).build()),
+                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(21).min(3).build()),
+                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(18).min(6).build()),
+                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(24).min(13).build())))
 
 
         when: "checkZoomLevel is called"
 
-        def result=VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(Wfs3Service),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(Wfs3RequestContext),Mock(CrsTransformation))
+        def result=VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(OgcApiDataset),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(OgcApiRequestContext),Mock(CrsTransformation))
 
         then: "it should return a map with the max and min zoom level of the requested collection and an entry with the key \'collection2\' and the value \'true\'"
 
@@ -214,11 +214,11 @@ class VectorTileSpec extends Specification{
         def collectionId='collection'
         def tilingSchemeId= 'default'
         def zoomLevelsMap =  new HashMap<>(ImmutableMap.of(
-                "collection", ImmutableMap.of("default", ImmutableMinMax.builder().max(25).min(0).build())))
+                "collection", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(25).min(0).build())))
 
         when: "checkZoomLevel is called"
 
-        VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(Wfs3Service),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(Wfs3RequestContext),Mock(CrsTransformation))
+        VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(OgcApiDataset),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(OgcApiRequestContext),Mock(CrsTransformation))
 
         then: thrown NotFoundException
 
@@ -234,14 +234,14 @@ class VectorTileSpec extends Specification{
         def collectionId='collection3'
         def tilingSchemeId= 'default'
         def zoomLevelsMap =  new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", ImmutableMinMax.builder().max(15).min(4).build()),
-                "collection1", ImmutableMap.of("default", ImmutableMinMax.builder().max(21).min(3).build()),
-                "collection2", ImmutableMap.of("default", ImmutableMinMax.builder().max(18).min(6).build()),
-                "collection3", ImmutableMap.of("default", ImmutableMinMax.builder().max(24).min(13).build())))
+                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(15).min(4).build()),
+                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(21).min(3).build()),
+                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(18).min(6).build()),
+                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(24).min(13).build())))
 
         when: "checkZoomLevel is called"
 
-        def result=VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(Wfs3Service),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(Wfs3RequestContext),Mock(CrsTransformation))
+        def result=VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(OgcApiDataset),Mock(Wfs3OutputFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(OgcApiRequestContext),Mock(CrsTransformation))
 
         then: "it should return a map with the max and min zoom level of the requested collection and an entry with the key \'collection3\' and the value \'false\'"
 

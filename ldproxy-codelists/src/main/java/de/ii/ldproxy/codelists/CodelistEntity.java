@@ -8,6 +8,7 @@
 package de.ii.ldproxy.codelists;
 
 import de.ii.xtraplatform.entity.api.AbstractPersistentEntity;
+import de.ii.xtraplatform.entity.api.EntityComponent;
 import de.ii.xtraplatform.entity.api.handler.Entity;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.HandlerDeclaration;
@@ -21,21 +22,16 @@ import java.util.Optional;
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Entity(entityType = Codelist.class, dataType = CodelistData.class)
-// TODO: @Stereotype does not seem to work, maybe test with bnd-ipojo-plugin
-// needed to register the ConfigurationHandler when no other properties are set
-@HandlerDeclaration("<properties></properties>")
 
+@EntityComponent
+@Entity(entityType = Codelist.class, dataType = CodelistData.class)
 public class CodelistEntity extends AbstractPersistentEntity<CodelistData> implements Codelist {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CodelistEntity.class);
 
-    //TODO: setData not called without this
-    @Validate
-    void onStart() {
-        LOGGER.debug("STARTED {} {}", getId(), shouldRegister());
+    @Override
+    protected void onStart() {
+        LOGGER.debug("Codelist loaded {} {}", getId(), shouldRegister());
     }
 
     @Override
@@ -48,17 +44,7 @@ public class CodelistEntity extends AbstractPersistentEntity<CodelistData> imple
     }
 
     @Override
-    protected CodelistData dataToImmutable(CodelistData data) {
-        return ImmutableCodelistData.copyOf(data);
-    }
-
-    @Override
     public CodelistData getData() {
         return super.getData();
     }
-
-    /*@Override
-    public String getType() {
-        return null;
-    }*/
 }

@@ -7,16 +7,19 @@
  */
 package de.ii.ldproxy.wfs3.styles.representation;
 
-import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.ldproxy.wfs3.styles.Wfs3EndpointStyles;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.server.CoreServerConfig;
-import de.ii.xtraplatform.service.api.Service;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -36,34 +39,34 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointStylesRepresentation implements Wfs3EndpointExtension {
+public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension {
+
+    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
+            .apiEntrypoint("maps")
+            .build();
+    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.TEXT_HTML_TYPE)
+                    .build()
+    );
+
     @Requires
     private KeyValueStore keyValueStore;
     @Requires
     private CoreServerConfig coreServerConfig;
 
     @Override
-    public String getPath() {
-        return "maps";
+    public OgcApiContext getApiContext() {
+        return API_CONTEXT;
     }
 
     @Override
-    public String getSubPathRegex() {
-        return "^\\/?.*$";
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
+        return API_MEDIA_TYPES;
     }
 
     @Override
-    public List<String> getMethods() {
-        return ImmutableList.of("GET");
-    }
-
-    @Override
-    public boolean matches(String firstPathSegment, String method, String subPath) {
-        return Wfs3EndpointExtension.super.matches(firstPathSegment, method, subPath);
-    }
-
-    @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
+    public boolean isEnabledForDataset(OgcApiDatasetData serviceData) {
         Optional<StylesConfiguration> stylesExtension = serviceData.getExtension(StylesConfiguration.class);
 
         if (!stylesExtension.isPresent() || !stylesExtension.get()
@@ -86,10 +89,9 @@ public class Wfs3EndpointStylesRepresentation implements Wfs3EndpointExtension {
     @Path("/{styleId}")
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response getStyles(@Context Service service, @PathParam("styleId") String styleId, @Context Wfs3RequestContext wfs3Request) {
-        Wfs3Service wfs3Service = (Wfs3Service) service;
+    public Response getStyles(@Context OgcApiDataset service, @PathParam("styleId") String styleId, @Context OgcApiRequestContext wfs3Request) {
 
-        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(wfs3Service.getData(), StylesConfiguration.class);
+        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(service.getData(), StylesConfiguration.class);
         if (!stylesExtension.isPresent() || !stylesExtension.get()
                                                             .getMapsEnabled()) {
             throw new NotFoundException();

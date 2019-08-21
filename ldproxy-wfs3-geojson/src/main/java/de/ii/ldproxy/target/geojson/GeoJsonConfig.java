@@ -7,60 +7,18 @@
  */
 package de.ii.ldproxy.target.geojson;
 
-import com.google.common.base.Strings;
-import de.ii.xtraplatform.cfgstore.api.BundleConfigDefault;
-import de.ii.xtraplatform.cfgstore.api.ConfigPropertyDescriptor;
-import de.ii.xtraplatform.cfgstore.api.handler.LocalBundleConfig;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import org.immutables.value.Value;
 
-import static de.ii.ldproxy.target.geojson.GeoJsonConfig.ENABLED;
-import static de.ii.ldproxy.target.geojson.GeoJsonConfig.MULTIPLICITY;
-import static de.ii.ldproxy.target.geojson.GeoJsonConfig.NESTED_OBJECTS;
+@Value.Immutable
+public interface GeoJsonConfig {
+    boolean isEnabled();
 
-/**
- * @author zahnen
- */
-@Component
-@Provides(specifications = {GeoJsonConfig.class})
-@Instantiate
-@LocalBundleConfig(bundleId = "ldproxy-target-geojson", category = "GeoJson Output Format", properties = {
-        @ConfigPropertyDescriptor(name = ENABLED, label = "Enable GeoJson output format?", defaultValue = "true", uiType = ConfigPropertyDescriptor.UI_TYPE.CHECKBOX),
-        @ConfigPropertyDescriptor(name = NESTED_OBJECTS, label = "How to format nested objects?", defaultValue = "NEST", uiType = ConfigPropertyDescriptor.UI_TYPE.SELECT, allowedValues = "{NEST: 'Nest', FLATTEN: 'Flatten'}"),
-        @ConfigPropertyDescriptor(name = MULTIPLICITY, label = "How to format multiple values?", defaultValue = "ARRAY", uiType = ConfigPropertyDescriptor.UI_TYPE.SELECT, allowedValues = "{ARRAY: 'Array', SUFFIX: 'Suffix'}")
-})
-public class GeoJsonConfig extends BundleConfigDefault {
+    FeatureTransformerGeoJson.NESTED_OBJECTS getNestedObjectStrategy();
 
-    static final String ENABLED = "enabled";
-    static final String NESTED_OBJECTS = "nestedObjects";
-    static final String MULTIPLICITY = "multiplicity";
+    FeatureTransformerGeoJson.MULTIPLICITY getMultiplicityStrategy();
 
-    public boolean isEnabled() {
-        return Strings.nullToEmpty(properties.get(ENABLED))
-                      .toLowerCase()
-                      .equals("true");
-    }
-
-    public FeatureTransformerGeoJson.NESTED_OBJECTS getNestedObjectStrategy() {
-        FeatureTransformerGeoJson.NESTED_OBJECTS nestedObjects;
-        try {
-            nestedObjects = FeatureTransformerGeoJson.NESTED_OBJECTS.valueOf(Strings.nullToEmpty(properties.get(NESTED_OBJECTS)));
-        } catch (Throwable e) {
-            nestedObjects = FeatureTransformerGeoJson.NESTED_OBJECTS.NEST;
-        }
-
-        return nestedObjects;
-    }
-
-    public FeatureTransformerGeoJson.MULTIPLICITY getMultiplicityStrategy() {
-        FeatureTransformerGeoJson.MULTIPLICITY multiplicity;
-        try {
-            multiplicity = FeatureTransformerGeoJson.MULTIPLICITY.valueOf(Strings.nullToEmpty(properties.get(MULTIPLICITY)));
-        } catch (Throwable e) {
-            multiplicity = FeatureTransformerGeoJson.MULTIPLICITY.ARRAY;
-        }
-
-        return multiplicity;
+    @Value.Default
+    default String getSeparator() {
+        return ".";
     }
 }

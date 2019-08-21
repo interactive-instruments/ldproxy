@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -47,9 +47,9 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
 
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
 
-        if (serviceData != null && isExtensionEnabled(serviceData, StylesConfiguration.class)) {
+        if (datasetData != null && isExtensionEnabled(datasetData, StylesConfiguration.class)) {
 
 
             Parameter styleId = new Parameter();
@@ -161,7 +161,7 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                    .add(new Tag().name("Styles")
                                  .description("Access to styles."));
 
-            if (serviceData != null) {
+            if (datasetData != null) {
 
                 openAPI.getPaths()
                        .addPathItem("/styles", new PathItem().description("something"));  //create a new path
@@ -223,11 +223,11 @@ public class Wfs3OpenApiStyles implements Wfs3OpenApiExtension {
                        .addPathItem("/styles/{styleId}", pathItem);
 
 
-                serviceData.getFeatureTypes()
+                datasetData.getFeatureTypes()
                            .values()
                            .stream()
-                           .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                           .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                           .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+                           .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                            .forEach(ft -> {
 
                                openAPI.getPaths()

@@ -32,6 +32,7 @@
         <br/>
         <br/>
         <br/>
+        {{^sectionsFirst}}
         <div class="row my-3">
             <div class="col-md-2 font-weight-bold">Collections</div>
             <div class="col-md-10">
@@ -47,8 +48,9 @@
                 </ul>
             </div>
         </div>
+        {{/sectionsFirst}}
 
-        {{#sections}}
+        {{#orderedSections}}
             <div class="row my-3">
                 <div class="col-md-2 font-weight-bold">{{title}}</div>
                 <div class="col-md-10">
@@ -64,7 +66,25 @@
                     </ul>
                 </div>
             </div>
-        {{/sections}}
+        {{/orderedSections}}
+
+        {{#sectionsFirst}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">Collections</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    {{#featureTypes}}
+                    <li>
+                        <a href="{{url}}">{{title}}</a>
+                    </li>
+                    {{/featureTypes}}
+                    {{^featureTypes}}
+                    <li>None</li>
+                    {{/featureTypes}}
+                </ul>
+            </div>
+        </div>
+        {{/sectionsFirst}}
 
         {{#dataSourceUrl}}
             <div class="row my-3">

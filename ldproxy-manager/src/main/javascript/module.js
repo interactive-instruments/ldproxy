@@ -9,9 +9,11 @@ import Codelists from './components/container/Codelists'
 import CodelistIndex from './components/presentational/CodelistIndex'
 import CodelistShow from './components/presentational/CodelistShow'
 import CodelistAdd from './components/presentational/CodelistAdd'
+import Console from './components/container/Console'
 import MappingEditGeneral from './components/presentational/MappingEditGeneral'
 import MappingEditGeoJson from './components/presentational/MappingEditGeoJson'
 import MappingEditHtml from './components/presentational/MappingEditHtml'
+import { customTheme } from './theme'
 
 export default {
     applicationName: 'ldproxy',
@@ -27,6 +29,7 @@ export default {
                 component: Codelists,
                 title: 'Codelists',
                 menu: true,
+                roles: ['SUPERADMIN', 'ADMIN', 'EDITOR'],
                 routes: [
                     {
                         path: '/add',
@@ -43,7 +46,16 @@ export default {
                         component: CodelistIndex
                     }
                 ]
-            }
+            },
+            {},
+            {},
+            /*{
+                path: '/console',
+                component: Console,
+                title: 'Console',
+                menu: true,
+                roles: ['SUPERADMIN', 'ADMIN']
+            }*/
         ]
     },
     typedComponents: {
@@ -53,6 +65,7 @@ export default {
             'application/ld+json': MappingEditHtml,
             'text/html': MappingEditHtml
         }
-    }
+    },
+    theme: customTheme
 };
 

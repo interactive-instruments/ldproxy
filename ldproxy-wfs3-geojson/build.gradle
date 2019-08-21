@@ -1,8 +1,9 @@
 
-version = '1.4.0'
+version = '1.4.1'
 
 dependencies {
     provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-ogcapi")
     provided project(":ldproxy-string-templates")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
@@ -11,6 +12,7 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
 
+    testImplementation group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
     testImplementation group: 'com.typesafe.akka', name: 'akka-testkit_2.12', version: '2.5.18'
     testImplementation (group: 'com.lightbend.akka', name: 'akka-stream-alpakka-xml_2.12', version: '0.17') {
         exclude  group: 'com.typesafe.akka', module: 'akka-stream_2.12'

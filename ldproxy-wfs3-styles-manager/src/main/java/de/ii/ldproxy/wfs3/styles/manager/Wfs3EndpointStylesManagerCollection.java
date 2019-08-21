@@ -8,15 +8,19 @@
 package de.ii.ldproxy.wfs3.styles.manager;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
-import de.ii.xtraplatform.service.api.Service;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -27,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -45,41 +48,42 @@ import java.util.regex.Pattern;
 
 /**
  * creates, updates and deletes a style from the collection
- *
  */
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtension {
+public class Wfs3EndpointStylesManagerCollection implements OgcApiEndpointExtension {
+
+    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
+            .apiEntrypoint("collections")
+            .subPathPattern("^\\/(?:\\w+)\\/styles\\/?.*$")
+            .addMethods(HttpMethods.POST, HttpMethods.PUT, HttpMethods.DELETE)
+            .build();
+    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.TEXT_HTML_TYPE)
+                    .build()
+    );
 
     @Requires
     private KeyValueStore keyValueStore;
 
     @Override
-    public String getPath() {
-        return "collections";
+    public OgcApiContext getApiContext() {
+        return API_CONTEXT;
     }
 
     @Override
-    public String getSubPathRegex() {
-        return "^\\/(?:\\w+)\\/styles\\/?.*$";
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
+        return API_MEDIA_TYPES;
     }
 
     @Override
-    public List<String> getMethods() {
-        return ImmutableList.of("POST", "PUT", "DELETE");
-    }
+    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+        Optional<StylesConfiguration> stylesExtension = datasetData.getExtension(StylesConfiguration.class);
 
-    @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        Optional<StylesConfiguration> stylesExtension = serviceData.getExtension(StylesConfiguration.class);
-
-        if (!stylesExtension.isPresent() || !stylesExtension.get()
-                                                            .getManagerEnabled()) {
-            throw new NotFoundException();
-        }
-
-        return true;
+        return stylesExtension.isPresent() && stylesExtension.get()
+                                                             .getManagerEnabled();
     }
 
     /**
@@ -90,9 +94,11 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
     @Path("/{collectionId}/styles/")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response postStyle(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpServletRequest request, InputStream requestBody) {
+    public Response postStyle(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId,
+                              @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request,
+                              @Context HttpServletRequest request, InputStream requestBody) {
 
-        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
+        checkAuthorization(service.getData(), optionalUser);
 
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
                                                  .getChildStore(service.getId())
@@ -143,9 +149,13 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
     @Path("/{collectionId}/styles/{styleId}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response putStyleCollection(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpServletRequest request, InputStream requestBody) {
+    public Response putStyleCollection(@Auth Optional<User> optionalUser,
+                                       @PathParam("collectionId") String collectionId,
+                                       @PathParam("styleId") String styleId, @Context OgcApiDataset service,
+                                       @Context OgcApiRequestContext wfs3Request, @Context HttpServletRequest request,
+                                       InputStream requestBody) {
 
-        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
+        checkAuthorization(service.getData(), optionalUser);
 
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
                                                  .getChildStore(service.getId())
@@ -177,9 +187,11 @@ public class Wfs3EndpointStylesManagerCollection implements Wfs3EndpointExtensio
      */
     @Path("/{collectionId}/styles/{styleId}")
     @DELETE
-    public Response deleteStyleCollection(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service) {
+    public Response deleteStyleCollection(@Auth Optional<User> optionalUser,
+                                          @PathParam("collectionId") String collectionId,
+                                          @PathParam("styleId") String styleId, @Context OgcApiDataset service) {
 
-        checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
+        checkAuthorization(service.getData(), optionalUser);
 
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
                                                  .getChildStore(service.getId())

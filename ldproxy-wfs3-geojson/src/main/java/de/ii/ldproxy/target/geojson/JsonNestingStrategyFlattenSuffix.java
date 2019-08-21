@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- * <p>
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -27,16 +27,17 @@ import java.util.stream.Stream;
 public class JsonNestingStrategyFlattenSuffix implements JsonNestingStrategy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonNestingStrategyFlattenSuffix.class);
-    private static final Joiner JOINER = Joiner.on('.')
-                                               .skipNulls();
 
     private Map<String, Integer> currentMultiplicities = new HashMap<>();
     private final List<String> currentFieldName;
     private final List<String> lastFieldName;
+    private final Joiner joiner;
 
-    public JsonNestingStrategyFlattenSuffix() {
+    public JsonNestingStrategyFlattenSuffix(String separator) {
         this.currentFieldName = new ArrayList<>();
         this.lastFieldName = new ArrayList<>();
+        this.joiner = Joiner.on(separator)
+                            .skipNulls();
     }
 
     //biotoptyp.1.zusatzbezeichnung.2.zusatzcode.1
@@ -113,7 +114,7 @@ public class JsonNestingStrategyFlattenSuffix implements JsonNestingStrategy {
         }
 
 
-        json.writeFieldName(JOINER.join(currentFieldName.stream()
+        json.writeFieldName(joiner.join(currentFieldName.stream()
                                                         .flatMap(element -> {
 
                                                             if (currentMultiplicities.containsKey(element)) {

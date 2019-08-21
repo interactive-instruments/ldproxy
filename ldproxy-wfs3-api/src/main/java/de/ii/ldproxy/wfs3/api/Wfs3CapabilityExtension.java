@@ -7,13 +7,17 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
+
 /**
  * @author zahnen
  */
-public interface Wfs3CapabilityExtension extends Wfs3Extension {
+public interface Wfs3CapabilityExtension extends OgcApiExtension {
 
 
     //String getExtensionKey();
 
-    ExtensionConfiguration getDefaultConfiguration();
+    ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset);
 }

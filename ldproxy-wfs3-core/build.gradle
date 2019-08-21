@@ -1,11 +1,13 @@
 
-version = '1.4.0'
+version = '1.4.1'
 
 dependencies {
     provided project(":ldproxy-wfs3-oas30")
     provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-ogcapi")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }

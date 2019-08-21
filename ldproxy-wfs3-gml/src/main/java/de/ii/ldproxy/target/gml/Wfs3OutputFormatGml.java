@@ -8,17 +8,17 @@
 package de.ii.ldproxy.target.gml;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClasses;
+import de.ii.ldproxy.ogcapi.domain.Dataset;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Collection;
-import de.ii.ldproxy.wfs3.api.Wfs3Collections;
-import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
-import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClasses;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.xtraplatform.feature.provider.wfs.FeatureProviderDataWfs;
+import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.apache.felix.ipojo.annotations.Component;
@@ -40,13 +40,13 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputFormatExtension {
+public class Wfs3OutputFormatGml implements ConformanceClass, Wfs3OutputFormatExtension {
 
-    private static final Wfs3MediaType MEDIA_TYPE = ImmutableWfs3MediaType.builder()
-                                                                          .main(new MediaType("application", "gml+xml", ImmutableMap.of("version", "3.2", "profile", "http://www.opengis.net/def/profile/ogc/2.0/gml-sf2")))
-                                                                          .label("GML")
-                                                                          .metadata(MediaType.APPLICATION_XML_TYPE)
-                                                                          .build();
+    private static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+            .main(new MediaType("application", "gml+xml", ImmutableMap.of("version", "3.2", "profile", "http://www.opengis.net/def/profile/ogc/2.0/gml-sf2")))
+            .label("GML")
+            .metadata(MediaType.APPLICATION_XML_TYPE)
+            .build();
 
     @Requires
     private GmlConfig gmlConfig;
@@ -65,45 +65,39 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
     }
 
     @Override
-    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData) {
-        if (isExtensionEnabled(serviceData, GmlConfiguration.class)) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public Wfs3MediaType getMediaType() {
+    public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
-
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, GmlConfiguration.class)) {
-            return false;
-        }
-        return true;
+    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+        return isExtensionEnabled(datasetData, GmlConfiguration.class);
     }
 
     @Override
-    public Response getConformanceResponse(List<Wfs3ConformanceClass> wfs3ConformanceClasses, String serviceLabel, Wfs3MediaType wfs3MediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix) {
-        return response(new Wfs3ConformanceClassesXml(new Wfs3ConformanceClasses(wfs3ConformanceClasses.stream()
-                                                                                                       .map(Wfs3ConformanceClass::getConformanceClass)
-                                                                                                       .collect(Collectors.toList()))));
+    public Response getConformanceResponse(List<ConformanceClass> wfs3ConformanceClasses, String serviceLabel,
+                                           OgcApiMediaType ogcApiMediaType, List<OgcApiMediaType> alternativeMediaTypes,
+                                           URICustomizer uriCustomizer, String staticUrlPrefix) {
+        return response(new Wfs3ConformanceClassesXml(new ConformanceClasses(wfs3ConformanceClasses.stream()
+                                                                                                   .map(ConformanceClass::getConformanceClass)
+                                                                                                   .collect(Collectors.toList()))));
     }
 
     @Override
-    public Response getDatasetResponse(Wfs3Collections wfs3Collections, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix, boolean isCollections) {
+    public Response getDatasetResponse(Dataset dataset, OgcApiDatasetData datasetData, OgcApiMediaType mediaType,
+                                       List<OgcApiMediaType> alternativeMediaTypes, URICustomizer uriCustomizer,
+                                       String staticUrlPrefix, boolean isCollections) {
         if (isCollections) {
-            return response(new Wfs3CollectionsXml(wfs3Collections));
+            return response(new Wfs3CollectionsXml(dataset));
         }
 
-        return response(new LandingPage(uriCustomizer, serviceData, mediaType, alternativeMediaTypes));
+        return response(new LandingPage(dataset.getLinks()));
     }
 
     @Override
-    public Response getCollectionResponse(Wfs3Collection wfs3Collection, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String collectionName) {
+    public Response getCollectionResponse(Wfs3Collection wfs3Collection, OgcApiDatasetData datasetData,
+                                          OgcApiMediaType mediaType, List<OgcApiMediaType> alternativeMediaTypes,
+                                          URICustomizer uriCustomizer, String collectionName) {
         return response(new Wfs3CollectionXml(wfs3Collection));
     }
 
@@ -116,9 +110,10 @@ public class Wfs3OutputFormatGml implements Wfs3ConformanceClass, Wfs3OutputForm
     public Optional<GmlConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
         return Optional.of(new FeatureTransformerGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
                                                                                                     .from(transformationContext)
-                                                                                                    .namespaces(((FeatureProviderDataWfs) transformationContext.getServiceData()
-                                                                                                                                                               .getFeatureProvider()).getConnectionInfo()
-                                                                                                                                                                                     .getNamespaces())
+                                                                                                    .namespaces(((ConnectionInfoWfsHttp) transformationContext.getServiceData()
+                                                                                                                                                              .getFeatureProvider()
+                                                                                                                                                              .getConnectionInfo())
+                                                                                                            .getNamespaces())
                                                                                                     .build()));
     }
 

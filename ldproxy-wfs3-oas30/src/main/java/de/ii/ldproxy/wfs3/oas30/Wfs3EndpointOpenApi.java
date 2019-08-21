@@ -7,10 +7,16 @@
  */
 package de.ii.ldproxy.wfs3.oas30;
 
-import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.openapi.DynamicOpenApi;
 import de.ii.xtraplatform.openapi.OpenApiViewerResource;
 import de.ii.xtraplatform.service.api.Service;
@@ -38,9 +44,23 @@ import javax.ws.rs.core.Response;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointExtension {
+public class Wfs3EndpointOpenApi implements ConformanceClass, OgcApiEndpointExtension {
 
     private static Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointOpenApi.class);
+    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
+            .apiEntrypoint("api")
+            .build();
+    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.APPLICATION_JSON_TYPE)
+                    .build(),
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.TEXT_HTML_TYPE)
+                    .build(),
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.WILDCARD_TYPE)
+                    .build()
+    );
 
     @Requires(optional = true)
     private OpenApiViewerResource openApiViewerResource;
@@ -54,29 +74,24 @@ public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointEx
     }
 
     @Override
-    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData) {
-        if (isExtensionEnabled(serviceData, Oas30Configuration.class)) {
-            return true;
-        }
-        return false;
+    public OgcApiContext getApiContext() {
+        return API_CONTEXT;
     }
 
     @Override
-    public String getPath() {
-        return "api";
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
+        return API_MEDIA_TYPES;
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, Oas30Configuration.class)) {
-            throw new NotFoundException();
-        }
-        return true;
+    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+        return isExtensionEnabled(datasetData, Oas30Configuration.class);
     }
 
     @GET
     @Produces({MediaType.TEXT_HTML})
-    public Response getApiDescription(@Context Service service, @Context Wfs3RequestContext wfs3Request, @Context HttpHeaders headers) throws Exception {
+    public Response getApiDescription(@Context Service service, @Context OgcApiRequestContext wfs3Request,
+                                      @Context HttpHeaders headers) throws Exception {
         if (!wfs3Request.getUriCustomizer()
                         .getPath()
                         .endsWith("/")) {
@@ -96,20 +111,22 @@ public class Wfs3EndpointOpenApi implements Wfs3ConformanceClass, Wfs3EndpointEx
     @GET
     @Produces({"application/openapi+json;version=3.0", MediaType.APPLICATION_JSON})
     //@Operation(summary = "the API description - this document", tags = {"Capabilities"}, parameters = {@Parameter(name = "f")})
-    public Response getApiDescriptionJson(@Context Service service, @Context Wfs3RequestContext wfs3Request) throws Exception {
+    public Response getApiDescriptionJson(@Context OgcApiDataset service,
+                                          @Context OgcApiRequestContext wfs3Request) throws Exception {
         LOGGER.debug("MIME {})", "JSON");
         return openApiDefinition.getOpenApi("json", wfs3Request.getUriCustomizer()
-                                                               .copy(), (Wfs3ServiceData) service.getData());
+                                                               .copy(), service.getData());
     }
 
 
     @GET
     @Produces({DynamicOpenApi.YAML})
     //@Operation(summary = "the API description - this document", tags = {"Capabilities"}, parameters = {@Parameter(name = "f")})
-    public Response getApiDescriptionYaml(@Context Service service, @Context Wfs3RequestContext wfs3Request) throws Exception {
+    public Response getApiDescriptionYaml(@Context OgcApiDataset service,
+                                          @Context OgcApiRequestContext wfs3Request) throws Exception {
         LOGGER.debug("MIME {})", "YAML");
         return openApiDefinition.getOpenApi("yaml", wfs3Request.getUriCustomizer()
-                                                               .copy(), (Wfs3ServiceData) service.getData());
+                                                               .copy(), service.getData());
     }
 
     @GET

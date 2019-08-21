@@ -28,36 +28,42 @@ public class JsonNestingStrategyNestArray implements JsonNestingStrategy {
     @Override
     public void openObjectInArray(JsonGenerator json, String key) throws IOException {
         json.writeStartObject();
-        LOGGER.debug("OPEN OBJECT IN ARRAY");
+        if (LOGGER.isTraceEnabled())
+            LOGGER.trace("OPEN OBJECT IN ARRAY");
     }
 
     @Override
     public void openArray(JsonGenerator json) throws IOException {
         json.writeStartArray();
-        LOGGER.debug("OPEN ARRAY");
+        if (LOGGER.isTraceEnabled())
+            LOGGER.trace("OPEN ARRAY");
     }
 
     @Override
     public void openObject(JsonGenerator json, String key) throws IOException {
         json.writeObjectFieldStart(key);
-        LOGGER.debug("OPEN OBJECT {}", key);
+        if (LOGGER.isTraceEnabled())
+            LOGGER.trace("OPEN OBJECT {}", key);
     }
 
     @Override
     public void openArray(JsonGenerator json, String key) throws IOException {
         json.writeArrayFieldStart(key);
-        LOGGER.debug("OPEN ARRAY {}", key);
+        if (LOGGER.isTraceEnabled())
+            LOGGER.trace("OPEN ARRAY {}", key);
     }
 
     @Override
     public void closeObject(JsonGenerator json) throws IOException {
         json.writeEndObject();
-        LOGGER.debug("CLOSE OBJECT");
+        if (LOGGER.isTraceEnabled())
+            LOGGER.trace("CLOSE OBJECT");
     }
 
     @Override
     public void closeArray(JsonGenerator json) throws IOException {
         json.writeEndArray();
-        LOGGER.debug("CLOSE ARRAY");
+        if (LOGGER.isTraceEnabled())
+            LOGGER.trace("CLOSE ARRAY");
     }
 }

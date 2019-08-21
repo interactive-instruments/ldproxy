@@ -8,13 +8,15 @@
 package de.ii.ldproxy.wfs3;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OutputFormatExtension;
+import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.infra.rest.Wfs3RequestInjectableContext;
 import de.ii.xtraplatform.server.CoreServerConfig;
 import org.apache.felix.ipojo.annotations.Bind;
 import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.glassfish.jersey.message.internal.QualitySourceMediaType;
@@ -31,6 +33,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -38,7 +42,7 @@ import java.util.stream.Stream;
  */
 @Component
 @Provides
-@Instantiate
+//@Instantiate
 @PreMatching
 public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
     private static final String CONTENT_TYPE_PARAMETER = "f";
@@ -50,12 +54,12 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
             .put("yaml", new MediaType("application", "yaml"))
             .put("html", MediaType.TEXT_HTML_TYPE)
             .put("xml", MediaType.APPLICATION_XML_TYPE)
-            .put("mvt", new MediaType ("application","vnd.mapbox-vector-tile"))
-            .put("jsonp", new MediaType ("application","javascript"))
+            .put("mvt", new MediaType("application", "vnd.mapbox-vector-tile"))
+            .put("jsonp", new MediaType("application", "javascript"))
             .build();
 
     @Requires
-    private Wfs3ExtensionRegistry wfs3ConformanceClassRegistry;
+    private OgcApiExtensionRegistry extensionRegistry;
 
     @Requires
     private Wfs3RequestInjectableContext wfs3RequestContext;
@@ -74,86 +78,94 @@ public class Wfs3ContentNegotiationFilter implements ContainerRequestFilter {
         this.externalUri = Optional.ofNullable(externalUri);
     }
 
+    private Set<OgcApiMediaType> getSupportedMediaTypes() {
+        return extensionRegistry.getExtensionsForType(OutputFormatExtension.class)
+                                .stream()
+                                .map(OutputFormatExtension::getMediaType)
+                                .collect(Collectors.toSet());
+    }
+
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         evaluateFormatParameter(requestContext);
 
-        Wfs3MediaType wfs3MediaType = negotiateMediaType(requestContext.getRequest())
-                .orElseThrow(NotAcceptableException::new);
+        String path = requestContext.getUriInfo()
+                                    .getPath();
+        if (!path.startsWith("admin")) {
+            OgcApiMediaType ogcApiMediaType = negotiateMediaType(requestContext.getRequest())
+                    .orElseThrow(NotAcceptableException::new);
 
-        wfs3RequestContext.inject(requestContext, ImmutableWfs3RequestContextImpl.builder()
-                .requestUri(requestContext.getUriInfo()
-                        .getRequestUri())
-                .externalUri(externalUri)
-                .mediaType(wfs3MediaType)
-                .build());
+            wfs3RequestContext.inject(requestContext, new ImmutableOgcApiRequestContext.Builder()
+                    .requestUri(requestContext.getUriInfo()
+                                              .getRequestUri())
+                    .externalUri(externalUri)
+                    .mediaType(ogcApiMediaType)
+                    .build());
+        }
     }
 
-    private Optional<Wfs3MediaType> negotiateMediaType(Request request) {
+    private Optional<OgcApiMediaType> negotiateMediaType(Request request) {
         //TODO: mvt is added explicitely, adjust Wfs3ExtensionRegistry to support additional types
-        Stream<MediaType> mediaTypeStream = Stream.concat(wfs3ConformanceClassRegistry.getOutputFormats()
-                .keySet()
-                .stream()
-                .flatMap(this::toTypes)
-                .distinct(), Stream.of(MIME_TYPES.get("mvt"), MIME_TYPES.get("jsonp")));
+        Stream<MediaType> mediaTypeStream = Stream.concat(getSupportedMediaTypes().stream()
+                                                                                  .flatMap(this::toTypes)
+                                                                                  .distinct(), Stream.of(MIME_TYPES.get("mvt"), MIME_TYPES.get("jsonp")));
 
         MediaType[] supportedMediaTypes = mediaTypeStream.toArray(MediaType[]::new);
 
         Variant variant = request.selectVariant(Variant.mediaTypes(supportedMediaTypes)
-                .build());
+                                                       .build());
 
 
         return Optional.ofNullable(variant)
-                .map(this::findMatchingWfs3MediaType);
+                       .map(this::findMatchingWfs3MediaType);
     }
 
-    private Wfs3MediaType findMatchingWfs3MediaType(Variant variant) {
+    private OgcApiMediaType findMatchingWfs3MediaType(Variant variant) {
         //TODO: mvt is added explicitely, adjust Wfs3ExtensionRegistry to support additional types
-        Stream<Wfs3MediaType> wfs3MediaTypeStream = Stream.concat(wfs3ConformanceClassRegistry.getOutputFormats()
-                .keySet()
-                .stream(), Stream.of(ImmutableWfs3MediaType.builder()
-                .main(MIME_TYPES.get("mvt"))
-                .build(),
-                ImmutableWfs3MediaType.builder()
-                                      .main(MIME_TYPES.get("jsonp"))
-                                      .build()));
+        Stream<OgcApiMediaType> wfs3MediaTypeStream = Stream.concat(getSupportedMediaTypes().stream(), Stream.of(new ImmutableOgcApiMediaType.Builder()
+                        .main(MIME_TYPES.get("mvt"))
+                        .build(),
+                new ImmutableOgcApiMediaType.Builder()
+                        .main(MIME_TYPES.get("jsonp"))
+                        .build()));
 
         return wfs3MediaTypeStream.filter(wfs3MediaType -> wfs3MediaType.matches(variant.getMediaType()))
-                .findFirst()
-                .orElse(null);
+                                  .findFirst()
+                                  .orElse(null);
     }
 
-    private Stream<MediaType> toTypes(Wfs3MediaType wfs3MediaType) {
-        return Stream.of(wfs3MediaType.main(), wfs3MediaType.metadata())
-                .map(mediaType -> wfs3MediaType.qs() < 1000 ? new QualitySourceMediaType(mediaType.getType(), mediaType.getSubtype(), wfs3MediaType.qs(), mediaType.getParameters()) : mediaType);
+    private Stream<MediaType> toTypes(OgcApiMediaType ogcApiMediaType) {
+        return Stream.of(ogcApiMediaType.main(), ogcApiMediaType.metadata())
+                     .map(mediaType -> ogcApiMediaType.qs() < 1000 ? new QualitySourceMediaType(mediaType.getType(), mediaType.getSubtype(), ogcApiMediaType.qs(), mediaType.getParameters()) : mediaType);
     }
 
     //TODO: parameter values from outputformats
     private void evaluateFormatParameter(ContainerRequestContext requestContext) throws IOException {
         // Quick check for a 'f' parameter
         if (!requestContext.getUriInfo()
-                .getQueryParameters()
-                .containsKey(CONTENT_TYPE_PARAMETER)) {
+                           .getQueryParameters()
+                           .containsKey(CONTENT_TYPE_PARAMETER)) {
             // overwrite wildcard
             if (requestContext.getHeaderString(ACCEPT_HEADER) == null || requestContext.getHeaderString(ACCEPT_HEADER)
-                    .length() == 0 || requestContext.getHeaders()
-                    .getFirst(ACCEPT_HEADER)
-                    .trim()
-                    .equals("*/*")) {
+                                                                                       .length() == 0 || requestContext.getHeaders()
+                                                                                                                       .getFirst(ACCEPT_HEADER)
+                                                                                                                       .trim()
+                                                                                                                       .equals("*/*")) {
 
                 requestContext.getHeaders()
-                                  .putSingle(ACCEPT_HEADER, MediaType.APPLICATION_JSON);
+                              .putSingle(ACCEPT_HEADER, MediaType.APPLICATION_JSON);
             }
         } else {
             String format = requestContext.getUriInfo()
-                    .getQueryParameters()
-                    .getFirst(CONTENT_TYPE_PARAMETER);
+                                          .getQueryParameters()
+                                          .getFirst(CONTENT_TYPE_PARAMETER);
 
             if (format.equals("json") && requestContext.getUriInfo()
-                              .getQueryParameters()
-                              .containsKey("callback")) {
+                                                       .getQueryParameters()
+                                                       .containsKey("callback")) {
                 requestContext.getHeaders()
-                              .putSingle(ACCEPT_HEADER, MIME_TYPES.get("jsonp").toString());
+                              .putSingle(ACCEPT_HEADER, MIME_TYPES.get("jsonp")
+                                                                  .toString());
             } else {
 
                 final MediaType accept = MIME_TYPES.get(format);

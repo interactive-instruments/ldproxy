@@ -16,7 +16,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.OptionalLong;
 
-import static com.greghaskins.spectrum.dsl.specification.Specification.*;
+import static com.greghaskins.spectrum.dsl.specification.Specification.beforeEach;
+import static com.greghaskins.spectrum.dsl.specification.Specification.context;
+import static com.greghaskins.spectrum.dsl.specification.Specification.describe;
+import static com.greghaskins.spectrum.dsl.specification.Specification.it;
 import static de.ii.ldproxy.target.geojson.GeoJsonWriterSetupUtil.createTransformationContext;
 import static org.testng.Assert.assertEquals;
 

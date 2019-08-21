@@ -10,27 +10,29 @@ package de.ii.ldproxy.wfs3.aroundrelations;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
+import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
+import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
+import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import de.ii.ldproxy.target.geojson.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
-import de.ii.ldproxy.target.geojson.GeoJsonConfig;
+import de.ii.ldproxy.target.geojson.GeoJsonConfigImpl;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonWriter;
 import de.ii.ldproxy.target.geojson.ImmutableFeatureTransformationContextGeoJson;
+import de.ii.ldproxy.target.geojson.ImmutableGeoJsonConfig;
 import de.ii.ldproxy.target.geojson.ModifiableStateGeoJson;
-import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableFeatureTypeExtent;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3Link;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfo;
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfo;
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableFeatureProviderDataWfs;
-import de.ii.xtraplatform.feature.transformer.api.TemporalExtent;
+import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
+import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
+import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
@@ -39,11 +41,15 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.Consumer;
 
-import static com.greghaskins.spectrum.dsl.specification.Specification.*;
+import static com.greghaskins.spectrum.dsl.specification.Specification.beforeEach;
+import static com.greghaskins.spectrum.dsl.specification.Specification.context;
+import static com.greghaskins.spectrum.dsl.specification.Specification.describe;
+import static com.greghaskins.spectrum.dsl.specification.Specification.it;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -144,7 +150,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                         int expectedSize = transformationContext.getLinks()
                                                                 .size() + 1;
 
-                        Wfs3Link expectedLink = ImmutableWfs3Link.builder()
+                        Wfs3Link expectedLink = new ImmutableWfs3Link.Builder()
                                                                  .rel("test1")
                                                                  .description("test1")
                                                                  .type("application/geo+json")
@@ -261,23 +267,25 @@ public class GeoJsonWriterAroundRelationsSpec {
     private FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, URI query) throws URISyntaxException {
         return ImmutableFeatureTransformationContextGeoJson.builder()
                                                            .crsTransformer(Optional.empty())
-                                                           .serviceData(ImmutableWfs3ServiceData.builder()
+                                                           .serviceData(new ImmutableOgcApiDatasetData.Builder()
                                                                                                 .id("s")
                                                                                                 .serviceType("WFS3")
-                                                                                                .featureProvider(new ImmutableFeatureProviderDataWfs.Builder()
-                                                                                                                                                .connectionInfo(ImmutableConnectionInfo.builder()
-                                                                                                                                                                                       .uri(new URI("http://localhost"))
-                                                                                                                                                                                       .method(ConnectionInfo.METHOD.GET)
-                                                                                                                                                                                       .version("2.0.0")
-                                                                                                                                                                                       .gmlVersion("3.2.1")
-                                                                                                                                                                                       .build())
+                                                                                                .featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
+                                                                                                        .providerType("WFS")
+                                                                                                        .connectorType("HTTP")
+                                                                                                                                                .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
+                                                                                                                                                                                              .uri(new URI("http://localhost"))
+                                                                                                                                                                                              .method(ConnectionInfoWfsHttp.METHOD.GET)
+                                                                                                                                                                                              .version("2.0.0")
+                                                                                                                                                                                              .gmlVersion("3.2.1")
+                                                                                                                                                                                              .build())
                                                                                                                                                 .nativeCrs(new EpsgCrs())
                                                                                                                                                 .build())
-                                                                                                .featureTypes(ImmutableMap.of("ft", ImmutableFeatureTypeConfigurationWfs3.builder()
+                                                                                                .featureTypes(ImmutableMap.of("ft", new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                                                                                                                                                                          .id("ft")
                                                                                                                                                                          .label("ft")
-                                                                                                                                                                         .extent(ImmutableFeatureTypeExtent.builder()
-                                                                                                                                                                                                           .temporal(new TemporalExtent(0, 0))
+                                                                                                                                                                         .extent(new ImmutableCollectionExtent.Builder()
+                                                                                                                                                                                                           .temporal(new ImmutableTemporalExtent.Builder().build())
                                                                                                                                                                                                            .build())
                                                                                                                                                                          .addCapabilities(ImmutableAroundRelationsConfiguration.builder()
                                                                                                                                                                                                                                     .enabled(true)
@@ -293,13 +301,23 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                                                 .build())
                                                            .collectionName("ft")
                                                            .outputStream(outputStream)
-                                                           .links(ImmutableList.of(ImmutableWfs3Link.builder()
+                                                           .links(ImmutableList.of(new ImmutableWfs3Link.Builder()
                                                                                                     .href("TEST")
                                                                                                     .build()))
                                                            .isFeatureCollection(false)
-                                                           .wfs3Request(new Wfs3RequestContext() {
+                                                           .wfs3Request(new OgcApiRequestContext() {
                                                                @Override
-                                                               public Wfs3MediaType getMediaType() {
+                                                               public OgcApiMediaType getMediaType() {
+                                                                   return null;
+                                                               }
+
+                                                               @Override
+                                                               public List<OgcApiMediaType> getAlternativeMediaTypes() {
+                                                                   return null;
+                                                               }
+
+                                                               @Override
+                                                               public OgcApiDatasetData getDataset() {
                                                                    return null;
                                                                }
 
@@ -318,7 +336,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                            .maxAllowableOffset(0)
                                                            .isHitsOnly(false)
                                                            .state(ModifiableStateGeoJson.create())
-                                                           .geoJsonConfig(new GeoJsonConfig())
+                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder().isEnabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).build())
                                                            .build();
 
     }

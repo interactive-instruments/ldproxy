@@ -8,8 +8,8 @@
 package de.ii.ldproxy.wfs3.aroundrelations;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -40,7 +40,7 @@ public class Wfs3OpenApiAroundRelations implements Wfs3OpenApiExtension {
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
 
         ObjectSchema collectionInfo = (ObjectSchema) openAPI.getComponents()
                                                             .getSchemas()
@@ -92,11 +92,11 @@ public class Wfs3OpenApiAroundRelations implements Wfs3OpenApiExtension {
                .addParameters("limitList", limitList)
                .addParameters("offsetList", offsetList);
 
-        serviceData.getFeatureTypes()
+        datasetData.getFeatureTypes()
                    .values()
                    .stream()
-                   .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                   .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()) && ft.getExtension(AroundRelationsConfiguration.class)
+                   .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+                   .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()) && ft.getExtension(AroundRelationsConfiguration.class)
                                                                                    .isPresent())
                    .forEach(ft -> {
 

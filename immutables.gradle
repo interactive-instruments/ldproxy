@@ -3,6 +3,7 @@ subprojects {
 
     dependencies {
         compileOnly         "org.immutables:value:2.7.5:annotations"
+        compileOnly         "org.immutables:encode:2.7.5"
         annotationProcessor "org.immutables:value:2.7.5"
     }
 

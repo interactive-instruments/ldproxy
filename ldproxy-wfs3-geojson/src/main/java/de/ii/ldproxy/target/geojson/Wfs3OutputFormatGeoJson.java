@@ -7,18 +7,26 @@
  */
 package de.ii.ldproxy.target.geojson;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClasses;
+import de.ii.ldproxy.ogcapi.domain.Dataset;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OutputFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Collection;
-import de.ii.ldproxy.wfs3.api.Wfs3Collections;
-import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
-import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClasses;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
+import de.ii.ldproxy.wfs3.api.TargetMappingRefiner;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
+import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -29,6 +37,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -36,15 +45,18 @@ import java.util.stream.Collectors;
  * @author zahnen
  */
 @Component
-@Provides
+//TODO
+@Provides(specifications = {Wfs3OutputFormatGeoJson.class, ConformanceClass.class, Wfs3OutputFormatExtension.class, OutputFormatExtension.class, OgcApiExtension.class})
 @Instantiate
-public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3OutputFormatExtension {
+public class Wfs3OutputFormatGeoJson implements ConformanceClass, Wfs3OutputFormatExtension {
 
-    public static final Wfs3MediaType MEDIA_TYPE = ImmutableWfs3MediaType.builder()
-                                                                         .main(new MediaType("application", "geo+json"))
-                                                                         .label("GeoJSON")
-                                                                         .metadata(MediaType.APPLICATION_JSON_TYPE)
-                                                                         .build();
+
+    private static final String CONFORMANCE_CLASS = "http://www.opengis.net/spec/wfs-1/3.0/req/geojson";
+    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+            .main(new MediaType("application", "geo+json"))
+            .label("GeoJSON")
+            .metadata(MediaType.APPLICATION_JSON_TYPE)
+            .build();
 
     @Requires
     private GeoJsonConfig geoJsonConfig;
@@ -55,44 +67,39 @@ public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3Output
 
     @Override
     public String getConformanceClass() {
-        return "http://www.opengis.net/spec/wfs-1/3.0/req/geojson";
+        return CONFORMANCE_CLASS;
     }
 
     @Override
-    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData) {
-        if (isExtensionEnabled(serviceData, GeoJsonConfiguration.class)) {
-            return true;
-        }
-        return false;
+    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+        return isExtensionEnabled(datasetData, GeoJsonConfiguration.class);
     }
 
     @Override
-    public Wfs3MediaType getMediaType() {
+    public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, GeoJsonConfiguration.class)) {
-            return false;
-        }
-        return true;
+    public Response getConformanceResponse(List<ConformanceClass> wfs3ConformanceClasses, String serviceLabel,
+                                           OgcApiMediaType ogcApiMediaType, List<OgcApiMediaType> alternativeMediaTypes,
+                                           URICustomizer uriCustomizer, String staticUrlPrefix) {
+        return response(new ConformanceClasses(wfs3ConformanceClasses.stream()
+                                                                     .map(ConformanceClass::getConformanceClass)
+                                                                     .collect(Collectors.toList())));
     }
 
     @Override
-    public Response getConformanceResponse(List<Wfs3ConformanceClass> wfs3ConformanceClasses, String serviceLabel, Wfs3MediaType wfs3MediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix) {
-        return response(new Wfs3ConformanceClasses(wfs3ConformanceClasses.stream()
-                                                                         .map(Wfs3ConformanceClass::getConformanceClass)
-                                                                         .collect(Collectors.toList())));
+    public Response getDatasetResponse(Dataset dataset, OgcApiDatasetData datasetData, OgcApiMediaType mediaType,
+                                       List<OgcApiMediaType> alternativeMediaTypes, URICustomizer uriCustomizer,
+                                       String staticUrlPrefix, boolean isCollections) {
+        return response(dataset);
     }
 
     @Override
-    public Response getDatasetResponse(Wfs3Collections wfs3Collections, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix, boolean isCollections) {
-        return response(wfs3Collections);
-    }
-
-    @Override
-    public Response getCollectionResponse(Wfs3Collection wfs3Collection, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String collectionName) {
+    public Response getCollectionResponse(Wfs3Collection wfs3Collection, OgcApiDatasetData datasetData,
+                                          OgcApiMediaType mediaType, List<OgcApiMediaType> alternativeMediaTypes,
+                                          URICustomizer uriCustomizer, String collectionName) {
         return response(wfs3Collection);
     }
 
@@ -103,31 +110,61 @@ public class Wfs3OutputFormatGeoJson implements Wfs3ConformanceClass, Wfs3Output
 
     @Override
     public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext) {
-        ImmutableList<GeoJsonWriter> writers = ImmutableList.of(
-                new GeoJsonWriterSkeleton(),
-                new GeoJsonWriterId(),
-                new GeoJsonWriterMetadata(),
-                new GeoJsonWriterGeometry(),
-                new GeoJsonWriterProperties(),
-                new GeoJsonWriterCrs()
-        );
-
-        List<GeoJsonWriter> geoJsonWriters = geoJsonWriterRegistry.getGeoJsonWriters()
-                                                                  .stream()
-                                                                  .sorted(Comparator.comparingInt(GeoJsonWriter::getSortPriority))
-                                                                  .map(GeoJsonWriter::create)
-                                                                  .collect(Collectors.toList());
+        ImmutableSortedSet<GeoJsonWriter> geoJsonWriters = geoJsonWriterRegistry.getGeoJsonWriters()
+                                                                                .stream()
+                                                                                .map(GeoJsonWriter::create)
+                                                                                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.comparingInt(GeoJsonWriter::getSortPriority)));
 
         return Optional.of(new FeatureTransformerGeoJson(ImmutableFeatureTransformationContextGeoJson.builder()
                                                                                                      .from(transformationContext)
                                                                                                      .geoJsonConfig(geoJsonConfig)
-                                                                                                     .debugJson(true)
                                                                                                      .build(), geoJsonWriters));
     }
 
     @Override
     public Optional<TargetMappingProviderFromGml> getMappingGenerator() {
         return Optional.of(new Gml2GeoJsonMappingProvider());
+    }
+
+    @Override
+    public Optional<TargetMappingRefiner> getMappingRefiner() {
+        return Optional.of(new TargetMappingRefiner() {
+            @Override
+            public boolean needsRefinement(SourcePathMapping sourcePathMapping) {
+                if (!sourcePathMapping.hasMappingForType(Gml2GeoJsonMappingProvider.MIME_TYPE)
+                || !(sourcePathMapping.getMappingForType(Gml2GeoJsonMappingProvider.MIME_TYPE) instanceof GeoJsonGeometryMapping)) {
+                    return false;
+                }
+                GeoJsonGeometryMapping geoJsonGeometryMapping = (GeoJsonGeometryMapping) sourcePathMapping.getMappingForType(Gml2GeoJsonMappingProvider.MIME_TYPE);
+
+                return geoJsonGeometryMapping.getGeometryType() == GEO_JSON_GEOMETRY_TYPE.GENERIC;
+            }
+
+            @Override
+            public SourcePathMapping refine(SourcePathMapping sourcePathMapping, SimpleFeatureGeometry simpleFeatureGeometry) {
+                if (!needsRefinement(sourcePathMapping)) {
+                    return sourcePathMapping;
+                }
+
+                ImmutableSourcePathMapping.Builder builder = new ImmutableSourcePathMapping.Builder();
+
+                for (Map.Entry<String, TargetMapping> entry : sourcePathMapping.getMappings()
+                                                                               .entrySet()) {
+                    TargetMapping targetMapping = entry.getValue();
+
+                    if (targetMapping instanceof GeoJsonGeometryMapping) {
+                        GeoJsonGeometryMapping geoJsonGeometryMapping = new GeoJsonGeometryMapping((GeoJsonGeometryMapping) targetMapping);
+                        geoJsonGeometryMapping.setGeometryType(GEO_JSON_GEOMETRY_TYPE.forGmlType(simpleFeatureGeometry));
+
+                        builder.putMappings(entry.getKey(), geoJsonGeometryMapping);
+                    } else {
+                        builder.putMappings(entry.getKey(), entry.getValue());
+                    }
+                }
+
+                return builder.build();
+            }
+        });
     }
 
     private Response response(Object entity) {

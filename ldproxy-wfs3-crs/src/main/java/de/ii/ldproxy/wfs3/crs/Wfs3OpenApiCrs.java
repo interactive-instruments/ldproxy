@@ -8,8 +8,8 @@
 package de.ii.ldproxy.wfs3.crs;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS_URI;
+import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS_URI;
 import static de.ii.ldproxy.wfs3.crs.Wfs3ParameterCrs.BBOX_CRS;
 import static de.ii.ldproxy.wfs3.crs.Wfs3ParameterCrs.CRS;
 
@@ -41,15 +41,15 @@ public class Wfs3OpenApiCrs implements Wfs3OpenApiExtension {
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
-        if (isExtensionEnabled(serviceData, CrsConfiguration.class)) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+        if (isExtensionEnabled(datasetData, CrsConfiguration.class)) {
 
             ImmutableSet<String> crsSet = ImmutableSet.<String>builder()
-                    .add(serviceData.getFeatureProvider()
+                    .add(datasetData.getFeatureProvider()
                                     .getNativeCrs()
                                     .getAsUri())
                     .add(DEFAULT_CRS_URI)
-                    .addAll(serviceData.getAdditionalCrs()
+                    .addAll(datasetData.getAdditionalCrs()
                                        .stream()
                                        .map(EpsgCrs::getAsUri)
                                        .collect(Collectors.toList()))
@@ -80,11 +80,11 @@ public class Wfs3OpenApiCrs implements Wfs3OpenApiExtension {
                            .explode(false)
                    );
 
-            serviceData.getFeatureTypes()
+            datasetData.getFeatureTypes()
                        .values()
                        .stream()
-                       .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                       .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                       .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+                       .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                        .forEach(ft -> {
 
                            PathItem pathItem = openAPI.getPaths()

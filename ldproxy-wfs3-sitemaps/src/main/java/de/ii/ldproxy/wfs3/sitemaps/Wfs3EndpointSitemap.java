@@ -8,18 +8,22 @@
 package de.ii.ldproxy.wfs3.sitemaps;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.wfs3.core.Wfs3Core;
-import de.ii.xtraplatform.server.CoreServerConfig;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
-import de.ii.xtraplatform.service.api.Service;
+import de.ii.xtraplatform.server.CoreServerConfig;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -27,10 +31,10 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +46,17 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointSitemap implements Wfs3EndpointExtension {
+public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
+
+    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
+            .apiEntrypoint("collections")
+            .subPathPattern("^\\/?(?:\\/\\w+\\/sitemap[_0-9]+\\.xml)$")
+            .build();
+    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.TEXT_HTML_TYPE)
+                    .build()
+    );
 
     @Requires
     private CoreServerConfig coreServerConfig;
@@ -51,37 +65,34 @@ public class Wfs3EndpointSitemap implements Wfs3EndpointExtension {
     private Wfs3Core wfs3Core;
 
     @Override
-    public String getPath() {
-        return "collections";
+    public OgcApiContext getApiContext() {
+        return API_CONTEXT;
     }
 
     @Override
-    public String getSubPathRegex() {
-        return "^\\/?(?:\\/\\w+\\/sitemap[_0-9]+\\.xml)$";
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
+        return API_MEDIA_TYPES;
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, SitemapsConfiguration.class)) {
-            throw new NotFoundException();
-        }
-        return true;
+    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+        return isExtensionEnabled(datasetData, SitemapsConfiguration.class);
     }
 
     @Path("/{id}/sitemap_{from}_{to}.xml")
     @GET
-    public Response getCollectionSitemap(@Auth Optional<User> optionalUser, @PathParam("id") String id, @PathParam("from") Long from, @PathParam("to") Long to, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
-        Wfs3ServiceData serviceData = ((Wfs3Service) service).getData();
-
-        wfs3Core.checkCollectionName(serviceData, id);
+    public Response getCollectionSitemap(@Auth Optional<User> optionalUser, @PathParam("id") String id,
+                                         @PathParam("from") Long from, @PathParam("to") Long to,
+                                         @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
+        wfs3Core.checkCollectionName(service.getData(), id);
 
         List<Site> sites = new ArrayList<>();
 
-        String baseUrlItems = String.format("%s/%s/collections/%s/items?f=html", coreServerConfig.getExternalUrl(), serviceData.getId(), id);
+        String baseUrlItems = String.format("%s/%s/collections/%s/items?f=html", coreServerConfig.getExternalUrl(), service.getId(), id);
         List<Site> itemsSites = SitemapComputation.getSites(baseUrlItems, from, to);
         sites.addAll(itemsSites);
 
-        String baseUrlItem = String.format("%s/%s/collections/%s/items", coreServerConfig.getExternalUrl(), serviceData.getId(), id);
+        String baseUrlItem = String.format("%s/%s/collections/%s/items", coreServerConfig.getExternalUrl(), service.getId(), id);
         ItemSitesReader itemSitesReader = new ItemSitesReader(baseUrlItem);
         FeatureQuery featureQuery = ImmutableFeatureQuery.builder()
                                                          .type(id)
@@ -89,9 +100,9 @@ public class Wfs3EndpointSitemap implements Wfs3EndpointExtension {
                                                          .limit(to.intValue() - from.intValue() + 1)
                                                          .fields(ImmutableList.of("ID")) //TODO only get id field
                                                          .build();
-        FeatureStream<FeatureTransformer> featureStream = ((Wfs3Service) service).getFeatureProvider()
-                                                                                 .getFeatureTransformStream(featureQuery);
-        featureStream.apply(itemSitesReader)
+        FeatureStream<FeatureTransformer> featureStream = service.getFeatureProvider()
+                                                                 .getFeatureTransformStream(featureQuery);
+        featureStream.apply(itemSitesReader, null)
                      .toCompletableFuture()
                      .join();
 

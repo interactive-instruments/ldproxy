@@ -14,12 +14,17 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.kvstore.api.KeyNotFoundException;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.service.api.Service;
@@ -29,7 +34,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -49,32 +53,35 @@ import java.util.Map;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
+public class Wfs3EndpointStylesCollection implements OgcApiEndpointExtension {
+
+    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
+            .apiEntrypoint("collections")
+            .subPathPattern("^\\/?(?:\\/\\w+\\/?(?:\\/styles\\/?.*)?)?$")
+            .addMethods(HttpMethods.GET)
+            .build();
+    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.WILDCARD_TYPE)
+                    .build()
+    );
 
     @Requires
     private KeyValueStore keyValueStore;
 
     @Override
-    public String getPath() {
-        return "collections";
+    public OgcApiContext getApiContext() {
+        return API_CONTEXT;
     }
 
     @Override
-    public String getSubPathRegex() {
-        return "^\\/?(?:\\/\\w+\\/?(?:\\/styles\\/?.*)?)?$";
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
+        return API_MEDIA_TYPES;
     }
 
     @Override
-    public List<String> getMethods() {
-        return ImmutableList.of("GET");
-    }
-
-    @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, StylesConfiguration.class)) {
-            throw new NotFoundException();
-        }
-        return true;
+    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+        return isExtensionEnabled(datasetData, StylesConfiguration.class);
     }
 
     /**
@@ -86,8 +93,8 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
     @Path("/{collectionId}/styles")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStylesCollection(@PathParam("collectionId") String collectionId, @Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException, KeyNotFoundException {
-        Wfs3Service wfs3Service = (Wfs3Service) service;
+    public Response getStylesCollection(@PathParam("collectionId") String collectionId, @Context OgcApiDataset service,
+                                        @Context OgcApiRequestContext wfs3Request) throws IOException, KeyNotFoundException {
 
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
                                                  .getChildStore(service.getId())
@@ -132,7 +139,8 @@ public class Wfs3EndpointStylesCollection implements Wfs3EndpointExtension {
     @Path("/{collectionId}/styles/{styleId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStyle(@PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId, @Context Service service) throws IOException, KeyNotFoundException {
+    public Response getStyle(@PathParam("collectionId") String collectionId, @PathParam("styleId") String styleId,
+                             @Context Service service) throws IOException, KeyNotFoundException {
 
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
                                                  .getChildStore(service.getId())

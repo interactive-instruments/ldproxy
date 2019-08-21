@@ -8,7 +8,7 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
 import java.net.URI;
 
@@ -17,14 +17,14 @@ import java.net.URI;
  */
 public class ServiceOverviewView extends DatasetView {
     public URI uri;
-    public ServiceOverviewView(URI uri, Object data, String urlPrefix, HtmlConfig htmlConfig) {
+    public ServiceOverviewView(URI uri, Object data, String urlPrefix, HtmlConfig htmlConfig, I18n i18n) {
         super("services", uri, data, urlPrefix, htmlConfig);
         this.uri = uri;
-        this.title = htmlConfig.getDatasetLabel();
-        this.description = htmlConfig.getDatasetDescription();
+        this.title = i18n.get("datasetsLabel");
+        this.description = i18n.get("datasetsDescription");
         this.keywords = new ImmutableList.Builder<String>().add("ldproxy", "service", "dataset", "overview").build();
         this.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Datasets", true))
+                .add(new NavigationDTO(i18n.get("datasets"), true))
                 .build();
     }
 

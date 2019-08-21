@@ -7,7 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.oas30;
 
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
 import de.ii.ldproxy.wfs3.api.Wfs3CapabilityExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -22,7 +23,18 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class Wfs3CapabilityOpenApi implements Wfs3CapabilityExtension {
 
     @Override
-    public ExtensionConfiguration getDefaultConfiguration() {
-        return ImmutableOas30Configuration.builder().build();
+    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
+        ImmutableOas30Configuration.Builder config = new ImmutableOas30Configuration.Builder();
+
+        switch (preset) {
+            case WFS3:
+                config.enabled(true);
+                break;
+            case GSFS:
+                config.enabled(false);
+                break;
+        }
+
+        return config.build();
     }
 }

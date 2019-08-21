@@ -7,13 +7,17 @@
  */
 package de.ii.ldproxy.wfs3.sitemaps;
 
-import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.auth.api.User;
-import de.ii.xtraplatform.service.api.Service;
+import de.ii.xtraplatform.server.CoreServerConfig;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -23,8 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,35 +42,45 @@ import java.util.Set;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointSiteIndex implements Wfs3EndpointExtension {
+public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointSiteIndex.class);
+    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
+            .apiEntrypoint("sitemap_index.xml")
+            .build();
+    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.TEXT_HTML_TYPE)
+                    .build()
+    );
 
     @Requires
     private CoreServerConfig coreServerConfig;
 
     @Override
-    public String getPath() {
-        return "sitemap_index.xml";
+    public OgcApiContext getApiContext() {
+        return API_CONTEXT;
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, SitemapsConfiguration.class)) {
-            throw new NotFoundException();
-        }
-        return true;
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
+        return API_MEDIA_TYPES;
+    }
+
+    @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+        return isExtensionEnabled(datasetData, SitemapsConfiguration.class);
     }
 
     @GET
-    public Response getDatasetSiteIndex(@Auth Optional<User> optionalUser, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
+    public Response getDatasetSiteIndex(@Auth Optional<User> optionalUser, @Context OgcApiDataset service,
+                                        @Context OgcApiRequestContext wfs3Request) {
 
-        Wfs3ServiceData serviceData = ((Wfs3Service) service).getData();
+        Set<String> collectionIds = service.getData()
+                                           .getFeatureTypes()
+                                           .keySet();
 
-        Set<String> collectionIds = serviceData.getFeatureTypes()
-                                               .keySet();
-
-        Map<String, Long> featureCounts = SitemapComputation.getFeatureCounts(collectionIds, ((Wfs3Service) service).getFeatureProvider());
+        Map<String, Long> featureCounts = SitemapComputation.getFeatureCounts(collectionIds, service.getFeatureProvider());
         long totalFeatureCount = featureCounts.values()
                                               .stream()
                                               .mapToLong(i -> i)
@@ -79,7 +93,7 @@ public class Wfs3EndpointSiteIndex implements Wfs3EndpointExtension {
         }
 
         List<Site> sitemaps = new ArrayList<>();
-        String landingPageUrl = String.format("%s/%s/sitemap_landingPage.xml", coreServerConfig.getExternalUrl(), serviceData.getId(), serviceData.getId());
+        String landingPageUrl = String.format("%s/%s/sitemap_landingPage.xml", coreServerConfig.getExternalUrl(), service.getId(), service.getId());
         sitemaps.add(new Site(landingPageUrl));
 
         //TODO duration with big blocks is too long, therefore the block length is dynamically generated
@@ -87,9 +101,9 @@ public class Wfs3EndpointSiteIndex implements Wfs3EndpointExtension {
 
         Map<String, Long> blockLengths = SitemapComputation.getDynamicRanges(collectionIds, featureCounts);
 
-        SitemapComputation.getCollectionIdStream(serviceData)
+        SitemapComputation.getCollectionIdStream(service.getData())
                           .forEach(collectionId -> {
-                              String baseUrl = String.format("%s/%s/collections/%s", coreServerConfig.getExternalUrl(), serviceData.getId(), collectionId);
+                              String baseUrl = String.format("%s/%s/collections/%s", coreServerConfig.getExternalUrl(), service.getId(), collectionId);
 
                               List<Site> sitemapsBlock = SitemapComputation.getSitemaps(baseUrl, featureCounts.get(collectionId), blockLengths.get(collectionId));
 

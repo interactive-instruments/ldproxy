@@ -8,7 +8,7 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import io.dropwizard.views.View;
 
 import java.util.Comparator;

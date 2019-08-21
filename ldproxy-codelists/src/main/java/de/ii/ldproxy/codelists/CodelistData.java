@@ -8,10 +8,10 @@
 package de.ii.ldproxy.codelists;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.entity.api.AbstractEntityData;
+import de.ii.xtraplatform.entity.api.EntityData;
+import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import org.immutables.value.Value;
 
-import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
@@ -19,35 +19,26 @@ import java.util.Optional;
  * @author zahnen
  */
 @Value.Immutable
-@Value.Modifiable
-@JsonDeserialize(as = ImmutableCodelistData.class)
-public abstract class CodelistData extends AbstractEntityData {
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableCodelistData.Builder.class)
+public interface CodelistData extends EntityData {
 
-    public enum IMPORT_TYPE {
+    enum IMPORT_TYPE {
         TEMPLATES,
         GML_DICTIONARY,
         ONEO_SCHLUESSELLISTE
     }
 
-    @Value.Default
-    @Override
-    public long getCreatedAt() {
-        return Instant.now().toEpochMilli();
+    abstract class Builder implements EntityDataBuilder<CodelistData> {
     }
 
-    @Value.Default
-    @Override
-    public long getLastModified() {
-        return Instant.now().toEpochMilli();
-    }
+    String getLabel();
 
-    public abstract String getLabel();
+    Map<String, String> getEntries();
 
-    public abstract Map<String,String> getEntries();
+    IMPORT_TYPE getSourceType();
 
-    public abstract IMPORT_TYPE getSourceType();
+    Optional<String> getSourceUrl();
 
-    public abstract Optional<String> getSourceUrl();
-
-    public abstract Optional<String> getFallback();
+    Optional<String> getFallback();
 }

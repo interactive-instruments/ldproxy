@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- * <p>
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -82,7 +81,8 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
 
         this.nestingStrategy = JsonNestingStrategyFactory.getNestingStrategy(transformationContext.getGeoJsonConfig()
                                                                                                   .getNestedObjectStrategy(), transformationContext.getGeoJsonConfig()
-                                                                                                                                                   .getMultiplicityStrategy());
+                                                                                                                                                   .getMultiplicityStrategy(), transformationContext.getGeoJsonConfig()
+                                                                                                                                                                                                    .getSeparator());
         this.nestingTracker = new JsonNestingTracker(nestingStrategy);
 
         next.accept(transformationContext);
@@ -155,7 +155,13 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                                                                  .contains(field));
     }
 
-    protected void triggerAdditionalIdHandling(JsonGenerator json, String currentValue) throws IOException {
+    protected void writeId(JsonGenerator json, String currentValue, String name,
+                           GEO_JSON_TYPE type, List<Integer> multiplicities,
+                           NESTED_OBJECTS nestedObjectStrategy,
+                           MULTIPLICITY multiplicityStrategy,
+                           FeatureTransformationContextGeoJson transformationContext) throws IOException {
+        writePropertyName(json, getIdFieldName(name), multiplicities, nestedObjectStrategy, multiplicityStrategy);
+        writeValue(json, currentValue, type);
     }
 
     protected String getIdFieldName(String name) {
@@ -228,14 +234,11 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         }
 
         if (currentMapping.getType() == GEO_JSON_TYPE.ID) {
-            triggerAdditionalIdHandling(json, currentValue);
-            writePropertyName(json, getIdFieldName(currentMapping.getName()), multiplicities, nestedObjectStrategy, multiplicityStrategy);
+            writeId(json, currentValue, currentMapping.getName(), currentMapping.getType(), multiplicities, nestedObjectStrategy, multiplicityStrategy, transformationContext);
         } else {
             writePropertyName(json, currentMapping.getName(), multiplicities, nestedObjectStrategy, multiplicityStrategy);
+            writeValue(json, currentValue, currentMapping.getType());
         }
-
-
-        writeValue(json, currentValue, currentMapping.getType());
     }
 
     private void writePropertyName(JsonGenerator json, String name, List<Integer> multiplicities,
@@ -257,67 +260,12 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         currentFieldMulti = false;
 
         if (nestedObjectStrategy == NESTED_OBJECTS.NEST) {
-
-            // write field name
-            /*String field = path.get(path.size() - 1);
-            boolean isMulti = field.contains("[");
-            int multi = 0;
-            if (isMulti) {
-                String multiplicityKey = field.substring(field.indexOf("[") + 1, field.indexOf("]"));
-                field = field.substring(0, field.indexOf("["));
-                multi = nestingTracker.getCurrentMultiplicityLevel(multiplicityKey);
-            }
-            if (!isMulti || multi == 1) {
-                if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace("FIELD {}", field);
-                }
-                //json.writeFieldName(field);
-                currentFieldName = field;
-            }
-            if (isMulti && multi == 1) {
-                //json.writeStartArray();
-                currentFieldMulti = true;
-            }*/
-
-            lastPath = path; //path.size() > 0 ? path.subList(0, path.size() - 1) : path;
-            //currentPath2 = path;
+            lastPath = path;
         } else {
             if (name.contains("[")) {
                 currentFieldMulti = true;
             }
             currentFieldName = name.replaceAll("\\[\\]", "");
-        }
-
-        /*if (currentFieldName != null) {
-            json.writeFieldName(currentFieldName);
-            currentFieldName = null;
-            if (currentFieldMulti) {
-                if (multiplicityStrategy == MULTIPLICITY.ARRAY) {
-                    json.writeStartArray();
-                }
-                currentFieldMulti = false;
-            }
-        }*/
-    }
-
-    private void openArrayAndOrObject(JsonGenerator json, String name) throws IOException {
-        LOGGER.debug("OPEN {}", name);
-        if (name.contains("[")) {
-            json.writeArrayFieldStart(name.substring(0, name.indexOf("[")));
-            json.writeStartObject();
-        } else {
-            json.writeObjectFieldStart(name);
-        }
-    }
-
-    private void closeArrayAndOrObject(JsonGenerator json, String name, boolean isObject,
-                                       boolean isMulti) throws IOException {
-        LOGGER.debug("CLOSE {} isObject={} isMulti={}", name, isObject, isMulti);
-        if (isObject) {
-            json.writeEndObject();
-        }
-        if (isMulti) {
-            json.writeEndArray();
         }
     }
 

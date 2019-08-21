@@ -7,15 +7,15 @@
  */
 package de.ii.ldproxy.wfs3.oas30;
 
-import de.ii.ldproxy.wfs3.api.Wfs3Extension;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * @author zahnen
  */
-public interface Wfs3OpenApiExtension extends Wfs3Extension {
+public interface Wfs3OpenApiExtension extends OgcApiExtension {
     int getSortPriority();
 
-    OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData);
+    OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData);
 }

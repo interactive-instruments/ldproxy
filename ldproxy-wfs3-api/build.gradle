@@ -1,7 +1,9 @@
 
-version = '1.4.0'
+version = '1.4.1'
 
 dependencies {
+    provided project(":ldproxy-ogcapi")
+    
     api group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
     api group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
     api group: 'de.interactive_instruments', name: 'xtraplatform-service-api'

@@ -1,14 +1,18 @@
 
-version = '1.4.0'
+version = '1.4.1'
 
 dependencies {
     provided project(':ldproxy-codelists')
     provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-ogcapi")
     provided project(':ldproxy-wfs3')
+    
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-admin-rest'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-csw-client'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-scheduler-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-web-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
 }
  

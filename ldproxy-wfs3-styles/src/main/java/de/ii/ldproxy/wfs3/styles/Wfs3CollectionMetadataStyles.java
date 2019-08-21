@@ -8,11 +8,11 @@
 package de.ii.ldproxy.wfs3.styles;
 
 
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3Collection;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3CollectionMetadataExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Collection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.Wfs3CollectionMetadataExtension;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -35,32 +35,33 @@ import java.util.Map;
 public class Wfs3CollectionMetadataStyles implements Wfs3CollectionMetadataExtension {
 
     @Requires
-    private KeyValueStore keyValueStore;
+    private StylesStore stylesStore;
 
 
     @Override
-    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection, FeatureTypeConfigurationWfs3 featureTypeConfigurationWfs3, URICustomizer uriCustomizer, boolean isNested, Wfs3ServiceData serviceData) {
+    public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection,
+                                                   FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+                                                   URICustomizer uriCustomizer, boolean isNested,
+                                                   OgcApiDatasetData datasetData) {
 
-        final StylesLinkGenerator stylesLinkGenerator= new StylesLinkGenerator();
+        final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
-        String collectionId=featureTypeConfigurationWfs3.getId();
+        String collectionId = featureTypeConfiguration.getId();
 
-        KeyValueStore kvStoreCollection = keyValueStore.getChildStore("styles").getChildStore(serviceData.getId()).getChildStore(collectionId);
-
-        List<String> styles = kvStoreCollection.getKeys();
+        List<String> styles = stylesStore.ids(datasetData.getId(), collectionId);
         List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
 
 
-        for(String key : styles){
+        for (String key : styles) {
             Map<String, Object> wfs3StylesInCollections = new HashMap<>();
             String styleId = key.split("\\.")[0];
-            wfs3StylesInCollections.put("id",styleId);
-            wfs3StylesInCollections.put("links", stylesLinkGenerator.generateStylesLinksCollectionMetadata(uriCustomizer,collectionId,styleId));
+            wfs3StylesInCollections.put("id", styleId);
+            wfs3StylesInCollections.put("links", stylesLinkGenerator.generateStylesLinksCollectionMetadata(uriCustomizer, collectionId, styleId));
             wfs3LinksList.add(wfs3StylesInCollections);
         }
 
 
-        collection.putExtensions("styles",wfs3LinksList);
+        collection.putExtensions("styles", wfs3LinksList);
 
 
         return collection;

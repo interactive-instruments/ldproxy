@@ -7,7 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.sitemaps;
 
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
 import de.ii.ldproxy.wfs3.api.Wfs3CapabilityExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -21,7 +22,16 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Instantiate
 public class Wfs3CapabilitySitemaps implements Wfs3CapabilityExtension {
     @Override
-    public ExtensionConfiguration getDefaultConfiguration() {
-        return ImmutableSitemapsConfiguration.builder().build();
+    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
+        ImmutableSitemapsConfiguration.Builder config = new ImmutableSitemapsConfiguration.Builder();
+
+        switch (preset) {
+            case WFS3:
+            case GSFS:
+                config.enabled(false);
+                break;
+        }
+
+        return config.build();
     }
 }

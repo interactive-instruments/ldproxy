@@ -8,18 +8,17 @@
 package de.ii.ldproxy.target.gml;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Modifiable
-@Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(as = ModifiableGmlConfiguration.class)
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableGmlConfiguration.Builder.class)
 public abstract class GmlConfiguration implements ExtensionConfiguration {
 
     @Value.Default
     @Override
     public boolean getEnabled() {
-        return true;
+        return false;
     }
 }

@@ -10,18 +10,18 @@ package de.ii.ldproxy.target.html;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.codelists.Codelist;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.Dataset;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Collection;
-import de.ii.ldproxy.wfs3.api.Wfs3Collections;
-import de.ii.ldproxy.wfs3.api.Wfs3ConformanceClass;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
 import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.akka.http.AkkaHttp;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
@@ -55,12 +55,12 @@ import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFormatExtension {
+public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatExtension {
 
-    static final Wfs3MediaType MEDIA_TYPE = ImmutableWfs3MediaType.builder()
-                                                                  .main(MediaType.TEXT_HTML_TYPE)
-                                                                  //.qs(900)
-                                                                  .build();
+    static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+            .main(MediaType.TEXT_HTML_TYPE)
+            //.qs(900)
+            .build();
 
     @Context
     private BundleContext bc;
@@ -80,38 +80,32 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
     @Requires
     private KeyValueStore keyValueStore;
 
+    @Requires
+    private I18n i18n;
+
     @Override
     public String getConformanceClass() {
         return "http://www.opengis.net/spec/wfs-1/3.0/req/html";
     }
 
     @Override
-    public boolean isConformanceEnabledForService(Wfs3ServiceData serviceData) {
-        if (isExtensionEnabled(serviceData, HtmlConfiguration.class)) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public Wfs3MediaType getMediaType() {
+    public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, HtmlConfiguration.class)) {
-            return false;
-        }
-        return true;
+    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+        return isExtensionEnabled(datasetData, HtmlConfiguration.class);
     }
 
 
     @Override
-    public Response getConformanceResponse(List<Wfs3ConformanceClass> wfs3ConformanceClasses, String serviceLabel, Wfs3MediaType wfs3MediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix) {
+    public Response getConformanceResponse(List<ConformanceClass> wfs3ConformanceClasses, String serviceLabel,
+                                           OgcApiMediaType ogcApiMediaType, List<OgcApiMediaType> alternativeMediaTypes,
+                                           URICustomizer uriCustomizer, String staticUrlPrefix) {
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Datasets", uriCustomizer.copy()
+                .add(new NavigationDTO("Services", uriCustomizer.copy()
                                                                 .removeLastPathSegments(2)
                                                                 .toString()))
                 .add(new NavigationDTO(serviceLabel, uriCustomizer.copy()
@@ -124,26 +118,30 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
         List<Wfs3Link> links = wfs3LinksGenerator.generateAlternateLinks(uriCustomizer.copy(), true, alternativeMediaTypes);
 
         Wfs3ConformanceClassesView wfs3ConformanceClassesView = new Wfs3ConformanceClassesView(wfs3ConformanceClasses.stream()
-                                                                                                                     .map(Wfs3ConformanceClass::getConformanceClass)
+                                                                                                                     .map(ConformanceClass::getConformanceClass)
                                                                                                                      .collect(Collectors.toList()), breadCrumbs, links, staticUrlPrefix, htmlConfig);
         return Response.ok()
-                       .type(wfs3MediaType.metadata())
+                       .type(ogcApiMediaType.metadata())
                        .entity(wfs3ConformanceClassesView)
                        .build();
     }
 
     @Override
-    public Response getDatasetResponse(Wfs3Collections wfs3Collections, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String staticUrlPrefix, boolean isCollections) {
+    public Response getDatasetResponse(Dataset wfs3Collections, OgcApiDatasetData datasetData, OgcApiMediaType mediaType,
+                                       List<OgcApiMediaType> alternativeMediaTypes, URICustomizer uriCustomizer,
+                                       String staticUrlPrefix, boolean isCollections) {
+        //TODO: locales from request context
+        String datasetsTitle = i18n.get("datasets");
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Datasets", uriCustomizer.copy()
+                .add(new NavigationDTO(datasetsTitle, uriCustomizer.copy()
                                                                 .removeLastPathSegments(uriCustomizer.isLastPathSegment("collections") ? 2 : 1)
                                                                 .toString()))
-                .add(new NavigationDTO(serviceData.getLabel()))
+                .add(new NavigationDTO(datasetData.getLabel()))
                 .build();
 
 
-        Wfs3DatasetView wfs3DatasetView = new Wfs3DatasetView(serviceData, wfs3Collections, breadCrumbs, staticUrlPrefix, htmlConfig);
+        Wfs3DatasetView wfs3DatasetView = new Wfs3DatasetView(datasetData, wfs3Collections, breadCrumbs, staticUrlPrefix, htmlConfig);
 
         return Response.ok()
                        .type(mediaType.metadata())
@@ -152,7 +150,9 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
     }
 
     @Override
-    public Response getCollectionResponse(Wfs3Collection wfs3Collection, Wfs3ServiceData serviceData, Wfs3MediaType mediaType, Wfs3MediaType[] alternativeMediaTypes, URICustomizer uriCustomizer, String collectionName) {
+    public Response getCollectionResponse(Wfs3Collection wfs3Collection, OgcApiDatasetData datasetData,
+                                          OgcApiMediaType mediaType, List<OgcApiMediaType> alternativeMediaTypes,
+                                          URICustomizer uriCustomizer, String collectionName) {
         return Response.status(MOVED_PERMANENTLY)
                        .header(HttpHeaders.LOCATION, uriCustomizer.copy()
                                                                   .ensureLastPathSegment("items")
@@ -167,7 +167,7 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
 
     @Override
     public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext) {
-        Wfs3ServiceData serviceData = transformationContext.getServiceData();
+        OgcApiDatasetData serviceData = transformationContext.getServiceData();
         String collectionName = transformationContext.getCollectionName();
         String staticUrlPrefix = transformationContext.getWfs3Request()
                                                       .getStaticUrlPrefix();
@@ -211,7 +211,11 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
         return Optional.of(new Gml2MicrodataMappingProvider());
     }
 
-    private FeatureCollectionView createFeatureCollectionView(FeatureTypeConfigurationWfs3 featureType, URICustomizer uriCustomizer, Map<String, String> filterableFields, Map<String, String> htmlNames, String staticUrlPrefix, boolean bare) {
+    private FeatureCollectionView createFeatureCollectionView(FeatureTypeConfigurationOgcApi featureType,
+                                                              URICustomizer uriCustomizer,
+                                                              Map<String, String> filterableFields,
+                                                              Map<String, String> htmlNames, String staticUrlPrefix,
+                                                              boolean bare) {
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
@@ -256,7 +260,10 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
         return featureTypeDataset;
     }
 
-    private FeatureCollectionView createFeatureDetailsView(FeatureTypeConfigurationWfs3 featureType, URICustomizer uriCustomizer, List<Wfs3Link> links, String serviceLabel, String featureId, String staticUrlPrefix) {
+    private FeatureCollectionView createFeatureDetailsView(FeatureTypeConfigurationOgcApi featureType,
+                                                           URICustomizer uriCustomizer, List<Wfs3Link> links,
+                                                           String serviceLabel, String featureId,
+                                                           String staticUrlPrefix) {
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
@@ -273,7 +280,7 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                                                     .orElse(featureType.getLabel());
 
         featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Datasets", uriBuilder.copy()
+                .add(new NavigationDTO("Services", uriBuilder.copy()
                                                              .removePathSegment("collections", -3)
                                                              .removeLastPathSegments(3)
                                                              .toString()))
@@ -303,7 +310,8 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
         return featureTypeDataset;
     }
 
-    private void addDatasetNavigation(FeatureCollectionView featureCollectionView, String serviceLabel, String collectionLabel, List<Wfs3Link> links, URICustomizer uriCustomizer) {
+    private void addDatasetNavigation(FeatureCollectionView featureCollectionView, String serviceLabel,
+                                      String collectionLabel, List<Wfs3Link> links, URICustomizer uriCustomizer) {
         URICustomizer uriBuilder = uriCustomizer
                 .clearParameters()
                 .ensureParameter("f", MEDIA_TYPE.parameter())
@@ -311,7 +319,7 @@ public class Wfs3OutputFormatHtml implements Wfs3ConformanceClass, Wfs3OutputFor
                 .removePathSegment("collections", -2);
 
         featureCollectionView.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Datasets", uriBuilder.copy()
+                .add(new NavigationDTO("Services", uriBuilder.copy()
                                                              .removeLastPathSegments(2)
                                                              .toString()))
                 .add(new NavigationDTO(serviceLabel, uriBuilder.copy()

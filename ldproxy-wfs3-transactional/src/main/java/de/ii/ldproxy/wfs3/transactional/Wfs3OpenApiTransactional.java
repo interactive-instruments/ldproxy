@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.transactional;
 
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -42,15 +42,15 @@ public class Wfs3OpenApiTransactional implements Wfs3OpenApiExtension {
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
-        if (serviceData != null && serviceData.getFeatureProvider()
-                                              .supportsTransactions() && isExtensionEnabled(serviceData, TransactionalConfiguration.class)) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+        if (datasetData != null && datasetData.getFeatureProvider()
+                                              .supportsTransactions() && isExtensionEnabled(datasetData, TransactionalConfiguration.class)) {
 
-            serviceData.getFeatureTypes()
+            datasetData.getFeatureTypes()
                        .values()
                        .stream()
-                       .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                       .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                       .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+                       .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                        .forEach(ft -> {
 
                            PathItem pathItem = openAPI.getPaths()

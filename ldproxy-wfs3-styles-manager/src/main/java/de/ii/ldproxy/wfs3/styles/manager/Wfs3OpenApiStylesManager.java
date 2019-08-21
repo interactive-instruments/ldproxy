@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.styles.manager;
 
-import de.ii.ldproxy.wfs3.api.FeatureTypeConfigurationWfs3;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -32,7 +32,6 @@ import java.util.Objects;
 
 /**
  * extend API definition with styles
- *
  */
 @Component
 @Provides
@@ -46,12 +45,12 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
 
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, Wfs3ServiceData serviceData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
 
 
-        if (serviceData != null && isExtensionEnabled(serviceData, StylesConfiguration.class)) {
+        if (datasetData != null && isExtensionEnabled(datasetData, StylesConfiguration.class)) {
 
-            StylesConfiguration stylesExtension = getExtensionConfiguration(serviceData, StylesConfiguration.class).get();
+            StylesConfiguration stylesExtension = getExtensionConfiguration(datasetData, StylesConfiguration.class).get();
 
             if (stylesExtension.getManagerEnabled()) {
                 PathItem pathItem1 = openAPI.getPaths()
@@ -104,11 +103,11 @@ public class Wfs3OpenApiStylesManager implements Wfs3OpenApiExtension {
                             );
                 }
 
-                serviceData.getFeatureTypes()
+                datasetData.getFeatureTypes()
                            .values()
                            .stream()
-                           .sorted(Comparator.comparing(FeatureTypeConfigurationWfs3::getId))
-                           .filter(ft -> serviceData.isFeatureTypeEnabled(ft.getId()))
+                           .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+                           .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                            .forEach(ft -> {
 
                                PathItem pathItem3 = openAPI.getPaths()

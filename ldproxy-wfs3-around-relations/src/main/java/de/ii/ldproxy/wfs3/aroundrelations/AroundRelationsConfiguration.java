@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3.aroundrelations;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -41,9 +41,13 @@ public abstract class AroundRelationsConfiguration implements ExtensionConfigura
 
 
     }
+
     @Override
     public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return ImmutableAroundRelationsConfiguration.builder().from(extensionConfigurationDefault).from(this).build(); //TODO
+        return ImmutableAroundRelationsConfiguration.builder()
+                                                    .from(extensionConfigurationDefault)
+                                                    .from(this)
+                                                    .build(); //TODO
     }
 
 

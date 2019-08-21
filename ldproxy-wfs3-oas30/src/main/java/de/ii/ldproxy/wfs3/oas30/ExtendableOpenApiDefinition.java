@@ -9,9 +9,9 @@ package de.ii.ldproxy.wfs3.oas30;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceMetadata;
+import de.ii.ldproxy.ogcapi.domain.Metadata;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.auth.api.AuthConfig;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Yaml;
@@ -62,7 +62,8 @@ public class ExtendableOpenApiDefinition {
     private final AuthConfig authConfig;
     private Set<Wfs3OpenApiExtension> openApiExtensions;
 
-    public ExtendableOpenApiDefinition(/*@Requires Jackson jackson, @Requires Dropwizard dropwizard,*/ @Requires AuthConfig authConfig) {
+    public ExtendableOpenApiDefinition(/*@Requires Jackson jackson, @Requires Dropwizard dropwizard,*/
+            @Requires AuthConfig authConfig) {
         super();
         //this.objectMapper = jackson.getDefaultObjectMapper();
         //this.externalUrl = dropwizard.getExternalUrl();
@@ -77,7 +78,7 @@ public class ExtendableOpenApiDefinition {
         return openApiExtensions;
     }
 
-    public Response getOpenApi(String type, URICustomizer requestUriCustomizer, Wfs3ServiceData serviceData) {
+    public Response getOpenApi(String type, URICustomizer requestUriCustomizer, OgcApiDatasetData datasetData) {
 
         boolean pretty = true;
 
@@ -89,7 +90,7 @@ public class ExtendableOpenApiDefinition {
                                                       .openBufferedStream());
 
             //TODO
-            if (serviceData.isSecured() && authConfig.isJwt()) {
+            if (datasetData.getSecured() && authConfig.isJwt()) {
                 openAPI.getComponents()
                        .addSecuritySchemes("JWT", new SecurityScheme().type(SecurityScheme.Type.HTTP)
                                                                       .scheme("bearer")
@@ -106,7 +107,7 @@ public class ExtendableOpenApiDefinition {
                                                                                   .removeLastPathSegment("api")
                                                                                   .toString())));
 
-            if (serviceData != null) {
+            if (datasetData != null) {
                 /*WFSOperation operation = new GetCapabilities();
 
                 WFSCapabilitiesAnalyzer analyzer = new MultiWfsCapabilitiesAnalyzer(
@@ -119,14 +120,12 @@ public class ExtendableOpenApiDefinition {
                                            .request(operation));*/
 
                 openAPI.getInfo()
-                       .title(serviceData.getLabel())
-                       .description(serviceData.getDescription()
+                       .title(datasetData.getLabel())
+                       .description(datasetData.getDescription()
                                                .orElse(""));
 
-                if (serviceData.getMetadata()
-                               .isPresent()) {
-                    Wfs3ServiceMetadata md = serviceData.getMetadata()
-                                                        .get();
+                if (Objects.nonNull(datasetData.getMetadata())) {
+                    Metadata md = datasetData.getMetadata();
                     openAPI.getInfo()
                            .contact(new Contact().name(md.getContactName()
                                                          .orElse(null))
@@ -141,7 +140,7 @@ public class ExtendableOpenApiDefinition {
                 }
             }
 
-            getOpenApiExtensions().forEach(openApiExtension -> openApiExtension.process(openAPI, serviceData));
+            getOpenApiExtensions().forEach(openApiExtension -> openApiExtension.process(openAPI, datasetData));
 
 
             if (StringUtils.isNotBlank(type) && type.trim()

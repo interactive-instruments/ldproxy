@@ -1,39 +1,65 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- * <p>
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.wfs3.generator;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
 import de.ii.ldproxy.wfs3.Gml2Wfs3GenericMappingProvider;
-import de.ii.ldproxy.wfs3.Wfs3Service;
-import de.ii.ldproxy.wfs3.api.ModifiableWfs3ServiceData;
+import de.ii.ldproxy.wfs3.api.TargetMappingRefiner;
 import de.ii.ldproxy.wfs3.api.Wfs3CapabilityExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ExtensionRegistry;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import de.ii.ldproxy.wfs3.api.Wfs3StyleGeneratorExtension;
+import de.ii.xtraplatform.api.exceptions.XtraserverFrameworkException;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.entity.api.EntityData;
 import de.ii.xtraplatform.entity.api.EntityDataGenerator;
 import de.ii.xtraplatform.entity.api.EntityRepository;
-import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
+import de.ii.xtraplatform.event.store.EntityDataStore;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderMetadataConsumer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
+import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
+import de.ii.xtraplatform.feature.provider.api.FeatureStream;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.MultiFeatureProviderMetadataConsumer;
-import de.ii.xtraplatform.feature.provider.wfs.ModifiableFeatureProviderDataWfs;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService2;
+import de.ii.xtraplatform.feature.provider.api.TargetMapping;
+import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
+import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
+import de.ii.xtraplatform.feature.transformer.api.FeatureProviderDataTransformer;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService;
+import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
+import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
+import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableMappingStatus;
+import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.MappingStatus;
+import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
+import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_GEOMETRY_TYPE;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
+import de.ii.xtraplatform.kvstore.api.KeyValueStore;
+import de.ii.xtraplatform.kvstore.api.WriteTransaction;
 import de.ii.xtraplatform.scheduler.api.Scheduler;
 import de.ii.xtraplatform.scheduler.api.Task;
 import de.ii.xtraplatform.scheduler.api.TaskContext;
 import de.ii.xtraplatform.scheduler.api.TaskQueue;
 import de.ii.xtraplatform.scheduler.api.TaskStatus;
-import de.ii.xtraplatform.service.api.Service;
-import de.ii.xtraplatform.service.api.ServiceTasks;
+import de.ii.xtraplatform.service.api.ServiceBackgroundTasks;
+import de.ii.xtraplatform.service.api.ServiceData;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -45,13 +71,19 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.WebApplicationException;
+import javax.xml.namespace.QName;
 import java.io.IOException;
+import java.net.URI;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,11 +94,11 @@ import java.util.stream.Stream;
 @Provides
 @Instantiate
 @Wbp(
-        filter = "(objectClass=de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService2)",
+        filter = "(objectClass=de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService)",
         onArrival = "onArrival",
         onDeparture = "onDeparture",
         onModification = "onModification")
-public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData>, ServiceTasks {
+public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetData>, ServiceBackgroundTasks {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3ServiceGenerator.class);
 
@@ -74,7 +106,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
     private BundleContext bundleContext;
 
     @Requires
-    private Wfs3ExtensionRegistry wfs3ConformanceClassRegistry;
+    private OgcApiExtensionRegistry wfs3ConformanceClassRegistry;
 
     @Requires
     private FeatureProviderRegistry featureProviderRegistry;
@@ -82,34 +114,62 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
     @Requires
     private EntityRepository entityRepository;
 
+    private final EntityDataStore<ServiceData> serviceRepository;
+
+    @Requires
+    private KeyValueStore rootKeyValueStore;
+
     private final TaskQueue taskQueue;
 
-    Wfs3ServiceGenerator(@Requires Scheduler scheduler) {
+    Wfs3ServiceGenerator(
+            @Requires EntityDataStore<EntityData> entityRepository,
+            @Requires Scheduler scheduler) {
+        this.serviceRepository = entityRepository.forType(ServiceData.class);
         this.taskQueue = scheduler.createQueue(this.getType()
                                                    .getSimpleName());
     }
 
     @Override
-    public Class<Wfs3ServiceData> getType() {
-        return Wfs3ServiceData.class;
+    public Class<OgcApiDatasetData> getType() {
+        return OgcApiDatasetData.class;
     }
 
     @Override
-    public Wfs3ServiceData generate(Wfs3ServiceData partialData) {
+    public OgcApiDatasetData generate(Map<String, String> partialData) {
+        if (Objects.isNull(partialData) || !partialData.containsKey("id") || !partialData.containsKey("url")) {
+            throw new BadRequestException();
+        }
+
+        OgcApiConfigPreset preset = OgcApiConfigPreset.fromString(partialData.get("preset"));
+
         try {
-            ModifiableWfs3ServiceData wfs3ServiceData = ModifiableWfs3ServiceData.create()
-                                                                                 .from(partialData);
-            //TODO: init from defaults? (can be achieved through copies)
-            final long now = Instant.now()
-                                    .toEpochMilli();
-            wfs3ServiceData.setCreatedAt(now);
-            wfs3ServiceData.setLastModified(now);
-            wfs3ServiceData.setShouldStart(true);
-            /*TODO if (!((ModifiableFeatureProviderDataWfs) wfs3ServiceData.getFeatureProvider()).mappingStatusIsSet()) {
-                ((ModifiableFeatureProviderDataWfs) wfs3ServiceData.getFeatureProvider()).setMappingStatus(ModifiableMappingStatus.create()
-                                                                                                                                  .setEnabled(true)
-                                                                                                                                  .setSupported(false));
-            }*/
+
+            ImmutableConnectionInfoWfsHttp.Builder connectionInfoBuilder = new ImmutableConnectionInfoWfsHttp.Builder().uri(URI.create(partialData.get("url")))
+                                                                                                                       .connectionUri(partialData.get("url"))
+                                                                                                                       .method(ConnectionInfoWfsHttp.METHOD.GET)
+                                                                                                                       .version("2.0.0")
+                                                                                                                       .gmlVersion("3.2.1");
+
+            if (partialData.containsKey("isBasicAuth") && Objects.equals(partialData.get("isBasicAuth"), "true")) {
+                connectionInfoBuilder.user(partialData.get("baUser"))
+                                     .password(partialData.get("baPassword"));
+            }
+
+            ImmutableFeatureProviderDataTransformer provider = new ImmutableFeatureProviderDataTransformer.Builder()
+                    .providerType("WFS")
+                    .connectorType("HTTP")
+                    .connectionInfo(connectionInfoBuilder.build())
+                    .nativeCrs(new EpsgCrs())
+                    .mappingStatus(new ImmutableMappingStatus.Builder().enabled(true)
+                                                                       .supported(false)
+                                                                       .build())
+                    .build();
+
+            ImmutableOgcApiDatasetData.Builder wfs3ServiceData = new ImmutableOgcApiDatasetData.Builder()
+                    .id(partialData.get("id"))
+                    .shouldStart(true)
+                    .serviceType("WFS3")
+                    .featureProvider(provider);
 
             wfs3ConformanceClassRegistry.getExtensions()
                                         .stream()
@@ -118,29 +178,35 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
                                                                                                    .getSimpleName()))
                                         .map(wfs3Extension -> (Wfs3CapabilityExtension) wfs3Extension)
                                         .forEach(wfs3Capability -> {
-                                            wfs3ServiceData.addCapabilities(wfs3Capability.getDefaultConfiguration());
+                                            wfs3ServiceData.addCapabilities(wfs3Capability.getDefaultConfiguration(preset));
                                         });
 
 
-            FeatureProvider featureProvider = featureProviderRegistry.createFeatureProvider(wfs3ServiceData.getFeatureProvider());
+            FeatureProvider featureProvider = featureProviderRegistry.createFeatureProvider(provider);
 
             if (!(featureProvider instanceof FeatureProvider.MetadataAware && featureProvider instanceof TransformingFeatureProvider.SchemaAware)) {
                 throw new IllegalArgumentException("feature provider not metadata aware");
             }
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Generating service of type {} with id {}", Wfs3ServiceData.class, partialData.getId());
+                LOGGER.debug("Generating service of type {} with id {}", OgcApiDatasetData.class, partialData.get("id"));
             }
 
             FeatureProvider.MetadataAware metadataAware = (FeatureProvider.MetadataAware) featureProvider;
-            FeatureProvider.DataGenerator dataGenerator = (TransformingFeatureProvider.DataGenerator) featureProvider;
+            TransformingFeatureProvider.DataGenerator dataGenerator = (TransformingFeatureProvider.DataGenerator) featureProvider;
 
-            FeatureProviderMetadataConsumer metadataConsumer = new MultiFeatureProviderMetadataConsumer(new Metadata2Wfs3(wfs3ServiceData), dataGenerator.getDataGenerator(wfs3ServiceData.getFeatureProvider()));
+            FeatureProviderMetadataConsumer metadataConsumer = new MultiFeatureProviderMetadataConsumer(new Metadata2Wfs3(wfs3ServiceData), dataGenerator.getDataGenerator(provider, wfs3ServiceData.featureProviderBuilder()));
             //TODO: getMetadata(partialData.getFeatureProvider(), FeatureProviderMetadataConsumer... additionalConsumers)
             metadataAware.getMetadata(metadataConsumer);
 
-            return wfs3ServiceData;
+            //TODO: only if gsfs is enabled???
+            wfs3ServiceData.addAdditionalCrs(new EpsgCrs(3857), new EpsgCrs(102100), new EpsgCrs(4326, true));
+
+            return wfs3ServiceData.build();
         } catch (Throwable e) {
+            if (e instanceof WebApplicationException) {
+                throw e;
+            }
             throw new IllegalArgumentException(e);
         }
     }
@@ -148,8 +214,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
     private List<TargetMappingProviderFromGml> getMappingProviders() {
         return Stream.concat(
                 Stream.of(new Gml2Wfs3GenericMappingProvider()),
-                wfs3ConformanceClassRegistry.getOutputFormats()
-                                            .values()
+                wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3OutputFormatExtension.class)
                                             .stream()
                                             .map(Wfs3OutputFormatExtension::getMappingGenerator)
                                             .filter(Optional::isPresent)
@@ -158,83 +223,118 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
                      .collect(Collectors.toList());
     }
 
-    private synchronized void onArrival(ServiceReference<FeatureTransformerService2> ref) {
-        checkGenerateMapping(ref);
+    private List<TargetMappingRefiner> getMappingRefiners() {
+        return wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3OutputFormatExtension.class)
+                                           .stream()
+                                           .map(Wfs3OutputFormatExtension::getMappingRefiner)
+                                           .filter(Optional::isPresent)
+                                           .map(Optional::get)
+                                           .collect(Collectors.toList());
     }
 
-    private synchronized void onDeparture(ServiceReference<FeatureTransformerService2> ref) {
+    private synchronized void onArrival(ServiceReference<FeatureTransformerService> ref) {
+        try {
+            checkGenerateMapping(ref);
+            checkRefineMapping(ref);
+        } catch (Throwable e) {
+            LOGGER.debug("E", e);
+        }
+
     }
 
-    private synchronized void onModification(ServiceReference<FeatureTransformerService2> ref) {
+    private synchronized void onDeparture(ServiceReference<FeatureTransformerService> ref) {
+    }
+
+    private synchronized void onModification(ServiceReference<FeatureTransformerService> ref) {
         LOGGER.debug("MOD");
         checkGenerateMapping(ref);
+        checkRefineMapping(ref);
     }
 
-    static final String GENERATE_LABEL = "Analyzing feature types";
+    private void checkGenerateMapping(ServiceReference<FeatureTransformerService> ref) {
+        final FeatureTransformerService featureTransformerService = bundleContext.getService(ref);
 
-    private void checkGenerateMapping(ServiceReference<FeatureTransformerService2> ref) {
-        final FeatureTransformerService2 featureTransformerService = bundleContext.getService(ref);
+        if (featureTransformerService instanceof OgcApiDataset) {
+            final OgcApiDataset wfs3Service = (OgcApiDataset) featureTransformerService;
+            final FeatureProviderDataTransformer featureProviderData = wfs3Service.getData()
+                                                                                  .getFeatureProvider();
 
-        if (featureTransformerService instanceof Wfs3Service) {
-            final Wfs3Service wfs3Service = (Wfs3Service) featureTransformerService;
+            if (canGenerateMapping(wfs3Service.getFeatureProvider()) && shouldGenerateMapping(featureProviderData
+                    .getMappingStatus(), wfs3Service.getId())) {
 
-            if (canGenerateMapping(wfs3Service.getFeatureProvider()) && shouldGenerateMapping(wfs3Service.getData()
-                                                                                                         .getFeatureProvider()
-                                                                                                         .getMappingStatus(), wfs3Service.getId())) {
-                final Wfs3ServiceData partialData = ModifiableWfs3ServiceData.create()
-                                                                             .from(wfs3Service.getData());
+                taskQueue.launch(new AnalyzeSchemaTask(wfs3Service, featureProviderData));
+            }
+        }
+    }
 
-                taskQueue.launch(new Task() {
+    private void checkRefineMapping(ServiceReference<FeatureTransformerService> ref) {
+        final FeatureTransformerService featureTransformerService = bundleContext.getService(ref);
 
-                    @Override
-                    public String getId() {
-                        return wfs3Service.getId();
-                    }
+        if (featureTransformerService instanceof OgcApiDataset) {
+            final OgcApiDataset wfs3Service = (OgcApiDataset) featureTransformerService;
+            final FeatureProviderDataTransformer featureProviderData = wfs3Service.getData()
+                                                                                  .getFeatureProvider();
+            final List<TargetMappingRefiner> mappingRefiners = getMappingRefiners();
 
-                    @Override
-                    public String getLabel() {
-                        return GENERATE_LABEL;
-                    }
+            if (canGenerateMapping(wfs3Service.getFeatureProvider()) && shouldRefineMapping(wfs3Service.getData(), featureProviderData.getMappingStatus(), wfs3Service.getId(), mappingRefiners)) {
 
-                    @Override
-                    public void run(TaskContext taskContext) {
-
-                        //TODO: to onServiceStart queue
-                        //TODO: set mappingStatus.enabled to false for catalog services
-                        //TODO: reactivate on-the-fly mapping
-                        TransformingFeatureProvider.SchemaAware schemaAware = (TransformingFeatureProvider.SchemaAware) wfs3Service.getFeatureProvider();
-                        FeatureProvider.DataGenerator dataGenerator = (TransformingFeatureProvider.DataGenerator) wfs3Service.getFeatureProvider();
-                        //TODO: getSchema(partialData.getFeatureProvider(), getMappingProviders(), FeatureProviderSchemaConsumer... additionalConsumers)
-                        schemaAware.getSchema(((TransformingFeatureProvider.DataGenerator) dataGenerator).getMappingGenerator(partialData.getFeatureProvider(), getMappingProviders()), partialData.getFeatureProvider()
-                                                                                                                                                                                                   .getFeatureTypes(), taskContext);
-
-
-                        try {
-                            new EntityRepositoryForType(entityRepository, Service.ENTITY_TYPE).replaceEntity(partialData);
-                        } catch (IOException e) {
-                            //ignore
-                        }
-                    }
-                });
+                taskQueue.launch(new AnalyzeDataTask(wfs3Service, featureProviderData, mappingRefiners));
             }
         }
     }
 
     private boolean canGenerateMapping(TransformingFeatureProvider featureProvider) {
-        return featureProvider instanceof TransformingFeatureProvider.SchemaAware && featureProvider instanceof FeatureProvider.DataGenerator;
+        return featureProvider instanceof TransformingFeatureProvider.SchemaAware && featureProvider instanceof TransformingFeatureProvider.DataGenerator;
     }
 
     private boolean shouldGenerateMapping(MappingStatus mappingStatus, String id) {
         return mappingStatus.getLoading()
                 && !getCurrentTask().filter(task -> task.getId()
                                                         .equals(id) && task.getLabel()
-                                                                           .equals(GENERATE_LABEL))
+                                                                           .equals(AnalyzeSchemaTask.LABEL))
                                     .isPresent()
                 && taskQueue.getFutureTasks()
                             .stream()
                             .noneMatch(task -> task.getId()
                                                    .equals(id) && task.getLabel()
-                                                                      .equals(GENERATE_LABEL));
+                                                                      .equals(AnalyzeSchemaTask.LABEL));
+    }
+
+    private boolean shouldRefineMapping(OgcApiDatasetData data, MappingStatus mappingStatus, String id,
+                                        List<TargetMappingRefiner> mappingRefiners) {
+        if (shouldGenerateMapping(mappingStatus, id)
+                || getCurrentTask().filter(task -> task.getId()
+                                                       .equals(id) && task.getLabel()
+                                                                          .equals(AnalyzeDataTask.LABEL))
+                                   .isPresent()
+                || taskQueue.getFutureTasks()
+                            .stream()
+                            .anyMatch(task -> task.getId()
+                                                   .equals(id) && task.getLabel()
+                                                                      .equals(AnalyzeDataTask.LABEL))) {
+            return false;
+        }
+
+        for (FeatureTypeConfigurationOgcApi featureType : data.getFeatureTypes()
+                                                              .values()) {
+            if (!data.isFeatureTypeEnabled(featureType.getId())) {
+                continue;
+            }
+
+            boolean needsRefinement = data.getFeatureProvider()
+                                          .getMappings()
+                                          .get(featureType.getId())
+                                          .getMappingsWithPathAsList()
+                                          .values()
+                                          .stream()
+                                          .anyMatch(sourcePathMapping -> mappingRefiners.stream()
+                                                                                        .anyMatch(targetMappingRefiner -> targetMappingRefiner.needsRefinement(sourcePathMapping)));
+            if (needsRefinement) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 
@@ -259,5 +359,270 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<Wfs3ServiceData
         }
 
         return optionalTaskStatus;
+    }
+
+    private class AnalyzeSchemaTask implements Task {
+
+        static final String LABEL = "Analyzing schema";
+
+        private final OgcApiDataset wfs3Service;
+        private final FeatureProviderDataTransformer featureProviderData;
+
+        public AnalyzeSchemaTask(OgcApiDataset wfs3Service, FeatureProviderDataTransformer featureProviderData) {
+            this.wfs3Service = wfs3Service;
+            this.featureProviderData = featureProviderData;
+        }
+
+        @Override
+        public String getId() {
+            return wfs3Service.getId();
+        }
+
+        @Override
+        public String getLabel() {
+            return LABEL;
+        }
+
+        @Override
+        public void run(TaskContext taskContext) {
+
+            //TODO: to onServiceStart queue
+            //TODO: set mappingStatus.enabled to false for catalog services
+            //TODO: reactivate on-the-fly mapping
+            TransformingFeatureProvider.SchemaAware schemaAware = (TransformingFeatureProvider.SchemaAware) wfs3Service.getFeatureProvider();
+            TransformingFeatureProvider.DataGenerator dataGenerator = (TransformingFeatureProvider.DataGenerator) wfs3Service.getFeatureProvider();
+            //TODO: getSchema(partialData.getFeatureProvider(), getMappingProviders(), FeatureProviderSchemaConsumer... additionalConsumers)
+
+            ImmutableFeatureProviderDataTransformer.Builder builder = new ImmutableFeatureProviderDataTransformer.Builder().from(featureProviderData);
+
+            schemaAware.getSchema(dataGenerator.getMappingGenerator(featureProviderData, builder, getMappingProviders()), featureProviderData.getLocalFeatureTypeNames(), taskContext);
+
+            ImmutableOgcApiDatasetData updated = new ImmutableOgcApiDatasetData.Builder().from(wfs3Service.getData())
+                                                                                         .featureProvider(builder.build())
+                                                                                         .build();
+
+            serviceRepository.put(wfs3Service.getId(), updated);
+
+            //TODO: generate GSFS styles
+            KeyValueStore stylesStore = rootKeyValueStore.getChildStore("styles")
+                                                         .getChildStore(wfs3Service.getData()
+                                                                                   .getId());
+
+            for (Wfs3StyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3StyleGeneratorExtension.class)) {
+                int i = 0;
+                for (FeatureTypeConfigurationOgcApi featureTypeConfiguration : updated.getFeatureTypes()
+                                                                                      .values()) {
+
+                    String style = wfs3StyleGeneratorExtension.generateStyle(updated, featureTypeConfiguration, i++);
+
+                    if (!Strings.isNullOrEmpty(style)) {
+                        String styleId = "gsfs_" + featureTypeConfiguration.getId();
+                        WriteTransaction<String> writeTransaction = stylesStore.openWriteTransaction(styleId);
+                        try {
+                            writeTransaction.write(style);
+                            writeTransaction.execute();
+                            writeTransaction.commit();
+                        } catch (IOException e) {
+                            writeTransaction.rollback();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private class AnalyzeDataTask implements Task {
+
+        static final String LABEL = "Analyzing data";
+
+        private final OgcApiDataset wfs3Service;
+        private final FeatureProviderDataTransformer featureProviderData;
+        private final List<TargetMappingRefiner> mappingRefiners;
+
+        public AnalyzeDataTask(OgcApiDataset wfs3Service, FeatureProviderDataTransformer featureProviderData,
+                               List<TargetMappingRefiner> mappingRefiners) {
+            this.wfs3Service = wfs3Service;
+            this.featureProviderData = featureProviderData;
+            this.mappingRefiners = mappingRefiners;
+        }
+
+        @Override
+        public String getId() {
+            return wfs3Service.getId();
+        }
+
+        @Override
+        public String getLabel() {
+            return LABEL;
+        }
+
+        @Override
+        public void run(TaskContext taskContext) {
+
+            double factor = 1.0 / wfs3Service.getData()
+                                             .getFeatureTypes()
+                                             .size();
+
+            double progress = 0.0;
+            final int[] i = {0};
+
+            ImmutableFeatureProviderDataTransformer.Builder builder = new ImmutableFeatureProviderDataTransformer.Builder().from(featureProviderData);
+
+            for (FeatureTypeConfigurationOgcApi featureTypeConfigurationOgcApi : wfs3Service.getData()
+                                                                                            .getFeatureTypes()
+                                                                                            .values()) {
+                final boolean[] hasData = {false};
+                final SourcePathMapping[] currentMapping = new SourcePathMapping[1];
+                final List<String>[] currentGeometryPath = new List[1];
+                final ImmutableFeatureTypeMapping.Builder mappingBuilder = builder.getMappings()
+                                                                                  .get(featureTypeConfigurationOgcApi.getId());
+
+                taskContext.setStatusMessage(featureTypeConfigurationOgcApi.getLabel());
+
+                FeatureQuery query = ImmutableFeatureQuery.builder()
+                                                          .type(featureTypeConfigurationOgcApi.getId())
+                                                          .limit(1)
+                                                          .build();
+
+                FeatureStream<GmlConsumer> featureStream = wfs3Service.getFeatureProvider()
+                                                                      .getFeatureStream(query);
+                featureStream.apply(new GmlConsumer() {
+                    @Override
+                    public void onGmlAttribute(String namespace, String localName, List<String> path,
+                                               String value,
+                                               List<Integer> multiplicities) throws Exception {
+
+                    }
+
+                    @Override
+                    public void onNamespaceRewrite(QName featureType, String namespace) throws Exception {
+
+                    }
+
+                    @Override
+                    public void onStart(OptionalLong numberReturned,
+                                        OptionalLong numberMatched) throws Exception {
+
+                    }
+
+                    @Override
+                    public void onEnd() throws Exception {
+
+                    }
+
+                    @Override
+                    public void onFeatureStart(List<String> path) throws Exception {
+                        hasData[0] = true;
+                    }
+
+                    @Override
+                    public void onFeatureEnd(List<String> path) throws Exception {
+
+                    }
+
+                    @Override
+                    public void onPropertyStart(List<String> path,
+                                                List<Integer> multiplicities) throws Exception {
+                        Optional<SourcePathMapping> optionalSourcePathMapping = Optional.ofNullable(featureProviderData.getMappings()
+                                                                                                                       .get(featureTypeConfigurationOgcApi.getId())
+                                                                                                                       .getMappingsWithPathAsList()
+                                                                                                                       .get(path));
+                        boolean isSpatial = optionalSourcePathMapping.map(sourcePathMapping -> sourcePathMapping.getMappingForType(TargetMapping.BASE_TYPE))
+                                                                     .filter(TargetMapping::isSpatial)
+                                                                     .isPresent();
+
+                        if (isSpatial) {
+
+                            currentGeometryPath[0] = ImmutableList.copyOf(path);
+                            currentMapping[0] = optionalSourcePathMapping.get();
+                        } else if (Objects.nonNull(currentGeometryPath[0]) && path.size() > currentGeometryPath[0].size() && Objects.equals(path.subList(0, currentGeometryPath[0].size()), currentGeometryPath[0])) {
+                            String s = path.get(currentGeometryPath[0].size());
+                            s = s.substring(s.lastIndexOf(":") + 1);
+                            LOGGER.debug("geometry type {} {} {} {}", featureTypeConfigurationOgcApi.getId(), s, currentMapping[0].getMappings(), GML_GEOMETRY_TYPE.fromString(s));
+
+                            ImmutableSourcePathMapping.Builder next = mappingBuilder.getMappings()
+                                                                                    .get(Joiner.on('/')
+                                                                                               .join(currentGeometryPath[0]));
+
+                            currentGeometryPath[0] = null;
+                            currentMapping[0] = null;
+                            //TODO: adjust mappings
+
+                            for (TargetMappingRefiner targetMappingRefiner : mappingRefiners) {
+                                SourcePathMapping refined = targetMappingRefiner.refine(next.build(), GML_GEOMETRY_TYPE.fromString(s)
+                                                                                                                       .toSimpleFeatureGeometry());
+                                next.mappings(refined.getMappings());
+                            }
+
+                            //TODO: use StylesStore
+                            KeyValueStore stylesStore = rootKeyValueStore.getChildStore("styles")
+                                                                         .getChildStore(wfs3Service.getData()
+                                                                                                   .getId());
+
+                            for (Wfs3StyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3StyleGeneratorExtension.class)) {
+
+                                String style = wfs3StyleGeneratorExtension.generateStyle(GML_GEOMETRY_TYPE.fromString(s)
+                                                                                                          .toSimpleFeatureGeometry(), i[0]);
+
+                                if (!Strings.isNullOrEmpty(style)) {
+                                    String styleId = "gsfs_" + featureTypeConfigurationOgcApi.getId();
+                                    WriteTransaction<String> writeTransaction = stylesStore.openWriteTransaction(styleId);
+                                    try {
+                                        writeTransaction.write(style);
+                                        writeTransaction.execute();
+                                        writeTransaction.commit();
+                                    } catch (IOException e) {
+                                        writeTransaction.rollback();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onPropertyText(String text) throws Exception {
+
+                    }
+
+                    @Override
+                    public void onPropertyEnd(List<String> path) throws Exception {
+
+                    }
+                }, null)
+                             .toCompletableFuture()
+                             .join();
+
+                if (!hasData[0]) {
+                    //TODO: disable feature type
+                    LOGGER.debug("NO DATA found for {}", featureTypeConfigurationOgcApi.getId());
+
+                    ImmutableSourcePathMapping.Builder next = mappingBuilder.getMappings()
+                                                                            .values()
+                                                                            .iterator()
+                                                                            .next();
+
+                    //TODO
+                    HashMap<String, TargetMapping> map = Maps.newHashMap(next.build()
+                                                                             .getMappings());
+                    ((Wfs3GenericMapping) map.get(TargetMapping.BASE_TYPE)).setEnabled(false);
+                    next.mappings(map);
+
+                }
+
+                progress += factor;
+                taskContext.setCompleteness(progress);
+                i[0]++;
+
+            }
+
+            ImmutableOgcApiDatasetData updated = new ImmutableOgcApiDatasetData.Builder().from(wfs3Service.getData())
+                                                                                         .featureProvider(builder.build())
+                                                                                         .build();
+
+            serviceRepository.put(wfs3Service.getId(), updated);
+
+            taskContext.setCompleteness(1);
+            taskContext.setStatusMessage("success");
+        }
     }
 }

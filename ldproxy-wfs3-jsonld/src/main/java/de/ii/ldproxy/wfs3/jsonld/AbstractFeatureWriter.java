@@ -1,6 +1,6 @@
 /**
  * Copyright 2017 European Union, interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.jsonld;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import de.ii.ldproxy.wfs3.api.AbstractWfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.AbstractWfs3GenericMapping;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
@@ -61,7 +61,9 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
     //protected WfsProxyOnTheFlyMapping onTheFlyMapping;
 
 
-    public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper, boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/, CrsTransformer crsTransformer/*, WfsProxyOnTheFlyMapping onTheFlyMapping*/) {
+    public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper,
+                                                          boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/,
+                                                          CrsTransformer crsTransformer/*, WfsProxyOnTheFlyMapping onTheFlyMapping*/) {
         this.jsonOut = jsonOut;
         this.json = jsonOut;
         this.jsonMapper = jsonMapper;
@@ -120,11 +122,11 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
         }
 
         Optional<TargetMapping> mapping = featureTypeMapping.findMappings(nsuri + ":" + localName, outputFormat);
-            //if (!mapping.isEnabled()) {
-            //    continue;
-            //}
-            featureMapping = mapping.orElse(null);
-            //break;
+        //if (!mapping.isEnabled()) {
+        //    continue;
+        //}
+        featureMapping = mapping.orElse(null);
+        //break;
 
         try {
             writeFeatureStart(featureMapping);
@@ -149,19 +151,21 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
         }*/
 
         Optional<TargetMapping> mapping = featureTypeMapping.findMappings(path, outputFormat);
-            if (mapping.isPresent() && mapping.get().isEnabled()) {
-                writeField(mapping.get(), value, 1);
-            }
+        if (mapping.isPresent() && mapping.get()
+                                          .isEnabled()) {
+            writeField(mapping.get(), value, 1);
+        }
 
 
     }
 
     //@Override
-    public final void analyzePropertyStart(String nsuri, String localName, int depth, SMInputCursor feature, boolean nil) {
+    public final void analyzePropertyStart(String nsuri, String localName, int depth, SMInputCursor feature,
+                                           boolean nil) {
         currentPath.track(nsuri, localName, depth, false);
         String path = currentPath.toString();
         String value = "";
-        fieldCounter.compute(path, (k, v) -> (v == null) ? 1 : v+1);
+        fieldCounter.compute(path, (k, v) -> (v == null) ? 1 : v + 1);
 
         /*if (featureTypeMapping.isEmpty()) {
             TargetMapping mapping = onTheFlyMapping.getTargetMappingForGeometry(currentPath, nsuri, localName);
@@ -173,11 +177,13 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
         }*/
 
         Optional<TargetMapping> mapping = featureTypeMapping.findMappings(path, outputFormat);
-        if (mapping.isPresent() && mapping.get().isEnabled()) {
+        if (mapping.isPresent() && mapping.get()
+                                          .isEnabled()) {
             // TODO: I guess fieldCounter is for multiplicity
 
             // TODO: only if not geometry
-            if (!((AbstractWfs3GenericMapping)mapping.get()).isSpatial()) {
+            if (!mapping.get()
+                        .isSpatial()) {
                 if (value.isEmpty()) {
                     try {
                         value = feature.collectDescendantText();
@@ -192,7 +198,7 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
                 // TODO: write geometry
                 writeGeometry(mapping.get(), feature);
             }
-            }
+        }
 
 
     }
@@ -240,7 +246,7 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
     }
 
     protected abstract void writeStart(SMInputCursor rootFuture) throws IOException;
-    
+
     protected abstract void writeStart(Future<SMInputCursor> rootFuture) throws IOException;
 
     protected abstract void writeFeatureStart(TargetMapping mapping) throws IOException;

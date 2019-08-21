@@ -1,5 +1,5 @@
 
-version = '1.4.0'
+version = '1.4.1'
 
 repositories {
     maven {
@@ -11,6 +11,7 @@ dependencies {
     provided project(":ldproxy-wfs3")
     provided project(":ldproxy-wfs3-oas30")
     provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-ogcapi")
     provided project(":ldproxy-wfs3-geojson")
     provided project(":ldproxy-wfs3-core")
 

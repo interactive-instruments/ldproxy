@@ -40,7 +40,7 @@ import static de.ii.ldproxy.target.html.HtmlConfig.PRIVACY_URL;
         //TODO: single quotes do not work in javascript, but double quotes are obviously not accepted by LocalBundleConfigHandler
         @ConfigPropertyDescriptor(name = LEAFLET_ATTRIBUTION, label = "Attribution for leaflet", defaultValue = "&copy; <a href=''http://osm.org/copyright''>OpenStreetMap</a> contributors"),
         @ConfigPropertyDescriptor(name = FOOTER_TEXT, label = "Text for footer", defaultValue = ""),
-        @ConfigPropertyDescriptor(name = DATASET_LABEL, label = "Dataset name for schema.org microdata", defaultValue = "Dataset Overview"),
+        @ConfigPropertyDescriptor(name = DATASET_LABEL, label = "Dataset name for schema.org microdata", defaultValue = "Service Overview"),
         @ConfigPropertyDescriptor(name = DATASET_DESCRIPTION, label = "Dataset description for schema.org microdata", defaultValue = "")
 })
 public class HtmlConfig extends BundleConfigDefault {

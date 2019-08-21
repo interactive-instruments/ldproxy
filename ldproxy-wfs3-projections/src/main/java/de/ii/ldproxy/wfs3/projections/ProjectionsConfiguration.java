@@ -8,13 +8,12 @@
 package de.ii.ldproxy.wfs3.projections;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.wfs3.api.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Modifiable
-@Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(as = ModifiableProjectionsConfiguration.class)
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableProjectionsConfiguration.Builder.class)
 public abstract class ProjectionsConfiguration implements ExtensionConfiguration {
 
     @Value.Default

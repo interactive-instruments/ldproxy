@@ -7,6 +7,11 @@
  */
 package de.ii.ldproxy.wfs3.api;
 
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OutputFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
@@ -19,8 +24,12 @@ import java.util.Optional;
  * @author zahnen
  */
 //TODO: split into metadata and features; might mean to also split Wfs3MediaType
-public interface Wfs3OutputFormatExtension extends Wfs3Extension, Wfs3FormatMetadataExtension {
-    Wfs3MediaType getMediaType();
+public interface Wfs3OutputFormatExtension extends OutputFormatExtension {
+
+    Response getCollectionResponse(Wfs3Collection wfs3Collection, OgcApiDatasetData datasetData,
+                                   OgcApiMediaType mediaType,
+                                   List<OgcApiMediaType> alternativeMediaTypes, URICustomizer uriCustomizer,
+                                   String collectionName);
 
     default boolean canPassThroughFeatures() {
         return false;
@@ -42,6 +51,8 @@ public interface Wfs3OutputFormatExtension extends Wfs3Extension, Wfs3FormatMeta
         return Optional.empty();
     }
 
-    default boolean isEnabledForService(Wfs3ServiceData serviceData){return true;}
+    default Optional<TargetMappingRefiner> getMappingRefiner() {
+        return Optional.empty();
+    }
 
 }

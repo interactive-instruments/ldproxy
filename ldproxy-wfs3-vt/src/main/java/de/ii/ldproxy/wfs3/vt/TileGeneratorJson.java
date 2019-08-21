@@ -9,18 +9,18 @@ package de.ii.ldproxy.wfs3.vt;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.ii.ldproxy.wfs3.ImmutableFeatureTransformationContextGeneric;
-import de.ii.ldproxy.wfs3.ImmutableWfs3RequestContextImpl;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
 import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
-import de.ii.ldproxy.wfs3.Wfs3Service;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3MediaType;
-import de.ii.ldproxy.wfs3.api.URICustomizer;
-import de.ii.ldproxy.wfs3.api.Wfs3Link;
-import de.ii.ldproxy.wfs3.api.Wfs3MediaType;
+import de.ii.ldproxy.wfs3.api.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
@@ -50,17 +50,14 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.concurrent.CompletionException;
 
-import static de.ii.ldproxy.wfs3.api.Wfs3ServiceData.DEFAULT_CRS;
-
 /**
  * This class is responsible for generation and deletion of JSON Tiles.
- *
  */
 
 public class TileGeneratorJson {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
 
-    private static  final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
+    private static final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
 
     /**
      * generate the GeoJSON tile file in the cache
@@ -76,11 +73,14 @@ public class TileGeneratorJson {
      * @param tile              the tile which should be generated
      * @return true, if the file was generated successfully, false, if an error occurred
      */
-    static boolean generateTileJson(File tileFile, CrsTransformation crsTransformation, @Context UriInfo uriInfo, Map<String, String> filters, Map<String, String> filterableFields, URICustomizer uriCustomizer, Wfs3MediaType mediaType, boolean isCollection, VectorTile tile) {
+    static boolean generateTileJson(File tileFile, CrsTransformation crsTransformation, @Context UriInfo uriInfo,
+                                    Map<String, String> filters, Map<String, String> filterableFields,
+                                    URICustomizer uriCustomizer, OgcApiMediaType mediaType, boolean isCollection,
+                                    VectorTile tile) {
         // TODO add support for multi-collection GeoJSON output
 
         String collectionId = tile.getCollectionId();
-        Wfs3ServiceData serviceData = tile.getServiceData();
+        OgcApiDatasetData serviceData = tile.getDatasetData();
         TilingScheme tilingScheme = tile.getTilingScheme();
         int level = tile.getLevel();
         int col = tile.getCol();
@@ -119,7 +119,7 @@ public class TileGeneratorJson {
         double maxAllowableOffsetNative = maxAllowableOffsetTilingScheme; // TODO convert to native CRS units
         double maxAllowableOffsetCrs84 = 0;
         try {
-            maxAllowableOffsetCrs84 = tilingScheme.getMaxAllowableOffset(level, row, col, DEFAULT_CRS, crsTransformation);
+            maxAllowableOffsetCrs84 = tilingScheme.getMaxAllowableOffset(level, row, col, OgcApiDatasetData.DEFAULT_CRS, crsTransformation);
         } catch (CrsTransformationException e) {
             LOGGER.error("CRS transformation error: " + e.getMessage());
             e.printStackTrace();
@@ -134,10 +134,10 @@ public class TileGeneratorJson {
             List<String> propertiesList = VectorTile.getPropertiesList(queryParameters);
 
             queryBuilder = ImmutableFeatureQuery.builder()
-                    .type(collectionId)
-                    .filter(filter)
-                    .maxAllowableOffset(maxAllowableOffsetNative)
-                    .fields(propertiesList);
+                                                .type(collectionId)
+                                                .filter(filter)
+                                                .maxAllowableOffset(maxAllowableOffsetNative)
+                                                .fields(propertiesList);
 
 
             if (filters != null && filterableFields != null) {
@@ -153,9 +153,9 @@ public class TileGeneratorJson {
             }
         } else {
             queryBuilder = ImmutableFeatureQuery.builder()
-                    .type(collectionId)
-                    .filter(filter)
-                    .maxAllowableOffset(maxAllowableOffsetNative);
+                                                .type(collectionId)
+                                                .filter(filter)
+                                                .maxAllowableOffset(maxAllowableOffsetNative);
         }
         queryBuilder.build();
 
@@ -164,12 +164,12 @@ public class TileGeneratorJson {
 
 
         if (isCollection) {
-            Wfs3MediaType alternativeMediatype;
-            alternativeMediatype = ImmutableWfs3MediaType.builder()
+            OgcApiMediaType alternativeMediatype;
+            alternativeMediatype = new ImmutableOgcApiMediaType.Builder()
                     .main(new MediaType("application", "vnd.mapbox-vector-tile"))
                     .label("MVT")
                     .build();
-            final VectorTilesLinkGenerator vectorTilesLinkGenerator= new VectorTilesLinkGenerator();
+            final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
             wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, Wfs3MediaTypes.JSON, true));
         }
 
@@ -177,15 +177,16 @@ public class TileGeneratorJson {
         FeatureStream<FeatureTransformer> featureTransformStream = featureProvider.getFeatureTransformStream(queryBuilder.build());
 
         try {
-            FeatureTransformationContext transformationContext = ImmutableFeatureTransformationContextGeneric.builder()
+            FeatureTransformationContext transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
                     .serviceData(serviceData)
                     .collectionName(collectionId)
-                    .wfs3Request(ImmutableWfs3RequestContextImpl.builder()
+                    .wfs3Request(new ImmutableOgcApiRequestContext.Builder()
+                            .dataset(serviceData)
                             .requestUri(uriCustomizer.build())
                             .mediaType(mediaType)
                             .build())
                     .crsTransformer(crsTransformation.getTransformer(serviceData.getFeatureProvider()
-                            .getNativeCrs(), DEFAULT_CRS))
+                                                                                .getNativeCrs(), OgcApiDatasetData.DEFAULT_CRS))
                     .links(wfs3Links)
                     .isFeatureCollection(true)
                     .limit(0) //TODO
@@ -197,9 +198,9 @@ public class TileGeneratorJson {
             Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext);
 
             if (featureTransformer.isPresent()) {
-                featureTransformStream.apply(featureTransformer.get())
-                        .toCompletableFuture()
-                        .join();
+                featureTransformStream.apply(featureTransformer.get(), null)
+                                      .toCompletableFuture()
+                                      .join();
             } else {
                 throw new IllegalStateException("Could not acquire FeatureTransformer");
             }
@@ -217,21 +218,24 @@ public class TileGeneratorJson {
     /**
      * generates an empty JSON Tile with the required links
      *
-     * @param tileFile                  the file object of the tile in the cache
-     * @param tilingScheme              the tilingScheme the JSON Tile should have
-     * @param serviceData               the Service data of the Wfs3Service
-     * @param wfs3OutputFormatGeoJson   the wfs3OutputFormatGeoJSON
-     * @param collectionId              the id of the collection in which the Tile should be generated
-     * @param isCollection              boolean collection or dataset Tile
-     * @param wfs3Request               the request
-     * @param level                     the zoom level as an integer
-     * @param row                       the row number as an integer
-     * @param col                       the col number as an integer
-     * @param crsTransformation         system transformation object to transform coordinates
-     * @param service                   the service
+     * @param tileFile                the file object of the tile in the cache
+     * @param tilingScheme            the tilingScheme the JSON Tile should have
+     * @param datasetData             the Service data of the Wfs3Service
+     * @param wfs3OutputFormatGeoJson the wfs3OutputFormatGeoJSON
+     * @param collectionId            the id of the collection in which the Tile should be generated
+     * @param isCollection            boolean collection or dataset Tile
+     * @param wfs3Request             the request
+     * @param level                   the zoom level as an integer
+     * @param row                     the row number as an integer
+     * @param col                     the col number as an integer
+     * @param crsTransformation       system transformation object to transform coordinates
+     * @param service                 the service
      * @return true, if the file was generated successfully, false, if an error occurred
      */
-    public static boolean generateEmptyJSON(File tileFile, TilingScheme tilingScheme, Wfs3ServiceData serviceData, Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId, boolean isCollection, Wfs3RequestContext wfs3Request, int level, int row, int col, CrsTransformation crsTransformation, Wfs3Service service) {
+    public static boolean generateEmptyJSON(File tileFile, TilingScheme tilingScheme, OgcApiDatasetData datasetData,
+                                            Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId,
+                                            boolean isCollection, OgcApiRequestContext wfs3Request, int level, int row,
+                                            int col, CrsTransformation crsTransformation, OgcApiDataset service) {
 
         if (collectionId == null)
             return false;
@@ -251,7 +255,7 @@ public class TileGeneratorJson {
         double maxAllowableOffsetNative = maxAllowableOffsetTilingScheme; // TODO convert to native CRS units
         double maxAllowableOffsetCrs84 = 0;
         try {
-            maxAllowableOffsetCrs84 = tilingScheme.getMaxAllowableOffset(level, row, col, DEFAULT_CRS, crsTransformation);
+            maxAllowableOffsetCrs84 = tilingScheme.getMaxAllowableOffset(level, row, col, OgcApiDatasetData.DEFAULT_CRS, crsTransformation);
         } catch (CrsTransformationException e) {
             LOGGER.error("CRS transformation error: " + e.getMessage());
             e.printStackTrace();
@@ -261,17 +265,17 @@ public class TileGeneratorJson {
 
 
         if (isCollection) {
-            Wfs3MediaType alternativeMediatype;
-            alternativeMediatype = ImmutableWfs3MediaType.builder()
+            OgcApiMediaType alternativeMediatype;
+            alternativeMediatype = new ImmutableOgcApiMediaType.Builder()
                     .main(new MediaType("application", "vnd.mapbox-vector-tile"))
                     .label("MVT")
                     .build();
-            final VectorTilesLinkGenerator vectorTilesLinkGenerator= new VectorTilesLinkGenerator();
+            final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
             wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, Wfs3MediaTypes.JSON, true));
         }
 
-        FeatureTransformationContext transformationContext = ImmutableFeatureTransformationContextGeneric.builder()
-                .serviceData(serviceData)
+        FeatureTransformationContext transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
+                .serviceData(datasetData)
                 .collectionName(collectionId)
                 .wfs3Request(wfs3Request)
                 .links(wfs3Links)
@@ -287,8 +291,10 @@ public class TileGeneratorJson {
             OptionalLong numMat = OptionalLong.of(0);
 
             try {
-                featureTransformer.get().onStart(numRet, numMat);
-                featureTransformer.get().onEnd();
+                featureTransformer.get()
+                                  .onStart(numRet, numMat);
+                featureTransformer.get()
+                                  .onEnd();
 
 
             } catch (Exception e) {
@@ -305,7 +311,7 @@ public class TileGeneratorJson {
     /**
      * deletes the specified JsonTile. This is used when a JsonTile is corrupt. After the deletion the JsonTile is immediately generated again.
      *
-     * @param tileFileJson      The Json Tile, which should be deleted
+     * @param tileFileJson The Json Tile, which should be deleted
      * @return true if the json Tile is successfully deleted
      * @throws FileNotFoundException
      */

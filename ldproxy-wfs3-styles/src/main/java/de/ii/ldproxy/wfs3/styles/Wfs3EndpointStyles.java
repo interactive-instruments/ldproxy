@@ -9,11 +9,16 @@ package de.ii.ldproxy.wfs3.styles;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.api.Wfs3EndpointExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3RequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3ServiceData;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.kvstore.api.KeyNotFoundException;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.service.api.Service;
@@ -44,27 +49,35 @@ import java.util.Map;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointStyles implements Wfs3EndpointExtension {
+public class Wfs3EndpointStyles implements OgcApiEndpointExtension {
+
+    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
+            .apiEntrypoint("styles")
+            .addMethods(HttpMethods.GET)
+            .build();
+    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.WILDCARD_TYPE)
+                    .build()
+    );
+
 
     @Requires
     private KeyValueStore keyValueStore;
 
     @Override
-    public String getPath() {
-        return "styles";
+    public OgcApiContext getApiContext() {
+        return API_CONTEXT;
     }
 
     @Override
-    public List<String> getMethods() {
-        return ImmutableList.of("GET");
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
+        return API_MEDIA_TYPES;
     }
 
     @Override
-    public boolean isEnabledForService(Wfs3ServiceData serviceData) {
-        if (!isExtensionEnabled(serviceData, StylesConfiguration.class)) {
-            throw new NotFoundException();
-        }
-        return true;
+    public boolean isEnabledForDataset(OgcApiDatasetData serviceData) {
+        return isExtensionEnabled(serviceData, StylesConfiguration.class);
     }
 
     /**
@@ -75,7 +88,8 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension {
     @Path("/")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStyles(@Context Service service, @Context Wfs3RequestContext wfs3Request) throws IOException, KeyNotFoundException {
+    public Response getStyles(@Context Service service,
+                              @Context OgcApiRequestContext wfs3Request) throws IOException, KeyNotFoundException {
         List<Map<String, Object>> styles = new ArrayList<>();
 
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
@@ -118,7 +132,8 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension {
     @Path("/{styleId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStyle(@PathParam("styleId") String styleId, @Context Service service) throws IOException, KeyNotFoundException {
+    public Response getStyle(@PathParam("styleId") String styleId,
+                             @Context Service service) throws IOException, KeyNotFoundException {
 
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
                                                  .getChildStore(service.getId());
@@ -171,7 +186,8 @@ public class Wfs3EndpointStyles implements Wfs3EndpointExtension {
      * @throws IOException
      * @throws KeyNotFoundException
      */
-    public static Map<String, Object> getStyleToDisplay(KeyValueStore stylesStore, List<String> styles, String styleId) {
+    public static Map<String, Object> getStyleToDisplay(KeyValueStore stylesStore, List<String> styles,
+                                                        String styleId) {
 
         Map<String, Object> styleToDisplay = null;
         for (String key : styles) {
