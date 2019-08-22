@@ -91,6 +91,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
 
         Set<OgcApiMediaType> alternativeMediaTypes = getAlternativeMediaTypes(selectedMediaType, supportedMediaTypes);
 
+        //TODO: inject locale, use for html (requestContext.getLanguage())
         OgcApiRequestContext ogcApiRequestContext = new ImmutableOgcApiRequestContext.Builder()
                 .requestUri(requestContext.getUriInfo()
                                           .getRequestUri())

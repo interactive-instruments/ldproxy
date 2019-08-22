@@ -37,13 +37,6 @@ yarn_install {
   }
 }
 
-task yarn_reduxui_workaround(type: YarnTask) {
-  execOverrides {
-    it.workingDir = 'src/main/javascript'
-  }
-  args = ['add', 'redux-ui@0.1.2', '-W']
-}
-
 task yarn_build(type: YarnTask) {
   execOverrides {
     it.workingDir = 'src/main/javascript'
@@ -51,7 +44,6 @@ task yarn_build(type: YarnTask) {
   args = ['run', 'build']
 }
 
-yarn_install.dependsOn yarn_reduxui_workaround
 yarn_build.dependsOn yarn_install
 
 yarn_start {

@@ -42,6 +42,7 @@
     "redux-immutable-state-invariant": "^2.1.0",
     "redux-little-router": "^15.1.2",
     "redux-query": "^2.3.1",
+    "redux-ui": "^0.1.1",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
     "webpack": "^4.30.0",
@@ -50,14 +51,17 @@
     "webpack-merge": "^4.2.1"
   },
   "dependencies": {
-    "redux-ui": "0.1.2",
     "xtraplatform-manager": "^1.1.1",
     "xtraplatform-manager-wfs-proxy": "^1.0.2"
+  },
+  "resolutions": {
+    "react": "^16.8.6",
+    "redux": "^4.0.1",
+    "react-redux": "^5.1.1"
   },
   "workspaces": [
     "./",
     "./xtraplatform-manager",
-    "./xtraplatform-manager-wfs-proxy",
-    "./redux-ui"
+    "./xtraplatform-manager-wfs-proxy"
   ]
 }
