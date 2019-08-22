@@ -36,7 +36,7 @@ class StylesManagerSpec extends Specification{
 
         when: "validateRequestBodyJSON is called"
 
-        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         then:'it should return null'
 
@@ -53,7 +53,7 @@ class StylesManagerSpec extends Specification{
 
         when: "validateRequestBodyJSON is called"
 
-        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         then:'it should return null'
 
@@ -69,7 +69,7 @@ class StylesManagerSpec extends Specification{
 
         when: "validateRequestBodyJSON is called"
 
-        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         then:'it should not return null'
 
@@ -103,7 +103,7 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         when: "validateRequestBody is called"
 
@@ -144,7 +144,7 @@ class StylesManagerSpec extends Specification{
 
 
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         when: "validateRequestBody is called"
 
@@ -179,7 +179,7 @@ class StylesManagerSpec extends Specification{
                 "}"
 
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         when: "validateRequestBody is called"
 
@@ -206,7 +206,7 @@ class StylesManagerSpec extends Specification{
                 "  \"sprite\": \"mapbox://sprites/mapbox/bright-v8\"\n" +
                 "}"
 
-        def requestBodyJsonNode = EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode = EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         when: "validateRequestBody is called"
 
@@ -245,7 +245,7 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         when: "validateRequestBody is called"
 
@@ -282,7 +282,7 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         when: "validateRequestBody is called"
 
@@ -330,7 +330,7 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         when: "validateRequestBody is called"
 
@@ -380,7 +380,7 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
 
         when: "validateRequestBody is called"
 
