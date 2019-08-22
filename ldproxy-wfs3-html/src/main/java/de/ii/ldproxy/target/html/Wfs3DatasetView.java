@@ -14,9 +14,9 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableDataset;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
 import de.ii.ldproxy.ogcapi.domain.Wfs3Extent;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import io.dropwizard.views.View;
 import org.threeten.extra.Interval;
 
@@ -86,7 +86,10 @@ public class Wfs3DatasetView extends View {
     }
 
     public Dataset getWfs3Dataset() {
-        ImmutableDataset.Builder builder = new ImmutableDataset.Builder().addAllLinks(wfs3Dataset.getLinks())
+        ImmutableDataset.Builder builder = new ImmutableDataset.Builder()
+                .title(wfs3Dataset.getTitle())
+                .description(wfs3Dataset.getDescription())
+                .addAllLinks(wfs3Dataset.getLinks())
                                                                          .addAllCrs(wfs3Dataset.getCrs());
 
         List<Map<String, Object>> collect = wfs3Dataset.getSections()
@@ -130,7 +133,7 @@ public class Wfs3DatasetView extends View {
     public String getApiUrl() {
         return wfs3Dataset.getLinks()
                           .stream()
-                          .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "service") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
+                          .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "service-doc") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
                                                                                                                                                                 .toString()))
                           .map(Wfs3Link::getHref)
                           .findFirst()
@@ -147,7 +150,7 @@ public class Wfs3DatasetView extends View {
         return getCollectionsStream(wfs3Dataset)
                 .flatMap(wfs3Collection -> wfs3Collection.getLinks()
                                                          .stream())
-                .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "item") && !Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
+                .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "items") && !Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
                                                                                                                                                     .toString()))
                 .map(wfs3Link -> new Distribution(wfs3Link.getTitle(), wfs3Link.getType(), wfs3Link.getHref()))
                 .collect(Collectors.toList());
@@ -215,7 +218,7 @@ public class Wfs3DatasetView extends View {
         public String getUrl() {
             return this.getLinks()
                        .stream()
-                       .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "item") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
+                       .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "items") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
                                                                                                                                                           .toString()))
                        .map(Wfs3Link::getHref)
                        .findFirst()
@@ -223,8 +226,8 @@ public class Wfs3DatasetView extends View {
         }
 
         @Override
-        public String getName() {
-            return collection.getName();
+        public String getId() {
+            return collection.getId();
         }
 
         @Override

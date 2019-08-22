@@ -34,6 +34,11 @@ public class Wfs3OpenApiFilterTransformer implements Wfs3OpenApiExtension {
     }
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, FilterTransformersConfiguration.class);
+    }
+
+    @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
 
         datasetData.getFeatureTypes()

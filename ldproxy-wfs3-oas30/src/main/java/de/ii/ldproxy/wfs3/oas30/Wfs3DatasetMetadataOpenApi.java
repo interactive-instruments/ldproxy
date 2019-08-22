@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -29,11 +29,16 @@ import java.util.List;
 public class Wfs3DatasetMetadataOpenApi implements Wfs3DatasetMetadataExtension {
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, Oas30Configuration.class);
+    }
+
+    @Override
     public ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData datasetData,
                                             URICustomizer uriCustomizer, OgcApiMediaType mediaType,
                                             List<OgcApiMediaType> alternativeMediaTypes) {
 
-        if (isExtensionEnabled(datasetData, Oas30Configuration.class)) {
+        if (isEnabledForDataset(datasetData)) {
             datasetBuilder.addSections(ImmutableMap.of("title", "API Definition", "links", ImmutableList.of(ImmutableMap.of("title", "OpenAPI 3.0", "url", uriCustomizer.ensureLastPathSegment("api")
                                                                                                                                                                         .toString()))));
         }

@@ -37,6 +37,11 @@ public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
     }
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, Wfs3CoreConfiguration.class);
+    }
+
+    @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
         if (datasetData != null) {
 

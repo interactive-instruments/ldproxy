@@ -35,8 +35,13 @@ public class Wfs3OpenApiGeneralization implements Wfs3OpenApiExtension {
     }
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, GeneralizationConfiguration.class);
+    }
+
+    @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
-        if (isExtensionEnabled(datasetData, GeneralizationConfiguration.class)) {
+        if (isEnabledForDataset(datasetData)) {
 
             openAPI.getComponents()
                    .addParameters("maxAllowableOffset", new Parameter()

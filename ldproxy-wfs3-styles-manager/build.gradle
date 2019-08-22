@@ -9,6 +9,7 @@ dependencies {
     provided project(":ldproxy-wfs3-oas30")
     provided project(":ldproxy-wfs3-styles")
 
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
 

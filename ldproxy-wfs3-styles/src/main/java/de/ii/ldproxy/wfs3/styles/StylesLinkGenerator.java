@@ -9,8 +9,10 @@ package de.ii.ldproxy.wfs3.styles;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 
 import java.util.List;
 
@@ -19,19 +21,17 @@ import java.util.List;
  */
 public class StylesLinkGenerator {
 
-
     /**
-     * generates the Links on the page /serviceId?f=json and /serviceId/collections?f=json
+     * generates the links on the service landing page /{serviceId}?f=json
      *
      * @param uriBuilder the URI, split in host, path and query
-     * @return a List with links
+     * @return a list with links
      */
-    public List<Wfs3Link> generateDatasetLinks(URICustomizer uriBuilder) {
+    public List<Wfs3Link> generateLandingPageLinks(URICustomizer uriBuilder) {
 
         return ImmutableList.<Wfs3Link>builder()
                 .add(new ImmutableWfs3Link.Builder()
                         .href(uriBuilder.copy()
-                                        .removeLastPathSegment("collections")
                                         .ensureLastPathSegment("styles")
                                         .ensureParameter("f", "json")
                                         .toString())
@@ -43,80 +43,53 @@ public class StylesLinkGenerator {
     }
 
     /**
-     * generates one link of a style on the page /serviceId/styles
+     * generates the links for a style on the page /{serviceId}/styles
      *
      * @param uriBuilder the URI, split in host, path and query
      * @param styleId    the ids of the styles
      * @return a list with links
      */
-    public List<Wfs3Link> generateStylesLinksDataset(URICustomizer uriBuilder, String styleId) {
+    public List<Wfs3Link> generateStyleLinks(URICustomizer uriBuilder, String styleId, List<OgcApiMediaType> mediaTypes) {
 
-        return ImmutableList.<Wfs3Link>builder()
-                .add(new ImmutableWfs3Link.Builder()
-                        .href(uriBuilder.copy()
-                                        .ensureLastPathSegment(styleId)
-                                        .setParameter("f", "json")
-                                        .toString()
-                        )
-                        .rel("style")
-                        .type("application/json")
-                        .build())
-                .build();
-    }
+        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>();
 
-    /**
-     * generates the collections styles link at /serviceid/collections and /servideid/collections/{collectionId}
-     *
-     * @param uriBuilder   the URI, split in host, path and query
-     * @param collectionId the id of the collection the style is part of
-     * @param styleId      the ids of the styles
-     * @return a list with links
-     */
-    public List<Wfs3Link> generateStylesLinksCollectionMetadata(URICustomizer uriBuilder, String collectionId,
-                                                                String styleId) {
-        String link = "";
-        if (!uriBuilder.copy()
-                       .isLastPathSegment(collectionId)) {
-            link = uriBuilder.copy()
-                             .ensureLastPathSegments("collections", collectionId, "styles", styleId)
-                             .setParameter("f", "json")
-                             .toString();
-        } else {
-            link = uriBuilder.copy()
-                             .ensureLastPathSegments("styles", styleId)
-                             .setParameter("f", "json")
-                             .toString();
+        for (OgcApiMediaType mediaType: mediaTypes) {
+            builder.add(new ImmutableWfs3Link.Builder()
+                    .href(uriBuilder.copy()
+                            .ensureLastPathSegment(styleId)
+                            .setParameter("f", mediaType.parameter())
+                            .toString()
+                    )
+                    .rel("stylesheet")
+                    .type(mediaType.main().toString())
+                    .build());
         }
 
-        return ImmutableList.<Wfs3Link>builder()
-                .add(new ImmutableWfs3Link.Builder()
-                        .href(link)
-                        .rel("style")
+        builder.add(new ImmutableWfs3Link.Builder()
+                        .href(uriBuilder.copy()
+                                .ensureLastPathSegment(styleId)
+                                .ensureLastPathSegment("metadata")
+                                .setParameter("f", "json")
+                                .toString()
+                        )
+                        .rel("describedBy")
                         .type("application/json")
-                        .build())
-                .build();
+                        .build());
+
+        return builder.build();
     }
 
+    public Wfs3Link generateStylesheetLink(URICustomizer uriBuilder, String styleId, OgcApiMediaType mediaType) {
 
-    /**
-     * generates one link of a style on the page /serviceId/collections/{collectionId}/styles
-     *
-     * @param uriBuilder the URI, split in host, path and query
-     * @param styleId    the ids of the styles
-     * @return a list with links
-     */
-    public List<Wfs3Link> generateStylesLinksCollection(URICustomizer uriBuilder, String styleId) {
-
-        return ImmutableList.<Wfs3Link>builder()
-                .add(new ImmutableWfs3Link.Builder()
+        final ImmutableWfs3Link.Builder builder = new ImmutableWfs3Link.Builder()
                         .href(uriBuilder.copy()
-                                        .ensureLastPathSegment(styleId)
-                                        .setParameter("f", "json")
-                                        .toString()
+                                .ensureLastPathSegment(styleId)
+                                .setParameter("f", mediaType.parameter())
+                                .toString()
                         )
-                        .rel("style")
-                        .type("application/json")
-                        .build())
-                .build();
+                        .rel("stylesheet")
+                        .type(mediaType.main().toString());
+
+        return builder.build();
     }
 }

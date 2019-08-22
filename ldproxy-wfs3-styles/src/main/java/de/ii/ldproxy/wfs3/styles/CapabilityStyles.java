@@ -14,13 +14,10 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-/**
- * @author zahnen
- */
 @Component
 @Provides
 @Instantiate
-public class Wfs3CapabilityStyles implements Wfs3CapabilityExtension {
+public class CapabilityStyles implements Wfs3CapabilityExtension {
     @Override
     public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
         ImmutableStylesConfiguration.Builder config = new ImmutableStylesConfiguration.Builder();

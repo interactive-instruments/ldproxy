@@ -17,7 +17,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
-import de.ii.ldproxy.wfs3.styles.Wfs3EndpointStyles;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.server.CoreServerConfig;
 import org.apache.felix.ipojo.annotations.Component;
@@ -100,7 +99,7 @@ public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension
         KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
                                                  .getChildStore(service.getId());
         List<String> styles = stylesStore.getKeys();
-        Wfs3EndpointStyles.getStyleToDisplay(stylesStore, styles, styleId);
+        // TODO EndpointStyles.getStyleDocument(stylesStore, styleId, "mbs");
 
         String prefix = coreServerConfig.getExternalUrl();
 

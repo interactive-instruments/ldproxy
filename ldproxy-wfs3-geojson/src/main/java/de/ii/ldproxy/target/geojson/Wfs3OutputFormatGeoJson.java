@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 public class Wfs3OutputFormatGeoJson implements ConformanceClass, Wfs3OutputFormatExtension {
 
 
-    private static final String CONFORMANCE_CLASS = "http://www.opengis.net/spec/wfs-1/3.0/req/geojson";
+    private static final String CONFORMANCE_CLASS = "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson";
     public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .main(new MediaType("application", "geo+json"))
             .label("GeoJSON")

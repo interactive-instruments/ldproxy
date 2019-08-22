@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @Instantiate
@@ -77,18 +78,21 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         final DatasetLinksGenerator linksGenerator = new DatasetLinksGenerator();
 
         //TODO: to crs extension
-        ImmutableList<String> crs = ImmutableList.<String>builder()
-                .add(requestContext.getDataset()
-                                   .getFeatureProvider()
-                                   .getNativeCrs()
-                                   .getAsUri())
-                .add(OgcApiDatasetData.DEFAULT_CRS_URI)
-                .addAll(requestContext.getDataset()
-                                      .getAdditionalCrs()
-                                      .stream()
-                                      .map(EpsgCrs::getAsUri)
-                                      .collect(Collectors.toList()))
-                .build();
+        ImmutableList<String> crs = Stream.concat(
+                Stream.of(
+                        requestContext.getDataset()
+                                      .getFeatureProvider()
+                                      .getNativeCrs()
+                                      .getAsUri(),
+                        OgcApiDatasetData.DEFAULT_CRS_URI
+                ),
+                requestContext.getDataset()
+                              .getAdditionalCrs()
+                              .stream()
+                              .map(EpsgCrs::getAsUri)
+        )
+                                           .distinct()
+                                           .collect(ImmutableList.toImmutableList());
 
 
         List<Wfs3Link> wfs3Links = linksGenerator.generateDatasetLinks(requestContext.getUriCustomizer()
@@ -97,6 +101,8 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
 
         ImmutableDataset.Builder dataset = new ImmutableDataset.Builder()
                 //.collections(collections)
+                .title(requestContext.getDataset().getLabel())
+                .description(requestContext.getDataset().getDescription().orElse(""))
                 .crs(crs)
                 .links(wfs3Links);
 

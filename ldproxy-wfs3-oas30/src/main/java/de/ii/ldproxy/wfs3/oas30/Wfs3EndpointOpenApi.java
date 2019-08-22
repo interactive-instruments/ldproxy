@@ -70,7 +70,7 @@ public class Wfs3EndpointOpenApi implements ConformanceClass, OgcApiEndpointExte
 
     @Override
     public String getConformanceClass() {
-        return "http://www.opengis.net/spec/wfs-1/3.0/req/oas30";
+        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30";
     }
 
     @Override
@@ -109,7 +109,7 @@ public class Wfs3EndpointOpenApi implements ConformanceClass, OgcApiEndpointExte
     }
 
     @GET
-    @Produces({"application/openapi+json;version=3.0", MediaType.APPLICATION_JSON})
+    @Produces({"application/vnd.oai.openapi+json;version=3.0", MediaType.APPLICATION_JSON})
     //@Operation(summary = "the API description - this document", tags = {"Capabilities"}, parameters = {@Parameter(name = "f")})
     public Response getApiDescriptionJson(@Context OgcApiDataset service,
                                           @Context OgcApiRequestContext wfs3Request) throws Exception {

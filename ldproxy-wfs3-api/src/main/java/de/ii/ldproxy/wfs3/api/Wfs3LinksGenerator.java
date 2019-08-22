@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -49,8 +49,8 @@ public class Wfs3LinksGenerator {
                                         .ensureLastPathSegment("api")
                                         .setParameter("f", "json")
                                         .toString())
-                        .rel("service")
-                        .type("application/openapi+json;version=3.0")
+                        .rel("service-desc")
+                        .type("application/vnd.oai.openapi+json;version=3.0")
                         .description("the OpenAPI definition")
                         .typeLabel("JSON")
                         .build())
@@ -60,7 +60,7 @@ public class Wfs3LinksGenerator {
                                         .ensureLastPathSegment("api")
                                         .setParameter("f", "html")
                                         .toString())
-                        .rel("service")
+                        .rel("service-doc")
                         .type("text/html")
                         .description("the OpenAPI definition")
                         .typeLabel("HTML")
@@ -116,7 +116,7 @@ public class Wfs3LinksGenerator {
 
         ImmutableList.Builder<Wfs3Link> links = new ImmutableList.Builder<Wfs3Link>()
                 .addAll(Stream.concat(Stream.of(mediaType), alternativeMediaTypes.stream())
-                              .map(generateItemLink(uriBuilder.copy(), collectionName))
+                              .map(generateItemsLink(uriBuilder.copy(), collectionName))
                               .collect(Collectors.toList()))
                 .addAll(Stream.concat(Stream.of(mediaType), alternativeMediaTypes.stream())
                               .map(generateCollectionsLink(uriBuilder.copy(), collectionName, collectionId, isCollection))
@@ -148,8 +148,8 @@ public class Wfs3LinksGenerator {
                         .description("this document")
                         .build())
                 .addAll(alternativeMediaTypes.stream()
-                              .map(generateAlternateLink(uriBuilder.copy(), false))
-                              .collect(Collectors.toList()));
+                                             .map(generateAlternateLink(uriBuilder.copy(), false))
+                                             .collect(Collectors.toList()));
 
         if (isFeatureCollection) {
             links.add(new ImmutableWfs3Link.Builder()
@@ -171,7 +171,7 @@ public class Wfs3LinksGenerator {
         } else {
             links.add(new ImmutableWfs3Link.Builder()
                     .href(uriBuilder.copy()
-                                    .removeLastPathSegments(1)
+                                    .removeLastPathSegments(2)
                                     .clearParameters()
                                     .setParameter("f", mediaType.parameter())
                                     .toString())
@@ -206,8 +206,8 @@ public class Wfs3LinksGenerator {
                 .build();
     }
 
-    private Function<OgcApiMediaType, Wfs3Link> generateItemLink(final URIBuilder uriBuilder,
-                                                                 final String collectionName) {
+    private Function<OgcApiMediaType, Wfs3Link> generateItemsLink(final URIBuilder uriBuilder,
+                                                                  final String collectionName) {
         return mediaType -> new ImmutableWfs3Link.Builder()
                 .href(uriBuilder
                         .setParameter("f", mediaType.parameter())

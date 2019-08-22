@@ -34,6 +34,11 @@ import java.util.Set;
 public class Wfs3CollectionMetadataVectorTiles implements Wfs3CollectionMetadataExtension {
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, TilesConfiguration.class);
+    }
+
+    @Override
     public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection,
                                                    FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                    URICustomizer uriCustomizer, boolean isNested,

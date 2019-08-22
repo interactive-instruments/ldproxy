@@ -49,6 +49,11 @@ public class Wfs3OpenApiVectorTiles implements Wfs3OpenApiExtension {
         return 20;
     }
 
+    @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, TilesConfiguration.class);
+    }
+
     /**
      * extend the openAPI definition with necessary parameters and schemas. Add paths with parameters and responses to the OpenAPI definition.
      *

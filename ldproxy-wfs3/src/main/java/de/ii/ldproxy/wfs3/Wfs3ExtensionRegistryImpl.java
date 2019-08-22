@@ -8,11 +8,11 @@
 package de.ii.ldproxy.wfs3;
 
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.Wfs3StartupTask;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;

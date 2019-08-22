@@ -37,10 +37,15 @@ public class Wfs3ParameterCrs implements Wfs3ParameterExtension {
     public static final String CRS = "crs";
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, CrsConfiguration.class);
+    }
+
+    @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                    Map<String, String> parameters, OgcApiDatasetData datasetData) {
 
-        if (!isExtensionEnabled(datasetData, CrsConfiguration.class)) {
+        if (!isEnabledForDataset(datasetData)) {
             return parameters;
         }
 
@@ -58,7 +63,7 @@ public class Wfs3ParameterCrs implements Wfs3ParameterExtension {
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDatasetData datasetData) {
 
-        if (!isExtensionEnabled(datasetData, CrsConfiguration.class)) {
+        if (!isEnabledForDataset(datasetData)) {
             return queryBuilder;
         }
 

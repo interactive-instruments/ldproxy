@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -77,7 +77,7 @@ public class Wfs3Core implements ConformanceClass {
 
     @Override
     public String getConformanceClass() {
-        return "http://www.opengis.net/spec/wfs-1/3.0/req/core";
+        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core";
     }
 
     @Override
@@ -107,7 +107,7 @@ public class Wfs3Core implements ConformanceClass {
         ;
 
         ImmutableWfs3Collection.Builder collection = ImmutableWfs3Collection.builder()
-                                                                            .name(featureType.getId())
+                                                                            .id(featureType.getId())
                                                                             .title(featureType.getLabel())
                                                                             .description(featureType.getDescription())
                                                                             //.prefixedName(qn)
@@ -115,13 +115,11 @@ public class Wfs3Core implements ConformanceClass {
 
         if (datasetData.getFilterableFieldsForFeatureType(featureType.getId())
                        .containsKey("time")) {
+            FeatureTypeConfigurationOgcApi.TemporalExtent temporal = featureType.getExtent()
+                                                                                .getTemporal();
             collection.extent(new Wfs3Extent(
-                    featureType.getExtent()
-                               .getTemporal()
-                               .getStart(),
-                    featureType.getExtent()
-                               .getTemporal()
-                               .getComputedEnd(),
+                    temporal.getStart() == 0 ? -1 : temporal.getStart(),
+                    temporal.getEnd() == 0 ? -1 : temporal.getComputedEnd(),
                     featureType.getExtent()
                                .getSpatial()
                                .getXmin(),
@@ -153,16 +151,19 @@ public class Wfs3Core implements ConformanceClass {
         //TODO: to crs extension
         if (isNested) {
             collection.crs(
-                    ImmutableList.<String>builder()
-                            .add(datasetData.getFeatureProvider()
-                                            .getNativeCrs()
-                                            .getAsUri())
-                            .add(datasetData.DEFAULT_CRS_URI)
-                            .addAll(datasetData.getAdditionalCrs()
-                                               .stream()
-                                               .map(EpsgCrs::getAsUri)
-                                               .collect(Collectors.toList()))
-                            .build()
+                    Stream.concat(
+                            Stream.of(
+                                    datasetData.getFeatureProvider()
+                                               .getNativeCrs()
+                                               .getAsUri(),
+                                    OgcApiDatasetData.DEFAULT_CRS_URI
+                            ),
+                            datasetData.getAdditionalCrs()
+                                       .stream()
+                                       .map(EpsgCrs::getAsUri)
+                    )
+                          .distinct()
+                          .collect(ImmutableList.toImmutableList())
             );
         }
 

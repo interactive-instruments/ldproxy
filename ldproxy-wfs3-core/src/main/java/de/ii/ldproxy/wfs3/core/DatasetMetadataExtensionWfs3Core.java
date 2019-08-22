@@ -33,12 +33,17 @@ public class DatasetMetadataExtensionWfs3Core implements Wfs3DatasetMetadataExte
     private Wfs3Core wfs3Core;
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, Wfs3CoreConfiguration.class);
+    }
+
+    @Override
     public ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData datasetData,
                                             URICustomizer uriCustomizer,
                                             OgcApiMediaType mediaType,
                                             List<OgcApiMediaType> alternativeMediaTypes) {
 
-        if (!isExtensionEnabled(datasetData, Wfs3CoreConfiguration.class)) {
+        if (!isEnabledForDataset(datasetData)) {
             return datasetBuilder;
         }
 

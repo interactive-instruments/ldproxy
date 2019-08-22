@@ -24,6 +24,11 @@ import java.util.Set;
 //TODO: this is not an extension, misused to have access to isExtensionEnabled and getExtensionConfiguration
 public class VectorTileMapGenerator implements OgcApiExtension {
 
+    @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, TilesConfiguration.class);
+    }
+
     /**
      * checks if the tiles extension is available and returns a Set with all collectionIds
      * @param datasetData       the service data of the Wfs3 Service

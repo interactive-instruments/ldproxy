@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Collection;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.domain.Wfs3CollectionMetadataExtension;
+import de.ii.ldproxy.wfs3.core.Wfs3CoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -27,6 +28,11 @@ import java.util.Optional;
 @Provides
 @Instantiate
 public class Wfs3CollectionMetadataAroundRelation implements Wfs3CollectionMetadataExtension {
+
+    @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, AroundRelationsConfiguration.class);
+    }
 
     @Override
     public ImmutableWfs3Collection.Builder process(ImmutableWfs3Collection.Builder collection,

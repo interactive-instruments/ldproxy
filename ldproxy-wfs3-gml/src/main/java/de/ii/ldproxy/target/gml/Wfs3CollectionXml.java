@@ -19,7 +19,7 @@ import java.util.List;
  * @author zahnen
  */
 @XmlRootElement(name = "Collection")
-@XmlType(propOrder = {"name", "title", "description", "links", "extent", "crs"})
+@XmlType(propOrder = {"id", "title", "description", "links", "extent", "crs"})
 public class Wfs3CollectionXml {
     private final Wfs3Collection wfs3Collection;
 
@@ -32,7 +32,7 @@ public class Wfs3CollectionXml {
 
     @XmlElement(name = "Name")
     public String getName() {
-        return wfs3Collection.getName();
+        return wfs3Collection.getId();
     }
 
     @XmlElement(name = "Title")

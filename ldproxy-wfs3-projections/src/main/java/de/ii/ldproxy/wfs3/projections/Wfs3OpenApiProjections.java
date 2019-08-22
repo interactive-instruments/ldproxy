@@ -35,8 +35,13 @@ public class Wfs3OpenApiProjections implements Wfs3OpenApiExtension {
     }
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, ProjectionsConfiguration.class);
+    }
+
+    @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
-        if (isExtensionEnabled(datasetData, ProjectionsConfiguration.class)) {
+        if (isEnabledForDataset(datasetData)) {
             openAPI.getComponents()
                    .addParameters("properties", new Parameter()
                            .name("properties")

@@ -29,6 +29,11 @@ import java.util.Map;
 public class Wfs3ParameterProjections implements Wfs3ParameterExtension {
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, ProjectionsConfiguration.class);
+    }
+
+    @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDatasetData datasetData) {

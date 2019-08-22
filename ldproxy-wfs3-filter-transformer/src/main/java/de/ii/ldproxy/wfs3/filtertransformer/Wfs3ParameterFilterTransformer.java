@@ -31,6 +31,11 @@ public class Wfs3ParameterFilterTransformer implements Wfs3ParameterExtension {
     private AkkaHttp akkaHttp;
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, FilterTransformersConfiguration.class);
+    }
+
+    @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                    Map<String, String> parameters, OgcApiDatasetData datasetData) {
         final Optional<FilterTransformersConfiguration> filterTransformersConfiguration = featureTypeConfiguration.getExtension(FilterTransformersConfiguration.class);

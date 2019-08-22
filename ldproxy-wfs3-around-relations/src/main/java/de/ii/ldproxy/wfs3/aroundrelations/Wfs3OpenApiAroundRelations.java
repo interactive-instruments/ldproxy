@@ -40,6 +40,11 @@ public class Wfs3OpenApiAroundRelations implements Wfs3OpenApiExtension {
     }
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, AroundRelationsConfiguration.class);
+    }
+
+    @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
 
         ObjectSchema collectionInfo = (ObjectSchema) openAPI.getComponents()

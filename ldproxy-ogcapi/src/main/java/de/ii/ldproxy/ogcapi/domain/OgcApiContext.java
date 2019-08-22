@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 @Value.Immutable
 public interface OgcApiContext {
-    enum HttpMethods {GET, POST, PUT, DELETE}
+    enum HttpMethods {GET, POST, PUT, DELETE, PATCH}
 
     String getApiEntrypoint();
 

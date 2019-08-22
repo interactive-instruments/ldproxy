@@ -42,9 +42,13 @@ public class Wfs3OpenApiTransactional implements Wfs3OpenApiExtension {
     }
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, TransactionalConfiguration.class);
+    }
+
+    @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
-        if (datasetData != null && datasetData.getFeatureProvider()
-                                              .supportsTransactions() && isExtensionEnabled(datasetData, TransactionalConfiguration.class)) {
+        if (datasetData.getFeatureProvider().supportsTransactions() && isEnabledForDataset(datasetData)) {
 
             datasetData.getFeatureTypes()
                        .values()

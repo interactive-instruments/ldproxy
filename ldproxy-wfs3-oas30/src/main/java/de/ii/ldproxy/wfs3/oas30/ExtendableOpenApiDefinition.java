@@ -154,7 +154,7 @@ public class ExtendableOpenApiDefinition {
                 return Response.status(Response.Status.OK)
                                .entity(pretty ? Json.pretty(openAPI) : Json.mapper()
                                                                            .writeValueAsString(openAPI))
-                               .type("application/openapi+json;version=3.0"/*MediaTypeCharset.APPLICATION_JSON_UTF8*/)
+                               .type("application/vnd.oai.openapi+json;version=3.0"/*MediaTypeCharset.APPLICATION_JSON_UTF8*/)
                                .build();
             }
         } catch (IOException e) {

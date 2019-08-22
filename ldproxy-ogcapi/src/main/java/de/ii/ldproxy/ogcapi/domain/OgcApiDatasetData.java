@@ -153,8 +153,8 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
 
     private Function<Map.Entry<String, TargetMapping>, String> getParameterName() {
         return mapping -> mapping.getValue()
-                                 .isSpatial() ? "bbox"
-                : ((Wfs3GenericMapping) mapping.getValue()).isTemporal() ? "time"
+                .isSpatial() ? "bbox"
+                : ((Wfs3GenericMapping) mapping.getValue()).isTemporal() ? "datetime"
                 : mapping.getValue()
                          .getName()
                          .replaceAll("\\[\\w+\\]", "")

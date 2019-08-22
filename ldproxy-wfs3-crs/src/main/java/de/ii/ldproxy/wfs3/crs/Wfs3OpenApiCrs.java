@@ -41,8 +41,13 @@ public class Wfs3OpenApiCrs implements Wfs3OpenApiExtension {
     }
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, CrsConfiguration.class);
+    }
+
+    @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
-        if (isExtensionEnabled(datasetData, CrsConfiguration.class)) {
+        if (isEnabledForDataset(datasetData)) {
 
             ImmutableSet<String> crsSet = ImmutableSet.<String>builder()
                     .add(datasetData.getFeatureProvider()

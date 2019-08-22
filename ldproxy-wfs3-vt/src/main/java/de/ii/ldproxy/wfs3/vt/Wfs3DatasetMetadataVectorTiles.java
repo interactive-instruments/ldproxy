@@ -28,6 +28,11 @@ import java.util.List;
 public class Wfs3DatasetMetadataVectorTiles implements Wfs3DatasetMetadataExtension {
 
     @Override
+    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+        return isExtensionEnabled(dataset, TilesConfiguration.class);
+    }
+
+    @Override
     public ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData datasetData,
                                             URICustomizer uriCustomizer, OgcApiMediaType mediaType,
                                             List<OgcApiMediaType> alternativeMediaTypes) {

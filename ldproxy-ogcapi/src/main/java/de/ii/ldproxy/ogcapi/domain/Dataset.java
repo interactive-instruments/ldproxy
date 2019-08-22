@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 @JsonDeserialize(builder = ImmutableDataset.Builder.class)
 public abstract class Dataset {
 
+    public abstract String getTitle();
+
+    public abstract String getDescription();
+
     public abstract List<Wfs3Link> getLinks();
 
     public abstract List<String> getCrs();
