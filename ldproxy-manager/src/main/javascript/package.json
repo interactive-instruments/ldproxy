@@ -50,6 +50,7 @@
     "webpack-merge": "^4.2.1"
   },
   "dependencies": {
+    "redux-ui": "^0.1.2",
     "xtraplatform-manager": "^1.1.1",
     "xtraplatform-manager-wfs-proxy": "^1.0.2"
   },
