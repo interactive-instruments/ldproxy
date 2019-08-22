@@ -3,7 +3,7 @@ services:
 - docker
 language:
 - java
-node_js: "6"
+node_js: "10"
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/

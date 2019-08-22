@@ -3,7 +3,7 @@ plugins {
 }
 
 node {
-    version = '6.14.1'
+    version = '10.16.0'
     download = project.findProperty('downloadNode') ?: false
 }
 
