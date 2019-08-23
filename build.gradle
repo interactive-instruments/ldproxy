@@ -87,6 +87,6 @@ task allDependencies {
     dependsOn allprojects.collect { "$it.path:dependencies" }
 }
 tasks.run {
-    debug = true
+    debug = false
 }
 
