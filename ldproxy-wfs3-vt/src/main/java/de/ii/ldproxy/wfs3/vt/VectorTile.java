@@ -50,8 +50,6 @@ class VectorTile {
 
     private static final String TIMESTAMP_REGEX = "([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))";
     private static final String OPEN_REGEX = "(\\.\\.)?";
-    private static final String OPEN_START = "0001-01-01T00:00:00Z";
-    private static final String OPEN_END = "2999-12-31T23:59:59Z";
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
 
@@ -382,14 +380,12 @@ class VectorTile {
                                       return null;
                                   } else if (timeValue.matches("^" + TIMESTAMP_REGEX + "\\/" + OPEN_REGEX + "$")) {
                                       // open end
-                                      // TODO: use AFTER, requires a fix in xtraplatform
                                       Instant fromIso8601 = Instant.parse(timeValue.substring(0, timeValue.indexOf("/")));
-                                      return String.format("%s DURING %s/" + OPEN_END, timeField, fromIso8601);
+                                      return String.format("%s AFTER %s", timeField, fromIso8601.minusSeconds(1));
                                   } else if (timeValue.matches("^" + OPEN_REGEX + "\\/" + TIMESTAMP_REGEX + "$")) {
                                       // open start
-                                      // TODO: use BEFORE, requires a fix in xtraplatform
                                       Instant fromIso8601 = Instant.parse(timeValue.substring(timeValue.indexOf("/") + 1));
-                                      return String.format("%s DURING " + OPEN_START + "/%s", timeField, fromIso8601);
+                                      return String.format("%s BEFORE %s", timeField, fromIso8601.plusSeconds(1));
                                   } else {
                                       LOGGER.error("TIME PARSER ERROR " + timeValue);
                                       throw new BadRequestException();

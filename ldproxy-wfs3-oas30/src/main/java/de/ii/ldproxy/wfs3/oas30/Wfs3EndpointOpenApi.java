@@ -52,13 +52,10 @@ public class Wfs3EndpointOpenApi implements ConformanceClass, OgcApiEndpointExte
             .build();
     private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
             new ImmutableOgcApiMediaType.Builder()
-                    .main(MediaType.APPLICATION_JSON_TYPE)
+                    .main(new MediaType("application", "vnd.oai.openapi+json"))
                     .build(),
             new ImmutableOgcApiMediaType.Builder()
                     .main(MediaType.TEXT_HTML_TYPE)
-                    .build(),
-            new ImmutableOgcApiMediaType.Builder()
-                    .main(MediaType.WILDCARD_TYPE)
                     .build()
     );
 
