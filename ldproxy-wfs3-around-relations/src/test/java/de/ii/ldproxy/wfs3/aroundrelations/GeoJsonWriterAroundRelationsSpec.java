@@ -252,7 +252,7 @@ public class GeoJsonWriterAroundRelationsSpec {
 
         transformer.onStart(OptionalLong.empty(), OptionalLong.empty());
         transformer.onFeatureStart(null);
-        transformer.onGeometryStart(geometryMapping, SimpleFeatureGeometry.MULTI_POLYGON, null);
+        transformer.onGeometryStart(geometryMapping, SimpleFeatureGeometry.POLYGON, null);
         transformer.onGeometryNestedStart();
         transformer.onGeometryCoordinates(coordinates);
         transformer.onGeometryNestedEnd();
