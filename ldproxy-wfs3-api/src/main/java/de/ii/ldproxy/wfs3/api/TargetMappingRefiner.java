@@ -14,5 +14,6 @@ public interface TargetMappingRefiner {
 
     boolean needsRefinement(SourcePathMapping sourcePathMapping);
 
-    SourcePathMapping refine(SourcePathMapping sourcePathMapping, SimpleFeatureGeometry simpleFeatureGeometry);
+    SourcePathMapping refine(SourcePathMapping sourcePathMapping, SimpleFeatureGeometry simpleFeatureGeometry,
+                             boolean mustReversePolygon);
 }

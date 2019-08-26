@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3.filtertransformer;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.xtraplatform.akka.http.AkkaHttp;
+import de.ii.xtraplatform.akka.http.HttpClient;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -24,11 +24,11 @@ import java.util.Map;
 public class RequestGeoJsonBboxTransformer implements FilterTransformer {
 
     private final RequestGeoJsonBboxConfiguration configuration;
-    private final AkkaHttp akkaHttp;
+    private final HttpClient httpClient;
 
-    public RequestGeoJsonBboxTransformer(RequestGeoJsonBboxConfiguration configuration, AkkaHttp akkaHttp) {
+    public RequestGeoJsonBboxTransformer(RequestGeoJsonBboxConfiguration configuration, HttpClient httpClient) {
         this.configuration = configuration;
-        this.akkaHttp = akkaHttp;
+        this.httpClient = httpClient;
     }
 
 
@@ -65,7 +65,7 @@ public class RequestGeoJsonBboxTransformer implements FilterTransformer {
 
         String url = getUrl(resolvableParameters);
 
-        String response = akkaHttp.getAsString(url);
+        String response = httpClient.getAsString(url);
 
         GeoJsonReader geoJsonReader = new GeoJsonReader();
         Geometry geometry = geoJsonReader.read(response);

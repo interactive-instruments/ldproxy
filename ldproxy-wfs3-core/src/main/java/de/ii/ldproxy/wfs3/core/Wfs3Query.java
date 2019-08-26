@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * @author zahnen
  */
 @Component
-@Provides
+@Provides(specifications = {Wfs3Query.class})
 @Instantiate
 public class Wfs3Query {
 

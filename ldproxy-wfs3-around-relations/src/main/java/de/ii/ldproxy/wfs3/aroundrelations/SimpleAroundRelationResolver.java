@@ -7,17 +7,17 @@
  */
 package de.ii.ldproxy.wfs3.aroundrelations;
 
-import de.ii.xtraplatform.akka.http.AkkaHttp;
+import de.ii.xtraplatform.akka.http.HttpClient;
 
 /**
  * @author zahnen
  */
 public class SimpleAroundRelationResolver implements AroundRelationResolver {
 
-    private final AkkaHttp akkaHttp;
+    private final HttpClient httpClient;
 
-    public SimpleAroundRelationResolver(/*@Requires*/ AkkaHttp akkaHttp) {
-        this.akkaHttp = akkaHttp;
+    public SimpleAroundRelationResolver(HttpClient httpClient) {
+        this.httpClient = httpClient;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class SimpleAroundRelationResolver implements AroundRelationResolver {
     public String resolve(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery, String additionalParameters) {
         String url = getUrl(aroundRelationQuery, additionalParameters);
 
-        return akkaHttp.getAsString(url);
+        return httpClient.getAsString(url);
     }
 
     @Override

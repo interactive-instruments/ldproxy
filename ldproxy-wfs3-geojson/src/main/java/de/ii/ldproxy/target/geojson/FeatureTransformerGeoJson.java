@@ -172,6 +172,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
             GEO_JSON_GEOMETRY_TYPE currentGeometryType = geometryMapping.getGeometryType();
             if (currentGeometryType == GEO_JSON_GEOMETRY_TYPE.GENERIC) {
                 currentGeometryType = GEO_JSON_GEOMETRY_TYPE.forGmlType(type);
+            } else if (currentGeometryType != GEO_JSON_GEOMETRY_TYPE.forGmlType(type)) {
+                return;
             }
 
             CoordinatesWriterType.Builder cwBuilder = CoordinatesWriterType.builder();
@@ -199,6 +201,10 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
 
             if (transformationContext.getGeometryPrecision() > 0) {
                 cwBuilder.precision(transformationContext.getGeometryPrecision());
+            }
+
+            if (Objects.equals(geometryMapping.getMustReversePolygon(), true)) {
+                cwBuilder.reversepolygon();
             }
 
             transformationContext.getState()

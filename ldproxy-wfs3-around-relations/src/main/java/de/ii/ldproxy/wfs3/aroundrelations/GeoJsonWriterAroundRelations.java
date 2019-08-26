@@ -13,7 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import de.ii.ldproxy.target.geojson.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.target.geojson.GeoJsonWriter;
 import de.ii.ldproxy.target.geojson.ImmutableFeatureTransformationContextGeoJson;
-import de.ii.xtraplatform.akka.http.AkkaHttp;
+import de.ii.xtraplatform.akka.http.Http;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -38,7 +38,7 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
 
     @Override
     public GeoJsonWriterAroundRelations create() {
-        return new GeoJsonWriterAroundRelations(new SimpleAroundRelationResolver(akkaHttp));
+        return new GeoJsonWriterAroundRelations(new SimpleAroundRelationResolver(http.getDefaultClient()));
     }
 
     public GeoJsonWriterAroundRelations create(AroundRelationResolver aroundRelationResolver) {
@@ -52,7 +52,7 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
     private final AroundRelationResolver aroundRelationResolver;
 
     @Requires
-    AkkaHttp akkaHttp;
+    Http http;
 
     public GeoJsonWriterAroundRelations() {
         this.aroundRelationResolver = null;

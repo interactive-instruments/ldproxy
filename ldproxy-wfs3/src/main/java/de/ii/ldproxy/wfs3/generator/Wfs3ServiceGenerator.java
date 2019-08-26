@@ -1,12 +1,13 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.wfs3.generator;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -23,8 +24,9 @@ import de.ii.ldproxy.wfs3.api.TargetMappingRefiner;
 import de.ii.ldproxy.wfs3.api.Wfs3CapabilityExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3StyleGeneratorExtension;
-import de.ii.xtraplatform.api.exceptions.XtraserverFrameworkException;
+import de.ii.xtraplatform.crs.api.DefaultCoordinatesWriter;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.crs.api.JsonCoordinateFormatter;
 import de.ii.xtraplatform.entity.api.EntityData;
 import de.ii.xtraplatform.entity.api.EntityDataGenerator;
 import de.ii.xtraplatform.entity.api.EntityRepository;
@@ -36,6 +38,7 @@ import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.MultiFeatureProviderMetadataConsumer;
+import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
@@ -162,6 +165,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                     .nativeCrs(new EpsgCrs())
                     .mappingStatus(new ImmutableMappingStatus.Builder().enabled(true)
                                                                        .supported(false)
+                                                                       .refined(false)
                                                                        .build())
                     .build();
 
@@ -302,7 +306,8 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
     private boolean shouldRefineMapping(OgcApiDatasetData data, MappingStatus mappingStatus, String id,
                                         List<TargetMappingRefiner> mappingRefiners) {
-        if (shouldGenerateMapping(mappingStatus, id)
+        if (mappingStatus.getRefined()
+                || shouldGenerateMapping(mappingStatus, id)
                 || getCurrentTask().filter(task -> task.getId()
                                                        .equals(id) && task.getLabel()
                                                                           .equals(AnalyzeDataTask.LABEL))
@@ -310,8 +315,8 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                 || taskQueue.getFutureTasks()
                             .stream()
                             .anyMatch(task -> task.getId()
-                                                   .equals(id) && task.getLabel()
-                                                                      .equals(AnalyzeDataTask.LABEL))) {
+                                                  .equals(id) && task.getLabel()
+                                                                     .equals(AnalyzeDataTask.LABEL))) {
             return false;
         }
 
@@ -472,8 +477,12 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                                                                                             .getFeatureTypes()
                                                                                             .values()) {
                 final boolean[] hasData = {false};
+                final boolean[] foundGeometry = {false};
                 final SourcePathMapping[] currentMapping = new SourcePathMapping[1];
                 final List<String>[] currentGeometryPath = new List[1];
+                final ImmutableSourcePathMapping.Builder[] currentBuilder = new ImmutableSourcePathMapping.Builder[1];
+                final SimpleFeatureGeometry[] currentGeometryType = new SimpleFeatureGeometry[1];
+
                 final ImmutableFeatureTypeMapping.Builder mappingBuilder = builder.getMappings()
                                                                                   .get(featureTypeConfigurationOgcApi.getId());
 
@@ -481,7 +490,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
                 FeatureQuery query = ImmutableFeatureQuery.builder()
                                                           .type(featureTypeConfigurationOgcApi.getId())
-                                                          .limit(1)
+                                                          .limit(5)
                                                           .build();
 
                 FeatureStream<GmlConsumer> featureStream = wfs3Service.getFeatureProvider()
@@ -523,6 +532,10 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                     @Override
                     public void onPropertyStart(List<String> path,
                                                 List<Integer> multiplicities) throws Exception {
+                        if (foundGeometry[0]) {
+                            return;
+                        }
+
                         Optional<SourcePathMapping> optionalSourcePathMapping = Optional.ofNullable(featureProviderData.getMappings()
                                                                                                                        .get(featureTypeConfigurationOgcApi.getId())
                                                                                                                        .getMappingsWithPathAsList()
@@ -540,18 +553,31 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                             s = s.substring(s.lastIndexOf(":") + 1);
                             LOGGER.debug("geometry type {} {} {} {}", featureTypeConfigurationOgcApi.getId(), s, currentMapping[0].getMappings(), GML_GEOMETRY_TYPE.fromString(s));
 
-                            ImmutableSourcePathMapping.Builder next = mappingBuilder.getMappings()
-                                                                                    .get(Joiner.on('/')
-                                                                                               .join(currentGeometryPath[0]));
-
+                            currentBuilder[0] = mappingBuilder.getMappings()
+                                                              .get(Joiner.on('/')
+                                                                         .join(currentGeometryPath[0]));
+                            currentGeometryType[0] = GML_GEOMETRY_TYPE.fromString(s)
+                                                                      .toSimpleFeatureGeometry();
                             currentGeometryPath[0] = null;
                             currentMapping[0] = null;
-                            //TODO: adjust mappings
+                        }
+                    }
+
+                    @Override
+                    public void onPropertyText(String text) throws Exception {
+                        if (currentBuilder[0] != null) {
+                            boolean mustReversePolygon = false;
+                            if (currentGeometryType[0] == SimpleFeatureGeometry.POLYGON || currentGeometryType[0] == SimpleFeatureGeometry.MULTI_POLYGON) {
+                                PolygonAnalyzer polygonAnalyzer = new PolygonAnalyzer(null, 2);
+                                polygonAnalyzer.write(text);
+                                LOGGER.debug("COO: {}", text);
+                                LOGGER.debug("REVERSE: {}", polygonAnalyzer.isClockwise());
+                                mustReversePolygon = polygonAnalyzer.isClockwise();
+                            }
 
                             for (TargetMappingRefiner targetMappingRefiner : mappingRefiners) {
-                                SourcePathMapping refined = targetMappingRefiner.refine(next.build(), GML_GEOMETRY_TYPE.fromString(s)
-                                                                                                                       .toSimpleFeatureGeometry());
-                                next.mappings(refined.getMappings());
+                                SourcePathMapping refined = targetMappingRefiner.refine(currentBuilder[0].build(), currentGeometryType[0], mustReversePolygon);
+                                currentBuilder[0].mappings(refined.getMappings());
                             }
 
                             //TODO: use StylesStore
@@ -561,8 +587,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
                             for (Wfs3StyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3StyleGeneratorExtension.class)) {
 
-                                String style = wfs3StyleGeneratorExtension.generateStyle(GML_GEOMETRY_TYPE.fromString(s)
-                                                                                                          .toSimpleFeatureGeometry(), i[0]);
+                                String style = wfs3StyleGeneratorExtension.generateStyle(currentGeometryType[0], i[0]);
 
                                 if (!Strings.isNullOrEmpty(style)) {
                                     String styleId = "gsfs_" + featureTypeConfigurationOgcApi.getId();
@@ -576,12 +601,11 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                                     }
                                 }
                             }
+
+                            currentBuilder[0] = null;
+                            currentGeometryType[0] = null;
+                            foundGeometry[0] = true;
                         }
-                    }
-
-                    @Override
-                    public void onPropertyText(String text) throws Exception {
-
                     }
 
                     @Override
@@ -593,7 +617,6 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                              .join();
 
                 if (!hasData[0]) {
-                    //TODO: disable feature type
                     LOGGER.debug("NO DATA found for {}", featureTypeConfigurationOgcApi.getId());
 
                     ImmutableSourcePathMapping.Builder next = mappingBuilder.getMappings()
@@ -615,6 +638,10 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
             }
 
+            builder.mappingStatus(new ImmutableMappingStatus.Builder().from(featureProviderData.getMappingStatus())
+                                                                      .refined(true)
+                                                                      .build());
+
             ImmutableOgcApiDatasetData updated = new ImmutableOgcApiDatasetData.Builder().from(wfs3Service.getData())
                                                                                          .featureProvider(builder.build())
                                                                                          .build();
@@ -625,4 +652,84 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
             taskContext.setStatusMessage("success");
         }
     }
+
+    static class PolygonAnalyzer extends DefaultCoordinatesWriter {
+
+        private String tuple;
+        private int cnt;
+
+        private double curX = 0;
+        private double prevX = 0;
+        private double prevY = 0;
+        private double a = 0;
+
+        public PolygonAnalyzer(JsonGenerator json, int srsDimension) {
+            super(new JsonCoordinateFormatter(json), srsDimension);
+            tuple = "";
+            cnt = 0;
+        }
+
+        public boolean isClockwise() {
+            return a > 0;
+        }
+
+        @Override
+        protected void writeStart() throws IOException {
+
+        }
+
+        @Override
+        protected void writeSeparator() throws IOException {
+
+        }
+
+        @Override
+        protected void writeEnd() throws IOException {
+
+        }
+
+        @Override
+        protected void writeValue(char[] chars, int start, int end) throws IOException {
+            flushChunkBoundaryBuffer();
+            for (int k = start; k < start + end; k++) {
+                tuple += chars[k];
+            }
+        }
+
+        @Override
+        protected void formatValue(String buf) throws IOException {
+            tuple += buf;
+        }
+
+        @Override
+        public final void close() throws IOException {
+            if (!lastWhite) {
+                counter++;
+            }
+            flushChunkBoundaryBuffer();
+            isCompleteTuple();
+        }
+
+        @Override
+        protected boolean isCompleteTuple() {
+            boolean ict = super.isCompleteTuple();
+            cnt++;
+            if (this.isXValue()) {
+                curX = Double.parseDouble(tuple);
+                tuple = "";
+            } else if (this.isYValue()) {
+                double curY = Double.parseDouble(tuple);
+                tuple = "";
+
+                if (cnt >= 4) {
+                    a += (prevX + curX) * (curY - prevY);
+                }
+                prevX = curX;
+                prevY = curY;
+            }
+            return ict;
+        }
+
+    }
+
 }

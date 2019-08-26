@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,7 +10,8 @@ package de.ii.ldproxy.wfs3.filtertransformer;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
-import de.ii.xtraplatform.akka.http.AkkaHttp;
+import de.ii.xtraplatform.akka.http.Http;
+import de.ii.xtraplatform.akka.http.HttpClient;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -27,8 +28,12 @@ import java.util.Optional;
 @Instantiate
 public class Wfs3ParameterFilterTransformer implements Wfs3ParameterExtension {
 
-    @Requires
-    private AkkaHttp akkaHttp;
+
+    private final HttpClient httpClient;
+
+    public Wfs3ParameterFilterTransformer(@Requires Http http) {
+        this.httpClient = http.getDefaultClient();
+    }
 
     @Override
     public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
@@ -48,7 +53,7 @@ public class Wfs3ParameterFilterTransformer implements Wfs3ParameterExtension {
                                                                                                                 .getTransformers()) {
                 //TODO
                 if (filterTransformerConfiguration instanceof RequestGeoJsonBboxConfiguration) {
-                    RequestGeoJsonBboxTransformer requestGeoJsonBboxTransformer = new RequestGeoJsonBboxTransformer((RequestGeoJsonBboxConfiguration) filterTransformerConfiguration, akkaHttp);
+                    RequestGeoJsonBboxTransformer requestGeoJsonBboxTransformer = new RequestGeoJsonBboxTransformer((RequestGeoJsonBboxConfiguration) filterTransformerConfiguration, httpClient);
                     nextParameters = requestGeoJsonBboxTransformer.resolveParameters(nextParameters);
 
                 }

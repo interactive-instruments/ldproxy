@@ -44,7 +44,7 @@ import java.util.TreeSet;
  * @author zahnen
  */
 @Component
-@Provides
+@Provides(specifications = {ExtendableOpenApiDefinition.class})
 @Instantiate
 @Wbp(
         filter = "(objectClass=de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension)",

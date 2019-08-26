@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.target.geojson;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
@@ -98,6 +99,7 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
 
     private static final String PROPERTY_NAME = "geometry";
     private GEO_JSON_GEOMETRY_TYPE geometryType;
+    private Boolean mustReversePolygon;
 
     public GeoJsonGeometryMapping() {
     }
@@ -105,6 +107,7 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
     GeoJsonGeometryMapping(GeoJsonGeometryMapping mapping) {
         super(mapping);
         this.geometryType = mapping.geometryType;
+        this.mustReversePolygon = mapping.mustReversePolygon;
     }
 
     public GEO_JSON_GEOMETRY_TYPE getGeometryType() {
@@ -122,6 +125,15 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
 
     @Override
     public void setName(String name) {
+    }
+
+    @JsonProperty(value = "mustReversePolygon")
+    public Boolean getMustReversePolygon() {
+        return mustReversePolygon;
+    }
+
+    public void setMustReversePolygon(Boolean mustReversePolygon) {
+        this.mustReversePolygon = mustReversePolygon;
     }
 
     @Override

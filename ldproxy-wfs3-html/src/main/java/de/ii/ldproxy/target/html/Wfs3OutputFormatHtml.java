@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -17,12 +17,12 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
 import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
 import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.xtraplatform.akka.http.AkkaHttp;
+import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
@@ -75,7 +75,7 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
     private Codelist[] codelists;
 
     @Requires
-    private AkkaHttp akkaHttp;
+    private Http http;
 
     @Requires
     private KeyValueStore keyValueStore;
@@ -127,7 +127,8 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
     }
 
     @Override
-    public Response getDatasetResponse(Dataset wfs3Collections, OgcApiDatasetData datasetData, OgcApiMediaType mediaType,
+    public Response getDatasetResponse(Dataset wfs3Collections, OgcApiDatasetData datasetData,
+                                       OgcApiMediaType mediaType,
                                        List<OgcApiMediaType> alternativeMediaTypes, URICustomizer uriCustomizer,
                                        String staticUrlPrefix, boolean isCollections) {
         //TODO: locales from request context
@@ -135,8 +136,8 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(datasetsTitle, uriCustomizer.copy()
-                                                                .removeLastPathSegments(uriCustomizer.isLastPathSegment("collections") ? 2 : 1)
-                                                                .toString()))
+                                                                   .removeLastPathSegments(uriCustomizer.isLastPathSegment("collections") ? 2 : 1)
+                                                                   .toString()))
                 .add(new NavigationDTO(datasetData.getLabel()))
                 .build();
 
@@ -203,7 +204,7 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
                                                                                                .featureTypeDataset(featureTypeDataset)
                                                                                                .codelists(codelists)
                                                                                                .mustacheRenderer(dropwizard.getMustacheRenderer())
-                                                                                               .build(), akkaHttp));
+                                                                                               .build(), http.getDefaultClient()));
     }
 
     @Override

@@ -11,11 +11,11 @@ version = '1.4.1'
 
 dependencies {
     // features to include in this application
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.0.1'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.0.3'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.0.2'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.0.1'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.2.3'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.0.2'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.0.4'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.0.3'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.0.2'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.2.4'
 
     // bundles to include in this application
     bundle subprojects

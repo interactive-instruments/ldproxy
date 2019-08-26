@@ -12,12 +12,12 @@ import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.CodelistData;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.target.html.MicrodataMapping.MICRODATA_TYPE;
-import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsConfiguration;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationResolver;
+import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsConfiguration;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsQuery;
 import de.ii.ldproxy.wfs3.aroundrelations.SimpleAroundRelationResolver;
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
-import de.ii.xtraplatform.akka.http.AkkaHttp;
+import de.ii.xtraplatform.akka.http.HttpClient;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
@@ -105,7 +105,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
     private final FeatureTransformationContextHtml transformationContext;
     private final int offset;
 
-    public FeatureTransformerHtml(FeatureTransformationContextHtml transformationContext, AkkaHttp akkaHttp) {
+    public FeatureTransformerHtml(FeatureTransformationContextHtml transformationContext, HttpClient httpClient) {
         this.outputStreamWriter = new OutputStreamWriter(transformationContext.getOutputStream());
         this.currentPath = new XMLPathTracker();
         //this.featureTypeMapping = featureTypeMapping;
@@ -156,7 +156,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         this.codelists = transformationContext.getCodelists();
         this.mustacheRenderer = transformationContext.getMustacheRenderer();
 
-        this.aroundRelationResolver = new SimpleAroundRelationResolver(akkaHttp);
+        this.aroundRelationResolver = new SimpleAroundRelationResolver(httpClient);
         this.transformationContext = transformationContext;
     }
 

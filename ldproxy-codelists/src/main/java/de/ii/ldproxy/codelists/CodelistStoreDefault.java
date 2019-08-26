@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,7 +8,8 @@
 package de.ii.ldproxy.codelists;
 
 import com.fasterxml.aalto.stax.InputFactoryImpl;
-import de.ii.xtraplatform.akka.http.AkkaHttp;
+import de.ii.xtraplatform.akka.http.Http;
+import de.ii.xtraplatform.akka.http.HttpClient;
 import de.ii.xtraplatform.api.exceptions.BadRequest;
 import de.ii.xtraplatform.dropwizard.api.Jackson;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
@@ -36,13 +37,14 @@ public class CodelistStoreDefault extends AbstractGenericResourceStore<CodelistO
     private static final Logger LOGGER = LoggerFactory.getLogger(CodelistStoreDefault.class);
     private static final String STORE_ID = "ldproxy-codelists";
 
-    private final AkkaHttp akkaHttp;
+    private final HttpClient httpClient;
     private final SMInputFactory staxFactory;
 
-    public CodelistStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore, @Requires AkkaHttp akkaHttp) {
+    public CodelistStoreDefault(@Requires Jackson jackson, @Requires KeyValueStore rootConfigStore,
+                                @Requires Http http) {
         super(rootConfigStore, STORE_ID, jackson.getDefaultObjectMapper(), true);
 
-        this.akkaHttp = akkaHttp;
+        this.httpClient = http.getDefaultClient();
         this.staxFactory = new SMInputFactory(new InputFactoryImpl());
     }
 
@@ -76,7 +78,7 @@ public class CodelistStoreDefault extends AbstractGenericResourceStore<CodelistO
         CodelistOld codelist = new CodelistOld(sourceUrl, sourceType);
 
         if (sourceType == IMPORT_TYPE.GML_DICTIONARY) {
-            InputStream response = akkaHttp.getAsInputStream(sourceUrl);
+            InputStream response = httpClient.getAsInputStream(sourceUrl);
 
             new ImportGmlDictionary(staxFactory).parse(response, codelist);
         } else {

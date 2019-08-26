@@ -141,7 +141,8 @@ public class Wfs3OutputFormatGeoJson implements ConformanceClass, Wfs3OutputForm
             }
 
             @Override
-            public SourcePathMapping refine(SourcePathMapping sourcePathMapping, SimpleFeatureGeometry simpleFeatureGeometry) {
+            public SourcePathMapping refine(SourcePathMapping sourcePathMapping,
+                                            SimpleFeatureGeometry simpleFeatureGeometry, boolean mustReversePolygon) {
                 if (!needsRefinement(sourcePathMapping)) {
                     return sourcePathMapping;
                 }
@@ -155,6 +156,10 @@ public class Wfs3OutputFormatGeoJson implements ConformanceClass, Wfs3OutputForm
                     if (targetMapping instanceof GeoJsonGeometryMapping) {
                         GeoJsonGeometryMapping geoJsonGeometryMapping = new GeoJsonGeometryMapping((GeoJsonGeometryMapping) targetMapping);
                         geoJsonGeometryMapping.setGeometryType(GEO_JSON_GEOMETRY_TYPE.forGmlType(simpleFeatureGeometry));
+
+                        if (mustReversePolygon && (simpleFeatureGeometry == SimpleFeatureGeometry.POLYGON || simpleFeatureGeometry == SimpleFeatureGeometry.MULTI_POLYGON)) {
+                            geoJsonGeometryMapping.setMustReversePolygon(true);
+                        }
 
                         builder.putMappings(entry.getKey(), geoJsonGeometryMapping);
                     } else {
