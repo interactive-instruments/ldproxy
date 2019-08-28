@@ -473,7 +473,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                             CoordinateTuple point = new CoordinateTuple(coordinates[0], coordinates[1]);
 
                             if (crsTransformer != null) {
-                                point = crsTransformer.transform(point);
+                                point = crsTransformer.transform(point, false);
                             }
 
                             this.writePointGeometry(point.getXasString(), point.getYasString());

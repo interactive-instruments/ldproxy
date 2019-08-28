@@ -15,8 +15,8 @@ dependencies {
     feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.0.2'
     feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.0.4'
     feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.0.3'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.0.2'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.2.4'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.0.3'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.2.5'
     featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '2.0.1'
 
     // bundles to include in this application

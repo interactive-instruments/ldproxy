@@ -689,7 +689,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                 String[] coordinates = text.split(" ");
                 CoordinateTuple point = new CoordinateTuple(coordinates[0], coordinates[1]);
                 if (crsTransformer != null) {
-                    point = crsTransformer.transform(point);
+                    point = crsTransformer.transform(point, false);
                 }
 
                 FeaturePropertyDTO longitude = new FeaturePropertyDTO();

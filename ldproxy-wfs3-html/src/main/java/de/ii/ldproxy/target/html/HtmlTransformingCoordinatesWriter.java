@@ -45,7 +45,7 @@ public class HtmlTransformingCoordinatesWriter extends HtmlCoordinatesWriter {
 
     private void writeCoordinates() throws IOException {       
         if (transformer != null) {
-            CoordinateTuple c = transformer.transform(coordinateBuffer);
+            CoordinateTuple c = transformer.transform(coordinateBuffer, false);
 
             output.write(c.getXasString());
             output.write(",");

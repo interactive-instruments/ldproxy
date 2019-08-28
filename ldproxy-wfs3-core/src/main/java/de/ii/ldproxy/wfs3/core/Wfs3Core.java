@@ -194,7 +194,7 @@ public class Wfs3Core implements ConformanceClass {
         checkCollectionName(dataset.getData(), collectionName);
         Optional<CrsTransformer> crsTransformer = dataset.getCrsTransformer(query.getCrs());
 
-        boolean swapCoordinates = !crsTransformer.isPresent() && dataset.getFeatureProvider()
+        boolean swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get().needsCoordinateSwap() : dataset.getFeatureProvider()
                                                                         .shouldSwapCoordinates(query.getCrs());
 
         final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
