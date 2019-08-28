@@ -307,7 +307,7 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
             double[] transformed = transformer.transform(coordinates.stream()
                                                                     .flatMap(Collection::stream)
                                                                     .mapToDouble(Double::doubleValue)
-                                                                    .toArray(), coordinates.size());
+                                                                    .toArray(), coordinates.size(), false);
             List<List<Double>> result = new ArrayList<>();
             for (int i = 0; i < transformed.length; i += 2) {
                 result.add(ImmutableList.of(transformed[i], transformed[i + 1]));
