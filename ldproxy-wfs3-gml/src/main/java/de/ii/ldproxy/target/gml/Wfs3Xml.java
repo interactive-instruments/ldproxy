@@ -7,8 +7,6 @@
  */
 package de.ii.ldproxy.target.gml;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
@@ -28,6 +26,6 @@ public interface Wfs3Xml {
 
     @XmlAttribute(name = "schemaLocation", namespace = "http://www.w3.org/2001/XMLSchema-instance")
     default String getSchemaLocation() {
-        return "http://www.opengis.net/wfs/3.0 https://raw.githubusercontent.com/opengeospatial/WFS_FES/master/core/xml/wfs.xsd";
+        return "http://www.opengis.net/wfs/3.0 https://raw.githubusercontent.com/opengeospatial/WFS_FES/master/core/xml/core.xsd";
     }
 }

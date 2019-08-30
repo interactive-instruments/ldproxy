@@ -30,14 +30,14 @@ public class Wfs3CollectionXml {
         this.wfs3Collection = wfs3Collection;
     }
 
-    @XmlElement(name = "Name")
-    public String getName() {
+    @XmlElement(name = "Id")
+    public String getId() {
         return wfs3Collection.getId();
     }
 
     @XmlElement(name = "Title")
     public String getTitle() {
-        return wfs3Collection.getTitle();
+        return wfs3Collection.getTitle().orElse(null);
     }
 
     @XmlElement(name = "Description")

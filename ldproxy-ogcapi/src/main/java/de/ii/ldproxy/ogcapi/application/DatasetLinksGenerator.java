@@ -49,8 +49,8 @@ public class DatasetLinksGenerator {
                                         .ensureLastPathSegment("api")
                                         .setParameter("f", "json")
                                         .toString())
-                        .rel("service")
-                        .type("application/openapi+json;version=3.0")
+                        .rel("service-desc")
+                        .type("application/vnd.oai.openapi+json;version=3.0")
                         .description("the OpenAPI definition")
                         .typeLabel("JSON")
                         .build())
@@ -60,7 +60,7 @@ public class DatasetLinksGenerator {
                                         .ensureLastPathSegment("api")
                                         .setParameter("f", "html")
                                         .toString())
-                        .rel("service")
+                        .rel("service-doc")
                         .type("text/html")
                         .description("the OpenAPI definition")
                         .typeLabel("HTML")
@@ -73,7 +73,7 @@ public class DatasetLinksGenerator {
                                         .toString())
                         .rel("conformance")
                         .type("application/json")
-                        .description("WFS 3.0 conformance classes implemented by this server")
+                        .description("Conformance classes implemented by this server")
                         .build());
         if (!isCollections) {
             builder
@@ -171,7 +171,7 @@ public class DatasetLinksGenerator {
         } else {
             links.add(new ImmutableWfs3Link.Builder()
                     .href(uriBuilder.copy()
-                                    .removeLastPathSegments(1)
+                                    .removeLastPathSegments(2)
                                     .clearParameters()
                                     .setParameter("f", mediaType.parameter())
                                     .toString())

@@ -56,6 +56,19 @@ public class Wfs3EndpointOpenApi implements ConformanceClass, OgcApiEndpointExte
                     .build(),
             new ImmutableOgcApiMediaType.Builder()
                     .main(MediaType.TEXT_HTML_TYPE)
+                    .build(),
+            // the following is needed, because the HTML requires sub-resources
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(new MediaType("application", "javascript"))
+                    .build(),
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(MediaType.APPLICATION_JSON_TYPE)
+                    .build(),
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(new MediaType("image", "*"))
+                    .build(),
+            new ImmutableOgcApiMediaType.Builder()
+                    .main(new MediaType("text", "css"))
                     .build()
     );
 

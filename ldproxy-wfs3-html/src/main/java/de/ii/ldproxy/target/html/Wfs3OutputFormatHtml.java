@@ -154,6 +154,7 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
     public Response getCollectionResponse(Wfs3Collection wfs3Collection, OgcApiDatasetData datasetData,
                                           OgcApiMediaType mediaType, List<OgcApiMediaType> alternativeMediaTypes,
                                           URICustomizer uriCustomizer, String collectionName) {
+        // TODO: return Collection info
         return Response.status(MOVED_PERMANENTLY)
                        .header(HttpHeaders.LOCATION, uriCustomizer.copy()
                                                                   .ensureLastPathSegment("items")

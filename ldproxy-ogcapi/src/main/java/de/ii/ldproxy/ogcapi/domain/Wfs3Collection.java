@@ -8,9 +8,7 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -27,7 +25,7 @@ public abstract class Wfs3Collection {
 
     public abstract String getId();
 
-    public abstract String getTitle();
+    public abstract Optional<String> getTitle();
 
     public abstract Optional<String> getDescription();
 

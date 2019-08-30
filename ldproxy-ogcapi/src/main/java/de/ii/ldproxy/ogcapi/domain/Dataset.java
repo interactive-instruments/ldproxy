@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import org.immutables.value.Value;
 
 import java.util.Comparator;
@@ -26,9 +25,9 @@ import java.util.stream.Collectors;
 @JsonDeserialize(builder = ImmutableDataset.Builder.class)
 public abstract class Dataset {
 
-    public abstract String getTitle();
+    public abstract Optional<String> getTitle();
 
-    public abstract String getDescription();
+    public abstract Optional<String> getDescription();
 
     public abstract List<Wfs3Link> getLinks();
 

@@ -82,7 +82,6 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
             .addMethods(HttpMethods.POST, HttpMethods.PUT, HttpMethods.DELETE, HttpMethods.PATCH)
             .build();
 
-
     private final StylesStore stylesStore;
     private final OgcApiExtensionRegistry extensionRegistry;
 

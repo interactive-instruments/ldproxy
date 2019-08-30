@@ -231,7 +231,7 @@ public class Wfs3DatasetView extends View {
         }
 
         @Override
-        public String getTitle() {
+        public Optional<String> getTitle() {
             return collection.getTitle();
         }
 
