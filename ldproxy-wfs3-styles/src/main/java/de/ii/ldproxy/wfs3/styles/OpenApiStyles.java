@@ -12,11 +12,7 @@ import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.MediaType;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -235,6 +231,8 @@ public class OpenApiStyles implements Wfs3OpenApiExtension {
                                 .addApiResponse("400", status400)
                                 .addApiResponse("404", status404)
                                 .addApiResponse("406", status406)));
+
+                defineStyleMetadataSchema(openAPI);
             }
         }
         return openAPI;
@@ -273,6 +271,131 @@ public class OpenApiStyles implements Wfs3OpenApiExtension {
         openAPI.getComponents()
                .addSchemas("styleEntry", styleEntry);
 
+    }
+
+    private void defineStyleMetadataSchema(OpenAPI openAPI) {
+        Schema styleMetadata = new Schema();
+        styleMetadata.setType("object");
+
+        List<String> required = new ArrayList<>();
+        required.add("id");
+        styleMetadata.setRequired(required);
+
+        styleMetadata.addProperties("id", new StringSchema());
+        styleMetadata.addProperties("title", new StringSchema().nullable(true));
+        styleMetadata.addProperties("description", new StringSchema().nullable(true));
+        styleMetadata.addProperties("keywords", new ArraySchema().items(new StringSchema())
+                .nullable(true));
+        styleMetadata.addProperties("pointOfContact", new StringSchema().nullable(true));
+
+        List<String> enumAccessConstraints = new ArrayList<>();
+        enumAccessConstraints.add("unclassified");
+        enumAccessConstraints.add("confidential");
+        enumAccessConstraints.add("restricted");
+        enumAccessConstraints.add("secret");
+        enumAccessConstraints.add("topSecret");
+        Schema accessConstraints = new StringSchema().nullable(true);
+        accessConstraints.setEnum(enumAccessConstraints);
+        styleMetadata.addProperties("accessConstraints", accessConstraints);
+
+        styleMetadata.addProperties("dates", new Schema().$ref("#/components/schemas/styleDates")
+                .nullable(true));
+
+        List<String> enumScope = new ArrayList<>();
+        enumScope.add("scope");
+        Schema scope = new StringSchema().nullable(true);
+        accessConstraints.setEnum(enumAccessConstraints);
+        styleMetadata.addProperties("scope", scope);
+
+        styleMetadata.addProperties("version", new StringSchema().nullable(true));
+        styleMetadata.addProperties("stylesheets", new ArraySchema().items(new Schema().$ref("#/components/schemas/stylesheet"))
+                .nullable(true));
+        styleMetadata.addProperties("layers", new ArraySchema().items(new Schema().$ref("#/components/schemas/styleLayer"))
+                .nullable(true));
+        styleMetadata.addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link"))
+                .nullable(true));
+
+        openAPI.getComponents()
+                .addSchemas("styleMetadata", styleMetadata);
+
+        defineStyleDatesSchema(openAPI);
+        defineStylesheetSchema(openAPI);
+        defineStyleLayerSchema(openAPI);
+    }
+
+    private void defineStyleDatesSchema(OpenAPI openAPI) {
+        Schema styleDates = new Schema();
+        styleDates.setType("object");
+        styleDates.nullable(true);
+
+        styleDates.addProperties("creation", new StringSchema().nullable(true).format("date-time"));
+        styleDates.addProperties("publication", new StringSchema().nullable(true).format("date-time"));
+        styleDates.addProperties("revision", new StringSchema().nullable(true).format("date-time"));
+        styleDates.addProperties("validTill", new StringSchema().nullable(true).format("date-time"));
+        styleDates.addProperties("receivedOn", new StringSchema().nullable(true).format("date-time"));
+
+        openAPI.getComponents()
+                .addSchemas("styleDates", styleDates);
+    }
+
+    private void defineStylesheetSchema(OpenAPI openAPI) {
+        Schema stylesheet = new Schema();
+        stylesheet.setType("object");
+        stylesheet.nullable(true);
+
+        List<String> required = new ArrayList<>();
+        required.add("link");
+        stylesheet.setRequired(required);
+
+        stylesheet.addProperties("title", new StringSchema().nullable(true));
+        stylesheet.addProperties("version", new StringSchema().nullable(true));
+        stylesheet.addProperties("specification", new StringSchema().nullable(true).format("url"));
+        stylesheet.addProperties("native", new BooleanSchema().nullable(true));
+        stylesheet.addProperties("tilingScheme", new StringSchema().nullable(true));
+        stylesheet.addProperties("link", new Schema().$ref("#/components/schemas/link"));
+
+        openAPI.getComponents()
+                .addSchemas("stylesheet", stylesheet);
+    }
+
+    private void defineStyleLayerSchema(OpenAPI openAPI) {
+        Schema styleLayer = new Schema();
+        styleLayer.setType("object");
+        styleLayer.nullable(true);
+
+        List<String> required = new ArrayList<>();
+        required.add("id");
+        styleLayer.setRequired(required);
+
+        styleLayer.addProperties("id", new StringSchema());
+        styleLayer.addProperties("description", new StringSchema().nullable(true));
+        List<String> enumType = new ArrayList<>();
+        enumType.add("point");
+        enumType.add("line");
+        enumType.add("polygon");
+        enumType.add("geometry");
+        enumType.add("raster");
+        Schema type = new StringSchema().nullable(true);
+        type.setEnum(enumType);
+        styleLayer.addProperties("type", type);
+        styleLayer.addProperties("attributes", new Schema().$ref("#/components/schemas/queryables"));
+        styleLayer.addProperties("sampleData", new Schema().$ref("#/components/schemas/link"));
+
+        openAPI.getComponents()
+                .addSchemas("styleLayer", styleLayer);
+
+        defineQueryablesSchema(openAPI);
+    }
+
+    private void defineQueryablesSchema(OpenAPI openAPI) {
+        Schema queryables = new Schema();
+        queryables.setType("object");
+        queryables.nullable(true);
+
+        // TODO: add schema
+
+        openAPI.getComponents()
+                .addSchemas("queryables", queryables);
     }
 
     private void defineMbStyleSchema(OpenAPI openAPI) {
