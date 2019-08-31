@@ -52,6 +52,12 @@ public class Wfs3ExtensionRegistryImpl implements OgcApiExtensionRegistry {
         this.wfs3Extensions = new ArrayList<>();;
     }
 
+    // TODO: temporary hack so that the ogcapi-features-1/core conformance class can be added, too. Refactoring is required so that the extension registry is not part of Wfs3Core
+    @Override
+    public void addExtension(OgcApiExtension extension) {
+        wfs3Extensions.add(extension);
+    }
+
     @Override
     public List<OgcApiExtension> getExtensions() {
         return wfs3Extensions;

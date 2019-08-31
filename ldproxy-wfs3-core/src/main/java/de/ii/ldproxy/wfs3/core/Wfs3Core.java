@@ -71,6 +71,10 @@ public class Wfs3Core implements ConformanceClass {
 
     public Wfs3Core(@Requires OgcApiExtensionRegistry extensionRegistry, @Requires Dropwizard dropwizard) {
         this.extensionRegistry = extensionRegistry;
+
+        // TODO: temporary hack so that the ogcapi-features-1/core conformance class can be added, too. Refactoring is required so that the extension registry is not part of Wfs3Core
+        this.extensionRegistry.addExtension(this);
+
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
     }
