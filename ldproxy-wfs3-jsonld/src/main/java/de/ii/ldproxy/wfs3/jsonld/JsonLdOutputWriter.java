@@ -56,7 +56,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                               FeatureTypeMapping featureTypeMapping, String outputFormat, CrsTransformer crsTransformer,
                               URI requestUri, FeatureCollectionView dataset, Map<String, String> rewrites,
                               String vocab) {
-        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer/*, new JsonLdOnTheFlyMapping()*/);
+        super(jsonOut, jsonMapper, isFeatureCollection, crsTransformer/*, new JsonLdOnTheFlyMapping()*/, false /* TODO: make configurable */ );
         this.featureTypeMapping = featureTypeMapping;
         this.outputFormat = outputFormat;
         this.objectDepth = 0;

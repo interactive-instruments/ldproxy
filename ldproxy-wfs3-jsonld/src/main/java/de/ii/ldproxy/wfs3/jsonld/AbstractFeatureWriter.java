@@ -10,7 +10,6 @@ package de.ii.ldproxy.wfs3.jsonld;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import de.ii.ldproxy.ogcapi.domain.AbstractWfs3GenericMapping;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
@@ -46,6 +45,7 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
     protected List<String> outFields;
     protected boolean geometryWithSR;
     protected boolean returnGeometry;
+    protected boolean useFormattedJsonOutput;
     protected Map<String, Integer> fieldCounter;
     protected boolean isFeatureCollection;
     protected double maxAllowableOffset;
@@ -63,7 +63,7 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
 
     public AbstractFeatureWriter(/*WFS2GSFSLayer layer,*/ JsonGenerator jsonOut, ObjectMapper jsonMapper,
                                                           boolean isFeatureCollection /*,LayerQueryParameters layerQueryParams, boolean featureRessource*/,
-                                                          CrsTransformer crsTransformer/*, WfsProxyOnTheFlyMapping onTheFlyMapping*/) {
+                                                          CrsTransformer crsTransformer/*, WfsProxyOnTheFlyMapping onTheFlyMapping*/, boolean useFormattedJsonOutput) {
         this.jsonOut = jsonOut;
         this.json = jsonOut;
         this.jsonMapper = jsonMapper;
@@ -71,6 +71,7 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
         //this.layer = layer;
         //this.featureRessource = featureRessource;
         //this.returnGeometry = layerQueryParams.isReturnGeometry();
+        this.useFormattedJsonOutput = useFormattedJsonOutput;
         this.currentPath = new XMLPathTracker();
         /*if (layerQueryParams.getOutSR() != null) {
             this.outSRS = layerQueryParams.getOutSR();
@@ -283,13 +284,12 @@ public abstract class AbstractFeatureWriter /*implements GMLAnalyzer*/ {
         }
     }
 
-    // TODO
     public TokenBuffer createJsonBuffer() throws IOException {
         TokenBuffer json = new TokenBuffer(jsonMapper, false);
 
-        //if (useFormattedJsonOutput) {
-        json.useDefaultPrettyPrinter();
-        //}
+        if (useFormattedJsonOutput) {
+            json.useDefaultPrettyPrinter();
+        }
         return json;
     }
 

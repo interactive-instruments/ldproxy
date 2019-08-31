@@ -17,6 +17,8 @@ public interface GeoJsonConfig {
 
     FeatureTransformerGeoJson.MULTIPLICITY getMultiplicityStrategy();
 
+    boolean getUseFormattedJsonOutput();
+
     @Value.Default
     default String getSeparator() {
         return ".";

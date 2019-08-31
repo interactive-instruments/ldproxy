@@ -66,4 +66,10 @@ public abstract class StylesConfiguration implements ExtensionConfiguration {
     public boolean getSld11Enabled() {
         return false;
     }
+
+    @Value.Default
+    public boolean getUseFormattedJsonOutput() {
+        return false;
+    }
+
 }
