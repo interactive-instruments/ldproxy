@@ -73,8 +73,8 @@ public class GeoJsonWriterCrsSpec {
                 runTransformer(outputStream, isCollection, crs);
 
                 String actual = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
-                String expected = "{\n" +
-                        "  \"crs\" : \"http://www.opengis.net/def/crs/EPSG/0/4258\"\n" +
+                String expected = "{" + System.lineSeparator() +
+                        "  \"crs\" : \"http://www.opengis.net/def/crs/EPSG/0/4258\"" + System.lineSeparator() +
                         "}";
 
                 assertEquals(actual, expected);

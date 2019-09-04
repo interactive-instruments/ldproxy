@@ -80,11 +80,11 @@ public class GeoJsonWriterPropertiesSpec {
                         runTransformer(outputStream, ImmutableList.of(propertyMapping, propertyMapping2), ImmutableList.of(ImmutableList.of(), ImmutableList.of()), ImmutableList.of(value1, value2));
 
                         String actual = GeoJsonWriterSetupUtil.asString(outputStream);
-                        String expected = "{\n" +
-                                "  \"properties\" : {\n" +
-                                "    \"p1\" : \"val1\",\n" +
-                                "    \"p2\" : 2\n" +
-                                "  }\n" +
+                        String expected = "{" + System.lineSeparator() +
+                                "  \"properties\" : {" + System.lineSeparator() +
+                                "    \"p1\" : \"val1\"," + System.lineSeparator() +
+                                "    \"p2\" : 2" + System.lineSeparator() +
+                                "  }" + System.lineSeparator() +
                                 "}";
 
                         assertEquals(actual, expected);
@@ -121,14 +121,14 @@ public class GeoJsonWriterPropertiesSpec {
                             runTransformer(outputStream, ImmutableList.of(mapping1, mapping2, mapping3), ImmutableList.of(ImmutableList.of(), ImmutableList.of(), ImmutableList.of()));
 
                             String actual = GeoJsonWriterSetupUtil.asString(outputStream);
-                            String expected = "{\n" +
-                                    "  \"properties\" : {\n" +
-                                    "    \"foto\" : {\n" +
-                                    "      \"bemerkung\" : \"xyz\",\n" +
-                                    "      \"hauptfoto\" : \"xyz\"\n" +
-                                    "    },\n" +
-                                    "    \"kennung\" : \"xyz\"\n" +
-                                    "  }\n" +
+                            String expected = "{" + System.lineSeparator() +
+                                    "  \"properties\" : {" + System.lineSeparator() +
+                                    "    \"foto\" : {" + System.lineSeparator() +
+                                    "      \"bemerkung\" : \"xyz\"," + System.lineSeparator() +
+                                    "      \"hauptfoto\" : \"xyz\"" + System.lineSeparator() +
+                                    "    }," + System.lineSeparator() +
+                                    "    \"kennung\" : \"xyz\"" + System.lineSeparator() +
+                                    "  }" + System.lineSeparator() +
                                     "}";
 
                             assertEquals(actual, expected);
@@ -173,18 +173,18 @@ public class GeoJsonWriterPropertiesSpec {
                             runTransformer(outputStream, mappings, multiplicities);
 
                             String actual = GeoJsonWriterSetupUtil.asString(outputStream);
-                            String expected = "{\n" +
-                                    "  \"properties\" : {\n" +
-                                    "    \"foto\" : [ {\n" +
-                                    "      \"bemerkung\" : \"xyz\",\n" +
-                                    "      \"hauptfoto\" : \"xyz\"\n" +
-                                    "    }, {\n" +
-                                    "      \"bemerkung\" : \"xyz\",\n" +
-                                    "      \"hauptfoto\" : \"xyz\"\n" +
-                                    "    } ],\n" +
-                                    "    \"fachreferenz\" : [ \"xyz\", \"xyz\" ],\n" +
-                                    "    \"kennung\" : \"xyz\"\n" +
-                                    "  }\n" +
+                            String expected = "{" + System.lineSeparator() +
+                                    "  \"properties\" : {" + System.lineSeparator() +
+                                    "    \"foto\" : [ {" + System.lineSeparator() +
+                                    "      \"bemerkung\" : \"xyz\"," + System.lineSeparator() +
+                                    "      \"hauptfoto\" : \"xyz\"" + System.lineSeparator() +
+                                    "    }, {" + System.lineSeparator() +
+                                    "      \"bemerkung\" : \"xyz\"," + System.lineSeparator() +
+                                    "      \"hauptfoto\" : \"xyz\"" + System.lineSeparator() +
+                                    "    } ]," + System.lineSeparator() +
+                                    "    \"fachreferenz\" : [ \"xyz\", \"xyz\" ]," + System.lineSeparator() +
+                                    "    \"kennung\" : \"xyz\"" + System.lineSeparator() +
+                                    "  }" + System.lineSeparator() +
                                     "}";
 
                             assertEquals(actual, expected);
@@ -228,20 +228,20 @@ public class GeoJsonWriterPropertiesSpec {
                             runTransformer(outputStream, mappings, multiplicities);
 
                             String actual = GeoJsonWriterSetupUtil.asString(outputStream);
-                            String expected = "{\n" +
-                                    "  \"properties\" : {\n" +
-                                    "    \"raumreferenz\" : [ {\n" +
-                                    "      \"datumAbgleich\" : \"xyz\",\n" +
-                                    "      \"ortsangaben\" : [ {\n" +
-                                    "        \"kreis\" : \"xyz\",\n" +
-                                    "        \"flurstueckskennung\" : [ \"xyz\", \"xyz\" ]\n" +
-                                    "      }, {\n" +
-                                    "        \"kreis\" : \"xyz\",\n" +
-                                    "        \"flurstueckskennung\" : [ \"xyz\" ]\n" +
-                                    "      } ]\n" +
-                                    "    } ],\n" +
-                                    "    \"kennung\" : \"xyz\"\n" +
-                                    "  }\n" +
+                            String expected = "{" + System.lineSeparator() +
+                                    "  \"properties\" : {" + System.lineSeparator() +
+                                    "    \"raumreferenz\" : [ {" + System.lineSeparator() +
+                                    "      \"datumAbgleich\" : \"xyz\"," + System.lineSeparator() +
+                                    "      \"ortsangaben\" : [ {" + System.lineSeparator() +
+                                    "        \"kreis\" : \"xyz\"," + System.lineSeparator() +
+                                    "        \"flurstueckskennung\" : [ \"xyz\", \"xyz\" ]" + System.lineSeparator() +
+                                    "      }, {" + System.lineSeparator() +
+                                    "        \"kreis\" : \"xyz\"," + System.lineSeparator() +
+                                    "        \"flurstueckskennung\" : [ \"xyz\" ]" + System.lineSeparator() +
+                                    "      } ]" + System.lineSeparator() +
+                                    "    } ]," + System.lineSeparator() +
+                                    "    \"kennung\" : \"xyz\"" + System.lineSeparator() +
+                                    "  }" + System.lineSeparator() +
                                     "}";
 
                             assertEquals(actual, expected);
