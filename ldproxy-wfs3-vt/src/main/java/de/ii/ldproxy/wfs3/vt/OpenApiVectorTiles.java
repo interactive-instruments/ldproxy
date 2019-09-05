@@ -13,11 +13,7 @@ import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.MediaType;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -268,12 +264,12 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             List<Double> lowerCorner = new ArrayList<>();
             lowerCorner.add(-20037508.3427892);
             lowerCorner.add(-20037508.342789);
-            boundingBox.addProperties("lowerCorner", new Schema().type("array")
+            boundingBox.addProperties("lowerCorner", new ArraySchema().items(new NumberSchema().minItems(2).maxItems(2))
                                                                  .example(lowerCorner));
             List<Double> upperCorner = new ArrayList<>();
             upperCorner.add(20037508.3427892);
             upperCorner.add(20037508.3427892);
-            boundingBox.addProperties("upperCorner", new Schema().type("array")
+            boundingBox.addProperties("upperCorner", new ArraySchema().items(new NumberSchema().minItems(2).maxItems(2))
                                                                  .example(upperCorner));
 
 
@@ -302,7 +298,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             List<Double> topLeftCorner = new ArrayList<>();
             topLeftCorner.add(-20037508.3427892);
             topLeftCorner.add(20037508.3427892);
-            matrix.addProperties("topLeftCorner", new Schema().type("array")
+            matrix.addProperties("topLeftCorner", new ArraySchema().items(new NumberSchema().minItems(2).maxItems(2))
                                                               .example(topLeftCorner));
 
             Schema tilingScheme = new Schema();

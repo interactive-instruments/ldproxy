@@ -115,6 +115,8 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
         for (File resourceFile : apiDir.listFiles()) {
 
             String resourceId = resourceFile.getName();
+            if (resourceFile.isHidden())
+                continue; // skip invisible files
             Map<String, Object> resourceInfo = new HashMap<>();
             resourceInfo.put("id", resourceId);
             resourceInfo.put("links", resourcesLinkGenerator.generateResourceLink(ogcApiRequest.getUriCustomizer(), resourceId));

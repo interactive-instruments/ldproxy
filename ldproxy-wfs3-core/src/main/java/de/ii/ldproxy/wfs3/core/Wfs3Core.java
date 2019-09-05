@@ -147,19 +147,19 @@ public class Wfs3Core implements ConformanceClass {
         //TODO: to crs extension
         if (isNested) {
             collection.crs(
-                    Stream.concat(
-                            Stream.of(
-                                    apiData.getFeatureProvider()
-                                               .getNativeCrs()
-                                               .getAsUri(),
-                                    OgcApiDatasetData.DEFAULT_CRS_URI
-                            ),
-                            apiData.getAdditionalCrs()
-                                       .stream()
-                                       .map(EpsgCrs::getAsUri)
-                    )
-                          .distinct()
-                          .collect(ImmutableList.toImmutableList())
+                    ImmutableList.<String>builder()
+                            .addAll(Stream.of(apiData.getFeatureProvider()
+                                    .getNativeCrs()
+                                    .getAsUri())
+                                    .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
+                                    .collect(Collectors.toList()))
+                            .add(OgcApiDatasetData.DEFAULT_CRS_URI)
+                            .addAll(apiData.getAdditionalCrs()
+                                    .stream()
+                                    .map(EpsgCrs::getAsUri)
+                                    .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
+                                    .collect(Collectors.toList()))
+                            .build()
             );
         }
 

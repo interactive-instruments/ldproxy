@@ -12,20 +12,16 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
+import de.ii.ldproxy.wfs3.api.Wfs3CollectionFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
-import de.ii.ldproxy.wfs3.api.Wfs3CollectionFormatExtension;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -33,11 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
@@ -156,7 +148,8 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3CollectionFor
 
     @Override
     public Response getCollectionsResponse(Dataset dataset, OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return null;
+        // TODO
+        return getLandingPageResponse(dataset, api, requestContext);
     }
 
 

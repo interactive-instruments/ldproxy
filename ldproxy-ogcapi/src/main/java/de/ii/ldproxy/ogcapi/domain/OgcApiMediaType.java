@@ -24,7 +24,6 @@ public interface OgcApiMediaType {
         return type().getSubtype().toUpperCase();
     }
 
-    // TODO: change approach
     @Value.Default
     default String parameter() {
         return type().getSubtype().contains("+") ? type().getSubtype().substring(type().getSubtype().lastIndexOf("+")+1)  : type().getSubtype();

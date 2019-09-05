@@ -180,8 +180,6 @@ public class Wfs3LinksGenerator {
                     rel = "alternate";
                     type = "application/gml+xml;profile=\\\"http://www.opengis.net/def/profile/ogc/2.0/gml-sf2\\\";version=3.2";
             }
-            if (isCollection)
-                rel = "data";
             return new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder
                             .copy()

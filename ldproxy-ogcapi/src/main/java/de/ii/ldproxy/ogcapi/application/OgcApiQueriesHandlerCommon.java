@@ -68,26 +68,23 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
 
     public Response getLandingPageResponse(OgcApiRequestContext requestContext) {
 
-        final DatasetLinksGenerator linksGenerator = new DatasetLinksGenerator();
+        final LandingPageLinksGenerator linksGenerator = new LandingPageLinksGenerator();
 
         //TODO: to crs extension
-        ImmutableList<String> crs = Stream.concat(
-                Stream.of(
-                        requestContext.getApi()
-                                .getData()
-                                .getFeatureProvider()
-                                .getNativeCrs()
-                                .getAsUri(),
-                        OgcApiDatasetData.DEFAULT_CRS_URI
-                ),
-                requestContext.getApi()
-                        .getData()
-                        .getAdditionalCrs()
+        OgcApiDatasetData apiData = requestContext.getApi().getData();
+        ImmutableList<String> crs = ImmutableList.<String>builder()
+                .addAll(Stream.of(apiData.getFeatureProvider()
+                        .getNativeCrs()
+                        .getAsUri())
+                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
+                        .collect(Collectors.toList()))
+                .add(OgcApiDatasetData.DEFAULT_CRS_URI)
+                .addAll(apiData.getAdditionalCrs()
                         .stream()
                         .map(EpsgCrs::getAsUri)
-        )
-                .distinct()
-                .collect(ImmutableList.toImmutableList());
+                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
+                        .collect(Collectors.toList()))
+                .build();
 
         CommonFormatExtension format =
                 requestContext.getApi()
@@ -103,7 +100,7 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                 .map(alternateFormat -> alternateFormat.getMediaType())
                 .collect(Collectors.toList());
 
-        List<OgcApiLink> ogcApiLinks = linksGenerator.generateDatasetLinks(requestContext.getUriCustomizer().copy(), Optional.empty(), requestContext.getMediaType(), alternateMediaTypes);
+        List<OgcApiLink> ogcApiLinks = linksGenerator.generateLandingPageLinks(requestContext.getUriCustomizer().copy(), Optional.empty(), requestContext.getMediaType(), alternateMediaTypes);
 
         ImmutableDataset.Builder dataset = new ImmutableDataset.Builder()
                 .crs(crs)
@@ -118,31 +115,26 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
 
 
     private Response getLandingPageResponse(OgcApiQueryInputLandingPage queryInput, OgcApiRequestContext requestContext) {
-        final DatasetLinksGenerator linksGenerator = new DatasetLinksGenerator();
+        final LandingPageLinksGenerator linksGenerator = new LandingPageLinksGenerator();
 
         //TODO: to crs extension
-        ImmutableList<String> crs = Stream.concat(
-                Stream.of(
-                        requestContext.getApi()
-                                      .getData()
-                                      .getFeatureProvider()
-                                      .getNativeCrs()
-                                      .getAsUri(),
-                        OgcApiDatasetData.DEFAULT_CRS_URI
-                ),
-                requestContext.getApi()
-                              .getData()
-                              .getAdditionalCrs()
-                              .stream()
-                              .map(EpsgCrs::getAsUri)
-        )
-                                           .distinct()
-                                           .collect(ImmutableList.toImmutableList());
+        OgcApiDatasetData apiData = requestContext.getApi().getData();
+        ImmutableList<String> crs = ImmutableList.<String>builder()
+                .addAll(Stream.of(apiData.getFeatureProvider()
+                        .getNativeCrs()
+                        .getAsUri())
+                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
+                        .collect(Collectors.toList()))
+                .add(OgcApiDatasetData.DEFAULT_CRS_URI)
+                .addAll(apiData.getAdditionalCrs()
+                        .stream()
+                        .map(EpsgCrs::getAsUri)
+                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
+                        .collect(Collectors.toList()))
+                .build();
 
-
-        List<OgcApiLink> ogcApiLinks = linksGenerator.generateDatasetLinks(requestContext.getUriCustomizer()
+        List<OgcApiLink> ogcApiLinks = linksGenerator.generateLandingPageLinks(requestContext.getUriCustomizer()
                                                                                      .copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, requestContext.getMediaType(), requestContext.getAlternateMediaTypes());
-
 
         ImmutableDataset.Builder dataset = new ImmutableDataset.Builder()
                 //.collections(collections)

@@ -27,9 +27,6 @@ public class OgcApiContentNegotiation {
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiContentNegotiation.class);
     private static final String CONTENT_TYPE_PARAMETER = "f";
     private static final String ACCEPT_HEADER = "Accept";
-    private static final String DEFAULT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
-
-    // TODO: review
 
     public OgcApiContentNegotiation() {
     }

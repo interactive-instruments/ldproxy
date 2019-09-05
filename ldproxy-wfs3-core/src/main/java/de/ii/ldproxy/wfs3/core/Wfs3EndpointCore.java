@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.core;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.application.DatasetLinksGenerator;
+import de.ii.ldproxy.ogcapi.application.LandingPageLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
 import de.ii.ldproxy.wfs3.api.Wfs3CollectionFormatExtension;
@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @Provides
@@ -114,27 +115,30 @@ public class Wfs3EndpointCore implements OgcApiEndpointExtension {
         OgcApiDatasetData apiData = service.getData();
         checkAuthorization(apiData, optionalUser);
 
-        final DatasetLinksGenerator linksGenerator = new DatasetLinksGenerator();
+        final LandingPageLinksGenerator linksGenerator = new LandingPageLinksGenerator();
 
-        //TODO: to crs extension, remove duplicates
+        //TODO: to crs extension
         ImmutableList<String> crs = ImmutableList.<String>builder()
-                .add(apiData.getFeatureProvider()
+                .addAll(Stream.of(apiData.getFeatureProvider()
                         .getNativeCrs()
                         .getAsUri())
+                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
+                        .collect(Collectors.toList()))
                 .add(OgcApiDatasetData.DEFAULT_CRS_URI)
                 .addAll(apiData.getAdditionalCrs()
                         .stream()
                         .map(EpsgCrs::getAsUri)
+                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
                         .collect(Collectors.toList()))
                 .build();
 
         Wfs3CollectionFormatExtension format = service.getOutputFormat(Wfs3CollectionFormatExtension.class, ogcApiRequest.getMediaType(), "/").orElseThrow(NotAcceptableException::new);
-        List<CommonFormatExtension> alternateFormats = service.getAllOutputFormats(CommonFormatExtension.class, ogcApiRequest.getMediaType(), "/", Optional.of(format));
+        List<Wfs3CollectionFormatExtension> alternateFormats = service.getAllOutputFormats(Wfs3CollectionFormatExtension.class, ogcApiRequest.getMediaType(), "/", Optional.of(format));
         List<OgcApiMediaType> alternateMediaTypes = alternateFormats.stream()
                 .map(alternateFormat -> alternateFormat.getMediaType())
                 .collect(Collectors.toList());
 
-        List<OgcApiLink> ogcApiLinks = linksGenerator.generateDatasetLinks(ogcApiRequest.getUriCustomizer().copy(), Optional.empty(), ogcApiRequest.getMediaType(), alternateMediaTypes);
+        List<OgcApiLink> ogcApiLinks = linksGenerator.generateLandingPageLinks(ogcApiRequest.getUriCustomizer().copy(), Optional.empty(), ogcApiRequest.getMediaType(), alternateMediaTypes);
 
         ImmutableDataset.Builder dataset = new ImmutableDataset.Builder()
                 .crs(crs)
