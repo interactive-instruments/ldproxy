@@ -8,11 +8,7 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
@@ -67,7 +63,7 @@ public class GeoJsonWriterSetupUtil {
                                                                }
 
                                                                @Override
-                                                               public OgcApiDatasetData getApi() {
+                                                               public OgcApiDataset getApi() {
                                                                    return null;
                                                                }
 

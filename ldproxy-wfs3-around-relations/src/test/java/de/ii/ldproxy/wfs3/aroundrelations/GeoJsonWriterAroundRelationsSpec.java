@@ -298,7 +298,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                }
 
                                                                @Override
-                                                               public OgcApiDatasetData getApi() {
+                                                               public OgcApiDataset getApi() {
                                                                    return null;
                                                                }
 
