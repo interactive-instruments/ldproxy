@@ -8,7 +8,8 @@
     "start": "webpack-dev-server",
     "build": "webpack -p --env production",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "preinstall": "node ./xtraplatform-manager/patch-yarn.js"
   },
   "author": "interactive instruments GmbH",
   "license": "MPL-2.0",

@@ -47,13 +47,13 @@ public class GeoJsonWriterAroundRelationsSpec {
         geometryMapping.setGeometryType(GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.POLYGON);
     }
 
-    static String expectedCollection = "{\n" +
-            "        \"type\" : \"FeatureCollection\",\n" +
-            "        \"links\" : [],\n" +
-            "        \"numberMatched\" : 8,\n" +
-            "        \"numberReturned\" : 5,\n" +
-            "        \"timeStamp\" : \"2018-08-30T15:36:08Z\",\n" +
-            "        \"features\" : [ { \"links\" : [ {\"rel\": \"self\", \"href\": \"RELATION\"} ] } ]\n" +
+    static String expectedCollection = "{" + System.lineSeparator() +
+            "        \"type\" : \"FeatureCollection\"," + System.lineSeparator() +
+            "        \"links\" : []," + System.lineSeparator() +
+            "        \"numberMatched\" : 8," + System.lineSeparator() +
+            "        \"numberReturned\" : 5," + System.lineSeparator() +
+            "        \"timeStamp\" : \"2018-08-30T15:36:08Z\"," + System.lineSeparator() +
+            "        \"features\" : [ { \"links\" : [ {\"rel\": \"self\", \"href\": \"RELATION\"} ] } ]" + System.lineSeparator() +
             "      }";
 
     {
@@ -197,17 +197,17 @@ public class GeoJsonWriterAroundRelationsSpec {
                         assertThat(nextTransformationContext[0]).isEqualTo(transformationContext);
 
                         String actual = new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
-                        String expected = "{\n" +
-                                "  \"additionalFeatures\" : {\n" +
-                                "    \"test1\" : {\n" +
-                                "        \"type\" : \"FeatureCollection\",\n" +
-                                "        \"links\" : [],\n" +
-                                "        \"numberMatched\" : 8,\n" +
-                                "        \"numberReturned\" : 5,\n" +
-                                "        \"timeStamp\" : \"2018-08-30T15:36:08Z\",\n" +
-                                "        \"features\" : [ { \"links\" : [ {\"rel\": \"self\", \"href\": \"RELATION\"} ] } ]\n" +
-                                "      }\n" +
-                                "  }\n" +
+                        String expected = "{" + System.lineSeparator() +
+                                "  \"additionalFeatures\" : {" + System.lineSeparator() +
+                                "    \"test1\" : {" + System.lineSeparator() +
+                                "        \"type\" : \"FeatureCollection\"," + System.lineSeparator() +
+                                "        \"links\" : []," + System.lineSeparator() +
+                                "        \"numberMatched\" : 8," + System.lineSeparator() +
+                                "        \"numberReturned\" : 5," + System.lineSeparator() +
+                                "        \"timeStamp\" : \"2018-08-30T15:36:08Z\"," + System.lineSeparator() +
+                                "        \"features\" : [ { \"links\" : [ {\"rel\": \"self\", \"href\": \"RELATION\"} ] } ]" + System.lineSeparator() +
+                                "      }" + System.lineSeparator() +
+                                "  }" + System.lineSeparator() +
                                 "}";
 
                         assertThat(actual).isEqualTo(expected);

@@ -50,11 +50,11 @@ public class GeoJsonWriterSkeletonSpec {
 
                     writeFeature(outputStream, true);
 
-                    String expected = "{\n" +
-                            "  \"type\" : \"FeatureCollection\",\n" +
-                            "  \"features\" : [ {\n" +
-                            "    \"type\" : \"Feature\"\n" +
-                            "  } ]\n" +
+                    String expected = "{" + System.lineSeparator() +
+                            "  \"type\" : \"FeatureCollection\"," + System.lineSeparator() +
+                            "  \"features\" : [ {" + System.lineSeparator() +
+                            "    \"type\" : \"Feature\"" + System.lineSeparator() +
+                            "  } ]" + System.lineSeparator() +
                             "}";
                     String actual = GeoJsonWriterSetupUtil.asString(outputStream);
 
@@ -70,8 +70,8 @@ public class GeoJsonWriterSkeletonSpec {
 
                     writeFeature(outputStream, false);
 
-                    String expected = "{\n" +
-                            "  \"type\" : \"Feature\"\n" +
+                    String expected = "{" + System.lineSeparator() +
+                            "  \"type\" : \"Feature\"" + System.lineSeparator() +
                             "}";
                     String actual = GeoJsonWriterSetupUtil.asString(outputStream);
 

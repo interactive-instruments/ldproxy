@@ -60,11 +60,11 @@ public class GeoJsonWriterGeometrySpec {
 
                     writeFeature(outputStream, ImmutableList.of(2, 1, 2, 2, 1, 1));
 
-                    String expected = "{\n" +
-                            "  \"geometry\" : {\n" +
-                            "    \"type\" : \"MultiPolygon\",\n" +
-                            "    \"coordinates\" : [ [ [ [ 10, 50 ], [ 11, 51 ] ], [ [ 10, 50 ], [ 11, 51 ] ] ], [ [ [ 10, 50 ], [ 11, 51 ] ] ], [ [ [ 10, 50 ], [ 11, 51 ] ], [ [ 10, 50 ], [ 11, 51 ] ], [ [ 10, 50 ], [ 11, 51 ] ] ] ]\n" +
-                            "  }\n" +
+                    String expected = "{" + System.lineSeparator() +
+                            "  \"geometry\" : {" + System.lineSeparator() +
+                            "    \"type\" : \"MultiPolygon\"," + System.lineSeparator() +
+                            "    \"coordinates\" : [ [ [ [ 10, 50 ], [ 11, 51 ] ], [ [ 10, 50 ], [ 11, 51 ] ] ], [ [ [ 10, 50 ], [ 11, 51 ] ] ], [ [ [ 10, 50 ], [ 11, 51 ] ], [ [ 10, 50 ], [ 11, 51 ] ], [ [ 10, 50 ], [ 11, 51 ] ] ] ]" + System.lineSeparator() +
+                            "  }" + System.lineSeparator() +
                             "}";
                     String actual = GeoJsonWriterSetupUtil.asString(outputStream);
 
@@ -79,8 +79,8 @@ public class GeoJsonWriterGeometrySpec {
 
                     writeFeature(outputStream, ImmutableList.of());
 
-                    String expected = "{\n" +
-                            "  \"geometry\" : null\n" +
+                    String expected = "{" + System.lineSeparator() +
+                            "  \"geometry\" : null" + System.lineSeparator() +
                             "}";
                     String actual = GeoJsonWriterSetupUtil.asString(outputStream);
 
