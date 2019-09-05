@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -42,12 +43,9 @@ public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EnpointSiteLandingPage.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("sitemap_landingPage.xml")
+            .addMethods(OgcApiContext.HttpMethods.GET)
+            .subPathPattern("^/?$")
             .build();
-    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
-            new ImmutableOgcApiMediaType.Builder()
-                    .main(MediaType.TEXT_HTML_TYPE)
-                    .build()
-    );
 
     @Requires
     private CoreServerConfig coreServerConfig;
@@ -58,13 +56,20 @@ public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
-        return API_MEDIA_TYPES;
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+        if (subPath.matches("^/?$"))
+            return ImmutableSet.of(
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(MediaType.APPLICATION_XML_TYPE)
+                            .build()
+            );
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return isExtensionEnabled(datasetData, SitemapsConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, SitemapsConfiguration.class);
     }
 
     @GET

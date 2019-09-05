@@ -8,8 +8,8 @@
 package de.ii.ldproxy.target.gml;
 
 import de.ii.ldproxy.ogcapi.domain.Dataset;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -35,7 +35,7 @@ public class Wfs3CollectionsXml implements Wfs3Xml {
     }
 
     @XmlElement(name = "link", namespace = "http://www.w3.org/2005/Atom")
-    public List<Wfs3Link> getLinks() {
+    public List<OgcApiLink> getLinks() {
         return wfs3Collections.getLinks();
     }
 
@@ -50,7 +50,7 @@ public class Wfs3CollectionsXml implements Wfs3Xml {
         return wfs3Collections.getSections()
                               .stream()
                               .filter(stringObjectMap -> stringObjectMap.containsKey("collections"))
-                              .flatMap(stringObjectMap -> ((List<Wfs3Collection>) stringObjectMap.get("collections")).stream())
+                              .flatMap(stringObjectMap -> ((List<OgcApiCollection>) stringObjectMap.get("collections")).stream())
                               .map(Wfs3CollectionXml::new)
                               .collect(Collectors.toList());
     }

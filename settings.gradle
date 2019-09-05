@@ -14,3 +14,5 @@ rootDir.listFiles().each { file ->
     	include file.name
     }    
 }
+include 'ldproxy-resources-manager'
+

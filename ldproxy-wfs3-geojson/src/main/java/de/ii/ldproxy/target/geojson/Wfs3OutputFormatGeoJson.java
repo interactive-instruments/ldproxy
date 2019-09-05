@@ -8,20 +8,11 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableSortedSet;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClasses;
-import de.ii.ldproxy.ogcapi.domain.Dataset;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OutputFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
 import de.ii.ldproxy.wfs3.api.TargetMappingRefiner;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
@@ -34,28 +25,23 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author zahnen
  */
 @Component
 //TODO
-@Provides(specifications = {Wfs3OutputFormatGeoJson.class, ConformanceClass.class, Wfs3OutputFormatExtension.class, OutputFormatExtension.class, OgcApiExtension.class})
+@Provides(specifications = {Wfs3OutputFormatGeoJson.class, ConformanceClass.class, Wfs3FeatureFormatExtension.class, FormatExtension.class, OgcApiExtension.class})
 @Instantiate
-public class Wfs3OutputFormatGeoJson implements ConformanceClass, Wfs3OutputFormatExtension {
-
+public class Wfs3OutputFormatGeoJson implements ConformanceClass, Wfs3FeatureFormatExtension {
 
     private static final String CONFORMANCE_CLASS = "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson";
     public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
-            .main(new MediaType("application", "geo+json"))
+            .type(new MediaType("application", "geo+json"))
             .label("GeoJSON")
-            .metadata(MediaType.APPLICATION_JSON_TYPE)
             .build();
 
     @Requires
@@ -71,36 +57,13 @@ public class Wfs3OutputFormatGeoJson implements ConformanceClass, Wfs3OutputForm
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return isExtensionEnabled(datasetData, GeoJsonConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, GeoJsonConfiguration.class);
     }
 
     @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
-    }
-
-    @Override
-    public Response getConformanceResponse(List<ConformanceClass> wfs3ConformanceClasses, String serviceLabel,
-                                           OgcApiMediaType ogcApiMediaType, List<OgcApiMediaType> alternativeMediaTypes,
-                                           URICustomizer uriCustomizer, String staticUrlPrefix) {
-        return response(new ConformanceClasses(wfs3ConformanceClasses.stream()
-                                                                     .map(ConformanceClass::getConformanceClass)
-                                                                     .collect(Collectors.toList())));
-    }
-
-    @Override
-    public Response getDatasetResponse(Dataset dataset, OgcApiDatasetData datasetData, OgcApiMediaType mediaType,
-                                       List<OgcApiMediaType> alternativeMediaTypes, URICustomizer uriCustomizer,
-                                       String staticUrlPrefix, boolean isCollections) {
-        return response(dataset);
-    }
-
-    @Override
-    public Response getCollectionResponse(Wfs3Collection wfs3Collection, OgcApiDatasetData datasetData,
-                                          OgcApiMediaType mediaType, List<OgcApiMediaType> alternativeMediaTypes,
-                                          URICustomizer uriCustomizer, String collectionName) {
-        return response(wfs3Collection);
     }
 
     @Override
@@ -170,19 +133,5 @@ public class Wfs3OutputFormatGeoJson implements ConformanceClass, Wfs3OutputForm
                 return builder.build();
             }
         });
-    }
-
-    private Response response(Object entity) {
-        return response(entity, null);
-    }
-
-    private Response response(Object entity, String type) {
-        Response.ResponseBuilder response = Response.ok()
-                                                    .entity(entity);
-        if (type != null) {
-            response.type(type);
-        }
-
-        return response.build();
     }
 }

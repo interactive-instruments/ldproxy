@@ -131,7 +131,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                         int expectedSize = transformationContext.getLinks()
                                                                 .size() + 1;
 
-                        Wfs3Link expectedLink = new ImmutableWfs3Link.Builder()
+                        OgcApiLink expectedLink = new ImmutableOgcApiLink.Builder()
                                                                  .rel("test1")
                                                                  .description("test1")
                                                                  .type("application/geo+json")
@@ -282,7 +282,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                                                 .build())
                                                            .collectionName("ft")
                                                            .outputStream(outputStream)
-                                                           .links(ImmutableList.of(new ImmutableWfs3Link.Builder()
+                                                           .links(ImmutableList.of(new ImmutableOgcApiLink.Builder()
                                                                                                     .href("TEST")
                                                                                                     .build()))
                                                            .isFeatureCollection(false)
@@ -293,12 +293,12 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                }
 
                                                                @Override
-                                                               public List<OgcApiMediaType> getAlternativeMediaTypes() {
+                                                               public List<OgcApiMediaType> getAlternateMediaTypes() {
                                                                    return null;
                                                                }
 
                                                                @Override
-                                                               public OgcApiDatasetData getDataset() {
+                                                               public OgcApiDatasetData getApi() {
                                                                    return null;
                                                                }
 

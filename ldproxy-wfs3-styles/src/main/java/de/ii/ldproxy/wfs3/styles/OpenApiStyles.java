@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3.styles;
 
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
+import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -31,7 +31,7 @@ import java.util.Objects;
 @Component
 @Provides
 @Instantiate
-public class OpenApiStyles implements Wfs3OpenApiExtension {
+public class OpenApiStyles implements OpenApiExtension {
 
     private static final String TAG = "Use styles";
 
@@ -42,14 +42,14 @@ public class OpenApiStyles implements Wfs3OpenApiExtension {
 
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, StylesConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, StylesConfiguration.class);
     }
 
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
 
-        if (isEnabledForDataset(datasetData) &&
+        if (isEnabledForApi(datasetData) &&
                 getExtensionConfiguration(datasetData, StylesConfiguration.class).isPresent()) {
 
             StylesConfiguration stylesExtension = getExtensionConfiguration(datasetData, StylesConfiguration.class).get();

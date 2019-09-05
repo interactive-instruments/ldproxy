@@ -8,7 +8,7 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import io.dropwizard.views.View;
 
 import java.util.Comparator;
@@ -23,11 +23,11 @@ public class Wfs3ConformanceClassesView extends View {
 
     private final List<String> classes;
     private final List<NavigationDTO> breadCrumbs;
-    private final List<Wfs3Link> links;
+    private final List<OgcApiLink> links;
     private final String urlPrefix;
     public final HtmlConfig htmlConfig;
 
-    public Wfs3ConformanceClassesView(List<String> classes, final List<NavigationDTO> breadCrumbs, List<Wfs3Link> links, String urlPrefix, HtmlConfig htmlConfig) {
+    public Wfs3ConformanceClassesView(List<String> classes, final List<NavigationDTO> breadCrumbs, List<OgcApiLink> links, String urlPrefix, HtmlConfig htmlConfig) {
         super("conformanceclasses.mustache", Charsets.UTF_8);
         this.classes = classes;
         this.breadCrumbs = breadCrumbs;

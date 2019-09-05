@@ -7,12 +7,7 @@
  */
 package de.ii.ldproxy.wfs3;
 
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.Wfs3StartupTask;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
@@ -67,46 +62,41 @@ public class Wfs3ExtensionRegistryImpl implements OgcApiExtensionRegistry {
         try {
             final OgcApiExtension extension = bundleContext.getService(ref);
 
+            if (extension==null) {
+                LOGGER.error("An extension could not be registered");
+                return;
+            }
+
             wfs3Extensions.add(extension);
 
             if (extension instanceof ConformanceClass) {
                 final ConformanceClass wfs3ConformanceClass = (ConformanceClass) extension;
 
-                LOGGER.debug("WFS3 CONFORMANCE CLASS {}", wfs3ConformanceClass.getConformanceClass());
-
-                //wfs3ConformanceClasses.add(wfs3ConformanceClass);
+                LOGGER.debug("CONFORMANCE CLASS {}", wfs3ConformanceClass.getConformanceClass());
             }
 
-            if (extension instanceof Wfs3OutputFormatExtension) {
-                final Wfs3OutputFormatExtension wfs3OutputFormat = (Wfs3OutputFormatExtension) extension;
+            if (extension instanceof FormatExtension) {
+                final FormatExtension outputFormat = (FormatExtension) extension;
 
-                LOGGER.debug("WFS3 OUTPUT FORMAT {}", wfs3OutputFormat.getMediaType());
-
-                //wfs3OutputFormats.put(wfs3OutputFormat.getMediaType(), wfs3OutputFormat);
+                LOGGER.debug("OUTPUT FORMAT {} {}", outputFormat.getMediaType(), outputFormat.getPathPattern());
             }
 
             if (extension instanceof OgcApiEndpointExtension) {
                 final OgcApiEndpointExtension wfs3Endpoint = (OgcApiEndpointExtension) extension;
 
-                LOGGER.debug("WFS3 ENDPOINT {}", wfs3Endpoint.getApiContext());
-
-                //wfs3Endpoints.add(wfs3Endpoint);
+                LOGGER.debug("ENDPOINT {}", wfs3Endpoint.getApiContext());
             }
 
-            if (extension instanceof Wfs3StartupTask) {
-                final Wfs3StartupTask wfs3StartupTask = (Wfs3StartupTask) extension;
+            if (extension instanceof OgcApiStartupTask) {
+                final OgcApiStartupTask ogcApiStartupTask = (OgcApiStartupTask) extension;
 
-                LOGGER.debug("WFS3 STARTUP TASK {}", extension.getClass().getSimpleName());
-
-                //wfs3StartupTasks.add(wfs3StartupTask);
-            }
+                LOGGER.debug("STARTUP TASK {}", extension.getClass().getSimpleName());
+           }
 
             if (extension instanceof Wfs3ParameterExtension) {
                 final Wfs3ParameterExtension wfs3Parameter = (Wfs3ParameterExtension) extension;
 
-                //LOGGER.debug("WFS3 ENDPOINT {} {}", wfs3Endpoint.getPath(), wfs3Endpoint.getMethods());
-
-                //wfs3Parameters.add(wfs3Parameter);
+                LOGGER.debug("PARAMETER {}", extension.getClass().getSimpleName());
             }
         } catch (Throwable e) {
             LOGGER.error("E", e);
@@ -124,9 +114,9 @@ public class Wfs3ExtensionRegistryImpl implements OgcApiExtensionRegistry {
 
     @Override
     public <T extends OgcApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
-        return getExtensions().stream()
-                                    .filter(wfs3Extension -> extensionType.isAssignableFrom(wfs3Extension.getClass()))
-                                    .map(extensionType::cast)
-                                    .collect(Collectors.toList());
+            return getExtensions().stream()
+                    .filter(extension -> extension!=null && extensionType.isAssignableFrom(extension.getClass()))
+                    .map(extensionType::cast)
+                    .collect(Collectors.toList());
     }
 }

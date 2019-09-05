@@ -1,0 +1,15 @@
+version = '1.0.0'
+
+dependencies {
+    provided project(":ldproxy-wfs3")
+    provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-ogcapi")
+    provided project(":ldproxy-wfs3-core")
+    provided project(":ldproxy-wfs3-oas30")
+    provided project(":ldproxy-wfs3-styles")
+    provided project(":ldproxy-resources")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+}

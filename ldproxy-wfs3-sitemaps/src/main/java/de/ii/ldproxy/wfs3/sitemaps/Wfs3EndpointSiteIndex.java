@@ -8,14 +8,7 @@
 package de.ii.ldproxy.wfs3.sitemaps;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.server.CoreServerConfig;
 import io.dropwizard.auth.Auth;
@@ -27,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -47,10 +41,12 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointSiteIndex.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("sitemap_index.xml")
+            .addMethods(OgcApiContext.HttpMethods.GET)
+            .subPathPattern("^/?$")
             .build();
     private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
             new ImmutableOgcApiMediaType.Builder()
-                    .main(MediaType.TEXT_HTML_TYPE)
+                    .type(MediaType.APPLICATION_XML_TYPE)
                     .build()
     );
 
@@ -63,13 +59,16 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
-        return API_MEDIA_TYPES;
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+        if (subPath.matches("^/?$"))
+            return API_MEDIA_TYPES;
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return isExtensionEnabled(datasetData, SitemapsConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, SitemapsConfiguration.class);
     }
 
     @GET

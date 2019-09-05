@@ -8,8 +8,6 @@
 package de.ii.ldproxy.target.gml;
 
 import de.ii.ldproxy.ogcapi.domain.ConformanceClasses;
-import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Link;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;

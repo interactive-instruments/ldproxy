@@ -31,7 +31,7 @@ public abstract class AbstractOgcApiRequestContext implements OgcApiRequestConte
     public abstract OgcApiMediaType getMediaType();
 
     @Override
-    public abstract List<OgcApiMediaType> getAlternativeMediaTypes();
+    public abstract List<OgcApiMediaType> getAlternateMediaTypes();
 
     @Value.Derived
     @Override

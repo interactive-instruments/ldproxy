@@ -7,9 +7,9 @@
  */
 package de.ii.ldproxy.target.gml;
 
-import de.ii.ldproxy.ogcapi.domain.Wfs3Extent;
-import de.ii.ldproxy.ogcapi.domain.Wfs3ExtentSpatial;
-import de.ii.ldproxy.ogcapi.domain.Wfs3ExtentTemporal;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtentSpatial;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtentTemporal;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
@@ -21,10 +21,10 @@ import java.util.Objects;
  */
 @XmlType(propOrder = {"spatial", "temporal"})
 public class Wfs3ExtentXml {
-    private final Wfs3ExtentSpatial spatial;
-    private final Wfs3ExtentTemporal temporal;
+    private final OgcApiExtentSpatial spatial;
+    private final OgcApiExtentTemporal temporal;
 
-    public Wfs3ExtentXml(Wfs3Extent extent) {
+    public Wfs3ExtentXml(OgcApiExtent extent) {
         this.spatial = extent.getSpatial();
         this.temporal = extent.getTemporal();
     }

@@ -9,18 +9,11 @@ package de.ii.ldproxy.wfs3.vt;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
-import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTransformationContextGeneric;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
@@ -34,20 +27,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
 import java.util.concurrent.CompletionException;
 
 /**
@@ -80,13 +62,13 @@ public class TileGeneratorJson {
         // TODO add support for multi-collection GeoJSON output
 
         String collectionId = tile.getCollectionId();
-        OgcApiDatasetData serviceData = tile.getDatasetData();
+        OgcApiDatasetData serviceData = tile.getApiData();
         TilingScheme tilingScheme = tile.getTilingScheme();
         int level = tile.getLevel();
         int col = tile.getCol();
         int row = tile.getRow();
         TransformingFeatureProvider featureProvider = tile.getFeatureProvider();
-        Wfs3OutputFormatExtension wfs3OutputFormatGeoJson = tile.getWfs3OutputFormatGeoJson();
+        Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson = tile.getWfs3OutputFormatGeoJson();
 
         if (collectionId == null)
             return false;
@@ -160,17 +142,17 @@ public class TileGeneratorJson {
         queryBuilder.build();
 
 
-        List<Wfs3Link> wfs3Links = new ArrayList<>();
+        List<OgcApiLink> ogcApiLinks = new ArrayList<>();
 
 
         if (isCollection) {
-            OgcApiMediaType alternativeMediatype;
-            alternativeMediatype = new ImmutableOgcApiMediaType.Builder()
-                    .main(new MediaType("application", "vnd.mapbox-vector-tile"))
+            OgcApiMediaType alternateMediaType;
+            alternateMediaType = new ImmutableOgcApiMediaType.Builder()
+                    .type(new MediaType("application", "vnd.mapbox-vector-tile"))
                     .label("MVT")
                     .build();
             final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-            wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, Wfs3MediaTypes.JSON, true));
+            ogcApiLinks = vectorTilesLinkGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternateMediaType, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, "application/vnd.mapbox-vector-tile", true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, "application/json", true));
         }
 
 
@@ -181,13 +163,13 @@ public class TileGeneratorJson {
                     .serviceData(serviceData)
                     .collectionName(collectionId)
                     .wfs3Request(new ImmutableOgcApiRequestContext.Builder()
-                            .dataset(serviceData)
+                            .api(null) // TODO, must pass OgcApiDataset variable, but we only have OgcApiDatasetData
                             .requestUri(uriCustomizer.build())
                             .mediaType(mediaType)
                             .build())
                     .crsTransformer(crsTransformation.getTransformer(serviceData.getFeatureProvider()
                                                                                 .getNativeCrs(), OgcApiDatasetData.DEFAULT_CRS))
-                    .links(wfs3Links)
+                    .links(ogcApiLinks)
                     .isFeatureCollection(true)
                     .limit(0) //TODO
                     .offset(0)
@@ -233,7 +215,7 @@ public class TileGeneratorJson {
      * @return true, if the file was generated successfully, false, if an error occurred
      */
     public static boolean generateEmptyJSON(File tileFile, TilingScheme tilingScheme, OgcApiDatasetData datasetData,
-                                            Wfs3OutputFormatExtension wfs3OutputFormatGeoJson, String collectionId,
+                                            Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson, String collectionId,
                                             boolean isCollection, OgcApiRequestContext wfs3Request, int level, int row,
                                             int col, CrsTransformation crsTransformation, OgcApiDataset service) {
 
@@ -261,24 +243,24 @@ public class TileGeneratorJson {
             e.printStackTrace();
             return false;
         }
-        List<Wfs3Link> wfs3Links = new ArrayList<>();
+        List<OgcApiLink> ogcApiLinks = new ArrayList<>();
 
 
         if (isCollection) {
-            OgcApiMediaType alternativeMediatype;
-            alternativeMediatype = new ImmutableOgcApiMediaType.Builder()
-                    .main(new MediaType("application", "vnd.mapbox-vector-tile"))
+            OgcApiMediaType alternateMediaType;
+            alternateMediaType = new ImmutableOgcApiMediaType.Builder()
+                    .type(new MediaType("application", "vnd.mapbox-vector-tile"))
                     .label("MVT")
                     .build();
             final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-            wfs3Links = vectorTilesLinkGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternativeMediatype, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, Wfs3MediaTypes.MVT, true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, Wfs3MediaTypes.JSON, true));
+            ogcApiLinks = vectorTilesLinkGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternateMediaType, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/json", true));
         }
 
         FeatureTransformationContext transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
                 .serviceData(datasetData)
                 .collectionName(collectionId)
                 .wfs3Request(wfs3Request)
-                .links(wfs3Links)
+                .links(ogcApiLinks)
                 .isFeatureCollection(true)
                 .maxAllowableOffset(maxAllowableOffsetCrs84)
                 .outputStream(outputStream)

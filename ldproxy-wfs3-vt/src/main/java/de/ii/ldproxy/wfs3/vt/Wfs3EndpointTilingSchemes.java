@@ -49,12 +49,9 @@ public class Wfs3EndpointTilingSchemes implements OgcApiEndpointExtension {
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("tilingSchemes")
+            .addMethods(OgcApiContext.HttpMethods.GET)
+            .subPathPattern("^/?(?:\\w+)?$")
             .build();
-    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
-            new ImmutableOgcApiMediaType.Builder()
-                    .main(MediaType.APPLICATION_JSON_TYPE)
-                    .build()
-    );
 
     private final VectorTilesCache cache;
     private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
@@ -72,13 +69,17 @@ public class Wfs3EndpointTilingSchemes implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
-        return API_MEDIA_TYPES;
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+        // TODO: generalize
+        return ImmutableSet.of(
+                new ImmutableOgcApiMediaType.Builder()
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build());
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return isExtensionEnabled(datasetData, TilesConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
     /**

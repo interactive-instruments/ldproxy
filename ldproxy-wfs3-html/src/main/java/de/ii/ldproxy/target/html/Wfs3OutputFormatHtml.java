@@ -10,18 +10,11 @@ package de.ii.ldproxy.target.html;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.codelists.Codelist;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.Dataset;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
+import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3CollectionFormatExtension;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
@@ -55,11 +48,11 @@ import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatExtension {
+public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3CollectionFormatExtension, CommonFormatExtension, Wfs3FeatureFormatExtension {
 
     static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
-            .main(MediaType.TEXT_HTML_TYPE)
-            //.qs(900)
+            .type(MediaType.TEXT_HTML_TYPE)
+            .parameter("html")
             .build();
 
     @Context
@@ -89,76 +82,93 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
     }
 
     @Override
+    public String getPathPattern() {
+        return "^\\/?(?:conformance|collections(q:/\\w+(q:/items(?:/\\w+)?)?)?)?$";
+    }
+
+    @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return isExtensionEnabled(datasetData, HtmlConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
-
+    // TODO: change approach
     @Override
-    public Response getConformanceResponse(List<ConformanceClass> wfs3ConformanceClasses, String serviceLabel,
-                                           OgcApiMediaType ogcApiMediaType, List<OgcApiMediaType> alternativeMediaTypes,
-                                           URICustomizer uriCustomizer, String staticUrlPrefix) {
+    public Response getLandingPageResponse(Dataset dataset,
+                                           OgcApiDataset api,
+                                           OgcApiRequestContext requestContext) {
+        //TODO: locales from request context
+        String datasetsTitle = i18n.get("datasets");
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("Services", uriCustomizer.copy()
-                                                                .removeLastPathSegments(2)
-                                                                .toString()))
-                .add(new NavigationDTO(serviceLabel, uriCustomizer.copy()
-                                                                  .removeLastPathSegments(1)
-                                                                  .toString()))
+                .add(new NavigationDTO(datasetsTitle, requestContext.getUriCustomizer().copy()
+                        .removeLastPathSegments(requestContext.getUriCustomizer().isLastPathSegment("collections") ? 2 : 1)
+                        .toString()))
+                .add(new NavigationDTO(api.getData().getLabel()))
+                .build();
+
+
+        Wfs3DatasetView wfs3DatasetView = new Wfs3DatasetView(api.getData(), dataset, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig);
+
+        return Response.ok()
+                .type(getMediaType().type())
+                .entity(wfs3DatasetView)
+                .build();
+    }
+
+    @Override
+    public Response getConformanceResponse(List<ConformanceClass> ocgApiConformanceClasses,
+                                           OgcApiDataset api, OgcApiRequestContext requestContext)  {
+
+        final URICustomizer uriCustomizer = requestContext.getUriCustomizer();
+        final List<Wfs3CollectionFormatExtension> alternateFormats =
+                api.getAllOutputFormats(Wfs3CollectionFormatExtension.class, getMediaType(),"/conformance", Optional.of(this));
+        final List<OgcApiMediaType> alternateMediaTypes = alternateFormats.stream()
+                .map(format -> format.getMediaType())
+                .collect(Collectors.toList());
+        final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
+        final List<OgcApiLink> links = wfs3LinksGenerator.generateAlternateLinks(uriCustomizer.copy(), alternateMediaTypes);
+        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
+                .add(new NavigationDTO("Services", // TODO
+                                       uriCustomizer.copy()
+                                                     .removeLastPathSegments(2)
+                                                     .toString()))
+                .add(new NavigationDTO(api.getData().getLabel(),
+                                       uriCustomizer.copy()
+                                                    .removeLastPathSegments(1)
+                                                    .toString()))
                 .add(new NavigationDTO("Conformance Classes"))
                 .build();
 
-        final Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
-        List<Wfs3Link> links = wfs3LinksGenerator.generateAlternateLinks(uriCustomizer.copy(), true, alternativeMediaTypes);
-
-        Wfs3ConformanceClassesView wfs3ConformanceClassesView = new Wfs3ConformanceClassesView(wfs3ConformanceClasses.stream()
-                                                                                                                     .map(ConformanceClass::getConformanceClass)
-                                                                                                                     .collect(Collectors.toList()), breadCrumbs, links, staticUrlPrefix, htmlConfig);
+        Wfs3ConformanceClassesView wfs3ConformanceClassesView =
+                new Wfs3ConformanceClassesView(ocgApiConformanceClasses.stream()
+                                                                       .map(ConformanceClass::getConformanceClass)
+                                                                       .collect(Collectors.toList()), breadCrumbs, links, requestContext.getStaticUrlPrefix(), htmlConfig);
         return Response.ok()
-                       .type(ogcApiMediaType.metadata())
+                       .type(getMediaType().type())
                        .entity(wfs3ConformanceClassesView)
                        .build();
     }
 
     @Override
-    public Response getDatasetResponse(Dataset wfs3Collections, OgcApiDatasetData datasetData,
-                                       OgcApiMediaType mediaType,
-                                       List<OgcApiMediaType> alternativeMediaTypes, URICustomizer uriCustomizer,
-                                       String staticUrlPrefix, boolean isCollections) {
-        //TODO: locales from request context
-        String datasetsTitle = i18n.get("datasets");
-
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(datasetsTitle, uriCustomizer.copy()
-                                                                   .removeLastPathSegments(uriCustomizer.isLastPathSegment("collections") ? 2 : 1)
-                                                                   .toString()))
-                .add(new NavigationDTO(datasetData.getLabel()))
-                .build();
-
-
-        Wfs3DatasetView wfs3DatasetView = new Wfs3DatasetView(datasetData, wfs3Collections, breadCrumbs, staticUrlPrefix, htmlConfig);
-
-        return Response.ok()
-                       .type(mediaType.metadata())
-                       .entity(wfs3DatasetView)
-                       .build();
+    public Response getCollectionsResponse(Dataset dataset, OgcApiDataset api, OgcApiRequestContext requestContext) {
+        return null;
     }
 
+
     @Override
-    public Response getCollectionResponse(Wfs3Collection wfs3Collection, OgcApiDatasetData datasetData,
-                                          OgcApiMediaType mediaType, List<OgcApiMediaType> alternativeMediaTypes,
-                                          URICustomizer uriCustomizer, String collectionName) {
+    public Response getCollectionResponse(OgcApiCollection ogcApiCollection, String collectionName,
+                                          OgcApiDataset api, OgcApiRequestContext requestContext) {
         // TODO: return Collection info
         return Response.status(MOVED_PERMANENTLY)
-                       .header(HttpHeaders.LOCATION, uriCustomizer.copy()
-                                                                  .ensureLastPathSegment("items")
-                                                                  .toString())
+                       .header(HttpHeaders.LOCATION, requestContext.getUriCustomizer()
+                                                                   .copy()
+                                                                   .ensureLastPathSegment("items")
+                                                                   .toString())
                        .build();
     }
 
@@ -254,7 +264,7 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
         featureTypeDataset.uriBuilder = uriBuilder;
         featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
 
-        //TODO: refactor all views, use extendable Wfs3Collection(s) as base, move this to Wfs3CollectionMetadataExtension
+        //TODO: refactor all views, use extendable OgcApiCollection(s) as base, move this to OgcApiCollectionExtension
         featureTypeDataset.spatialSearch = featureType.getCapabilities()
                                                       .stream()
                                                       .anyMatch(extensionConfiguration -> Objects.equals(extensionConfiguration.getExtensionType(), "FILTER_TRANSFORMERS"));
@@ -263,7 +273,7 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
     }
 
     private FeatureCollectionView createFeatureDetailsView(FeatureTypeConfigurationOgcApi featureType,
-                                                           URICustomizer uriCustomizer, List<Wfs3Link> links,
+                                                           URICustomizer uriCustomizer, List<OgcApiLink> links,
                                                            String serviceLabel, String featureId,
                                                            String staticUrlPrefix) {
         URI requestUri = null;
@@ -303,17 +313,11 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
 
         featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
 
-        /*new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("GeoJson", "f=json"))
-                .add(new NavigationDTO("GML", "f=xml"))
-                .add(new NavigationDTO("JSON-LD", "f=jsonld"))
-                .build();*/
-
         return featureTypeDataset;
     }
 
     private void addDatasetNavigation(FeatureCollectionView featureCollectionView, String serviceLabel,
-                                      String collectionLabel, List<Wfs3Link> links, URICustomizer uriCustomizer) {
+                                      String collectionLabel, List<OgcApiLink> links, URICustomizer uriCustomizer) {
         URICustomizer uriBuilder = uriCustomizer
                 .clearParameters()
                 .ensureParameter("f", MEDIA_TYPE.parameter())
@@ -337,13 +341,5 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
                                                                                       .toUpperCase()))
                                              .map(wfs3Link -> new NavigationDTO(wfs3Link.getTypeLabel(), wfs3Link.getHref()))
                                              .collect(Collectors.toList());
-
-        /*new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO("GeoJson", "f=json"))
-                .add(new NavigationDTO("GML", "f=xml"))
-                .add(new NavigationDTO("JSON-LD", "f=jsonld"))
-                .build();*/
-
-
     }
 }

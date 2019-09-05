@@ -52,52 +52,6 @@
                 }
             }
         },
-        "/api": {
-            "get": {
-                "summary": "the API description - this document",
-                "operationId": "getApiDescription",
-                "tags": [
-                    "Capabilities"
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/f"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The formal documentation of this API according to the OpenAPI specification, version 3.0. I.e., this document.",
-                        "content": {
-                            "application/vnd.oai.openapi+json;version=3.0": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            },
-                            "text/html": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "default": {
-                        "description": "An error occured.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/exception"
-                                }
-                            },
-                            "text/html": {
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/conformance": {
             "get": {
                 "summary": "information about standards that this API conforms to",

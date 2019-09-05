@@ -9,19 +9,7 @@ package de.ii.ldproxy.ogcapi.application;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ImmutableDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueriesHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryIdentifier;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.OutputFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.Wfs3DatasetMetadataExtension;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -33,7 +21,6 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,16 +30,21 @@ import java.util.stream.Stream;
 @Provides(specifications = {OgcApiQueriesHandlerCommon.class})
 public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQueriesHandlerCommon.CommonQuery> {
 
-    public enum CommonQuery implements OgcApiQueryIdentifier {DATASET, CONFORMANCE}
+    public enum CommonQuery implements OgcApiQueryIdentifier {LANDING_PAGE, CONFORMANCE, API_DEFINITION}
 
     @Value.Immutable
-    public interface OgcApiQueryInputDataset extends OgcApiQueryInput {
+    public interface OgcApiQueryInputLandingPage extends OgcApiQueryInput {
 
     }
 
     @Value.Immutable
     public interface OgcApiQueryInputConformance extends OgcApiQueryInput {
 
+    }
+
+    @Value.Immutable
+    public interface OgcApiQueryInputApiDefinition extends OgcApiQueryInput {
+        Optional<String> getSubPath();
     }
 
     private final OgcApiExtensionRegistry extensionRegistry;
@@ -63,8 +55,9 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         this.extensionRegistry = extensionRegistry;
 
         this.queryHandlers = ImmutableMap.of(
-                CommonQuery.DATASET, OgcApiQueryHandler.with(OgcApiQueryInputDataset.class, this::getDatasetResponse),
-                CommonQuery.CONFORMANCE, OgcApiQueryHandler.with(OgcApiQueryInputConformance.class, this::getConformanceResponse)
+                CommonQuery.LANDING_PAGE, OgcApiQueryHandler.with(OgcApiQueryInputLandingPage.class, this::getLandingPageResponse),
+                CommonQuery.CONFORMANCE, OgcApiQueryHandler.with(OgcApiQueryInputConformance.class, this::getConformanceResponse),
+                CommonQuery.API_DEFINITION, OgcApiQueryHandler.with(OgcApiQueryInputApiDefinition.class, this::getApiDefinitionResponse)
         );
     }
 
@@ -73,20 +66,72 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         return queryHandlers;
     }
 
+    public Response getLandingPageResponse(OgcApiRequestContext requestContext) {
 
-    private Response getDatasetResponse(OgcApiQueryInputDataset queryInput, OgcApiRequestContext requestContext) {
         final DatasetLinksGenerator linksGenerator = new DatasetLinksGenerator();
 
         //TODO: to crs extension
         ImmutableList<String> crs = Stream.concat(
                 Stream.of(
-                        requestContext.getDataset()
+                        requestContext.getApi()
+                                .getData()
+                                .getFeatureProvider()
+                                .getNativeCrs()
+                                .getAsUri(),
+                        OgcApiDatasetData.DEFAULT_CRS_URI
+                ),
+                requestContext.getApi()
+                        .getData()
+                        .getAdditionalCrs()
+                        .stream()
+                        .map(EpsgCrs::getAsUri)
+        )
+                .distinct()
+                .collect(ImmutableList.toImmutableList());
+
+        CommonFormatExtension format =
+                requestContext.getApi()
+                        .getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), "/")
+                        .orElseThrow(NotAcceptableException::new);
+        List<CommonFormatExtension> alternateFormats =
+                requestContext.getApi()
+                        .getAllOutputFormats(CommonFormatExtension.class,
+                                             requestContext.getMediaType(),
+                                       "/",
+                                             Optional.of(format));
+        List<OgcApiMediaType> alternateMediaTypes = alternateFormats.stream()
+                .map(alternateFormat -> alternateFormat.getMediaType())
+                .collect(Collectors.toList());
+
+        List<OgcApiLink> ogcApiLinks = linksGenerator.generateDatasetLinks(requestContext.getUriCustomizer().copy(), Optional.empty(), requestContext.getMediaType(), alternateMediaTypes);
+
+        ImmutableDataset.Builder dataset = new ImmutableDataset.Builder()
+                .crs(crs)
+                .links(ogcApiLinks);
+
+        for (OgcApiLandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
+            dataset = ogcApiLandingPageExtension.process(dataset, requestContext.getApi().getData(), requestContext.getUriCustomizer().copy(), requestContext.getMediaType(), alternateMediaTypes);
+        }
+
+        return format.getLandingPageResponse(dataset.build(), requestContext.getApi(), requestContext);
+    }
+
+
+    private Response getLandingPageResponse(OgcApiQueryInputLandingPage queryInput, OgcApiRequestContext requestContext) {
+        final DatasetLinksGenerator linksGenerator = new DatasetLinksGenerator();
+
+        //TODO: to crs extension
+        ImmutableList<String> crs = Stream.concat(
+                Stream.of(
+                        requestContext.getApi()
+                                      .getData()
                                       .getFeatureProvider()
                                       .getNativeCrs()
                                       .getAsUri(),
                         OgcApiDatasetData.DEFAULT_CRS_URI
                 ),
-                requestContext.getDataset()
+                requestContext.getApi()
+                              .getData()
                               .getAdditionalCrs()
                               .stream()
                               .map(EpsgCrs::getAsUri)
@@ -95,70 +140,95 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                                            .collect(ImmutableList.toImmutableList());
 
 
-        List<Wfs3Link> wfs3Links = linksGenerator.generateDatasetLinks(requestContext.getUriCustomizer()
-                                                                                     .copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, requestContext.getMediaType(), requestContext.getAlternativeMediaTypes());
+        List<OgcApiLink> ogcApiLinks = linksGenerator.generateDatasetLinks(requestContext.getUriCustomizer()
+                                                                                     .copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, requestContext.getMediaType(), requestContext.getAlternateMediaTypes());
 
 
         ImmutableDataset.Builder dataset = new ImmutableDataset.Builder()
                 //.collections(collections)
-                .title(requestContext.getDataset().getLabel())
-                .description(requestContext.getDataset().getDescription().orElse(""))
+                .title(requestContext.getApi().getData().getLabel())
+                .description(requestContext.getApi().getData().getDescription().orElse(""))
                 .crs(crs)
-                .links(wfs3Links);
+                .links(ogcApiLinks);
 
 
-        for (Wfs3DatasetMetadataExtension wfs3DatasetMetadataExtension : getDatasetExtenders()) {
-            dataset = wfs3DatasetMetadataExtension.process(dataset, requestContext.getDataset(), requestContext.getUriCustomizer()
-                                                                                                               .copy(), requestContext.getMediaType(), requestContext.getAlternativeMediaTypes());
+        for (OgcApiLandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
+            dataset = ogcApiLandingPageExtension.process(dataset,
+                    requestContext.getApi().getData(),
+                    requestContext.getUriCustomizer()
+                                  .copy(),
+                    requestContext.getMediaType(),
+                    requestContext.getAlternateMediaTypes());
         }
 
-        OutputFormatExtension outputFormatExtension = findOutputFormat(requestContext.getMediaType(), requestContext.getDataset())
+        CommonFormatExtension outputFormatExtension = requestContext.getApi()
+                .getOutputFormat(CommonFormatExtension.class,
+                        requestContext.getMediaType(),
+                        "/")
                 .orElseThrow(NotAcceptableException::new);
 
-        //TODO
-        Response datasetResponse = outputFormatExtension
-                .getDatasetResponse(dataset.build(), requestContext.getDataset(), requestContext.getMediaType(), requestContext.getAlternativeMediaTypes(), requestContext.getUriCustomizer(), requestContext.getStaticUrlPrefix(), false);
+        Response datasetResponse = outputFormatExtension.getLandingPageResponse(dataset.build(),
+                requestContext.getApi(),
+                requestContext);
 
         return Response.ok()
                        .entity(datasetResponse.getEntity())
                        .type(requestContext.getMediaType()
-                                           .metadata())
+                                           .type())
                        .build();
     }
 
     private Response getConformanceResponse(OgcApiQueryInputConformance queryInput,
                                             OgcApiRequestContext requestContext) {
-        //Wfs3MediaType wfs3MediaType = checkMediaType(mediaType);
 
         List<ConformanceClass> conformanceClasses = getConformanceClasses().stream()
-                                                                           .filter(conformanceClass -> conformanceClass.isEnabledForDataset(requestContext.getDataset()))
+                                                                           .filter(conformanceClass -> conformanceClass.isEnabledForApi(requestContext.getApi().getData()))
                                                                            .collect(Collectors.toList());
 
-        OutputFormatExtension outputFormatExtension = findOutputFormat(requestContext.getMediaType(), requestContext.getDataset())
+        CommonFormatExtension outputFormatExtension = getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), requestContext.getApi().getData(), "/conformance")
                 .orElseThrow(NotAcceptableException::new);
 
         //TODO
         Response conformanceResponse = outputFormatExtension
-                .getConformanceResponse(conformanceClasses, requestContext.getDataset()
-                                                                          .getLabel(), requestContext.getMediaType(), requestContext.getAlternativeMediaTypes(), requestContext.getUriCustomizer(), requestContext.getStaticUrlPrefix());
+                .getConformanceResponse(conformanceClasses,
+                        requestContext.getApi(),
+                        requestContext);
 
         return Response.ok()
                        .entity(conformanceResponse.getEntity())
                        .type(requestContext.getMediaType()
-                                           .metadata())
+                                           .type())
                        .build();
     }
 
-    private Optional<OutputFormatExtension> findOutputFormat(OgcApiMediaType mediaType, OgcApiDatasetData dataset) {
-        return extensionRegistry.getExtensionsForType(OutputFormatExtension.class)
+    private Response getApiDefinitionResponse(OgcApiQueryInputApiDefinition queryInput,
+                                            OgcApiRequestContext requestContext) {
+
+        String subPath = queryInput.getSubPath().orElse("");
+        ApiDefinitionFormatExtension outputFormatExtension =
+                requestContext.getApi()
+                              .getOutputFormat(ApiDefinitionFormatExtension.class,
+                                               requestContext.getMediaType(),
+                                         "/api"+(subPath.isEmpty() ? "" : subPath.startsWith("/") ? subPath : "/"+subPath ))
+                              .orElseThrow(NotAcceptableException::new);
+
+        if (subPath.matches("/?[^/]+"))
+            return outputFormatExtension.getApiDefinitionFile(requestContext.getApi().getData(), requestContext, subPath);
+
+        return outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(), requestContext);
+    }
+
+    private <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, OgcApiDatasetData apiData, String path) {
+        return extensionRegistry.getExtensionsForType(extensionType)
                                 .stream()
-                                .filter(outputFormatExtension -> Objects.equals(outputFormatExtension.getMediaType(), mediaType))
-                                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForDataset(dataset))
+                                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
+                                .filter(outputFormatExtension -> mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))
+                                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
                                 .findFirst();
     }
 
-    private List<Wfs3DatasetMetadataExtension> getDatasetExtenders() {
-        return extensionRegistry.getExtensionsForType(Wfs3DatasetMetadataExtension.class);
+    private List<OgcApiLandingPageExtension> getDatasetExtenders() {
+        return extensionRegistry.getExtensionsForType(OgcApiLandingPageExtension.class);
     }
 
     private List<ConformanceClass> getConformanceClasses() {

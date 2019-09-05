@@ -23,11 +23,11 @@ import javax.ws.rs.core.MediaType;
 @Instantiate
 public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension {
 
+    public static final String MEDIA_TYPE_STRING = "application/vnd.ogc.sld+xml;version=1.0" ;
     static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
-            .main(new MediaType("application", "vnd.ogc.sld+xml", ImmutableMap.of("version", "1.1")))
+            .type(new MediaType("application", "vnd.ogc.sld+xml", ImmutableMap.of("version", "1.1")))
             .label("OGC SLD 1.1")
             .parameter("sld11")
-            .metadata(MediaType.APPLICATION_JSON_TYPE)
             .build();
 
     @Override
@@ -36,8 +36,8 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return getExtensionConfiguration(datasetData, StylesConfiguration.class).map(StylesConfiguration::getSld11Enabled)
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, StylesConfiguration.class).map(StylesConfiguration::getSld11Enabled)
                                                                                 .orElse(false);
     }
 

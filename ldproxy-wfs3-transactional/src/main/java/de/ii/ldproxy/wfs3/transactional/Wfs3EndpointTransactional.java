@@ -8,16 +8,8 @@
 package de.ii.ldproxy.wfs3.transactional;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -25,17 +17,12 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Optional;
 
 
@@ -49,14 +36,11 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
-            .subPathPattern("\\/(?:\\w+)\\/items\\/?.*$")
+            .subPathPattern("^/(?:\\w+)/items/?\\w*$")
             .addMethods(HttpMethods.POST, HttpMethods.PUT, HttpMethods.DELETE)
+            .putSubPathsAndMethods("^/(?:\\w+)/items/?", Arrays.asList(new HttpMethods[]{HttpMethods.POST}))
+            .putSubPathsAndMethods("^/(?:[^/]+)/items/?(?:\\w+)$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.DELETE}))
             .build();
-    private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
-            new ImmutableOgcApiMediaType.Builder()
-                    .main(new MediaType("application", "geo+json"))
-                    .build()
-    );
 
     private final CommandHandlerTransactional commandHandler;
 
@@ -70,18 +54,25 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
-        return API_MEDIA_TYPES;
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+        if (subPath.matches("^/(?:\\w+)/items/?\\w*$"))
+            return ImmutableSet.of(
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(new MediaType("application", "geo+json"))
+                            .build()
+            );
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return isExtensionEnabled(datasetData, TransactionalConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, TransactionalConfiguration.class);
     }
 
     @Path("/{id}/items")
     @POST
-    @Consumes(Wfs3MediaTypes.GEO_JSON)
+    @Consumes("application/geo+json")
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                               @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request,
                               @Context HttpServletRequest request, InputStream requestBody) {
@@ -98,7 +89,7 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
 
     @Path("/{id}/items/{featureid}")
     @PUT
-    @Consumes(Wfs3MediaTypes.GEO_JSON)
+    @Consumes("application/geo+json")
     public Response putItem(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                             @PathParam("featureid") final String featureId, @Context OgcApiDataset service,
                             @Context OgcApiRequestContext wfs3Request, @Context HttpServletRequest request,

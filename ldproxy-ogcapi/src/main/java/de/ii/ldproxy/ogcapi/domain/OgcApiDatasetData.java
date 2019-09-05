@@ -11,8 +11,6 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.test.ImmutableTest;
-import de.ii.ldproxy.ogcapi.domain.test.Test;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
@@ -64,7 +62,6 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
     @JsonMerge
     @Override
     public abstract ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getFeatureTypes();
-    //public abstract Map<String, FeatureTypeConfigurationOgcApi> getFeatureTypes();
 
     public abstract List<EpsgCrs> getAdditionalCrs();
 

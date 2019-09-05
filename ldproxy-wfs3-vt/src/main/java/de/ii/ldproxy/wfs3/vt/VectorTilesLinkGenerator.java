@@ -8,10 +8,9 @@
 package de.ii.ldproxy.wfs3.vt;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Link;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 
 import java.util.List;
 
@@ -26,10 +25,10 @@ public class VectorTilesLinkGenerator {
      * @param uriBuilder the URI, split in host, path and query
      * @return a List with links
      */
-    public List<Wfs3Link> generateDatasetLinks(URICustomizer uriBuilder) {
+    public List<OgcApiLink> generateDatasetLinks(URICustomizer uriBuilder) {
 
-        return ImmutableList.<Wfs3Link>builder()
-                .add(new ImmutableWfs3Link.Builder()
+        return ImmutableList.<OgcApiLink>builder()
+                .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                         .removeLastPathSegment("collections")
                                         .ensureLastPathSegment("tilingSchemes")
@@ -39,7 +38,7 @@ public class VectorTilesLinkGenerator {
                         .type("application/json")
                         .description("the list of available tiling schemes")
                         .build())
-                .add(new ImmutableWfs3Link.Builder()
+                .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                         .removeLastPathSegment("collections")
                                         .ensureLastPathSegment("tiles")
@@ -59,11 +58,11 @@ public class VectorTilesLinkGenerator {
      * @param tilingSchemeId the id of the tiling Scheme
      * @return a list with links
      */
-    public List<Wfs3Link> generateTilingSchemesLinks(URICustomizer uriBuilder, String tilingSchemeId) {
+    public List<OgcApiLink> generateTilingSchemesLinks(URICustomizer uriBuilder, String tilingSchemeId) {
 
 
-        return ImmutableList.<Wfs3Link>builder()
-                .add(new ImmutableWfs3Link.Builder()
+        return ImmutableList.<OgcApiLink>builder()
+                .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                         .ensureLastPathSegment("tilingSchemes")
                                         .ensureLastPathSegment(tilingSchemeId)
@@ -84,11 +83,11 @@ public class VectorTilesLinkGenerator {
      * @param tilingSchemeId the id of the tiling Scheme
      * @return a list with links
      */
-    public List<Wfs3Link> generateTilesLinks(URICustomizer uriBuilder, String tilingSchemeId) {
+    public List<OgcApiLink> generateTilesLinks(URICustomizer uriBuilder, String tilingSchemeId) {
 
 
-        return ImmutableList.<Wfs3Link>builder()
-                .add(new ImmutableWfs3Link.Builder()
+        return ImmutableList.<OgcApiLink>builder()
+                .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                         .ensureLastPathSegment("tiles")
                                         .ensureLastPathSegment(tilingSchemeId)
@@ -107,7 +106,7 @@ public class VectorTilesLinkGenerator {
      *
      * @param uriBuilder           the URI, split in host, path and query
      * @param mediaType            the media type
-     * @param alternativeMediaType the alternative media type
+     * @param alternateMediaType the alternative media type
      * @param tilingSchemeId       the id of the tiling scheme of the tile
      * @param zoomLevel            the zoom level of the tile
      * @param row                  the row of the tile
@@ -116,10 +115,10 @@ public class VectorTilesLinkGenerator {
      * @param json                 json enabled or disabled
      * @return
      */
-    public List<Wfs3Link> generateGeoJSONTileLinks(URICustomizer uriBuilder, OgcApiMediaType mediaType,
-                                                   OgcApiMediaType alternativeMediaType, String tilingSchemeId,
-                                                   String zoomLevel, String row, String col, boolean mvt,
-                                                   boolean json) {
+    public List<OgcApiLink> generateGeoJSONTileLinks(URICustomizer uriBuilder, OgcApiMediaType mediaType,
+                                                     OgcApiMediaType alternateMediaType, String tilingSchemeId,
+                                                     String zoomLevel, String row, String col, boolean mvt,
+                                                     boolean json) {
 
         uriBuilder.removeLastPathSegments(3);
         uriBuilder
@@ -127,28 +126,28 @@ public class VectorTilesLinkGenerator {
                 .ensureLastPathSegments("tiles", "default", zoomLevel, row, col);
 
 
-        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>();
+        final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>();
 
         if (json) {
-            builder.add(new ImmutableWfs3Link.Builder()
+            builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder
                             .ensureLastPathSegments("tiles", tilingSchemeId, zoomLevel, row, col)
                             .toString())
                     .rel("self")
-                    .type(mediaType.main()
+                    .type(mediaType.type()
                                    .toString())
                     .description("this document")
                     .build());
         }
         if (mvt) {
-            builder.add(new ImmutableWfs3Link.Builder()
+            builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
                                     .ensureLastPathSegments("tiles", tilingSchemeId, zoomLevel, row, col)
                                     .removeLastPathSegment("")
                                     .setParameter("f", "mvt")
                                     .toString())
                     .rel("alternate")
-                    .type(alternativeMediaType.metadata()
+                    .type(alternateMediaType.type() // TODO: check
                                               .toString())
                     .description("this document as MVT")
                     .build());
@@ -166,14 +165,14 @@ public class VectorTilesLinkGenerator {
      * @param json           json enabled or disabled
      * @return a list with links
      */
-    public List<Wfs3Link> generateTilingSchemeLinks(URICustomizer uriBuilder, String tilingSchemeId, boolean mvt,
-                                                    boolean json) {
+    public List<OgcApiLink> generateTilingSchemeLinks(URICustomizer uriBuilder, String tilingSchemeId, boolean mvt,
+                                                      boolean json) {
 
 
-        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>();
+        final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>();
 
         if (json) {
-            builder.add(new ImmutableWfs3Link.Builder()
+            builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
                                     .ensureLastPathSegment(tilingSchemeId)
                                     .clearParameters()
@@ -185,7 +184,7 @@ public class VectorTilesLinkGenerator {
                     .build());
         }
         if (mvt) {
-            builder.add(new ImmutableWfs3Link.Builder()
+            builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
                                     .ensureLastPathSegment(tilingSchemeId)
                                     .clearParameters()

@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.aroundrelations;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
+import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -33,15 +33,15 @@ import java.util.Objects;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OpenApiAroundRelations implements Wfs3OpenApiExtension {
+public class Wfs3OpenApiAroundRelations implements OpenApiExtension {
     @Override
     public int getSortPriority() {
         return 200;
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, AroundRelationsConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, AroundRelationsConfiguration.class);
     }
 
     @Override

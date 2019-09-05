@@ -10,22 +10,11 @@ package de.ii.ldproxy.wfs3.core;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Collection;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
-import de.ii.ldproxy.ogcapi.domain.Wfs3CollectionMetadataExtension;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Extent;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTransformationContextGeneric;
+import de.ii.ldproxy.wfs3.api.Wfs3CollectionFormatExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3LinksGenerator;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
@@ -51,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -85,9 +75,8 @@ public class Wfs3Core implements ConformanceClass {
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        //TODO: config, config dependencies
-        return true;
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, Wfs3CoreConfiguration.class);
     }
 
     public void checkCollectionName(OgcApiDatasetData datasetData, String collectionName) {
@@ -96,32 +85,35 @@ public class Wfs3Core implements ConformanceClass {
         }
     }
 
-    private List<Wfs3CollectionMetadataExtension> getCollectionExtenders() {
-        return extensionRegistry.getExtensionsForType(Wfs3CollectionMetadataExtension.class);
+    private List<OgcApiCollectionExtension> getCollectionExtenders() {
+        return extensionRegistry.getExtensionsForType(OgcApiCollectionExtension.class);
     }
 
-    public Wfs3Collection createCollection(FeatureTypeConfigurationOgcApi featureType, OgcApiDatasetData datasetData,
-                                           OgcApiMediaType mediaType, List<OgcApiMediaType> alternativeMediaTypes,
-                                           URICustomizer uriCustomizer, boolean isNested) {
+    public OgcApiCollection createCollection(FeatureTypeConfigurationOgcApi featureType, OgcApiDatasetData apiData,
+                                             OgcApiMediaType mediaType, List<OgcApiMediaType> alternateMediaTypes,
+                                             URICustomizer uriCustomizer, boolean isNested) {
         Wfs3LinksGenerator wfs3LinksGenerator = new Wfs3LinksGenerator();
 
-        /*final String qn = featureType.getLabel()/*service.getWfsAdapter()
-                                                               .getNsStore()
-                                                               .getNamespacePrefix(featureType.getNamespace()) + ":" + featureType.getName()*/
-        ;
+        List<OgcApiMediaType> featureMediaTypes = extensionRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
+                .stream()
+                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                .map(outputFormatExtension -> outputFormatExtension.getMediaType())
+                .collect(Collectors.toList());
 
-        ImmutableWfs3Collection.Builder collection = ImmutableWfs3Collection.builder()
+        // TODO add support
+        Optional<String> describeFeatureTypeUrl = Optional.empty();
+
+        ImmutableOgcApiCollection.Builder collection = ImmutableOgcApiCollection.builder()
                                                                             .id(featureType.getId())
                                                                             .title(featureType.getLabel())
                                                                             .description(featureType.getDescription())
-                                                                            //.prefixedName(qn)
-                                                                            .links(wfs3LinksGenerator.generateDatasetCollectionLinks(uriCustomizer.copy(), featureType.getId(), featureType.getLabel(), Optional.empty() /* new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType(ImmutableMap.of(featureType.getNamespace(), ImmutableList.of(featureType.getName())))).getAsUrl()*/, mediaType, alternativeMediaTypes));
+                                                                            .links(wfs3LinksGenerator.generateDatasetCollectionLinks(uriCustomizer.copy(), featureType.getId(), featureType.getLabel(), describeFeatureTypeUrl, mediaType, alternateMediaTypes, featureMediaTypes));
 
-        if (datasetData.getFilterableFieldsForFeatureType(featureType.getId())
+        if (apiData.getFilterableFieldsForFeatureType(featureType.getId())
                        .containsKey("time")) {
             FeatureTypeConfigurationOgcApi.TemporalExtent temporal = featureType.getExtent()
                                                                                 .getTemporal();
-            collection.extent(new Wfs3Extent(
+            collection.extent(new OgcApiExtent(
                     temporal.getStart() == 0 ? -1 : temporal.getStart(),
                     temporal.getEnd() == 0 ? -1 : temporal.getComputedEnd(),
                     featureType.getExtent()
@@ -137,7 +129,7 @@ public class Wfs3Core implements ConformanceClass {
                                .getSpatial()
                                .getYmax()));
         } else {
-            collection.extent(new Wfs3Extent(
+            collection.extent(new OgcApiExtent(
                     featureType.getExtent()
                                .getSpatial()
                                .getXmin(),
@@ -157,12 +149,12 @@ public class Wfs3Core implements ConformanceClass {
             collection.crs(
                     Stream.concat(
                             Stream.of(
-                                    datasetData.getFeatureProvider()
+                                    apiData.getFeatureProvider()
                                                .getNativeCrs()
                                                .getAsUri(),
                                     OgcApiDatasetData.DEFAULT_CRS_URI
                             ),
-                            datasetData.getAdditionalCrs()
+                            apiData.getAdditionalCrs()
                                        .stream()
                                        .map(EpsgCrs::getAsUri)
                     )
@@ -171,29 +163,29 @@ public class Wfs3Core implements ConformanceClass {
             );
         }
 
-        for (Wfs3CollectionMetadataExtension wfs3CollectionMetadataExtension : getCollectionExtenders()) {
-            collection = wfs3CollectionMetadataExtension.process(collection, featureType, uriCustomizer.copy(), isNested, datasetData);
+        for (OgcApiCollectionExtension ogcApiCollectionExtension : getCollectionExtenders()) {
+            collection = ogcApiCollectionExtension.process(collection, featureType, uriCustomizer.copy(), isNested, apiData);
         }
 
         return collection.build();
     }
 
     public Response getItemsResponse(OgcApiDataset dataset, OgcApiRequestContext wfs3Request, String collectionName,
-                                     FeatureQuery query, Wfs3OutputFormatExtension outputFormat,
-                                     List<OgcApiMediaType> alternativeMediaTypes, boolean onlyHitsIfMore) {
-        return getItemsResponse(dataset, wfs3Request, collectionName, query, true, outputFormat, alternativeMediaTypes, onlyHitsIfMore);
+                                     FeatureQuery query, Wfs3FeatureFormatExtension outputFormat,
+                                     List<OgcApiMediaType> alternateMediaTypes, boolean onlyHitsIfMore) {
+        return getItemsResponse(dataset, wfs3Request, collectionName, query, true, outputFormat, alternateMediaTypes, onlyHitsIfMore);
     }
 
     public Response getItemResponse(OgcApiDataset dataset, OgcApiRequestContext wfs3Request, String collectionName,
-                                    FeatureQuery query, Wfs3OutputFormatExtension outputFormat,
-                                    List<OgcApiMediaType> alternativeMediaTypes) {
-        return getItemsResponse(dataset, wfs3Request, collectionName, query, false, outputFormat, alternativeMediaTypes, false);
+                                    FeatureQuery query, Wfs3FeatureFormatExtension outputFormat,
+                                    List<OgcApiMediaType> alternateMediaTypes) {
+        return getItemsResponse(dataset, wfs3Request, collectionName, query, false, outputFormat, alternateMediaTypes, false);
     }
 
     private Response getItemsResponse(OgcApiDataset dataset, OgcApiRequestContext wfs3Request, String collectionName,
                                       FeatureQuery query,
-                                      boolean isCollection, Wfs3OutputFormatExtension outputFormat,
-                                      List<OgcApiMediaType> alternativeMediaTypes, boolean onlyHitsIfMore) {
+                                      boolean isCollection, Wfs3FeatureFormatExtension outputFormat,
+                                      List<OgcApiMediaType> alternateMediaTypes, boolean onlyHitsIfMore) {
         //Wfs3MediaType wfs3MediaType = checkMediaType(mediaType);
         checkCollectionName(dataset.getData(), collectionName);
         Optional<CrsTransformer> crsTransformer = dataset.getCrsTransformer(query.getCrs());
@@ -205,7 +197,13 @@ public class Wfs3Core implements ConformanceClass {
         int pageSize = query.getLimit();
         int page = pageSize > 0 ? (pageSize + query.getOffset()) / pageSize : 0;
 
-        List<Wfs3Link> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(wfs3Request.getUriCustomizer(), isCollection, page, pageSize, wfs3Request.getMediaType(), alternativeMediaTypes);
+        List<OgcApiMediaType> collectionMediaTypes = extensionRegistry.getExtensionsForType(Wfs3CollectionFormatExtension.class)
+                .stream()
+                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset.getData()))
+                .map(outputFormatExtension -> outputFormatExtension.getMediaType())
+                .collect(Collectors.toList());
+
+        List<OgcApiLink> links = wfs3LinksGenerator.generateCollectionOrFeatureLinks(wfs3Request.getUriCustomizer(), isCollection, page, pageSize, wfs3Request.getMediaType(), alternateMediaTypes, collectionMediaTypes);
 
         ImmutableFeatureTransformationContextGeneric.Builder transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
                 .serviceData(dataset.getData())
@@ -247,11 +245,11 @@ public class Wfs3Core implements ConformanceClass {
         }
 
         return response(streamingOutput, wfs3Request.getMediaType()
-                                                    .main()
+                                                    .type()
                                                     .toString());
 
         //return outputFormat
-        //                        .getItemsResponse(getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), collectionName, query, featureTransformStream, crsTransformer, wfs3Request.getStaticUrlPrefix(), featureStream);
+        //                        .getItemsResponse(getData(), wfs3Request.getMediaType(), getAlternateMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), collectionName, query, featureTransformStream, crsTransformer, wfs3Request.getStaticUrlPrefix(), featureStream);
     }
 
     private Response response(Object entity, String type) {

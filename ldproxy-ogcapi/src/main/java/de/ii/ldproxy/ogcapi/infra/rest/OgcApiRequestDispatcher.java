@@ -54,12 +54,12 @@ public class OgcApiRequestDispatcher implements ServiceResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiRequestDispatcher.class);
 
     private final OgcApiExtensionRegistry extensionRegistry;
-    private final Wfs3RequestInjectableContext ogcApiInjectableContext;
+    private final OgcApiRequestInjectableContext ogcApiInjectableContext;
     private final CoreServerConfig coreServerConfig;
     private final OgcApiContentNegotiation ogcApiContentNegotiation;
 
     OgcApiRequestDispatcher(@Requires OgcApiExtensionRegistry extensionRegistry,
-                            @Requires Wfs3RequestInjectableContext ogcApiInjectableContext,
+                            @Requires OgcApiRequestInjectableContext ogcApiInjectableContext,
                             @Requires CoreServerConfig coreServerConfig) {
         this.extensionRegistry = extensionRegistry;
         this.ogcApiInjectableContext = ogcApiInjectableContext;
@@ -84,12 +84,12 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         OgcApiEndpointExtension ogcApiEndpoint = findEndpoint(service.getData(), entrypoint, subPath, method)
                                                      .orElseThrow(NotFoundException::new);
 
-        ImmutableSet<OgcApiMediaType> supportedMediaTypes = ogcApiEndpoint.getMediaTypes(service.getData());
+        ImmutableSet<OgcApiMediaType> supportedMediaTypes = ogcApiEndpoint.getMediaTypes(service.getData(), subPath);
 
         OgcApiMediaType selectedMediaType = ogcApiContentNegotiation.negotiate(requestContext, supportedMediaTypes)
                                                                     .orElseThrow(NotAcceptableException::new);
 
-        Set<OgcApiMediaType> alternativeMediaTypes = getAlternativeMediaTypes(selectedMediaType, supportedMediaTypes);
+        Set<OgcApiMediaType> alternateMediaTypes = getAlternateMediaTypes(selectedMediaType, supportedMediaTypes);
 
         //TODO: inject locale, use for html (requestContext.getLanguage())
         OgcApiRequestContext ogcApiRequestContext = new ImmutableOgcApiRequestContext.Builder()
@@ -97,8 +97,8 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                                           .getRequestUri())
                 .externalUri(getExternalUri())
                 .mediaType(selectedMediaType)
-                .alternativeMediaTypes(alternativeMediaTypes)
-                .dataset(service.getData())
+                .alternateMediaTypes(alternateMediaTypes)
+                .api(service)
                 .build();
 
         ogcApiInjectableContext.inject(requestContext, ogcApiRequestContext);
@@ -106,7 +106,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         return ogcApiEndpoint;
     }
 
-    private Set<OgcApiMediaType> getAlternativeMediaTypes(OgcApiMediaType selectedMediaType,
+    private Set<OgcApiMediaType> getAlternateMediaTypes(OgcApiMediaType selectedMediaType,
                                                           Set<OgcApiMediaType> mediaTypes) {
         return mediaTypes.stream()
                          .filter(mediaType -> !Objects.equals(mediaType, selectedMediaType))
@@ -119,7 +119,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         return getEndpoints().stream()
                              .filter(wfs3Endpoint -> wfs3Endpoint.getApiContext()
                                                                  .matches(entrypoint, subPath, method))
-                             .filter(wfs3Endpoint -> wfs3Endpoint.isEnabledForDataset(dataset))
+                             .filter(wfs3Endpoint -> wfs3Endpoint.isEnabledForApi(dataset))
                              .findFirst();
     }
 

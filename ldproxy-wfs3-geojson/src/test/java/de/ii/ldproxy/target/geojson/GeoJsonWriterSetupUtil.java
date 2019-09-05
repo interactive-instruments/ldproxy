@@ -62,12 +62,12 @@ public class GeoJsonWriterSetupUtil {
                                                                }
 
                                                                @Override
-                                                               public List<OgcApiMediaType> getAlternativeMediaTypes() {
+                                                               public List<OgcApiMediaType> getAlternateMediaTypes() {
                                                                    return null;
                                                                }
 
                                                                @Override
-                                                               public OgcApiDatasetData getDataset() {
+                                                               public OgcApiDatasetData getApi() {
                                                                    return null;
                                                                }
 

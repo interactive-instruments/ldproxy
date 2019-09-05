@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.styles;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -32,5 +32,5 @@ public interface StyleSheet {
 
     Optional<String> getTilingScheme();
 
-    Optional<Wfs3Link> getLink();
+    Optional<OgcApiLink> getLink();
 }

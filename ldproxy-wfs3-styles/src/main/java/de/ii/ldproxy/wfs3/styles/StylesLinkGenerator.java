@@ -8,11 +8,9 @@
 package de.ii.ldproxy.wfs3.styles;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
-import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 
 import java.util.List;
 
@@ -27,10 +25,10 @@ public class StylesLinkGenerator {
      * @param uriBuilder the URI, split in host, path and query
      * @return a list with links
      */
-    public List<Wfs3Link> generateLandingPageLinks(URICustomizer uriBuilder) {
+    public List<OgcApiLink> generateLandingPageLinks(URICustomizer uriBuilder) {
 
-        return ImmutableList.<Wfs3Link>builder()
-                .add(new ImmutableWfs3Link.Builder()
+        return ImmutableList.<OgcApiLink>builder()
+                .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                         .ensureLastPathSegment("styles")
                                         .ensureParameter("f", "json")
@@ -49,23 +47,23 @@ public class StylesLinkGenerator {
      * @param styleId    the ids of the styles
      * @return a list with links
      */
-    public List<Wfs3Link> generateStyleLinks(URICustomizer uriBuilder, String styleId, List<OgcApiMediaType> mediaTypes) {
+    public List<OgcApiLink> generateStyleLinks(URICustomizer uriBuilder, String styleId, List<OgcApiMediaType> mediaTypes) {
 
-        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>();
+        final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>();
 
         for (OgcApiMediaType mediaType: mediaTypes) {
-            builder.add(new ImmutableWfs3Link.Builder()
+            builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
                             .ensureLastPathSegment(styleId)
                             .setParameter("f", mediaType.parameter())
                             .toString()
                     )
                     .rel("stylesheet")
-                    .type(mediaType.main().toString())
+                    .type(mediaType.type().toString())
                     .build());
         }
 
-        builder.add(new ImmutableWfs3Link.Builder()
+        builder.add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureLastPathSegment(styleId)
                                 .ensureLastPathSegment("metadata")
@@ -79,16 +77,16 @@ public class StylesLinkGenerator {
         return builder.build();
     }
 
-    public Wfs3Link generateStylesheetLink(URICustomizer uriBuilder, String styleId, OgcApiMediaType mediaType) {
+    public OgcApiLink generateStylesheetLink(URICustomizer uriBuilder, String styleId, OgcApiMediaType mediaType) {
 
-        final ImmutableWfs3Link.Builder builder = new ImmutableWfs3Link.Builder()
+        final ImmutableOgcApiLink.Builder builder = new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureLastPathSegment(styleId)
                                 .setParameter("f", mediaType.parameter())
                                 .toString()
                         )
                         .rel("stylesheet")
-                        .type(mediaType.main().toString());
+                        .type(mediaType.type().toString());
 
         return builder.build();
     }

@@ -25,21 +25,23 @@ import java.util.stream.Collectors;
 @JsonDeserialize(builder = ImmutableDataset.Builder.class)
 public abstract class Dataset {
 
+    // TODO: split into Dataset (collections, crs) extending Api (title, description, links, sections)
+
     public abstract Optional<String> getTitle();
 
     public abstract Optional<String> getDescription();
 
-    public abstract List<Wfs3Link> getLinks();
+    public abstract List<OgcApiLink> getLinks();
 
     public abstract List<String> getCrs();
 
     //TODO
-    //public abstract List<Wfs3Collection> getCollections();
+    //public abstract List<OgcApiCollection> getCollections();
     @Value.Derived
-    public List<Wfs3Collection> getCollections() {
-        Optional<List<Wfs3Collection>> collections = getSections().stream()
+    public List<OgcApiCollection> getCollections() {
+        Optional<List<OgcApiCollection>> collections = getSections().stream()
                                                                  .filter(stringObjectMap -> stringObjectMap.containsKey("collections"))
-                                                                 .map(stringObjectMap -> (List<Wfs3Collection>) stringObjectMap.get("collections"))
+                                                                 .map(stringObjectMap -> (List<OgcApiCollection>) stringObjectMap.get("collections"))
                                                                  .findFirst();
         if (collections.isPresent()) {
             return collections.get();

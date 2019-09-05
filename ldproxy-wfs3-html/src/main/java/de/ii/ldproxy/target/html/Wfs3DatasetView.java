@@ -9,14 +9,8 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import de.ii.ldproxy.ogcapi.domain.Dataset;
-import de.ii.ldproxy.ogcapi.domain.ImmutableDataset;
-import de.ii.ldproxy.ogcapi.domain.Metadata;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Extent;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtent;
 import io.dropwizard.views.View;
 import org.threeten.extra.Interval;
 
@@ -109,7 +103,7 @@ public class Wfs3DatasetView extends View {
         return wfs3Dataset.getLinks()
                           .stream()
                           .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "self"))
-                          .map(Wfs3Link::getHref)
+                          .map(OgcApiLink::getHref)
                           .map(mayThrow(url -> new URICustomizer(url).clearParameters()
                                                                      .ensureTrailingSlash()
                                                                      .toString()))
@@ -121,7 +115,7 @@ public class Wfs3DatasetView extends View {
         return wfs3Dataset.getLinks()
                           .stream()
                           .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "self"))
-                          .map(Wfs3Link::getHref)
+                          .map(OgcApiLink::getHref)
                           .map(mayThrow(url -> new URICustomizer(url).clearParameters()
                                                                      .removeLastPathSegments(1)
                                                                      .ensureTrailingSlash()
@@ -133,9 +127,9 @@ public class Wfs3DatasetView extends View {
     public String getApiUrl() {
         return wfs3Dataset.getLinks()
                           .stream()
-                          .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "service-doc") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
+                          .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "service-doc") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.type()
                                                                                                                                                                 .toString()))
-                          .map(Wfs3Link::getHref)
+                          .map(OgcApiLink::getHref)
                           .findFirst()
                           .orElse("");
     }
@@ -150,17 +144,17 @@ public class Wfs3DatasetView extends View {
         return getCollectionsStream(wfs3Dataset)
                 .flatMap(wfs3Collection -> wfs3Collection.getLinks()
                                                          .stream())
-                .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "items") && !Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
+                .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "items") && !Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.type()
                                                                                                                                                     .toString()))
                 .map(wfs3Link -> new Distribution(wfs3Link.getTitle(), wfs3Link.getType(), wfs3Link.getHref()))
                 .collect(Collectors.toList());
     }
 
-    private Stream<Wfs3Collection> getCollectionsStream(Dataset dataset) {
+    private Stream<OgcApiCollection> getCollectionsStream(Dataset dataset) {
         return dataset.getSections()
                       .stream()
                       .filter(stringObjectMap -> stringObjectMap.containsKey("collections"))
-                      .flatMap(stringObjectMap -> ((List<Wfs3Collection>) stringObjectMap.get("collections")).stream());
+                      .flatMap(stringObjectMap -> ((List<OgcApiCollection>) stringObjectMap.get("collections")).stream());
     }
 
     public List<NavigationDTO> getFormats() {
@@ -208,19 +202,19 @@ public class Wfs3DatasetView extends View {
         }
     }
 
-    static class FeatureType extends Wfs3Collection {
-        private final Wfs3Collection collection;
+    static class FeatureType extends OgcApiCollection {
+        private final OgcApiCollection collection;
 
-        public FeatureType(Wfs3Collection collection) {
+        public FeatureType(OgcApiCollection collection) {
             this.collection = collection;
         }
 
         public String getUrl() {
             return this.getLinks()
                        .stream()
-                       .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "items") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
+                       .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "items") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.type()
                                                                                                                                                           .toString()))
-                       .map(Wfs3Link::getHref)
+                       .map(OgcApiLink::getHref)
                        .findFirst()
                        .orElse("");
         }
@@ -241,12 +235,12 @@ public class Wfs3DatasetView extends View {
         }
 
         @Override
-        public Wfs3Extent getExtent() {
+        public OgcApiExtent getExtent() {
             return collection.getExtent();
         }
 
         @Override
-        public List<Wfs3Link> getLinks() {
+        public List<OgcApiLink> getLinks() {
             return collection.getLinks();
         }
 

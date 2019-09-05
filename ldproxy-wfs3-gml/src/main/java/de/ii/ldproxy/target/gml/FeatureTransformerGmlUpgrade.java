@@ -12,7 +12,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.escape.Escaper;
 import com.google.common.xml.XmlEscapers;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
@@ -53,7 +53,7 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
     private final OutputStreamWriter writer;
     private final XMLNamespaceNormalizer namespaces;
     private final CrsTransformer crsTransformer;
-    private final List<Wfs3Link> links;
+    private final List<OgcApiLink> links;
     private final Escaper escaper;
     private final int pageSize;
     private double maxAllowableOffset;
@@ -336,7 +336,7 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
         return locations.entrySet().stream().map(entry -> entry.getKey() + " " + entry.getValue()).collect(Collectors.joining(" "));
     }
 
-    private String linkAsAtom(Wfs3Link link) {
+    private String linkAsAtom(OgcApiLink link) {
         return String.format("\n<atom:link rel=\"%s\" title=\"%s\" type=\"%s\" href=\"%s\"/>", link.getRel(), link.getTitle(), escaper.escape(link.getType()), escaper.escape(link.getHref()));
     }
 

@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3.styles.manager;
 
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
+import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -30,6 +30,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Extend the API definition with style management
@@ -37,7 +38,7 @@ import java.util.Objects;
 @Component
 @Provides
 @Instantiate
-public class OpenApiStylesManager implements Wfs3OpenApiExtension {
+public class OpenApiStylesManager implements OpenApiExtension {
 
     private static final String TAG = "Manage Styles";
 
@@ -47,14 +48,21 @@ public class OpenApiStylesManager implements Wfs3OpenApiExtension {
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, StylesConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+
+        if (stylesExtension.isPresent() &&
+                stylesExtension.get()
+                        .getManagerEnabled()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
 
-        if (!isEnabledForDataset(datasetData)) {
+        if (!isEnabledForApi(datasetData)) {
             return openAPI;
         }
 

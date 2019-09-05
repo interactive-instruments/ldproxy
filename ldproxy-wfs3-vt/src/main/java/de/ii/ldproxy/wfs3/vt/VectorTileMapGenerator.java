@@ -25,8 +25,8 @@ import java.util.Set;
 public class VectorTileMapGenerator implements OgcApiExtension {
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, TilesConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
     /**

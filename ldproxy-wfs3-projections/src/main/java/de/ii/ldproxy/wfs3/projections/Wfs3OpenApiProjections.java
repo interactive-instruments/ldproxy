@@ -9,7 +9,7 @@ package de.ii.ldproxy.wfs3.projections;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
+import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -28,20 +28,20 @@ import java.util.Objects;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OpenApiProjections implements Wfs3OpenApiExtension {
+public class Wfs3OpenApiProjections implements OpenApiExtension {
     @Override
     public int getSortPriority() {
         return 400;
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, ProjectionsConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, ProjectionsConfiguration.class);
     }
 
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
-        if (isEnabledForDataset(datasetData)) {
+        if (isEnabledForApi(datasetData)) {
             openAPI.getComponents()
                    .addParameters("properties", new Parameter()
                            .name("properties")

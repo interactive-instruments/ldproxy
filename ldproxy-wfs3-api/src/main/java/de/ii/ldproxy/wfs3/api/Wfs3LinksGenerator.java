@@ -8,13 +8,12 @@
 package de.ii.ldproxy.wfs3.api;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Link;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import org.apache.http.client.utils.URIBuilder;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -26,84 +25,11 @@ import java.util.stream.Stream;
  */
 public class Wfs3LinksGenerator {
 
-    public List<Wfs3Link> generateDatasetLinks(URICustomizer uriBuilder, Optional<String> describeFeatureTypeUrl,
-                                               OgcApiMediaType mediaType, OgcApiMediaType... alternativeMediaTypes) {
-        uriBuilder
-                .ensureParameter("f", mediaType.parameter());
-
-        final boolean isCollections = uriBuilder.isLastPathSegment("collections");
-        final ImmutableList.Builder<Wfs3Link> builder = new ImmutableList.Builder<Wfs3Link>()
-                .add(new ImmutableWfs3Link.Builder()
-                        .href(uriBuilder.toString())
-                        .rel("self")
-                        .type(mediaType.metadata()
-                                       .toString())
-                        .description("this document")
-                        .build())
-                .addAll(Arrays.stream(alternativeMediaTypes)
-                              .map(generateAlternateLink(uriBuilder.copy(), true))
-                              .collect(Collectors.toList()))
-                .add(new ImmutableWfs3Link.Builder()
-                        .href(uriBuilder.copy()
-                                        .removeLastPathSegment("collections")
-                                        .ensureLastPathSegment("api")
-                                        .setParameter("f", "json")
-                                        .toString())
-                        .rel("service-desc")
-                        .type("application/vnd.oai.openapi+json;version=3.0")
-                        .description("the OpenAPI definition")
-                        .typeLabel("JSON")
-                        .build())
-                .add(new ImmutableWfs3Link.Builder()
-                        .href(uriBuilder.copy()
-                                        .removeLastPathSegment("collections")
-                                        .ensureLastPathSegment("api")
-                                        .setParameter("f", "html")
-                                        .toString())
-                        .rel("service-doc")
-                        .type("text/html")
-                        .description("the OpenAPI definition")
-                        .typeLabel("HTML")
-                        .build())
-                .add(new ImmutableWfs3Link.Builder()
-                        .href(uriBuilder.copy()
-                                        .removeLastPathSegment("collections")
-                                        .ensureLastPathSegment("conformance")
-                                        .setParameter("f", "json")
-                                        .toString())
-                        .rel("conformance")
-                        .type("application/json")
-                        .description("WFS 3.0 conformance classes implemented by this server")
-                        .build());
-        if (!isCollections) {
-            builder
-                    .add(new ImmutableWfs3Link.Builder()
-                            .href(uriBuilder.copy()
-                                            .ensureLastPathSegment("collections")
-                                            .setParameter("f", "json")
-                                            .toString())
-                            .rel("data")
-                            .type("application/json")
-                            .description("Metadata about the feature collections")
-                            .build());
-        }
-
-        if (describeFeatureTypeUrl.isPresent()) {
-            builder.add(new ImmutableWfs3Link.Builder()
-                    .href(describeFeatureTypeUrl.get())
-                    .rel("describedBy")
-                    .type("application/xml")
-                    .description("XML schema for all feature types")
-                    .build());
-        }
-
-        return builder.build();
-    }
-
-    public List<Wfs3Link> generateDatasetCollectionLinks(URICustomizer uriBuilder, String collectionId,
-                                                         String collectionName, Optional<String> describeFeatureTypeUrl,
-                                                         OgcApiMediaType mediaType,
-                                                         List<OgcApiMediaType> alternativeMediaTypes) {
+    public List<OgcApiLink> generateDatasetCollectionLinks(URICustomizer uriBuilder, String collectionId,
+                                                           String collectionName, Optional<String> describeFeatureTypeUrl,
+                                                           OgcApiMediaType mediaType,
+                                                           List<OgcApiMediaType> alternateMediaTypes,
+                                                           List<OgcApiMediaType> featureMediaTypes) {
         boolean isCollection = false;
 
         if (uriBuilder.getLastPathSegment()
@@ -114,15 +40,15 @@ public class Wfs3LinksGenerator {
                 .ensureParameter("f", mediaType.parameter())
                 .ensureLastPathSegments("collections", collectionId, "items");
 
-        ImmutableList.Builder<Wfs3Link> links = new ImmutableList.Builder<Wfs3Link>()
-                .addAll(Stream.concat(Stream.of(mediaType), alternativeMediaTypes.stream())
+        ImmutableList.Builder<OgcApiLink> links = new ImmutableList.Builder<OgcApiLink>()
+                .addAll(featureMediaTypes.stream()
                               .map(generateItemsLink(uriBuilder.copy(), collectionName))
                               .collect(Collectors.toList()))
-                .addAll(Stream.concat(Stream.of(mediaType), alternativeMediaTypes.stream())
+                .addAll(Stream.concat(Stream.of(mediaType), alternateMediaTypes.stream())
                               .map(generateCollectionsLink(uriBuilder.copy(), collectionName, collectionId, isCollection))
                               .collect(Collectors.toList()));
 
-        describeFeatureTypeUrl.ifPresent(url -> links.add(new ImmutableWfs3Link.Builder()
+        describeFeatureTypeUrl.ifPresent(url -> links.add(new ImmutableOgcApiLink.Builder()
                 .href(describeFeatureTypeUrl.get())
                 .rel("describedBy")
                 .type("application/xml")
@@ -133,98 +59,105 @@ public class Wfs3LinksGenerator {
     }
 
 
-    public List<Wfs3Link> generateCollectionOrFeatureLinks(URICustomizer uriBuilder, boolean isFeatureCollection,
-                                                           int page, int count, OgcApiMediaType mediaType,
-                                                           List<OgcApiMediaType> alternativeMediaTypes) {
+    public List<OgcApiLink> generateCollectionOrFeatureLinks(URICustomizer uriBuilder, boolean isFeatureCollection,
+                                                             int page, int count, OgcApiMediaType mediaType,
+                                                             List<OgcApiMediaType> alternateMediaTypes,
+                                                             List<OgcApiMediaType> collectionMediaTypes) {
         uriBuilder
                 .ensureParameter("f", mediaType.parameter());
 
-        final ImmutableList.Builder<Wfs3Link> links = new ImmutableList.Builder<Wfs3Link>()
-                .add(new ImmutableWfs3Link.Builder()
+        final ImmutableList.Builder<OgcApiLink> links = new ImmutableList.Builder<OgcApiLink>()
+                .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.toString())
                         .rel("self")
-                        .type(mediaType.main()
+                        .type(mediaType.type()
                                        .toString())
                         .description("this document")
                         .build())
-                .addAll(alternativeMediaTypes.stream()
-                                             .map(generateAlternateLink(uriBuilder.copy(), false))
-                                             .collect(Collectors.toList()));
+                .addAll(alternateMediaTypes.stream()
+                                           .map(generateAlternateLink(uriBuilder.copy()))
+                                           .collect(Collectors.toList()));
 
         if (isFeatureCollection) {
-            links.add(new ImmutableWfs3Link.Builder()
+            // TODO: no next link, if there is no next page
+            links.add(new ImmutableOgcApiLink.Builder()
                     .href(getUrlWithPageAndCount(uriBuilder.copy(), page + 1, count))
                     .rel("next")
-                    .type(mediaType.main()
+                    .type(mediaType.type()
                                    .toString())
                     .description("next page")
                     .build());
             if (page > 1) {
-                links.add(new ImmutableWfs3Link.Builder()
+                links.add(new ImmutableOgcApiLink.Builder()
                         .href(getUrlWithPageAndCount(uriBuilder.copy(), page - 1, count))
                         .rel("prev")
-                        .type(mediaType.main()
+                        .type(mediaType.type()
                                        .toString())
                         .description("previous page")
                         .build());
             }
         } else {
-            links.add(new ImmutableWfs3Link.Builder()
-                    .href(uriBuilder.copy()
-                                    .removeLastPathSegments(2)
-                                    .clearParameters()
-                                    .setParameter("f", mediaType.parameter())
-                                    .toString())
-                    .rel("collection")
-                    .type(mediaType.metadata()
-                                   .toString())
-                    .description("the collection document")
-                    .build());
+            links.addAll(collectionMediaTypes.stream()
+                    .map(generateCollectionLink(uriBuilder.copy()))
+                    .collect(Collectors.toList()));
         }
 
         return links.build();
     }
 
-    public List<Wfs3Link> generateAlternateLinks(final URICustomizer uriBuilder, boolean isMetadata,
-                                                 List<OgcApiMediaType> alternativeMediaTypes) {
-        return alternativeMediaTypes.stream()
-                                    .map(generateAlternateLink(uriBuilder.copy(), isMetadata))
-                                    .collect(Collectors.toList());
+    public List<OgcApiLink> generateAlternateLinks(final URICustomizer uriBuilder,
+                                                   List<OgcApiMediaType> alternateMediaTypes) {
+        return alternateMediaTypes.stream()
+                                  .map(generateAlternateLink(uriBuilder.copy()))
+                                  .collect(Collectors.toList());
     }
 
-    private Function<OgcApiMediaType, Wfs3Link> generateAlternateLink(final URIBuilder uriBuilder, boolean isMetadata) {
-        return mediaType -> new ImmutableWfs3Link.Builder()
+    private Function<OgcApiMediaType, OgcApiLink> generateAlternateLink(final URIBuilder uriBuilder) {
+        return mediaType -> new ImmutableOgcApiLink.Builder()
                 .href(uriBuilder
                         .setParameter("f", mediaType.parameter())
                         .toString())
                 .rel("alternate")
-                .type(isMetadata ? mediaType.metadata()
-                                            .toString() : mediaType.main()
-                                                                   .toString())
+                .type(mediaType.type()
+                               .toString())
                 .description("this document")
-                .typeLabel(isMetadata ? mediaType.metadataLabel() : mediaType.label())
+                .typeLabel(mediaType.label())
                 .build();
     }
 
-    private Function<OgcApiMediaType, Wfs3Link> generateItemsLink(final URIBuilder uriBuilder,
-                                                                  final String collectionName) {
-        return mediaType -> new ImmutableWfs3Link.Builder()
+    private Function<OgcApiMediaType, OgcApiLink> generateCollectionLink(final URICustomizer uriBuilder) {
+        return mediaType -> new ImmutableOgcApiLink.Builder()
+                .href(uriBuilder
+                        .copy()
+                        .removeLastPathSegments(2)
+                        .setParameter("f", mediaType.parameter())
+                        .toString())
+                .rel("collection")
+                .type(mediaType.type()
+                        .toString())
+                .description("the collection document")
+                .typeLabel(mediaType.label())
+                .build();
+    }
+
+    private Function<OgcApiMediaType, OgcApiLink> generateItemsLink(final URIBuilder uriBuilder,
+                                                                    final String collectionName) {
+        return mediaType -> new ImmutableOgcApiLink.Builder()
                 .href(uriBuilder
                         .setParameter("f", mediaType.parameter())
                         .toString())
                 .rel("items")
-                .type(mediaType.main()
+                .type(mediaType.type()
                                .toString())
                 .description(collectionName)
                 .typeLabel(mediaType.label())
                 .build();
     }
 
-    private Function<OgcApiMediaType, Wfs3Link> generateCollectionsLink(final URICustomizer uriBuilder,
-                                                                        final String collectionName,
-                                                                        final String collectionId,
-                                                                        boolean isCollection) {
-
+    private Function<OgcApiMediaType, OgcApiLink> generateCollectionsLink(final URICustomizer uriBuilder,
+                                                                          final String collectionName,
+                                                                          final String collectionId,
+                                                                          boolean isCollection) {
 
         return mediaType -> {
             String rel = "";
@@ -249,7 +182,7 @@ public class Wfs3LinksGenerator {
             }
             if (isCollection)
                 rel = "data";
-            return new ImmutableWfs3Link.Builder()
+            return new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder
                             .copy()
                             .removeLastPathSegment("items")

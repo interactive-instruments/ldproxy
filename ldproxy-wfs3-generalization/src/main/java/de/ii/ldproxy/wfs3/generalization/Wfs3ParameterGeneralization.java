@@ -26,8 +26,8 @@ import java.util.Map;
 public class Wfs3ParameterGeneralization implements Wfs3ParameterExtension {
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, GeneralizationConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, GeneralizationConfiguration.class);
     }
 
     @Override

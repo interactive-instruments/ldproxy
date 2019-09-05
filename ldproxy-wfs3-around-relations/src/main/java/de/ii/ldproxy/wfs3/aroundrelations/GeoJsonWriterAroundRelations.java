@@ -8,8 +8,8 @@
 package de.ii.ldproxy.wfs3.aroundrelations;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Link;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.target.geojson.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.target.geojson.GeoJsonWriter;
 import de.ii.ldproxy.target.geojson.ImmutableFeatureTransformationContextGeoJson;
@@ -46,7 +46,7 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
     }
 
     private AroundRelationsQuery aroundRelationsQuery;
-    private ImmutableList.Builder<Wfs3Link> links;
+    private ImmutableList.Builder<OgcApiLink> links;
 
     //TODO inject, multiple implementations
     private final AroundRelationResolver aroundRelationResolver;
@@ -106,7 +106,7 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
         FeatureTransformationContextGeoJson nextTransformationContext = transformationContext;
 
         if (aroundRelationsQuery.isActive() && !aroundRelationsQuery.isResolve()) {
-            this.links = ImmutableList.<Wfs3Link>builder().addAll(transformationContext.getLinks());
+            this.links = ImmutableList.<OgcApiLink>builder().addAll(transformationContext.getLinks());
 
             nextTransformationContext = ImmutableFeatureTransformationContextGeoJson.builder()
                                                                                     .from(transformationContext)
@@ -160,7 +160,7 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
                                     } else {
                                         String url = aroundRelationResolver.getUrl(query, "&f=json");
 
-                                        links.add(new ImmutableWfs3Link.Builder()
+                                        links.add(new ImmutableOgcApiLink.Builder()
                                                 .href(url)
                                                 .rel(query.configuration.getId())
                                                 .type(query.configuration.getResponseType())
