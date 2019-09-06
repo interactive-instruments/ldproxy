@@ -85,6 +85,13 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
                                 .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(dataset));
     }
 
+    private List<OgcApiMediaType> getMediaTypes(OgcApiDatasetData apiData, File apiDir, String styleId) {
+        return getStyleFormatStream(apiData)
+                .filter(styleFormat -> new File( apiDir + File.separator + styleId + "." + styleFormat.getFileExtension()).exists())
+                .map(StyleFormatExtension::getMediaType)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
         return isExtensionEnabled(apiData, StylesConfiguration.class);
@@ -99,7 +106,6 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStyles(@Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest) {
-        List<Map<String, Object>> styles = new ArrayList<>();
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
         final String datasetId = dataset.getId();
@@ -108,31 +114,30 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
             apiDir.mkdirs();
         }
 
-        for (File resourceFile : apiDir.listFiles()) {
-
-            String resourceId = resourceFile.getName();
-            String styleId = Files.getNameWithoutExtension(resourceId);
-            String fileExtension = Files.getFileExtension(resourceId);
-
-            if (fileExtension.equalsIgnoreCase("metadata")) {
-                Map<String, Object> styleInfo = new HashMap<>();
-                styleInfo.put("id", styleId);
-                List<OgcApiMediaType> mediaTypes = getStyleFormatStream(dataset.getData())
-                        .filter(styleFormat -> new File( apiDir + File.separator + styleId + "." + styleFormat.getFileExtension()).exists())
-                        .map(StyleFormatExtension::getMediaType)
-                        .collect(Collectors.toList());
-                styleInfo.put("links", stylesLinkGenerator.generateStyleLinks(ogcApiRequest.getUriCustomizer(), styleId, mediaTypes));
-                styles.add(styleInfo);
-            }
-        }
+        List<Map<String, Object>> styles = Arrays.stream(apiDir.listFiles())
+                .filter(file -> !file.isHidden())
+                .map(File::getName)
+                .sorted()
+                .filter(filename -> Files.getFileExtension(filename).equalsIgnoreCase("metadata"))
+                .map(filename -> ImmutableMap.<String, Object>builder()
+                        .put("id", Files.getNameWithoutExtension(filename))
+                        .put("links", stylesLinkGenerator.generateStyleLinks(ogcApiRequest.getUriCustomizer(),
+                                                                             filename,
+                                                                             getMediaTypes(dataset.getData(),
+                                                                                     apiDir,
+                                                                                     Files.getNameWithoutExtension(filename))))
+                        .build())
+                .collect(Collectors.toList());
 
         if (styles.size() == 0) {
-            return Response.ok("{ \n \"styles\": [] \n }")
-                           .build();
+            return Response.ok("{\"styles\":[]}")
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
         }
 
         return Response.ok(ImmutableMap.of("styles", styles))
-                       .build();
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .build();
     }
 
     /**

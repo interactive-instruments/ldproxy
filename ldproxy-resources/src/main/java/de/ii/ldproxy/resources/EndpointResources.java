@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -103,7 +104,6 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getResources(@Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest) {
-        List<Map<String, Object>> resources = new ArrayList<>();
         final ResourcesLinkGenerator resourcesLinkGenerator = new ResourcesLinkGenerator();
 
         final String datasetId = dataset.getId();
@@ -112,19 +112,18 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
             apiDir.mkdirs();
         }
 
-        for (File resourceFile : apiDir.listFiles()) {
-
-            String resourceId = resourceFile.getName();
-            if (resourceFile.isHidden())
-                continue; // skip invisible files
-            Map<String, Object> resourceInfo = new HashMap<>();
-            resourceInfo.put("id", resourceId);
-            resourceInfo.put("links", resourcesLinkGenerator.generateResourceLink(ogcApiRequest.getUriCustomizer(), resourceId));
-            resources.add(resourceInfo);
-        }
+        List<Map<String, Object>> resources = Arrays.stream(apiDir.listFiles())
+                .filter(file -> !file.isHidden())
+                .map(File::getName)
+                .sorted()
+                .map(filename -> ImmutableMap.<String, Object>builder()
+                                .put("id", filename)
+                                .put("link", resourcesLinkGenerator.generateResourceLink(ogcApiRequest.getUriCustomizer(), filename))
+                                .build())
+                                .collect(Collectors.toList());
 
         if (resources.size() == 0) {
-            return Response.ok("{ \n \"resources\": [] \n }")
+            return Response.ok("{\"resources\":[]}")
                     .type(MediaType.APPLICATION_JSON_TYPE)
                     .build();
         }
