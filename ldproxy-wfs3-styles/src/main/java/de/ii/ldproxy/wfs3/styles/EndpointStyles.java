@@ -122,7 +122,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
                 .map(filename -> ImmutableMap.<String, Object>builder()
                         .put("id", Files.getNameWithoutExtension(filename))
                         .put("links", stylesLinkGenerator.generateStyleLinks(ogcApiRequest.getUriCustomizer(),
-                                                                             filename,
+                                                                             Files.getNameWithoutExtension(filename),
                                                                              getMediaTypes(dataset.getData(),
                                                                                      apiDir,
                                                                                      Files.getNameWithoutExtension(filename))))
