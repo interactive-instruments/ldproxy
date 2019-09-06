@@ -10,7 +10,6 @@ package ii.de.ldproxy.resources.manager;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
-import de.ii.ldproxy.resources.EndpointResources;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
@@ -105,8 +104,6 @@ public class EndpointResourcesManager implements OgcApiEndpointExtension, Confor
                              @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
-
-        String encodedResourceId = EndpointResources.encodeResourceId(resourceId);
 
         final String datasetId = dataset.getId();
         File apiDir = new File(resourcesStore + File.separator + datasetId);

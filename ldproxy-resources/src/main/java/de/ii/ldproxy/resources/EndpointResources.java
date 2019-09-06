@@ -175,19 +175,10 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
             return Response.ok()
                     .entity(resource)
                     .type(contentType)
-                    .header("Content-Disposition", "attachment; filename=\""+resourceId+"\"")
+                    .header("Content-Disposition", "inline; filename=\""+resourceId+"\"")
                     .build();
         } catch (IOException e) {
             throw new ServerErrorException("resource could not be read: "+resourceId, 500);
         }
     }
-
-    public static String encodeResourceId(String resourceId) {
-        return resourceId.replace(".", "__dot__");
-    }
-
-    static String decodeResourceId(String encodedResoureId) {
-        return encodedResoureId.replace("__dot__", ".");
-    }
-
 }
