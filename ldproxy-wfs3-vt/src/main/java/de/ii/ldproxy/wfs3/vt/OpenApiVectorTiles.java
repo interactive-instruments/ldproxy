@@ -346,8 +346,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                  .description("Access to data (features), partitioned into a hierarchy of tiles."));
 
 
-            if (datasetData != null && datasetData.getFeatureProvider()
-                                                  .supportsTransactions()) {
+            if (datasetData != null) {
 
                 openAPI.getPaths()
                        .addPathItem("/tilingSchemes", new PathItem().description("something"));  //create a new path
