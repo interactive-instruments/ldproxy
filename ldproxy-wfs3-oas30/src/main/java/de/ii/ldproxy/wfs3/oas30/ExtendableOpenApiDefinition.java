@@ -140,7 +140,9 @@ public class ExtendableOpenApiDefinition {
                 }
             }
 
-            getOpenApiExtensions().forEach(openApiExtension -> openApiExtension.process(openAPI, datasetData));
+            getOpenApiExtensions().stream()
+                    .sorted(Comparator.comparing(OpenApiExtension::getSortPriority))
+                    .forEach(openApiExtension -> openApiExtension.process(openAPI, datasetData));
 
 
             if (StringUtils.isNotBlank(type) && type.trim()
