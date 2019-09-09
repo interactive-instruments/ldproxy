@@ -135,6 +135,42 @@ class LandingPageSpec extends Specification {
         then: 'the server shall also conform to HTTP over TLS'
     }
 
+    @PendingFeature
+    def 'Requirement 8 A: query parameter not specified in the API definition'() {
+        when: 'a request to the landing page with a parameter not specified in the API definition'
+        def queryInputDataset = new ImmutableOgcApiQueryInputDataset.Builder().build()
+        Dataset landingPage = queryHandler.handle(CommonQuery.DATASET, queryInputDataset,
+                createRequestContextUnknownParameter()).entity as Dataset
+
+        then: 'an exception is thrown resulting in a response with HTTP status code 400'
+        thrown(IllegalStateException)
+    }
+
+    @PendingFeature
+    def 'Requirement 9 A: invalid query parameter value'() {
+        when: 'a request to the landing page with a URI that has an invalid value'
+        def queryInputDataset = new ImmutableOgcApiQueryInputDataset.Builder().build()
+        Dataset landingPage = queryHandler.handle(CommonQuery.DATASET, queryInputDataset,
+                createRequestContextInvalidParameterValue()).entity as Dataset
+
+        then: 'an exception is thrown resulting in a response with HTTP status code 400'
+        thrown(IllegalArgumentException)
+    }
+
+    @Ignore
+    def 'Requirement 10 A: coordinate reference systems'() {
+        expect: 'all spatial geometries shall be in the coordinate reference system'
+    }
+
+    @Ignore
+    def 'Requirement 13 A: '() {
+        when: "The server returns a response at path /collections"
+
+        then: "the response shall include a link to this document"
+
+        and: "a link to the response document in every other media type supported by the server"
+    }
+
     static def createDatasetData() {
         new ImmutableOgcApiDatasetData.Builder()
                 .id('test')
@@ -168,6 +204,26 @@ class LandingPageSpec extends Specification {
                         .build())
                 .dataset(datasetData)
                 .requestUri(new URI('http://example.com'))
+                .build()
+    }
+
+    static def createRequestContextUnknownParameter() {
+        new ImmutableOgcApiRequestContext.Builder()
+                .mediaType(new ImmutableOgcApiMediaType.Builder()
+                .main(MediaType.APPLICATION_JSON_TYPE)
+                .build())
+                .dataset(datasetData)
+                .requestUri(new URI('http://example.com?abc=true'))
+                .build()
+    }
+
+    static def createRequestContextInvalidParameterValue() {
+        new ImmutableOgcApiRequestContext.Builder()
+                .mediaType(new ImmutableOgcApiMediaType.Builder()
+                .main(MediaType.APPLICATION_JSON_TYPE)
+                .build())
+                .dataset(datasetData)
+                .requestUri(new URI('http://example.com?f=abcdf'))
                 .build()
     }
 
