@@ -38,7 +38,6 @@ import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
-import java.util.stream.Collectors
 
 class LandingPageSpec extends Specification {
 
@@ -117,10 +116,7 @@ class LandingPageSpec extends Specification {
                 .handle(CommonQuery.CONFORMANCE, queryInputConformance, requestContext).entity as List<ConformanceClass>
 
         then: 'it should return a list of conformance classes that the server conforms to'
-        conformancePage.stream()
-                .map { p -> p.getConformanceClass() }
-                .collect(Collectors.toList())
-                .contains('http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson')
+        conformancePage.any { it.getConformanceClass() == 'foo bar 1234' }
 
     }
 
@@ -162,14 +158,6 @@ class LandingPageSpec extends Specification {
         expect: 'all spatial geometries shall be in the coordinate reference system'
     }
 
-    @Ignore
-    def 'Requirement 13 A: '() {
-        when: "The server returns a response at path /collections"
-
-        then: "the response shall include a link to this document"
-
-        and: "a link to the response document in every other media type supported by the server"
-    }
 
     static def createDatasetData() {
         new ImmutableOgcApiDatasetData.Builder()
@@ -266,7 +254,7 @@ class LandingPageSpec extends Specification {
 
                         @Override
                         String getConformanceClass() {
-                            return 'http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson'
+                            return 'foo bar 1234'
                         }
 
                         @Override
