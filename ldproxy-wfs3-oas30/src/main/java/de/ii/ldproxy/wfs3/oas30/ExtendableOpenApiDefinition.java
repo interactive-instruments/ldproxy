@@ -150,7 +150,7 @@ public class ExtendableOpenApiDefinition {
                 return Response.status(Response.Status.OK)
                                .entity(pretty ? Yaml.pretty(openAPI) : Yaml.mapper()
                                                                            .writeValueAsString(openAPI))
-                               .type("application/vnd.oai.openapi+yaml;version=3.0")
+                               .type("application/vnd.oai.openapi;version=3.0")
                                .build();
             } else {
                 return Response.status(Response.Status.OK)
