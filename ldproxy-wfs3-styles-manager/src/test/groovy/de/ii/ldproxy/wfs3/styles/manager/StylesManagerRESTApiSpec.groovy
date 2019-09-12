@@ -41,24 +41,4 @@ class StylesManagerRESTApiSpec extends Specification {
         response.responseData == null
     }
 
-    def 'PUT Request for a style of a collection'(){
-
-        when:
-        def response=restClient.request(SUT_URL, Method.PUT, ContentType.JSON,{ req ->
-            uri.path = SUT_PATH +'/collections/' +SUT_COLLECTION + '/styles/'+ SUT_STYLE
-            headers.Accept = 'application/json'
-            body="{\"id\": \"default\"}"
-        })
-
-
-        then:
-        response.status == 204
-
-        and:
-        response.responseData == null
-    }
-
-
-
-
 }

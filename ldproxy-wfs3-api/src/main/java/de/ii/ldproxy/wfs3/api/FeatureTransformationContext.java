@@ -9,7 +9,7 @@ package de.ii.ldproxy.wfs3.api;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
@@ -43,7 +43,7 @@ public interface FeatureTransformationContext {
 
     Optional<CrsTransformer> getCrsTransformer();
 
-    List<Wfs3Link> getLinks();
+    List<OgcApiLink> getLinks();
 
     boolean isFeatureCollection();
 

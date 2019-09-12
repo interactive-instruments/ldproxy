@@ -15,9 +15,9 @@ import java.util.List;
 public interface OgcApiRequestContext {
     OgcApiMediaType getMediaType();
 
-    List<OgcApiMediaType> getAlternativeMediaTypes();
+    List<OgcApiMediaType> getAlternateMediaTypes();
 
-    OgcApiDatasetData getDataset();
+    OgcApiDataset getApi();
 
     URICustomizer getUriCustomizer();
 

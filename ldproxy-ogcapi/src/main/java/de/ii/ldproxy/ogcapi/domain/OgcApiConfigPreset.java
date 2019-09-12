@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.Objects;
 
+// TODO: change WFS3 to OGCAPI
 public enum OgcApiConfigPreset {
     WFS3,
     GSFS;

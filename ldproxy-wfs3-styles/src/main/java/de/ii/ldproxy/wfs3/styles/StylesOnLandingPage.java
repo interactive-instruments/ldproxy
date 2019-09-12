@@ -10,20 +10,20 @@ package de.ii.ldproxy.wfs3.styles;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
-import de.ii.ldproxy.ogcapi.domain.ImmutableDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3DatasetMetadataExtension;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.osgi.framework.BundleContext;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 /**
  * add styles information to the landing page
@@ -32,37 +32,46 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class StylesOnLandingPage implements Wfs3DatasetMetadataExtension {
+public class StylesOnLandingPage implements OgcApiLandingPageExtension {
 
-    private final StylesStore stylesStore;
+    private final File stylesStore;
 
-    public StylesOnLandingPage(@Requires StylesStore stylesStore) {
-        this.stylesStore = stylesStore;
+    public StylesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
+        this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
+        if (!stylesStore.exists()) {
+            stylesStore.mkdirs();
+        }
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, StylesConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, StylesConfiguration.class);
     }
 
     @Override
-    public ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData datasetData,
+    public ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData apiData,
                                             URICustomizer uriCustomizer,
                                             OgcApiMediaType mediaType,
-                                            List<OgcApiMediaType> alternativeMediaTypes) {
+                                            List<OgcApiMediaType> alternateMediaTypes) {
 
-        if (!isEnabledForDataset(datasetData)) {
+        if (!isEnabledForApi(apiData)) {
             return datasetBuilder;
         }
 
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
-        List<Wfs3Link> wfs3Links = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer);
-        datasetBuilder.addAllLinks(wfs3Links);
+        List<OgcApiLink> ogcApiLinks = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer);
+        datasetBuilder.addAllLinks(ogcApiLinks);
 
-        List<String> styleDocumentList = stylesStore.ids(datasetData.getId());
+        final String datasetId = apiData.getId();
+        File apiDir = new File(stylesStore + File.separator + datasetId);
+        if (!apiDir.exists()) {
+            apiDir.mkdirs();
+        }
 
-        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(datasetData, StylesConfiguration.class);
+        List<String> styleDocumentList = Arrays.stream(apiDir.list()).collect(Collectors.toList());
+
+        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
         // TODO: review maps
         if (stylesExtension.isPresent() && stylesExtension.get()

@@ -7,27 +7,22 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-
-import javax.ws.rs.core.Response;
 
 /**
  * Extension for a style encoding at /{serviceId}/styles/{styleId}
  */
-public interface StyleFormatExtension extends OgcApiExtension {
+public interface StyleFormatExtension extends FormatExtension {
 
     @Override
-    default boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+    default boolean isEnabledForApi(OgcApiDatasetData apiData) {
         return true;
     }
 
-    /**
-     *
-     * @return the media type of this style format
-     */
-    OgcApiMediaType getMediaType();
+    default String getPathPattern() {
+        return "^\\/?(?:styles(\\/[^\\/]+(\\/metadata)?)?)?$";
+    }
 
     /**
      *

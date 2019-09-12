@@ -7,19 +7,10 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3StartupTask;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.target.geojson.Wfs3OutputFormatGeoJson;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
-import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
+import de.ii.xtraplatform.crs.api.*;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.server.CoreServerConfig;
 import org.apache.felix.ipojo.annotations.Component;
@@ -35,15 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -55,7 +38,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class VectorTileSeeding implements Wfs3StartupTask {
+public class VectorTileSeeding implements OgcApiStartupTask {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(VectorTileSeeding.class);
     private final VectorTilesCache cache;
     private Thread t = null;
@@ -79,22 +62,22 @@ public class VectorTileSeeding implements Wfs3StartupTask {
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, TilesConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
 
     /**
      * The runnable Task which starts the seeding.
      *
-     * @param datasetData     the service data of the Wfs3 Service
+     * @param apiData     the service data of the Wfs3 Service
      * @param featureProvider the featureProvider
      * @return the runnable process
      */
     @Override
-    public Runnable getTask(OgcApiDatasetData datasetData, TransformingFeatureProvider featureProvider) {
+    public Runnable getTask(OgcApiDatasetData apiData, TransformingFeatureProvider featureProvider) {
 
-        Optional<Wfs3OutputFormatExtension> wfs3OutputFormatGeoJson = getOutputFormatForType(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
+        Optional<Wfs3FeatureFormatExtension> wfs3OutputFormatGeoJson = getOutputFormatForType(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
 
         if (!wfs3OutputFormatGeoJson.isPresent()) {
             return () -> {
@@ -104,8 +87,8 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
         Runnable startSeeding = () -> {
 
-            Set<String> collectionIdsDataset = Wfs3EndpointTiles.getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(datasetData), vectorTileMapGenerator.getEnabledMap(datasetData),
-                    vectorTileMapGenerator.getFormatsMap(datasetData), vectorTileMapGenerator.getMinMaxMap(datasetData, true), false, false, true);
+            Set<String> collectionIdsDataset = Wfs3EndpointTiles.getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(apiData), vectorTileMapGenerator.getEnabledMap(apiData),
+                    vectorTileMapGenerator.getFormatsMap(apiData), vectorTileMapGenerator.getMinMaxMap(apiData, true), false, false, true);
             try {
                 boolean tilesDatasetEnabled = false;
                 boolean seedingDatasetEnabled = false;
@@ -116,10 +99,10 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
                 if (tilesDatasetEnabled) {
                     for (String collectionId : collectionIdsDataset) {
-                        if (isExtensionEnabled(datasetData, datasetData.getFeatureTypes()
+                        if (isExtensionEnabled(apiData, apiData.getFeatureTypes()
                                                                        .get(collectionId), TilesConfiguration.class)) {
 
-                            final TilesConfiguration tilesConfiguration = getExtensionConfiguration(datasetData, datasetData.getFeatureTypes()
+                            final TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, apiData.getFeatureTypes()
                                                                                                                             .get(collectionId), TilesConfiguration.class).get();
 
                             Map<String, TilesConfiguration.MinMax> seedingCollection = tilesConfiguration.getSeeding();
@@ -136,7 +119,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
 
                 if (tilesDatasetEnabled && seedingDatasetEnabled) {
-                    seedingDataset(collectionIdsDataset, datasetData, crsTransformation, cache, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson.get());
+                    seedingDataset(collectionIdsDataset, apiData, crsTransformation, cache, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson.get());
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -147,7 +130,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         t = new Thread(startSeeding);
         t.setDaemon(true);
         t.start();
-        threadMap.put(t, datasetData.getId());
+        threadMap.put(t, apiData.getId());
         return startSeeding;
 
     }
@@ -175,17 +158,17 @@ public class VectorTileSeeding implements Wfs3StartupTask {
      * for every tiling Scheme in the specified seeding range
      *
      * @param collectionIdsDataset all ids of feature Types which have the tiles support and seeding enabled
-     * @param datasetData          the service Data of the Wfs3 Service
+     * @param apiData              the Features API data
      * @param crsTransformation    the coordinate reference system transformation object to transform coordinates
      * @param cache                the vector tile cache
      * @param featureProvider      the feature Provider
      * @param coreServerConfig     the core server config with the external url
      * @throws FileNotFoundException
      */
-    private void seedingDataset(Set<String> collectionIdsDataset, OgcApiDatasetData datasetData,
+    private void seedingDataset(Set<String> collectionIdsDataset, OgcApiDatasetData apiData,
                                 CrsTransformation crsTransformation, VectorTilesCache cache,
                                 TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
-                                Wfs3OutputFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
+                                Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
 
         /*Computation of the minimum and maximum values for x and y from the minimum/maximum spatial extent
          * TODO: Maybe a spatial extent for the whole dataset in the config?*/
@@ -196,6 +179,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
         List<Integer> minZoomList = new ArrayList<>();
         List<Integer> maxZoomList = new ArrayList<>();
         Set<String> tilingSchemeIdsCollection = null;
+        OgcApiDatasetData datasetData = apiData;
         Map<String, Map<String, TilesConfiguration.MinMax>> seedingMap = vectorTileMapGenerator.getMinMaxMap(datasetData, true);
         for (String collectionId : collectionIdsDataset) {
 
@@ -352,7 +336,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
     private File generateMVT(OgcApiDatasetData datasetData, String collectionId, String tilingSchemeId, int z, int x,
                              int y, VectorTilesCache cache, CrsTransformation crsTransformation,
                              TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
-                             Wfs3OutputFormatExtension wfs3OutputFormatGeoJson) {
+                             Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) {
 
         try {
             LOGGER.debug("seeding - ZoomLevel: " + Integer.toString(z) + " row: " + Integer.toString(x) + " col: " + Integer.toString(y));
@@ -394,7 +378,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
     private File generateJSON(OgcApiDatasetData datasetData, String collectionId, String tilingSchemeId, int z, int x,
                               int y, VectorTilesCache cache, CrsTransformation crsTransformation,
                               TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
-                              Wfs3OutputFormatExtension wfs3OutputFormatGeoJson) {
+                              Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) {
 
         try {
             VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), datasetData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
@@ -415,7 +399,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
                 OgcApiMediaType mediaType;
                 mediaType = new ImmutableOgcApiMediaType.Builder()
-                        .main(new MediaType("application", "json"))
+                        .type(new MediaType("application", "json"))
                         .label("JSON")
                         .build();
                 TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, null, null, null, uriCustomizer, mediaType, true, tile);
@@ -552,8 +536,8 @@ public class VectorTileSeeding implements Wfs3StartupTask {
     }
 
 
-    private Optional<Wfs3OutputFormatExtension> getOutputFormatForType(OgcApiMediaType mediaType) {
-        return extensionRegistry.getExtensionsForType(Wfs3OutputFormatExtension.class)
+    private Optional<Wfs3FeatureFormatExtension> getOutputFormatForType(OgcApiMediaType mediaType) {
+        return extensionRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
                                 .stream()
                                 .filter(wfs3OutputFormatExtension -> wfs3OutputFormatExtension.getMediaType()
                                                                                               .equals(mediaType))

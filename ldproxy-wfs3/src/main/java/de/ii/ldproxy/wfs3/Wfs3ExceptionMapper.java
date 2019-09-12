@@ -95,11 +95,11 @@ public class Wfs3ExceptionMapper extends LoggingExceptionMapper<Throwable> imple
     public void writeTo(WfsErrorMessage e, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
         //TODO: f=html not working, receives json
         switch (mediaType.toString()) {
-            case Wfs3MediaTypes.HTML:
+            case "text/html":
                 //TODO: Wfs3ExceptionView, might delegate to WfsOutputFormatHtml
                 //return e.getResponse();
-            case Wfs3MediaTypes.JSON:
-            case Wfs3MediaTypes.GEO_JSON:
+            case "application/json":
+            case "application/geo+json":
                 jackson.getDefaultObjectMapper()
                        .writeValue(entityStream, e);
                 break;

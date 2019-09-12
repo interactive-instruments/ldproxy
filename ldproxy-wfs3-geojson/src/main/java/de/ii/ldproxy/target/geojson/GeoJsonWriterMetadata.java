@@ -8,7 +8,7 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -98,12 +98,12 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
         }
     }
 
-    private void writeLinksIfAny(JsonGenerator json, List<Wfs3Link> links, boolean isLastPage) throws IOException {
+    private void writeLinksIfAny(JsonGenerator json, List<OgcApiLink> links, boolean isLastPage) throws IOException {
         if (!linksWritten && !links.isEmpty()) {
             json.writeFieldName("links");
             json.writeStartArray();
 
-            for (Wfs3Link link : links) {
+            for (OgcApiLink link : links) {
                 if (!(isLastPage && Objects.equals(link.getRel(), "next"))) {
                     json.writeStartObject();
                     json.writeStringField("href", link.getHref());

@@ -9,11 +9,7 @@ package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
 import com.greghaskins.spectrum.Spectrum;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
@@ -33,10 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 
-import static com.greghaskins.spectrum.dsl.specification.Specification.beforeEach;
-import static com.greghaskins.spectrum.dsl.specification.Specification.context;
-import static com.greghaskins.spectrum.dsl.specification.Specification.describe;
-import static com.greghaskins.spectrum.dsl.specification.Specification.it;
+import static com.greghaskins.spectrum.dsl.specification.Specification.*;
 import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS;
 import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertEquals;
@@ -219,12 +212,12 @@ public class GeoJsonWriterCrsSpec {
                                                                }
 
                                                                @Override
-                                                               public List<OgcApiMediaType> getAlternativeMediaTypes() {
+                                                               public List<OgcApiMediaType> getAlternateMediaTypes() {
                                                                    return null;
                                                                }
 
                                                                @Override
-                                                               public OgcApiDatasetData getDataset() {
+                                                               public OgcApiDataset getApi() {
                                                                    return null;
                                                                }
 
@@ -243,7 +236,7 @@ public class GeoJsonWriterCrsSpec {
                                                            .maxAllowableOffset(0)
                                                            .isHitsOnly(false)
                                                            .state(ModifiableStateGeoJson.create())
-                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder().isEnabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).build())
+                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder().isEnabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).useFormattedJsonOutput(true).build())
                                                            .build();
 
     }

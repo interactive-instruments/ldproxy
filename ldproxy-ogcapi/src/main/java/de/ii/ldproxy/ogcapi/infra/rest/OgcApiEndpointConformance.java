@@ -20,7 +20,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.OutputFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.CommonFormatExtension;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
@@ -47,6 +48,8 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("conformance")
+            .addMethods(OgcApiContext.HttpMethods.GET)
+            .subPathPattern("^/?$")
             .build();
 
     private final OgcApiExtensionRegistry extensionRegistry;
@@ -64,11 +67,14 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
-        return extensionRegistry.getExtensionsForType(OutputFormatExtension.class)
-                                .stream()
-                                .map(OutputFormatExtension::getMediaType)
-                                .collect(ImmutableSet.toImmutableSet());
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+        if (subPath.matches("^/?$"))
+            return extensionRegistry.getExtensionsForType(CommonFormatExtension.class)
+                                    .stream()
+                                    .map(CommonFormatExtension::getMediaType)
+                                    .collect(ImmutableSet.toImmutableSet());
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
     @GET

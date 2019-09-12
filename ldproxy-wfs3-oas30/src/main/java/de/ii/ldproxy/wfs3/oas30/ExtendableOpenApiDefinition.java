@@ -47,7 +47,7 @@ import java.util.TreeSet;
 @Provides(specifications = {ExtendableOpenApiDefinition.class})
 @Instantiate
 @Wbp(
-        filter = "(objectClass=de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension)",
+        filter = "(objectClass=de.ii.ldproxy.wfs3.oas30.OpenApiExtension)",
         onArrival = "onArrival",
         onDeparture = "onDeparture")
 public class ExtendableOpenApiDefinition {
@@ -60,7 +60,7 @@ public class ExtendableOpenApiDefinition {
     //private final ObjectMapper objectMapper;
     //private final String externalUrl;
     private final AuthConfig authConfig;
-    private Set<Wfs3OpenApiExtension> openApiExtensions;
+    private Set<OpenApiExtension> openApiExtensions;
 
     public ExtendableOpenApiDefinition(/*@Requires Jackson jackson, @Requires Dropwizard dropwizard,*/
             @Requires AuthConfig authConfig) {
@@ -68,12 +68,12 @@ public class ExtendableOpenApiDefinition {
         //this.objectMapper = jackson.getDefaultObjectMapper();
         //this.externalUrl = dropwizard.getExternalUrl();
         this.authConfig = authConfig;
-        //this.openApiExtensions = new TreeSet<>(Comparator.comparingInt(Wfs3OpenApiExtension::getSortPriority));
+        //this.openApiExtensions = new TreeSet<>(Comparator.comparingInt(OpenApiExtension::getSortPriority));
     }
 
-    private Set<Wfs3OpenApiExtension> getOpenApiExtensions() {
+    private Set<OpenApiExtension> getOpenApiExtensions() {
         if (Objects.isNull(openApiExtensions)) {
-            this.openApiExtensions = new TreeSet<>(Comparator.comparingInt(Wfs3OpenApiExtension::getSortPriority));
+            this.openApiExtensions = new TreeSet<>(Comparator.comparingInt(OpenApiExtension::getSortPriority));
         }
         return openApiExtensions;
     }
@@ -140,7 +140,9 @@ public class ExtendableOpenApiDefinition {
                 }
             }
 
-            getOpenApiExtensions().forEach(openApiExtension -> openApiExtension.process(openAPI, datasetData));
+            getOpenApiExtensions().stream()
+                    .sorted(Comparator.comparing(OpenApiExtension::getSortPriority))
+                    .forEachOrdered(openApiExtension -> openApiExtension.process(openAPI, datasetData));
 
 
             if (StringUtils.isNotBlank(type) && type.trim()
@@ -148,13 +150,13 @@ public class ExtendableOpenApiDefinition {
                 return Response.status(Response.Status.OK)
                                .entity(pretty ? Yaml.pretty(openAPI) : Yaml.mapper()
                                                                            .writeValueAsString(openAPI))
-                               .type("application/yaml")
+                               .type("application/vnd.oai.openapi+yaml;version=3.0")
                                .build();
             } else {
                 return Response.status(Response.Status.OK)
                                .entity(pretty ? Json.pretty(openAPI) : Json.mapper()
                                                                            .writeValueAsString(openAPI))
-                               .type("application/vnd.oai.openapi+json;version=3.0"/*MediaTypeCharset.APPLICATION_JSON_UTF8*/)
+                               .type("application/vnd.oai.openapi+json;version=3.0")
                                .build();
             }
         } catch (IOException e) {
@@ -165,21 +167,21 @@ public class ExtendableOpenApiDefinition {
                        .build();
     }
 
-    private synchronized void onArrival(ServiceReference<Wfs3OpenApiExtension> ref) {
+    private synchronized void onArrival(ServiceReference<OpenApiExtension> ref) {
         try {
-            final Wfs3OpenApiExtension wfs3OpenApiExtension = bundleContext.getService(ref);
+            final OpenApiExtension openApiExtension = bundleContext.getService(ref);
 
-            getOpenApiExtensions().add(wfs3OpenApiExtension);
+            getOpenApiExtensions().add(openApiExtension);
         } catch (Throwable e) {
             LOGGER.error("E", e);
         }
     }
 
-    private synchronized void onDeparture(ServiceReference<Wfs3OpenApiExtension> ref) {
-        final Wfs3OpenApiExtension wfs3OpenApiExtension = bundleContext.getService(ref);
+    private synchronized void onDeparture(ServiceReference<OpenApiExtension> ref) {
+        final OpenApiExtension openApiExtension = bundleContext.getService(ref);
 
-        if (Objects.nonNull(wfs3OpenApiExtension)) {
-            getOpenApiExtensions().remove(wfs3OpenApiExtension);
+        if (Objects.nonNull(openApiExtension)) {
+            getOpenApiExtensions().remove(openApiExtension);
         }
     }
 

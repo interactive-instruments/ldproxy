@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.core;
 import com.google.common.collect.Lists;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
+import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -30,15 +30,15 @@ import java.util.Set;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
+public class Wfs3OpenApiCore implements OpenApiExtension {
     @Override
     public int getSortPriority() {
         return 0;
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, Wfs3CoreConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, Wfs3CoreConfiguration.class);
     }
 
     @Override

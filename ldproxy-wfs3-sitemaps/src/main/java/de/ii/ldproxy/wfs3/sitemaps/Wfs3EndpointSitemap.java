@@ -33,6 +33,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -50,11 +51,11 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
-            .subPathPattern("^\\/?(?:\\/\\w+\\/sitemap[_0-9]+\\.xml)$")
+            .subPathPattern("^/?(?:/\\w+/sitemap[_0-9]+\\.xml)$")
             .build();
     private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
             new ImmutableOgcApiMediaType.Builder()
-                    .main(MediaType.TEXT_HTML_TYPE)
+                    .type(MediaType.APPLICATION_XML_TYPE)
                     .build()
     );
 
@@ -70,13 +71,16 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
-        return API_MEDIA_TYPES;
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+        if (subPath.matches("^/?(?:/\\w+/sitemap[_0-9]+\\.xml)$"))
+            return API_MEDIA_TYPES;
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return isExtensionEnabled(datasetData, SitemapsConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, SitemapsConfiguration.class);
     }
 
     @Path("/{id}/sitemap_{from}_{to}.xml")

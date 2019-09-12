@@ -36,8 +36,8 @@ public class Wfs3ParameterFilterTransformer implements Wfs3ParameterExtension {
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, FilterTransformersConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, FilterTransformersConfiguration.class);
     }
 
     @Override

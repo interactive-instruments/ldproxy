@@ -15,10 +15,7 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 @Component
 @Provides
@@ -27,10 +24,9 @@ public class StyleFormatMbStyles implements ConformanceClass, StyleFormatExtensi
 
     public static final String MEDIA_TYPE_STRING = "application/vnd.mapbox.style+json" ;
     static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
-            .main(new MediaType("application", "vnd.mapbox.style+json"))
+            .type(new MediaType("application", "vnd.mapbox.style+json"))
             .label("Mapbox Style")
             .parameter("mbs")
-            .metadata(MediaType.APPLICATION_JSON_TYPE)
             .build();
 
     @Override
@@ -39,8 +35,8 @@ public class StyleFormatMbStyles implements ConformanceClass, StyleFormatExtensi
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return getExtensionConfiguration(datasetData, StylesConfiguration.class).map(StylesConfiguration::getMbStyleEnabled).orElse(false);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, StylesConfiguration.class).map(StylesConfiguration::getMbStyleEnabled).orElse(false);
     }
 
     @Override

@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import org.glassfish.jersey.message.internal.QualitySourceMediaType;
@@ -28,7 +27,6 @@ public class OgcApiContentNegotiation {
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiContentNegotiation.class);
     private static final String CONTENT_TYPE_PARAMETER = "f";
     private static final String ACCEPT_HEADER = "Accept";
-    private static final String DEFAULT_MEDIA_TYPE = MediaType.APPLICATION_JSON;
 
     public OgcApiContentNegotiation() {
     }
@@ -56,26 +54,13 @@ public class OgcApiContentNegotiation {
         if (queryParameters.containsKey(CONTENT_TYPE_PARAMETER)) {
             String format = queryParameters.getFirst(CONTENT_TYPE_PARAMETER);
 
-            /*if (format.equals("json") && queryParameters.containsKey("callback")) {
-                headers.putSingle(ACCEPT_HEADER, MIME_TYPES.get("jsonp")
-                                                           .toString());
-            } else {*/
-
             Optional<OgcApiMediaType> ogcApiMediaType = supportedMediaTypes.stream()
                                                                            .filter(mediaType -> Objects.equals(mediaType.parameter(), format))
                                                                            .findFirst();
             if (ogcApiMediaType.isPresent()) {
                 headers.putSingle(ACCEPT_HEADER, ogcApiMediaType.get()
-                                                                .main()
+                                                                .type()
                                                                 .toString());
-            }
-            //}
-        } else {
-            // if no accept header or wildcard
-            if (Strings.isNullOrEmpty(headers.getFirst(ACCEPT_HEADER)) || headers.getFirst(ACCEPT_HEADER)
-                                                                                 .trim()
-                                                                                 .equals("*/*")) {
-                headers.putSingle(ACCEPT_HEADER, DEFAULT_MEDIA_TYPE);
             }
         }
     }
@@ -107,7 +92,7 @@ public class OgcApiContentNegotiation {
     }
 
     private Stream<MediaType> toTypes(OgcApiMediaType ogcApiMediaType) {
-        return Stream.of(ogcApiMediaType.main(), ogcApiMediaType.metadata())
+        return Stream.of(ogcApiMediaType.type())
                      .map(mediaType -> ogcApiMediaType.qs() < 1000 ? new QualitySourceMediaType(mediaType.getType(), mediaType.getSubtype(), ogcApiMediaType.qs(), mediaType.getParameters()) : mediaType);
     }
 }

@@ -20,7 +20,7 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
 
     OgcApiContext getApiContext();
 
-    ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset);
+    ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath);
 
     default void checkAuthorization(OgcApiDatasetData datasetData, Optional<User> optionalUser) {
         if (datasetData.getSecured() && !optionalUser.isPresent()) {
@@ -29,7 +29,7 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
         }
     }
 
-    default boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
+    default boolean isEnabledForApi(OgcApiDatasetData apiData) {
         return true;
     }
 }

@@ -29,8 +29,8 @@ import java.util.Map;
 public class Wfs3ParameterProjections implements Wfs3ParameterExtension {
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, ProjectionsConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, ProjectionsConfiguration.class);
     }
 
     @Override

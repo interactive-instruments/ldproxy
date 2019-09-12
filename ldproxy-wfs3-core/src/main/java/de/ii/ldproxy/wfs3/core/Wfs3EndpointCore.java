@@ -7,21 +7,17 @@
  */
 package de.ii.ldproxy.wfs3.core;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.application.LandingPageLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3CollectionFormatExtension;
+import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3ParameterExtension;
 import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -31,23 +27,15 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.AbstractMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-/**
- * @author zahnen
- */
 @Component
 @Provides
 @Instantiate
@@ -56,7 +44,7 @@ public class Wfs3EndpointCore implements OgcApiEndpointExtension {
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointCore.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
-            .subPathPattern("^\\/?(?:\\/\\w+\\/?(?:\\/items\\/?.*)?)?$")
+            .subPathPattern("^/?(?:/\\w+/?(?:/items/?\\w*)?)?$")
             .addMethods(HttpMethods.GET)
             .build();
 
@@ -76,11 +64,18 @@ public class Wfs3EndpointCore implements OgcApiEndpointExtension {
         return extensionRegistry.getExtensionsForType(Wfs3ParameterExtension.class);
     }
 
-    private Map<OgcApiMediaType, Wfs3OutputFormatExtension> getOutputFormats() {
-        return extensionRegistry.getExtensionsForType(Wfs3OutputFormatExtension.class)
+    private Map<OgcApiMediaType, Wfs3FeatureFormatExtension> getFeatureFormats() {
+        return extensionRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
                                 .stream()
                                 .map(outputFormatExtension -> new AbstractMap.SimpleEntry<>(outputFormatExtension.getMediaType(), outputFormatExtension))
                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private Map<OgcApiMediaType, Wfs3CollectionFormatExtension> getCollectionFormats() {
+        return extensionRegistry.getExtensionsForType(Wfs3CollectionFormatExtension.class)
+                .stream()
+                .map(outputFormatExtension -> new AbstractMap.SimpleEntry<>(outputFormatExtension.getMediaType(), outputFormatExtension))
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override
@@ -89,69 +84,122 @@ public class Wfs3EndpointCore implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
-        return extensionRegistry.getExtensionsForType(Wfs3OutputFormatExtension.class)
-                                .stream()
-                                .filter(wfs3OutputFormatExtension -> wfs3OutputFormatExtension.isEnabledForDataset(dataset))
-                                .map(Wfs3OutputFormatExtension::getMediaType)
-                                .collect(ImmutableSet.toImmutableSet());
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+        if (subPath.matches("^/?\\w+/items(?:/?\\w+)?$"))
+            // feature collection or feature
+            return extensionRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
+                                    .stream()
+                                    .filter(formatExtension -> formatExtension.isEnabledForApi(dataset))
+                                    .map(Wfs3FeatureFormatExtension::getMediaType)
+                                    .collect(ImmutableSet.toImmutableSet());
+        else if (subPath.matches("^/?(?:\\w+)?$"))
+            // collections or collection
+            return extensionRegistry.getExtensionsForType(Wfs3CollectionFormatExtension.class)
+                    .stream()
+                    .filter(formatExtension -> formatExtension.isEnabledForApi(dataset))
+                    .map(Wfs3CollectionFormatExtension::getMediaType)
+                    .collect(ImmutableSet.toImmutableSet());
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
-    //TODO: config for wfs3 core, what about dependencies between extensions?
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData serviceData) {
-        return true;
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, Wfs3CoreConfiguration.class);
     }
 
     @Path("/")
     @GET
     public Response getCollections(@Auth Optional<User> optionalUser, @Context OgcApiDataset service,
-                                   @Context OgcApiRequestContext wfs3Request) {
-        checkAuthorization(service.getData(), optionalUser);
+                                   @Context OgcApiRequestContext ogcApiRequest) {
+        OgcApiDatasetData apiData = service.getData();
+        checkAuthorization(apiData, optionalUser);
 
-        return service.getDatasetResponse(wfs3Request, true);
+        final LandingPageLinksGenerator linksGenerator = new LandingPageLinksGenerator();
+
+        //TODO: to crs extension
+        ImmutableList<String> crs = ImmutableList.<String>builder()
+                .addAll(Stream.of(apiData.getFeatureProvider()
+                        .getNativeCrs()
+                        .getAsUri())
+                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
+                        .collect(Collectors.toList()))
+                .add(OgcApiDatasetData.DEFAULT_CRS_URI)
+                .addAll(apiData.getAdditionalCrs()
+                        .stream()
+                        .map(EpsgCrs::getAsUri)
+                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
+                        .collect(Collectors.toList()))
+                .build();
+
+        Wfs3CollectionFormatExtension format = service.getOutputFormat(Wfs3CollectionFormatExtension.class, ogcApiRequest.getMediaType(), "/").orElseThrow(NotAcceptableException::new);
+        List<Wfs3CollectionFormatExtension> alternateFormats = service.getAllOutputFormats(Wfs3CollectionFormatExtension.class, ogcApiRequest.getMediaType(), "/", Optional.of(format));
+        List<OgcApiMediaType> alternateMediaTypes = alternateFormats.stream()
+                .map(alternateFormat -> alternateFormat.getMediaType())
+                .collect(Collectors.toList());
+
+        List<OgcApiLink> ogcApiLinks = linksGenerator.generateLandingPageLinks(ogcApiRequest.getUriCustomizer().copy(), Optional.empty(), ogcApiRequest.getMediaType(), alternateMediaTypes);
+
+        ImmutableDataset.Builder dataset = new ImmutableDataset.Builder()
+                .crs(crs)
+                .links(ogcApiLinks);
+
+        for (OgcApiLandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
+            dataset = ogcApiLandingPageExtension.process(dataset, apiData, ogcApiRequest.getUriCustomizer().copy(), ogcApiRequest.getMediaType(), alternateMediaTypes);
+        }
+
+        Response response =  format.getCollectionsResponse(dataset.build(), service, ogcApiRequest);
+
+        return Response.ok()
+                .entity(response.getEntity())
+                .type(format.getMediaType().type())
+                .build();
     }
 
-    @Path("/{id}")
+    @Path("/{collectionId}")
     @GET
-    public Response getCollectionInfo(@Auth Optional<User> optionalUser, @PathParam("id") String id,
-                                      @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
+    public Response getCollection(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId,
+                                  @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
+        OgcApiDatasetData apiData = service.getData();
         checkAuthorization(service.getData(), optionalUser);
 
-        wfs3Core.checkCollectionName(service.getData(), id);
+        wfs3Core.checkCollectionName(apiData, collectionId);
 
-        Wfs3Collection wfs3Collection = wfs3Core.createCollection(service.getData()
-                                                                         .getFeatureTypes()
-                                                                         .get(id), service.getData(), wfs3Request.getMediaType(), wfs3Request.getAlternativeMediaTypes(), wfs3Request.getUriCustomizer(), false);
+        OgcApiCollection ogcApiCollection = wfs3Core.createCollection(apiData.getFeatureTypes()
+                                                                             .get(collectionId), service.getData(), wfs3Request.getMediaType(), wfs3Request.getAlternateMediaTypes(), wfs3Request.getUriCustomizer(), false);
 
-        return getOutputFormats().get(wfs3Request.getMediaType())
-                                 .getCollectionResponse(wfs3Collection, service.getData(), wfs3Request.getMediaType(), wfs3Request.getAlternativeMediaTypes(), wfs3Request.getUriCustomizer(), id);
+        Wfs3CollectionFormatExtension format = service.getOutputFormat(Wfs3CollectionFormatExtension.class, wfs3Request.getMediaType(), "/collections/"+collectionId).orElseThrow(NotAcceptableException::new);
 
+        Response response = format.getCollectionResponse(ogcApiCollection, collectionId, service, wfs3Request);
 
+        return Response.ok()
+                .entity(response.getEntity())
+                .type(format.getMediaType().type())
+                .build();
     }
 
-    @Path("/{id}/items")
+    @Path("/{collectionId}/items")
     @GET
-    public Response getItems(@Auth Optional<User> optionalUser, @PathParam("id") String id,
+    public Response getItems(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId,
                              @HeaderParam("Range") String range, @Context OgcApiDataset service,
                              @Context UriInfo uriInfo, @Context OgcApiRequestContext wfs3Request) {
         checkAuthorization(service.getData(), optionalUser);
 
-        FeatureQuery query = wfs3Query.requestToFeatureQuery(service, id, range, toFlatMap(uriInfo.getQueryParameters()));
+        FeatureQuery query = wfs3Query.requestToFeatureQuery(service, collectionId, range, toFlatMap(uriInfo.getQueryParameters()));
 
-        return wfs3Core.getItemsResponse(service, wfs3Request, id, query, getOutputFormats().get(wfs3Request.getMediaType()), wfs3Request.getAlternativeMediaTypes(), false);
+        return wfs3Core.getItemsResponse(service, wfs3Request, collectionId, query, getFeatureFormats().get(wfs3Request.getMediaType()), wfs3Request.getAlternateMediaTypes(), false);
     }
 
-    @Path("/{id}/items/{featureid}")
+    @Path("/{collectionId}/items/{featureId}")
     @GET
-    public Response getItem(@Auth Optional<User> optionalUser, @PathParam("id") String id,
-                            @PathParam("featureid") final String featureId, @Context OgcApiDataset service,
+    public Response getItem(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId,
+                            @PathParam("featureId") final String featureId, @Context OgcApiDataset service,
                             @Context OgcApiRequestContext wfs3Request, @Context UriInfo uriInfo) {
         checkAuthorization(service.getData(), optionalUser);
 
-        FeatureQuery query = wfs3Query.requestToFeatureQuery(service, id, toFlatMap(uriInfo.getQueryParameters()), featureId);
+        FeatureQuery query = wfs3Query.requestToFeatureQuery(service, collectionId, toFlatMap(uriInfo.getQueryParameters()), featureId);
 
-        return wfs3Core.getItemResponse(service, wfs3Request, id, query, getOutputFormats().get(wfs3Request.getMediaType()), wfs3Request.getAlternativeMediaTypes());
+        return wfs3Core.getItemResponse(service, wfs3Request, collectionId, query, getFeatureFormats().get(wfs3Request.getMediaType()), wfs3Request.getAlternateMediaTypes());
     }
 
     public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
@@ -187,5 +235,7 @@ public class Wfs3EndpointCore implements OgcApiEndpointExtension {
         return filters;
     }
 
-
+    private List<OgcApiLandingPageExtension> getDatasetExtenders() {
+        return extensionRegistry.getExtensionsForType(OgcApiLandingPageExtension.class);
+    }
 }

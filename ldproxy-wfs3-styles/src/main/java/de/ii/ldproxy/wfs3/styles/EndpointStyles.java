@@ -10,36 +10,25 @@ package de.ii.ldproxy.wfs3.styles;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.osgi.framework.BundleContext;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 /**
  * fetch list of styles or a style for the service
@@ -52,14 +41,18 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("styles")
             .addMethods(HttpMethods.GET)
+            .subPathPattern("^/?(?:\\w+(?:/metadata)?)?$")
             .build();
 
-    private final StylesStore stylesStore;
+    private final File stylesStore;
     private final OgcApiExtensionRegistry extensionRegistry;
 
-    public EndpointStyles(@Requires StylesStore stylesStore, @Requires OgcApiExtensionRegistry extensionRegistry) {
-        this.stylesStore = stylesStore;
+    public EndpointStyles(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires OgcApiExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
+        this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
+        if (!stylesStore.exists()) {
+            stylesStore.mkdirs();
+        }
     }
 
     @Override
@@ -73,20 +66,35 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
-        return getStyleFormatStream(dataset).map(StyleFormatExtension::getMediaType)
-                                            .collect(ImmutableSet.toImmutableSet());
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+        if (subPath.matches("^/?$|^/?\\w+/metadata$"))
+            return ImmutableSet.of(
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(MediaType.APPLICATION_JSON_TYPE)
+                            .build());
+        else if (subPath.matches("^/?\\w+$"))
+            return getStyleFormatStream(dataset).map(StyleFormatExtension::getMediaType)
+                    .collect(ImmutableSet.toImmutableSet());
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
     private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiDatasetData dataset) {
         return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
                                 .stream()
-                                .filter(styleFormatExtension -> styleFormatExtension.isEnabledForDataset(dataset));
+                                .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(dataset));
+    }
+
+    private List<OgcApiMediaType> getMediaTypes(OgcApiDatasetData apiData, File apiDir, String styleId) {
+        return getStyleFormatStream(apiData)
+                .filter(styleFormat -> new File( apiDir + File.separator + styleId + "." + styleFormat.getFileExtension()).exists())
+                .map(StyleFormatExtension::getMediaType)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return isExtensionEnabled(datasetData, StylesConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, StylesConfiguration.class);
     }
 
     /**
@@ -98,34 +106,38 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStyles(@Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest) {
-        List<Map<String, Object>> styles = new ArrayList<>();
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
-        String datasetId = dataset.getId();
 
-        for (String key : stylesStore.ids(datasetId)) {
-
-            String styleId = Files.getNameWithoutExtension(key);
-            String fileExtension = Files.getFileExtension(key);
-
-            if (fileExtension.equalsIgnoreCase("metadata")) {
-                Map<String, Object> styleInfo = new HashMap<>();
-                styleInfo.put("id", styleId);
-                List<OgcApiMediaType> mediaTypes = getStyleFormatStream(dataset.getData())
-                        .filter(styleFormat -> stylesStore.has(styleId + "." + styleFormat.getFileExtension(), datasetId))
-                        .map(StyleFormatExtension::getMediaType)
-                        .collect(Collectors.toList());
-                styleInfo.put("links", stylesLinkGenerator.generateStyleLinks(ogcApiRequest.getUriCustomizer(), styleId, mediaTypes));
-                styles.add(styleInfo);
-            }
+        final String datasetId = dataset.getId();
+        File apiDir = new File(stylesStore + File.separator + datasetId);
+        if (!apiDir.exists()) {
+            apiDir.mkdirs();
         }
 
+        List<Map<String, Object>> styles = Arrays.stream(apiDir.listFiles())
+                .filter(file -> !file.isHidden())
+                .map(File::getName)
+                .sorted()
+                .filter(filename -> Files.getFileExtension(filename).equalsIgnoreCase("metadata"))
+                .map(filename -> ImmutableMap.<String, Object>builder()
+                        .put("id", Files.getNameWithoutExtension(filename))
+                        .put("links", stylesLinkGenerator.generateStyleLinks(ogcApiRequest.getUriCustomizer(),
+                                                                             Files.getNameWithoutExtension(filename),
+                                                                             getMediaTypes(dataset.getData(),
+                                                                                     apiDir,
+                                                                                     Files.getNameWithoutExtension(filename))))
+                        .build())
+                .collect(Collectors.toList());
+
         if (styles.size() == 0) {
-            return Response.ok("{ \n \"styles\": [] \n }")
-                           .build();
+            return Response.ok("{\"styles\":[]}")
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
         }
 
         return Response.ok(ImmutableMap.of("styles", styles))
-                       .build();
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .build();
     }
 
     /**
@@ -141,28 +153,33 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
 
         StyleFormatExtension styleFormat = getStyleFormatStream(dataset.getData()).filter(format -> format.getMediaType()
                                                                                                           .matches(ogcApiRequest.getMediaType()
-                                                                                                                                .main()))
+                                                                                                                                .type()))
                                                                                   .findFirst()
                                                                                   .orElseThrow(NotAcceptableException::new);
 
         String key = styleId + "." + styleFormat.getFileExtension();
         String datasetId = dataset.getId();
-
-        if (!stylesStore.has(key, datasetId)) {
-            if (stylesStore.has(styleId + ".metadata", datasetId)) {
+        File stylesheet = new File( stylesStore + File.separator + datasetId + File.separator + styleId + "." + styleFormat.getFileExtension());
+        File metadata = new File( stylesStore + File.separator + datasetId + File.separator + styleId + ".metadata");
+        if (!stylesheet.exists()) {
+            if (metadata.exists()) {
                 throw new NotAcceptableException();
             } else {
                 throw new NotFoundException();
             }
         }
 
-        byte[] style = stylesStore.get(key, datasetId);
+        try {
+            final byte[] style = java.nio.file.Files.readAllBytes(stylesheet.toPath());
 
-        return Response.ok()
-                       .entity(style)
-                       .type(styleFormat.getMediaType()
-                                        .main())
-                       .build();
+            return Response.ok()
+                           .entity(style)
+                           .type(styleFormat.getMediaType()
+                                            .type())
+                           .build();
+        } catch (IOException e) {
+            throw new ServerErrorException("stylesheet could not be read: "+styleId, 500);
+        }
     }
 
     /**
@@ -178,15 +195,21 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
 
         String key = styleId + ".metadata";
         String datasetId = dataset.getId();
+        File metadataFile = new File( stylesStore + File.separator + datasetId + File.separator + styleId + ".metadata");
 
-        if (!stylesStore.has(key, datasetId)) {
+        if (!metadataFile.exists()) {
             throw new NotFoundException();
         }
 
-        byte[] metadata = stylesStore.get(key, datasetId);
+        try {
+            final byte[] metadata = java.nio.file.Files.readAllBytes(metadataFile.toPath());
 
-        return Response.ok()
-                       .entity(metadata)
-                       .build();
+            return Response.ok()
+                    .entity(metadata)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
+        } catch (IOException e) {
+            throw new ServerErrorException("stylesheet could not be read: "+styleId, 500);
+        }
     }
 }

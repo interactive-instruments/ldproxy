@@ -14,7 +14,6 @@ import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService;
 import de.ii.xtraplatform.service.api.Service;
 
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,22 +21,17 @@ import java.util.Optional;
  * @author zahnen
  */
 public interface OgcApiDataset extends FeatureTransformerService, Service {
+
+    // TODO: move the following 3 methods to OgcApiApi, split generic parts of OgcApiDatasetData to OgcApiApiData (requires a change in xtraplatform)
     OgcApiDatasetData getData();
+    <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, String path);
+    <T extends FormatExtension> List<T> getAllOutputFormats(Class<T> extensionType, OgcApiMediaType mediaType, String path, Optional<T> excludeFormat);
 
-    Response getConformanceResponse(OgcApiRequestContext wfs3Request);
-
-    Response getDatasetResponse(OgcApiRequestContext wfs3Request, boolean isCollections);
-
+    // TODO: all these go to OgcApiDataset (or OgcApiFeatureDataset?)
     Optional<CrsTransformer> getCrsTransformer(EpsgCrs crs);
 
     CrsTransformer getCrsReverseTransformer(EpsgCrs crs);
 
-    /*
-                Response getItemsResponse(Wfs3RequestContext wfs3Request, String collectionName, FeatureQuery query);
-
-                Response getItemsResponse(Wfs3RequestContext wfs3Request, String collectionName, FeatureQuery query,
-                                          boolean isCollection, Wfs3OutputFormatExtension outputFormat);
-            */
     BoundingBox transformBoundingBox(BoundingBox bbox) throws CrsTransformationException;
 
     List<List<Double>> transformCoordinates(List<List<Double>> coordinates,

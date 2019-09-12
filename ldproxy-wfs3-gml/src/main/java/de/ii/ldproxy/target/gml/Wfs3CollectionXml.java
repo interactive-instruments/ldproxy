@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.target.gml;
 
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -21,42 +21,42 @@ import java.util.List;
 @XmlRootElement(name = "Collection")
 @XmlType(propOrder = {"id", "title", "description", "links", "extent", "crs"})
 public class Wfs3CollectionXml {
-    private final Wfs3Collection wfs3Collection;
+    private final OgcApiCollection ogcApiCollection;
 
     public Wfs3CollectionXml() {
-        this.wfs3Collection = null;
+        this.ogcApiCollection = null;
     }
-    public Wfs3CollectionXml(Wfs3Collection wfs3Collection) {
-        this.wfs3Collection = wfs3Collection;
+    public Wfs3CollectionXml(OgcApiCollection ogcApiCollection) {
+        this.ogcApiCollection = ogcApiCollection;
     }
 
-    @XmlElement(name = "Name")
-    public String getName() {
-        return wfs3Collection.getId();
+    @XmlElement(name = "Id")
+    public String getId() {
+        return ogcApiCollection.getId();
     }
 
     @XmlElement(name = "Title")
     public String getTitle() {
-        return wfs3Collection.getTitle();
+        return ogcApiCollection.getTitle().orElse(null);
     }
 
     @XmlElement(name = "Description")
     public String getDescription() {
-        return wfs3Collection.getDescription().orElse(null);
+        return ogcApiCollection.getDescription().orElse(null);
     }
 
     @XmlElement(name = "Extent")
     public Wfs3ExtentXml getExtent() {
-        return new Wfs3ExtentXml(wfs3Collection.getExtent());
+        return new Wfs3ExtentXml(ogcApiCollection.getExtent());
     }
 
     @XmlElement(name = "link", namespace = "http://www.w3.org/2005/Atom")
-    public List<Wfs3Link> getLinks() {
-        return wfs3Collection.getLinks();
+    public List<OgcApiLink> getLinks() {
+        return ogcApiCollection.getLinks();
     }
 
     @XmlElement(name = "crs")
     public List<String> getCrs() {
-        return wfs3Collection.getCrs();
+        return ogcApiCollection.getCrs();
     }
 }

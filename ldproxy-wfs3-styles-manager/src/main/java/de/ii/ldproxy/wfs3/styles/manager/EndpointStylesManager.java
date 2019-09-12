@@ -15,26 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.wfs3.styles.ImmutableStyleMetadata;
-import de.ii.ldproxy.wfs3.styles.ImmutableStyleSheet;
-import de.ii.ldproxy.wfs3.styles.StyleFormatExtension;
-import de.ii.ldproxy.wfs3.styles.StyleFormatMbStyles;
-import de.ii.ldproxy.wfs3.styles.StyleMetadata;
-import de.ii.ldproxy.wfs3.styles.StyleSheet;
-import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
-import de.ii.ldproxy.wfs3.styles.StylesLinkGenerator;
-import de.ii.ldproxy.wfs3.styles.StylesStore;
+import de.ii.ldproxy.wfs3.styles.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -42,32 +27,25 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.osgi.framework.BundleContext;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 /**
  * creates, updates and deletes a style from the service
@@ -80,16 +58,22 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("styles")
             .addMethods(HttpMethods.POST, HttpMethods.PUT, HttpMethods.DELETE, HttpMethods.PATCH)
+            .subPathPattern("^/?(?:\\w*(?:/metadata)?)?$")
+            .putSubPathsAndMethods("^/?$", Arrays.asList(new HttpMethods[]{HttpMethods.POST}))
+            .putSubPathsAndMethods("^/?\\w+$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.DELETE}))
+            .putSubPathsAndMethods("^/?\\w+/metadata$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.PATCH}))
             .build();
 
-
-    private final StylesStore stylesStore;
+    private final File stylesStore;
     private final OgcApiExtensionRegistry extensionRegistry;
 
-    public EndpointStylesManager(@Requires StylesStore stylesStore,
+    public EndpointStylesManager(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
                                  @Requires OgcApiExtensionRegistry extensionRegistry) {
-        this.stylesStore = stylesStore;
         this.extensionRegistry = extensionRegistry;
+        this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
+        if (!stylesStore.exists()) {
+            stylesStore.mkdirs();
+        }
     }
 
     @Override
@@ -103,20 +87,28 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
-        return getStyleFormatStream(dataset).map(StyleFormatExtension::getMediaType)
-                                            .collect(ImmutableSet.toImmutableSet());
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+        if (subPath.matches("^/?\\w+/metadata$"))
+            return ImmutableSet.of(
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(MediaType.APPLICATION_JSON_TYPE)
+                            .build());
+        else if (subPath.matches("^/?\\w*$"))
+            return getStyleFormatStream(dataset).map(StyleFormatExtension::getMediaType)
+                    .collect(ImmutableSet.toImmutableSet());
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
     private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiDatasetData dataset) {
         return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
                                 .stream()
-                                .filter(styleFormatExtension -> styleFormatExtension.isEnabledForDataset(dataset));
+                                .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(dataset));
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(datasetData, StylesConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
         if (stylesExtension.isPresent() &&
                 stylesExtension.get()
@@ -182,31 +174,42 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     }
 
     /**
-     * updates one specific style
+     * creates or updates a style(sheet)
      *
      * @param styleId the local identifier of a specific style
      * @return empty response (204)
      */
     @Path("/{styleId}")
     @PUT
-    @Consumes(StyleFormatMbStyles.MEDIA_TYPE_STRING)
+    @Consumes({StyleFormatMbStyles.MEDIA_TYPE_STRING,StyleFormatSld10.MEDIA_TYPE_STRING,StyleFormatSld11.MEDIA_TYPE_STRING})
     public Response putStyle(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
                              @Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest,
                              @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
 
-        StyleFormatExtension format = new StyleFormatMbStyles();
-
-        JsonNode requestBodyJson = validateRequestBodyJSON(requestBody);
-
-        if (requestBodyJson == null || !validateRequestBody(requestBodyJson))
-            throw new BadRequestException();
-
         boolean newStyle = isNewStyle(dataset.getId(), styleId);
-        writeStylesheet(dataset.getData(), ogcApiRequest, styleId, format, requestBody, newStyle);
+        String contentType = request.getContentType();
+        MediaType requestMediaType = EndpointStylesManager.mediaTypeFromString(contentType);
 
-        // TODO: add stylesheet to metadata, if newStyle == false
+        for (StyleFormatExtension format: extensionRegistry.getExtensionsForType(StyleFormatExtension.class)) {
+            MediaType formatMediaType = format.getMediaType().type();
+            if (format.isEnabledForApi(dataset.getData()) && requestMediaType.isCompatible(formatMediaType)) {
+
+                if (format instanceof StyleFormatMbStyles) {
+                    JsonNode requestBodyJson = validateRequestBodyJSON(requestBody);
+
+                    if (requestBodyJson == null || !validateRequestBody(requestBodyJson))
+                        throw new BadRequestException();
+                }
+
+                writeStylesheet(dataset.getData(), ogcApiRequest, styleId, format, requestBody, newStyle);
+
+                // TODO: add stylesheet to metadata, if newStyle == false
+
+                break;
+            }
+        }
 
         return Response.noContent()
                        .build();
@@ -278,7 +281,8 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
         try {
             // parse input for validation
             mapper.readValue(requestBody, StyleMetadata.class);
-            currentMetadata = mapper.readValue(stylesStore.get(styleId + ".metadata", dataset.getId()), new TypeReference<LinkedHashMap>() {
+            File metadataFile = new File( stylesStore + File.separator + dataset.getId() + File.separator + styleId + ".metadata");
+            currentMetadata = mapper.readValue(metadataFile, new TypeReference<LinkedHashMap>() {
             });
             ObjectReader objectReader = mapper.readerForUpdating(currentMetadata);
             updatedMetadata = objectReader.readValue(requestBody);
@@ -295,7 +299,8 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
 
     private boolean isNewStyle(String datasetId, String styleId) {
 
-        return !stylesStore.has(styleId + ".metadata", datasetId);
+        File metadataFile = new File( stylesStore + File.separator + datasetId + File.separator + styleId + ".metadata");
+        return !metadataFile.exists();
     }
 
     private void writeStylesheet(OgcApiDatasetData datasetData, OgcApiRequestContext ogcApiRequest, String styleId,
@@ -363,11 +368,15 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
      */
     private void deleteStyle(String datasetId, String styleId) {
         boolean styleFound = false;
-        for (String key : stylesStore.ids(datasetId)) {
+        File apiDir = new File(stylesStore + File.separator + datasetId);
+
+        for (String key : apiDir.list()) {
             if (key.substring(0, key.lastIndexOf("."))
                    .equals(styleId)) {
                 styleFound = true;
-                stylesStore.delete(key, datasetId);
+                File styleFile = new File( apiDir + File.separator + key );
+                if (styleFile.exists())
+                    styleFile.delete();
             }
         }
         if (!styleFound) {
@@ -385,7 +394,13 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     private void putStyleDocument(String datasetId, String styleId, String fileExtension, byte[] payload) {
 
         String key = styleId + "." + fileExtension;
-        stylesStore.put(key, payload, datasetId);
+        File styleFile = new File(stylesStore + File.separator + datasetId + File.separator + styleId + "." + fileExtension);
+
+        try {
+            Files.write(styleFile.toPath(), payload);
+        } catch (IOException e) {
+            throw new ServerErrorException("could not PUT style document: "+styleId, 500);
+        }
     }
 
     /**
@@ -449,5 +464,42 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
         }
 
         return requestBodyNode;
+    }
+
+    // TODO: move elsewhere
+    /**
+     * create MediaType from text string; if the input string has problems, the value defaults to wildcards
+     *
+     * @param mediaTypeString the media type as a string
+     * @return the processed media type
+     */
+    public static MediaType mediaTypeFromString(String mediaTypeString) {
+        String[] typeAndSubtype = mediaTypeString.split("/", 2);
+        if (typeAndSubtype[0].matches("application|audio|font|example|image|message|model|multipart|text|video")) {
+            if (typeAndSubtype.length==1) {
+                // no subtype
+                return new MediaType(typeAndSubtype[0],"*");
+            } else {
+                // we have a subtype - and maybe parameters
+                String[] subtypeAndParameters = typeAndSubtype[1].split(";");
+                int count = subtypeAndParameters.length;
+                if (count==1) {
+                    // no parameters
+                    return new MediaType(typeAndSubtype[0],subtypeAndParameters[0]);
+                } else {
+                    // we have at least one parameter
+                    Map<String, String> params = IntStream.rangeClosed(1, count-1)
+                            .mapToObj( i -> subtypeAndParameters[i].split("=",2) )
+                            .filter(nameValuePair -> nameValuePair.length==2)
+                            .map(nameValuePair -> new AbstractMap.SimpleImmutableEntry<>(nameValuePair[0].trim(), nameValuePair[1].trim()))
+                            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+                    return new MediaType(typeAndSubtype[0],subtypeAndParameters[0],params);
+                }
+            }
+        } else {
+            // not a valid type, fall back to wildcard
+            return MediaType.WILDCARD_TYPE;
+        }
+
     }
 }

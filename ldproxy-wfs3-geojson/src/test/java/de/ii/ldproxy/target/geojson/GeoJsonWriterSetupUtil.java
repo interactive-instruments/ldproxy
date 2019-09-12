@@ -8,11 +8,7 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
@@ -62,12 +58,12 @@ public class GeoJsonWriterSetupUtil {
                                                                }
 
                                                                @Override
-                                                               public List<OgcApiMediaType> getAlternativeMediaTypes() {
+                                                               public List<OgcApiMediaType> getAlternateMediaTypes() {
                                                                    return null;
                                                                }
 
                                                                @Override
-                                                               public OgcApiDatasetData getDataset() {
+                                                               public OgcApiDataset getApi() {
                                                                    return null;
                                                                }
 
@@ -86,7 +82,7 @@ public class GeoJsonWriterSetupUtil {
                                                            .maxAllowableOffset(0)
                                                            .isHitsOnly(false)
                                                            .state(ModifiableStateGeoJson.create())
-                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder().isEnabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).build())
+                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder().isEnabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).useFormattedJsonOutput(true).build())
                                                            .build();
 
     }

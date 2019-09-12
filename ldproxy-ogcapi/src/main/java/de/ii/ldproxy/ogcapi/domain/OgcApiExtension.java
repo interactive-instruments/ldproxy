@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 public interface OgcApiExtension {
 
-    boolean isEnabledForDataset(OgcApiDatasetData dataset);
+    boolean isEnabledForApi(OgcApiDatasetData apiData);
 
     default <T extends ExtensionConfiguration> Optional<T> getExtensionConfiguration(
             ExtendableConfiguration extendableConfiguration, Class<T> clazz) {

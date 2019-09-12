@@ -18,7 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
 public interface Wfs3CapabilityExtension extends OgcApiExtension {
 
     @Override
-    default boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+    default boolean isEnabledForApi(OgcApiDatasetData apiData) {
         return true;
     }
 

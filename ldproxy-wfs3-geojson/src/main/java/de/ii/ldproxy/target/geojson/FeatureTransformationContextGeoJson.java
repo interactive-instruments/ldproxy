@@ -46,9 +46,9 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
         }
 
         json.setCodec(new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL));
-        //if (useFormattedJsonOutput) {
-        json.useDefaultPrettyPrinter();
-        //}
+        if (getGeoJsonConfig().getUseFormattedJsonOutput()) {
+            json.useDefaultPrettyPrinter();
+        }
         if (getDebugJson()) {
             // Zum JSON debuggen hier einschalten.
             json = new JsonGeneratorDebug(json);
@@ -72,9 +72,9 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     private TokenBuffer createJsonBuffer() {
         TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
 
-        //if (useFormattedJsonOutput) {
-        json.useDefaultPrettyPrinter();
-        //}
+        if (getGeoJsonConfig().getUseFormattedJsonOutput()) {
+            json.useDefaultPrettyPrinter();
+        }
         return json;
     }
 

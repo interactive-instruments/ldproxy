@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
 import org.immutables.value.Value;
 
 import java.util.Comparator;
@@ -26,21 +25,23 @@ import java.util.stream.Collectors;
 @JsonDeserialize(builder = ImmutableDataset.Builder.class)
 public abstract class Dataset {
 
-    public abstract String getTitle();
+    // TODO: split into Dataset (collections, crs) extending Api (title, description, links, sections)
 
-    public abstract String getDescription();
+    public abstract Optional<String> getTitle();
 
-    public abstract List<Wfs3Link> getLinks();
+    public abstract Optional<String> getDescription();
+
+    public abstract List<OgcApiLink> getLinks();
 
     public abstract List<String> getCrs();
 
     //TODO
-    //public abstract List<Wfs3Collection> getCollections();
+    //public abstract List<OgcApiCollection> getCollections();
     @Value.Derived
-    public List<Wfs3Collection> getCollections() {
-        Optional<List<Wfs3Collection>> collections = getSections().stream()
+    public List<OgcApiCollection> getCollections() {
+        Optional<List<OgcApiCollection>> collections = getSections().stream()
                                                                  .filter(stringObjectMap -> stringObjectMap.containsKey("collections"))
-                                                                 .map(stringObjectMap -> (List<Wfs3Collection>) stringObjectMap.get("collections"))
+                                                                 .map(stringObjectMap -> (List<OgcApiCollection>) stringObjectMap.get("collections"))
                                                                  .findFirst();
         if (collections.isPresent()) {
             return collections.get();

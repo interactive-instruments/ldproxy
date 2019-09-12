@@ -20,10 +20,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
 import de.ii.ldproxy.wfs3.Gml2Wfs3GenericMappingProvider;
-import de.ii.ldproxy.wfs3.api.TargetMappingRefiner;
-import de.ii.ldproxy.wfs3.api.Wfs3CapabilityExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
-import de.ii.ldproxy.wfs3.api.Wfs3StyleGeneratorExtension;
+import de.ii.ldproxy.wfs3.api.*;
 import de.ii.xtraplatform.crs.api.DefaultCoordinatesWriter;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.crs.api.JsonCoordinateFormatter;
@@ -218,9 +215,9 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
     private List<TargetMappingProviderFromGml> getMappingProviders() {
         return Stream.concat(
                 Stream.of(new Gml2Wfs3GenericMappingProvider()),
-                wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3OutputFormatExtension.class)
+                wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
                                             .stream()
-                                            .map(Wfs3OutputFormatExtension::getMappingGenerator)
+                                            .map(Wfs3FeatureFormatExtension::getMappingGenerator)
                                             .filter(Optional::isPresent)
                                             .map(Optional::get)
         )
@@ -228,9 +225,9 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
     }
 
     private List<TargetMappingRefiner> getMappingRefiners() {
-        return wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3OutputFormatExtension.class)
+        return wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
                                            .stream()
-                                           .map(Wfs3OutputFormatExtension::getMappingRefiner)
+                                           .map(Wfs3FeatureFormatExtension::getMappingRefiner)
                                            .filter(Optional::isPresent)
                                            .map(Optional::get)
                                            .collect(Collectors.toList());

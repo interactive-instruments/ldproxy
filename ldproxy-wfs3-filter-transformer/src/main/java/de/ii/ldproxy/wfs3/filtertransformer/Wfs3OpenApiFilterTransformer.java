@@ -9,7 +9,7 @@ package de.ii.ldproxy.wfs3.filtertransformer;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
+import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -27,15 +27,15 @@ import java.util.Objects;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OpenApiFilterTransformer implements Wfs3OpenApiExtension {
+public class Wfs3OpenApiFilterTransformer implements OpenApiExtension {
     @Override
     public int getSortPriority() {
         return 300;
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, FilterTransformersConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, FilterTransformersConfiguration.class);
     }
 
     @Override

@@ -8,13 +8,8 @@
 package de.ii.ldproxy.wfs3.core;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3DatasetMetadataExtension;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Collection;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -27,34 +22,34 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class DatasetMetadataExtensionWfs3Core implements Wfs3DatasetMetadataExtension {
+public class DatasetMetadataExtensionWfs3Core implements OgcApiLandingPageExtension {
 
     @Requires
     private Wfs3Core wfs3Core;
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, Wfs3CoreConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, Wfs3CoreConfiguration.class);
     }
 
     @Override
-    public ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData datasetData,
+    public ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData apiData,
                                             URICustomizer uriCustomizer,
                                             OgcApiMediaType mediaType,
-                                            List<OgcApiMediaType> alternativeMediaTypes) {
+                                            List<OgcApiMediaType> alternateMediaTypes) {
 
-        if (!isEnabledForDataset(datasetData)) {
+        if (!isEnabledForApi(apiData)) {
             return datasetBuilder;
         }
 
         //TODO
-        List<Wfs3Collection> collections = datasetData.getFeatureTypes()
+        List<OgcApiCollection> collections = apiData.getFeatureTypes()
                                                       .values()
                                                       .stream()
                                                       //TODO
-                                                      .filter(featureType -> datasetData.isFeatureTypeEnabled(featureType.getId()))
+                                                      .filter(featureType -> apiData.isFeatureTypeEnabled(featureType.getId()))
                                                       .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                                                      .map(featureType -> wfs3Core.createCollection(featureType, datasetData, mediaType, alternativeMediaTypes, uriCustomizer, true))
+                                                      .map(featureType -> wfs3Core.createCollection(featureType, apiData, mediaType, alternateMediaTypes, uriCustomizer, true))
                                                       .collect(Collectors.toList());
 
         return datasetBuilder.addSections(ImmutableMap.of("collections", collections));

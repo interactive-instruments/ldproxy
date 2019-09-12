@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.crs;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.wfs3.oas30.Wfs3OpenApiExtension;
+import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -34,20 +34,20 @@ import static de.ii.ldproxy.wfs3.crs.Wfs3ParameterCrs.CRS;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OpenApiCrs implements Wfs3OpenApiExtension {
+public class Wfs3OpenApiCrs implements OpenApiExtension {
     @Override
     public int getSortPriority() {
         return 500;
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData dataset) {
-        return isExtensionEnabled(dataset, CrsConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, CrsConfiguration.class);
     }
 
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
-        if (isEnabledForDataset(datasetData)) {
+        if (isEnabledForApi(datasetData)) {
 
             ImmutableSet<String> crsSet = ImmutableSet.<String>builder()
                     .add(datasetData.getFeatureProvider()

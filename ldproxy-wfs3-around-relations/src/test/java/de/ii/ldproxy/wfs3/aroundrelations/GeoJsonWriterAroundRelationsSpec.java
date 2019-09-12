@@ -10,24 +10,8 @@ package de.ii.ldproxy.wfs3.aroundrelations;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
-import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
-import de.ii.ldproxy.target.geojson.FeatureTransformationContextGeoJson;
-import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
-import de.ii.ldproxy.target.geojson.GeoJsonConfigImpl;
-import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping;
-import de.ii.ldproxy.target.geojson.GeoJsonWriter;
-import de.ii.ldproxy.target.geojson.ImmutableFeatureTransformationContextGeoJson;
-import de.ii.ldproxy.target.geojson.ImmutableGeoJsonConfig;
-import de.ii.ldproxy.target.geojson.ModifiableStateGeoJson;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.target.geojson.*;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
@@ -46,10 +30,7 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.Consumer;
 
-import static com.greghaskins.spectrum.dsl.specification.Specification.beforeEach;
-import static com.greghaskins.spectrum.dsl.specification.Specification.context;
-import static com.greghaskins.spectrum.dsl.specification.Specification.describe;
-import static com.greghaskins.spectrum.dsl.specification.Specification.it;
+import static com.greghaskins.spectrum.dsl.specification.Specification.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -150,7 +131,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                         int expectedSize = transformationContext.getLinks()
                                                                 .size() + 1;
 
-                        Wfs3Link expectedLink = new ImmutableWfs3Link.Builder()
+                        OgcApiLink expectedLink = new ImmutableOgcApiLink.Builder()
                                                                  .rel("test1")
                                                                  .description("test1")
                                                                  .type("application/geo+json")
@@ -301,7 +282,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                                                 .build())
                                                            .collectionName("ft")
                                                            .outputStream(outputStream)
-                                                           .links(ImmutableList.of(new ImmutableWfs3Link.Builder()
+                                                           .links(ImmutableList.of(new ImmutableOgcApiLink.Builder()
                                                                                                     .href("TEST")
                                                                                                     .build()))
                                                            .isFeatureCollection(false)
@@ -312,12 +293,12 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                }
 
                                                                @Override
-                                                               public List<OgcApiMediaType> getAlternativeMediaTypes() {
+                                                               public List<OgcApiMediaType> getAlternateMediaTypes() {
                                                                    return null;
                                                                }
 
                                                                @Override
-                                                               public OgcApiDatasetData getDataset() {
+                                                               public OgcApiDataset getApi() {
                                                                    return null;
                                                                }
 
@@ -336,7 +317,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                            .maxAllowableOffset(0)
                                                            .isHitsOnly(false)
                                                            .state(ModifiableStateGeoJson.create())
-                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder().isEnabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).build())
+                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder().isEnabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).useFormattedJsonOutput(true).build())
                                                            .build();
 
     }

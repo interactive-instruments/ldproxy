@@ -8,22 +8,32 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.immutables.value.Value;
 
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Value.Immutable
 public interface OgcApiContext {
-    enum HttpMethods {GET, POST, PUT, DELETE, PATCH}
+    enum HttpMethods {GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS}
 
     String getApiEntrypoint();
 
     Optional<String> getSubPathPattern();
 
+    Map<String, List<HttpMethods>> getSubPathsAndMethods();
+
     @Value.Default
     default List<HttpMethods> getMethods() {
+        return ImmutableList.of();
+    }
+
+    @Value.Default
+    default List<HttpMethods> getMethods(Optional<String> subPathPattern) {
         return ImmutableList.of();
     }
 
@@ -41,12 +51,32 @@ public interface OgcApiContext {
                            .collect(ImmutableList.toImmutableList());
     }
 
+    @Value.Derived
+    @Value.Auxiliary
+    default Map<Optional<Pattern>, List<String>> getSubPathsAndMethodsProcessed() {
+        if (getSubPathsAndMethods().isEmpty()) {
+            return new ImmutableMap.Builder()
+                    .put(getSubPathPatternCompiled(), getMethodStrings())
+                    .build();
+        }
+
+        return getSubPathsAndMethods().entrySet().stream()
+                .map(pathAndMethods -> new AbstractMap.SimpleImmutableEntry<Optional<Pattern>,List<String>>(
+                        Optional.ofNullable(Pattern.compile(pathAndMethods.getKey())),
+                        pathAndMethods.getValue()
+                                .stream()
+                                .map(Enum::name)
+                                .collect(ImmutableList.toImmutableList())))
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
     default boolean matches(String firstPathSegment, String subPath, String method) {
         boolean matchesPath = firstPathSegment.matches(getApiEntrypoint());
         boolean matchesSubPath = !getSubPathPatternCompiled().isPresent() || getSubPathPatternCompiled().get()
                                                                                                         .matcher(subPath)
                                                                                                         .matches();
-        boolean matchesMethod = getMethods().isEmpty() || getMethodStrings().contains(method);
+        boolean matchesMethod = getSubPathsAndMethodsProcessed().entrySet().stream()
+                    .anyMatch(entry -> entry.getKey().orElse(Pattern.compile(".*")).matcher(subPath).matches() && entry.getValue().contains(method));
 
         return matchesPath && matchesMethod && matchesSubPath;
     }

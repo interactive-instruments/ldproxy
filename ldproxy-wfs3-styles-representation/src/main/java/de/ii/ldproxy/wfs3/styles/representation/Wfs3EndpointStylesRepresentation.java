@@ -24,11 +24,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -42,10 +38,12 @@ public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("maps")
+            .addMethods(OgcApiContext.HttpMethods.GET)
+            .subPathPattern("^/?\\w+$")
             .build();
     private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
             new ImmutableOgcApiMediaType.Builder()
-                    .main(MediaType.TEXT_HTML_TYPE)
+                    .type(MediaType.TEXT_HTML_TYPE)
                     .build()
     );
 
@@ -60,13 +58,16 @@ public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset) {
-        return API_MEDIA_TYPES;
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+        if (subPath.matches("^/?\\w+$"))
+            return API_MEDIA_TYPES;
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData serviceData) {
-        Optional<StylesConfiguration> stylesExtension = serviceData.getExtension(StylesConfiguration.class);
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
         if (!stylesExtension.isPresent() || !stylesExtension.get()
                                                             .getMapsEnabled()) {

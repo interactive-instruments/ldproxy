@@ -16,21 +16,18 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 @Component
 @Provides
 @Instantiate
 public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension {
 
+    public static final String MEDIA_TYPE_STRING = "application/vnd.ogc.sld+xml;version=1.0" ;
     static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
-            .main(new MediaType("application", "vnd.ogc.sld+xml", ImmutableMap.of("version", "1.0")))
+            .type(new MediaType("application", "vnd.ogc.sld+xml", ImmutableMap.of("version", "1.0")))
             .label("OGC SLD 1.0")
             .parameter("sld10")
-            .metadata(MediaType.APPLICATION_JSON_TYPE)
             .build();
 
     @Override
@@ -39,8 +36,8 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
-    public boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-        return getExtensionConfiguration(datasetData, StylesConfiguration.class).map(StylesConfiguration::getSld10Enabled)
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, StylesConfiguration.class).map(StylesConfiguration::getSld10Enabled)
                                                                                 .orElse(false);
     }
 

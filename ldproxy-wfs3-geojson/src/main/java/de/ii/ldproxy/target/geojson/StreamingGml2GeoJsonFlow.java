@@ -44,8 +44,8 @@ import java.util.function.Consumer;
 // TODO make an extension of FeatureTransformerGeoJson
 public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransformerFlow {
 
-    public static Flow<ByteString, ByteString, CompletionStage<Done>> transformer(final QName featureType, final FeatureTypeMapping featureTypeMapping) {
-        return GmlStreamParserFlow.transform(featureType, featureTypeMapping, new StreamingGml2GeoJsonFlow(true));
+    public static Flow<ByteString, ByteString, CompletionStage<Done>> transformer(final QName featureType, final FeatureTypeMapping featureTypeMapping, final boolean useFormattedJsonOutput) {
+        return GmlStreamParserFlow.transform(featureType, featureTypeMapping, new StreamingGml2GeoJsonFlow(true, useFormattedJsonOutput));
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamingGml2GeoJsonFlow.class);
@@ -60,6 +60,7 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
     protected List<String> outFields;
     protected boolean geometryWithSR;
     protected boolean returnGeometry;
+    protected boolean useFormattedJsonOutput;
     protected Map<String, Integer> fieldCounter;
     protected boolean isFeatureCollection;
     protected double maxAllowableOffset;
@@ -78,19 +79,18 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
     OutputStream outputStream;
     Consumer<Throwable> failStage;
 
-    public StreamingGml2GeoJsonFlow(boolean isFeatureCollection) {
+    public StreamingGml2GeoJsonFlow(boolean isFeatureCollection, boolean useFormattedJsonOutput) {
         //this.jsonOut = jsonOut;
         //this.json = jsonOut;
         //this.jsonMapper = jsonMapper;
         this.isFeatureCollection = isFeatureCollection;
+        this.useFormattedJsonOutput = useFormattedJsonOutput;
         //this.currentPath = new XMLPathTracker();
         //this.crsTransformer = crsTransformer;
         //this.onTheFlyMapping = new GeoJsonOnTheFlyMapping();
         //this.featureTypeMapping = featureTypeMapping;
         //this.outputFormat = outputFormat;
     }
-
-
 
     @Override
     public void initialize(Consumer<ByteString> push, Consumer<Throwable> failStage) {
@@ -107,7 +107,11 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
                 public void write(byte[] bytes, int i, int i1) {
                     push.accept(ByteString.ByteStrings.fromArray(bytes, i, i1));
                 }
-            }).useDefaultPrettyPrinter().disable(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM);
+            }).disable(JsonGenerator.Feature.FLUSH_PASSED_TO_STREAM);
+
+            if (useFormattedJsonOutput) {
+                jsonGenerator.useDefaultPrettyPrinter();
+            }
 
             StreamingGml2GeoJsonFlow.this.json = jsonGenerator;
             StreamingGml2GeoJsonFlow.this.jsonOut = jsonGenerator;
@@ -328,13 +332,12 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
         }
     }
 
-    // TODO
     private TokenBuffer createJsonBuffer() throws IOException {
         TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
 
-        //if (useFormattedJsonOutput) {
-        json.useDefaultPrettyPrinter();
-        //}
+        if (useFormattedJsonOutput) {
+            json.useDefaultPrettyPrinter();
+        }
         return json;
     }
 }

@@ -55,7 +55,7 @@ public class TileGeneratorMvt {
 
         // Prepare MVT output
         TilingScheme tilingScheme = tile.getTilingScheme();
-        OgcApiDatasetData serviceData = tile.getDatasetData();
+        OgcApiDatasetData serviceData = tile.getApiData();
         int level = tile.getLevel();
         int row = tile.getRow();
         int col = tile.getCol();
