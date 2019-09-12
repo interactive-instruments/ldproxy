@@ -62,9 +62,6 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     @Requires
     private CoreServerConfig coreServerConfig;
 
-    @Requires
-    private Wfs3Core wfs3Core;
-
     @Override
     public OgcApiContext getApiContext() {
         return API_CONTEXT;
@@ -88,7 +85,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     public Response getCollectionSitemap(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                                          @PathParam("from") Long from, @PathParam("to") Long to,
                                          @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
-        wfs3Core.checkCollectionName(service.getData(), id);
+        Wfs3Core.checkCollectionName(service.getData(), id);
 
         List<Site> sites = new ArrayList<>();
 
