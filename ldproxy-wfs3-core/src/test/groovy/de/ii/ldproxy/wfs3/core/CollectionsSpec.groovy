@@ -10,25 +10,9 @@ package de.ii.ldproxy.wfs3.core
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import de.ii.ldproxy.ogcapi.application.OgcApiDatasetEntity
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass
-import de.ii.ldproxy.ogcapi.domain.Dataset
-import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent
-import de.ii.ldproxy.ogcapi.domain.ImmutableDataset
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType
-import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent
-import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Collection
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtension
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext
-import de.ii.ldproxy.ogcapi.domain.OutputFormatExtension
-import de.ii.ldproxy.ogcapi.domain.URICustomizer
-import de.ii.ldproxy.ogcapi.domain.Wfs3DatasetMetadataExtension
-import de.ii.ldproxy.ogcapi.domain.Wfs3Extent
+import de.ii.ldproxy.ogcapi.domain.*
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
+import de.ii.ldproxy.wfs3.api.Wfs3CollectionFormatExtension
 import de.ii.xtraplatform.crs.api.BoundingBox
 import de.ii.xtraplatform.crs.api.EpsgCrs
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp
@@ -44,9 +28,9 @@ class CollectionsSpec extends Specification {
 
     static final OgcApiExtensionRegistry registry = createExtensionRegistry()
     static final OgcApiDatasetData datasetData = createDatasetData()
+    static final OgcApiDatasetEntity ogcApiDatasetEntity =createDatasetEntity()
     static final OgcApiRequestContext requestContext = createRequestContext()
     static final Wfs3EndpointCore endpoint = new Wfs3EndpointCore(registry)
-    static OgcApiDatasetEntity ogcApiDatasetEntity = new OgcApiDatasetEntity(registry, null, null, null, null, null)
 
     @Ignore
     def 'Requirement 11 A: GET support at /collections'() {
@@ -68,7 +52,6 @@ class CollectionsSpec extends Specification {
 
     def 'Requirement 13 A: collections response'() {
         given: 'A request to the server at /collections'
-        ogcApiDatasetEntity.setData(datasetData)
 
         when: 'The server returns a response at path /collections'
         Dataset collections = endpoint.getCollections(Optional.empty(), ogcApiDatasetEntity, requestContext).entity as Dataset
@@ -82,7 +65,6 @@ class CollectionsSpec extends Specification {
 
     def 'Requirement 14 A: collections response'() {
         given: 'A request to the server at /collections'
-        ogcApiDatasetEntity.setData(datasetData)
 
         when: 'The server returns a response at path /colections'
         Dataset collections = endpoint.getCollections(Optional.empty(), ogcApiDatasetEntity, requestContext).entity as Dataset
@@ -94,6 +76,11 @@ class CollectionsSpec extends Specification {
     static def createExtensionRegistry() {
         new OgcApiExtensionRegistry() {
             @Override
+            void addExtension(OgcApiExtension extension) {
+
+            }
+
+            @Override
             List<OgcApiExtension> getExtensions() {
                 return ImmutableList.of()
 
@@ -101,36 +88,38 @@ class CollectionsSpec extends Specification {
 
             @Override
             <T extends OgcApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
-                if (extensionType == OutputFormatExtension.class)
-                    return ImmutableList.of((T) new OutputFormatExtension() {
+                if (extensionType == Wfs3CollectionFormatExtension.class) {
+                    return ImmutableList.of((T) new Wfs3CollectionFormatExtension() {
                         @Override
                         OgcApiMediaType getMediaType() {
                             return new ImmutableOgcApiMediaType.Builder()
-                                    .main(MediaType.APPLICATION_JSON_TYPE)
+                                    .type(MediaType.APPLICATION_JSON_TYPE)
                                     .build()
                         }
 
                         @Override
-                        Response getConformanceResponse(List<ConformanceClass> wfs3ConformanceClasses, String serviceLabel,
-                                                        OgcApiMediaType ogcApiMediaType, List<OgcApiMediaType> alternativeMediaTypes,
-                                                        URICustomizer uriCustomizer, String staticUrlPrefix) {
-                            return null
-                        }
-
-                        @Override
-                        Response getDatasetResponse(Dataset dataset, OgcApiDatasetData datasetData, OgcApiMediaType mediaType,
-                                                    List<OgcApiMediaType> alternativeMediaTypes, URICustomizer uriCustomizer,
-                                                    String staticUrlPrefix, boolean isCollections) {
+                        Response getCollectionsResponse(Dataset dataset, OgcApiDataset api, OgcApiRequestContext requestContext) {
                             return Response.ok().entity(dataset).build()
                         }
 
                         @Override
-                        boolean isEnabledForDataset(OgcApiDatasetData datasetData) {
-                            return true
+                        Response getCollectionResponse(OgcApiCollection ogcApiCollection, String collectionName, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                            return Response.ok().entity(ogcApiCollection).build()
+                        }
+
+                        @Override
+                        Response getLandingPageResponse(Dataset dataset, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                            return null
+                        }
+
+                        @Override
+                        Response getConformanceResponse(List<ConformanceClass> ocgApiConformanceClasses, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                            return null
                         }
                     })
-                if (extensionType == Wfs3DatasetMetadataExtension.class)
-                    return ImmutableList.of((T) new Wfs3DatasetMetadataExtension() {
+                }
+                if (extensionType == OgcApiLandingPageExtension.class)
+                    return ImmutableList.of((T) new OgcApiLandingPageExtension() {
                         @Override
                         ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData datasetData,
                                                          URICustomizer uriCustomizer, OgcApiMediaType mediaType,
@@ -138,17 +127,17 @@ class CollectionsSpec extends Specification {
                             datasetBuilder.title('Test title')
                             datasetBuilder.description("Test description")
                             datasetBuilder.addSections(ImmutableMap.of("collections",
-                                    ImmutableList.of(new ImmutableWfs3Collection.Builder()
+                                    ImmutableList.of(new ImmutableOgcApiCollection.Builder()
                                             .id("id1")
                                             .title("title1")
                                             .description("foo bar 1")
-                                            .extent(new Wfs3Extent())
+                                            .extent(new OgcApiExtent())
                                             .build())))
                             return datasetBuilder
                         }
 
                         @Override
-                        boolean isEnabledForDataset(OgcApiDatasetData dataset) {
+                        boolean isEnabledForApi(OgcApiDatasetData dataset) {
                             return true
                         }
                     })
@@ -159,12 +148,12 @@ class CollectionsSpec extends Specification {
     static def createRequestContext() {
         new ImmutableOgcApiRequestContext.Builder()
                 .mediaType(new ImmutableOgcApiMediaType.Builder()
-                        .main(MediaType.APPLICATION_JSON_TYPE)
+                        .type(MediaType.APPLICATION_JSON_TYPE)
                         .build())
-                .alternativeMediaTypes(ImmutableList.of(new ImmutableOgcApiMediaType.Builder()
-                        .main(MediaType.APPLICATION_XML_TYPE)
+                .alternateMediaTypes(ImmutableList.of(new ImmutableOgcApiMediaType.Builder()
+                        .type(MediaType.APPLICATION_XML_TYPE)
                         .build()))
-                .dataset(datasetData)
+                .api(ogcApiDatasetEntity)
                 .requestUri(new URI('http://example.com/collections'))
                 .build()
     }
@@ -193,5 +182,11 @@ class CollectionsSpec extends Specification {
                                 .build())
                         .build())
                 .build()
+    }
+
+    static def createDatasetEntity() {
+        def entity = new OgcApiDatasetEntity(registry, null, null, null, null, null)
+        entity.setData(datasetData)
+        return entity
     }
 }
