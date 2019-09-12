@@ -14,9 +14,6 @@ import java.util.List;
  */
 public interface OgcApiExtensionRegistry {
 
-    // TODO: temporary hack so that the ogcapi-features-1/core conformance class can be added in Wfs3Core, too.
-    void addExtension(OgcApiExtension extension);
-
     List<OgcApiExtension> getExtensions();
 
     <T extends OgcApiExtension> List<T> getExtensionsForType(Class<T> extensionType);

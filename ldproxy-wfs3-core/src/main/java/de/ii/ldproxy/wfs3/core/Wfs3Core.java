@@ -50,8 +50,9 @@ import static com.codahale.metrics.MetricRegistry.name;
  * @author zahnen
  */
 @Component
-@Provides(specifications = {Wfs3Core.class})
+@Provides(specifications = {Wfs3Core.class, ConformanceClass.class, OgcApiExtension.class})
 @Instantiate
+// TODO: move functionality to query handler, don't provide implementation class as interface
 public class Wfs3Core implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3Core.class);
@@ -61,9 +62,6 @@ public class Wfs3Core implements ConformanceClass {
 
     public Wfs3Core(@Requires OgcApiExtensionRegistry extensionRegistry, @Requires Dropwizard dropwizard) {
         this.extensionRegistry = extensionRegistry;
-
-        // TODO: temporary hack so that the ogcapi-features-1/core conformance class can be added, too. Refactoring is required so that the extension registry is not part of Wfs3Core
-        this.extensionRegistry.addExtension(this);
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
@@ -79,7 +77,7 @@ public class Wfs3Core implements ConformanceClass {
         return isExtensionEnabled(apiData, Wfs3CoreConfiguration.class);
     }
 
-    public void checkCollectionName(OgcApiDatasetData datasetData, String collectionName) {
+    public static void checkCollectionName(OgcApiDatasetData datasetData, String collectionName) {
         if (!datasetData.isFeatureTypeEnabled(collectionName)) {
             throw new NotFoundException();
         }
