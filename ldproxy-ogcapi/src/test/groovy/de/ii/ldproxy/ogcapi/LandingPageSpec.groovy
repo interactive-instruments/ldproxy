@@ -27,7 +27,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiExtension
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext
-import de.ii.ldproxy.ogcapi.domain.URICustomizer
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
 import de.ii.xtraplatform.crs.api.BoundingBox
 import de.ii.xtraplatform.crs.api.EpsgCrs
@@ -61,14 +60,13 @@ class LandingPageSpec extends Specification {
         then: 'the server responds with HTTP status code 200'
     }
 
-    @PendingFeature
     def 'Requirement 2 B: landing page response'() {
 
         given: "a request to the landing page"
         def queryInputDataset = new ImmutableOgcApiQueryInputLandingPage.Builder().build()
 
         when: "the response is created"
-        Dataset landingPage = queryHandler.handle(CommonQuery.DATASET, queryInputDataset, requestContext).entity as Dataset
+        Dataset landingPage = queryHandler.handle(CommonQuery.LANDING_PAGE, queryInputDataset, requestContext).entity as Dataset
 
         then: 'it should comply to landingPage.yml'
 
@@ -138,8 +136,8 @@ class LandingPageSpec extends Specification {
     def 'Requirement 8 A: query parameter not specified in the API definition'() {
         when: 'a request to the landing page with a parameter not specified in the API definition'
         def queryInputDataset = new ImmutableOgcApiQueryInputLandingPage.Builder().build()
-        Dataset landingPage = queryHandler.handle(CommonQuery.DATASET, queryInputDataset,
-                createRequestContextUnknownParameter()).entity as Dataset
+        Dataset landingPage = queryHandler.handle(CommonQuery.LANDING_PAGE, queryInputDataset,
+                createRequestContext('http://example.com?abc=true')).entity as Dataset
 
         then: 'an exception is thrown resulting in a response with HTTP status code 400'
         thrown(IllegalStateException)
@@ -147,10 +145,10 @@ class LandingPageSpec extends Specification {
 
     @PendingFeature
     def 'Requirement 9 A: invalid query parameter value'() {
-        when: 'a request to the landing page with a URI that has an invalid value'
+        when: 'a request to the landing page with a URI that has an invalid parameter value'
         def queryInputDataset = new ImmutableOgcApiQueryInputLandingPage.Builder().build()
-        Dataset landingPage = queryHandler.handle(CommonQuery.DATASET, queryInputDataset,
-                createRequestContextInvalidParameterValue()).entity as Dataset
+        Dataset landingPage = queryHandler.handle(CommonQuery.LANDING_PAGE, queryInputDataset,
+                createRequestContext('http://example.com?f=abcdf')).entity as Dataset
 
         then: 'an exception is thrown resulting in a response with HTTP status code 400'
         thrown(IllegalArgumentException)
@@ -194,33 +192,13 @@ class LandingPageSpec extends Specification {
         return entity
     }
 
-    static def createRequestContext() {
+    static def createRequestContext(String uri = 'http://example.com') {
         new ImmutableOgcApiRequestContext.Builder()
                 .mediaType(new ImmutableOgcApiMediaType.Builder()
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build())
                 .api(ogcApiDatasetEntity)
-                .requestUri(new URI('http://example.com'))
-                .build()
-    }
-
-    static def createRequestContextUnknownParameter() {
-        new ImmutableOgcApiRequestContext.Builder()
-                .mediaType(new ImmutableOgcApiMediaType.Builder()
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .build())
-                .dataset(datasetData)
-                .requestUri(new URI('http://example.com?abc=true'))
-                .build()
-    }
-
-    static def createRequestContextInvalidParameterValue() {
-        new ImmutableOgcApiRequestContext.Builder()
-                .mediaType(new ImmutableOgcApiMediaType.Builder()
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .build())
-                .dataset(datasetData)
-                .requestUri(new URI('http://example.com?f=abcdf'))
+                .requestUri(new URI(uri))
                 .build()
     }
 
