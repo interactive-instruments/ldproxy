@@ -123,7 +123,7 @@ public class VectorTilesLinkGenerator {
         uriBuilder.removeLastPathSegments(3);
         uriBuilder
                 .ensureParameter("f", mediaType.parameter())
-                .ensureLastPathSegments("tiles", "default", zoomLevel, row, col);
+                .ensureLastPathSegments("tiles", "WebMercatorQuad", zoomLevel, row, col);
 
 
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>();

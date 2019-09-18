@@ -122,7 +122,7 @@ class VectorTileSpec extends Specification{
         def zoomLevelsMap = null
         def zoomLevel = 10
         def collectionId='collection'
-        def tilingSchemeId= 'default'
+        def tilingSchemeId= 'WebMercatorQuad'
 
         when: "checkZoomLevel is called"
 
@@ -141,7 +141,7 @@ class VectorTileSpec extends Specification{
         def zoomLevelsMap = new HashMap()
         def zoomLevel = 10
         def collectionId='collection'
-        def tilingSchemeId= 'default'
+        def tilingSchemeId= 'WebMercatorQuad'
 
         when: "checkZoomLevel is called"
 
@@ -160,7 +160,7 @@ class VectorTileSpec extends Specification{
 
         def zoomLevel = 10
         def collectionId='collection1'
-        def tilingSchemeId= 'default'
+        def tilingSchemeId= 'WebMercatorQuad'
         def zoomLevelsMap =  new HashMap()
 
         zoomLevelsMap.put("collection0",null)
@@ -186,12 +186,12 @@ class VectorTileSpec extends Specification{
 
         def zoomLevel = 12
         def collectionId='collection2'
-        def tilingSchemeId= 'default'
+        def tilingSchemeId= 'WebMercatorQuad'
         def zoomLevelsMap =  new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(15).min(4).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(21).min(3).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(18).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(24).min(13).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(15).min(4).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(21).min(3).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(18).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(24).min(13).build())))
 
 
         when: "checkZoomLevel is called"
@@ -212,9 +212,9 @@ class VectorTileSpec extends Specification{
 
         def zoomLevel = 10
         def collectionId='collection'
-        def tilingSchemeId= 'default'
+        def tilingSchemeId= 'WebMercatorQuad'
         def zoomLevelsMap =  new HashMap<>(ImmutableMap.of(
-                "collection", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(25).min(0).build())))
+                "collection", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(25).min(0).build())))
 
         when: "checkZoomLevel is called"
 
@@ -232,12 +232,12 @@ class VectorTileSpec extends Specification{
 
         def zoomLevel = 12
         def collectionId='collection3'
-        def tilingSchemeId= 'default'
+        def tilingSchemeId= 'WebMercatorQuad'
         def zoomLevelsMap =  new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(15).min(4).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(21).min(3).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(18).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(24).min(13).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(15).min(4).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(21).min(3).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(18).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(24).min(13).build())))
 
         when: "checkZoomLevel is called"
 

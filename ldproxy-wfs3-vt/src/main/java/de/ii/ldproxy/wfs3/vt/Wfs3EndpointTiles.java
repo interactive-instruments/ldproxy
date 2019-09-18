@@ -77,12 +77,12 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension {
 
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
-        if (subPath.matches("^/?\\w+?$"))
+        if (subPath.matches("^/?(?:\\w+)?$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.APPLICATION_JSON_TYPE)
                             .build());
-        else if (subPath.matches("^/?\\w+/\\w+/\\w+/\\w+?$"))
+        else if (subPath.matches("^/?(?:\\w+/\\w+/\\w+/\\w+)$"))
             // TODO: from tile format extensions
             return ImmutableSet.of(
                 new ImmutableOgcApiMediaType.Builder()

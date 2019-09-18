@@ -87,7 +87,7 @@ class VectorTile {
         this.collectionId = collectionId;
 
         // get the TilingScheme
-        if (tilingSchemeId.equalsIgnoreCase("default")) {
+        if (tilingSchemeId.equalsIgnoreCase("WebMercatorQuad")) {
             tilingScheme = new DefaultTilingScheme();
         } else {
             throw new NotFoundException();
@@ -473,7 +473,7 @@ class VectorTile {
                     zoomLevels.put("min", Integer.toString(minZoom));
                 } else {
                     //if there is no member "zoomLevels" in configuration
-                    if (tilingSchemeId.equals("default")) {
+                    if (tilingSchemeId.equals("WebMercatorQuad")) {
                         TilingScheme tilingScheme = new DefaultTilingScheme();
                         minZoom = tilingScheme.getMinLevel();
                         maxZoom = tilingScheme.getMaxLevel();
@@ -481,7 +481,7 @@ class VectorTile {
                         zoomLevels.put("min", Integer.toString(minZoom));
                     }
                 }
-                if (tilingSchemeId.equals("default")) { //TODO only default supported
+                if (tilingSchemeId.equals("WebMercatorQuad")) { //TODO only default supported
                     TilingScheme tilingScheme = new DefaultTilingScheme();
                     //check if min or max zoom are valid values for the tiling scheme
                     if (minZoom > tilingScheme.getMaxLevel() || minZoom < tilingScheme.getMinLevel() || maxZoom > tilingScheme.getMaxLevel() || maxZoom < tilingScheme.getMinLevel()) {

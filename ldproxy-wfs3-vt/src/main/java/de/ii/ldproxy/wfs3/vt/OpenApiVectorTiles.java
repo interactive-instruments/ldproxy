@@ -107,10 +107,10 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             tilingSchemeIdSchema.setType("string");
 
             List<String> tilingSchemeEnum = new ArrayList<String>();
-            tilingSchemeEnum.add("default");
+            tilingSchemeEnum.add("WebMercatorQuad");
 
             tilingSchemeId.setSchema(new StringSchema()._enum(tilingSchemeEnum));
-            tilingSchemeId.example("default");
+            tilingSchemeId.example("WebMercatorQuad");
 
 
             Parameter zoomLevel = new Parameter();
@@ -245,7 +245,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             tilingSchemesArray.setType("object");
             tilingSchemesArray.setRequired(modelRequirements);
             tilingSchemesArray.addProperties("identifier", new Schema().type("string")
-                                                                       .example("default"));
+                                                                       .example("WebMercatorQuad"));
             tilingSchemesArray.addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
 
             Schema tilingSchemes = new Schema();
@@ -312,7 +312,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             tilingSchemeWellKnownEnum.add("http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible");
             tilingScheme.addProperties("type", new StringSchema()._enum(tileMatrixSetEnum));
             tilingScheme.addProperties("identifier", new Schema().type("string")
-                                                                 .example("default"));
+                                                                 .example("WebMercatorQuad"));
             tilingScheme.addProperties("title", new Schema().type("string")
                                                             .example("Google Maps Compatible for the World"));
             tilingScheme.addProperties("supportedCrs", new StringSchema()._enum(tilingSchemeSupportedCrsEnum)

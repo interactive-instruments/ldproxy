@@ -34,11 +34,11 @@ public class DefaultTilingScheme implements TilingScheme {
     private static final int TILE_EXTENT = 4096;
 
     /**
-     * @return for the default tiling scheme, a fixed id "default" is used
+     * @return for the default tiling scheme, a fixed id "WebMercatorQuad" is used
      */
     @Override
     public String getId() {
-        return "default";
+        return "WebMercatorQuad";
     };
 
 

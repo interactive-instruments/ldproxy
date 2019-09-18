@@ -49,7 +49,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
-            .subPathPattern("^/?(?:\\w+)/tiles/?(?:\\w+(?:/\\w+/\\w+/\\w+)?)?$")
+            .subPathPattern("^/?(?:\\w+)/tiles(?:/\\w+(?:/\\w+/\\w+/\\w+)?)?$")
             .addMethods(OgcApiContext.HttpMethods.GET)
             .build();
 
@@ -77,12 +77,12 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
-        if (subPath.matches("^/?(?:\\w+)/tiles/?\\w+?$"))
+        if (subPath.matches("^/?(?:\\w+)/tiles(?:/\\w+)?$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.APPLICATION_JSON_TYPE)
                             .build());
-        else if (subPath.matches("^/?(?:\\w+)/tiles/\\w+/\\w+/\\w+/\\w+?$"))
+        else if (subPath.matches("^/?(?:\\w+)/tiles/(?:\\w+/\\w+/\\w+/\\w+)$"))
             // TODO: from tile format extensions
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()

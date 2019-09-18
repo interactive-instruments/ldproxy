@@ -18,7 +18,7 @@ class VectorTilesRESTApiSpec extends Specification{
 
     static final String SUT_URL = System.getenv('SUT_URL')
     static final String SUT_PATH = "/rest/services/daraa"
-    static final String SUT_TILING_SCHEME = "default"
+    static final String SUT_TILING_SCHEME = "WebMercatorQuad"
     static final String SUT_COLLECTION = "aeronauticcrv"
 
     RESTClient restClient = new RESTClient(SUT_URL)
@@ -34,7 +34,7 @@ class VectorTilesRESTApiSpec extends Specification{
 
         and:
         response.responseData.containsKey("tilingSchemes")
-        response.responseData.get("tilingSchemes").get(0).get("identifier") == "default"
+        response.responseData.get("tilingSchemes").get(0).get("identifier") == "WebMercatorQuad"
     }
 
     def 'GET Request for a tiling Scheme Page from tilingSchemes'(){
@@ -53,7 +53,7 @@ class VectorTilesRESTApiSpec extends Specification{
         response.responseData.containsKey("title")
         response.responseData.containsKey("type")
         response.responseData.containsKey("wellKnownScaleSet")
-        response.responseData.get("identifier") == "default"
+        response.responseData.get("identifier") == "WebMercatorQuad"
     }
 
     def 'GET Request for the tiles Page'(){
@@ -66,7 +66,7 @@ class VectorTilesRESTApiSpec extends Specification{
 
         and:
         response.responseData.containsKey("tilingSchemes")
-        response.responseData.get("tilingSchemes").get(0).get("identifier") == "default"
+        response.responseData.get("tilingSchemes").get(0).get("identifier") == "WebMercatorQuad"
     }
 
     def 'GET Request for a tiling Scheme Page from tiles'(){
@@ -85,7 +85,7 @@ class VectorTilesRESTApiSpec extends Specification{
         response.responseData.containsKey("title")
         response.responseData.containsKey("type")
         response.responseData.containsKey("wellKnownScaleSet")
-        response.responseData.get("identifier") == "default"
+        response.responseData.get("identifier") == "WebMercatorQuad"
     }
 
     def 'GET Request for a empty tile of the dataset'(){
@@ -132,7 +132,7 @@ class VectorTilesRESTApiSpec extends Specification{
 
         and:
         response.responseData.containsKey("tilingSchemes")
-        response.responseData.get("tilingSchemes").get(0).get("identifier") == "default"
+        response.responseData.get("tilingSchemes").get(0).get("identifier") == "WebMercatorQuad"
     }
 
     def 'GET Request for a tile of a collection in json format'(){
