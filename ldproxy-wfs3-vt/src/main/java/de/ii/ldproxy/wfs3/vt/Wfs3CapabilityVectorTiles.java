@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
 import de.ii.ldproxy.wfs3.api.Wfs3CapabilityExtension;
@@ -32,6 +33,11 @@ public class Wfs3CapabilityVectorTiles implements Wfs3CapabilityExtension {
                 config.enabled(false);
                 break;
         }
+
+        config.zoomLevels(ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder()
+                .min(0)
+                .max(23)
+                .build()));
 
         return config.build();
     }
