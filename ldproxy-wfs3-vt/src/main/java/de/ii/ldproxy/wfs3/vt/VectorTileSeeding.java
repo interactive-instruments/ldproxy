@@ -415,7 +415,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * compute the min and max row/col for the zoom level with the given spatial extent.
      *
      * @param zoomLevel         the zoom level you want to compute the values for
-     * @param tilingScheme      the id of the tiling Scheme
+     * @param tileMatrixSet      the id of the tiling Scheme
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @param xMin              the x coordinate of a the lower left corner of a bounding box, including the whole dataset you want to use the seeding for
      * @param xMax              the x coordinate of a the lower upper right corner of a bounding box, including the whole dataset you want to use the seeding for
@@ -424,7 +424,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @return a map with minimum and maximum values for row and col
      * @throws CrsTransformationException
      */
-    public static Map<String, Integer> computeMinMax(int zoomLevel, TilingScheme tilingScheme,
+    public static Map<String, Integer> computeMinMax(int zoomLevel, TileMatrixSet tileMatrixSet,
                                                      CrsTransformation crsTransformation, double xMin, double xMax,
                                                      double yMin, double yMax,
                                                      EpsgCrs targetCrs) throws CrsTransformationException {
@@ -432,13 +432,13 @@ public class VectorTileSeeding implements OgcApiStartupTask {
         int col = 0;
         Map<String, Integer> minMax = new HashMap<>();
         double getXMax;
-        double getXMin = getBoundingBoxCornerValue(crsTransformation, tilingScheme, zoomLevel, col, row, true, false, targetCrs);
+        double getXMin = getBoundingBoxCornerValue(crsTransformation, tileMatrixSet, zoomLevel, col, row, true, false, targetCrs);
         double getYMin;
-        double getYMax = getBoundingBoxCornerValue(crsTransformation, tilingScheme, zoomLevel, col, row, false, false, targetCrs);
+        double getYMax = getBoundingBoxCornerValue(crsTransformation, tileMatrixSet, zoomLevel, col, row, false, false, targetCrs);
 
         while (getXMin < xMin) {
             col++;
-            getXMin = getBoundingBoxCornerValue(crsTransformation, tilingScheme, zoomLevel, col, row, true, true, targetCrs);
+            getXMin = getBoundingBoxCornerValue(crsTransformation, tileMatrixSet, zoomLevel, col, row, true, true, targetCrs);
         }
         //leads to a "buffer" around the desired area, so a a little bit more tiles are created than needed, col mustn't be -1
         if (col != 0)
@@ -448,7 +448,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
         getXMax = getXMin;
         while (getXMax < xMax) {
             col++;
-            getXMax = getBoundingBoxCornerValue(crsTransformation, tilingScheme, zoomLevel, col, row, true, false, targetCrs);
+            getXMax = getBoundingBoxCornerValue(crsTransformation, tileMatrixSet, zoomLevel, col, row, true, false, targetCrs);
         }
         //at the edge case of maximum col number for the zoom level the col is not valid anymore
         if (col == Math.pow(2, zoomLevel)) {
@@ -458,7 +458,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
         while (getYMax > yMax) {
             row++;
-            getYMax = getBoundingBoxCornerValue(crsTransformation, tilingScheme, zoomLevel, col, row, false, false, targetCrs);
+            getYMax = getBoundingBoxCornerValue(crsTransformation, tileMatrixSet, zoomLevel, col, row, false, false, targetCrs);
         }
         //leads to a "buffer" around the desired area, so a a little bit more tiles are created than needed, row mustn't be -1
 
@@ -469,7 +469,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
         getYMin = getYMax;
         while (getYMin > yMin) {
             row++;
-            getYMin = getBoundingBoxCornerValue(crsTransformation, tilingScheme, zoomLevel, col, row, false, true, targetCrs);
+            getYMin = getBoundingBoxCornerValue(crsTransformation, tileMatrixSet, zoomLevel, col, row, false, true, targetCrs);
         }
         //at the edge case of maximum row number for the zoom level the col is not valid anymore
         if (row == Math.pow(2, zoomLevel)) {
@@ -485,7 +485,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * Method to convert a specific tile into a bounding box in a desired CRS
      *
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
-     * @param tilingScheme      the id of the tiling Scheme of the tile you want to convert
+     * @param tileMatrixSet      the id of the tiling Scheme of the tile you want to convert
      * @param zoomLevel         the zoom level of the tile you want to convert
      * @param col               the zoom col of the tile you want to convert
      * @param row               the zoom row of the tile you want to convert
@@ -495,30 +495,30 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @return a x or y value of a bounding box corner in the desired CRS
      * @throws CrsTransformationException
      */
-    public static double getBoundingBoxCornerValue(CrsTransformation crsTransformation, TilingScheme tilingScheme,
+    public static double getBoundingBoxCornerValue(CrsTransformation crsTransformation, TileMatrixSet tileMatrixSet,
                                                    int zoomLevel, int col, int row, boolean x, boolean min,
                                                    EpsgCrs targetCrs) throws CrsTransformationException {
         double cornerValue = 0;
 
-        if (crsTransformation == null || targetCrs.equals(tilingScheme.getBoundingBox(zoomLevel, col, row)
+        if (crsTransformation == null || targetCrs.equals(tileMatrixSet.getBoundingBox(zoomLevel, col, row)
                                                                       .getEpsgCrs())) {
             if (x && min)
-                cornerValue = tilingScheme.getBoundingBox(zoomLevel, col, row)
+                cornerValue = tileMatrixSet.getBoundingBox(zoomLevel, col, row)
                                           .getXmin();
             if (x && !min)
-                cornerValue = tilingScheme.getBoundingBox(zoomLevel, col, row)
+                cornerValue = tileMatrixSet.getBoundingBox(zoomLevel, col, row)
                                           .getXmax();
             if (!x && min)
-                cornerValue = tilingScheme.getBoundingBox(zoomLevel, col, row)
+                cornerValue = tileMatrixSet.getBoundingBox(zoomLevel, col, row)
                                           .getYmin();
             if (!x && !min)
-                cornerValue = tilingScheme.getBoundingBox(zoomLevel, col, row)
+                cornerValue = tileMatrixSet.getBoundingBox(zoomLevel, col, row)
                                           .getYmax();
 
         } else {
-            CrsTransformer crsTransformer = crsTransformation.getTransformer(tilingScheme.getBoundingBox(zoomLevel, col, row)
+            CrsTransformer crsTransformer = crsTransformation.getTransformer(tileMatrixSet.getBoundingBox(zoomLevel, col, row)
                                                                                          .getEpsgCrs(), targetCrs);
-            BoundingBox bbox = tilingScheme.getBoundingBox(zoomLevel, col, row);
+            BoundingBox bbox = tileMatrixSet.getBoundingBox(zoomLevel, col, row);
             BoundingBox boundingBox = crsTransformer.transformBoundingBox(bbox);
 
             if (x && min)

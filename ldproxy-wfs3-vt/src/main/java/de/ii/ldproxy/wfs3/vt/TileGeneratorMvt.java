@@ -54,14 +54,14 @@ public class TileGeneratorMvt {
                                    CrsTransformation crsTransformation, VectorTile tile) {
 
         // Prepare MVT output
-        TilingScheme tilingScheme = tile.getTilingScheme();
+        TileMatrixSet tileMatrixSet = tile.getTileMatrixSet();
         OgcApiDatasetData serviceData = tile.getApiData();
         int level = tile.getLevel();
         int row = tile.getRow();
         int col = tile.getCol();
         //checkZoomLevels(level, service,collectionId,tilingScheme.getId());
 
-        VectorTileEncoder encoder = new VectorTileEncoder(tilingScheme.getTileExtent());
+        VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         AffineTransformation transform;
         try {
             transform = tile.createTransformLonLatToTile(crsTransformation);
@@ -227,10 +227,10 @@ public class TileGeneratorMvt {
      * generates an empty MVT.
      *
      * @param tileFileMvt  the file object of the tile in the cache
-     * @param tilingScheme the tilingScheme the MVT should have
+     * @param tileMatrixSet the tile matrix set the MVT should have
      */
-    public static void generateEmptyMVT(File tileFileMvt, TilingScheme tilingScheme) {
-        VectorTileEncoder encoder = new VectorTileEncoder(tilingScheme.getTileExtent());
+    public static void generateEmptyMVT(File tileFileMvt, TileMatrixSet tileMatrixSet) {
+        VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         byte[] encoded = encoder.encode();
         try {
             Files.write(encoded, tileFileMvt);
