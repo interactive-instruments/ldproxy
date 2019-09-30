@@ -174,4 +174,17 @@ class VectorTilesRESTApiSpec extends Specification{
         then:
         status == 200
     }
+
+    def 'Vector tiles conformance class'() {
+        when: "request to the conformance page"
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
+            uri.path = SUT_PATH + '/conformance'
+            headers.Accept = 'application/json'
+        })
+
+        then: "check if vector tiles conformance class is there"
+        response.status == 200
+        response.responseData.containsKey("conformsTo")
+        response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/core' }
+    }
 }

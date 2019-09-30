@@ -15,7 +15,7 @@ import de.ii.xtraplatform.crs.api.*;
  *
  * @author portele
  */
-public class DefaultTilingScheme implements TilingScheme {
+public class DefaultTileMatrixSet implements TilingScheme {
 
     /**
      * Web Mercator is the coordinate reference system of the tiling scheme, EPSG code is 3857

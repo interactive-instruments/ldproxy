@@ -119,7 +119,8 @@ public class TileGeneratorJson {
                                                 .type(collectionId)
                                                 .filter(filter)
                                                 .maxAllowableOffset(maxAllowableOffsetNative)
-                                                .fields(propertiesList);
+                                                .fields(propertiesList)
+                                                .crs(OgcApiDatasetData.DEFAULT_CRS);
 
 
             if (filters != null && filterableFields != null) {

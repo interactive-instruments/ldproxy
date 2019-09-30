@@ -21,7 +21,7 @@ import java.util.Set;
 public class VectorTilesCache {
 
     private static final String TILES_DIR_NAME = "tiles";
-    private static final String TILING_SCHEMES_DIR_NAME = "tilingSchemes";
+    private static final String TILE_MATRIX_SETS_DIR_NAME = "tileMatrixSets";
     private static final String TMP_DIR_NAME = "__tmp__";
     private static final long TEN_MINUTES = 10 * 60 * 1000;
     private File dataDirectory;
@@ -48,37 +48,37 @@ public class VectorTilesCache {
     }
 
     /**
-     * return and if necessary create the directory for the tiling schemes cache
+     * return and if necessary create the directory for the tile matrix sets cache
      * @return the file object of the directory
      */
-    private File getTilingSchemesDirectory() {
-        File tilingSchemesDirectory = new File(dataDirectory, TILING_SCHEMES_DIR_NAME);
-        if (!tilingSchemesDirectory.exists()) {
-            tilingSchemesDirectory.mkdirs();
+    private File getTileMatrixSetsDirectory() {
+        File tileMatrixSetsDirectory = new File(dataDirectory, TILE_MATRIX_SETS_DIR_NAME);
+        if (!tileMatrixSetsDirectory.exists()) {
+            tileMatrixSetsDirectory.mkdirs();
         }
-        return tilingSchemesDirectory;
+        return tileMatrixSetsDirectory;
     }
 
     /**
-     * return tiling scheme by id
-     * @return the file object of the tiling scheme
+     * Return matrix set by id
+     * @return the file object of the tile matrix set
      */
-    File getTilingScheme(String tilingSchemeId) {
-        File tilingSchemesDirectory = getTilingSchemesDirectory();
-        File file = new File(tilingSchemesDirectory, tilingSchemeId + ".json");
+    File getTileMatrixSet(String matrixSetId) {
+        File tileMatrixSetsDirectory = getTileMatrixSetsDirectory();
+        File file = new File(tileMatrixSetsDirectory, matrixSetId + ".json");
         if (!file.exists())
             throw new NotFoundException();
         return file;
     }
 
     /**
-     * fetch set of tiling scheme identifiers supported by the service
-     * @return the set of tiling scheme identifiers
+     * Fetch set of matrix set identifiers supported by the service
+     * @return the set of matrix set identifiers
      */
-    Set<String> getTilingSchemeIds() {
-        Set<String> schemes = new HashSet<>();
-        File tilingSchemesDirectory = getTilingSchemesDirectory();
-        File[] files = tilingSchemesDirectory.listFiles(new FileFilter() {
+    Set<String> getTileMatrixSetIds() {
+        Set<String> matrixSets = new HashSet<>();
+        File tileMatrixSetsDirectory = getTileMatrixSetsDirectory();
+        File[] files = tileMatrixSetsDirectory.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
                 return file.getName().toLowerCase().endsWith(".json");
@@ -89,10 +89,10 @@ public class VectorTilesCache {
                 // remove extension ".json"
                 String filename = file.getName();
                 filename = filename.substring(0, filename.lastIndexOf("."));
-                schemes.add(filename);
+                matrixSets.add(filename);
             }
         }
-        return schemes;
+        return matrixSets;
     }
 
     /**

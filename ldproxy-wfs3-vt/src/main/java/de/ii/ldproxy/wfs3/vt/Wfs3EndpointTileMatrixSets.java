@@ -45,7 +45,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointTilingSchemes implements OgcApiEndpointExtension {
+public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension {
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("tilingSchemes")
@@ -56,7 +56,7 @@ public class Wfs3EndpointTilingSchemes implements OgcApiEndpointExtension {
     private final VectorTilesCache cache;
     private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
 
-    Wfs3EndpointTilingSchemes(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
+    Wfs3EndpointTileMatrixSets(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
         cache = new VectorTilesCache(dataDirectory);
 
@@ -85,7 +85,7 @@ public class Wfs3EndpointTilingSchemes implements OgcApiEndpointExtension {
     /**
      * retrieve all available tiling schemes
      *
-     * @return all tiling schemes in a json array
+     * @return all tile matrix sets in a json array
      */
     @Path("/")
     @GET
@@ -97,34 +97,34 @@ public class Wfs3EndpointTilingSchemes implements OgcApiEndpointExtension {
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
         List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
 
-        for (Object tilingSchemeId : cache.getTilingSchemeIds()
+        for (Object tileMatrixSetId : cache.getTileMatrixSetIds()
                                           .toArray()) {
             Map<String, Object> wfs3LinksMap = new HashMap<>();
-            wfs3LinksMap.put("identifier", tilingSchemeId);
-            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTilingSchemesLinks(wfs3Request.getUriCustomizer(), tilingSchemeId.toString()));
+            wfs3LinksMap.put("identifier", tileMatrixSetId);
+            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTilingSchemesLinks(wfs3Request.getUriCustomizer(), tileMatrixSetId.toString()));
             wfs3LinksList.add(wfs3LinksMap);
         }
 
-        return Response.ok(ImmutableMap.of("tilingSchemes", wfs3LinksList))
+        return Response.ok(ImmutableMap.of("tileMatrixSetLinks", wfs3LinksList))
                        .build();
     }
 
     /**
-     * retrieve one specific tiling scheme by id
+     * retrieve one specific tile matrix set by id
      *
-     * @param tilingSchemeId the local identifier of a specific tiling scheme
+     * @param tileMatrixSetId   the local identifier of a specific tile matrix set
      * @return the tiling scheme in a json file
      */
-    @Path("/{tilingSchemeId}")
+    @Path("/{tileMatrixSetId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingScheme(@PathParam("tilingSchemeId") String tilingSchemeId,
+    public Response getTilingScheme(@PathParam("tileMatrixSetId") String tileMatrixSetId,
                                     @Context OgcApiDataset service) {
 
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
 
 
-        File file = cache.getTilingScheme(tilingSchemeId);
+        File file = cache.getTileMatrixSet(tileMatrixSetId);
 
         return Response.ok(file, MediaType.APPLICATION_JSON)
                        .build();

@@ -118,11 +118,11 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension {
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
         List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
 
-        for (Object tilingSchemeId : cache.getTilingSchemeIds()
+        for (Object tileMatrixSetId : cache.getTileMatrixSetIds()
                                           .toArray()) {
             Map<String, Object> wfs3LinksMap = new HashMap<>();
-            wfs3LinksMap.put("identifier", tilingSchemeId);
-            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTilesLinks(wfs3Request.getUriCustomizer(), tilingSchemeId.toString()));
+            wfs3LinksMap.put("identifier", tileMatrixSetId);
+            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTilesLinks(wfs3Request.getUriCustomizer(), tileMatrixSetId.toString()));
             wfs3LinksList.add(wfs3LinksMap);
         }
 
@@ -144,10 +144,10 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension {
                                     @PathParam("tilingSchemeId") String tilingSchemeId, @Context OgcApiDataset service,
                                     @Context OgcApiRequestContext wfs3Request) throws IOException {
         checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
-        File file = cache.getTilingScheme(tilingSchemeId);
+        File file = cache.getTileMatrixSet(tilingSchemeId);
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-        List<OgcApiLink> ogcApiLink = vectorTilesLinkGenerator.generateTilingSchemeLinks(wfs3Request.getUriCustomizer(), tilingSchemeId, true, false);
+        List<OgcApiLink> ogcApiLink = vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), tilingSchemeId, true, false);
 
 
         /*read the json file to add links*/
