@@ -240,7 +240,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension {
             doNotCache = true;
 
 
-        VectorTile tile = new VectorTile(null, tilingSchemeId, level, row, col, service.getData(), doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+        VectorTile tile = new VectorTile(null, tilingSchemeId, level, row, col, service, doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
         // generate tile
         File tileFileMvt = tile.getFile(cache, "pbf");
 
@@ -253,7 +253,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension {
             boolean invalid = false;
 
             for (String collectionId : collectionIds) {
-                VectorTile layerTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, service.getData(), doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                VectorTile layerTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, service, doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
                 File tileFileJson = layerTile.getFile(cache, "json");
                 if (tileFileJson.exists()) {
                     if (TileGeneratorJson.deleteJSON(tileFileJson)) {
@@ -430,14 +430,14 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension {
 
                 Map<String, File> layerCollection = new HashMap<String, File>();
 
-                VectorTile tileCollection = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                VectorTile tileCollection = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
 
                 File tileFileMvtCollection = tileCollection.getFile(cache, "pbf");
                 if (!tileFileMvtCollection.exists() || invalid) {
                     if (invalid)
                         tileFileMvtCollection.delete();
 
-                    VectorTile layerTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService.getData(), doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                    VectorTile layerTile = new VectorTile(collectionId, tilingSchemeId, level, row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
 
                     File tileFileJson = layerTile.getFile(cache, "json");
                     if (!tileFileJson.exists()) {

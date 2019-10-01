@@ -93,7 +93,7 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
             }
         }
 
-        ogcApiStartupTasks.forEach(ogcApiStartupTask -> startupTaskExecutor.submit(ogcApiStartupTask.getTask(getData(), featureProvider)));
+        ogcApiStartupTasks.forEach(ogcApiStartupTask -> startupTaskExecutor.submit(ogcApiStartupTask.getTask(this, featureProvider)));
 
     }
 

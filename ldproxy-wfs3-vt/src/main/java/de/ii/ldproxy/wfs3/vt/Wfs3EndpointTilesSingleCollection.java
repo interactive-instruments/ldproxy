@@ -244,12 +244,12 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         }
 
 
-        VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, service.getData(), doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+        VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, service, doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
 
         File tileFileMvt = tile.getFile(cache, "pbf");
         if (!tileFileMvt.exists()) {
 
-            VectorTile jsonTile = new VectorTile(collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, service.getData(), doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+            VectorTile jsonTile = new VectorTile(collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, service, doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
             File tileFileJson = jsonTile.getFile(cache, "json");
             if (!tileFileJson.exists()) {
                 OgcApiMediaType geojsonMediaType;
@@ -271,7 +271,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
             generateTileCollection(collectionId, tileFileJson, tileFileMvt, tile, requestedProperties, crsTransformation);
         } else {
-            VectorTile jsonTile = new VectorTile(collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, service.getData(), doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+            VectorTile jsonTile = new VectorTile(collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, service, doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
             File tileFileJson = jsonTile.getFile(cache, "json");
 
             if (TileGeneratorJson.deleteJSON(tileFileJson)) {
@@ -314,11 +314,11 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
     public Response getTileJson(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId,
                                 @PathParam("tileMatrixSetId") String tileMatrixSetId, @PathParam("tileMatrix") String tileMatrix,
                                 @PathParam("tileRow") String tileRow, @PathParam("tileCol") String tileCol,
-                                @Context OgcApiDataset service,
-                                @Context UriInfo uriInfo,
+                                @Context OgcApiDataset service, @Context UriInfo uriInfo,
                                 @Context OgcApiRequestContext wfs3Request) throws CrsTransformationException, FileNotFoundException {
 
-        Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(Wfs3OutputFormatGeoJson.MEDIA_TYPE).orElseThrow(NotAcceptableException::new);
+        Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(Wfs3OutputFormatGeoJson.MEDIA_TYPE)
+                                                                    .orElseThrow(NotAcceptableException::new);
 
         checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
         VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/geo+json", false);
@@ -336,7 +336,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         LOGGER.debug("GET TILE GeoJSON {} {} {} {} {} {}", service.getId(), collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol);
 
 
-        VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, service.getData(), doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+        VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, service, doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
 
         File tileFileJson = tile.getFile(cache, "json");
 

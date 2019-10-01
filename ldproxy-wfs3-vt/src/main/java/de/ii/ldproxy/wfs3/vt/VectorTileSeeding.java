@@ -70,14 +70,15 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     /**
      * The runnable Task which starts the seeding.
      *
-     * @param apiData     the service data of the Wfs3 Service
-     * @param featureProvider the featureProvider
+     * @param service               the Wfs3 Service
+     * @param featureProvider   the featureProvider
      * @return the runnable process
      */
     @Override
-    public Runnable getTask(OgcApiDatasetData apiData, TransformingFeatureProvider featureProvider) {
+    public Runnable getTask(OgcApiDataset service, TransformingFeatureProvider featureProvider) {
 
         Optional<Wfs3FeatureFormatExtension> wfs3OutputFormatGeoJson = getOutputFormatForType(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
+        OgcApiDatasetData apiData = service.getData();
 
         if (!wfs3OutputFormatGeoJson.isPresent()) {
             return () -> {
@@ -119,7 +120,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
 
                 if (tilesDatasetEnabled && seedingDatasetEnabled) {
-                    seedingDataset(collectionIdsDataset, apiData, crsTransformation, cache, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson.get());
+                    seedingDataset(collectionIdsDataset, service, crsTransformation, cache, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson.get());
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -158,14 +159,14 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * for every tiling Scheme in the specified seeding range
      *
      * @param collectionIdsDataset all ids of feature Types which have the tiles support and seeding enabled
-     * @param apiData              the Features API data
+     * @param service              the Wfs3 service
      * @param crsTransformation    the coordinate reference system transformation object to transform coordinates
      * @param cache                the vector tile cache
      * @param featureProvider      the feature Provider
      * @param coreServerConfig     the core server config with the external url
      * @throws FileNotFoundException
      */
-    private void seedingDataset(Set<String> collectionIdsDataset, OgcApiDatasetData apiData,
+    private void seedingDataset(Set<String> collectionIdsDataset, OgcApiDataset service,
                                 CrsTransformation crsTransformation, VectorTilesCache cache,
                                 TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
                                 Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
@@ -179,7 +180,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
         List<Integer> minZoomList = new ArrayList<>();
         List<Integer> maxZoomList = new ArrayList<>();
         Set<String> tilingSchemeIdsCollection = null;
-        OgcApiDatasetData datasetData = apiData;
+        OgcApiDatasetData datasetData = service.getData();
         Map<String, Map<String, TilesConfiguration.MinMax>> seedingMap = vectorTileMapGenerator.getMinMaxMap(datasetData, true);
         for (String collectionId : collectionIdsDataset) {
 
@@ -263,7 +264,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                 for (int y = colMin; y <= colMax; y++) {
                     for (String tilingSchemeId : tilingSchemeIdsCollection) {
 
-                        VectorTile tile = new VectorTile(null, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), datasetData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+                        VectorTile tile = new VectorTile(null, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
 
                         // generate tile
                         File tileFileMvt = tile.getFile(cache, "pbf");
@@ -283,7 +284,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                     int collectionMin = seeding.get(tilingSchemeId)
                                                                .getMin();
                                     if (collectionMin <= z && z <= collectionMax) {
-                                        File tileFileMvtCollection = generateMVT(datasetData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
+                                        File tileFileMvtCollection = generateMVT(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
                                         layers.put(collectionId, tileFileMvtCollection);
                                     }
                                 }
@@ -307,7 +308,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                     int collectionMin = seeding.get(tilingSchemeId)
                                                                .getMin();
                                     if (collectionMin <= z && z <= collectionMax) {
-                                        generateJSON(datasetData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
+                                        generateJSON(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
                                     }
                                 }
                             }
@@ -321,7 +322,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     /**
      * generates the MVT for the specified parameters
      *
-     * @param datasetData       the service data of the Wfs3 Service
+     * @param service           the service data of the Wfs3 Service
      * @param collectionId      the id of the collection of the tile
      * @param tilingSchemeId    the id of the tiling scheme of the tile
      * @param z                 the zoom level of the tile
@@ -333,17 +334,17 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @param coreServerConfig  the core server config with the external url
      * @return the Json File. If the mvt already exists, return null
      */
-    private File generateMVT(OgcApiDatasetData datasetData, String collectionId, String tilingSchemeId, int z, int x,
+    private File generateMVT(OgcApiDataset service, String collectionId, String tilingSchemeId, int z, int x,
                              int y, VectorTilesCache cache, CrsTransformation crsTransformation,
                              TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
                              Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) {
 
         try {
             LOGGER.debug("seeding - ZoomLevel: " + Integer.toString(z) + " row: " + Integer.toString(x) + " col: " + Integer.toString(y));
-            VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), datasetData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+            VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
             File tileFileMvt = tile.getFile(cache, "pbf");
             if (!tileFileMvt.exists()) {
-                File tileFileJson = generateJSON(datasetData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
+                File tileFileJson = generateJSON(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
                 Map<String, File> layers = new HashMap<>();
                 layers.put(collectionId, tileFileJson);
                 boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile);
@@ -363,7 +364,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     /**
      * generates the JSON Tile for the specified parameters
      *
-     * @param datasetData       the service data of the Wfs3 Service
+     * @param service           the service data of the Wfs3 Service
      * @param collectionId      the id of the collection of the tile
      * @param tilingSchemeId    the id of the tiling scheme of the tile
      * @param z                 the zoom level of the tile
@@ -375,18 +376,18 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @param coreServerConfig  the core server config with the external url
      * @return the json File, if it already exists return null
      */
-    private File generateJSON(OgcApiDatasetData datasetData, String collectionId, String tilingSchemeId, int z, int x,
+    private File generateJSON(OgcApiDataset service, String collectionId, String tilingSchemeId, int z, int x,
                               int y, VectorTilesCache cache, CrsTransformation crsTransformation,
                               TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
                               Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) {
 
         try {
-            VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), datasetData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+            VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
             File tileFileJson = tile.getFile(cache, "json");
 
             if (!tileFileJson.exists()) {
                 String prefix = coreServerConfig.getExternalUrl();
-                String uriString = prefix + "/" + datasetData.getId() + "/" + "collections" + "/"
+                String uriString = prefix + "/" + service.getData().getId() + "/" + "collections" + "/"
                         + collectionId + "/tiles/" + tilingSchemeId + "/" + z + "/" + y + "/" + x;
 
                 URI uri = null;
