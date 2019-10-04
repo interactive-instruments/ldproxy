@@ -9,11 +9,13 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.List;
 
-public interface OgcApiLandingPageExtension extends OgcApiExtension {
+public interface OgcApiLandingPageExtension extends OgcApiContentExtension {
 
-    // TODO: split into LandingPage and Dataset
+    ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
+                                         OgcApiDatasetData apiData,
+                                         URICustomizer uriCustomizer,
+                                         OgcApiMediaType mediaType,
+                                         List<OgcApiMediaType> alternateMediaTypes);
 
-    ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData apiData,
-                                     URICustomizer uriCustomizer, OgcApiMediaType mediaType,
-                                     List<OgcApiMediaType> alternateMediaTypes);
+    default String getResourceName() { return "LandingPage"; };
 }

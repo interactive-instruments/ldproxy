@@ -8,11 +8,7 @@
 package de.ii.ldproxy.wfs3.vt;
 
 
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionExtension;
+import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -41,8 +37,10 @@ public class OgcApiCollectionVectorTiles implements OgcApiCollectionExtension {
     @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+                                                     OgcApiDatasetData apiData,
                                                      URICustomizer uriCustomizer, boolean isNested,
-                                                     OgcApiDatasetData apiData) {
+                                                     OgcApiMediaType mediaType,
+                                                     List<OgcApiMediaType> alternateMediaTypes) {
         // The hrefs are URI templates and not URIs, so the templates should not be percent encoded!
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 

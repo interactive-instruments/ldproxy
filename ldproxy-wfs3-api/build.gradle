@@ -10,4 +10,6 @@ dependencies {
     api group: 'de.interactive_instruments', name: 'xtraplatform-crs-api'
     api group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
     api group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
 }

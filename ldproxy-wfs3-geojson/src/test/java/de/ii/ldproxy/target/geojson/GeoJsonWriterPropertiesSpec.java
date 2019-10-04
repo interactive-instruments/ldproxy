@@ -289,7 +289,7 @@ public class GeoJsonWriterPropertiesSpec {
 
         return ImmutableFeatureTransformationContextGeoJson.builder()
                                                            .crsTransformer(Optional.ofNullable(crsTransformer))
-                                                           .serviceData(new ImmutableOgcApiDatasetData.Builder()
+                                                           .apiData(new ImmutableOgcApiDatasetData.Builder()
                                                                                                 .id("s")
                                                                                                 .serviceType("WFS3")
                                                                                                 .featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
@@ -304,11 +304,11 @@ public class GeoJsonWriterPropertiesSpec {
                                                                                                                                                 .nativeCrs(new EpsgCrs())
                                                                                                                                                 .build())
                                                                                                 .build())
-                                                           .collectionName("xyz")
+                                                           .collectionId("xyz")
                                                            .outputStream(outputStream)
                                                            .links(ImmutableList.of())
                                                            .isFeatureCollection(isCollection)
-                                                           .wfs3Request(new OgcApiRequestContext() {
+                                                           .ogcApiRequest(new OgcApiRequestContext() {
                                                                @Override
                                                                public OgcApiMediaType getMediaType() {
                                                                    return null;

@@ -521,7 +521,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
 
 
                 if (mapping.getCodelist() != null) {
-                    //TODO: read into map in Wfs3OutputFormatHtml with @Bind(aggregate=true)
+                    //TODO: read into map in OgcApiFeaturesOutputFormatHtml with @Bind(aggregate=true)
                     //  private void bindHello(Hello h) { m_hellos.add(h); }
 
                     property.value = Arrays.stream(codelists)

@@ -46,6 +46,10 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
         @Value.Default
         default boolean getSpatialComputed(){return false;}
 
+        // TODO support computed temporal extent
+        // TODO do not use EPOCH for open start
+        // TODO do not use now for open end
+
     }
 
     @Value.Immutable

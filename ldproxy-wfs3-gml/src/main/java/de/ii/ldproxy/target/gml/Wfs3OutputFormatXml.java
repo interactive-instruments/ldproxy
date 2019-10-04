@@ -8,13 +8,10 @@
 package de.ii.ldproxy.target.gml;
 
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.wfs3.api.Wfs3CollectionFormatExtension;
 import org.apache.felix.ipojo.annotations.*;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -22,7 +19,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OutputFormatXml implements Wfs3CollectionFormatExtension, CommonFormatExtension {
+public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFormatExtension {
 
     private static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(new MediaType("application", "xml"))
@@ -57,25 +54,23 @@ public class Wfs3OutputFormatXml implements Wfs3CollectionFormatExtension, Commo
     }
 
     @Override
-    public Response getLandingPageResponse(Dataset dataset, OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return response(new LandingPageXml(dataset.getLinks()));
+    public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiDataset api, OgcApiRequestContext requestContext) {
+        return response(new LandingPageXml(apiLandingPage.getLinks()));
     }
 
     @Override
-    public Response getConformanceResponse(List<ConformanceClass> ocgApiConformanceClasses,
+    public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
                                            OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return response(new Wfs3ConformanceClassesXml(new ConformanceClasses(ocgApiConformanceClasses.stream()
-                                                                                                   .map(ConformanceClass::getConformanceClass)
-                                                                                                   .collect(Collectors.toList()))));
+        return response(new Wfs3ConformanceClassesXml(conformanceDeclaration));
     }
 
     @Override
-    public Response getCollectionsResponse(Dataset dataset, OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return response(new Wfs3CollectionsXml(dataset));
+    public Response getCollectionsResponse(Collections collections, OgcApiDataset api, OgcApiRequestContext requestContext) {
+        return response(new Wfs3CollectionsXml(collections));
     }
 
     @Override
-    public Response getCollectionResponse(OgcApiCollection ogcApiCollection, String collectionName,
+    public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
                                           OgcApiDataset api, OgcApiRequestContext requestContext) {
         return response(new Wfs3CollectionXml(ogcApiCollection));
     }

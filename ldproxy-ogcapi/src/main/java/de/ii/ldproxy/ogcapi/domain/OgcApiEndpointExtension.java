@@ -20,10 +20,10 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
 
     OgcApiContext getApiContext();
 
-    ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath);
+    ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData apiData, String subPath);
 
-    default void checkAuthorization(OgcApiDatasetData datasetData, Optional<User> optionalUser) {
-        if (datasetData.getSecured() && !optionalUser.isPresent()) {
+    default void checkAuthorization(OgcApiDatasetData apiData, Optional<User> optionalUser) {
+        if (apiData.getSecured() && !optionalUser.isPresent()) {
             throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
             //throw new ClientErrorException(Response.Status.UNAUTHORIZED);
         }

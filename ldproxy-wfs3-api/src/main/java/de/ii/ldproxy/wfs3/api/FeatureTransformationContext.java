@@ -35,9 +35,9 @@ public interface FeatureTransformationContext {
         GEOMETRY_END
     }
 
-    OgcApiDatasetData getServiceData();
+    OgcApiDatasetData getApiData();
 
-    String getCollectionName();
+    String getCollectionId();
 
     OutputStream getOutputStream();
 
@@ -67,7 +67,7 @@ public interface FeatureTransformationContext {
         return ImmutableList.of("*");
     }
 
-    OgcApiRequestContext getWfs3Request();
+    OgcApiRequestContext getOgcApiRequest();
 
     int getLimit();
 
@@ -84,9 +84,9 @@ public interface FeatureTransformationContext {
     // to ValueTransformerContext
     @Value.Derived
     default String getServiceUrl() {
-        return getWfs3Request().getUriCustomizer()
+        return getOgcApiRequest().getUriCustomizer()
                                .copy()
-                               .cutPathAfterSegments(getServiceData().getId())
+                               .cutPathAfterSegments(getApiData().getId())
                                .clearParameters()
                                .toString();
     }

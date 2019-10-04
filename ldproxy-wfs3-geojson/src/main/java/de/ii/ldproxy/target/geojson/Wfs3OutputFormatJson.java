@@ -8,23 +8,20 @@
 package de.ii.ldproxy.target.geojson;
 
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.wfs3.api.Wfs3CollectionFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author zahnen
  */
 @Component
-@Provides(specifications = {Wfs3OutputFormatJson.class, Wfs3CollectionFormatExtension.class, CommonFormatExtension.class, FormatExtension.class, OgcApiExtension.class})
+@Provides(specifications = {Wfs3OutputFormatJson.class, CollectionsFormatExtension.class, CommonFormatExtension.class, FormatExtension.class, OgcApiExtension.class})
 @Instantiate
-public class Wfs3OutputFormatJson implements Wfs3CollectionFormatExtension, CommonFormatExtension {
+public class Wfs3OutputFormatJson implements CollectionsFormatExtension, CommonFormatExtension {
 
     public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(new MediaType("application", "json"))
@@ -48,26 +45,25 @@ public class Wfs3OutputFormatJson implements Wfs3CollectionFormatExtension, Comm
     }
 
     @Override
-    public Response getLandingPageResponse(Dataset dataset, OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return response(dataset); // TODO: update
+    public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiDataset api, OgcApiRequestContext requestContext) {
+        return response(apiLandingPage);
     }
 
     @Override
-    public Response getConformanceResponse(List<ConformanceClass> ocgApiConformanceClasses,
+    public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
                                            OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return response(new ConformanceClasses(ocgApiConformanceClasses.stream()
-                                                                       .map(ConformanceClass::getConformanceClass)
-                                                                       .collect(Collectors.toList())));
+        return response(conformanceDeclaration);
     }
 
     @Override
-    public Response getCollectionsResponse(Dataset dataset, OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return response(dataset); // TODO: update
+    public Response getCollectionsResponse(Collections collections, OgcApiDataset api, OgcApiRequestContext requestContext) {
+        return response(collections);
     }
 
     @Override
-    public Response getCollectionResponse(OgcApiCollection ogcApiCollection, String collectionName,
-                                          OgcApiDataset api, OgcApiRequestContext requestContext) {
+    public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
+                                          OgcApiDataset api,
+                                          OgcApiRequestContext requestContext) {
         return response(ogcApiCollection);
     }
 

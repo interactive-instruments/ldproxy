@@ -35,7 +35,7 @@ public class StylesLinkGenerator {
                                         .toString())
                         .rel("styles")
                         .type("application/json")
-                        .description("the list of available styles")
+                        .description("Styles to render data")
                         .build())
                 .build();
     }

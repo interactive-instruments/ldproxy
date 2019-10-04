@@ -15,12 +15,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -50,9 +45,9 @@ public class FeatureCollectionView extends DatasetView {
     public boolean isCollection;
     public boolean spatialSearch;
 
-    public FeatureCollectionView(String template, URI uri, String name, String title, String urlPrefix,
-                                 HtmlConfig htmlConfig) {
-        super(template, uri, name, title, urlPrefix, htmlConfig);
+    public FeatureCollectionView(String template, URI uri, String name, String title, String description,
+                                 String urlPrefix, HtmlConfig htmlConfig) {
+        super(template, uri, name, title, description, urlPrefix, htmlConfig);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
     }
@@ -82,9 +77,8 @@ public class FeatureCollectionView extends DatasetView {
                                                    .stream()
                                                    .filter(kvp -> !kvp.getName()
                                                                       .equals("page") && !kvp.getName()
-                                                                                             .equals("startIndex") && !kvp.getName()
-                                                                                                                          .equals("offset") && !kvp.getName()
-                                                                                                                                                   .equals("limit"))
+                                                                                             .equals("offset") && !kvp.getName()
+                                                                                                                          .equals("limit"))
                                                    .collect(Collectors.toList());
 
         return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';

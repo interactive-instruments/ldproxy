@@ -2,7 +2,7 @@
     <ul class="pagination mb-4">
         {{#pagination}}
             {{#url}}
-                <li class="page-item"><a class="page-link" href="{{path}}{{#queryWithout}}page,startindex,offset,limit{{/queryWithout}}{{.}}">{{label}}</a></li>
+                <li class="page-item"><a class="page-link" href="{{path}}{{#queryWithout}}page,offset,limit{{/queryWithout}}{{.}}">{{label}}</a></li>
             {{/url}}
             {{^url}}
                 {{#active}}

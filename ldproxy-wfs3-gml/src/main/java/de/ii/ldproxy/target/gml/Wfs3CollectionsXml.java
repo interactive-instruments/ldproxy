@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.target.gml;
 
-import de.ii.ldproxy.ogcapi.domain.Dataset;
+import de.ii.ldproxy.ogcapi.domain.Collections;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
 
@@ -24,13 +24,13 @@ import java.util.stream.Collectors;
 @XmlType(propOrder = {"links", "crs", "collections"})
 public class Wfs3CollectionsXml implements Wfs3Xml {
 
-    private final Dataset wfs3Collections;
+    private final Collections wfs3Collections;
 
     public Wfs3CollectionsXml() {
         this.wfs3Collections = null;
     }
 
-    public Wfs3CollectionsXml(Dataset wfs3Collections) {
+    public Wfs3CollectionsXml(Collections wfs3Collections) {
         this.wfs3Collections = wfs3Collections;
     }
 

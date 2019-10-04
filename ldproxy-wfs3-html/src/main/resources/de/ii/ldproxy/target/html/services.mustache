@@ -2,7 +2,7 @@
 
 <div itemscope itemtype="http://schema.org/DataCatalog">
     <h1 itemprop="name">{{title}}</h1>
-    <p itemprop="description">{{description}}</p>
+    <p itemprop="description">{{{description}}}</p>
     <p itemprop="url" class="d-none">{{canonicalUrl}}</p>
     <br/>
     <br/>
@@ -11,7 +11,7 @@
     <ul class="list-unstyled space-after">
         {{#data}}
         {{#uri}}
-        <li itemprop="dataset" itemscope itemtype="http://schema.org/Dataset">
+        <li itemprop="collections" itemscope itemtype="http://schema.org/Dataset">
             <h2>
                 <a itemprop="url" href="{{path}}{{id}}">
                     <span itemprop="name">{{label}}</span>

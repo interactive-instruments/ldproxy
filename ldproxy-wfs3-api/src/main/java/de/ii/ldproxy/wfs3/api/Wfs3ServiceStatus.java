@@ -20,6 +20,8 @@ import javax.annotation.Nullable;
 @Value.Style(deepImmutablesDetection = true)
 public abstract class Wfs3ServiceStatus implements ServiceData {
 
+    // TODO what is the purpose?
+
     public abstract ServiceStatus.STATUS getStatus();
 
     @Value.Default

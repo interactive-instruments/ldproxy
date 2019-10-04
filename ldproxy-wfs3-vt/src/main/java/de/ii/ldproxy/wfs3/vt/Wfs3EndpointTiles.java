@@ -13,8 +13,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.target.geojson.Wfs3OutputFormatGeoJson;
-import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
+import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
+import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -200,7 +200,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension {
                                 @Context UriInfo uriInfo,
                                 @Context OgcApiRequestContext wfs3Request) throws CrsTransformationException, FileNotFoundException, NotFoundException {
 
-        Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(Wfs3OutputFormatGeoJson.MEDIA_TYPE).orElseThrow(NotAcceptableException::new);
+        OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE).orElseThrow(NotAcceptableException::new);
 
         // TODO support time
         // TODO support other filter parameters
@@ -315,7 +315,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension {
         if (queryParameters.containsKey("properties"))
             doNotCache = true;
 
-        Wfs3CollectionFormatExtension wfs3OutputFormatGeoJson = extensionRegistry.getOutputFormats().get(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
+        CollectionsFormatExtension wfs3OutputFormatGeoJson = extensionRegistry.getOutputFormats().get(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE);
 
         for (String collectionId : collectionIds) {
             VectorTile.checkZoomLevel(Integer.parseInt(level), VectorTileMapGenerator.getMinMaxMap(wfsService.getData(),false),wfsService, wfs3OutputFormatGeoJson, collectionId, tilingSchemeId, MediaType.APPLICATION_JSON, row, col, doNotCache, cache, false, wfs3Request, crsTransformation);
@@ -418,7 +418,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension {
                                      String row, String col, String tilingSchemeId, boolean doNotCache,
                                      VectorTilesCache cache, OgcApiRequestContext wfs3Request,
                                      CrsTransformation crsTransformation, UriInfo uriInfo, boolean invalid,
-                                     Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
+                                     OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
 
         for (String collectionId : collectionIds) {
             // include only the requested layers / collections
@@ -478,8 +478,8 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension {
 
     }
 
-    private Optional<Wfs3FeatureFormatExtension> getOutputFormatForType(OgcApiMediaType mediaType) {
-        return extensionRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
+    private Optional<OgcApiFeatureFormatExtension> getOutputFormatForType(OgcApiMediaType mediaType) {
+        return extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
                                 .stream()
                                 .filter(wfs3OutputFormatExtension -> wfs3OutputFormatExtension.getMediaType()
                                                                                               .equals(mediaType))

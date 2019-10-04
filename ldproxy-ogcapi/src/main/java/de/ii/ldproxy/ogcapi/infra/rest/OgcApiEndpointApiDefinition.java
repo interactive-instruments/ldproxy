@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.infra.rest;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputApiDefinition;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.CommonQuery;
+import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.OgcApiQueryInputApiDefinition;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
@@ -39,7 +39,7 @@ public class OgcApiEndpointApiDefinition implements OgcApiEndpointExtension {
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("api")
             .addMethods(OgcApiContext.HttpMethods.GET)
-            .subPathPattern("^/?[^/]*$")
+            .subPathPattern("^(?:/[^/]*)?$")
             .build();
 
     private final OgcApiExtensionRegistry extensionRegistry;
@@ -70,10 +70,10 @@ public class OgcApiEndpointApiDefinition implements OgcApiEndpointExtension {
     public Response getApiDefinition(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
                                      @Context OgcApiRequestContext ogcApiContext) {
 
-        OgcApiQueryInputApiDefinition queryInputApiDefinition = new ImmutableOgcApiQueryInputApiDefinition.Builder()
+        OgcApiQueryInputApiDefinition queryInput = new ImmutableOgcApiQueryInputApiDefinition.Builder()
                 .build();
 
-        return queryHandler.handle(CommonQuery.API_DEFINITION, queryInputApiDefinition, ogcApiContext);
+        return queryHandler.handle(Query.API_DEFINITION, queryInput, ogcApiContext);
     }
 
     @GET
@@ -85,6 +85,6 @@ public class OgcApiEndpointApiDefinition implements OgcApiEndpointExtension {
                 .subPath(file)
                 .build();
 
-        return queryHandler.handle(CommonQuery.API_DEFINITION, queryInputApiDefinition, ogcApiContext);
+        return queryHandler.handle(Query.API_DEFINITION, queryInputApiDefinition, ogcApiContext);
     }
 }

@@ -78,7 +78,8 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
         this.escaper = XmlEscapers.xmlAttributeEscaper();
         this.pageSize  = transformationContext.getLimit();
         this.maxAllowableOffset = transformationContext.getMaxAllowableOffset();
-        this.namespaces.addNamespace("wfs", "http://www.opengis.net/wfs/3.0", true);
+        this.namespaces.addNamespace("feat", "http://www.opengis.net/ogcapi-features-1/1.0/sf", true);
+        this.namespaces.addNamespace("ogcapi", "http://www.opengis.net/ogcapi-features-1/1.0", true);
         this.namespaces.addNamespace("atom", "http://www.w3.org/2005/Atom", true);
     }
 
@@ -86,7 +87,7 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
     public void onStart(OptionalLong numberReturned, OptionalLong numberMatched) throws Exception {
         writer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
         if (isFeatureCollection) {
-            writer.append("\n<wfs:FeatureCollection");
+            writer.append("\n<feat:FeatureCollection");
             namespaces.getNamespaces()
                       .keySet()
                       .forEach(consumerMayThrow(prefix -> {
@@ -132,7 +133,7 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
 
                 inCurrentStart = false;
             }
-            writer.append("\n</wfs:FeatureCollection>");
+            writer.append("\n</feat:FeatureCollection>");
         }
         writer.flush();
         writer.close();
@@ -151,7 +152,7 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
         }
 
         if (isFeatureCollection) {
-            writer.append("\n<wfs:member>");
+            writer.append("\n<feat:member>");
         }
         writer.append("\n<");
         writer.append(namespaces.getNamespacePrefix(getNamespaceUri(path)));
@@ -186,7 +187,7 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
         writer.append(getLocalName(path));
         writer.append(">");
         if (isFeatureCollection) {
-            writer.append("\n</wfs:member>");
+            writer.append("\n</feat:member>");
         }
         writer.flush();
     }
@@ -324,12 +325,14 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
         Map<String,String> locations = new LinkedHashMap<>();
 
         for (int i = 0; i < split.size()-1; i += 2) {
-            if (!split.get(i).startsWith("http://www.opengis.net/wfs")) {
+            if (!split.get(i).startsWith("http://www.opengis.net/ogcapi-features-1")) {
                 locations.put(split.get(i), split.get(i + 1));
             }
         }
 
-        locations.put("http://www.opengis.net/wfs/3.0", "https://raw.githubusercontent.com/opengeospatial/WFS_FES/master/core/xml/wfs.xsd");
+        // TODO: Update schema locations after publication
+        locations.put("http://www.opengis.net/ogcapi-features-1/1.0/sf", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/xml/core-sf.xsd");
+        locations.put("http://www.opengis.net/ogcapi-features-1/1.0", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/xml/core.xsd");
         locations.put("http://www.w3.org/2005/Atom", "http://schemas.opengis.net/kml/2.3/atom-author-link.xsd");
 
 

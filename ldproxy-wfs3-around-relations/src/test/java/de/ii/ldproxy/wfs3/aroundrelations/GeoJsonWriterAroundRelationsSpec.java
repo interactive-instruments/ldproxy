@@ -248,7 +248,7 @@ public class GeoJsonWriterAroundRelationsSpec {
     private FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, URI query) throws URISyntaxException {
         return ImmutableFeatureTransformationContextGeoJson.builder()
                                                            .crsTransformer(Optional.empty())
-                                                           .serviceData(new ImmutableOgcApiDatasetData.Builder()
+                                                           .apiData(new ImmutableOgcApiDatasetData.Builder()
                                                                                                 .id("s")
                                                                                                 .serviceType("WFS3")
                                                                                                 .featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
@@ -280,13 +280,13 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                                                                                                                                                                                     .build())
                                                                                                                                                                          .build()))
                                                                                                 .build())
-                                                           .collectionName("ft")
+                                                           .collectionId("ft")
                                                            .outputStream(outputStream)
                                                            .links(ImmutableList.of(new ImmutableOgcApiLink.Builder()
                                                                                                     .href("TEST")
                                                                                                     .build()))
                                                            .isFeatureCollection(false)
-                                                           .wfs3Request(new OgcApiRequestContext() {
+                                                           .ogcApiRequest(new OgcApiRequestContext() {
                                                                @Override
                                                                public OgcApiMediaType getMediaType() {
                                                                    return null;

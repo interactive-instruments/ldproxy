@@ -14,6 +14,7 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -33,8 +34,11 @@ public class OgcApiCollectionAroundRelation implements OgcApiCollectionExtension
     @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                     URICustomizer uriCustomizer, boolean isNested,
-                                                     OgcApiDatasetData apiData) {
+                                                     OgcApiDatasetData apiData,
+                                                     URICustomizer uriCustomizer,
+                                                     boolean isNested,
+                                                     OgcApiMediaType mediaType,
+                                                     List<OgcApiMediaType> alternateMediaTypes) {
         final Optional<AroundRelationsConfiguration> aroundRelationConfiguration = featureTypeConfiguration.getExtension(AroundRelationsConfiguration.class);
         if (aroundRelationConfiguration.isPresent()) {
             if (!aroundRelationConfiguration.get()

@@ -29,16 +29,16 @@ public class OgcApiLandingPageVectorTiles implements OgcApiLandingPageExtension 
     }
 
     @Override
-    public ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData apiData,
-                                            URICustomizer uriCustomizer, OgcApiMediaType mediaType,
-                                            List<OgcApiMediaType> alternateMediaTypes) {
+    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiDatasetData apiData,
+                                                URICustomizer uriCustomizer, OgcApiMediaType mediaType,
+                                                List<OgcApiMediaType> alternateMediaTypes) {
 
         if (checkTilesEnabled(apiData)) {
             final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
             List<OgcApiLink> ogcApiLinks = vectorTilesLinkGenerator.generateDatasetLinks(uriCustomizer);
-            datasetBuilder.addAllLinks(ogcApiLinks);
+            landingPageBuilder.addAllLinks(ogcApiLinks);
         }
-        return datasetBuilder;
+        return landingPageBuilder;
     }
 
     private boolean checkTilesEnabled(OgcApiDatasetData datasetData) {

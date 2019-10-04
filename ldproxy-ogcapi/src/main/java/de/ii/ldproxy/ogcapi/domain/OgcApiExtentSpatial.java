@@ -9,9 +9,6 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import com.google.common.collect.ImmutableList;
 
-/**
- * @author portele
- */
 public class OgcApiExtentSpatial {
     private double[][] bbox;
     private String crs;

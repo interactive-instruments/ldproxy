@@ -48,7 +48,7 @@ public class AroundRelationsQuery {
         if (aroundRelationConfiguration.isPresent()) {
             this.aroundRelationConfiguration = aroundRelationConfiguration.get();
 
-            List<NameValuePair> queryParams = transformationContext.getWfs3Request()
+            List<NameValuePair> queryParams = transformationContext.getOgcApiRequest()
                                                                    .getUriCustomizer()
                                                                    .getQueryParams();
             Map<String, String> query = queryParams.stream()
@@ -194,9 +194,9 @@ public class AroundRelationsQuery {
 
     private Optional<AroundRelationsConfiguration> getAroundRelationConfiguration(FeatureTransformationContext transformationContext) {
         try {
-            return transformationContext.getServiceData()
+            return transformationContext.getApiData()
                                         .getFeatureTypes()
-                                        .get(transformationContext.getCollectionName())
+                                        .get(transformationContext.getCollectionId())
                                         .getExtension(AroundRelationsConfiguration.class);
         } catch (Throwable e) {
             return Optional.empty();

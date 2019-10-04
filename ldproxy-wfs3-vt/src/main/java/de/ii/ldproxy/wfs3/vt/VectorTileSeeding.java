@@ -8,8 +8,8 @@
 package de.ii.ldproxy.wfs3.vt;
 
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.target.geojson.Wfs3OutputFormatGeoJson;
-import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
+import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
+import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.*;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.server.CoreServerConfig;
@@ -77,7 +77,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     @Override
     public Runnable getTask(OgcApiDatasetData apiData, TransformingFeatureProvider featureProvider) {
 
-        Optional<Wfs3FeatureFormatExtension> wfs3OutputFormatGeoJson = getOutputFormatForType(Wfs3OutputFormatGeoJson.MEDIA_TYPE);
+        Optional<OgcApiFeatureFormatExtension> wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE);
 
         if (!wfs3OutputFormatGeoJson.isPresent()) {
             return () -> {
@@ -168,7 +168,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     private void seedingDataset(Set<String> collectionIdsDataset, OgcApiDatasetData apiData,
                                 CrsTransformation crsTransformation, VectorTilesCache cache,
                                 TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
-                                Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
+                                OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
 
         /*Computation of the minimum and maximum values for x and y from the minimum/maximum spatial extent
          * TODO: Maybe a spatial extent for the whole dataset in the config?*/
@@ -336,7 +336,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     private File generateMVT(OgcApiDatasetData datasetData, String collectionId, String tilingSchemeId, int z, int x,
                              int y, VectorTilesCache cache, CrsTransformation crsTransformation,
                              TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
-                             Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) {
+                             OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) {
 
         try {
             LOGGER.debug("seeding - ZoomLevel: " + Integer.toString(z) + " row: " + Integer.toString(x) + " col: " + Integer.toString(y));
@@ -378,7 +378,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     private File generateJSON(OgcApiDatasetData datasetData, String collectionId, String tilingSchemeId, int z, int x,
                               int y, VectorTilesCache cache, CrsTransformation crsTransformation,
                               TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
-                              Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) {
+                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) {
 
         try {
             VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), datasetData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
@@ -536,8 +536,8 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     }
 
 
-    private Optional<Wfs3FeatureFormatExtension> getOutputFormatForType(OgcApiMediaType mediaType) {
-        return extensionRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
+    private Optional<OgcApiFeatureFormatExtension> getOutputFormatForType(OgcApiMediaType mediaType) {
+        return extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
                                 .stream()
                                 .filter(wfs3OutputFormatExtension -> wfs3OutputFormatExtension.getMediaType()
                                                                                               .equals(mediaType))

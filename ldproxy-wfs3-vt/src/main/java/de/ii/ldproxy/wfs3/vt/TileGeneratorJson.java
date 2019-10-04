@@ -13,7 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
 import de.ii.ldproxy.wfs3.api.ImmutableFeatureTransformationContextGeneric;
-import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
+import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
@@ -68,7 +68,7 @@ public class TileGeneratorJson {
         int col = tile.getCol();
         int row = tile.getRow();
         TransformingFeatureProvider featureProvider = tile.getFeatureProvider();
-        Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson = tile.getWfs3OutputFormatGeoJson();
+        OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = tile.getWfs3OutputFormatGeoJson();
 
         if (collectionId == null)
             return false;
@@ -160,9 +160,9 @@ public class TileGeneratorJson {
 
         try {
             FeatureTransformationContext transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
-                    .serviceData(serviceData)
-                    .collectionName(collectionId)
-                    .wfs3Request(new ImmutableOgcApiRequestContext.Builder()
+                    .apiData(serviceData)
+                    .collectionId(collectionId)
+                    .ogcApiRequest(new ImmutableOgcApiRequestContext.Builder()
                             .api(null) // TODO, must pass OgcApiDataset variable, but we only have OgcApiDatasetData
                             .requestUri(uriCustomizer.build())
                             .mediaType(mediaType)
@@ -215,7 +215,7 @@ public class TileGeneratorJson {
      * @return true, if the file was generated successfully, false, if an error occurred
      */
     public static boolean generateEmptyJSON(File tileFile, TilingScheme tilingScheme, OgcApiDatasetData datasetData,
-                                            Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson, String collectionId,
+                                            OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, String collectionId,
                                             boolean isCollection, OgcApiRequestContext wfs3Request, int level, int row,
                                             int col, CrsTransformation crsTransformation, OgcApiDataset service) {
 
@@ -257,9 +257,9 @@ public class TileGeneratorJson {
         }
 
         FeatureTransformationContext transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
-                .serviceData(datasetData)
-                .collectionName(collectionId)
-                .wfs3Request(wfs3Request)
+                .apiData(datasetData)
+                .collectionId(collectionId)
+                .ogcApiRequest(wfs3Request)
                 .links(ogcApiLinks)
                 .isFeatureCollection(true)
                 .maxAllowableOffset(maxAllowableOffsetCrs84)

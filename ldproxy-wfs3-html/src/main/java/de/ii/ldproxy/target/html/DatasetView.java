@@ -72,6 +72,13 @@ public class DatasetView extends GenericView {
         this.title = title;
     }
 
+    public DatasetView(String template, URI uri, String name, String title, String description, String urlPrefix, HtmlConfig htmlConfig) {
+        this(template, uri, urlPrefix, htmlConfig);
+        this.name = name;
+        this.title = title;
+        this.description = description;
+    }
+
     public DecoratedCollection<String> getKeywordsDecorated() {
         return new DecoratedCollection<>(keywords);
     }

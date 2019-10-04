@@ -11,7 +11,7 @@ package de.ii.ldproxy.wfs3.vt;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
+import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.*;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import org.locationtech.jts.geom.util.AffineTransformation;
@@ -51,7 +51,7 @@ class VectorTile {
     private final TransformingFeatureProvider featureProvider;
     private final boolean temporary;
     private final String fileName;
-    private final Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson;
+    private final OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson;
 
 
     /**
@@ -71,7 +71,7 @@ class VectorTile {
     VectorTile(String collectionId, String tilingSchemeId, String level, String row, String col,
                OgcApiDatasetData apiData, boolean temporary, VectorTilesCache cache,
                TransformingFeatureProvider featureProvider,
-               Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
+               OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
         this.wfs3OutputFormatGeoJson = wfs3OutputFormatGeoJson;
 
         // check and process parameters
@@ -138,7 +138,7 @@ class VectorTile {
     }
 
 
-    public Wfs3FeatureFormatExtension getWfs3OutputFormatGeoJson() {
+    public OgcApiFeatureFormatExtension getWfs3OutputFormatGeoJson() {
         return wfs3OutputFormatGeoJson;
     }
 
@@ -403,7 +403,7 @@ class VectorTile {
      * @param formatsMap        a map with all collections and the supported formats
      * @param collectionId      the id of the collection you want to check the formats for
      * @param mediaType         the requested format
-     * @param forLinksOrDataset boolean, false if it is requested from a collection, true if requested from Dataset or Link.
+     * @param forLinksOrDataset boolean, false if it is requested from a collection, true if requested from Collections or Link.
      * @return false if forLinksOrDataset is true and the format is not supported.
      *         NotAcceptableException if forLinksOrDataset is false and the format is not supported
      *         true if the format is supported
@@ -449,7 +449,7 @@ class VectorTile {
     public static Map<String, String> checkZoomLevel(int zoomLevel,
                                                      Map<String, Map<String, TilesConfiguration.MinMax>> zoomLevelsMap,
                                                      OgcApiDataset wfsService,
-                                                     Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson,
+                                                     OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                                                      String collectionId, String tilingSchemeId, String mediaType,
                                                      String row, String col, boolean doNotCache, VectorTilesCache cache,
                                                      boolean isCollection, OgcApiRequestContext wfs3Request,
@@ -520,7 +520,7 @@ class VectorTile {
      * @throws FileNotFoundException
      */
     public static void generateEmptyTile(String collectionId, String tilingSchemeId, int zoomLevel,
-                                         OgcApiDataset wfsService, Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson,
+                                         OgcApiDataset wfsService, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                                          String mediaType, String row, String col, boolean doNotCache,
                                          VectorTilesCache cache, boolean isCollection, OgcApiRequestContext wfs3Request,
                                          CrsTransformation crsTransformation) throws FileNotFoundException {

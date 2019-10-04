@@ -126,13 +126,13 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     @Path("/")
     @POST
     @Consumes(StyleFormatMbStyles.MEDIA_TYPE_STRING)
-    public Response postStyle(@Auth Optional<User> optionalUser, @Context OgcApiDataset dataset,
+    public Response postStyle(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
                               @Context OgcApiRequestContext ogcApiRequest, @Context HttpServletRequest request,
                               byte[] requestBody) {
 
-        checkAuthorization(dataset.getData(), optionalUser);
+        checkAuthorization(api.getData(), optionalUser);
 
-        String datasetId = dataset.getId();
+        String datasetId = api.getId();
         StyleFormatExtension format = new StyleFormatMbStyles();
 
         // TODO: update
@@ -156,7 +156,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
             styleId = Integer.toString(id);
         }
 
-        writeStylesheet(dataset.getData(), ogcApiRequest, styleId, format, requestBody, true);
+        writeStylesheet(api.getData(), ogcApiRequest, styleId, format, requestBody, true);
 
         // Return 201 with Location header
         URI newURI;

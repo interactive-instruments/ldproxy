@@ -15,25 +15,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * @author zahnen
- */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(as = ImmutableOgcApiCollection.class)
-public abstract class OgcApiCollection {
+@JsonDeserialize(builder = ImmutableOgcApiCollection.Builder.class)
+public abstract class OgcApiCollection extends PageRepresentation {
 
     public abstract String getId();
 
-    public abstract Optional<String> getTitle();
-
-    public abstract Optional<String> getDescription();
-
     public abstract OgcApiExtent getExtent();
 
-    public abstract List<OgcApiLink> getLinks();
-
     public abstract List<String> getCrs();
+
+    public abstract Optional<String> getStorageCrs();
+
+    public abstract Optional<String> getItemType();
 
     //@JsonIgnore
     //public abstract String getPrefixedName();

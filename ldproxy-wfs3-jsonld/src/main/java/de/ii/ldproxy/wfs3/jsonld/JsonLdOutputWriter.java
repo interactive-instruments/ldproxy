@@ -151,13 +151,13 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                 }
 
 
-                json.writeStringField("@type", "Dataset");
+                json.writeStringField("@type", "Collections");
                 json.writeStringField("@id", url);
                 json.writeStringField("name", name);
                 json.writeStringField("description", dataset.description);
                 json.writeStringField("url", url);
                 json.writeObjectFieldStart("isPartOf");
-                json.writeStringField("@type", "Dataset");
+                json.writeStringField("@type", "Collections");
                 json.writeStringField("url", parentUrl);
                 json.writeEndObject();
                 if (!dataset.hideMetadata) {

@@ -7,35 +7,32 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-/**
- * @author zahnen
- */
 public class OgcApiExtent {
     private OgcApiExtentSpatial spatial;
     private OgcApiExtentTemporal temporal;
 
     public OgcApiExtent() {
-        this.spatial = new OgcApiExtentSpatial(-180, -90, 180, 90);
-        this.temporal = new OgcApiExtentTemporal(null, null);
+        this.spatial = null;
+        this.temporal = null;
     }
 
     public OgcApiExtent(String xmin, String ymin, String xmax, String ymax) {
         this.spatial = new OgcApiExtentSpatial(xmin, ymin, xmax, ymax);
-        this.temporal = new OgcApiExtentTemporal(null, null);
+        this.temporal = null;
     }
 
     public OgcApiExtent(double xmin, double ymin, double xmax, double ymax) {
         this.spatial = new OgcApiExtentSpatial(xmin, ymin, xmax, ymax);
-        this.temporal = new OgcApiExtentTemporal(null, null);
+        this.temporal = null;
     }
 
     public OgcApiExtent(String begin, String end) {
-        this.spatial = new OgcApiExtentSpatial(-180, -90, 180, 90);
+        this.spatial = null;
         this.temporal = new OgcApiExtentTemporal(begin, end);
     }
 
     public OgcApiExtent(long begin, long end) {
-        this.spatial = new OgcApiExtentSpatial(-180, -90, 180, 90);
+        this.spatial = null;
         this.temporal = new OgcApiExtentTemporal(begin, end);
     }
 
@@ -48,7 +45,6 @@ public class OgcApiExtent {
         this.spatial = new OgcApiExtentSpatial(xmin, ymin, xmax, ymax);
         this.temporal = new OgcApiExtentTemporal(begin, end);
     }
-
     public OgcApiExtentSpatial getSpatial() {
         return spatial;
     }

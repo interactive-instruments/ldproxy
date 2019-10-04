@@ -107,9 +107,12 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
                 if (!(isLastPage && Objects.equals(link.getRel(), "next"))) {
                     json.writeStartObject();
                     json.writeStringField("href", link.getHref());
-                    json.writeStringField("rel", link.getRel());
-                    json.writeStringField("type", link.getType());
-                    json.writeStringField("title", link.getTitle());
+                    if (Objects.nonNull(link.getRel()))
+                        json.writeStringField("rel", link.getRel());
+                    if (Objects.nonNull(link.getType()))
+                        json.writeStringField("type", link.getType());
+                    if (Objects.nonNull(link.getTitle()))
+                        json.writeStringField("title", link.getTitle());
                     json.writeEndObject();
                 }
             }

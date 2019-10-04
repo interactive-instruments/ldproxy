@@ -25,8 +25,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS_URI;
-import static de.ii.ldproxy.wfs3.crs.Wfs3ParameterCrs.BBOX_CRS;
-import static de.ii.ldproxy.wfs3.crs.Wfs3ParameterCrs.CRS;
+import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.BBOX_CRS;
+import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.CRS;
 
 /**
  * @author zahnen

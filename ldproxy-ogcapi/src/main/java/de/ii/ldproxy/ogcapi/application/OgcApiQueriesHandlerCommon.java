@@ -7,10 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.application;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -23,14 +21,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 @Instantiate
 @Provides(specifications = {OgcApiQueriesHandlerCommon.class})
-public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQueriesHandlerCommon.CommonQuery> {
+public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQueriesHandlerCommon.Query> {
 
-    public enum CommonQuery implements OgcApiQueryIdentifier {LANDING_PAGE, CONFORMANCE, API_DEFINITION}
+    public enum Query implements OgcApiQueryIdentifier {LANDING_PAGE, CONFORMANCE_DECLARATION, API_DEFINITION}
 
     @Value.Immutable
     public interface OgcApiQueryInputLandingPage extends OgcApiQueryInput {
@@ -48,104 +45,41 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
     }
 
     private final OgcApiExtensionRegistry extensionRegistry;
-    private final Map<CommonQuery, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
+    private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
 
 
     public OgcApiQueriesHandlerCommon(@Requires OgcApiExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
 
         this.queryHandlers = ImmutableMap.of(
-                CommonQuery.LANDING_PAGE, OgcApiQueryHandler.with(OgcApiQueryInputLandingPage.class, this::getLandingPageResponse),
-                CommonQuery.CONFORMANCE, OgcApiQueryHandler.with(OgcApiQueryInputConformance.class, this::getConformanceResponse),
-                CommonQuery.API_DEFINITION, OgcApiQueryHandler.with(OgcApiQueryInputApiDefinition.class, this::getApiDefinitionResponse)
+                Query.LANDING_PAGE, OgcApiQueryHandler.with(OgcApiQueryInputLandingPage.class, this::getLandingPageResponse),
+                Query.CONFORMANCE_DECLARATION, OgcApiQueryHandler.with(OgcApiQueryInputConformance.class, this::getConformanceResponse),
+                Query.API_DEFINITION, OgcApiQueryHandler.with(OgcApiQueryInputApiDefinition.class, this::getApiDefinitionResponse)
         );
     }
 
     @Override
-    public Map<CommonQuery, OgcApiQueryHandler<? extends OgcApiQueryInput>> getQueryHandlers() {
+    public Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> getQueryHandlers() {
         return queryHandlers;
     }
-
-    public Response getLandingPageResponse(OgcApiRequestContext requestContext) {
-
-        final LandingPageLinksGenerator linksGenerator = new LandingPageLinksGenerator();
-
-        //TODO: to crs extension
-        OgcApiDatasetData apiData = requestContext.getApi().getData();
-        ImmutableList<String> crs = ImmutableList.<String>builder()
-                .addAll(Stream.of(apiData.getFeatureProvider()
-                        .getNativeCrs()
-                        .getAsUri())
-                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
-                        .collect(Collectors.toList()))
-                .add(OgcApiDatasetData.DEFAULT_CRS_URI)
-                .addAll(apiData.getAdditionalCrs()
-                        .stream()
-                        .map(EpsgCrs::getAsUri)
-                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
-                        .collect(Collectors.toList()))
-                .build();
-
-        CommonFormatExtension format =
-                requestContext.getApi()
-                        .getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), "/")
-                        .orElseThrow(NotAcceptableException::new);
-        List<CommonFormatExtension> alternateFormats =
-                requestContext.getApi()
-                        .getAllOutputFormats(CommonFormatExtension.class,
-                                             requestContext.getMediaType(),
-                                       "/",
-                                             Optional.of(format));
-        List<OgcApiMediaType> alternateMediaTypes = alternateFormats.stream()
-                .map(alternateFormat -> alternateFormat.getMediaType())
-                .collect(Collectors.toList());
-
-        List<OgcApiLink> ogcApiLinks = linksGenerator.generateLandingPageLinks(requestContext.getUriCustomizer().copy(), Optional.empty(), requestContext.getMediaType(), alternateMediaTypes);
-
-        ImmutableDataset.Builder dataset = new ImmutableDataset.Builder()
-                .crs(crs)
-                .links(ogcApiLinks);
-
-        for (OgcApiLandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
-            dataset = ogcApiLandingPageExtension.process(dataset, requestContext.getApi().getData(), requestContext.getUriCustomizer().copy(), requestContext.getMediaType(), alternateMediaTypes);
-        }
-
-        return format.getLandingPageResponse(dataset.build(), requestContext.getApi(), requestContext);
-    }
-
 
     private Response getLandingPageResponse(OgcApiQueryInputLandingPage queryInput, OgcApiRequestContext requestContext) {
         final LandingPageLinksGenerator linksGenerator = new LandingPageLinksGenerator();
 
-        //TODO: to crs extension
-        OgcApiDatasetData apiData = requestContext.getApi().getData();
-        ImmutableList<String> crs = ImmutableList.<String>builder()
-                .addAll(Stream.of(apiData.getFeatureProvider()
-                        .getNativeCrs()
-                        .getAsUri())
-                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
-                        .collect(Collectors.toList()))
-                .add(OgcApiDatasetData.DEFAULT_CRS_URI)
-                .addAll(apiData.getAdditionalCrs()
-                        .stream()
-                        .map(EpsgCrs::getAsUri)
-                        .filter(crsUri -> !crsUri.equalsIgnoreCase(OgcApiDatasetData.DEFAULT_CRS_URI))
-                        .collect(Collectors.toList()))
-                .build();
-
         List<OgcApiLink> ogcApiLinks = linksGenerator.generateLandingPageLinks(requestContext.getUriCustomizer()
-                                                                                     .copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, requestContext.getMediaType(), requestContext.getAlternateMediaTypes());
+                                                                                             .copy(),
+                Optional.empty() /* TODO: support schema links, e.g. for WFS provider new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/,
+                requestContext.getMediaType(),
+                requestContext.getAlternateMediaTypes());
 
-        ImmutableDataset.Builder dataset = new ImmutableDataset.Builder()
-                //.collections(collections)
+        ImmutableLandingPage.Builder apiLandingPage = new ImmutableLandingPage.Builder()
                 .title(requestContext.getApi().getData().getLabel())
                 .description(requestContext.getApi().getData().getDescription().orElse(""))
-                .crs(crs)
                 .links(ogcApiLinks);
 
 
         for (OgcApiLandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
-            dataset = ogcApiLandingPageExtension.process(dataset,
+            apiLandingPage = ogcApiLandingPageExtension.process(apiLandingPage,
                     requestContext.getApi().getData(),
                     requestContext.getUriCustomizer()
                                   .copy(),
@@ -159,12 +93,12 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                         "/")
                 .orElseThrow(NotAcceptableException::new);
 
-        Response datasetResponse = outputFormatExtension.getLandingPageResponse(dataset.build(),
+        Response landingPageResponse = outputFormatExtension.getLandingPageResponse(apiLandingPage.build(),
                 requestContext.getApi(),
                 requestContext);
 
         return Response.ok()
-                       .entity(datasetResponse.getEntity())
+                       .entity(landingPageResponse.getEntity())
                        .type(requestContext.getMediaType()
                                            .type())
                        .build();
@@ -172,22 +106,41 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
 
     private Response getConformanceResponse(OgcApiQueryInputConformance queryInput,
                                             OgcApiRequestContext requestContext) {
-
         List<ConformanceClass> conformanceClasses = getConformanceClasses().stream()
                                                                            .filter(conformanceClass -> conformanceClass.isEnabledForApi(requestContext.getApi().getData()))
                                                                            .collect(Collectors.toList());
 
+        List<OgcApiLink> ogcApiLinks = new ConformanceDeclarationLinksGenerator().generateLinks(
+                requestContext.getUriCustomizer().copy(),
+                requestContext.getMediaType(),
+                requestContext.getAlternateMediaTypes());
+
         CommonFormatExtension outputFormatExtension = getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), requestContext.getApi().getData(), "/conformance")
                 .orElseThrow(NotAcceptableException::new);
 
-        //TODO
-        Response conformanceResponse = outputFormatExtension
-                .getConformanceResponse(conformanceClasses,
-                        requestContext.getApi(),
-                        requestContext);
+        ImmutableConformanceDeclaration.Builder conformanceDeclaration = new ImmutableConformanceDeclaration.Builder()
+                .title("Conformance Declaration") // TODO
+                .description("This API implements the conformance classes from standards and community specifications that are listed below. Conformance classes are identified by a URI.") // TODO
+                .links(ogcApiLinks)
+                .conformsTo(conformanceClasses.stream()
+                                              .map(ConformanceClass::getConformanceClass)
+                                              .collect(Collectors.toList()));
+
+        for (OgcApiConformanceDeclarationExtension ogcApiConformanceDeclarationExtension : getConformanceExtenders()) {
+            conformanceDeclaration = ogcApiConformanceDeclarationExtension.process(conformanceDeclaration,
+                    requestContext.getApi().getData(),
+                    requestContext.getUriCustomizer()
+                            .copy(),
+                    requestContext.getMediaType(),
+                    requestContext.getAlternateMediaTypes());
+        }
+
+        Response conformanceDeclarationResponse = outputFormatExtension.getConformanceResponse(conformanceDeclaration.build(),
+                requestContext.getApi(),
+                requestContext);
 
         return Response.ok()
-                       .entity(conformanceResponse.getEntity())
+                       .entity(conformanceDeclarationResponse.getEntity())
                        .type(requestContext.getMediaType()
                                            .type())
                        .build();
@@ -221,6 +174,10 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
 
     private List<OgcApiLandingPageExtension> getDatasetExtenders() {
         return extensionRegistry.getExtensionsForType(OgcApiLandingPageExtension.class);
+    }
+
+    private List<OgcApiConformanceDeclarationExtension> getConformanceExtenders() {
+        return extensionRegistry.getExtensionsForType(OgcApiConformanceDeclarationExtension.class);
     }
 
     private List<ConformanceClass> getConformanceClasses() {

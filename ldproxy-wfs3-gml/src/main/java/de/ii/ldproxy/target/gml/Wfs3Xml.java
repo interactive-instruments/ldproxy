@@ -26,6 +26,6 @@ public interface Wfs3Xml {
 
     @XmlAttribute(name = "schemaLocation", namespace = "http://www.w3.org/2001/XMLSchema-instance")
     default String getSchemaLocation() {
-        return "http://www.opengis.net/wfs/3.0 https://raw.githubusercontent.com/opengeospatial/WFS_FES/master/core/xml/core.xsd";
+        return "http://www.opengis.net/ogcapi-features-1/1.0 https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/xml/core.xsd";
     }
 }

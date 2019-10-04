@@ -26,6 +26,9 @@ import java.io.IOException;
 @Provides
 @Instantiate
 public class CORSFilter implements ContainerResponseFilter {
+
+    // TODO review
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CORSFilter.class);
 
     //@Context

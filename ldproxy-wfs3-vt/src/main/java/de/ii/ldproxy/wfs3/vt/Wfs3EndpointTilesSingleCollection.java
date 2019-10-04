@@ -13,9 +13,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.target.geojson.Wfs3OutputFormatGeoJson;
-import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
-import de.ii.ldproxy.wfs3.core.Wfs3EndpointCore;
+import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
+import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.wfs3.core.OgcApiFeaturesEndpoint;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -200,7 +200,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                @Context UriInfo uriInfo,
                                @Context OgcApiRequestContext wfs3Request) throws CrsTransformationException, FileNotFoundException, NotFoundException {
 
-        Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(Wfs3OutputFormatGeoJson.MEDIA_TYPE).orElseThrow(NotAcceptableException::new);
+        OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE).orElseThrow(NotAcceptableException::new);
 
         checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
         VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", false);
@@ -210,7 +210,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         final Map<String, String> filterableFields = service.getData()
                                                             .getFilterableFieldsForFeatureType(collectionId);
-        final Map<String, String> filters = Wfs3EndpointCore.getFiltersFromQuery(Wfs3EndpointCore.toFlatMap(queryParameters), filterableFields);
+        final Map<String, String> filters = OgcApiFeaturesEndpoint.getFiltersFromQuery(OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields);
         if (!filters.isEmpty() || queryParameters.containsKey("properties"))
             doNotCache = true;
 
@@ -308,14 +308,14 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                 @Context UriInfo uriInfo,
                                 @Context OgcApiRequestContext wfs3Request) throws CrsTransformationException, FileNotFoundException {
 
-        Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(Wfs3OutputFormatGeoJson.MEDIA_TYPE).orElseThrow(NotAcceptableException::new);
+        OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE).orElseThrow(NotAcceptableException::new);
 
         checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
         VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/json", false);
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         final Map<String, String> filterableFields = service.getData()
                                                             .getFilterableFieldsForFeatureType(collectionId);
-        final Map<String, String> filters = Wfs3EndpointCore.getFiltersFromQuery(Wfs3EndpointCore.toFlatMap(queryParameters), filterableFields);
+        final Map<String, String> filters = OgcApiFeaturesEndpoint.getFiltersFromQuery(OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields);
 
         boolean doNotCache = false;
         if (!filters.isEmpty() || queryParameters.containsKey("properties"))
@@ -384,8 +384,8 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         }
     }
 
-    private Optional<Wfs3FeatureFormatExtension> getOutputFormatForType(OgcApiMediaType mediaType) {
-        return wfs3ExtensionRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
+    private Optional<OgcApiFeatureFormatExtension> getOutputFormatForType(OgcApiMediaType mediaType) {
+        return wfs3ExtensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
                                     .stream()
                                     .filter(wfs3OutputFormatExtension -> wfs3OutputFormatExtension.getMediaType()
                                                                                                   .equals(mediaType))

@@ -1,0 +1,64 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+    <br/>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Data Collections</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#collections}}
+                    <li>
+                        <a href="collections/{{id}}/items">{{title}}</a> <small>— <a href="collections/{{id}}">more information</a></small>
+                    </li>
+                {{/collections}}
+                {{^collections}}
+                    <li>None</li>
+                {{/collections}}
+            </ul>
+        </div>
+    </div>
+
+    <h2>Expert information</h2>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Supported CRSs</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#crs}}
+                    <li>
+                        <a href="{{.}}">{{.}}</a>
+                    </li>
+                {{/crs}}
+                {{^crs}}
+                    <li>
+                        <a href="http://www.opengis.net/def/crs/OGC/1.3/CRS84">http://www.opengis.net/def/crs/OGC/1.3/CRS84</a>
+                    </li>
+                {{/crs}}
+            </ul>
+        </div>
+    </div>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">Additional Links</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#links}}
+                    <li>
+                        <a itemprop="url" href="{{href}}">{{title}}</a>
+                    </li>
+                {{/links}}
+                {{^links}}
+                    <li>None</li>
+                {{/links}}
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+{{> footer}}
+

@@ -10,16 +10,8 @@ package de.ii.ldproxy.ogcapi.infra.rest;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputLandingPage;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.CommonQuery;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.CommonFormatExtension;
+import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -30,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -79,20 +70,12 @@ public class OgcApiEndpointLandingPage implements OgcApiEndpointExtension {
 
 
     @GET
-    public Response getLandingPage(@Auth Optional<User> optionalUser, @Context OgcApiDataset service,
+    public Response getLandingPage(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
                                    @Context OgcApiRequestContext requestContext) {
-        checkAuthorization(service, optionalUser);
+        checkAuthorization(api.getData(), optionalUser);
 
-        OgcApiQueriesHandlerCommon.OgcApiQueryInputLandingPage queryInputDataset = new ImmutableOgcApiQueryInputLandingPage.Builder().build();
+        OgcApiQueriesHandlerCommon.OgcApiQueryInputLandingPage queryInput = new ImmutableOgcApiQueryInputLandingPage.Builder().build();
 
-        return queryHandler.handle(CommonQuery.LANDING_PAGE, queryInputDataset, requestContext);
-    }
-
-    private void checkAuthorization(OgcApiDataset service, Optional<User> optionalUser) {
-        if (service.getData()
-                   .getSecured() && !optionalUser.isPresent()) {
-            throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
-            //throw new ClientErrorException(Response.Status.UNAUTHORIZED);
-        }
+        return queryHandler.handle(Query.LANDING_PAGE, queryInput, requestContext);
     }
 }

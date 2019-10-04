@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.infra.rest;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputConformance;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.CommonQuery;
+import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.OgcApiQueryInputConformance;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
@@ -71,6 +71,7 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
         if (subPath.matches("^/?$"))
             return extensionRegistry.getExtensionsForType(CommonFormatExtension.class)
                                     .stream()
+                                    .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))
                                     .map(CommonFormatExtension::getMediaType)
                                     .collect(ImmutableSet.toImmutableSet());
 
@@ -83,6 +84,6 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
 
         OgcApiQueryInputConformance queryInputConformance = new ImmutableOgcApiQueryInputConformance.Builder().build();
 
-        return queryHandler.handle(CommonQuery.CONFORMANCE, queryInputConformance, requestContext);
+        return queryHandler.handle(Query.CONFORMANCE_DECLARATION, queryInputConformance, requestContext);
     }
 }

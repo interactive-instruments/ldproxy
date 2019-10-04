@@ -7,13 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.oas30;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ImmutableDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLandingPageExtension;
+import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -34,15 +28,19 @@ public class OgcApiLandingPageOpenApi implements OgcApiLandingPageExtension {
     }
 
     @Override
-    public ImmutableDataset.Builder process(ImmutableDataset.Builder datasetBuilder, OgcApiDatasetData apiData,
-                                            URICustomizer uriCustomizer, OgcApiMediaType mediaType,
-                                            List<OgcApiMediaType> alternateMediaTypes) {
+    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiDatasetData apiData,
+                                                URICustomizer uriCustomizer, OgcApiMediaType mediaType,
+                                                List<OgcApiMediaType> alternateMediaTypes) {
 
+        /* TODO
         if (isEnabledForApi(apiData)) {
-            datasetBuilder.addSections(ImmutableMap.of("title", "API Definition", "links", ImmutableList.of(ImmutableMap.of("title", "OpenAPI 3.0", "url", uriCustomizer.ensureLastPathSegment("api")
-                                                                                                                                                                        .toString()))));
+            landingPageBuilder.addSections(ImmutableMap.of("title", "API Definition", "links",
+                                           ImmutableList.of(ImmutableMap.of("title", "OpenAPI 3.0", "url",
+                                                            uriCustomizer.ensureLastPathSegment("api")
+                                                                         .toString()))));
         }
+        */
 
-        return datasetBuilder;
+        return landingPageBuilder;
     }
 }

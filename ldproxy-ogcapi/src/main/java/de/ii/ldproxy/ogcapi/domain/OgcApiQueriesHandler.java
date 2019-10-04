@@ -25,7 +25,7 @@ public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
        }
 
         if (!queryHandler.isValidInput(queryInput)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Invalid query handler");
         }
 
         return queryHandler.handle(queryInput, requestContext);

@@ -12,103 +12,56 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import org.apache.http.client.utils.URIBuilder;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-/**
- * @author zahnen
- */
-public class LandingPageLinksGenerator {
+public class LandingPageLinksGenerator extends DefaultLinksGenerator {
 
     public List<OgcApiLink> generateLandingPageLinks(URICustomizer uriBuilder, Optional<String> describeFeatureTypeUrl,
                                                      OgcApiMediaType mediaType, List<OgcApiMediaType> alternateMediaTypes) {
+        final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
+                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes));
+
         uriBuilder
+                .ensureNoTrailingSlash()
                 .ensureParameter("f", mediaType.parameter());
 
-        final boolean isCollections = uriBuilder.isLastPathSegment("collections");
-        final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
-                .add(new ImmutableOgcApiLink.Builder()
-                        .href(uriBuilder.toString())
-                        .rel("self")
-                        .type(mediaType.type()
-                                       .toString())
-                        .description("this document")
+        builder.add(new ImmutableOgcApiLink.Builder()
+                        .href(uriBuilder.copy()
+                                .ensureLastPathSegment("collections")
+                                .removeParameters("f")
+                                .toString())
+                        .rel("data")
+                        .description("Access the data")
                         .build())
-                .addAll(alternateMediaTypes.stream()
-                                             .map(generateAlternateLink(uriBuilder.copy(), true))
-                                             .collect(Collectors.toList()))
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
-                                        .removeLastPathSegment("collections")
                                         .ensureLastPathSegment("api")
                                         .setParameter("f", "json")
                                         .toString())
                         .rel("service-desc")
-                        .type("application/vnd.oai.openapi+json;version=3.0") // TODO: configurable
-                        .description("the OpenAPI definition")
-                        .typeLabel("JSON")
+                        .type("application/vnd.oai.openapi+json;version=3.0") // TODO make configurable
+                        .description("Formal definition of the API in OpenAPI 3.0")
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
-                                        .removeLastPathSegment("collections")
                                         .ensureLastPathSegment("api")
                                         .setParameter("f", "html")
                                         .toString())
                         .rel("service-doc")
                         .type("text/html")
-                        .description("the OpenAPI definition")
-                        .typeLabel("HTML")
+                        .description("Documentation of the API")
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
-                                        .removeLastPathSegment("collections")
                                         .ensureLastPathSegment("conformance")
-                                        .setParameter("f", "json")
+                                        .removeParameters("f")
                                         .toString())
                         .rel("conformance")
-                        .type("application/json")
-                        .description("Conformance classes implemented by this server")
+                        .description("OGC API conformance classes implemented by this server")
                         .build());
-        if (!isCollections) {
-            builder
-                    .add(new ImmutableOgcApiLink.Builder()
-                            .href(uriBuilder.copy()
-                                            .ensureLastPathSegment("collections")
-                                            .setParameter("f", "json")
-                                            .toString())
-                            .rel("data")
-                            .type("application/json")
-                            .description("Metadata about the feature collections")
-                            .build());
-        }
-
-        if (describeFeatureTypeUrl.isPresent()) {
-            builder.add(new ImmutableOgcApiLink.Builder()
-                    .href(describeFeatureTypeUrl.get())
-                    .rel("describedBy")
-                    .type("application/xml")
-                    .description("XML schema for all feature types")
-                    .build());
-        }
 
         return builder.build();
-    }
-
-    private Function<OgcApiMediaType, OgcApiLink> generateAlternateLink(final URIBuilder uriBuilder, boolean isMetadata) {
-        return mediaType -> new ImmutableOgcApiLink.Builder()
-                .href(uriBuilder
-                        .setParameter("f", mediaType.parameter())
-                        .toString())
-                .rel("alternate")
-                .type(isMetadata ? mediaType.type() // TODO: check
-                                            .toString() : mediaType.type()
-                                                                   .toString())
-                .description("this document")
-                .typeLabel(isMetadata ? mediaType.label() : mediaType.label()) // TODO: check
-                .build();
     }
 }

@@ -31,6 +31,9 @@ import java.util.Set;
 @Provides
 @Instantiate
 public class Wfs3OpenApiCore implements OpenApiExtension {
+
+    // TODO update
+
     @Override
     public int getSortPriority() {
         return 0;
@@ -38,7 +41,7 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        return isExtensionEnabled(apiData, Wfs3CoreConfiguration.class);
+        return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 
     @Override

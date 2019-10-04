@@ -12,13 +12,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.Gml2Wfs3GenericMappingProvider;
 import de.ii.ldproxy.wfs3.api.*;
 import de.ii.xtraplatform.crs.api.DefaultCoordinatesWriter;
@@ -100,6 +94,8 @@ import java.util.stream.Stream;
         onModification = "onModification")
 public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetData>, ServiceBackgroundTasks {
 
+    // TODO review
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3ServiceGenerator.class);
 
     @Context
@@ -174,10 +170,10 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
             wfs3ConformanceClassRegistry.getExtensions()
                                         .stream()
-                                        .filter(wfs3Extension -> wfs3Extension instanceof Wfs3CapabilityExtension)
+                                        .filter(wfs3Extension -> wfs3Extension instanceof OgcApiCapabilityExtension)
                                         .sorted(Comparator.comparing(wfs3Extension -> wfs3Extension.getClass()
                                                                                                    .getSimpleName()))
-                                        .map(wfs3Extension -> (Wfs3CapabilityExtension) wfs3Extension)
+                                        .map(wfs3Extension -> (OgcApiCapabilityExtension) wfs3Extension)
                                         .forEach(wfs3Capability -> {
                                             wfs3ServiceData.addCapabilities(wfs3Capability.getDefaultConfiguration(preset));
                                         });
@@ -215,9 +211,9 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
     private List<TargetMappingProviderFromGml> getMappingProviders() {
         return Stream.concat(
                 Stream.of(new Gml2Wfs3GenericMappingProvider()),
-                wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
+                wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
                                             .stream()
-                                            .map(Wfs3FeatureFormatExtension::getMappingGenerator)
+                                            .map(OgcApiFeatureFormatExtension::getMappingGenerator)
                                             .filter(Optional::isPresent)
                                             .map(Optional::get)
         )
@@ -225,9 +221,9 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
     }
 
     private List<TargetMappingRefiner> getMappingRefiners() {
-        return wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
+        return wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
                                            .stream()
-                                           .map(Wfs3FeatureFormatExtension::getMappingRefiner)
+                                           .map(OgcApiFeatureFormatExtension::getMappingRefiner)
                                            .filter(Optional::isPresent)
                                            .map(Optional::get)
                                            .collect(Collectors.toList());

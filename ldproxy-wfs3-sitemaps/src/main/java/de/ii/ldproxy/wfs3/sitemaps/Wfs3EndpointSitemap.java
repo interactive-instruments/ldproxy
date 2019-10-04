@@ -9,15 +9,8 @@ package de.ii.ldproxy.wfs3.sitemaps;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.wfs3.core.Wfs3Core;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.wfs3.api.OgcApiFeaturesCoreQueriesHandler;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
@@ -85,7 +78,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     public Response getCollectionSitemap(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                                          @PathParam("from") Long from, @PathParam("to") Long to,
                                          @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
-        Wfs3Core.checkCollectionName(service.getData(), id);
+        OgcApiFeaturesCoreQueriesHandler.checkCollectionId(service.getData(), id);
 
         List<Site> sites = new ArrayList<>();
 

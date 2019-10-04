@@ -24,6 +24,8 @@ import java.util.Objects;
  */
 public class Metadata2Wfs3 extends AbstractFeatureProviderMetadataConsumer {
 
+    // TODO review
+
     private final ImmutableOgcApiDatasetData.Builder wfs3ServiceData;
     private final ImmutableMetadata.Builder serviceMetadata;
     private ImmutableFeatureTypeConfigurationOgcApi.Builder currentFeatureType;

@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  * @author zahnen
  */
 @Value.Immutable
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonDeserialize(as = ImmutableOgcApiLink.class)
 @XmlType(propOrder={"rel","type","title","href","hreflang","length","templated"})
 public abstract class OgcApiLink {
@@ -64,6 +64,8 @@ public abstract class OgcApiLink {
     public abstract String getTypeLabel();
 
     @Nullable
+    @JsonIgnore
+    @XmlTransient
     abstract String getDescription();
 
     @Nullable
