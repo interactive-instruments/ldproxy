@@ -126,7 +126,8 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         for (Object tileMatrixSetId : cache.getTileMatrixSetIds()
                                           .toArray()) {
             Map<String, Object> wfs3LinksMap = new HashMap<>();
-            wfs3LinksMap.put("identifier", tileMatrixSetId);
+            wfs3LinksMap.put("tileMatrixSet", tileMatrixSetId);
+            wfs3LinksMap.put("tileMatrixSetURI", "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad");
             // TODO: json support
             wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), tileMatrixSetId.toString(), true, false));
             wfs3LinksList.add(wfs3LinksMap);

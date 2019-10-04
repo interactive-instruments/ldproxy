@@ -164,7 +164,7 @@ public class TileGeneratorJson {
                     .serviceData(serviceData)
                     .collectionName(collectionId)
                     .wfs3Request(new ImmutableOgcApiRequestContext.Builder()
-                            .api(tile.getApi()) // TODO, must pass OgcApiDataset variable, but we only have OgcApiDatasetData
+                            .api(tile.getApi())
                             .requestUri(uriCustomizer.build())
                             .mediaType(mediaType)
                             .build())

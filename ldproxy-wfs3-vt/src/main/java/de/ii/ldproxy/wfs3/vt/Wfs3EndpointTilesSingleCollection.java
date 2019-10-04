@@ -122,11 +122,11 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
         List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
 
-        for (Object tileMatrixSet : cache.getTileMatrixSetIds().toArray()) {
+        for (Object tileMatrixSetId : cache.getTileMatrixSetIds().toArray()) {
             Map<String, Object> wfs3LinksMap = new HashMap<>();
-            wfs3LinksMap.put("tileMatrixSet", tileMatrixSet);
+            wfs3LinksMap.put("tileMatrixSet", tileMatrixSetId);
             wfs3LinksMap.put("tileMatrixSetURI", "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad");
-            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), tileMatrixSet.toString(),
+            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), tileMatrixSetId.toString(),
                     VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", true),
                     VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/geo+json", true)));
             wfs3LinksList.add(wfs3LinksMap);
