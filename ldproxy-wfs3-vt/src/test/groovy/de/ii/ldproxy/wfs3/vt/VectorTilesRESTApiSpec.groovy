@@ -13,12 +13,12 @@ import groovyx.net.http.RESTClient
 import spock.lang.Requires
 import spock.lang.Specification
 
-git @Requires({env['SUT_URL'] != null})
+@Requires({env['SUT_URL'] != null})
 class VectorTilesRESTApiSpec extends Specification{
 
     static final String SUT_URL = System.getenv('SUT_URL')
     static final String SUT_PATH = "/rest/services/daraa"
-    static final String SUT_TILING_SCHEME = "WebMercatorQuad"
+    static final String SUT_TILE_MATRIX_SET_ID = "WebMercatorQuad"
     static final String SUT_COLLECTION = "aeronauticcrv"
 
     RESTClient restClient = new RESTClient(SUT_URL)
@@ -37,7 +37,7 @@ class VectorTilesRESTApiSpec extends Specification{
         response.responseData.get("tileMatrixSetLinks").get(0).get("id") == "WebMercatorQuad"
     }
 
-    def 'GET Request for a tiling Scheme Page from tileMatrixSets'(){
+    def 'GET Request for the tile matrix set Page from tileMatrixSets'(){
 
         when:
         def response = restClient.get( path: SUT_PATH + '/tileMatrixSets/'+ SUT_TILE_MATRIX_SET_ID)
@@ -69,7 +69,7 @@ class VectorTilesRESTApiSpec extends Specification{
         response.responseData.get("tileMatrixSetLinks").get(0).get("tileMatrixSet") == "WebMercatorQuad"
     }
 
-    def 'GET Request for a tiling Scheme Page from tiles'(){
+    def 'GET Request for the tile matrix set Page from tiles'(){
 
         when:
         def response = restClient.get( path: SUT_PATH + '/tiles/'+ SUT_TILE_MATRIX_SET_ID)
