@@ -7,8 +7,6 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
@@ -124,8 +122,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
         List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
 
-        for (Object tileMatrixSet : cache.getTileMatrixSetIds()
-                                          .toArray()) {
+        for (Object tileMatrixSet : cache.getTileMatrixSetIds().toArray()) {
             Map<String, Object> wfs3LinksMap = new HashMap<>();
             wfs3LinksMap.put("tileMatrixSet", tileMatrixSet);
             wfs3LinksMap.put("tileMatrixSetURI", "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad");
@@ -139,46 +136,6 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                        .build();
     }
 
-    /**
-     * retrieve a tile matrix set used to partition the collection into tiles
-     *
-     * @param optionalUser      the user
-     * @param collectionId      the id of the collection in which the tiling scheme belongs
-     * @param tileMatrixSetId   the local identifier of a specific tiling scheme
-     * @return the tile matrix set in a json file
-     */
-
-    @Path("/{collectionId}/tiles/{tileMatrixSetId}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getTileMatrixSet(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId,
-                                     @PathParam("tileMatrixSetId") String tileMatrixSetId, @Context OgcApiDataset service,
-                                     @Context OgcApiRequestContext wfs3Request) {
-        checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
-
-        File file = cache.getTileMatrixSet(tileMatrixSetId);
-
-        final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-        List<OgcApiLink> ogcApiLink = vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), tileMatrixSetId,
-                VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", true),
-                VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/geo+json", true));
-
-
-        /*read the json file to add links*/
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> jsonTileMatrixSet = null;
-        try {
-            jsonTileMatrixSet = mapper.readValue(new FileReader(file), new TypeReference<LinkedHashMap>() {
-            });
-
-            jsonTileMatrixSet.put("links", ogcApiLink);
-
-            return Response.ok(jsonTileMatrixSet)
-                           .build();
-        } catch (IOException e) {
-            throw new NotFoundException();
-        }
-    }
 
     /**
      * Retrieve a tile of the collection. The tile in the requested tiling scheme,

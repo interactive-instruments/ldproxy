@@ -21,7 +21,7 @@ import java.util.Set;
 public class VectorTilesCache {
 
     private static final String TILES_DIR_NAME = "tiles";
-    private static final String TILE_MATRIX_SETS_DIR_NAME = "tileMatrixSets";
+    private static final String TILE_MATRIX_SETS_DIR_NAME = "tilingSchemes";
     private static final String TMP_DIR_NAME = "__tmp__";
     private static final long TEN_MINUTES = 10 * 60 * 1000;
     private File dataDirectory;
