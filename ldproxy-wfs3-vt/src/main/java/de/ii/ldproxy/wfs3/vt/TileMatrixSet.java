@@ -19,7 +19,7 @@ import de.ii.xtraplatform.crs.api.EpsgCrs;
  *
  * @author portele
  */
-public interface TilingScheme {
+public interface TileMatrixSet {
 
     /**
      * fetch the identifier of the scheme; the id is used in the URI path

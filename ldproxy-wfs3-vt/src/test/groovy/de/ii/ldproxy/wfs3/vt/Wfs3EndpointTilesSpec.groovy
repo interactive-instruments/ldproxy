@@ -80,16 +80,16 @@ class Wfs3EndpointTilesSpec extends Specification {
       /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
         false      | false    | false        | null                                     | new HashMap<>()                                           | new HashMap<>()                                                                                        | new HashMap<>()                                                                                                                             || new HashSet<>()
         false      | false    | false        | new HashSet<>()                          | new HashMap<>()                                           | new HashMap<>()                                                                                        | new HashMap<>()                                                                                                                             || new HashSet<>()
-        false      | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | null                                                                                                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))  || new HashSet<>()
-        false      | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("unknownCollection", ImmutableList.of("application/json")))            | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))  || new HashSet<>()
-        false      | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",false))  | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))  || new HashSet<>()
-        false      | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))  || allCollectionIds
+        false      | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | null                                                                                                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))  || new HashSet<>()
+        false      | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("unknownCollection", ImmutableList.of("application/json")))            | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))  || new HashSet<>()
+        false      | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",false))  | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))  || new HashSet<>()
+        false      | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))  || allCollectionIds
         false      | false    | true         | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap().put("collection",null)                                                                                                        || new HashSet<>()
-        false      | false    | true         | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))  || allCollectionIds
-        false      | true     | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/vnd.mapbox-vector-tile"))) | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))  || new HashSet<>()
-        false      | true     | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))  || allCollectionIds
-        true       | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))  || new HashSet<>()
-        true       | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/vnd.mapbox-vector-tile"))) | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))  || allCollectionIds
+        false      | false    | true         | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))  || allCollectionIds
+        false      | true     | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/vnd.mapbox-vector-tile"))) | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))  || new HashSet<>()
+        false      | true     | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))  || allCollectionIds
+        true       | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))                   | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))  || new HashSet<>()
+        true       | false    | false        | new HashSet(Arrays.asList("collection")) | new HashMap(ImmutableMap.of("collection",true))   | new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/vnd.mapbox-vector-tile"))) | new HashMap(ImmutableMap.of("collection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))  || allCollectionIds
 
     }
 
@@ -115,10 +115,10 @@ class Wfs3EndpointTilesSpec extends Specification {
                 "collection3", ImmutableList.of("application/json", "application/vnd.mapbox-vector-tile")))
 
         def seedingMap = new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build())))
 
         def mvtEnabled = false
         def onlyJson = false
@@ -154,7 +154,7 @@ class Wfs3EndpointTilesSpec extends Specification {
         def seedingMap = new HashMap()
 
         seedingMap.put("collection0",null)
-        seedingMap.put("collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()))
+        seedingMap.put("collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()))
         seedingMap.put("collection2",null)
         seedingMap.put("collection3",null)
 
@@ -189,10 +189,10 @@ class Wfs3EndpointTilesSpec extends Specification {
                 "collection3", ImmutableList.of("application/json", "application/vnd.mapbox-vector-tile")))
 
         def seedingMap = new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build())))
 
         def mvtEnabled = false
         def onlyJson = true
@@ -227,10 +227,10 @@ class Wfs3EndpointTilesSpec extends Specification {
                 "collection3", ImmutableList.of("application/json", "application/vnd.mapbox-vector-tile")))
 
         def seedingMap = new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build())))
 
         def mvtEnabled = true
         def onlyJson = false
@@ -297,7 +297,7 @@ class Wfs3EndpointTilesSpec extends Specification {
         def allCollectionIds = new HashSet(Arrays.asList("collection"))
         def enabledMap = new HashMap(ImmutableMap.of("collection",true))
         def formatsMap = null
-        def seedingMap = new HashMap(ImmutableMap.of("collection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))
+        def seedingMap = new HashMap(ImmutableMap.of("collection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))
         def mvtEnabled = false
         def onlyJson = false
         def startSeeding = false
@@ -318,7 +318,7 @@ class Wfs3EndpointTilesSpec extends Specification {
         def allCollectionIds = new HashSet(Arrays.asList("collection"))
         def enabledMap = new HashMap(ImmutableMap.of("collection",true))
         def formatsMap = new HashMap(ImmutableMap.of("collection", ImmutableList.of("application/json")))
-        def seedingMap = new HashMap(ImmutableMap.of("unknownCollection", ImmutableMap.of("default",new ImmutableMinMax.Builder().max(10).min(6).build())))
+        def seedingMap = new HashMap(ImmutableMap.of("unknownCollection", ImmutableMap.of("WebMercatorQuad",new ImmutableMinMax.Builder().max(10).min(6).build())))
         def mvtEnabled = false
         def onlyJson = false
         def startSeeding = false
@@ -352,10 +352,10 @@ class Wfs3EndpointTilesSpec extends Specification {
                 "collection3", ImmutableList.of("application/json", "application/vnd.mapbox-vector-tile")))
 
         def seedingMap = new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build())))
 
         def mvtEnabled = false
         def onlyJson = false
@@ -391,10 +391,10 @@ class Wfs3EndpointTilesSpec extends Specification {
                 "collection3", ImmutableList.of("application/json", "application/vnd.mapbox-vector-tile")))
 
         def seedingMap = new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build())))
 
         def mvtEnabled = false
         def onlyJson = false
@@ -468,10 +468,10 @@ class Wfs3EndpointTilesSpec extends Specification {
                 "collection3", ImmutableList.of("application/json", "application/vnd.mapbox-vector-tile")))
 
         def seedingMap = new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build())))
 
         def mvtEnabled = false
         def onlyJson = false
@@ -507,10 +507,10 @@ class Wfs3EndpointTilesSpec extends Specification {
                 "collection3", ImmutableList.of("application/vnd.mapbox-vector-tile")))
 
         def seedingMap = new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build())))
 
         def mvtEnabled = false
         def onlyJson = true
@@ -546,10 +546,10 @@ class Wfs3EndpointTilesSpec extends Specification {
                 "collection3", ImmutableList.of("application/json")))
 
         def seedingMap = new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build())))
 
         def mvtEnabled = false
         def onlyJson = true
@@ -583,10 +583,10 @@ class Wfs3EndpointTilesSpec extends Specification {
                 "collection3", ImmutableList.of("application/json")))
 
         def seedingMap = new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build())))
 
         def mvtEnabled = true
         def onlyJson = false
@@ -620,10 +620,10 @@ class Wfs3EndpointTilesSpec extends Specification {
                 "collection3", ImmutableList.of("application/json", "application/vnd.mapbox-vector-tile")))
 
         def seedingMap = new HashMap(ImmutableMap.of(
-                "collection0", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection1", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection2", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build()),
-                "collection3", ImmutableMap.of("default", new ImmutableMinMax.Builder().max(10).min(6).build())))
+                "collection0", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection1", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection2", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build()),
+                "collection3", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(10).min(6).build())))
 
         def mvtEnabled = true
         def onlyJson = false

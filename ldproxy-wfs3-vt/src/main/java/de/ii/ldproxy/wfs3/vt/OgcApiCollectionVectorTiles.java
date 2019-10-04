@@ -13,11 +13,8 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
 
 /**
  * add tiling information to the collection metadata (supported tiling schemes, links)
@@ -45,17 +42,7 @@ public class OgcApiCollectionVectorTiles implements OgcApiCollectionExtension {
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
         if (!isNested && isExtensionEnabled(apiData, featureTypeConfiguration, TilesConfiguration.class)) {
-            List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
-            TilesConfiguration tiles = getExtensionConfiguration(apiData, featureTypeConfiguration, TilesConfiguration.class).get();
-            Set<String> tilingSchemeIds = tiles.getZoomLevels()
-                                               .keySet();
-            for (String tilingSchemeId : tilingSchemeIds) {
-                Map<String, Object> tilingSchemeInCollection = new HashMap<>();
-                tilingSchemeInCollection.put("identifier", tilingSchemeId);
-                tilingSchemeInCollection.put("links", vectorTilesLinkGenerator.generateTilesLinks(uriCustomizer, tilingSchemeId));
-                wfs3LinksList.add(tilingSchemeInCollection);
-            }
-            collection.putExtensions("tilingSchemes", wfs3LinksList);
+            collection.addAllLinks(vectorTilesLinkGenerator.generateTilesLinks(uriCustomizer));
         }
 
         return collection;

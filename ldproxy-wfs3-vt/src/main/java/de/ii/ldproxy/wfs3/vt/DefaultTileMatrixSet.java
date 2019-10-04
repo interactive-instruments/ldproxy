@@ -15,7 +15,7 @@ import de.ii.xtraplatform.crs.api.*;
  *
  * @author portele
  */
-public class DefaultTilingScheme implements TilingScheme {
+public class DefaultTileMatrixSet implements TileMatrixSet {
 
     /**
      * Web Mercator is the coordinate reference system of the tiling scheme, EPSG code is 3857
@@ -34,11 +34,11 @@ public class DefaultTilingScheme implements TilingScheme {
     private static final int TILE_EXTENT = 4096;
 
     /**
-     * @return for the default tiling scheme, a fixed id "default" is used
+     * @return for the default tiling scheme, a fixed id "WebMercatorQuad" is used
      */
     @Override
     public String getId() {
-        return "default";
+        return "WebMercatorQuad";
     };
 
 

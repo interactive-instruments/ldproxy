@@ -18,42 +18,42 @@ class VectorTilesRESTApiSpec extends Specification{
 
     static final String SUT_URL = System.getenv('SUT_URL')
     static final String SUT_PATH = "/rest/services/daraa"
-    static final String SUT_TILING_SCHEME = "default"
+    static final String SUT_TILE_MATRIX_SET_ID = "WebMercatorQuad"
     static final String SUT_COLLECTION = "aeronauticcrv"
 
     RESTClient restClient = new RESTClient(SUT_URL)
 
-    //TODO - delete tilingSchemes Test if "tilingSchemes" is replaced with "tiles"
-    def 'GET Request for the tiling Schemes Page'(){
+
+    def 'GET Request for the /tileMatrixSets Page'(){
 
         when:
-        def response = restClient.get( path: SUT_PATH + '/tilingSchemes')
+        def response = restClient.get( path: SUT_PATH + '/tileMatrixSets')
 
         then:
         response.status == 200
 
         and:
-        response.responseData.containsKey("tilingSchemes")
-        response.responseData.get("tilingSchemes").get(0).get("identifier") == "default"
+        response.responseData.containsKey("tileMatrixSetLinks")
+        response.responseData.get("tileMatrixSetLinks").get(0).get("id") == "WebMercatorQuad"
     }
 
-    def 'GET Request for a tiling Scheme Page from tilingSchemes'(){
+    def 'GET Request for the tile matrix set Page from tileMatrixSets'(){
 
         when:
-        def response = restClient.get( path: SUT_PATH + '/tilingSchemes/'+ SUT_TILING_SCHEME)
+        def response = restClient.get( path: SUT_PATH + '/tileMatrixSets/'+ SUT_TILE_MATRIX_SET_ID)
 
         then:
         response.status == 200
 
         and:
-        response.responseData.containsKey("TileMatrix")
+        response.responseData.containsKey("tileMatrix")
         response.responseData.containsKey("boundingBox")
         response.responseData.containsKey("identifier")
         response.responseData.containsKey("supportedCRS")
         response.responseData.containsKey("title")
         response.responseData.containsKey("type")
         response.responseData.containsKey("wellKnownScaleSet")
-        response.responseData.get("identifier") == "default"
+        response.responseData.get("identifier") == "WebMercatorQuad"
     }
 
     def 'GET Request for the tiles Page'(){
@@ -65,34 +65,34 @@ class VectorTilesRESTApiSpec extends Specification{
         response.status == 200
 
         and:
-        response.responseData.containsKey("tilingSchemes")
-        response.responseData.get("tilingSchemes").get(0).get("identifier") == "default"
+        response.responseData.containsKey("tileMatrixSetLinks")
+        response.responseData.get("tileMatrixSetLinks").get(0).get("tileMatrixSet") == "WebMercatorQuad"
     }
 
-    def 'GET Request for a tiling Scheme Page from tiles'(){
+    def 'GET Request for the tile matrix set Page from tiles'(){
 
         when:
-        def response = restClient.get( path: SUT_PATH + '/tiles/'+ SUT_TILING_SCHEME)
+        def response = restClient.get( path: SUT_PATH + '/tiles/'+ SUT_TILE_MATRIX_SET_ID)
 
         then:
         response.status == 200
 
         and:
-        response.responseData.containsKey("TileMatrix")
+        response.responseData.containsKey("tileMatrix")
         response.responseData.containsKey("boundingBox")
         response.responseData.containsKey("identifier")
         response.responseData.containsKey("supportedCRS")
         response.responseData.containsKey("title")
         response.responseData.containsKey("type")
         response.responseData.containsKey("wellKnownScaleSet")
-        response.responseData.get("identifier") == "default"
+        response.responseData.get("identifier") == "WebMercatorQuad"
     }
 
     def 'GET Request for a empty tile of the dataset'(){
 
         when:
         def response=restClient.request(SUT_URL, Method.GET, ContentType.JSON,{ req ->
-            uri.path = SUT_PATH + '/tiles/'+ SUT_TILING_SCHEME + '/10/413/618'
+            uri.path = SUT_PATH + '/tiles/'+ SUT_TILE_MATRIX_SET_ID + '/10/413/618'
             headers.Accept = 'application/vnd.mapbox-vector-tile'
         })
 
@@ -109,7 +109,7 @@ class VectorTilesRESTApiSpec extends Specification{
 
         when:
         restClient.request(SUT_URL, Method.GET, ContentType.JSON,{ req ->
-            uri.path = SUT_PATH + '/tiles/'+ SUT_TILING_SCHEME + '/10/413/614'
+            uri.path = SUT_PATH + '/tiles/'+ SUT_TILE_MATRIX_SET_ID + '/10/413/614'
             headers.Accept = 'application/vnd.mapbox-vector-tile'
 
             response.success = { resp ->
@@ -122,7 +122,7 @@ class VectorTilesRESTApiSpec extends Specification{
         status == 200
     }
 
-    def 'GET Request for a tiling Scheme Page from a collection'(){
+    def 'GET Request for a tile matrix set Page from a collection'(){
 
         when:
         def response = restClient.get( path: SUT_PATH + '/collections/'+ SUT_COLLECTION +"/tiles")
@@ -131,15 +131,15 @@ class VectorTilesRESTApiSpec extends Specification{
         response.status == 200
 
         and:
-        response.responseData.containsKey("tilingSchemes")
-        response.responseData.get("tilingSchemes").get(0).get("identifier") == "default"
+        response.responseData.containsKey("tileMatrixSetLinks")
+        response.responseData.get("tileMatrixSetLinks").get(0).get("tileMatrixSet") == "WebMercatorQuad"
     }
 
     def 'GET Request for a tile of a collection in json format'(){
 
         when:
         def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
-            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/" + SUT_TILING_SCHEME + "/10/413/614"
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/" + SUT_TILE_MATRIX_SET_ID + "/10/413/614"
             headers.Accept = 'application/json'
         })
 
@@ -162,7 +162,7 @@ class VectorTilesRESTApiSpec extends Specification{
 
         when:
         restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
-            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/" + SUT_TILING_SCHEME + "/10/413/614"
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/" + SUT_TILE_MATRIX_SET_ID + "/10/413/614"
             headers.Accept = 'application/vnd.mapbox-vector-tile'
 
             response.success = { resp ->
@@ -173,5 +173,20 @@ class VectorTilesRESTApiSpec extends Specification{
 
         then:
         status == 200
+    }
+
+    def 'Vector tiles conformance classes'() {
+        when: "request to the conformance page"
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
+            uri.path = SUT_PATH + '/conformance'
+            headers.Accept = 'application/json'
+        })
+
+        then: "check conformance classes"
+        response.status == 200
+        response.responseData.containsKey("conformsTo")
+        response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/core' }
+        response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/collections' }
+        response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/tmxs' }
     }
 }

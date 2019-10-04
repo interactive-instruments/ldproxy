@@ -31,47 +31,45 @@ public class VectorTilesLinkGenerator {
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                         .removeLastPathSegment("collections")
-                                        .ensureLastPathSegment("tilingSchemes")
+                                        .ensureLastPathSegment("tileMatrixSets")
                                         .ensureParameter("f", "json")
                                         .toString())
-                        .rel("tilingSchemes")
+                        .rel("tileMatrixSets")
                         .type("application/json")
-                        .description("the list of available tiling schemes")
+                        .description("List of tileMatrixSets implemented by this API in JSON")
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
-                                        .removeLastPathSegment("collections")
-                                        .ensureLastPathSegment("tiles")
-                                        .ensureParameter("f", "json")
-                                        .toString())
+                                .removeLastPathSegment("collections")
+                                .ensureLastPathSegment("tiles")
+                                .ensureParameter("f", "json")
+                                .toString())
                         .rel("tiles")
                         .type("application/json")
-                        .description("the list of available tiling schemes")
+                        .description("Link to information on map tiles combining more than one collection")
                         .build())
                 .build();
     }
 
     /**
-     * generates the links on the page /serviceId/tilingSchemes
+     * generates the links on the page /serviceId/tileMatrixSets
      *
-     * @param uriBuilder     the URI, split in host, path and query
-     * @param tilingSchemeId the id of the tiling Scheme
+     * @param uriBuilder        the URI, split in host, path and query
+     * @param tileMatrixSetId   the id of the tiling Scheme
      * @return a list with links
      */
-    public List<OgcApiLink> generateTilingSchemesLinks(URICustomizer uriBuilder, String tilingSchemeId) {
+    public List<OgcApiLink> generateTileMatrixSetsLinks(URICustomizer uriBuilder, String tileMatrixSetId) {
 
 
         return ImmutableList.<OgcApiLink>builder()
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
-                                        .ensureLastPathSegment("tilingSchemes")
-                                        .ensureLastPathSegment(tilingSchemeId)
+                                        .ensureLastPathSegment(tileMatrixSetId)
                                         .setParameter("f", "json")
                                         .toString()
                         )
-                        .rel("tilingScheme")
+                        .rel("tileMatrixSet")
                         .type("application/json")
-                        .description("Google Maps Tiling Scheme")//TODO dynamic naming
                         .build())
                 .build();
     }
@@ -80,12 +78,11 @@ public class VectorTilesLinkGenerator {
      * generates the links on the page /serviceId/tiles
      *
      * @param uriBuilder     the URI, split in host, path and query
-     * @param tilingSchemeId the id of the tiling Scheme
      * @return a list with links
      */
     public List<OgcApiLink> generateTilesLinks(URICustomizer uriBuilder, String tilingSchemeId) {
 
-
+        //TODO: check if this method should be removed
         return ImmutableList.<OgcApiLink>builder()
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
@@ -94,9 +91,33 @@ public class VectorTilesLinkGenerator {
                                         .setParameter("f", "json")
                                         .toString()
                         )
-                        .rel("tilingScheme")
+                        .rel("tiles")
                         .type("application/json")
-                        .description("Google Maps Tiling Scheme") //TODO dynamic naming
+                        .description("Vector Tiles Description") //TODO dynamic naming
+                        .build())
+                .build();
+    }
+
+
+    /**
+     * generates the links on the page /serviceId/tiles
+     *
+     * @param uriBuilder     the URI, split in host, path and query
+     * @return a list with links
+     */
+    public List<OgcApiLink> generateTilesLinks(URICustomizer uriBuilder) {
+
+
+        return ImmutableList.<OgcApiLink>builder()
+                .add(new ImmutableOgcApiLink.Builder()
+                        .href(uriBuilder.copy()
+                                .ensureLastPathSegment("tiles")
+                                .setParameter("f", "json")
+                                .toString()
+                        )
+                        .rel("tiles")
+                        .type("application/json")
+                        .description("Vector Tiles Description") //TODO dynamic naming
                         .build())
                 .build();
     }
@@ -107,7 +128,7 @@ public class VectorTilesLinkGenerator {
      * @param uriBuilder           the URI, split in host, path and query
      * @param mediaType            the media type
      * @param alternateMediaType the alternative media type
-     * @param tilingSchemeId       the id of the tiling scheme of the tile
+     * @param tileMatrixSetId       the id of the tiling scheme of the tile
      * @param zoomLevel            the zoom level of the tile
      * @param row                  the row of the tile
      * @param col                  the col of the tile
@@ -116,14 +137,14 @@ public class VectorTilesLinkGenerator {
      * @return
      */
     public List<OgcApiLink> generateGeoJSONTileLinks(URICustomizer uriBuilder, OgcApiMediaType mediaType,
-                                                     OgcApiMediaType alternateMediaType, String tilingSchemeId,
+                                                     OgcApiMediaType alternateMediaType, String tileMatrixSetId,
                                                      String zoomLevel, String row, String col, boolean mvt,
                                                      boolean json) {
 
         uriBuilder.removeLastPathSegments(3);
         uriBuilder
                 .ensureParameter("f", mediaType.parameter())
-                .ensureLastPathSegments("tiles", "default", zoomLevel, row, col);
+                .ensureLastPathSegments("tiles", "WebMercatorQuad", zoomLevel, row, col);
 
 
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>();
@@ -131,7 +152,7 @@ public class VectorTilesLinkGenerator {
         if (json) {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder
-                            .ensureLastPathSegments("tiles", tilingSchemeId, zoomLevel, row, col)
+                            .ensureLastPathSegments("tiles", tileMatrixSetId, zoomLevel, row, col)
                             .toString())
                     .rel("self")
                     .type(mediaType.type()
@@ -142,7 +163,7 @@ public class VectorTilesLinkGenerator {
         if (mvt) {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
-                                    .ensureLastPathSegments("tiles", tilingSchemeId, zoomLevel, row, col)
+                                    .ensureLastPathSegments("tiles", tileMatrixSetId, zoomLevel, row, col)
                                     .removeLastPathSegment("")
                                     .setParameter("f", "mvt")
                                     .toString())
@@ -159,14 +180,14 @@ public class VectorTilesLinkGenerator {
     /**
      * generates the URI templates on the page /serviceId/tilingSchemes/{tilingSchemeId} and /serviceId/tiles/{tilingSchemeId}
      *
-     * @param uriBuilder     the URI, split in host, path and query
-     * @param tilingSchemeId the id of the tiling Scheme
-     * @param mvt            mvt enabled or disabled
-     * @param json           json enabled or disabled
+     * @param uriBuilder        the URI, split in host, path and query
+     * @param tileMatrixSetId   the id of the tiling Scheme
+     * @param mvt               mvt enabled or disabled
+     * @param json              json enabled or disabled
      * @return a list with links
      */
-    public List<OgcApiLink> generateTilingSchemeLinks(URICustomizer uriBuilder, String tilingSchemeId, boolean mvt,
-                                                      boolean json) {
+    public List<OgcApiLink> generateTileMatrixSetLinks(URICustomizer uriBuilder, String tileMatrixSetId, boolean mvt,
+                                                       boolean json) {
 
 
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>();
@@ -174,24 +195,22 @@ public class VectorTilesLinkGenerator {
         if (json) {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
-                                    .ensureLastPathSegment(tilingSchemeId)
                                     .clearParameters()
-                                    .toString() + "/{level}/{row}/{col}?f=json")
+                                    .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f=json")
                     .rel("tiles")
                     .type("application/geo+json")
-                    .description("Tile in GeoJSON. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
+                    .description("Tile in GeoJSON. The link is a URI template where {tileMatrix}/{tileRow}/{tileCol} is the tile based on the tiling scheme {tileMatrixSetId}.")
                     .templated("true")
                     .build());
         }
         if (mvt) {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
-                                    .ensureLastPathSegment(tilingSchemeId)
                                     .clearParameters()
-                                    .toString() + "/{level}/{row}/{col}?f=mvt")
+                                    .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f=mvt")
                     .rel("tiles")
                     .type("application/vnd.mapbox-vector-tile")
-                    .description("Mapbox vector tile. The link is a URI template where {level}/{row}/{col} is the tile based on the tiling scheme.")
+                    .description("Mapbox vector tile. The link is a URI template where {tileMatrix}/{tileRow}/{tileCol} is the tile based on the tiling scheme {tileMatrixSetId}.")
                     .templated("true")
                     .build());
         }

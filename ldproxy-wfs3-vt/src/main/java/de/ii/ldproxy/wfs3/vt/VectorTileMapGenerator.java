@@ -89,7 +89,7 @@ public class VectorTileMapGenerator implements OgcApiExtension {
 
                 List<String> formatsList = tilesConfiguration.getFormats();
                 if (formatsList == null) {
-                    formatsList = (ImmutableList.of("application/json", "application/vnd.mapbox-vector-tile"));
+                    formatsList = (ImmutableList.of("application/geo+json", "application/vnd.mapbox-vector-tile"));
                 }
                 formatsMap.put(collectionId, formatsList);
 

@@ -20,7 +20,7 @@ class VectorTileSeedingSpec extends Specification{
         given: "a zoom Level of 0 and a spatial extent of the following Tile: zoom level 8, row 103, col 153"
 
         def zoomLevel = 0
-        def tilingScheme = new DefaultTilingScheme()
+        def tilingScheme = new DefaultTileMatrixSet()
 
         def crsTransformation = null
 
@@ -47,7 +47,7 @@ class VectorTileSeedingSpec extends Specification{
         given: "a zoom Level of 10 and a spatial extent with default values"
 
         def zoomLevel = 10
-        def tilingScheme = new DefaultTilingScheme()
+        def tilingScheme = new DefaultTileMatrixSet()
 
         def crsTransformation = null
 
@@ -76,7 +76,7 @@ class VectorTileSeedingSpec extends Specification{
         given: "a zoom Level of 12 and a spatial extent of the following Tile: zoom level 8, row 103, col 153"
 
         def zoomLevel = 12
-        def tilingScheme = new DefaultTilingScheme()
+        def tilingScheme = new DefaultTileMatrixSet()
 
         def crsTransformation = null
 
