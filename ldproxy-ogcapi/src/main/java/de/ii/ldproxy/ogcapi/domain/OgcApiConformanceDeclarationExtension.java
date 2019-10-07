@@ -8,14 +8,17 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 public interface OgcApiConformanceDeclarationExtension extends OgcApiContentExtension {
 
     ImmutableConformanceDeclaration.Builder process(ImmutableConformanceDeclaration.Builder conformanceDeclarationBuilder,
-                                         OgcApiDatasetData apiData,
-                                         URICustomizer uriCustomizer,
-                                         OgcApiMediaType mediaType,
-                                         List<OgcApiMediaType> alternateMediaTypes);
+                                                    OgcApiDatasetData apiData,
+                                                    URICustomizer uriCustomizer,
+                                                    OgcApiMediaType mediaType,
+                                                    List<OgcApiMediaType> alternateMediaTypes,
+                                                    Optional<Locale> language);
 
     default String getResourceName() { return "ConformanceDeclaration"; };
 }

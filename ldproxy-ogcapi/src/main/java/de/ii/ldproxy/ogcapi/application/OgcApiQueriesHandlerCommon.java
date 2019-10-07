@@ -18,6 +18,7 @@ import org.immutables.value.Value;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,6 +29,9 @@ import java.util.stream.Collectors;
 public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQueriesHandlerCommon.Query> {
 
     public enum Query implements OgcApiQueryIdentifier {LANDING_PAGE, CONFORMANCE_DECLARATION, API_DEFINITION}
+
+    @Requires
+    I18n i18n;
 
     @Value.Immutable
     public interface OgcApiQueryInputLandingPage extends OgcApiQueryInput {
@@ -66,11 +70,13 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
     private Response getLandingPageResponse(OgcApiQueryInputLandingPage queryInput, OgcApiRequestContext requestContext) {
         final LandingPageLinksGenerator linksGenerator = new LandingPageLinksGenerator();
 
-        List<OgcApiLink> ogcApiLinks = linksGenerator.generateLandingPageLinks(requestContext.getUriCustomizer()
+        List<OgcApiLink> ogcApiLinks = linksGenerator.generateLinks(requestContext.getUriCustomizer()
                                                                                              .copy(),
-                Optional.empty() /* TODO: support schema links, e.g. for WFS provider new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/,
+                Optional.empty(), // TODO: support schema links, e.g. for WFS provider new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()
                 requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes());
+                requestContext.getAlternateMediaTypes(),
+                i18n,
+                requestContext.getLanguage());
 
         ImmutableLandingPage.Builder apiLandingPage = new ImmutableLandingPage.Builder()
                 .title(requestContext.getApi().getData().getLabel())
@@ -84,7 +90,8 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                     requestContext.getUriCustomizer()
                                   .copy(),
                     requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes());
+                    requestContext.getAlternateMediaTypes(),
+                    requestContext.getLanguage());
         }
 
         CommonFormatExtension outputFormatExtension = requestContext.getApi()
@@ -97,11 +104,17 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                 requestContext.getApi(),
                 requestContext);
 
-        return Response.ok()
-                       .entity(landingPageResponse.getEntity())
-                       .type(requestContext.getMediaType()
-                                           .type())
-                       .build();
+
+        Response.ResponseBuilder response = Response.ok()
+                .entity(landingPageResponse.getEntity())
+                .type(requestContext.getMediaType()
+                        .type());
+
+        Optional<Locale> language = requestContext.getLanguage();
+        if (language.isPresent())
+            response.language(language.get());
+
+        return response.build();
     }
 
     private Response getConformanceResponse(OgcApiQueryInputConformance queryInput,
@@ -113,14 +126,14 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         List<OgcApiLink> ogcApiLinks = new ConformanceDeclarationLinksGenerator().generateLinks(
                 requestContext.getUriCustomizer().copy(),
                 requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes());
+                requestContext.getAlternateMediaTypes(),
+                i18n,
+                requestContext.getLanguage());
 
         CommonFormatExtension outputFormatExtension = getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), requestContext.getApi().getData(), "/conformance")
                 .orElseThrow(NotAcceptableException::new);
 
         ImmutableConformanceDeclaration.Builder conformanceDeclaration = new ImmutableConformanceDeclaration.Builder()
-                .title("Conformance Declaration") // TODO
-                .description("This API implements the conformance classes from standards and community specifications that are listed below. Conformance classes are identified by a URI.") // TODO
                 .links(ogcApiLinks)
                 .conformsTo(conformanceClasses.stream()
                                               .map(ConformanceClass::getConformanceClass)
@@ -132,18 +145,24 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                     requestContext.getUriCustomizer()
                             .copy(),
                     requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes());
+                    requestContext.getAlternateMediaTypes(),
+                    requestContext.getLanguage());
         }
 
         Response conformanceDeclarationResponse = outputFormatExtension.getConformanceResponse(conformanceDeclaration.build(),
                 requestContext.getApi(),
                 requestContext);
 
-        return Response.ok()
-                       .entity(conformanceDeclarationResponse.getEntity())
-                       .type(requestContext.getMediaType()
-                                           .type())
-                       .build();
+        Response.ResponseBuilder response = Response.ok()
+                .entity(conformanceDeclarationResponse.getEntity())
+                .type(requestContext.getMediaType()
+                        .type());
+
+        Optional<Locale> language = requestContext.getLanguage();
+        if (language.isPresent())
+            response.language(language.get());
+
+        return response.build();
     }
 
     private Response getApiDefinitionResponse(OgcApiQueryInputApiDefinition queryInput,

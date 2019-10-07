@@ -8,12 +8,16 @@
 package de.ii.ldproxy.wfs3.vt;
 
 
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 
 /**
@@ -26,6 +30,9 @@ import java.util.List;
 @Instantiate
 public class OgcApiCollectionVectorTiles implements OgcApiCollectionExtension {
 
+    @Requires
+    I18n i18n;
+
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
         return isExtensionEnabled(apiData, TilesConfiguration.class);
@@ -37,12 +44,13 @@ public class OgcApiCollectionVectorTiles implements OgcApiCollectionExtension {
                                                      OgcApiDatasetData apiData,
                                                      URICustomizer uriCustomizer, boolean isNested,
                                                      OgcApiMediaType mediaType,
-                                                     List<OgcApiMediaType> alternateMediaTypes) {
+                                                     List<OgcApiMediaType> alternateMediaTypes,
+                                                     Optional<Locale> language) {
         // The hrefs are URI templates and not URIs, so the templates should not be percent encoded!
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
         if (!isNested && isExtensionEnabled(apiData, featureTypeConfiguration, TilesConfiguration.class)) {
-            collection.addAllLinks(vectorTilesLinkGenerator.generateTilesLinks(uriCustomizer));
+            collection.addAllLinks(vectorTilesLinkGenerator.generateTilesLinks(uriCustomizer, i18n, language));
         }
 
         return collection;

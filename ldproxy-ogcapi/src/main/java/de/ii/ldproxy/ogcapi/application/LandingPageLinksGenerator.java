@@ -14,14 +14,19 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public class LandingPageLinksGenerator extends DefaultLinksGenerator {
 
-    public List<OgcApiLink> generateLandingPageLinks(URICustomizer uriBuilder, Optional<String> describeFeatureTypeUrl,
-                                                     OgcApiMediaType mediaType, List<OgcApiMediaType> alternateMediaTypes) {
+    public List<OgcApiLink> generateLinks(URICustomizer uriBuilder,
+                                                     Optional<String> describeFeatureTypeUrl,
+                                                     OgcApiMediaType mediaType,
+                                                     List<OgcApiMediaType> alternateMediaTypes,
+                                                     I18n i18n,
+                                                     Optional<Locale> language) {
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
-                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes));
+                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
         uriBuilder
                 .ensureNoTrailingSlash()
@@ -33,7 +38,7 @@ public class LandingPageLinksGenerator extends DefaultLinksGenerator {
                                 .removeParameters("f")
                                 .toString())
                         .rel("data")
-                        .description("Access the data")
+                        .description(i18n.get("dataLink",language))
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
@@ -42,7 +47,7 @@ public class LandingPageLinksGenerator extends DefaultLinksGenerator {
                                         .toString())
                         .rel("service-desc")
                         .type("application/vnd.oai.openapi+json;version=3.0") // TODO make configurable
-                        .description("Formal definition of the API in OpenAPI 3.0")
+                        .description(i18n.get("serviceDescLink",language))
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
@@ -51,7 +56,7 @@ public class LandingPageLinksGenerator extends DefaultLinksGenerator {
                                         .toString())
                         .rel("service-doc")
                         .type("text/html")
-                        .description("Documentation of the API")
+                        .description(i18n.get("serviceDocLink",language))
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
@@ -59,7 +64,7 @@ public class LandingPageLinksGenerator extends DefaultLinksGenerator {
                                         .removeParameters("f")
                                         .toString())
                         .rel("conformance")
-                        .description("OGC API conformance classes implemented by this server")
+                        .description(i18n.get("conformanceLink",language))
                         .build());
 
         return builder.build();

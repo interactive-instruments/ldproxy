@@ -15,6 +15,8 @@ import org.osgi.framework.BundleContext;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -46,7 +48,8 @@ public class StylesOnLandingPage implements OgcApiLandingPageExtension {
                                                 OgcApiDatasetData apiData,
                                                 URICustomizer uriCustomizer,
                                                 OgcApiMediaType mediaType,
-                                                List<OgcApiMediaType> alternateMediaTypes) {
+                                                List<OgcApiMediaType> alternateMediaTypes,
+                                                Optional<Locale> language) {
 
         if (!isEnabledForApi(apiData)) {
             return landingPageBuilder;

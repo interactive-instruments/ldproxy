@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.wfs3.api.TargetMappingRefiner;
 import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.wfs3.api.TargetMappingRefiner;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
@@ -26,6 +26,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -72,7 +73,9 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
     }
 
     @Override
-    public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext) {
+    public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext, Optional<Locale> language) {
+
+        // TODO support language
         ImmutableSortedSet<GeoJsonWriter> geoJsonWriters = geoJsonWriterRegistry.getGeoJsonWriters()
                                                                                 .stream()
                                                                                 .map(GeoJsonWriter::create)

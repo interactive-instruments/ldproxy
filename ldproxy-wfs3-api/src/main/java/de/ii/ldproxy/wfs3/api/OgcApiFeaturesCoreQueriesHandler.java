@@ -10,6 +10,7 @@ package de.ii.ldproxy.wfs3.api;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
@@ -31,6 +32,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
@@ -44,6 +46,9 @@ import static com.codahale.metrics.MetricRegistry.name;
 public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<OgcApiFeaturesCoreQueriesHandler.Query> {
 
     // TODO merge ldproxy-wfs3-core and ldproxy-wfs3-api to ldproxy-ogcapi-features-core
+
+    @Requires
+    I18n i18n;
 
     public enum Query implements OgcApiQueryIdentifier {FEATURES, FEATURE}
 
@@ -147,8 +152,8 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
 
         List<OgcApiLink> links =
                 isCollection ?
-                        new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes):
-                        new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes);
+                        new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage()):
+                        new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
 
         ImmutableFeatureTransformationContextGeneric.Builder transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
                 .apiData(api.getData())
@@ -183,23 +188,26 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
                     .getFeatureTransformStream(query);
 
             streamingOutput = stream(featureTransformStream, outputStream -> outputFormat.getFeatureTransformer(transformationContext.outputStream(outputStream)
-                    .build())
+                    .build(), requestContext.getLanguage())
                     .get());
         } else {
             throw new NotAcceptableException();
         }
 
-        return response(streamingOutput, requestContext.getMediaType()
-                .type()
-                .toString());
+        return response(streamingOutput,
+                        requestContext.getMediaType(),
+                        requestContext.getLanguage());
     }
 
-    private Response response(Object entity, String type) {
+    private Response response(Object entity, OgcApiMediaType mediaType, Optional<Locale> language) {
         Response.ResponseBuilder response = Response.ok()
                 .entity(entity);
-        if (type != null) {
-            response.type(type);
-        }
+
+        if (mediaType != null)
+            response.type(mediaType.type().toString());
+
+        if (language.isPresent())
+            response.language(language.get());
 
         return response.build();
     }

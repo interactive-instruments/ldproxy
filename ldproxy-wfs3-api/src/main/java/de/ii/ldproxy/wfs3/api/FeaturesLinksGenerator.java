@@ -9,12 +9,15 @@ package de.ii.ldproxy.wfs3.api;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 public class FeaturesLinksGenerator extends DefaultLinksGenerator {
 
@@ -23,10 +26,12 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                                           int limit,
                                           int defaultLimit,
                                           OgcApiMediaType mediaType,
-                                          List<OgcApiMediaType> alternateMediaTypes)
+                                          List<OgcApiMediaType> alternateMediaTypes,
+                                          I18n i18n,
+                                          Optional<Locale> language)
     {
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
-                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes));
+                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
         // TODO: make next links opaque
         // TODO: no next link, if there is no next page (but we don't know this yet)
@@ -35,7 +40,7 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                 .rel("next")
                 .type(mediaType.type()
                         .toString())
-                .description("next page")
+                .description(i18n.get("nextLink",language))
                 .build());
         if (offset > 0) {
             builder.add(new ImmutableOgcApiLink.Builder()
@@ -43,14 +48,14 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                     .rel("prev")
                     .type(mediaType.type()
                             .toString())
-                    .description("previous page")
+                    .description(i18n.get("prevLink",language))
                     .build());
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(getUrlWithPageAndCount(uriBuilder.copy(), 0, limit, defaultLimit))
                     .rel("first")
                     .type(mediaType.type()
                             .toString())
-                    .description("first page")
+                    .description(i18n.get("firstLink",language))
                     .build());
         }
 
@@ -62,7 +67,7 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                         .clearParameters()
                         .toString())
                 .rel("home")
-                .description("API Landing Page")
+                .description(i18n.get("homeLink",language))
                 .build());
 
         return builder.build();

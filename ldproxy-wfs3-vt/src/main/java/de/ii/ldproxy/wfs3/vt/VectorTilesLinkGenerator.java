@@ -8,11 +8,15 @@
 package de.ii.ldproxy.wfs3.vt;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  * This class is responsible for generating the links in the json Files.
@@ -23,30 +27,30 @@ public class VectorTilesLinkGenerator {
      * generates the Links on the page /serviceId?f=json and /serviceId/collections?f=json
      *
      * @param uriBuilder the URI, split in host, path and query
+     * @param i18n module to get linguistic text
+     * @param language the requested language (optional)
      * @return a List with links
      */
-    public List<OgcApiLink> generateDatasetLinks(URICustomizer uriBuilder) {
+    public List<OgcApiLink> generateDatasetLinks(URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
 
         return ImmutableList.<OgcApiLink>builder()
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                         .removeLastPathSegment("collections")
                                         .ensureLastPathSegment("tileMatrixSets")
-                                        .ensureParameter("f", "json")
+                                        .removeParameters("f")
                                         .toString())
                         .rel("tileMatrixSets")
-                        .type("application/json")
-                        .description("List of tileMatrixSets implemented by this API in JSON")
+                        .description(i18n.get("tileMatrixSetsLink", language))
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                 .removeLastPathSegment("collections")
                                 .ensureLastPathSegment("tiles")
-                                .ensureParameter("f", "json")
+                                .removeParameters("f")
                                 .toString())
                         .rel("tiles")
-                        .type("application/json")
-                        .description("Link to information on map tiles combining more than one collection")
+                        .description(i18n.get("tilesLink", language))
                         .build())
                 .build();
     }
@@ -56,68 +60,22 @@ public class VectorTilesLinkGenerator {
      *
      * @param uriBuilder        the URI, split in host, path and query
      * @param tileMatrixSetId   the id of the tiling Scheme
+     * @param i18n module to get linguistic text
+     * @param language the requested language (optional)
      * @return a list with links
      */
-    public List<OgcApiLink> generateTileMatrixSetsLinks(URICustomizer uriBuilder, String tileMatrixSetId) {
+    public List<OgcApiLink> generateTileMatrixSetsLinks(URICustomizer uriBuilder, String tileMatrixSetId, I18n i18n, Optional<Locale> language) {
 
 
         return ImmutableList.<OgcApiLink>builder()
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                         .ensureLastPathSegment(tileMatrixSetId)
-                                        .setParameter("f", "json")
-                                        .toString()
-                        )
+                                        .removeParameters("f")
+                                        .toString())
                         .rel("tileMatrixSet")
                         .type("application/json")
-                        .build())
-                .build();
-    }
-
-    /**
-     * generates the links on the page /serviceId/tiles
-     *
-     * @param uriBuilder     the URI, split in host, path and query
-     * @return a list with links
-     */
-    public List<OgcApiLink> generateTilesLinks(URICustomizer uriBuilder, String tilingSchemeId) {
-
-        //TODO: check if this method should be removed
-        return ImmutableList.<OgcApiLink>builder()
-                .add(new ImmutableOgcApiLink.Builder()
-                        .href(uriBuilder.copy()
-                                        .ensureLastPathSegment("tiles")
-                                        .ensureLastPathSegment(tilingSchemeId)
-                                        .setParameter("f", "json")
-                                        .toString()
-                        )
-                        .rel("tiles")
-                        .type("application/json")
-                        .description("Vector Tiles Description") //TODO dynamic naming
-                        .build())
-                .build();
-    }
-
-
-    /**
-     * generates the links on the page /serviceId/tiles
-     *
-     * @param uriBuilder     the URI, split in host, path and query
-     * @return a list with links
-     */
-    public List<OgcApiLink> generateTilesLinks(URICustomizer uriBuilder) {
-
-
-        return ImmutableList.<OgcApiLink>builder()
-                .add(new ImmutableOgcApiLink.Builder()
-                        .href(uriBuilder.copy()
-                                .ensureLastPathSegment("tiles")
-                                .setParameter("f", "json")
-                                .toString()
-                        )
-                        .rel("tiles")
-                        .type("application/json")
-                        .description("Vector Tiles Description") //TODO dynamic naming
+                        .description(i18n.get("tileMatrixSetLink", language))
                         .build())
                 .build();
     }
@@ -134,12 +92,14 @@ public class VectorTilesLinkGenerator {
      * @param col                  the col of the tile
      * @param mvt                  mvt enabled or disabled
      * @param json                 json enabled or disabled
+     * @param i18n module to get linguistic text
+     * @param language the requested language (optional)
      * @return
      */
     public List<OgcApiLink> generateGeoJSONTileLinks(URICustomizer uriBuilder, OgcApiMediaType mediaType,
                                                      OgcApiMediaType alternateMediaType, String tileMatrixSetId,
                                                      String zoomLevel, String row, String col, boolean mvt,
-                                                     boolean json) {
+                                                     boolean json, I18n i18n, Optional<Locale> language) {
 
         uriBuilder.removeLastPathSegments(3);
         uriBuilder
@@ -157,7 +117,7 @@ public class VectorTilesLinkGenerator {
                     .rel("self")
                     .type(mediaType.type()
                                    .toString())
-                    .description("this document")
+                    .description(i18n.get("selfLink", language))
                     .build());
         }
         if (mvt) {
@@ -168,9 +128,9 @@ public class VectorTilesLinkGenerator {
                                     .setParameter("f", "mvt")
                                     .toString())
                     .rel("alternate")
-                    .type(alternateMediaType.type() // TODO: check
-                                              .toString())
-                    .description("this document as MVT")
+                    .type("application/vnd.mapbox-vector-tile")
+                    .description(i18n.get("alternateLink", language))
+                    .typeLabel("MVT")
                     .build());
         }
         return builder.build();
@@ -184,10 +144,12 @@ public class VectorTilesLinkGenerator {
      * @param tileMatrixSetId   the id of the tiling Scheme
      * @param mvt               mvt enabled or disabled
      * @param json              json enabled or disabled
+     * @param i18n module to get linguistic text
+     * @param language the requested language (optional)
      * @return a list with links
      */
     public List<OgcApiLink> generateTileMatrixSetLinks(URICustomizer uriBuilder, String tileMatrixSetId, boolean mvt,
-                                                       boolean json) {
+                                                       boolean json, I18n i18n, Optional<Locale> language) {
 
 
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>();
@@ -199,7 +161,7 @@ public class VectorTilesLinkGenerator {
                                     .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f=json")
                     .rel("tiles")
                     .type("application/geo+json")
-                    .description("Tile in GeoJSON. The link is a URI template where {tileMatrix}/{tileRow}/{tileCol} is the tile based on the tiling scheme {tileMatrixSetId}.")
+                    .description(i18n.get("tilesLinkTemplateGeoJSON", language))
                     .templated("true")
                     .build());
         }
@@ -210,7 +172,7 @@ public class VectorTilesLinkGenerator {
                                     .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f=mvt")
                     .rel("tiles")
                     .type("application/vnd.mapbox-vector-tile")
-                    .description("Mapbox vector tile. The link is a URI template where {tileMatrix}/{tileRow}/{tileCol} is the tile based on the tiling scheme {tileMatrixSetId}.")
+                    .description(i18n.get("tilesLinkTemplateMVT", language))
                     .templated("true")
                     .build());
         }
@@ -218,4 +180,27 @@ public class VectorTilesLinkGenerator {
         return builder.build();
     }
 
+    /**
+     * generates the links on the page /serviceId/tiles
+     *
+     * @param uriBuilder     the URI, split in host, path and query
+     * @param i18n module to get linguistic text
+     * @param language the requested language (optional)
+     * @return a list with links
+     */
+    public List<OgcApiLink> generateTilesLinks(URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
+
+
+        return ImmutableList.<OgcApiLink>builder()
+                .add(new ImmutableOgcApiLink.Builder()
+                        .href(uriBuilder.copy()
+                                .ensureLastPathSegment("tiles")
+                                .removeParameters("f")
+                                .toString()
+                        )
+                        .rel("tiles")
+                        .description(i18n.get("tilesLink", language))
+                        .build())
+                .build();
+    }
 }

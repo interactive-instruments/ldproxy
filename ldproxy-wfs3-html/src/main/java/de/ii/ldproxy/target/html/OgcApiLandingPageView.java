@@ -10,6 +10,7 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import io.dropwizard.views.View;
 
@@ -37,10 +38,21 @@ public class OgcApiLandingPageView extends View {
     public Map<String, String> bbox2;
     public Map<String, String> temporalExtent;
     private final OgcApiDatasetData datasetData;
+    public String dataTitle;
+    public String apiDefinitionTitle;
+    public String apiDocumentationTitle;
+    public String providerTitle;
+    public String licenseTitle;
+    public String spatialExtentTitle;
+    public String temporalExtentTitle;
+    public String dataSourceTitle;
+    public String additionalLinksTitle;
+    public String expertInformationTitle;
+    public String none;
 
     public OgcApiLandingPageView(OgcApiDatasetData datasetData, LandingPage apiLandingPage,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig,
-                                 URICustomizer uriCustomizer) {
+                                 URICustomizer uriCustomizer, I18n i18n, Optional<Locale> language) {
         super("landingPage.mustache", Charsets.UTF_8);
         this.apiLandingPage = apiLandingPage;
         this.breadCrumbs = breadCrumbs;
@@ -99,6 +111,18 @@ public class OgcApiLandingPageView extends View {
         }
 
         this.datasetData = datasetData;
+
+        this.dataTitle = i18n.get("dataLink", language);
+        this.apiDefinitionTitle = i18n.get("apiDefinition", language);
+        this.apiDocumentationTitle = i18n.get("apiDocumentation", language);
+        this.providerTitle = i18n.get("provider", language);
+        this.licenseTitle = i18n.get("license", language);
+        this.spatialExtentTitle = i18n.get("spatialExtent", language);
+        this.temporalExtentTitle = i18n.get("temporalExtent", language);
+        this.dataSourceTitle = i18n.get("dataSource", language);
+        this.additionalLinksTitle = i18n.get("additionalLinks", language);
+        this.expertInformationTitle = i18n.get ("expertInformation", language);
+        this.none = i18n.get ("none", language);
     }
 
     public List<OgcApiLink> getLinks() {

@@ -9,18 +9,12 @@ package de.ii.ldproxy.wfs3.vt;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.GET;
@@ -47,6 +41,9 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Provides
 @Instantiate
 public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, ConformanceClass {
+
+    @Requires
+    I18n i18n;
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("tileMatrixSets")
@@ -80,7 +77,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
 
     @Override
     public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/tmxs";
+        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tmxs";
     }
 
     @Override
@@ -108,7 +105,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
             Map<String, Object> wfs3LinksMap = new HashMap<>();
             wfs3LinksMap.put("id", tileMatrixSetId);
             wfs3LinksMap.put("title", "Google Maps Compatible for the World");
-            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTileMatrixSetsLinks(wfs3Request.getUriCustomizer(), tileMatrixSetId.toString()));
+            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTileMatrixSetsLinks(wfs3Request.getUriCustomizer(), tileMatrixSetId.toString(), i18n, wfs3Request.getLanguage()));
             wfs3LinksList.add(wfs3LinksMap);
         }
 

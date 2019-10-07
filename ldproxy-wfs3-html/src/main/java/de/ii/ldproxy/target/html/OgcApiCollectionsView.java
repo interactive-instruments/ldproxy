@@ -8,12 +8,12 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.Collections;
 import io.dropwizard.views.View;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -32,9 +32,16 @@ public class OgcApiCollectionsView extends View {
     public List<String> crs;
     public Metadata metadata;
     public List<OgcApiLink> links;
+    public String collectionsTitle;
+    public String supportedCrsTitle;
+    public String additionalLinksTitle;
+    public String expertInformationTitle;
+    public String none;
+    public String moreInformation;
 
     public OgcApiCollectionsView(OgcApiDatasetData datasetData, Collections collections,
-                                 final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig) {
+                                 final List<NavigationDTO> breadCrumbs, String urlPrefix,
+                                 HtmlConfig htmlConfig, I18n i18n, Optional<Locale> language) {
         super("collections.mustache", Charsets.UTF_8);
         this.collections = collections.getCollections();
         this.breadCrumbs = breadCrumbs;
@@ -61,6 +68,13 @@ public class OgcApiCollectionsView extends View {
         }
 
         this.datasetData = datasetData;
+
+        this.collectionsTitle = i18n.get("collections", language);
+        this.supportedCrsTitle = i18n.get("supportedCrs", language);
+        this.additionalLinksTitle = i18n.get("additionalLinks", language);
+        this.expertInformationTitle = i18n.get ("expertInformation", language);
+        this.none = i18n.get ("none", language);
+        this.moreInformation = i18n.get("moreInformation", language);
     }
 
     public List<OgcApiLink> getLinks() {

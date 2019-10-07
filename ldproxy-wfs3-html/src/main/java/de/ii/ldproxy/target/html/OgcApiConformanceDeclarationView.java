@@ -8,13 +8,12 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.ConformanceDeclaration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import io.dropwizard.views.View;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -30,7 +29,8 @@ public class OgcApiConformanceDeclarationView extends View {
     public String title;
     public String description;
 
-    public OgcApiConformanceDeclarationView(ConformanceDeclaration conformanceDeclaration, final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig) {
+    public OgcApiConformanceDeclarationView(ConformanceDeclaration conformanceDeclaration, final List<NavigationDTO> breadCrumbs,
+                                            String urlPrefix, HtmlConfig htmlConfig, I18n i18n, Optional<Locale> language) {
         super("conformanceDeclaration.mustache", Charsets.UTF_8);
         this.conformanceDeclaration = conformanceDeclaration;
         this.breadCrumbs = breadCrumbs;
@@ -38,16 +38,15 @@ public class OgcApiConformanceDeclarationView extends View {
         this.htmlConfig = htmlConfig;
         this.title = conformanceDeclaration
                 .getTitle()
-                .orElse("Conformance Declaration");
+                .orElse(i18n.get("conformanceDeclarationTitle", language));
         this.description = conformanceDeclaration
                 .getDescription()
-                .orElse("");
+                .orElse(i18n.get("conformanceDeclarationDescription", language));
         this.links = conformanceDeclaration
                 .getLinks()
                 .stream()
                 .filter(link -> !link.getRel().matches("^(?:self|alternate|home)$"))
                 .collect(Collectors.toList());
-
     }
 
     public List<String> getClasses() {

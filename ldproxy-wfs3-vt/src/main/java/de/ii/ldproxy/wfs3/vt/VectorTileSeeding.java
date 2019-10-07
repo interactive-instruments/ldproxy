@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
@@ -44,6 +45,8 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     private Thread t = null;
     private Map<Thread, String> threadMap = new HashMap<>();
 
+    @Requires
+    I18n i18n;
 
     @Requires
     private CrsTransformation crsTransformation;
@@ -65,7 +68,6 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
         return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
-
 
     /**
      * The runnable Task which starts the seeding.
@@ -117,7 +119,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                 }
 
                 if (tilesDatasetEnabled && seedingDatasetEnabled) {
-                    seedingDataset(collectionIdsDataset, api, crsTransformation, cache, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson.get());
+                    seedingDataset(collectionIdsDataset, api, crsTransformation, cache, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson.get(), Optional.of(Locale.ENGLISH));
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -165,7 +167,8 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     private void seedingDataset(Set<String> collectionIdsDataset, OgcApiDataset service,
                                 CrsTransformation crsTransformation, VectorTilesCache cache,
                                 TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
-                                OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
+                                OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language)
+            throws FileNotFoundException {
 
         /*Computation of the minimum and maximum values for x and y from the minimum/maximum spatial extent
          * TODO: Maybe a spatial extent for the whole dataset in the config?*/
@@ -280,7 +283,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                     int collectionMin = seeding.get(tilingSchemeId)
                                                                .getMin();
                                     if (collectionMin <= z && z <= collectionMax) {
-                                        File tileFileMvtCollection = generateMVT(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
+                                        File tileFileMvtCollection = generateMVT(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
                                         layers.put(collectionId, tileFileMvtCollection);
                                     }
                                 }
@@ -304,7 +307,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                     int collectionMin = seeding.get(tilingSchemeId)
                                                                .getMin();
                                     if (collectionMin <= z && z <= collectionMax) {
-                                        generateJSON(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
+                                        generateJSON(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
                                     }
                                 }
                             }
@@ -333,14 +336,14 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     private File generateMVT(OgcApiDataset service, String collectionId, String tilingSchemeId, int z, int x,
                              int y, VectorTilesCache cache, CrsTransformation crsTransformation,
                              TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
-                             OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) {
+                             OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
 
         try {
             LOGGER.debug("seeding - ZoomLevel: " + Integer.toString(z) + " row: " + Integer.toString(x) + " col: " + Integer.toString(y));
             VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
             File tileFileMvt = tile.getFile(cache, "pbf");
             if (!tileFileMvt.exists()) {
-                File tileFileJson = generateJSON(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
+                File tileFileJson = generateJSON(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
                 Map<String, File> layers = new HashMap<>();
                 layers.put(collectionId, tileFileJson);
                 boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile);
@@ -375,7 +378,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     private File generateJSON(OgcApiDataset service, String collectionId, String tilingSchemeId, int z, int x,
                               int y, VectorTilesCache cache, CrsTransformation crsTransformation,
                               TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
-                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) {
+                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
 
         try {
             VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
@@ -399,7 +402,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                         .type(new MediaType("application", "json"))
                         .label("JSON")
                         .build();
-                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, null, null, null, uriCustomizer, mediaType, true, tile);
+                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, null, null, null, uriCustomizer, mediaType, true, tile, i18n, language);
             }
             return tileFileJson;
         } catch (FileNotFoundException e) {

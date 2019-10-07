@@ -19,6 +19,7 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,6 +27,9 @@ import java.util.Optional;
 @Instantiate
 @Provides(specifications = {OgcApiQueriesHandlerCollections.class})
 public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<OgcApiQueriesHandlerCollections.Query> {
+
+    @Requires
+    I18n i18n;
 
     public enum Query implements OgcApiQueryIdentifier {COLLECTIONS, FEATURE_COLLECTION}
 
@@ -58,7 +62,6 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
 
     private Response getCollectionsResponse(OgcApiQueryInputCollections queryInput, OgcApiRequestContext requestContext) {
 
-
         OgcApiDataset api = requestContext.getApi();
         OgcApiDatasetData apiData = api.getData();
 
@@ -67,7 +70,9 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                                              .copy(),
                     Optional.empty(),
                     requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes());
+                    requestContext.getAlternateMediaTypes(),
+                        i18n,
+                        requestContext.getLanguage());
 
         ImmutableCollections.Builder collections = new ImmutableCollections.Builder()
                 .title(apiData.getLabel())
@@ -80,7 +85,8 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                     requestContext.getUriCustomizer()
                                   .copy(),
                     requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes());
+                    requestContext.getAlternateMediaTypes(),
+                    requestContext.getLanguage());
         }
 
         CollectionsFormatExtension outputFormatExtension = api.getOutputFormat(CollectionsFormatExtension.class,
@@ -92,11 +98,16 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                 requestContext.getApi(),
                 requestContext);
 
-        return Response.ok()
-                       .entity(collectionsResponse.getEntity())
-                       .type(requestContext.getMediaType()
-                                           .type())
-                       .build();
+        Response.ResponseBuilder response = Response.ok()
+                .entity(collectionsResponse.getEntity())
+                .type(requestContext.getMediaType()
+                        .type());
+
+        Optional<Locale> language = requestContext.getLanguage();
+        if (language.isPresent())
+            response.language(language.get());
+
+        return response.build();
     }
 
     private Response getCollectionResponse(OgcApiQueryInputFeatureCollection queryInput,
@@ -114,7 +125,9 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                 requestContext.getUriCustomizer()
                     .copy(),
                 requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes());
+                requestContext.getAlternateMediaTypes(),
+                i18n,
+                requestContext.getLanguage());
 
         CollectionsFormatExtension outputFormatExtension = getOutputFormat(CollectionsFormatExtension.class, requestContext.getMediaType(), requestContext.getApi().getData(), "/collections/"+collectionId)
                 .orElseThrow(NotAcceptableException::new);
@@ -133,15 +146,22 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                                   .copy(),
                     false,
                     requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes());
+                    requestContext.getAlternateMediaTypes(),
+                    requestContext.getLanguage());
         }
 
-        Response response = outputFormatExtension.getCollectionResponse(ogcApiCollection.build(), api, requestContext);
+        Response collectionResponse = outputFormatExtension.getCollectionResponse(ogcApiCollection.build(), api, requestContext);
 
-        return Response.ok()
-                .entity(response.getEntity())
-                .type(outputFormatExtension.getMediaType().type())
-                .build();
+        Response.ResponseBuilder response = Response.ok()
+                .entity(collectionResponse.getEntity())
+                .type(requestContext.getMediaType()
+                        .type());
+
+        Optional<Locale> language = requestContext.getLanguage();
+        if (language.isPresent())
+            response.language(language.get());
+
+        return response.build();
     }
 
     private <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, OgcApiDatasetData apiData, String path) {

@@ -8,19 +8,10 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.server.CoreServerConfig;
 import de.ii.xtraplatform.service.api.ServiceResource;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.felix.ipojo.annotations.StaticServiceProperty;
+import org.apache.felix.ipojo.annotations.*;
 import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +25,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author zahnen
@@ -89,15 +77,18 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         OgcApiMediaType selectedMediaType = ogcApiContentNegotiation.negotiate(requestContext, supportedMediaTypes)
                                                                     .orElseThrow(NotAcceptableException::new);
 
+        Locale selectedLanguage = ogcApiContentNegotiation.negotiate(requestContext)
+                                                          .orElse(Locale.ENGLISH);
+
         Set<OgcApiMediaType> alternateMediaTypes = getAlternateMediaTypes(selectedMediaType, supportedMediaTypes);
 
-        //TODO: inject locale, use for html (requestContext.getLanguage())
         OgcApiRequestContext ogcApiRequestContext = new ImmutableOgcApiRequestContext.Builder()
                 .requestUri(requestContext.getUriInfo()
                                           .getRequestUri())
                 .externalUri(getExternalUri())
                 .mediaType(selectedMediaType)
                 .alternateMediaTypes(alternateMediaTypes)
+                .language(selectedLanguage)
                 .api(service)
                 .build();
 

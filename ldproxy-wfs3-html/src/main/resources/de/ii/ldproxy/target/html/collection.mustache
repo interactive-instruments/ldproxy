@@ -7,7 +7,7 @@
     <br/>
 
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">Link to the Data</div>
+        <div class="col-md-2 font-weight-bold">{{dataTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
                 {{#items}}
@@ -16,9 +16,7 @@
                 </li>
                 {{/items}}
                 {{^items}}
-                    <li>
-                        None
-                    </li>
+                    <li>{{none}}</li>
                 {{/items}}
             </ul>
         </div>
@@ -26,7 +24,7 @@
 
     {{#bbox2}}
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">Spatial Extent</div>
+        <div class="col-md-2 font-weight-bold">{{spatialExtentTitle}}</div>
         {{^hideMap}}
             <div class="col-md-10">
                 <div id="map"></div>
@@ -46,7 +44,7 @@
 
     {{#temporalExtent}}
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">Temporal Extent</div>
+        <div class="col-md-2 font-weight-bold">{{temporalExtentTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
                 <li>
@@ -60,7 +58,7 @@
     <h2>Expert information</h2>
 
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">Supported CRSs</div>
+        <div class="col-md-2 font-weight-bold">{{supportedCrsTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
                 {{#crs}}
@@ -79,7 +77,7 @@
 
     {{#storageCrs}}
         <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">Storage CRS</div>
+            <div class="col-md-2 font-weight-bold">{{storageCrsTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
                     <li>
@@ -91,7 +89,7 @@
     {{/storageCrs}}
 
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">Additional Links</div>
+        <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
                 {{#links}}
@@ -100,14 +98,14 @@
                     </li>
                 {{/links}}
                 {{^links}}
-                    <li>None</li>
+                    <li>{{none}}</li>
                 {{/links}}
             </ul>
         </div>
     </div>
 
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">Type of Data</div>
+        <div class="col-md-2 font-weight-bold">{{itemTypeTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
                 {{#itemType}}

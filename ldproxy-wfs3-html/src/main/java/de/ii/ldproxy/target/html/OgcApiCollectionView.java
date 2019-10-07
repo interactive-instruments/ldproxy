@@ -9,20 +9,23 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import io.dropwizard.views.View;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * @author zahnen
  */
 public class OgcApiCollectionView extends View {
+
+    @Requires
+    private I18n i18n;
+
     private final OgcApiCollection collection;
     private final List<NavigationDTO> breadCrumbs;
     private final String urlPrefix;
@@ -39,9 +42,20 @@ public class OgcApiCollectionView extends View {
     public Metadata metadata;
     public List<OgcApiLink> links;
     public OgcApiLink items;
+    public String itemTypeTitle;
+    public String dataTitle;
+    public String licenseTitle;
+    public String spatialExtentTitle;
+    public String temporalExtentTitle;
+    public String supportedCrsTitle;
+    public String storageCrsTitle;
+    public String additionalLinksTitle;
+    public String expertInformationTitle;
+    public String none;
 
     public OgcApiCollectionView(OgcApiDatasetData datasetData, OgcApiCollection collection,
-                                final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig) {
+                                final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig,
+                                I18n i18n, Optional<Locale> language) {
         super("collection.mustache", Charsets.UTF_8);
         this.collection = collection;
         this.breadCrumbs = breadCrumbs;
@@ -91,6 +105,17 @@ public class OgcApiCollectionView extends View {
                 .orElse("feature");
 
         this.datasetData = datasetData;
+
+        this.itemTypeTitle = i18n.get("itemType", language);
+        this.dataTitle = i18n.get("dataLink", language);
+        this.licenseTitle = i18n.get("license", language);
+        this.spatialExtentTitle = i18n.get("spatialExtent", language);
+        this.temporalExtentTitle = i18n.get("temporalExtent", language);
+        this.supportedCrsTitle = i18n.get("supportedCrs", language);
+        this.storageCrsTitle = i18n.get("storageCrs", language);
+        this.additionalLinksTitle = i18n.get("additionalLinks", language);
+        this.expertInformationTitle = i18n.get ("expertInformation", language);
+        this.none = i18n.get ("none", language);
     }
 
     public List<OgcApiLink> getLinks() {

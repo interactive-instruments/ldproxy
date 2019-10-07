@@ -12,6 +12,7 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 
+import java.util.Locale;
 import java.util.Optional;
 
 public interface OgcApiFeatureFormatExtension extends FormatExtension {
@@ -32,7 +33,7 @@ public interface OgcApiFeatureFormatExtension extends FormatExtension {
         return Optional.empty();
     }
 
-    default Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext) {
+    default Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext, Optional<Locale> language) {
         return Optional.empty();
     }
 

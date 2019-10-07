@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
@@ -51,6 +52,9 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             .addMethods(OgcApiContext.HttpMethods.GET)
             .subPathPattern("^/?(?:\\w+(?:/\\w+/\\w+/\\w+)?)?$")
             .build();
+
+    @Requires
+    I18n i18n;
 
     @Requires
     private CrsTransformation crsTransformation;
@@ -100,7 +104,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
     @Override
     public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/collections";
+        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/collections";
     }
 
     @Override
@@ -129,7 +133,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             wfs3LinksMap.put("tileMatrixSet", tileMatrixSetId);
             wfs3LinksMap.put("tileMatrixSetURI", "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad");
             // TODO: json support
-            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), tileMatrixSetId.toString(), true, false));
+            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), tileMatrixSetId.toString(), true, false, i18n, wfs3Request.getLanguage()));
             wfs3LinksList.add(wfs3LinksMap);
         }
 
@@ -154,7 +158,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         File file = cache.getTileMatrixSet(tilingSchemeId);
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-        List<OgcApiLink> ogcApiLink = vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), tilingSchemeId, true, false);
+        List<OgcApiLink> ogcApiLink = vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), tilingSchemeId, true, false, i18n, wfs3Request.getLanguage());
 
 
         /*read the json file to add links*/
@@ -433,7 +437,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             if (requestedCollections != null && !requestedCollections.contains(collectionId))
                 continue;
             if (VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(wfsService.getData()), collectionId, "application/vnd.mapbox-vector-tile", true)) {
-                VectorTile.checkZoomLevel(Integer.parseInt(level), vectorTileMapGenerator.getMinMaxMap(wfsService.getData(), false), wfsService, wfs3OutputFormatGeoJson, collectionId, tilingSchemeId, "application/vnd.mapbox-vector-tile", row, col, doNotCache, cache, false, wfs3Request, crsTransformation);
+                VectorTile.checkZoomLevel(Integer.parseInt(level), vectorTileMapGenerator.getMinMaxMap(wfsService.getData(), false), wfsService, wfs3OutputFormatGeoJson, collectionId, tilingSchemeId, "application/vnd.mapbox-vector-tile", row, col, doNotCache, cache, false, wfs3Request, crsTransformation, i18n);
 
                 Map<String, File> layerCollection = new HashMap<String, File>();
 
@@ -453,7 +457,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                 .type(new MediaType("application", "geo+json"))
                                 .label("GeoJSON")
                                 .build();
-                        boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, wfs3Request.getUriCustomizer(), geojsonMediaType, false, layerTile);
+                        boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, wfs3Request.getUriCustomizer(), geojsonMediaType, false, layerTile, i18n, wfs3Request.getLanguage());
                         if (!success) {
                             String msg = "Internal server error: could not generate GeoJSON for a tile.";
                             LOGGER.error(msg);
@@ -461,7 +465,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                         }
                     } else {
                         if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, layerTile);
+                            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, layerTile, i18n, wfs3Request.getLanguage());
                         }
                     }
                     layers.put(collectionId, tileFileJson);

@@ -16,6 +16,8 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -33,10 +35,11 @@ public class OgcApiCollectionsCrs implements OgcApiCollectionsExtension {
 
     @Override
     public ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder,
-                                         OgcApiDatasetData apiData,
-                                         URICustomizer uriCustomizer,
-                                         OgcApiMediaType mediaType,
-                                         List<OgcApiMediaType> alternateMediaTypes) {
+                                                OgcApiDatasetData apiData,
+                                                URICustomizer uriCustomizer,
+                                                OgcApiMediaType mediaType,
+                                                List<OgcApiMediaType> alternateMediaTypes,
+                                                Optional<Locale> language) {
         if (isExtensionEnabled(apiData, CrsConfiguration.class)) {
             // list all CRSs as the list of default CRSs
             ImmutableList<String> crsList = ImmutableList.<String>builder()

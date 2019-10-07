@@ -7,25 +7,25 @@
     <br/>
 
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">Data Collections</div>
+        <div class="col-md-2 font-weight-bold">{{collectionsTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
                 {{#collections}}
                     <li>
-                        <a href="collections/{{id}}/items">{{title}}</a> <small>— <a href="collections/{{id}}">more information</a></small>
+                        <a href="collections/{{id}}/items">{{title}}</a> <small>— <a href="collections/{{id}}">{{moreInformation}}</a></small>
                     </li>
                 {{/collections}}
                 {{^collections}}
-                    <li>None</li>
+                    <li>{{none}}</li>
                 {{/collections}}
             </ul>
         </div>
     </div>
 
-    <h2>Expert information</h2>
+    <h2>{{expertInformationTitle}}</h2>
 
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">Supported CRSs</div>
+        <div class="col-md-2 font-weight-bold">{{supportedCrsTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
                 {{#crs}}
@@ -43,7 +43,7 @@
     </div>
 
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">Additional Links</div>
+        <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
                 {{#links}}
@@ -52,7 +52,7 @@
                     </li>
                 {{/links}}
                 {{^links}}
-                    <li>None</li>
+                    <li>{{none}}</li>
                 {{/links}}
             </ul>
         </div>

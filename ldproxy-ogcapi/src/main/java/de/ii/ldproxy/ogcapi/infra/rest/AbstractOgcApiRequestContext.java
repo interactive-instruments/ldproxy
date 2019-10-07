@@ -14,6 +14,7 @@ import org.immutables.value.Value;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -32,6 +33,9 @@ public abstract class AbstractOgcApiRequestContext implements OgcApiRequestConte
 
     @Override
     public abstract List<OgcApiMediaType> getAlternateMediaTypes();
+
+    @Override
+    public abstract Optional<Locale> getLanguage();
 
     @Value.Derived
     @Override

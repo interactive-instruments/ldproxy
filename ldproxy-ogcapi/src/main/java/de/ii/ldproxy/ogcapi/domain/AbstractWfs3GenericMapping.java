@@ -36,7 +36,7 @@ public abstract class AbstractWfs3GenericMapping<T extends Enum<T>> implements T
 
     @Override
     public String getName() {
-        return name;
+        return name; // TODO support i18n
     }
 
     @Override
@@ -51,7 +51,7 @@ public abstract class AbstractWfs3GenericMapping<T extends Enum<T>> implements T
 
     public void setName(String name) {
         this.name = name;
-    }
+    } // TODO support i18n
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;

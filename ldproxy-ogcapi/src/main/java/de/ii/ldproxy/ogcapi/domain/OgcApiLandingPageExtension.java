@@ -8,6 +8,8 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 public interface OgcApiLandingPageExtension extends OgcApiContentExtension {
 
@@ -15,7 +17,8 @@ public interface OgcApiLandingPageExtension extends OgcApiContentExtension {
                                          OgcApiDatasetData apiData,
                                          URICustomizer uriCustomizer,
                                          OgcApiMediaType mediaType,
-                                         List<OgcApiMediaType> alternateMediaTypes);
+                                         List<OgcApiMediaType> alternateMediaTypes,
+                                         Optional<Locale> language);
 
     default String getResourceName() { return "LandingPage"; };
 }

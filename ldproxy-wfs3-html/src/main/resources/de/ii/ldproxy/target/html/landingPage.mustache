@@ -27,50 +27,33 @@
     </ul>
     <br/>
     <br/>
+    {{#data}}
+    <span><big><a href="{{href}}">{{title}}</a></big></span>
+    {{/data}}
+    <br/>
     <br/>
 
-    {{#data}}
         <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">Data</div>
+            <div class="col-md-2 font-weight-bold">{{apiDocumentationTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
-                    <li>
-                        <a href="{{href}}">{{title}}</a>
-                    </li>
+                    {{#apiDefinition}}
+                        <li>
+                            <a href="{{href}}" target="_blank">{{title}}</a>
+                        </li>
+                    {{/apiDefinition}}
+                    {{#apiDocumentation}}
+                        <li>
+                            <a href="{{href}}" target="_blank">{{title}}</a>
+                        </li>
+                    {{/apiDocumentation}}
                 </ul>
             </div>
         </div>
-    {{/data}}
-
-    {{#apiDefinition}}
-        <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">API definition</div>
-            <div class="col-md-10">
-                <ul class="list-unstyled">
-                    <li>
-                        <a href="{{href}}" target="_blank">{{title}}</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    {{/apiDefinition}}
-
-    {{#apiDocumentation}}
-        <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">API documentation</div>
-            <div class="col-md-10">
-                <ul class="list-unstyled">
-                    <li>
-                        <a href="{{href}}" target="_blank">{{title}}</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    {{/apiDocumentation}}
 
     {{#metadata}}
         <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">Provider</div>
+            <div class="col-md-2 font-weight-bold">{{providerTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled" itemprop="creator" itemscope itemtype="http://schema.org/Organization">
                     {{#contactName}}
@@ -98,7 +81,7 @@
         </div>
         {{#licenseName}}
             <div class="row my-3">
-                <div class="col-md-2 font-weight-bold">License</div>
+                <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
                 <div class="col-md-10">
                     <div itemprop="license">{{.}}</div>
                 </div>
@@ -106,10 +89,9 @@
         {{/licenseName}}
     {{/metadata}}
 
-
     {{#bbox2}}
         <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">Spatial Extent</div>
+            <div class="col-md-2 font-weight-bold">{{spatialExtentTitle}}</div>
             {{^hideMap}}
                 <div class="col-md-10">
                     <div id="map"></div>
@@ -129,7 +111,7 @@
 
     {{#temporalExtent}}
         <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">Temporal Extent</div>
+            <div class="col-md-2 font-weight-bold">{{temporalExtentTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
                     <li>
@@ -140,10 +122,10 @@
         </div>
     {{/temporalExtent}}
 
-    <h2>Expert information</h2>
+    <h2>{{expertInformationTitle}}</h2>
 
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">Additional Links</div>
+        <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
                 {{#links}}
@@ -152,7 +134,7 @@
                     </li>
                 {{/links}}
                 {{^links}}
-                    <li>None</li>
+                    <li>{{none}}</li>
                 {{/links}}
             </ul>
         </div>
@@ -169,7 +151,7 @@
                         </li>
                     {{/links}}
                     {{^links}}
-                        <li>None</li>
+                        <li>{{none}}</li>
                     {{/links}}
                 </ul>
             </div>
@@ -178,7 +160,7 @@
 
     {{#dataSourceUrl}}
         <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">Data source</div>
+            <div class="col-md-2 font-weight-bold">{{dataSourceTitle}}</div>
             <div class="col-md-10">
                 <a itemprop="isBasedOn" href="{{.}}" target="_blank">{{.}}</a>
             </div>

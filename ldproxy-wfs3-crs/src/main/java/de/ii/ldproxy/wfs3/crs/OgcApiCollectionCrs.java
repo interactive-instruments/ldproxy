@@ -16,6 +16,8 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -38,7 +40,8 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
                                                      URICustomizer uriCustomizer,
                                                      boolean isNested,
                                                      OgcApiMediaType mediaType,
-                                                     List<OgcApiMediaType> alternateMediaTypes) {
+                                                     List<OgcApiMediaType> alternateMediaTypes,
+                                                     Optional<Locale> language) {
         if (isExtensionEnabled(apiData, featureTypeConfiguration, CrsConfiguration.class)) {
             ImmutableList<String> crsList;
             if (isNested) {

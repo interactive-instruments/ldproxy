@@ -14,15 +14,19 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 public class ConformanceDeclarationLinksGenerator extends DefaultLinksGenerator {
 
     public List<OgcApiLink> generateLinks(URICustomizer uriBuilder,
                                           OgcApiMediaType mediaType,
-                                          List<OgcApiMediaType> alternateMediaTypes)
+                                          List<OgcApiMediaType> alternateMediaTypes,
+                                          I18n i18n,
+                                          Optional<Locale> language)
     {
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
-                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes));
+                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
         builder.add(new ImmutableOgcApiLink.Builder()
                 .href(uriBuilder
@@ -32,7 +36,7 @@ public class ConformanceDeclarationLinksGenerator extends DefaultLinksGenerator 
                         .clearParameters()
                         .toString())
                 .rel("home")
-                .description("API Landing Page")
+                .description(i18n.get("homeLink",language))
                 .build());
 
         return builder.build();

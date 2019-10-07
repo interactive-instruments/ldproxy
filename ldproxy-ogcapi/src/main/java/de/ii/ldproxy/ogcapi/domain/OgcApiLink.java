@@ -44,7 +44,7 @@ public abstract class OgcApiLink {
         if (getTypeLabel() == null) {
             return getDescription();
         }
-        return String.format("%s as %s", getDescription(), getTypeLabel());
+        return String.format("%s %s", getDescription(), getTypeLabel());
     }
 
     @XmlAttribute

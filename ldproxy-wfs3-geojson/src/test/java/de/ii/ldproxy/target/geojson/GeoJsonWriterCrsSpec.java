@@ -24,10 +24,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
 
 import static com.greghaskins.spectrum.dsl.specification.Specification.*;
 import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS;
@@ -214,6 +211,11 @@ public class GeoJsonWriterCrsSpec {
                                                                @Override
                                                                public List<OgcApiMediaType> getAlternateMediaTypes() {
                                                                    return null;
+                                                               }
+
+                                                               @Override
+                                                               public Optional<Locale> getLanguage() {
+                                                                   return Optional.empty();
                                                                }
 
                                                                @Override

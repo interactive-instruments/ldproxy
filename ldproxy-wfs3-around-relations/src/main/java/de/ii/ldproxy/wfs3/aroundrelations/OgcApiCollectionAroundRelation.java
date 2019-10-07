@@ -15,6 +15,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -38,7 +39,8 @@ public class OgcApiCollectionAroundRelation implements OgcApiCollectionExtension
                                                      URICustomizer uriCustomizer,
                                                      boolean isNested,
                                                      OgcApiMediaType mediaType,
-                                                     List<OgcApiMediaType> alternateMediaTypes) {
+                                                     List<OgcApiMediaType> alternateMediaTypes,
+                                                     Optional<Locale> language) {
         final Optional<AroundRelationsConfiguration> aroundRelationConfiguration = featureTypeConfiguration.getExtension(AroundRelationsConfiguration.class);
         if (aroundRelationConfiguration.isPresent()) {
             if (!aroundRelationConfiguration.get()

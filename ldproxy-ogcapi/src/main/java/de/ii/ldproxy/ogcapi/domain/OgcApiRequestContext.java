@@ -8,14 +8,15 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
-/**
- * @author zahnen
- */
 public interface OgcApiRequestContext {
     OgcApiMediaType getMediaType();
 
     List<OgcApiMediaType> getAlternateMediaTypes();
+
+    Optional<Locale> getLanguage();
 
     OgcApiDataset getApi();
 

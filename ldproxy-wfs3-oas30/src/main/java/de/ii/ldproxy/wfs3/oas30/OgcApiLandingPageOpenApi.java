@@ -13,6 +13,8 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  * @author zahnen
@@ -30,7 +32,7 @@ public class OgcApiLandingPageOpenApi implements OgcApiLandingPageExtension {
     @Override
     public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiDatasetData apiData,
                                                 URICustomizer uriCustomizer, OgcApiMediaType mediaType,
-                                                List<OgcApiMediaType> alternateMediaTypes) {
+                                                List<OgcApiMediaType> alternateMediaTypes, Optional<Locale> language) {
 
         /* TODO
         if (isEnabledForApi(apiData)) {

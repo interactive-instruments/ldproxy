@@ -8,6 +8,7 @@
 package de.ii.ldproxy.wfs3.vt;
 
 
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
@@ -458,7 +459,7 @@ class VectorTile {
                                                      String collectionId, String tilingSchemeId, String mediaType,
                                                      String row, String col, boolean doNotCache, VectorTilesCache cache,
                                                      boolean isCollection, OgcApiRequestContext wfs3Request,
-                                                     CrsTransformation crsTransformation) throws FileNotFoundException {
+                                                     CrsTransformation crsTransformation, I18n i18n) throws FileNotFoundException {
         Map<String, String> zoomLevels = new HashMap<>();
 
         try {
@@ -497,7 +498,7 @@ class VectorTile {
                 //if requested zoom Level is not in range
                 if (zoomLevel < minZoom || zoomLevel > maxZoom || minZoom > maxZoom) {
                     zoomLevels.put(collectionId, "false");
-                    generateEmptyTile(collectionId, tilingSchemeId, zoomLevel, wfsService, wfs3OutputFormatGeoJson, mediaType, row, col, doNotCache, cache, isCollection, wfs3Request, crsTransformation);
+                    generateEmptyTile(collectionId, tilingSchemeId, zoomLevel, wfsService, wfs3OutputFormatGeoJson, mediaType, row, col, doNotCache, cache, isCollection, wfs3Request, crsTransformation, i18n);
                 } else {
                     zoomLevels.put(collectionId, "true");
                 }
@@ -528,13 +529,13 @@ class VectorTile {
                                          OgcApiDataset wfsService, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                                          String mediaType, String row, String col, boolean doNotCache,
                                          VectorTilesCache cache, boolean isCollection, OgcApiRequestContext wfs3Request,
-                                         CrsTransformation crsTransformation) throws FileNotFoundException {
+                                         CrsTransformation crsTransformation, I18n i18n) throws FileNotFoundException {
         try {
             if (mediaType.equals("application/json")) {
                 VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
                 File tileFileJSON = tile.getFile(cache, "json");
                 if (!tileFileJSON.exists()) {
-                    TileGeneratorJson.generateEmptyJSON(tileFileJSON, new DefaultTileMatrixSet(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService);
+                    TileGeneratorJson.generateEmptyJSON(tileFileJSON, new DefaultTileMatrixSet(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService, i18n, wfs3Request.getLanguage());
                 }
             }
             //generate empty MVT
@@ -546,7 +547,7 @@ class VectorTile {
                     VectorTile jsonTile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
                     File tileFileJSON = jsonTile.getFile(cache, "json");
                     if (!tileFileJSON.exists()) {
-                        TileGeneratorJson.generateEmptyJSON(tileFileJSON, new DefaultTileMatrixSet(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService);
+                        TileGeneratorJson.generateEmptyJSON(tileFileJSON, new DefaultTileMatrixSet(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService, i18n, wfs3Request.getLanguage());
                     }
                     TileGeneratorMvt.generateEmptyMVT(tileFileMvt, new DefaultTileMatrixSet());
                 }

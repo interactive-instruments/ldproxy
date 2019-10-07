@@ -10,6 +10,7 @@ package de.ii.ldproxy.target.html;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.codelists.Codelist;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.Collections;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
@@ -30,9 +31,6 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * @author zahnen
- */
 @Component
 @Provides
 @Instantiate
@@ -88,18 +86,17 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     public Response getLandingPageResponse(LandingPage apiLandingPage,
                                            OgcApiDataset api,
                                            OgcApiRequestContext requestContext) {
-        // TODO: support i18n
-        // TODO: locales from request context
-        String datasetsTitle = i18n.get("datasets");
+
+        String rootTitle = i18n.get("root", requestContext.getLanguage());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(datasetsTitle, requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(1)
                         .toString()))
                 .add(new NavigationDTO(api.getData().getLabel()))
                 .build();
 
-        OgcApiLandingPageView landingPageView = new OgcApiLandingPageView(api.getData(), apiLandingPage, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer());
+        OgcApiLandingPageView landingPageView = new OgcApiLandingPageView(api.getData(), apiLandingPage, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
@@ -111,12 +108,12 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
                                            OgcApiDataset api, OgcApiRequestContext requestContext)  {
 
-        //TODO: locales from request context
-        String datasetsTitle = i18n.get("datasets");
+        String rootTitle = i18n.get("root", requestContext.getLanguage());
+        String conformanceDeclarationTitle = i18n.get("conformanceDeclarationTitle", requestContext.getLanguage());
 
         final URICustomizer uriCustomizer = requestContext.getUriCustomizer();
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(datasetsTitle,
+                .add(new NavigationDTO(rootTitle,
                                        uriCustomizer.copy()
                                                      .removeLastPathSegments(2)
                                                      .toString()))
@@ -124,11 +121,11 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                        uriCustomizer.copy()
                                                     .removeLastPathSegments(1)
                                                     .toString()))
-                .add(new NavigationDTO("Conformance Declaration"))
+                .add(new NavigationDTO(conformanceDeclarationTitle))
                 .build();
 
         OgcApiConformanceDeclarationView ogcApiConformanceDeclarationView =
-                new OgcApiConformanceDeclarationView(conformanceDeclaration, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig);
+                new OgcApiConformanceDeclarationView(conformanceDeclaration, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, i18n, requestContext.getLanguage());
         return Response.ok()
                        .type(getMediaType().type())
                        .entity(ogcApiConformanceDeclarationView)
@@ -138,20 +135,20 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     @Override
     public Response getCollectionsResponse(Collections collections, OgcApiDataset api, OgcApiRequestContext requestContext) {
 
-        //TODO: locales from request context
-        String datasetsTitle = i18n.get("datasets");
+        String rootTitle = i18n.get("root", requestContext.getLanguage());
+        String collectionsTitle = i18n.get("collections", requestContext.getLanguage());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(datasetsTitle, requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(2)
                         .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(1)
                         .toString()))
-                .add(new NavigationDTO("Collections"))
+                .add(new NavigationDTO(collectionsTitle))
                 .build();
 
-        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig);
+        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
@@ -165,23 +162,23 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                           OgcApiDataset api,
                                           OgcApiRequestContext requestContext) {
 
-        //TODO: locales from request context
-        String datasetsTitle = i18n.get("datasets");
+        String rootTitle = i18n.get("root", requestContext.getLanguage());
+        String collectionsTitle = i18n.get("collections", requestContext.getLanguage());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(datasetsTitle, requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(3)
                         .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(2)
                         .toString()))
-                .add(new NavigationDTO("Collections", requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(1)
                         .toString()))
                 .add(new NavigationDTO(ogcApiCollection.getTitle().orElse(ogcApiCollection.getId())))
                 .build();
 
-        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig);
+        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
@@ -195,7 +192,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     }
 
     @Override
-    public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext) {
+    public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext, Optional<Locale> language) {
         OgcApiDatasetData serviceData = transformationContext.getApiData();
         String collectionName = transformationContext.getCollectionId();
         String staticUrlPrefix = transformationContext.getOgcApiRequest()
@@ -214,14 +211,14 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         if (transformationContext.isFeatureCollection()) {
             featureTypeDataset = createFeatureCollectionView(serviceData.getFeatureTypes()
-                                                                        .get(collectionName), uriCustomizer.copy(), serviceData.getFilterableFieldsForFeatureType(collectionName, true), serviceData.getHtmlNamesForFeatureType(collectionName), staticUrlPrefix, bare);
+                                                                        .get(collectionName), uriCustomizer.copy(), serviceData.getFilterableFieldsForFeatureType(collectionName, true), serviceData.getHtmlNamesForFeatureType(collectionName), staticUrlPrefix, bare, language);
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getFeatureTypes()
                                                                                         .get(collectionName)
-                                                                                        .getLabel(), transformationContext.getLinks(), uriCustomizer.copy());
+                                                                                        .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language);
         } else {
             featureTypeDataset = createFeatureDetailsView(serviceData.getFeatureTypes()
-                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix);
+                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language);
         }
 
         //TODO
@@ -244,7 +241,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                               URICustomizer uriCustomizer,
                                                               Map<String, String> filterableFields,
                                                               Map<String, String> htmlNames, String staticUrlPrefix,
-                                                              boolean bare) {
+                                                              boolean bare, Optional<Locale> language) {
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
@@ -258,7 +255,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         DatasetView dataset = new DatasetView("", requestUri, null, staticUrlPrefix, htmlConfig);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, i18n, language.orElse(Locale.ENGLISH));
 
         //TODO featureTypeDataset.uriBuilder = uriBuilder;
         dataset.featureTypes.add(featureTypeDataset);
@@ -292,38 +289,40 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     private FeatureCollectionView createFeatureDetailsView(FeatureTypeConfigurationOgcApi featureType,
                                                            URICustomizer uriCustomizer, List<OgcApiLink> links,
                                                            String apiLabel, String featureId,
-                                                           String staticUrlPrefix) {
-        //TODO: locales from request context
-        String datasetsTitle = i18n.get("datasets");
+                                                           String staticUrlPrefix, Optional<Locale> language) {
+
+        String rootTitle = i18n.get("root", language);
+        String collectionsTitle = i18n.get("collections", language);
+        String itemsTitle = i18n.get("items", language);
 
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
         } catch (URISyntaxException e) {
-            //ignore
+            // ignore
         }
         URICustomizer uriBuilder = uriCustomizer.copy()
                                                 .clearParameters()
                                                 .removeLastPathSegments(1);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, i18n, language.orElse(Locale.ENGLISH));
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());
 
         featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(datasetsTitle, uriBuilder.copy()
+                .add(new NavigationDTO(rootTitle, uriBuilder.copy()
                         .removeLastPathSegments(4)
                         .toString()))
                 .add(new NavigationDTO(apiLabel, uriBuilder.copy()
                         .removeLastPathSegments(3)
                         .toString()))
-                .add(new NavigationDTO("Collections", uriBuilder.copy()
+                .add(new NavigationDTO(collectionsTitle, uriBuilder.copy()
                         .removeLastPathSegments(2)
                         .toString()))
                 .add(new NavigationDTO(featureType.getLabel(), uriBuilder.copy()
                         .removeLastPathSegments(1)
                         .toString()))
-                .add(new NavigationDTO("Items", uriBuilder.toString()))
+                .add(new NavigationDTO(itemsTitle, uriBuilder.toString()))
                 .add(new NavigationDTO(featureId))
                 .build();
 
@@ -340,34 +339,36 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     }
 
     private void addDatasetNavigation(FeatureCollectionView featureCollectionView, String apiLabel,
-                                      String collectionLabel, List<OgcApiLink> links, URICustomizer uriCustomizer) {
-        //TODO: locales from request context
-        String datasetsTitle = i18n.get("datasets");
+                                      String collectionLabel, List<OgcApiLink> links, URICustomizer uriCustomizer,
+                                      Optional<Locale> language) {
+
+        String rootTitle = i18n.get("root", language);
+        String collectionsTitle = i18n.get("collections", language);
+        String itemsTitle = i18n.get("items", language);
 
         URICustomizer uriBuilder = uriCustomizer
                 .clearParameters()
                 .removePathSegment("items", -1);
 
         featureCollectionView.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(datasetsTitle, uriBuilder.copy()
+                .add(new NavigationDTO(rootTitle, uriBuilder.copy()
                         .removeLastPathSegments(3)
                         .toString()))
                 .add(new NavigationDTO(apiLabel, uriBuilder.copy()
                         .removeLastPathSegments(2)
                         .toString()))
-                .add(new NavigationDTO("Collections", uriBuilder.copy()
+                .add(new NavigationDTO(collectionsTitle, uriBuilder.copy()
                         .removeLastPathSegments(1)
                         .toString()))
                 .add(new NavigationDTO(collectionLabel, uriBuilder.toString()))
-                .add(new NavigationDTO("Items"))
+                .add(new NavigationDTO(itemsTitle))
                 .build();
 
-        // TODO: only activated formats
         featureCollectionView.formats = links.stream()
-                                             .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "alternate"))
+                                             .filter(link -> Objects.equals(link.getRel(), "alternate"))
                                              .sorted(Comparator.comparing(link -> link.getTypeLabel()
                                                                                       .toUpperCase()))
-                                             .map(wfs3Link -> new NavigationDTO(wfs3Link.getTypeLabel(), wfs3Link.getHref()))
+                                             .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
                                              .collect(Collectors.toList());
     }
 }

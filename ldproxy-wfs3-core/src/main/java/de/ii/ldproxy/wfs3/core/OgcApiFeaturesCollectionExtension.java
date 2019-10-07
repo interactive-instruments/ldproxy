@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.core;
 
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.BoundingBox;
@@ -16,6 +17,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +26,9 @@ import java.util.stream.Collectors;
 @Provides
 @Instantiate
 public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtension {
+
+    @Requires
+    I18n i18n;
 
     private final OgcApiExtensionRegistry extensionRegistry;
 
@@ -37,7 +42,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
     }
 
     @Override
-    public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection, FeatureTypeConfigurationOgcApi featureType, OgcApiDatasetData apiData, URICustomizer uriCustomizer, boolean isNested, OgcApiMediaType mediaType, List<OgcApiMediaType> alternateMediaTypes) {
+    public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection, FeatureTypeConfigurationOgcApi featureType, OgcApiDatasetData apiData, URICustomizer uriCustomizer, boolean isNested, OgcApiMediaType mediaType, List<OgcApiMediaType> alternateMediaTypes, Optional<Locale> language) {
 
         List<OgcApiMediaType> featureMediaTypes = extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
                 .stream()
@@ -61,7 +66,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                             .removeParameters("f")
                             .toString())
                     .rel("self")
-                    .description("The collection '" + featureType.getLabel() +"'")
+                    .description(i18n.get("selfLinkCollection",language).replace("{{collection}}",featureType.getLabel()))
                     .build());
         }
 
@@ -69,7 +74,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                 .href(uriBuilder.ensureLastPathSegment("items")
                         .toString())
                 .rel("items")
-                .description("Features in the collection '" + featureType.getLabel() +"'")
+                .description(i18n.get("itemsLink",language).replace("{{collection}}",featureType.getLabel()))
                 .build());
 
         // TODO add support for schemas
@@ -79,7 +84,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     .href(describeFeatureTypeUrl.get())
                     .rel("describedBy")
                     .type("application/xml")
-                    .description("XML schema for the feature collection")
+                    .description(i18n.get("describedByXsdLink",language))
                     .build());
         }
 
@@ -120,6 +125,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
 
     public static OgcApiCollection createNestedCollection(FeatureTypeConfigurationOgcApi featureType, OgcApiDatasetData apiData,
                                                    OgcApiMediaType mediaType, List<OgcApiMediaType> alternateMediaTypes,
+                                                   Optional<Locale> language,
                                                    URICustomizer uriCustomizer, List<OgcApiCollectionExtension> collectionExtenders) {
         ImmutableOgcApiCollection.Builder ogcApiCollection = ImmutableOgcApiCollection.builder()
                 .id(featureType.getId());
@@ -132,7 +138,8 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     uriCustomizer.copy(),
                     true,
                     mediaType,
-                    alternateMediaTypes);
+                    alternateMediaTypes,
+                    language);
         }
 
         return ogcApiCollection.build();

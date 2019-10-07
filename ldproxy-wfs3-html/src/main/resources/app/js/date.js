@@ -11,11 +11,11 @@ if ($('#timeInterval').length ) {
     if (fromSet && toSet) {
         document.getElementById("timeInterval").innerHTML = dateFromMilliseconds(window._ldproxy.time.start).concat(" - ").concat(dateFromMilliseconds(window._ldproxy.time.end));
     } else if (!fromSet && toSet) {
-        document.getElementById("timeInterval").innerHTML = "Until ".concat(dateFromMilliseconds(window._ldproxy.time.end));
+        document.getElementById("timeInterval").innerHTML = ".. - ".concat(dateFromMilliseconds(window._ldproxy.time.end));
     } else if (fromSet && !toSet) {
-        document.getElementById("timeInterval").innerHTML = "Since ".concat(dateFromMilliseconds(window._ldproxy.time.start));
+        document.getElementById("timeInterval").innerHTML = dateFromMilliseconds(window._ldproxy.time.start).concat(" - ..");
     } else {
-        document.getElementById("timeInterval").innerHTML = "Unspecified";
+        document.getElementById("timeInterval").innerHTML = "-";
     }
 }
 

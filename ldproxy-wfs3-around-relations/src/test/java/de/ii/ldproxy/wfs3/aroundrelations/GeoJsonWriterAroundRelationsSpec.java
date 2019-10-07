@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.Consumer;
@@ -295,6 +296,11 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                @Override
                                                                public List<OgcApiMediaType> getAlternateMediaTypes() {
                                                                    return null;
+                                                               }
+
+                                                               @Override
+                                                               public Optional<Locale> getLanguage() {
+                                                                   return Optional.empty();
                                                                }
 
                                                                @Override

@@ -15,6 +15,8 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -22,7 +24,9 @@ public class DefaultLinksGenerator {
 
     public List<OgcApiLink> generateLinks(URICustomizer uriBuilder,
                                           OgcApiMediaType mediaType,
-                                          List<OgcApiMediaType> alternateMediaTypes) {
+                                          List<OgcApiMediaType> alternateMediaTypes,
+                                          I18n i18n,
+                                          Optional<Locale> language) {
         uriBuilder
                 .ensureNoTrailingSlash();
 
@@ -34,16 +38,16 @@ public class DefaultLinksGenerator {
                         .rel("self")
                         .type(mediaType.type()
                                        .toString())
-                        .description("This document")
+                        .description(i18n.get("selfLink",language))
                         .build())
                 .addAll(alternateMediaTypes.stream()
-                                             .map(generateAlternateLink(uriBuilder.copy()))
+                                             .map(generateAlternateLink(uriBuilder.copy(), i18n, language))
                                              .collect(Collectors.toList()));
 
         return builder.build();
     }
 
-    private Function<OgcApiMediaType, OgcApiLink> generateAlternateLink(final URIBuilder uriBuilder) {
+    private Function<OgcApiMediaType, OgcApiLink> generateAlternateLink(final URIBuilder uriBuilder, I18n i18n, Optional<Locale> language) {
         return mediaType -> new ImmutableOgcApiLink.Builder()
                 .href(uriBuilder
                         .setParameter("f", mediaType.parameter())
@@ -52,7 +56,7 @@ public class DefaultLinksGenerator {
                 .type(mediaType
                         .type()
                         .toString())
-                .description("This document")
+                .description(i18n.get("alternateLink",language))
                 .typeLabel(mediaType.label())
                 .build();
     }

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.target.html;
 
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import org.apache.http.NameValuePair;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  */
 public class FeatureCollectionView extends DatasetView {
 
+    private URI uri;
     public String requestUrl;
     public List<NavigationDTO> pagination;
     public List<NavigationDTO> metaPagination;
@@ -46,17 +48,26 @@ public class FeatureCollectionView extends DatasetView {
     public boolean spatialSearch;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String description,
-                                 String urlPrefix, HtmlConfig htmlConfig) {
+                                 String urlPrefix, HtmlConfig htmlConfig, I18n i18n, Locale language) {
         super(template, uri, name, title, description, urlPrefix, htmlConfig);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
+        this.uri = uri; // TODO need to overload getPath() as it currently forces trailing slashes while OGC API uses no trailing slashes
+    }
+
+    @Override
+    public String getPath() {
+        String path = uri.getPath();
+        return path;
     }
 
     public Optional<String> getCanonicalUrl() throws URISyntaxException {
         String bla = uriBuilder2.copy()
                                 .clearParameters()
+                                .ensureNoTrailingSlash()
                                 .toString() + "?";
         String bla2 = uriBuilder2.copy()
+                                 .ensureNoTrailingSlash()
                                  .removeParameters("f")
                                  .toString();
 
@@ -67,7 +78,6 @@ public class FeatureCollectionView extends DatasetView {
         return !hasOtherParams && (!isCollection || !hasPrevLink)
                 ? Optional.of(uriBuilder2.copy()
                                          .clearParameters()
-                                         .ensureNoTrailingSlash()
                                          .toString())
                 : Optional.empty();
     }
@@ -75,10 +85,8 @@ public class FeatureCollectionView extends DatasetView {
     public String getQueryWithoutPage() {
         List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Charset.forName("utf-8"))
                                                    .stream()
-                                                   .filter(kvp -> !kvp.getName()
-                                                                      .equals("page") && !kvp.getName()
-                                                                                             .equals("offset") && !kvp.getName()
-                                                                                                                          .equals("limit"))
+                                                   .filter(kvp -> !kvp.getName().equals("offset") &&
+                                                                  !kvp.getName().equals("limit"))
                                                    .collect(Collectors.toList());
 
         return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';
@@ -87,12 +95,14 @@ public class FeatureCollectionView extends DatasetView {
     public Function<String, String> getCurrentUrlWithSegment() {
         return segment -> uriBuilder.copy()
                                     .ensureLastPathSegment(segment)
+                                    .ensureNoTrailingSlash()
                                     .toString();
     }
 
     public Function<String, String> getCurrentUrlWithSegmentClearParams() {
         return segment -> uriBuilder.copy()
                                     .ensureLastPathSegment(segment)
+                                    .ensureNoTrailingSlash()
                                     .clearParameters()
                                     .toString();
     }

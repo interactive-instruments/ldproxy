@@ -14,15 +14,20 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public class CollectionsLinksGenerator extends DefaultLinksGenerator {
 
-    public List<OgcApiLink> generateLinks(URICustomizer uriBuilder, Optional<String> describeFeatureTypeUrl,
-                                                     OgcApiMediaType mediaType, List<OgcApiMediaType> alternateMediaTypes)
+    public List<OgcApiLink> generateLinks(URICustomizer uriBuilder,
+                                          Optional<String> describeFeatureTypeUrl,
+                                          OgcApiMediaType mediaType,
+                                          List<OgcApiMediaType> alternateMediaTypes,
+                                          I18n i18n,
+                                          Optional<Locale> language)
     {
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
-                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes));
+                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
         builder.add(new ImmutableOgcApiLink.Builder()
                 .href(uriBuilder
@@ -32,7 +37,7 @@ public class CollectionsLinksGenerator extends DefaultLinksGenerator {
                         .clearParameters()
                         .toString())
                 .rel("home")
-                .description("API Landing Page")
+                .description(i18n.get("homeLink",language))
                 .build());
 
         if (describeFeatureTypeUrl.isPresent()) {
@@ -40,7 +45,7 @@ public class CollectionsLinksGenerator extends DefaultLinksGenerator {
                         .href(describeFeatureTypeUrl.get())
                         .rel("describedBy")
                         .type("application/xml")
-                        .description("XML schema for the dataset")
+                        .description(i18n.get("describedByXsdLink",language))
                         .build());
         }
 

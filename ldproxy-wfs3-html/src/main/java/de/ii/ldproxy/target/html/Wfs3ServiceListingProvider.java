@@ -8,30 +8,24 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.io.Resources;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.server.CoreServerConfig;
-import de.ii.xtraplatform.service.api.Service;
 import de.ii.xtraplatform.service.api.ServiceData;
 import de.ii.xtraplatform.service.api.ServiceListingProvider;
-import org.apache.felix.ipojo.annotations.Bind;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -100,6 +94,11 @@ public class Wfs3ServiceListingProvider implements ServiceListingProvider {
 
     @Override
     public Response getServiceListing(List<ServiceData> services, URI uri) {
+        return getServiceListing(services, uri, Optional.of(Locale.ENGLISH));
+    }
+
+    // TODO: add locale parameter in ServiceListing.getServiceListing() in xtraplatform
+    public Response getServiceListing(List<ServiceData> services, URI uri, Optional<Locale> language) {
         URICustomizer uriCustomizer = new URICustomizer(uri);
         String urlPrefix = getStaticUrlPrefix(uriCustomizer);
         customizeUri(uriCustomizer);
@@ -108,10 +107,10 @@ public class Wfs3ServiceListingProvider implements ServiceListingProvider {
         } catch (URISyntaxException e) {
             // ignore
         }
-        //TODO: map in caller
+        // TODO: map in caller
         return Response.ok()
-                       .entity(new ServiceOverviewView(uri, services.stream().sorted(Comparator.comparingLong(ServiceData::getCreatedAt).reversed()).collect(Collectors.toList()), urlPrefix, htmlConfig, i18n))
-                       .build();
+                .entity(new ServiceOverviewView(uri, services.stream().sorted(Comparator.comparingLong(ServiceData::getCreatedAt).reversed()).collect(Collectors.toList()), urlPrefix, htmlConfig, i18n, language))
+                .build();
     }
 
     @Override
@@ -130,25 +129,5 @@ public class Wfs3ServiceListingProvider implements ServiceListingProvider {
         } catch (Throwable e) {
             throw new NotFoundException();
         }
-    }
-
-    //TODO: if still needed, move to feature provider
-    private Response getResponseForParams(Collection<Service> services, UriInfo uriInfo) {
-        /*if (uriInfo.getQueryParameters().containsKey(PARAM_WFS_URL)) {
-            try {
-                URI wfsUri = WFSAdapter.parseAndCleanWfsUrl(uriInfo.getQueryParameters().getFirst(PARAM_WFS_URL));
-                for (Service service : services) {
-                    URI serviceWfsUri = ((LdProxyService) service).getWfsAdapter().getUrls().get("default").get(WFS.METHOD.GET);
-                    if (wfsUri.equals(serviceWfsUri)) {
-                        URI serviceUri = new URIBuilder().setPath(getPath(uriInfo) + service.getId() + "/").build();
-                        return Response.status(Response.Status.TEMPORARY_REDIRECT).header("Location", serviceUri.toString()).build();
-                    }
-                }
-            } catch (URISyntaxException e) {
-                //ignore
-            }
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }*/
-        return null;
     }
 }

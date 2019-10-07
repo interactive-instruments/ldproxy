@@ -15,6 +15,8 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -37,7 +39,8 @@ public class OgcApiFeaturesCollectionsExtension implements OgcApiCollectionsExte
     public ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder, OgcApiDatasetData apiData,
                                                 URICustomizer uriCustomizer,
                                                 OgcApiMediaType mediaType,
-                                                List<OgcApiMediaType> alternateMediaTypes) {
+                                                List<OgcApiMediaType> alternateMediaTypes,
+                                                Optional<Locale> language) {
 
         if (!isEnabledForApi(apiData)) {
             return collectionsBuilder;
@@ -50,7 +53,7 @@ public class OgcApiFeaturesCollectionsExtension implements OgcApiCollectionsExte
                                                       .stream()
                                                       .filter(featureType -> apiData.isFeatureTypeEnabled(featureType.getId()))
                                                       .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                                                      .map(featureType -> OgcApiFeaturesCollectionExtension.createNestedCollection(featureType, apiData, mediaType, alternateMediaTypes, uriCustomizer, collectionExtenders))
+                                                      .map(featureType -> OgcApiFeaturesCollectionExtension.createNestedCollection(featureType, apiData, mediaType, alternateMediaTypes, language, uriCustomizer, collectionExtenders))
                                                       .collect(Collectors.toList());
 
         collectionsBuilder.addAllCollections(collections);

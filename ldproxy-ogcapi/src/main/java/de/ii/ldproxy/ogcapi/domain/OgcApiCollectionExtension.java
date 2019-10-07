@@ -8,6 +8,8 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 public interface OgcApiCollectionExtension extends OgcApiContentExtension {
 
@@ -17,7 +19,8 @@ public interface OgcApiCollectionExtension extends OgcApiContentExtension {
                                               URICustomizer uriCustomizer,
                                               boolean isNested,
                                               OgcApiMediaType mediaType,
-                                              List<OgcApiMediaType> alternateMediaTypes);
+                                              List<OgcApiMediaType> alternateMediaTypes,
+                                              Optional<Locale> language);
 
     default String getResourceName() { return "Collection"; };
 }
