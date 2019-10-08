@@ -164,7 +164,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
      * @throws FileNotFoundException      an error occurred when searching for a file
      * @throws NotFoundException          an error occurred when a resource is not found
      */
-    @Path("/{collectionId}/tiles/{tileMatrixSetId}/{level}/{tileRow}/{tileCol}")
+    @Path("/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
     @GET
     @Produces({"application/vnd.mapbox-vector-tile"})
     public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId,
