@@ -42,8 +42,6 @@ import java.util.stream.Collectors;
 @Instantiate
 public class OgcApiFeaturesQuery {
 
-    // TODO review
-
     private static final String TIMESTAMP_REGEX = "([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))";
     private static final String OPEN_REGEX = "(\\.\\.)?";
 
@@ -174,22 +172,44 @@ public class OgcApiFeaturesQuery {
     private String bboxToCql(OgcApiDataset service, String geometryField, String bboxValue) {
         String[] bboxArray = bboxValue.split(",");
 
-        String bboxCrs = bboxArray.length > 4 ? bboxArray[4] : null;
-        EpsgCrs crs = Optional.ofNullable(bboxCrs)
-                              .map(EpsgCrs::new)
-                              .orElse(OgcApiDatasetData.DEFAULT_CRS);
+        if (bboxArray.length<4)
+            throw new BadRequestException("The parameter 'bbox' has less than four values.");
 
-        BoundingBox bbox = new BoundingBox(Double.valueOf(bboxArray[0]), Double.valueOf(bboxArray[1]), Double.valueOf(bboxArray[2]), Double.valueOf(bboxArray[3]), crs);
-        BoundingBox transformedBbox = null;
+        if (bboxArray.length>5)
+            throw new BadRequestException("The parameter 'bbox' has more than four values.");
+
+        EpsgCrs crs;
         try {
-            transformedBbox = service.transformBoundingBox(bbox);
-        } catch (CrsTransformationException e) {
-            LOGGER.error("Error transforming bbox");
-            transformedBbox = bbox;
+            String bboxCrs = bboxArray.length > 4 ? bboxArray[4] : null;
+            crs = Optional.ofNullable(bboxCrs)
+                    .map(EpsgCrs::new)
+                    .orElse(OgcApiDatasetData.DEFAULT_CRS);
+        } catch (NullPointerException e) {
+            throw new BadRequestException("Error processing CRS of bounding box: '" + getBboxCrs(bboxArray) + "'");
         }
 
-        return String.format(Locale.US, "BBOX(%s, %.3f, %.3f, %.3f, %.3f, '%s')", geometryField, transformedBbox.getXmin(), transformedBbox.getYmin(), transformedBbox.getXmax(), transformedBbox.getYmax(), transformedBbox.getEpsgCrs()
-                                                                                                                                                                          .getAsSimple());
+        try {
+            BoundingBox bbox = new BoundingBox(Double.valueOf(bboxArray[0]), Double.valueOf(bboxArray[1]), Double.valueOf(bboxArray[2]), Double.valueOf(bboxArray[3]), crs);
+            BoundingBox transformedBbox = null;
+            transformedBbox = service.transformBoundingBox(bbox);
+            return String
+                    .format(Locale.US, "BBOX(%s, %.3f, %.3f, %.3f, %.3f, '%s')", geometryField, transformedBbox.getXmin(), transformedBbox.getYmin(), transformedBbox.getXmax(), transformedBbox.getYmax(), transformedBbox.getEpsgCrs()
+                    .getAsSimple());
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("Error processing the coordinates of the bounding box '" + getBbox(bboxArray) + "'");
+        } catch (CrsTransformationException e) {
+            throw new BadRequestException("Error transforming the bounding box '" + getBbox(bboxArray) + "' with CRS '" + getBboxCrs(bboxArray) +"'");
+        } catch (NullPointerException e) {
+            throw new BadRequestException("Error processing the bounding box '" + getBbox(bboxArray) + "' with CRS '" + getBboxCrs(bboxArray) +"'");
+        }
+    }
+
+    private String getBbox(String[] bboxArray) {
+        return String.format("%s,%s,%s,%s", bboxArray[0], bboxArray[1], bboxArray[2], bboxArray[3]);
+    }
+
+    private String getBboxCrs(String[] bboxArray) {
+        return (bboxArray.length==5 ? bboxArray[4] : OgcApiDatasetData.DEFAULT_CRS.getAsUri());
     }
 
     private String timeToCql(String timeField, String timeValue) {

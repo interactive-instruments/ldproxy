@@ -42,7 +42,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFeaturesEndpoint.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/\\w+/items(?:/\\w+)?/?$")
             .build();
 
@@ -90,12 +90,21 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
         int maxPageSize = getExtensionConfiguration(api.getData(), OgcApiFeaturesCoreConfiguration.class)
                 .map(OgcApiFeaturesCoreConfiguration::getMaxPageSize)
                 .orElse(OgcApiFeaturesCoreConfiguration.MAX_PAGE_SIZE);
+        boolean showsFeatureSelfLink = getExtensionConfiguration(api.getData(), OgcApiFeaturesCoreConfiguration.class)
+                .map(OgcApiFeaturesCoreConfiguration::getShowsFeatureSelfLink)
+                .orElse(false);
+        boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+                .orElse(false);
+
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api, collectionId, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()));
 
         OgcApiFeaturesCoreQueriesHandler.OgcApiQueryInputFeatures queryInput = ImmutableOgcApiQueryInputFeatures.builder()
                 .collectionId(collectionId)
                 .query(query)
                 .defaultPageSize(Optional.of(defaultPageSize))
+                .showsFeatureSelfLink(showsFeatureSelfLink)
+                .includeHomeLink(includeHomeLink)
                 .build();
 
         return queryHandler.handle(OgcApiFeaturesCoreQueriesHandler.Query.FEATURES, queryInput, requestContext);
@@ -111,12 +120,17 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                             @PathParam("featureId") String featureId) {
         checkAuthorization(api.getData(), optionalUser);
 
+        boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+                .orElse(false);
+
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api, collectionId, toFlatMap(uriInfo.getQueryParameters()), featureId);
 
         OgcApiFeaturesCoreQueriesHandler.OgcApiQueryInputFeature queryInput = ImmutableOgcApiQueryInputFeature.builder()
                 .collectionId(collectionId)
                 .featureId(featureId)
                 .query(query)
+                .includeHomeLink(includeHomeLink)
                 .build();
 
         return queryHandler.handle(OgcApiFeaturesCoreQueriesHandler.Query.FEATURE, queryInput, requestContext);

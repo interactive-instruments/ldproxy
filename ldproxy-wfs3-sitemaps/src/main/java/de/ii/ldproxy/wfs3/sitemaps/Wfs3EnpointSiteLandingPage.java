@@ -43,7 +43,7 @@ public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EnpointSiteLandingPage.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("sitemap_landingPage.xml")
-            .addMethods(OgcApiContext.HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?$")
             .build();
 

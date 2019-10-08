@@ -41,7 +41,7 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointSiteIndex.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("sitemap_index.xml")
-            .addMethods(OgcApiContext.HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?$")
             .build();
     private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(

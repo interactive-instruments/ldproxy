@@ -8,11 +8,14 @@
 package de.ii.ldproxy.wfs3.styles;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  * This class is responsible for generating the links to the styles.
@@ -25,7 +28,9 @@ public class StylesLinkGenerator {
      * @param uriBuilder the URI, split in host, path and query
      * @return a list with links
      */
-    public List<OgcApiLink> generateLandingPageLinks(URICustomizer uriBuilder) {
+    public List<OgcApiLink> generateLandingPageLinks(URICustomizer uriBuilder,
+                                          I18n i18n,
+                                          Optional<Locale> language) {
 
         return ImmutableList.<OgcApiLink>builder()
                 .add(new ImmutableOgcApiLink.Builder()
@@ -35,7 +40,7 @@ public class StylesLinkGenerator {
                                         .toString())
                         .rel("styles")
                         .type("application/json")
-                        .description("Styles to render data")
+                        .description(i18n.get("stylesLink",language))
                         .build())
                 .build();
     }
@@ -47,7 +52,11 @@ public class StylesLinkGenerator {
      * @param styleId    the ids of the styles
      * @return a list with links
      */
-    public List<OgcApiLink> generateStyleLinks(URICustomizer uriBuilder, String styleId, List<OgcApiMediaType> mediaTypes) {
+    public List<OgcApiLink> generateStyleLinks(URICustomizer uriBuilder,
+                                               String styleId,
+                                               List<OgcApiMediaType> mediaTypes,
+                                               I18n i18n,
+                                               Optional<Locale> language) {
 
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>();
 
@@ -60,24 +69,28 @@ public class StylesLinkGenerator {
                     )
                     .rel("stylesheet")
                     .type(mediaType.type().toString())
+                    .description(i18n.get("stylesheetLink",language).replace("{{format}}", mediaType.label()))
                     .build());
         }
 
         builder.add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
-                                .ensureLastPathSegment(styleId)
-                                .ensureLastPathSegment("metadata")
-                                .setParameter("f", "json")
+                                .ensureLastPathSegments("styles", styleId, "metadata")
+                                .removeParameters("f")
                                 .toString()
                         )
                         .rel("describedBy")
-                        .type("application/json")
+                        .description(i18n.get("styleMetadataLink",language))
                         .build());
 
         return builder.build();
     }
 
-    public OgcApiLink generateStylesheetLink(URICustomizer uriBuilder, String styleId, OgcApiMediaType mediaType) {
+    public OgcApiLink generateStylesheetLink(URICustomizer uriBuilder,
+                                             String styleId,
+                                             OgcApiMediaType mediaType,
+                                             I18n i18n,
+                                             Optional<Locale> language) {
 
         final ImmutableOgcApiLink.Builder builder = new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
@@ -86,6 +99,7 @@ public class StylesLinkGenerator {
                                 .toString()
                         )
                         .rel("stylesheet")
+                        .description(i18n.get("stylesheetLink",language).replace("{{format}}", mediaType.label()))
                         .type(mediaType.type().toString());
 
         return builder.build();

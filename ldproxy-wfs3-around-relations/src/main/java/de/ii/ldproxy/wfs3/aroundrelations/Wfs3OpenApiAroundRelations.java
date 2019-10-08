@@ -49,7 +49,7 @@ public class Wfs3OpenApiAroundRelations implements OpenApiExtension {
 
         ObjectSchema collectionInfo = (ObjectSchema) openAPI.getComponents()
                                                             .getSchemas()
-                                                            .get("collectionInfo");
+                                                            .get("collection");
 
         collectionInfo.getProperties()
                       .put("relations", new ObjectSchema().description("Related collections that may be retrieved for this collection")

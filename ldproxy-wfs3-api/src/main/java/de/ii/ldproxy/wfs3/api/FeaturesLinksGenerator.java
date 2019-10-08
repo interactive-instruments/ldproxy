@@ -27,14 +27,15 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                                           int defaultLimit,
                                           OgcApiMediaType mediaType,
                                           List<OgcApiMediaType> alternateMediaTypes,
+                                          boolean homeLink,
                                           I18n i18n,
                                           Optional<Locale> language)
     {
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
-        // TODO: make next links opaque
-        // TODO: no next link, if there is no next page (but we don't know this yet)
+        // we have to create a next link here as we do not know numberMatched yet, but it will
+        // be removed again in the feature transformer, if we are on the last page
         builder.add(new ImmutableOgcApiLink.Builder()
                 .href(getUrlWithPageAndCount(uriBuilder.copy(), offset + limit, limit, defaultLimit))
                 .rel("next")
@@ -59,16 +60,17 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                     .build());
         }
 
-        builder.add(new ImmutableOgcApiLink.Builder()
-                .href(uriBuilder
-                        .copy()
-                        .removeLastPathSegments(3)
-                        .ensureNoTrailingSlash()
-                        .clearParameters()
-                        .toString())
-                .rel("home")
-                .description(i18n.get("homeLink",language))
-                .build());
+        if (homeLink)
+            builder.add(new ImmutableOgcApiLink.Builder()
+                    .href(uriBuilder
+                            .copy()
+                            .removeLastPathSegments(3)
+                            .ensureNoTrailingSlash()
+                            .clearParameters()
+                            .toString())
+                    .rel("home")
+                    .description(i18n.get("homeLink",language))
+                    .build());
 
         return builder.build();
     }

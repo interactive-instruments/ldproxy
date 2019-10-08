@@ -51,7 +51,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
             .subPathPattern("^/?(?:\\w+)/tiles(?:/\\w+(?:/\\w+/\\w+/\\w+)?)?$")
-            .addMethods(OgcApiContext.HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .build();
 
     @Requires

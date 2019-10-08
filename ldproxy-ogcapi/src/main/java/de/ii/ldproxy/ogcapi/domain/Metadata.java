@@ -33,4 +33,6 @@ public interface Metadata {
     Optional<String> getLicenseUrl();
 
     List<String> getKeywords();
+
+    Optional<String> getVersion();
 }

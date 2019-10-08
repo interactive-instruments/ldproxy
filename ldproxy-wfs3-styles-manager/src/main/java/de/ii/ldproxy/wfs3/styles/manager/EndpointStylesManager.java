@@ -17,6 +17,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
 import de.ii.ldproxy.wfs3.styles.*;
@@ -54,6 +55,9 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Provides
 @Instantiate
 public class EndpointStylesManager implements OgcApiEndpointExtension, ConformanceClass {
+
+    @Requires
+    I18n i18n;
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("styles")
@@ -317,7 +321,8 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                 ImmutableStyleSheet.Builder stylesheet = ImmutableStyleSheet.builder()
                                                                             .native_(true)
                                                                             .link(stylesLinkGenerator.generateStylesheetLink(ogcApiRequest.getUriCustomizer(),
-                                                                                    styleId, format.getMediaType()))
+                                                                                    styleId, format.getMediaType(),
+                                                                                    i18n, ogcApiRequest.getLanguage()))
                                                                             .specification(format.getSpecification())
                                                                             .version(format.getVersion());
 

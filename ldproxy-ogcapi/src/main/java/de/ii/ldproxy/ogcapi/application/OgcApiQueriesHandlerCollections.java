@@ -35,11 +35,13 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
 
     @Value.Immutable
     public interface OgcApiQueryInputCollections extends OgcApiQueryInput {
+        boolean getIncludeHomeLink();
     }
 
     @Value.Immutable
     public interface OgcApiQueryInputFeatureCollection extends OgcApiQueryInput {
         String getCollectionId();
+        boolean getIncludeHomeLink();
     }
 
     private final OgcApiExtensionRegistry extensionRegistry;
@@ -71,6 +73,7 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                     Optional.empty(),
                     requestContext.getMediaType(),
                     requestContext.getAlternateMediaTypes(),
+                        queryInput.getIncludeHomeLink(),
                         i18n,
                         requestContext.getLanguage());
 
@@ -126,6 +129,7 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                     .copy(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
+                queryInput.getIncludeHomeLink(),
                 i18n,
                 requestContext.getLanguage());
 

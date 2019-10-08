@@ -34,7 +34,7 @@ public class OgcApiEndpointCollections implements OgcApiEndpointExtension {
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEndpointCollections.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?$")
             .build();
 
@@ -70,7 +70,13 @@ public class OgcApiEndpointCollections implements OgcApiEndpointExtension {
                                    @Context OgcApiRequestContext requestContext) {
         checkAuthorization(api.getData(), optionalUser);
 
-        OgcApiQueriesHandlerCollections.OgcApiQueryInputCollections queryInput = new ImmutableOgcApiQueryInputCollections.Builder().build();
+        boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+                .orElse(false);
+
+        OgcApiQueriesHandlerCollections.OgcApiQueryInputCollections queryInput = new ImmutableOgcApiQueryInputCollections.Builder()
+                .includeHomeLink(includeHomeLink)
+                .build();
 
         return queryHandler.handle(OgcApiQueriesHandlerCollections.Query.COLLECTIONS, queryInput, requestContext);
     }

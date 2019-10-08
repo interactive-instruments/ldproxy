@@ -57,6 +57,8 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
         String getCollectionId();
         FeatureQuery getQuery();
         Optional<Integer> getDefaultPageSize();
+        boolean getShowsFeatureSelfLink();
+        boolean getIncludeHomeLink();
     }
 
     @Value.Immutable
@@ -64,6 +66,7 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
         String getCollectionId();
         String getFeatureId();
         FeatureQuery getQuery();
+        boolean getIncludeHomeLink();
     }
 
     private final OgcApiExtensionRegistry extensionRegistry;
@@ -118,7 +121,8 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
                     "/collections/"+collectionId+"/items")
                 .orElseThrow(NotAcceptableException::new);
 
-        return getItemsResponse(api, requestContext, collectionId, query, true, outputFormat, onlyHitsIfMore, defaultPageSize);
+        return getItemsResponse(api, requestContext, collectionId, query, true, outputFormat, onlyHitsIfMore, defaultPageSize,
+                queryInput.getIncludeHomeLink(), queryInput.getShowsFeatureSelfLink());
     }
 
     private Response getItemResponse(OgcApiQueryInputFeature queryInput,
@@ -137,12 +141,14 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
                 "/collections/"+collectionId+"/items/"+featureId)
                 .orElseThrow(NotAcceptableException::new);
 
-        return getItemsResponse(api, requestContext, collectionId, query, false, outputFormat, false, Optional.empty());
+        return getItemsResponse(api, requestContext, collectionId, query, false, outputFormat, false, Optional.empty(),
+                queryInput.getIncludeHomeLink(), false);
     }
 
     private Response getItemsResponse(OgcApiDataset api, OgcApiRequestContext requestContext, String collectionId,
                                       FeatureQuery query, boolean isCollection, OgcApiFeatureFormatExtension outputFormat,
-                                      boolean onlyHitsIfMore, Optional<Integer> defaultPageSize) {
+                                      boolean onlyHitsIfMore, Optional<Integer> defaultPageSize, boolean includeHomeLink,
+                                      boolean showsFeatureSelfLink) {
         checkCollectionId(api.getData(), collectionId);
         Optional<CrsTransformer> crsTransformer = api.getCrsTransformer(query.getCrs());
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
@@ -152,7 +158,7 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
 
         List<OgcApiLink> links =
                 isCollection ?
-                        new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage()):
+                        new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes, includeHomeLink, i18n, requestContext.getLanguage()):
                         new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
 
         ImmutableFeatureTransformationContextGeneric.Builder transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
@@ -170,7 +176,8 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
                 .maxAllowableOffset(query.getMaxAllowableOffset())
                 .geometryPrecision(query.getGeometryPrecision())
                 .shouldSwapCoordinates(swapCoordinates)
-                .isHitsOnlyIfMore(onlyHitsIfMore);
+                .isHitsOnlyIfMore(onlyHitsIfMore)
+                .showsFeatureSelfLink(showsFeatureSelfLink);
 
         StreamingOutput streamingOutput;
         if (requestContext.getMediaType()

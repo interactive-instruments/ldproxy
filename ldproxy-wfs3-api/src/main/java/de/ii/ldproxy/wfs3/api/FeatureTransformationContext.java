@@ -48,6 +48,9 @@ public interface FeatureTransformationContext {
     boolean isFeatureCollection();
 
     @Value.Default
+    default boolean getShowsFeatureSelfLink() { return true; }
+
+    @Value.Default
     default boolean isHitsOnly() {
         return false;
     }

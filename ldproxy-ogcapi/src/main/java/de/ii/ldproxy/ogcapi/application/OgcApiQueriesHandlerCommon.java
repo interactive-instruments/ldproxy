@@ -40,7 +40,7 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
 
     @Value.Immutable
     public interface OgcApiQueryInputConformance extends OgcApiQueryInput {
-
+        boolean getIncludeHomeLink();
     }
 
     @Value.Immutable
@@ -127,6 +127,7 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                 requestContext.getUriCustomizer().copy(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
+                queryInput.getIncludeHomeLink(),
                 i18n,
                 requestContext.getLanguage());
 

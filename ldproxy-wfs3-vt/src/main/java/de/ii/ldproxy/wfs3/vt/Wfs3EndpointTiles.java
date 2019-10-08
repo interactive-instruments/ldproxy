@@ -49,7 +49,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("tiles")
-            .addMethods(OgcApiContext.HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?(?:\\w+(?:/\\w+/\\w+/\\w+)?)?$")
             .build();
 

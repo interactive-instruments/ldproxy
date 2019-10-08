@@ -47,7 +47,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("tileMatrixSets")
-            .addMethods(OgcApiContext.HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?(?:\\w+)?$")
             .build();
 

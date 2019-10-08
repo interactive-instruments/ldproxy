@@ -22,17 +22,14 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.whiteboard.Wbp;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Comparator;
@@ -40,9 +37,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-/**
- * @author zahnen
- */
 @Component
 @Provides(specifications = {ExtendableOpenApiDefinition.class})
 @Instantiate
@@ -57,18 +51,12 @@ public class ExtendableOpenApiDefinition {
     @Context
     private BundleContext bundleContext;
 
-    //private final ObjectMapper objectMapper;
-    //private final String externalUrl;
     private final AuthConfig authConfig;
     private Set<OpenApiExtension> openApiExtensions;
 
-    public ExtendableOpenApiDefinition(/*@Requires Jackson jackson, @Requires Dropwizard dropwizard,*/
-            @Requires AuthConfig authConfig) {
+    public ExtendableOpenApiDefinition(@Requires AuthConfig authConfig) {
         super();
-        //this.objectMapper = jackson.getDefaultObjectMapper();
-        //this.externalUrl = dropwizard.getExternalUrl();
         this.authConfig = authConfig;
-        //this.openApiExtensions = new TreeSet<>(Comparator.comparingInt(OpenApiExtension::getSortPriority));
     }
 
     private Set<OpenApiExtension> getOpenApiExtensions() {
@@ -78,103 +66,89 @@ public class ExtendableOpenApiDefinition {
         return openApiExtensions;
     }
 
-    public Response getOpenApi(String type, URICustomizer requestUriCustomizer, OgcApiDatasetData datasetData) {
+    public Response getOpenApi(String type, URICustomizer requestUriCustomizer, OgcApiDatasetData apiData) {
 
         boolean pretty = true;
 
         try {
             OpenAPI openAPI = Json.mapper()
-                                  .readerFor(OpenAPI.class)
-                                  //.with(DeserializationFeature.READ_ENUMS_USING_TO_STRING)
-                                  .readValue(Resources.asByteSource(Resources.getResource(ExtendableOpenApiDefinition.class, "/wfs3-api.json"))
-                                                      .openBufferedStream());
+                    .readerFor(OpenAPI.class)
+                    .readValue(Resources.asByteSource(Resources.getResource(ExtendableOpenApiDefinition.class, "/openapi.json"))
+                            .openBufferedStream());
 
-            //TODO
-            if (datasetData.getSecured() && authConfig.isJwt()) {
+            // TODO
+            if (apiData.getSecured() && authConfig.isJwt()) {
                 openAPI.getComponents()
-                       .addSecuritySchemes("JWT", new SecurityScheme().type(SecurityScheme.Type.HTTP)
-                                                                      .scheme("bearer")
-                                                                      .bearerFormat("JWT"));
+                        .addSecuritySchemes("JWT", new SecurityScheme().type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT"));
                 openAPI.addSecurityItem(new SecurityRequirement().addList("JWT"));
             }
 
-            openAPI.getInfo()
-                   .version("1.0.0");
-
-
             openAPI.servers(ImmutableList.of(new Server().url(requestUriCustomizer.copy()
-                                                                                  .clearParameters()
-                                                                                  .removeLastPathSegment("api")
-                                                                                  .toString())));
+                    .clearParameters()
+                    .removeLastPathSegment("api")
+                    .toString())));
 
-            if (datasetData != null) {
-                /*WFSOperation operation = new GetCapabilities();
-
-                WFSCapabilitiesAnalyzer analyzer = new MultiWfsCapabilitiesAnalyzer(
-                        new GetCapabilities2OpenApi(openAPI)
-                );
-
-                WFSCapabilitiesParser wfsParser = new WFSCapabilitiesParser(analyzer, serviceData.staxFactory);
-
-                wfsParser.parse(serviceData.getWfsAdapter()
-                                           .request(operation));*/
+            if (apiData != null) {
 
                 openAPI.getInfo()
-                       .title(datasetData.getLabel())
-                       .description(datasetData.getDescription()
-                                               .orElse(""));
+                        .title(apiData.getLabel())
+                        .description(apiData.getDescription()
+                                .orElse(""));
 
-                if (Objects.nonNull(datasetData.getMetadata())) {
-                    Metadata md = datasetData.getMetadata();
+                if (Objects.nonNull(apiData.getMetadata())) {
+                    Metadata md = apiData.getMetadata();
                     openAPI.getInfo()
-                           .contact(new Contact().name(md.getContactName()
-                                                         .orElse(null))
-                                                 .url(md.getContactUrl()
-                                                        .orElse(null))
-                                                 .email(md.getContactEmail()
-                                                          .orElse(null)))
-                           .license(new License().name(md.getLicenseName()
-                                                         .orElse(null))
-                                                 .url(md.getLicenseUrl()
-                                                        .orElse(null)));
+                            .version(apiData.getMetadata().getVersion().orElse("1.0.0"))
+                            .contact(new Contact().name(md.getContactName()
+                                    .orElse(null))
+                                    .url(md.getContactUrl()
+                                            .orElse(null))
+                                    .email(md.getContactEmail()
+                                            .orElse(null)))
+                            .license(new License().name(md.getLicenseName()
+                                    .orElse(null))
+                                    .url(md.getLicenseUrl()
+                                            .orElse(null)));
+                } else {
+                    // version is required
+                    openAPI.getInfo()
+                            .version("1.0.0");
                 }
             }
 
+            // TODO update with examples and details (f enums, lang enums, etc.)
+
             getOpenApiExtensions().stream()
                     .sorted(Comparator.comparing(OpenApiExtension::getSortPriority))
-                    .forEachOrdered(openApiExtension -> openApiExtension.process(openAPI, datasetData));
+                    .forEachOrdered(openApiExtension -> openApiExtension.process(openAPI, apiData));
 
 
             if (StringUtils.isNotBlank(type) && type.trim()
-                                                    .equalsIgnoreCase("yaml")) {
+                    .equalsIgnoreCase("yaml")) {
                 return Response.status(Response.Status.OK)
-                               .entity(pretty ? Yaml.pretty(openAPI) : Yaml.mapper()
-                                                                           .writeValueAsString(openAPI))
-                               .type("application/vnd.oai.openapi;version=3.0")
-                               .build();
+                        .entity(pretty ? Yaml.pretty(openAPI) : Yaml.mapper()
+                                .writeValueAsString(openAPI))
+                        .type("application/vnd.oai.openapi;version=3.0")
+                        .build();
             } else {
                 return Response.status(Response.Status.OK)
-                               .entity(pretty ? Json.pretty(openAPI) : Json.mapper()
-                                                                           .writeValueAsString(openAPI))
-                               .type("application/vnd.oai.openapi+json;version=3.0")
-                               .build();
+                        .entity(pretty ? Json.pretty(openAPI) : Json.mapper()
+                                .writeValueAsString(openAPI))
+                        .type("application/vnd.oai.openapi+json;version=3.0")
+                        .build();
             }
         } catch (IOException e) {
-            // ignore
-            LOGGER.debug("ERROR", e);
+            LOGGER.error("OpenAPI document could not be created: " + e.getMessage());
+            throw new ServerErrorException("OpenAPI document could not be created", 500);
         }
-        return Response.noContent()
-                       .build();
     }
 
     private synchronized void onArrival(ServiceReference<OpenApiExtension> ref) {
-        try {
-            final OpenApiExtension openApiExtension = bundleContext.getService(ref);
+        final OpenApiExtension openApiExtension = bundleContext.getService(ref);
 
-            getOpenApiExtensions().add(openApiExtension);
-        } catch (Throwable e) {
-            LOGGER.error("E", e);
-        }
+        getOpenApiExtensions().add(openApiExtension);
     }
 
     private synchronized void onDeparture(ServiceReference<OpenApiExtension> ref) {

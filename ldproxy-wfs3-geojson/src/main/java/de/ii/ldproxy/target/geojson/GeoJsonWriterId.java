@@ -8,7 +8,6 @@
 package de.ii.ldproxy.target.geojson;
 
 import de.ii.ldproxy.target.geojson.GeoJsonMapping.GEO_JSON_TYPE;
-import de.ii.ldproxy.wfs3.api.FeatureWriterGeoJson;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -59,6 +58,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
             if (Objects.nonNull(currentId)) {
                 transformationContext.getJson()
                                      .writeStringField("id", currentId);
+                writeLink(transformationContext, currentId);
                 this.currentId = null;
             }
         }
@@ -91,6 +91,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
                 } else {
                     transformationContext.getJson()
                                          .writeStringField("id", currentValue);
+                    writeLink(transformationContext, currentValue);
                 }
                 // don't pass through
                 return;
@@ -111,5 +112,27 @@ public class GeoJsonWriterId implements GeoJsonWriter {
 
         // next chain for extensions
         next.accept(transformationContext);
+    }
+
+    private void writeLink(FeatureTransformationContextGeoJson transformationContext, String featureId) throws IOException {
+        if (transformationContext.isFeatureCollection() &&
+                transformationContext.getShowsFeatureSelfLink() &&
+                Objects.nonNull(featureId) &&
+                !featureId.isEmpty()) {
+            transformationContext.getJson()
+                    .writeFieldName("links");
+            transformationContext.getJson()
+                    .writeStartArray(1);
+            transformationContext.getJson()
+                    .writeStartObject();
+            transformationContext.getJson()
+                    .writeStringField("rel", "self");
+            transformationContext.getJson()
+                    .writeStringField("href", transformationContext.getServiceUrl()+"/collections/"+transformationContext.getCollectionId()+"/items/"+featureId);
+            transformationContext.getJson()
+                    .writeEndObject();
+            transformationContext.getJson()
+                    .writeEndArray();
+        }
     }
 }

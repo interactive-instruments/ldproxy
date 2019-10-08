@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteSource;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -27,7 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
@@ -42,7 +44,7 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("resources")
-            .addMethods(HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?[^/]*$")
             .build();
 

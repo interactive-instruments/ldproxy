@@ -44,12 +44,6 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
     @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection, FeatureTypeConfigurationOgcApi featureType, OgcApiDatasetData apiData, URICustomizer uriCustomizer, boolean isNested, OgcApiMediaType mediaType, List<OgcApiMediaType> alternateMediaTypes, Optional<Locale> language) {
 
-        List<OgcApiMediaType> featureMediaTypes = extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
-                .stream()
-                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-                .map(outputFormatExtension -> outputFormatExtension.getMediaType())
-                .collect(Collectors.toList());
-
         collection.title(featureType.getLabel())
                 .description(featureType.getDescription());
 
@@ -70,12 +64,22 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     .build());
         }
 
-        collection.addLinks(new ImmutableOgcApiLink.Builder()
-                .href(uriBuilder.ensureLastPathSegment("items")
-                        .toString())
-                .rel("items")
-                .description(i18n.get("itemsLink",language).replace("{{collection}}",featureType.getLabel()))
-                .build());
+        List<OgcApiMediaType> featureMediaTypes = extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
+                .stream()
+                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                .map(outputFormatExtension -> outputFormatExtension.getMediaType())
+                .collect(Collectors.toList());
+
+        featureMediaTypes
+                .stream()
+                .forEach(mtype -> collection.addLinks(new ImmutableOgcApiLink.Builder()
+                        .href(uriBuilder.ensureLastPathSegments("collections", featureType.getId(), "items")
+                                .setParameter("f", mtype.parameter())
+                                .toString())
+                        .rel("items")
+                        .type(mtype.type().toString())
+                        .description(i18n.get("itemsLink",language).replace("{{collection}}",featureType.getLabel()))
+                        .build()));
 
         // TODO add support for schemas
         Optional<String> describeFeatureTypeUrl = Optional.empty();

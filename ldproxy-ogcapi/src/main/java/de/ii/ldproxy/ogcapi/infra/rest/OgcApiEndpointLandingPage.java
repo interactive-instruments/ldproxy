@@ -38,7 +38,7 @@ public class OgcApiEndpointLandingPage implements OgcApiEndpointExtension {
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEndpointLandingPage.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("")
-            .addMethods(OgcApiContext.HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?$")
             .build();
 

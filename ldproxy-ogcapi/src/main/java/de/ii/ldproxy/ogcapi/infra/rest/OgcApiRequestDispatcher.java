@@ -17,15 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.PermitAll;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -91,6 +89,23 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                 .language(selectedLanguage)
                 .api(service)
                 .build();
+
+        // validate generic parameters
+        String f = requestContext.getUriInfo().getQueryParameters().getFirst("f");
+        if (f!=null) {
+            boolean found = supportedMediaTypes.stream()
+                    .map(mediaType -> mediaType.parameter())
+                    .anyMatch(value -> value != null && value.equalsIgnoreCase(f));
+            if (!found) {
+                Set<String> validValues = supportedMediaTypes.stream()
+                        .map(mediaType -> mediaType.parameter())
+                        .filter(value -> value != null && !value.isEmpty())
+                        .collect(Collectors.toSet());
+                throw new BadRequestException("Invalid value for parameter 'f': " + f + ". Valid values: " + String.join(", ",validValues)+".");
+            }
+        }
+
+        // TODO check lang, too
 
         ogcApiInjectableContext.inject(requestContext, ogcApiRequestContext);
 

@@ -7,10 +7,12 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
 
 import java.io.File;
@@ -28,6 +30,9 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Provides
 @Instantiate
 public class StylesOnLandingPage implements OgcApiLandingPageExtension {
+
+    @Requires
+    I18n i18n;
 
     private final File stylesStore;
 
@@ -57,7 +62,7 @@ public class StylesOnLandingPage implements OgcApiLandingPageExtension {
 
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
-        List<OgcApiLink> ogcApiLinks = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer);
+        List<OgcApiLink> ogcApiLinks = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
         landingPageBuilder.addAllLinks(ogcApiLinks);
 
         final String datasetId = apiData.getId();

@@ -23,22 +23,24 @@ public class CollectionsLinksGenerator extends DefaultLinksGenerator {
                                           Optional<String> describeFeatureTypeUrl,
                                           OgcApiMediaType mediaType,
                                           List<OgcApiMediaType> alternateMediaTypes,
+                                          boolean homeLink,
                                           I18n i18n,
                                           Optional<Locale> language)
     {
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
-        builder.add(new ImmutableOgcApiLink.Builder()
-                .href(uriBuilder
-                        .copy()
-                        .removeLastPathSegments(1)
-                        .ensureNoTrailingSlash()
-                        .clearParameters()
-                        .toString())
-                .rel("home")
-                .description(i18n.get("homeLink",language))
-                .build());
+        if (homeLink)
+            builder.add(new ImmutableOgcApiLink.Builder()
+                    .href(uriBuilder
+                            .copy()
+                            .removeLastPathSegments(1)
+                            .ensureNoTrailingSlash()
+                            .clearParameters()
+                            .toString())
+                    .rel("home")
+                    .description(i18n.get("homeLink",language))
+                    .build());
 
         if (describeFeatureTypeUrl.isPresent()) {
             builder.add(new ImmutableOgcApiLink.Builder()

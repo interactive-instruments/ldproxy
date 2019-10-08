@@ -34,4 +34,8 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
     public int getMaxPageSize() {
         return MAX_PAGE_SIZE;
     }
+
+    @Value.Default
+    public boolean getShowsFeatureSelfLink() { return false; }
+
 }

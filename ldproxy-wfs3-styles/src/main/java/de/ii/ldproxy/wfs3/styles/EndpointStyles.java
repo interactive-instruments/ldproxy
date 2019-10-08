@@ -10,8 +10,8 @@ package de.ii.ldproxy.wfs3.styles;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -24,7 +24,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,9 +40,12 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Instantiate
 public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass {
 
+    @Requires
+    I18n i18n;
+
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("styles")
-            .addMethods(HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?(?:\\w+(?:/metadata)?)?$")
             .build();
 
@@ -125,7 +130,9 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
                                                                              Files.getNameWithoutExtension(filename),
                                                                              getMediaTypes(dataset.getData(),
                                                                                      apiDir,
-                                                                                     Files.getNameWithoutExtension(filename))))
+                                                                                     Files.getNameWithoutExtension(filename)),
+                                                                             i18n,
+                                                                             ogcApiRequest.getLanguage()))
                         .build())
                 .collect(Collectors.toList());
 

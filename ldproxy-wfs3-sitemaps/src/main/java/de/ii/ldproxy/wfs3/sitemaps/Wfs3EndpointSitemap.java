@@ -44,6 +44,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?(?:/\\w+/sitemap[_0-9]+\\.xml)$")
             .build();
     private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(

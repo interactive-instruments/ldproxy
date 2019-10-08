@@ -49,11 +49,11 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
         if (datasetData != null) {
 
             PathItem featuresPathItem = openAPI.getPaths()
-                                               .remove("/collections/{featureType}");
+                                               .remove("/collections/{collectionId}");
             PathItem featuresPathItems = openAPI.getPaths()
-                                                .remove("/collections/{featureType}/items");
+                                                .remove("/collections/{collectionId}/items");
             PathItem featurePathItem = openAPI.getPaths()
-                                              .remove("/collections/{featureType}/items/{featureId}");
+                                              .remove("/collections/{collectionId}/items/{featureId}");
 
             datasetData.getFeatureTypes()
                        .values()
