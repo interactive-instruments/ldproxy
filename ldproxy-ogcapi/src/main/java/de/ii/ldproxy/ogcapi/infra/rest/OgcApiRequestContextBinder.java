@@ -22,9 +22,7 @@ import javax.ws.rs.ext.Provider;
 
 import static de.ii.xtraplatform.rest.ServiceContextBinder.SERVICE_CONTEXT_KEY;
 
-/**
- * @author zahnen
- */
+
 @Component
 @Provides
 @Instantiate

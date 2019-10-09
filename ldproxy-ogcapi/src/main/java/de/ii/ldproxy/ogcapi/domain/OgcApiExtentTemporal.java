@@ -14,10 +14,6 @@ public class OgcApiExtentTemporal {
     private String[][] interval;
     private String trs;
 
-    public OgcApiExtentTemporal() {
-
-    }
-
     public OgcApiExtentTemporal(long begin, long end) {
         this.interval = new String[][]{{
                                 begin>=0 ? Instant.ofEpochMilli(begin).truncatedTo(ChronoUnit.SECONDS).toString() : null,

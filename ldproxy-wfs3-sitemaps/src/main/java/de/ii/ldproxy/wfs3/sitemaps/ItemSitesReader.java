@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.sitemaps;
 
-import de.ii.ldproxy.ogcapi.domain.AbstractWfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.AbstractOgcApiFeaturesGenericMapping;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
@@ -35,7 +35,7 @@ public class ItemSitesReader implements FeatureTransformer {
 
     @Override
     public String getTargetFormat() {
-        return AbstractWfs3GenericMapping.BASE_TYPE;
+        return AbstractOgcApiFeaturesGenericMapping.BASE_TYPE;
     }
 
     @Override

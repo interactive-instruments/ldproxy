@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap
 import de.ii.ldproxy.ogcapi.application.I18n
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataset
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext
-import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension
 import de.ii.xtraplatform.crs.api.CrsTransformation
 import spock.lang.Specification
 

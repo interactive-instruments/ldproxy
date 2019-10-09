@@ -9,9 +9,7 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.List;
 
-/**
- * @author zahnen
- */
+
 public interface OgcApiExtensionRegistry {
 
     List<OgcApiExtension> getExtensions();

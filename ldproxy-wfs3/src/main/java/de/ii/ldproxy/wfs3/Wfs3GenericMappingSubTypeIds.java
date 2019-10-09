@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
 import de.ii.xtraplatform.dropwizard.api.JacksonSubTypeIds;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -26,7 +26,7 @@ public class Wfs3GenericMappingSubTypeIds implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(Wfs3GenericMapping.class, "GENERIC_PROPERTY")
+                .put(OgcApiFeaturesGenericMapping.class, "GENERIC_PROPERTY")
                 //.put(GenericMapping.class, "META_PROPERTY")
                 .build();
     }

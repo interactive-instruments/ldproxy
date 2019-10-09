@@ -12,7 +12,7 @@ import javax.ws.rs.core.Response;
 public interface CommonFormatExtension extends FormatExtension {
 
     default String getPathPattern() {
-        return "^/?(?:conformance)?$";
+        return "^/?(?:conformance(?:/)?)?$";
     }
 
     Response getLandingPageResponse(LandingPage apiLandingPage,

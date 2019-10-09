@@ -18,9 +18,7 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 import java.time.Instant;
 
-/**
- * @author zahnen
- */
+
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableFeatureTypeConfigurationOgcApi.Builder.class)
 public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration, ExtendableConfiguration, ValueInstance {
@@ -46,9 +44,7 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
         @Value.Default
         default boolean getSpatialComputed(){return false;}
 
-        // TODO support computed temporal extent
-        // TODO do not use EPOCH for open start
-        // TODO do not use now for open end
+        // TODO: temporal: support computed temporal extent; do not use EPOCH for open start; do not use now for open end
 
     }
 

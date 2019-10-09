@@ -9,7 +9,7 @@ package de.ii.ldproxy.admin.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.wfs3.api.ImmutableWfs3ServiceStatus;
+import de.ii.ldproxy.ogcapi.features.core.api.ImmutableWfs3ServiceStatus;
 import de.ii.xtraplatform.api.MediaTypeCharset;
 import de.ii.xtraplatform.api.exceptions.BadRequest;
 import de.ii.xtraplatform.api.permission.AuthenticatedUser;

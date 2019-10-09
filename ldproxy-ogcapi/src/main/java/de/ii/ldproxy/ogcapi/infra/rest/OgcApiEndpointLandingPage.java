@@ -27,9 +27,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
 
-/**
- * @author zahnen
- */
+
 @Component
 @Provides
 @Instantiate
@@ -43,7 +41,7 @@ public class OgcApiEndpointLandingPage implements OgcApiEndpointExtension {
             .build();
 
     private final OgcApiExtensionRegistry extensionRegistry;
-    //TODO
+
     @Requires
     private OgcApiQueriesHandlerCommon queryHandler;
 
@@ -68,13 +66,18 @@ public class OgcApiEndpointLandingPage implements OgcApiEndpointExtension {
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
-
     @GET
     public Response getLandingPage(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
                                    @Context OgcApiRequestContext requestContext) {
         checkAuthorization(api.getData(), optionalUser);
 
-        OgcApiQueriesHandlerCommon.OgcApiQueryInputLandingPage queryInput = new ImmutableOgcApiQueryInputLandingPage.Builder().build();
+        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+                .orElse(false);
+
+        OgcApiQueriesHandlerCommon.OgcApiQueryInputLandingPage queryInput = new ImmutableOgcApiQueryInputLandingPage.Builder()
+                .includeLinkHeader(includeLinkHeader)
+                .build();
 
         return queryHandler.handle(Query.LANDING_PAGE, queryInput, requestContext);
     }

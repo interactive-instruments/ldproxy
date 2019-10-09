@@ -19,9 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * @author zahnen
- */
+
 public class URICustomizer extends URIBuilder {
     public URICustomizer() {
         super();

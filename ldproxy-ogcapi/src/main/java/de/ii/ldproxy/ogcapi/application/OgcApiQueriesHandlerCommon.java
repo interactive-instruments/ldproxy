@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.application;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
@@ -35,12 +36,13 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
 
     @Value.Immutable
     public interface OgcApiQueryInputLandingPage extends OgcApiQueryInput {
-
+        boolean getIncludeLinkHeader();
     }
 
     @Value.Immutable
     public interface OgcApiQueryInputConformance extends OgcApiQueryInput {
         boolean getIncludeHomeLink();
+        boolean getIncludeLinkHeader();
     }
 
     @Value.Immutable
@@ -100,10 +102,10 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                         "/")
                 .orElseThrow(NotAcceptableException::new);
 
-        Response landingPageResponse = outputFormatExtension.getLandingPageResponse(apiLandingPage.build(),
+        ImmutableLandingPage responseObject = apiLandingPage.build();
+        Response landingPageResponse = outputFormatExtension.getLandingPageResponse(responseObject,
                 requestContext.getApi(),
                 requestContext);
-
 
         Response.ResponseBuilder response = Response.ok()
                 .entity(landingPageResponse.getEntity())
@@ -113,6 +115,9 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         Optional<Locale> language = requestContext.getLanguage();
         if (language.isPresent())
             response.language(language.get());
+
+        if (queryInput.getIncludeLinkHeader())
+            addLinks(response, responseObject.getLinks());
 
         return response.build();
     }
@@ -150,7 +155,8 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                     requestContext.getLanguage());
         }
 
-        Response conformanceDeclarationResponse = outputFormatExtension.getConformanceResponse(conformanceDeclaration.build(),
+        ImmutableConformanceDeclaration responseObject = conformanceDeclaration.build();
+        Response conformanceDeclarationResponse = outputFormatExtension.getConformanceResponse(responseObject,
                 requestContext.getApi(),
                 requestContext);
 
@@ -162,6 +168,9 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         Optional<Locale> language = requestContext.getLanguage();
         if (language.isPresent())
             response.language(language.get());
+
+        if (queryInput.getIncludeLinkHeader())
+            addLinks(response, responseObject.getLinks());
 
         return response.build();
     }
@@ -204,4 +213,7 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         return extensionRegistry.getExtensionsForType(ConformanceClass.class);
     }
 
+    private void addLinks(Response.ResponseBuilder response, ImmutableList<OgcApiLink> links) {
+        links.stream().forEach(link -> response.links(link.getLink()));
+    }
 }

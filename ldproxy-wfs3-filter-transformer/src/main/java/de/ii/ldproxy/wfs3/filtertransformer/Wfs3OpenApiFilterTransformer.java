@@ -7,19 +7,13 @@
  */
 package de.ii.ldproxy.wfs3.filtertransformer;
 
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.media.StringSchema;
-import io.swagger.v3.oas.models.parameters.Parameter;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-
-import java.util.Comparator;
-import java.util.Objects;
 
 /**
  * @author zahnen
@@ -35,12 +29,13 @@ public class Wfs3OpenApiFilterTransformer implements OpenApiExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        return isExtensionEnabled(apiData, FilterTransformersConfiguration.class);
+        return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class); // TODO currently no separate configuration option
     }
 
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
 
+        /* TODO this can be deleted, correct?
         datasetData.getFeatureTypes()
                    .values()
                    .stream()
@@ -86,7 +81,7 @@ public class Wfs3OpenApiFilterTransformer implements OpenApiExtension {
                        }
 
                    });
-
+        */
         return openAPI;
     }
 }

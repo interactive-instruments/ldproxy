@@ -13,13 +13,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.core.Link;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-/**
- * @author zahnen
- */
+
 @Value.Immutable
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonDeserialize(as = ImmutableOgcApiLink.class)
@@ -71,4 +70,19 @@ public abstract class OgcApiLink {
     @Nullable
     @XmlAttribute
     public abstract String getTemplated();
+
+    @JsonIgnore
+    @XmlTransient
+    public Link getLink() {
+        Link.Builder link = Link.fromUri(getHref());
+
+        if (getRel()!=null && !getRel().isEmpty())
+            link.rel(getRel());
+        if (getTitle()!=null && !getTitle().isEmpty())
+            link.title(getTitle());
+        if (getType()!=null && !getType().isEmpty())
+            link.type(getType());
+
+        return link.build();
+    };
 }

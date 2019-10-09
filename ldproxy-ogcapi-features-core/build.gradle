@@ -1,0 +1,18 @@
+version = '1.0.0'
+
+dependencies {
+    provided project(":ldproxy-ogcapi")
+
+    api group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-service-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-crs-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+}
+

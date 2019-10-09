@@ -39,7 +39,7 @@ public class OgcApiEndpointCollections implements OgcApiEndpointExtension {
             .build();
 
     private final OgcApiExtensionRegistry extensionRegistry;
-    //TODO
+
     @Requires
     private OgcApiQueriesHandlerCollections queryHandler;
 
@@ -73,9 +73,13 @@ public class OgcApiEndpointCollections implements OgcApiEndpointExtension {
         boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
+        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+                .orElse(false);
 
         OgcApiQueriesHandlerCollections.OgcApiQueryInputCollections queryInput = new ImmutableOgcApiQueryInputCollections.Builder()
                 .includeHomeLink(includeHomeLink)
+                .includeLinkHeader(includeLinkHeader)
                 .build();
 
         return queryHandler.handle(OgcApiQueriesHandlerCollections.Query.COLLECTIONS, queryInput, requestContext);

@@ -23,7 +23,7 @@ import java.util.Optional;
 /**
  * add tiling information to the collection metadata (supported tiling schemes, links)
  *
- * @author portele
+ *
  */
 @Component
 @Provides

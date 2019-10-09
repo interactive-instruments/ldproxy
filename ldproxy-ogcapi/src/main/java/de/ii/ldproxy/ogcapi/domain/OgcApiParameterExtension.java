@@ -7,11 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.google.common.collect.ImmutableSet;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 
 import java.util.Map;
 
 public interface OgcApiParameterExtension extends OgcApiExtension {
+
+    ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath);
 
     default Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfigurationWfs3,
                                                     Map<String, String> parameters, OgcApiDatasetData serviceData) {

@@ -73,10 +73,14 @@ public class OgcApiEndpointCollection implements OgcApiEndpointExtension {
         boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
+        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+                .orElse(false);
 
         OgcApiQueriesHandlerCollections.OgcApiQueryInputFeatureCollection queryInput = new ImmutableOgcApiQueryInputFeatureCollection.Builder()
                 .collectionId(collectionId)
                 .includeHomeLink(includeHomeLink)
+                .includeLinkHeader(includeLinkHeader)
                 .build();
 
         return queryHandler.handle(OgcApiQueriesHandlerCollections.Query.FEATURE_COLLECTION, queryInput, requestContext);

@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 public interface ApiDefinitionFormatExtension extends FormatExtension {
 
     default String getPathPattern() {
-        return "^\\/api\\/?$";
+        return "^/api/?$";
     }
 
     Response getApiDefinitionResponse(OgcApiDatasetData apiData,

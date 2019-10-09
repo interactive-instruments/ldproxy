@@ -75,7 +75,7 @@ public class VectorTilesLinkGenerator {
                                         .toString())
                         .rel("tileMatrixSet")
                         .type("application/json")
-                        .description(i18n.get("tileMatrixSetLink", language))
+                        .description(i18n.get("tileMatrixSetLink", language).replace("{{tileMatrixSetId}}", tileMatrixSetId))
                         .build())
                 .build();
     }
@@ -138,7 +138,7 @@ public class VectorTilesLinkGenerator {
 
 
     /**
-     * generates the URI templates on the page /serviceId/tilingSchemes/{tilingSchemeId} and /serviceId/tiles/{tilingSchemeId}
+     * generates the URI templates on the page /serviceId/tileMatrixSets/{tileMatrixSetId} and /serviceId/tiles/{tileMatrixSetId}
      *
      * @param uriBuilder        the URI, split in host, path and query
      * @param tileMatrixSetId   the id of the tiling Scheme
@@ -158,7 +158,8 @@ public class VectorTilesLinkGenerator {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
                                     .clearParameters()
-                                    .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f=json")
+                                    .ensureNoTrailingSlash()
+                                    .toString() + (tileMatrixSetId==null ? "" : "/"+tileMatrixSetId) + "/{tileMatrix}/{tileRow}/{tileCol}?f=json")
                     .rel("tiles")
                     .type("application/geo+json")
                     .description(i18n.get("tilesLinkTemplateGeoJSON", language))
@@ -169,7 +170,8 @@ public class VectorTilesLinkGenerator {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
                                     .clearParameters()
-                                    .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f=mvt")
+                                    .ensureNoTrailingSlash()
+                                    .toString() + (tileMatrixSetId==null ? "" : "/"+tileMatrixSetId) + "/{tileMatrix}/{tileRow}/{tileCol}?f=mvt")
                     .rel("tiles")
                     .type("application/vnd.mapbox-vector-tile")
                     .description(i18n.get("tilesLinkTemplateMVT", language))

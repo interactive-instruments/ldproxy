@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.generalization;
 
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
@@ -28,6 +29,14 @@ public class OgcApiParameterGeneralization implements OgcApiParameterExtension {
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
         return isExtensionEnabled(apiData, GeneralizationConfiguration.class);
+    }
+
+    @Override
+    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+        if (!isEnabledForApi(apiData))
+            return ImmutableSet.of();
+
+        return ImmutableSet.of("maxAllowableOffset");
     }
 
     @Override

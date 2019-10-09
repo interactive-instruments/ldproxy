@@ -17,9 +17,7 @@ import de.ii.xtraplatform.service.api.Service;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * @author zahnen
- */
+
 public interface OgcApiDataset extends FeatureTransformerService, Service {
 
     // TODO: move the following 3 methods to OgcApiApi, split generic parts of OgcApiDatasetData to OgcApiApiData (requires a change in xtraplatform)

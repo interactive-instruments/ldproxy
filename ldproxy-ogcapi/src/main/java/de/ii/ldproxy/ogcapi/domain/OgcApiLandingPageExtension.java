@@ -20,5 +20,5 @@ public interface OgcApiLandingPageExtension extends OgcApiContentExtension {
                                          List<OgcApiMediaType> alternateMediaTypes,
                                          Optional<Locale> language);
 
-    default String getResourceName() { return "LandingPage"; };
+    default String getResourceName() { return "Landing Page"; };
 }

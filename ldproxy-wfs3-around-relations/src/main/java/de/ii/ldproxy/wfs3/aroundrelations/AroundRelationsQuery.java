@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.aroundrelations;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import org.apache.http.NameValuePair;

@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.vt;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
-import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.*;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.server.CoreServerConfig;
@@ -178,7 +178,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
         List<Double> yMaxList = new ArrayList<>();
         List<Integer> minZoomList = new ArrayList<>();
         List<Integer> maxZoomList = new ArrayList<>();
-        Set<String> tilingSchemeIdsCollection = null;
+        Set<String> tileMatrixSetIdsCollection = null;
         OgcApiDatasetData datasetData = service.getData();
         Map<String, Map<String, TilesConfiguration.MinMax>> seedingMap = vectorTileMapGenerator.getMinMaxMap(datasetData, true);
         for (String collectionId : collectionIdsDataset) {
@@ -189,9 +189,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                 Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
 
 
-                tilingSchemeIdsCollection = seeding.keySet();
+                tileMatrixSetIdsCollection = seeding.keySet();
 
-                for (String tilingSchemeId : tilingSchemeIdsCollection) {
+                for (String tileMatrixSetId : tileMatrixSetIdsCollection) {
                     try {
                         BoundingBox spatial = datasetData.getFeatureTypes()
                                                          .get(collectionId)
@@ -200,9 +200,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                         if (spatial == null) {
                         }
                         if (seeding.size() != 0 && spatial != null) {
-                            int maxZoom = seeding.get(tilingSchemeId)
+                            int maxZoom = seeding.get(tileMatrixSetId)
                                                  .getMax();
-                            int minZoom = seeding.get(tilingSchemeId)
+                            int minZoom = seeding.get(tileMatrixSetId)
                                                  .getMin();
                             double xMin = spatial.getXmin();
                             double xMax = spatial.getXmax();
@@ -261,9 +261,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
             for (int x = rowMin; x <= rowMax; x++) {
                 for (int y = colMin; y <= colMax; y++) {
-                    for (String tilingSchemeId : tilingSchemeIdsCollection) {
+                    for (String tileMatrixSetId : tileMatrixSetIdsCollection) {
 
-                        VectorTile tile = new VectorTile(null, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+                        VectorTile tile = new VectorTile(null, tileMatrixSetId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
 
                         // generate tile
                         File tileFileMvt = tile.getFile(cache, "pbf");
@@ -278,12 +278,12 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                             for (String collectionId : collectionIdsMVTEnabled) {
                                 Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
                                 if (!Objects.isNull(seeding)) {
-                                    int collectionMax = seeding.get(tilingSchemeId)
+                                    int collectionMax = seeding.get(tileMatrixSetId)
                                                                .getMax();
-                                    int collectionMin = seeding.get(tilingSchemeId)
+                                    int collectionMin = seeding.get(tileMatrixSetId)
                                                                .getMin();
                                     if (collectionMin <= z && z <= collectionMax) {
-                                        File tileFileMvtCollection = generateMVT(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
+                                        File tileFileMvtCollection = generateMVT(service, collectionId, tileMatrixSetId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
                                         layers.put(collectionId, tileFileMvtCollection);
                                     }
                                 }
@@ -291,9 +291,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
                             boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile);
                             if (!success) {
-                                String msg = "Internal server error: could not generate protocol buffers for a tile.";
+                                String msg = "Internal server error: could not generate protocol buffer for a tile.";
                                 LOGGER.error(msg);
-                                throw new InternalServerErrorException(msg);
+                                // throw new InternalServerErrorException(msg);
                             }
 
                             Set<String> collectionIdsOnlyJSON = Wfs3EndpointTiles.getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(datasetData), vectorTileMapGenerator.getEnabledMap(datasetData),
@@ -302,12 +302,12 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                             for (String collectionId : collectionIdsOnlyJSON) {
                                 Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
                                 if (!Objects.isNull(seeding)) {
-                                    int collectionMax = seeding.get(tilingSchemeId)
+                                    int collectionMax = seeding.get(tileMatrixSetId)
                                                                .getMax();
-                                    int collectionMin = seeding.get(tilingSchemeId)
+                                    int collectionMin = seeding.get(tileMatrixSetId)
                                                                .getMin();
                                     if (collectionMin <= z && z <= collectionMax) {
-                                        generateJSON(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
+                                        generateJSON(service, collectionId, tileMatrixSetId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
                                     }
                                 }
                             }
@@ -323,7 +323,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      *
      * @param service           the service data of the Wfs3 Service
      * @param collectionId      the id of the collection of the tile
-     * @param tilingSchemeId    the id of the tiling scheme of the tile
+     * @param tileMatrixSetId    the id of the tiling scheme of the tile
      * @param z                 the zoom level of the tile
      * @param x                 the row of the tile
      * @param y                 the col of the tile
@@ -333,17 +333,17 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @param coreServerConfig  the core server config with the external url
      * @return the Json File. If the mvt already exists, return null
      */
-    private File generateMVT(OgcApiDataset service, String collectionId, String tilingSchemeId, int z, int x,
+    private File generateMVT(OgcApiDataset service, String collectionId, String tileMatrixSetId, int z, int x,
                              int y, VectorTilesCache cache, CrsTransformation crsTransformation,
                              TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
 
         try {
             LOGGER.debug("seeding - ZoomLevel: " + Integer.toString(z) + " row: " + Integer.toString(x) + " col: " + Integer.toString(y));
-            VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+            VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
             File tileFileMvt = tile.getFile(cache, "pbf");
             if (!tileFileMvt.exists()) {
-                File tileFileJson = generateJSON(service, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
+                File tileFileJson = generateJSON(service, collectionId, tileMatrixSetId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
                 Map<String, File> layers = new HashMap<>();
                 layers.put(collectionId, tileFileJson);
                 boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile);
@@ -365,7 +365,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      *
      * @param service           the service data of the Wfs3 Service
      * @param collectionId      the id of the collection of the tile
-     * @param tilingSchemeId    the id of the tiling scheme of the tile
+     * @param tileMatrixSetId    the id of the tiling scheme of the tile
      * @param z                 the zoom level of the tile
      * @param x                 the row of the tile
      * @param y                 the col of the tile
@@ -375,19 +375,19 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @param coreServerConfig  the core server config with the external url
      * @return the json File, if it already exists return null
      */
-    private File generateJSON(OgcApiDataset service, String collectionId, String tilingSchemeId, int z, int x,
+    private File generateJSON(OgcApiDataset service, String collectionId, String tileMatrixSetId, int z, int x,
                               int y, VectorTilesCache cache, CrsTransformation crsTransformation,
                               TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
                               OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
 
         try {
-            VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+            VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(z), Integer.toString(x), Integer.toString(y), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
             File tileFileJson = tile.getFile(cache, "json");
 
             if (!tileFileJson.exists()) {
                 String prefix = coreServerConfig.getExternalUrl();
                 String uriString = prefix + "/" + service.getData().getId() + "/" + "collections" + "/"
-                        + collectionId + "/tiles/" + tilingSchemeId + "/" + z + "/" + y + "/" + x;
+                        + collectionId + "/tiles/" + tileMatrixSetId + "/" + z + "/" + y + "/" + x;
 
                 URI uri = null;
                 try {

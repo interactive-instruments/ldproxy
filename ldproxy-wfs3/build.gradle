@@ -2,9 +2,8 @@
 version = '1.4.1'
 
 dependencies {
-    provided project(":ldproxy-wfs3-api")
     provided project(":ldproxy-ogcapi")
-    provided project(":ldproxy-wfs3-core")
+    provided project(":ldproxy-ogcapi-features-core")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
@@ -13,6 +12,10 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-geojson'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-crs-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-service-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-rest'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-scheduler-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-server'

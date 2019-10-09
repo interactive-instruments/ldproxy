@@ -26,11 +26,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -59,7 +55,7 @@ public class TileGeneratorMvt {
         int level = tile.getLevel();
         int row = tile.getRow();
         int col = tile.getCol();
-        //checkZoomLevels(level, service,collectionId,tilingScheme.getId());
+        //checkZoomLevels(level, service,collectionId,tileMatrixSet.getId());
 
         VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         AffineTransformation transform;
@@ -87,20 +83,33 @@ public class TileGeneratorMvt {
             ObjectMapper mapper = new ObjectMapper();
 
             Map<String, Object> jsonFeatureCollection = null;
-            try {
-                if (tileFileJson != null) {
-                    if (new BufferedReader(new FileReader(tileFileJson)).readLine() != null) {
-                        jsonFeatureCollection = mapper.readValue(tileFileJson, new TypeReference<LinkedHashMap>() {
-                        });
+            if (tileFileJson != null) {
+                int count = 0;
+                while (true) {
+                    try {
+                        if (new BufferedReader(new FileReader(tileFileJson)).readLine() != null) {
+                            jsonFeatureCollection = mapper.readValue(tileFileJson, new TypeReference<LinkedHashMap>() {
+                            });
+                        }
+                        break;
+                    } catch (IOException e) {
+                        if (count++ < 2) {
+                            // maybe the file is still generated, try to wait twice before giving up
+                            String msg = "Failure to read the GeoJSON file of tile {}/{}/{} in dataset '{}', layer '{}'. Trying again ...";
+                            LOGGER.info(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException ex) {
+                                // ignore and just continue
+                            }
+                        } else {
+                            String msg = "Internal server error: exception reading the GeoJSON file of tile {}/{}/{} in dataset '{}', layer '{}'.";
+                            LOGGER.error(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
+                            e.printStackTrace();
+                            return false;
+                        }
                     }
-
                 }
-
-            } catch (IOException e) {
-                String msg = "Internal server error: exception reading the GeoJSON file of tile {}/{}/{} in dataset '{}', layer {}.";
-                LOGGER.error(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
-                e.printStackTrace();
-                return false;
             }
 
             //empty Collection or no features in the collection

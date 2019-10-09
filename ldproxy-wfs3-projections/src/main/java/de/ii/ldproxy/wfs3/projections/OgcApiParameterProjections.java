@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.projections;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
@@ -31,6 +32,14 @@ public class OgcApiParameterProjections implements OgcApiParameterExtension {
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
         return isExtensionEnabled(apiData, ProjectionsConfiguration.class);
+    }
+
+    @Override
+    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+        if (!isEnabledForApi(apiData))
+            return ImmutableSet.of();
+
+        return ImmutableSet.of("properties");
     }
 
     @Override

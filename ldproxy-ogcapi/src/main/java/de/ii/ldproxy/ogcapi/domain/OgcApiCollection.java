@@ -30,9 +30,6 @@ public abstract class OgcApiCollection extends PageRepresentation {
 
     public abstract Optional<String> getItemType();
 
-    //@JsonIgnore
-    //public abstract String getPrefixedName();
-
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
 }

@@ -25,16 +25,14 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * @author zahnen
- */
+
 @Component
 @Provides(properties = {
         @StaticServiceProperty(name = ServiceResource.SERVICE_TYPE_KEY, type = "java.lang.String", value = "WFS3")
 })
 @Instantiate
 
-@PermitAll //TODO ???
+@PermitAll
 public class OgcApiRequestDispatcher implements ServiceResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiRequestDispatcher.class);
@@ -54,8 +52,8 @@ public class OgcApiRequestDispatcher implements ServiceResource {
     }
 
     @Path("")
-    public OgcApiEndpointExtension dispatchDatasetWithoutSlash(@PathParam("entrypoint") String entrypoint, @Context OgcApiDataset service,
-                                            @Context ContainerRequestContext requestContext) {
+    public OgcApiEndpointExtension dispatchLandingPageWithoutSlash(@PathParam("entrypoint") String entrypoint, @Context OgcApiDataset service,
+                                                                   @Context ContainerRequestContext requestContext) {
         return dispatch("", service, requestContext);
 
     }
@@ -67,8 +65,25 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         String subPath = ((UriRoutingContext) requestContext.getUriInfo()).getFinalMatchingGroup();
         String method = requestContext.getMethod();
 
-        OgcApiEndpointExtension ogcApiEndpoint = findEndpoint(service.getData(), entrypoint, subPath, method)
-                                                     .orElseThrow(NotFoundException::new);
+        OgcApiEndpointExtension ogcApiEndpoint = findEndpoint(service.getData(), entrypoint, subPath, method).orElse(null);
+
+        if (ogcApiEndpoint==null) {
+            if (findEndpoint(service.getData(), entrypoint, subPath, null).isPresent())
+                throw new NotAllowedException("Method "+method+" is not supported for this resource.");
+            throw new NotFoundException();
+        }
+
+        Set<String> parameters = requestContext.getUriInfo().getQueryParameters().keySet();
+        Set<String> knownParameters = ogcApiEndpoint.getParameters(service.getData(), subPath);
+        Set<String> unknownParameters = parameters.stream()
+                .filter(parameter -> !knownParameters.contains(parameter))
+                .collect(Collectors.toSet());
+        if (!unknownParameters.isEmpty()) {
+            throw new BadRequestException("The following query parameters are rejected: " +
+                    String.join(", ", unknownParameters) +
+                    ". Valid parameters for this request are: " +
+                    String.join(", ", knownParameters));
+        }
 
         ImmutableSet<OgcApiMediaType> supportedMediaTypes = ogcApiEndpoint.getMediaTypes(service.getData(), subPath);
 
@@ -138,7 +153,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         try {
             externalUri = new URI(coreServerConfig.getExternalUrl());
         } catch (URISyntaxException e) {
-            // ignore
+            // return null
         }
 
         return Optional.ofNullable(externalUri);

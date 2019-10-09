@@ -17,11 +17,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-/**
- * @author zahnen
- */
+
 @Value.Immutable
-//@JsonDeserialize(as = ImmutableOgcApiRequestContextImpl.class)
 public abstract class AbstractOgcApiRequestContext implements OgcApiRequestContext {
 
     abstract URI getRequestUri();

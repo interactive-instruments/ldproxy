@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.domain;
 
 public interface OgcApiCapabilityExtension extends OgcApiExtension {
 
-    // TODO clarify how this is supposed to work
+    // TODO: clarify the relevance of these extensions
 
     @Override
     default boolean isEnabledForApi(OgcApiDatasetData apiData) {

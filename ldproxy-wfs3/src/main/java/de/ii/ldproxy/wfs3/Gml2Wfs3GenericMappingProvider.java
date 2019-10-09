@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.wfs3;
 
-import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
-import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping.GENERIC_TYPE;
+import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping.GENERIC_TYPE;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.slf4j.Logger;
@@ -34,7 +34,7 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
 
     @Override
     public TargetMapping getTargetMappingForFeatureType(String nsUri, String localName) {
-        Wfs3GenericMapping targetMapping = new Wfs3GenericMapping();
+        OgcApiFeaturesGenericMapping targetMapping = new OgcApiFeaturesGenericMapping();
         targetMapping.setEnabled(true);
 
         this.hasSpatialField = false;
@@ -53,7 +53,7 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
             GENERIC_TYPE dataType = GENERIC_TYPE.forGmlType(type);
 
             if (dataType.isValid()) {
-                Wfs3GenericMapping targetMapping = new Wfs3GenericMapping();
+                OgcApiFeaturesGenericMapping targetMapping = new OgcApiFeaturesGenericMapping();
                 targetMapping.setEnabled(true);
                 targetMapping.setName("id");
                 targetMapping.setType(dataType);
@@ -74,7 +74,7 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
         if (dataType.isValid()) {
             LOGGER.debug("PROPERTY {} {}", path, dataType);
 
-            Wfs3GenericMapping targetMapping = new Wfs3GenericMapping();
+            OgcApiFeaturesGenericMapping targetMapping = new OgcApiFeaturesGenericMapping();
             targetMapping.setEnabled(true);
             targetMapping.setName(path);
             targetMapping.setType(dataType);
@@ -96,7 +96,7 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
         if (type.isValid()) {
             LOGGER.debug("GEOMETRY {} {}", path, type);
 
-            Wfs3GenericMapping targetMapping = new Wfs3GenericMapping();
+            OgcApiFeaturesGenericMapping targetMapping = new OgcApiFeaturesGenericMapping();
             targetMapping.setEnabled(true);
             targetMapping.setType(GENERIC_TYPE.SPATIAL);
             //TODO needed for reverse filter lookup

@@ -20,5 +20,5 @@ public interface OgcApiConformanceDeclarationExtension extends OgcApiContentExte
                                                     List<OgcApiMediaType> alternateMediaTypes,
                                                     Optional<Locale> language);
 
-    default String getResourceName() { return "ConformanceDeclaration"; };
+    default String getResourceName() { return "Conformance Declaration"; };
 }

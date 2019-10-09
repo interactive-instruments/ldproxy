@@ -35,7 +35,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 /**
  * fetch tiling schemes / tile matrix sets that have been configured for this service
  *
- * @author portele
+ *
  */
 @Component
 @Provides
@@ -93,7 +93,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
     @Path("/")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingSchemes(@Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
+    public Response getTileMatrixSets(@Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
 
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
 
@@ -109,7 +109,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
             wfs3LinksList.add(wfs3LinksMap);
         }
 
-        return Response.ok(ImmutableMap.of("tileMatrixSetLinks", wfs3LinksList))
+        return Response.ok(ImmutableMap.of("tileMatrixSets", wfs3LinksList))
                        .build();
     }
 
@@ -122,7 +122,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
     @Path("/{tileMatrixSetId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTilingScheme(@PathParam("tileMatrixSetId") String tileMatrixSetId,
+    public Response getTileMatrixSet(@PathParam("tileMatrixSetId") String tileMatrixSetId,
                                     @Context OgcApiDataset service) {
 
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));

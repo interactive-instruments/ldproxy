@@ -13,9 +13,7 @@ import org.immutables.value.Value;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * @author zahnen
- */
+
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableMetadata.Builder.class)
 public interface Metadata {

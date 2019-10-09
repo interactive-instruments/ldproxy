@@ -13,7 +13,7 @@ import de.ii.xtraplatform.crs.api.*;
  * This is the most commonly used tiling scheme. It is used by Google Maps and most other web mapping applications.
  * In WMTS it is called "Google Maps Compatible".
  *
- * @author portele
+ *
  */
 public class DefaultTileMatrixSet implements TileMatrixSet {
 

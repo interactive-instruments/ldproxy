@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.application;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
@@ -36,12 +37,14 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
     @Value.Immutable
     public interface OgcApiQueryInputCollections extends OgcApiQueryInput {
         boolean getIncludeHomeLink();
+        boolean getIncludeLinkHeader();
     }
 
     @Value.Immutable
     public interface OgcApiQueryInputFeatureCollection extends OgcApiQueryInput {
         String getCollectionId();
         boolean getIncludeHomeLink();
+        boolean getIncludeLinkHeader();
     }
 
     private final OgcApiExtensionRegistry extensionRegistry;
@@ -97,7 +100,8 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                                                                          "/collections")
                 .orElseThrow(NotAcceptableException::new);
 
-        Response collectionsResponse = outputFormatExtension.getCollectionsResponse(collections.build(),
+        ImmutableCollections responseObject = collections.build();
+        Response collectionsResponse = outputFormatExtension.getCollectionsResponse(responseObject,
                 requestContext.getApi(),
                 requestContext);
 
@@ -109,6 +113,9 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
         Optional<Locale> language = requestContext.getLanguage();
         if (language.isPresent())
             response.language(language.get());
+
+        if (queryInput.getIncludeLinkHeader())
+            addLinks(response, responseObject.getLinks());
 
         return response.build();
     }
@@ -154,6 +161,7 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                     requestContext.getLanguage());
         }
 
+        ImmutableOgcApiCollection responseObject = ogcApiCollection.build();
         Response collectionResponse = outputFormatExtension.getCollectionResponse(ogcApiCollection.build(), api, requestContext);
 
         Response.ResponseBuilder response = Response.ok()
@@ -164,6 +172,9 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
         Optional<Locale> language = requestContext.getLanguage();
         if (language.isPresent())
             response.language(language.get());
+
+        if (queryInput.getIncludeLinkHeader())
+            addLinks(response, responseObject.getLinks());
 
         return response.build();
     }
@@ -183,5 +194,9 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
 
     private List<OgcApiCollectionsExtension> getCollectionsExtenders() {
         return extensionRegistry.getExtensionsForType(OgcApiCollectionsExtension.class);
+    }
+
+    private void addLinks(Response.ResponseBuilder response, ImmutableList<OgcApiLink> links) {
+        links.stream().forEach(link -> response.links(link.getLink()));
     }
 }

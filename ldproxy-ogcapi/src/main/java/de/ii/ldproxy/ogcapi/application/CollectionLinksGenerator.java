@@ -19,7 +19,7 @@ import java.util.Optional;
 
 public class CollectionLinksGenerator extends DefaultLinksGenerator {
 
-    // TODO add license link
+    // TODO add license link to configuration and here
 
     public List<OgcApiLink> generateLinks(URICustomizer uriBuilder,
                                           OgcApiMediaType mediaType,

@@ -28,9 +28,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
 
-/**
- * @author zahnen
- */
+
 @Component
 @Provides
 @Instantiate
@@ -45,7 +43,7 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
             .build();
 
     private final OgcApiExtensionRegistry extensionRegistry;
-    //TODO
+
     @Requires
     private OgcApiQueriesHandlerCommon queryHandler;
 
@@ -77,12 +75,14 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
         boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
+        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+                .orElse(false);
 
         OgcApiQueryInputConformance queryInput = new ImmutableOgcApiQueryInputConformance.Builder()
                 .includeHomeLink(includeHomeLink)
+                .includeLinkHeader(includeLinkHeader)
                 .build();
-
-
 
         return queryHandler.handle(Query.CONFORMANCE_DECLARATION, queryInput, requestContext);
     }

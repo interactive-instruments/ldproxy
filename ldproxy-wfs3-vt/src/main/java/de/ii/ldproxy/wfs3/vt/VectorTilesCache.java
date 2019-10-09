@@ -7,21 +7,28 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.NotFoundException;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * Information about the cache for vector tile files.
- *
- * @author portele
  */
 public class VectorTilesCache {
 
+    private static Logger LOGGER = LoggerFactory.getLogger(VectorTilesCache.class);
+
     private static final String TILES_DIR_NAME = "tiles";
-    private static final String TILE_MATRIX_SETS_DIR_NAME = "tilingSchemes";
+    private static final String TILE_MATRIX_SETS_DIR_NAME = "tileMatrixSets";
     private static final String TMP_DIR_NAME = "__tmp__";
     private static final long TEN_MINUTES = 10 * 60 * 1000;
     private File dataDirectory;
@@ -55,6 +62,15 @@ public class VectorTilesCache {
         File tileMatrixSetsDirectory = new File(dataDirectory, TILE_MATRIX_SETS_DIR_NAME);
         if (!tileMatrixSetsDirectory.exists()) {
             tileMatrixSetsDirectory.mkdirs();
+        }
+        File webMercatorQuad = new File(tileMatrixSetsDirectory,  "WebMercatorQuad.json");
+        if (!webMercatorQuad.exists()) {
+            try {
+                URL tms = Resources.getResource(VectorTilesCache.class, "/WebMercatorQuad.json");
+                Resources.asByteSource(tms).copyTo(Files.asByteSink(webMercatorQuad));
+            } catch (IOException e) {
+                LOGGER.error("Could not access WebMercatorQuad.json: "+e.getMessage());
+            }
         }
         return tileMatrixSetsDirectory;
     }

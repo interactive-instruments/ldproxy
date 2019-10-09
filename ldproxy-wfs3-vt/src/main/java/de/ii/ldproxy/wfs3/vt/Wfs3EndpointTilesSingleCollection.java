@@ -12,9 +12,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesEndpoint;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
-import de.ii.ldproxy.wfs3.api.OgcApiFeatureFormatExtension;
-import de.ii.ldproxy.wfs3.core.OgcApiFeaturesEndpoint;
+import de.ii.ldproxy.wfs3.filtertransformer.OgcApiParameterFilterTransformer;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -33,6 +34,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -41,7 +43,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
  * <p>
  * TODO: Make support for the path configurable. Include in the configuration for each collection: min/max zoom level, automated seeding (based on the spatial extent) for specified zoom levels
  *
- * @author portele
+ *
  */
 @Component
 @Provides
@@ -50,7 +52,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
-            .subPathPattern("^/?(?:\\w+)/tiles(?:/\\w+(?:/\\w+/\\w+/\\w+)?)?$")
+            .subPathPattern("^/?\\w+/tiles(?:/\\w+(?:/\\w+/\\w+/\\w+)?)?/?$")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .build();
 
@@ -81,7 +83,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
-        if (subPath.matches("^/?(?:\\w+)/tiles(?:/\\w+)?$"))
+        if (subPath.matches("^/?\\w+/tiles(?:/\\w+)?/?$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.APPLICATION_JSON_TYPE)
@@ -98,6 +100,31 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                             .parameter("mvt")
                             .build()
             );
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
+    }
+
+    @Override
+    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+        if (subPath.matches("^/?\\w+/tiles(?:/\\w+)?/?$")) {
+            return OgcApiEndpointExtension.super.getParameters(apiData, subPath);
+        } else if (subPath.matches("^/?(?:\\w+)/tiles/(?:\\w+/\\w+/\\w+/\\w+)$")) {
+            ImmutableSet<String> parametersFromExtensions = new ImmutableSet.Builder<String>()
+                    .addAll(wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)
+                            .stream()
+                            // TODO: this is a hack, we need a more flexible mechanism to determine where the parameters apply
+                            .filter(ext -> ext.getClass()==OgcApiParameterFilterTransformer.class)
+                            .map(ext -> ext.getParameters(apiData, subPath.split("/tiles/",2)[0] + "/items"))
+                            .flatMap(Collection::stream)
+                            .collect(Collectors.toSet()))
+                    .build();
+
+            return new ImmutableSet.Builder<String>()
+                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
+                    .add("properties", "datetime")
+                    .addAll(parametersFromExtensions)
+                    .build();
+        }
 
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }

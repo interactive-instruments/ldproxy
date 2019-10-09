@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.Gml2Wfs3GenericMappingProvider;
-import de.ii.ldproxy.wfs3.api.*;
+import de.ii.ldproxy.ogcapi.features.core.api.*;
 import de.ii.xtraplatform.crs.api.DefaultCoordinatesWriter;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.crs.api.JsonCoordinateFormatter;
@@ -620,7 +620,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                     //TODO
                     HashMap<String, TargetMapping> map = Maps.newHashMap(next.build()
                                                                              .getMappings());
-                    ((Wfs3GenericMapping) map.get(TargetMapping.BASE_TYPE)).setEnabled(false);
+                    ((OgcApiFeaturesGenericMapping) map.get(TargetMapping.BASE_TYPE)).setEnabled(false);
                     next.mappings(map);
 
                 }

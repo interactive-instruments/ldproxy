@@ -14,9 +14,7 @@ import org.immutables.value.Value;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author zahnen
- */
+
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableCollections.Builder.class)
 public abstract class Collections extends PageRepresentation {

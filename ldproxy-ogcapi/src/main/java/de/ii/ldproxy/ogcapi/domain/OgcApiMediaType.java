@@ -11,9 +11,7 @@ import org.immutables.value.Value;
 
 import javax.ws.rs.core.MediaType;
 
-/**
- * @author zahnen
- */
+
 @Value.Immutable
 public interface OgcApiMediaType {
 

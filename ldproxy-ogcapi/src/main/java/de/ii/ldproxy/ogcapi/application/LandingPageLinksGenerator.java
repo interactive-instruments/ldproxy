@@ -30,6 +30,7 @@ public class LandingPageLinksGenerator extends DefaultLinksGenerator {
 
         uriBuilder
                 .ensureNoTrailingSlash()
+                .removeParameters("lang")
                 .ensureParameter("f", mediaType.parameter());
 
         builder.add(new ImmutableOgcApiLink.Builder()
@@ -46,7 +47,7 @@ public class LandingPageLinksGenerator extends DefaultLinksGenerator {
                                         .setParameter("f", "json")
                                         .toString())
                         .rel("service-desc")
-                        .type("application/vnd.oai.openapi+json;version=3.0") // TODO make configurable
+                        .type("application/vnd.oai.openapi+json;version=3.0")
                         .description(i18n.get("serviceDescLink",language))
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()

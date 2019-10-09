@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonPropertyMapping;
@@ -46,7 +46,6 @@ import org.apache.felix.ipojo.annotations.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.AbstractMap;
@@ -285,8 +284,8 @@ public class Wfs3ServiceMigrate {
         String mappingType = (String) mapping.get("mappingType");
 
         switch (mimeType) {
-            case Wfs3GenericMapping.BASE_TYPE:
-                return createGenericMapping(mappingType, mapping, (Wfs3GenericMapping) oldTargetMapping);
+            case OgcApiFeaturesGenericMapping.BASE_TYPE:
+                return createGenericMapping(mappingType, mapping, (OgcApiFeaturesGenericMapping) oldTargetMapping);
             case Gml2GeoJsonMappingProvider.MIME_TYPE:
                 return createGeoJsonMapping(mappingType, mapping, (GeoJsonPropertyMapping) oldTargetMapping);
             case Gml2MicrodataMappingProvider.MIME_TYPE:
@@ -297,16 +296,16 @@ public class Wfs3ServiceMigrate {
         return null;
     }
 
-    private Wfs3GenericMapping createGenericMapping(String mappingType, Map<String, Object> mapping,
-                                                    Wfs3GenericMapping oldTargetMapping) {
+    private OgcApiFeaturesGenericMapping createGenericMapping(String mappingType, Map<String, Object> mapping,
+                                                              OgcApiFeaturesGenericMapping oldTargetMapping) {
         switch (mappingType) {
             case "GENERIC_PROPERTY":
-                Wfs3GenericMapping targetMapping = oldTargetMapping != null ? oldTargetMapping : new Wfs3GenericMapping();
+                OgcApiFeaturesGenericMapping targetMapping = oldTargetMapping != null ? oldTargetMapping : new OgcApiFeaturesGenericMapping();
                 targetMapping.setEnabled((Boolean) mapping.get("enabled"));
                 targetMapping.setFilterable((Boolean) mapping.get("filterable"));
                 targetMapping.setName((String) mapping.get("name"));
                 if (mapping.containsKey("type"))
-                    targetMapping.setType(Wfs3GenericMapping.GENERIC_TYPE.valueOf((String) mapping.get("type")));
+                    targetMapping.setType(OgcApiFeaturesGenericMapping.GENERIC_TYPE.valueOf((String) mapping.get("type")));
                 if (mapping.containsKey("codelist"))
                     targetMapping.setCodelist((String) mapping.get("codelist"));
                 if (mapping.containsKey("format"))

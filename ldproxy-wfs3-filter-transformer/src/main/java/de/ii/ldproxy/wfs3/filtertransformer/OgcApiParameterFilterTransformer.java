@@ -7,9 +7,11 @@
  */
 package de.ii.ldproxy.wfs3.filtertransformer;
 
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.akka.http.HttpClient;
 import org.apache.felix.ipojo.annotations.Component;
@@ -17,6 +19,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.ws.rs.ServerErrorException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,7 +31,6 @@ import java.util.Optional;
 @Instantiate
 public class OgcApiParameterFilterTransformer implements OgcApiParameterExtension {
 
-
     private final HttpClient httpClient;
 
     public OgcApiParameterFilterTransformer(@Requires Http http) {
@@ -37,12 +39,41 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        return isExtensionEnabled(apiData, FilterTransformersConfiguration.class);
+        return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
+    }
+
+    @Override
+    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+        if (!isEnabledForApi(apiData))
+            return ImmutableSet.of();
+
+        if (subPath.matches("^/\\w+/items/?$")) {
+            // Features
+            Optional<FeatureTypeConfigurationOgcApi> ft = apiData.getFeatureTypes()
+                    .values()
+                    .stream()
+                    .filter(ftype -> apiData.isFeatureTypeEnabled(ftype.getId()))
+                    .filter(ftype -> subPath.matches("^/" + ftype.getId() + "/items/?$"))
+                    .findFirst();
+
+            if (ft.isPresent()) {
+                Map<String, String> filterableFields = apiData.getFilterableFieldsForFeatureType(ft.get().getId(), true);
+                return new ImmutableSet.Builder<String>()
+                        .addAll(filterableFields.keySet())
+                        .build();
+            }
+            return ImmutableSet.of();
+        } else if (subPath.matches("^/\\w+/items/\\w+/?$")) {
+            // Feature
+            return ImmutableSet.of();
+        }
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                   Map<String, String> parameters, OgcApiDatasetData datasetData) {
+                                                   Map<String, String> parameters, OgcApiDatasetData apiData) {
         final Optional<FilterTransformersConfiguration> filterTransformersConfiguration = featureTypeConfiguration.getExtension(FilterTransformersConfiguration.class);
 
         if (filterTransformersConfiguration.isPresent()) {

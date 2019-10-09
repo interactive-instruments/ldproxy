@@ -13,7 +13,7 @@ public interface CollectionsFormatExtension extends FormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^/collections(?:/\\w+)?$";
+        return "^/collections(?:/\\w+)?/?$";
     }
 
     Response getCollectionsResponse(Collections collections,

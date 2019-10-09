@@ -76,7 +76,7 @@ public interface OgcApiContext {
                                                                                                         .matcher(subPath)
                                                                                                         .matches();
         boolean matchesMethod = getSubPathsAndMethodsProcessed().entrySet().stream()
-                    .anyMatch(entry -> entry.getKey().orElse(Pattern.compile(".*")).matcher(subPath).matches() && entry.getValue().contains(method));
+                    .anyMatch(entry -> entry.getKey().orElse(Pattern.compile(".*")).matcher(subPath).matches() && (method==null || entry.getValue().contains(method)));
 
         return matchesPath && matchesMethod && matchesSubPath;
     }

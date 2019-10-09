@@ -28,10 +28,12 @@ public class CORSFilter implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext requestContext,
                        ContainerResponseContext responseContext) throws IOException {
+
         if (!requestContext.getUriInfo()
                            .getPath()
                            .startsWith("admin") &&
-            !(requestContext.getHeaderString("Origin") !=null) && // OPTIONS requests have their own endpoint
+            !(requestContext.getHeaderString("Origin")==null) &&
+            // OPTIONS requests have their own endpoint
             !requestContext.getMethod()
                            .equalsIgnoreCase("options")) {
 
@@ -42,7 +44,7 @@ public class CORSFilter implements ContainerResponseFilter {
                 responseContext.getHeaders()
                         .add("Access-Control-Allow-Credentials", "true");
                 responseContext.getHeaders()
-                        .add("Access-Control-Expose-Headers", "Location"); // TODO add additional headers
+                        .add("Access-Control-Expose-Headers", "Location, Link"); // TODO add additional headers
             }
         }
     }

@@ -13,14 +13,22 @@ import de.ii.xtraplatform.auth.api.User;
 import javax.ws.rs.NotAuthorizedException;
 import java.util.Optional;
 
-/**
- * @author zahnen
- */
+
 public interface OgcApiEndpointExtension extends OgcApiExtension {
 
     OgcApiContext getApiContext();
 
     ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData apiData, String subPath);
+
+    default ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+        boolean useLangParameter = getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getUseLangParameter)
+                .orElse(false);
+        if (!useLangParameter)
+            return ImmutableSet.of("f");
+
+        return ImmutableSet.of("f", "lang");
+    }
 
     default void checkAuthorization(OgcApiDatasetData apiData, Optional<User> optionalUser) {
         if (apiData.getSecured() && !optionalUser.isPresent()) {

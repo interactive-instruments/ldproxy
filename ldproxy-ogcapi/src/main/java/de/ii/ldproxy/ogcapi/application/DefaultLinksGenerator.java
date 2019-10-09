@@ -22,12 +22,15 @@ import java.util.stream.Collectors;
 
 public class DefaultLinksGenerator {
 
+    // TODO add option to not include self/alternate links for more compact responses (note: voids compliance with OGC API)
+
     public List<OgcApiLink> generateLinks(URICustomizer uriBuilder,
                                           OgcApiMediaType mediaType,
                                           List<OgcApiMediaType> alternateMediaTypes,
                                           I18n i18n,
                                           Optional<Locale> language) {
         uriBuilder
+                .removeParameters("lang")
                 .ensureNoTrailingSlash();
 
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()

@@ -17,7 +17,7 @@ import de.ii.xtraplatform.crs.api.EpsgCrs;
  *
  * TODO: This is preliminary and will change as a result of discussions in the OGC Vector Tile Pilot.
  *
- * @author portele
+ *
  */
 public interface TileMatrixSet {
 

@@ -13,9 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.google.common.base.CaseFormat;
 import de.ii.xtraplatform.dropwizard.cfg.JacksonProvider;
 
-/**
- * @author zahnen
- */
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "extensionType")
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
 public interface ExtensionConfiguration {

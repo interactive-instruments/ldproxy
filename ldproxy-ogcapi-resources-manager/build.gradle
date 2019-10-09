@@ -1,0 +1,17 @@
+version = '1.0.0'
+
+dependencies {
+    provided project(":ldproxy-wfs3")
+    provided project(":ldproxy-ogcapi")
+    provided project(":ldproxy-ogcapi-oas30")
+    provided project(":ldproxy-ogcapi-styles")
+    provided project(":ldproxy-ogcapi-resources")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api' // TODO why?
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-service-api' // TODO why?
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api' // TODO why?
+}
