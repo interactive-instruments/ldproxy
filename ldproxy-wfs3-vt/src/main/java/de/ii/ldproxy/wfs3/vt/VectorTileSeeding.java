@@ -289,7 +289,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                 }
                             }
 
-                            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile);
+                            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile, true);
                             if (!success) {
                                 String msg = "Internal server error: could not generate protocol buffer for a tile.";
                                 LOGGER.error(msg);
@@ -346,7 +346,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                 File tileFileJson = generateJSON(service, collectionId, tileMatrixSetId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
                 Map<String, File> layers = new HashMap<>();
                 layers.put(collectionId, tileFileJson);
-                boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile);
+                boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile, true);
                 if (!success) {
                     String msg = "Internal server error: could not generate protocol buffers for a tile.";
                     LOGGER.error(msg);

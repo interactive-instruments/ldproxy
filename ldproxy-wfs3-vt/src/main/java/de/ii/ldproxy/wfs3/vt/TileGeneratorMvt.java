@@ -44,10 +44,11 @@ public class TileGeneratorMvt {
      * @param propertyNames     a list of all property Names
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @param tile              the tile which should be generated
+     * @param seeding           flag to indicate that the tile creation is part of a seeding process
      * @return true, if the file was generated successfully, false, if an error occurred
      */
     static boolean generateTileMvt(File tileFileMvt, Map<String, File> layers, Set<String> propertyNames,
-                                   CrsTransformation crsTransformation, VectorTile tile) {
+                                   CrsTransformation crsTransformation, VectorTile tile, boolean seeding) {
 
         // Prepare MVT output
         TileMatrixSet tileMatrixSet = tile.getTileMatrixSet();
@@ -93,12 +94,12 @@ public class TileGeneratorMvt {
                         }
                         break;
                     } catch (IOException e) {
-                        if (count++ < 2) {
+                        if (seeding && count++ < 5) {
                             // maybe the file is still generated, try to wait twice before giving up
                             String msg = "Failure to read the GeoJSON file of tile {}/{}/{} in dataset '{}', layer '{}'. Trying again ...";
                             LOGGER.info(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
                             try {
-                                Thread.sleep(1000);
+                                Thread.sleep(5000);
                             } catch (InterruptedException ex) {
                                 // ignore and just continue
                             }
