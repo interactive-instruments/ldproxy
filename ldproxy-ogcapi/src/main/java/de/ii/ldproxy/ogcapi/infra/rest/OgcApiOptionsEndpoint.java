@@ -112,6 +112,9 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
         if (supportedMethods.isEmpty())
             throw(new NotFoundException());
 
+        // add OPTIONS since this is supported for all paths
+        supportedMethods.add("OPTIONS");
+
         return Response
                 .ok(String.join(", ", supportedMethods))
                 .allow(supportedMethods)
