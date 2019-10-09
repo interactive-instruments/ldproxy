@@ -57,6 +57,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
             collection.addLinks(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder
                             .copy()
+                            .ensureLastPathSegments("collections", featureType.getId())
                             .removeParameters("f")
                             .toString())
                     .rel("self")
