@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.application;
 
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -21,6 +22,9 @@ import java.util.Optional;
 @Provides
 @Instantiate
 public class OgcApiFeaturesLandingPageExtension implements OgcApiLandingPageExtension {
+
+    @Requires
+    I18n i18n;
 
     @Requires
     private OgcApiFeaturesCore ogcApiFeaturesCore;
@@ -41,7 +45,15 @@ public class OgcApiFeaturesLandingPageExtension implements OgcApiLandingPageExte
             return landingPageBuilder;
         }
 
-        // TODO: Nothing to add? Then delete!
+        landingPageBuilder.addLinks(new ImmutableOgcApiLink.Builder()
+                        .href(uriCustomizer.copy()
+                                .ensureLastPathSegment("collections")
+                                .removeParameters("f")
+                                .toString())
+                        .rel("data")
+                        .description(i18n.get("dataLink",language))
+                        .build());
+
         return landingPageBuilder;
     }
 }
