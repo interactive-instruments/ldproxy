@@ -36,10 +36,9 @@ public class StylesLinkGenerator {
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                         .ensureLastPathSegment("styles")
-                                        .ensureParameter("f", "json")
+                                        .removeParameters("f")
                                         .toString())
                         .rel("styles")
-                        .type("application/json")
                         .description(i18n.get("stylesLink",language))
                         .build())
                 .build();

@@ -42,8 +42,6 @@ import static com.codahale.metrics.MetricRegistry.name;
 @Provides(specifications = {OgcApiFeaturesCoreQueriesHandler.class})
 public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<OgcApiFeaturesCoreQueriesHandler.Query> {
 
-    // TODO merge ldproxy-wfs3-core and ldproxy-wfs3-api to ldproxy-ogcapi-features-core
-
     @Requires
     I18n i18n;
 
@@ -95,6 +93,7 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
         }
     }
 
+    // TODO this should apply to all handlers, move this abstract superclass?
     private <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, OgcApiDatasetData apiData, String path) {
         return extensionRegistry.getExtensionsForType(extensionType)
                 .stream()

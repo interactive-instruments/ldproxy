@@ -1,6 +1,12 @@
 
 version = '1.4.1'
 
+repositories {
+    maven {
+        url "https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases"
+    }
+}
+
 dependencies {
     provided project(":ldproxy-codelists")
     provided project(":ldproxy-ogcapi")
@@ -9,6 +15,7 @@ dependencies {
     provided project(":ldproxy-string-templates")
     provided project(":ldproxy-ogcapi-styles")
     provided project(":ldproxy-ogcapi-oas30")
+    provided project(":ldproxy-wfs3-vt")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
