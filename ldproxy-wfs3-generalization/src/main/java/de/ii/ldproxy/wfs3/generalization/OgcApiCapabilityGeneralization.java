@@ -27,8 +27,6 @@ public class OgcApiCapabilityGeneralization implements OgcApiCapabilityExtension
 
         switch (preset) {
             case OGCAPI:
-                config.enabled(true);
-                break;
             case GSFS:
                 config.enabled(false);
                 break;

@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.wfs3.projections;
+package de.ii.ldproxy.wfs3.aroundrelations;
 
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
@@ -14,16 +14,13 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-/**
- * @author zahnen
- */
 @Component
 @Provides
 @Instantiate
-public class OgcApiCapabilityProjections implements OgcApiCapabilityExtension {
+public class CapabilityAroundRelations implements OgcApiCapabilityExtension {
     @Override
     public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
-        ImmutableProjectionsConfiguration.Builder config = new ImmutableProjectionsConfiguration.Builder();
+        ImmutableAroundRelationsConfiguration.Builder config = new ImmutableAroundRelationsConfiguration.Builder();
 
         switch (preset) {
             case OGCAPI:

@@ -19,7 +19,7 @@ public abstract class StylesConfiguration implements ExtensionConfiguration {
     @Value.Default
     @Override
     public boolean getEnabled() {
-        return true;
+        return false;
     }
 
     @Value.Default
