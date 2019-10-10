@@ -89,7 +89,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                             .type(MediaType.APPLICATION_JSON_TYPE)
                             .build());
         else if (subPath.matches("^/?(?:\\w+)/tiles/(?:\\w+/\\w+/\\w+/\\w+)$"))
-            // TODO: from tile format extensions
+            // TODO: from tile format configuration
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
                             .type(new MediaType("application", "geo+json"))

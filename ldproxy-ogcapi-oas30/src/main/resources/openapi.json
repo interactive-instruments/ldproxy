@@ -20,7 +20,7 @@
           "Capabilities"
         ],
         "summary": "landing page",
-        "description": "The landing page provides links to the API definition, the conformance\nstatements and to the feature collections in this dataset.",
+        "description": "The landing page provides links to the API definition, the conformance\nstatements and to other resources provided by the API.",
         "operationId": "getLandingPage",
         "parameters": [
           {
@@ -33,6 +33,12 @@
           },
           "400": {
             "$ref": "#/components/responses/InvalidParameter"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowed"
+          },
+          "406": {
+            "$ref": "#/components/responses/NotSupported"
           },
           "500": {
             "$ref": "#/components/responses/ServerError"
@@ -60,6 +66,12 @@
           "400": {
             "$ref": "#/components/responses/InvalidParameter"
           },
+          "405": {
+            "$ref": "#/components/responses/NotAllowed"
+          },
+          "406": {
+            "$ref": "#/components/responses/NotSupported"
+          },
           "500": {
             "$ref": "#/components/responses/ServerError"
           }
@@ -84,6 +96,12 @@
           },
           "400": {
             "$ref": "#/components/responses/InvalidParameter"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowed"
+          },
+          "406": {
+            "$ref": "#/components/responses/NotSupported"
           },
           "500": {
             "$ref": "#/components/responses/ServerError"
@@ -115,6 +133,12 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowed"
+          },
+          "406": {
+            "$ref": "#/components/responses/NotSupported"
           },
           "500": {
             "$ref": "#/components/responses/ServerError"
@@ -169,6 +193,12 @@
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
+          "405": {
+            "$ref": "#/components/responses/NotAllowed"
+          },
+          "406": {
+            "$ref": "#/components/responses/NotSupported"
+          },
           "500": {
             "$ref": "#/components/responses/ServerError"
           }
@@ -215,6 +245,12 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "405": {
+            "$ref": "#/components/responses/NotAllowed"
+          },
+          "406": {
+            "$ref": "#/components/responses/NotSupported"
           },
           "500": {
             "$ref": "#/components/responses/ServerError"
@@ -273,7 +309,7 @@
       "limit": {
         "name": "limit",
         "in": "query",
-        "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.\n\nMinimum = 1. Maximum = 10000. Default = 10.",
+        "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.",
         "required": false,
         "schema": {
           "type": "integer",
@@ -385,10 +421,12 @@
         ],
         "properties": {
           "code": {
-            "type": "string"
+            "type": "string",
+            "description": "HTTP status code of the error (4xx or 5xx)"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "description of the error"
           }
         }
       },
@@ -817,7 +855,7 @@
     },
     "responses": {
       "LandingPage": {
-        "description": "The landing page provides links to the API definition\n(link relations `service-desc` and `service-doc`),\nthe Conformance declaration (path `/conformance`,\nlink relation `conformance`), and the Feature\nCollections (path `/collections`, link relation\n`data`).",
+        "description": "The landing page provides links to the API definition\n(link relations `service-desc` and `service-doc`),\nthe Conformance declaration (path `/conformance`,\nlink relation `conformance`), and to other resources.",
         "content": {
           "application/json": {
             "schema": {
@@ -916,6 +954,36 @@
       },
       "InvalidParameter": {
         "description": "A query parameter has an invalid value.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/exception"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "NotAllowed": {
+        "description": "The method is not allowed at the path.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/exception"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "NotSupported": {
+        "description": "None of the requested media types is supported at the path.",
         "content": {
           "application/json": {
             "schema": {

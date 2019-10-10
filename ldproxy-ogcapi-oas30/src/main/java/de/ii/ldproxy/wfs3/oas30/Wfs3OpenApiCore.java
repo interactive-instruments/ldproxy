@@ -46,9 +46,12 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
         if (datasetData != null) {
 
-            PathItem featuresPathItem = openAPI.getPaths()
+            // TODO dynamically add limit - min/max/default, feature formats, other formats, parameters, collectionId values
+
+
+            PathItem collectionPathItem = openAPI.getPaths()
                                                .remove("/collections/{collectionId}");
-            PathItem featuresPathItems = openAPI.getPaths()
+            PathItem featuresPathItem = openAPI.getPaths()
                                                 .remove("/collections/{collectionId}/items");
             PathItem featurePathItem = openAPI.getPaths()
                                               .remove("/collections/{collectionId}/items/{featureId}");
@@ -60,7 +63,7 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
                        .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                        .forEach(ft -> {
 
-                           PathItem clonedPathItem1 = clonePathItem(featuresPathItem);
+                           PathItem clonedPathItem1 = clonePathItem(collectionPathItem);
                            clonedPathItem1
                                    .get(clonedPathItem1.getGet()
                                                        .summary("describe the " + ft.getLabel() + " feature collection")
@@ -71,7 +74,7 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
                                   .addPathItem("/collections/" + ft.getId(), clonedPathItem1);
 
 
-                           PathItem clonedPathItem = clonePathItem(featuresPathItems);
+                           PathItem clonedPathItem = clonePathItem(featuresPathItem);
                            clonedPathItem
                                    .get(clonedPathItem.getGet()
                                                       .summary("retrieve features of " + ft.getLabel() + " feature collection")
@@ -87,7 +90,7 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
                                                                      new Parameter()
                                                                              .name(field)
                                                                              .in("query")
-                                                                             .description("Filter the collection by " + field)
+                                                                             .description("Filter the collection by property '" + field + "'")
                                                                              .required(false)
                                                                              // TODO
                                                                              .schema(new StringSchema())

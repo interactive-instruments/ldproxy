@@ -87,7 +87,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                             .type(MediaType.APPLICATION_JSON_TYPE)
                             .build());
         else if (subPath.matches("^/?(?:\\w+/\\w+/\\w+/\\w+)$"))
-            // TODO: from tile format extensions
+            // TODO: from tile format configuration
             return ImmutableSet.of(
                 new ImmutableOgcApiMediaType.Builder()
                         .type(new MediaType("application", "geo+json"))

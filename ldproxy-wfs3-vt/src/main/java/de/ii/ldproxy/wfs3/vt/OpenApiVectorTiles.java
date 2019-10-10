@@ -89,7 +89,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
              * tileMatrix
              * tileRow
              * tileCol
-             * f2/f3/f4
+             * fVtTilesCollection/fVtOther/fVtTilesDataset
              * collections
              * properties*/
 
@@ -101,7 +101,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             Schema tileMatrixSetIdSchema = new Schema();
             tileMatrixSetIdSchema.setType("string");
 
-            List<String> tileMatrixSetEnum = new ArrayList<>();
+            List<String> tileMatrixSetEnum = new ArrayList<>(); // TODO determine dynamically
             tileMatrixSetEnum.add("WebMercatorQuad");
 
             tileMatrixSetId.setSchema(new StringSchema()._enum(tileMatrixSetEnum));
@@ -136,50 +136,50 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             column.setExample("1231");
 
 
-            Parameter f2 = new Parameter();
-            f2.setName("f");
-            f2.in("query");
-            f2.description("\\\n" +
+            Parameter fVtTilesCollection = new Parameter();
+            fVtTilesCollection.setName("f");
+            fVtTilesCollection.in("query");
+            fVtTilesCollection.description("\\\n" +
                     "        The format of the response. If no value is provided, the standard http rules apply, i.e., the accept header shall be used to determine the format.\\\n" +
                     "        Pre-defined values are \"json\" and \"mvt\". The response to other values is determined by the server.");
-            f2.setRequired(false);
-            f2.setStyle(Parameter.StyleEnum.FORM);
-            f2.setExplode(false);
-            List<String> f2Enum = new ArrayList<String>();
-            f2Enum.add("json");
-            f2Enum.add("mvt");
-            f2.setSchema(new StringSchema()._enum(f2Enum));
-            f2.example("json");
+            fVtTilesCollection.setRequired(false);
+            fVtTilesCollection.setStyle(Parameter.StyleEnum.FORM);
+            fVtTilesCollection.setExplode(false);
+            List<String> fVtTilesCollectionEnum = new ArrayList<String>(); // TODO determine dynamically
+            fVtTilesCollectionEnum.add("json");
+            fVtTilesCollectionEnum.add("mvt");
+            fVtTilesCollection.setSchema(new StringSchema()._enum(fVtTilesCollectionEnum));
+            fVtTilesCollection.example("json");
 
-            Parameter f3 = new Parameter();
-            f3.setName("f");
-            f3.in("query");
-            f3.description("\\\n" +
+            Parameter fVtOther = new Parameter();
+            fVtOther.setName("f");
+            fVtOther.in("query");
+            fVtOther.description("\\\n" +
                     "        The format of the response. If no value is provided, the standard http rules apply, i.e., the accept header shall be used to determine the format.\\\n" +
                     "        The only pre-defined value is \"json\". The response to other values is determined by the server.");
-            f3.setRequired(false);
-            f3.setStyle(Parameter.StyleEnum.FORM);
-            f3.setExplode(false);
-            Schema f3Schema = new Schema();
-            f3Schema.setType("string");
-            List<String> f3Enum = new ArrayList<String>();
-            f3Enum.add("json");
-            f3.setSchema(new StringSchema()._enum(f3Enum));
-            f3.example("json");
+            fVtOther.setRequired(false);
+            fVtOther.setStyle(Parameter.StyleEnum.FORM);
+            fVtOther.setExplode(false);
+            Schema fVtOtherSchema = new Schema();
+            fVtOtherSchema.setType("string");
+            List<String> fVtOtherEnum = new ArrayList<String>(); // TODO determine dynamically
+            fVtOtherEnum.add("json");
+            fVtOther.setSchema(new StringSchema()._enum(fVtOtherEnum));
+            fVtOther.example("json");
 
-            Parameter f4 = new Parameter();
-            f4.setName("f");
-            f4.in("query");
-            f4.description("\\\n" +
+            Parameter fVtTilesDataset = new Parameter();
+            fVtTilesDataset.setName("f");
+            fVtTilesDataset.in("query");
+            fVtTilesDataset.description("\\\n" +
                     "        The format of the response. If no value is provided, the standard http rules apply, i.e., the accept header shall be used to determine the format.\\\n" +
                     "        The only pre-defined value is \"mvt\". The response to other values is determined by the server.");
-            f4.setRequired(false);
-            f4.setStyle(Parameter.StyleEnum.FORM);
-            f4.setExplode(false);
-            List<String> f4Enum = new ArrayList<String>();
-            f4Enum.add("mvt");
-            f4.setSchema(new StringSchema()._enum(f4Enum));
-            f4.example("mvt");
+            fVtTilesDataset.setRequired(false);
+            fVtTilesDataset.setStyle(Parameter.StyleEnum.FORM);
+            fVtTilesDataset.setExplode(false);
+            List<String> fVtTilesDatasetEnum = new ArrayList<String>(); // TODO determine dynamically
+            fVtTilesDatasetEnum.add("mvt");
+            fVtTilesDataset.setSchema(new StringSchema()._enum(fVtTilesDatasetEnum));
+            fVtTilesDataset.example("mvt");
 
             Parameter collections = new Parameter();
             collections.setName("collections");
@@ -212,11 +212,11 @@ public class OpenApiVectorTiles implements OpenApiExtension {
 
             /*Add the parameters to definition*/
             openAPI.getComponents()
-                   .addParameters("f2", f2);
+                   .addParameters("fVtTilesCollection", fVtTilesCollection);
             openAPI.getComponents()
-                   .addParameters("f3", f3);
+                   .addParameters("fVtOther", fVtOther);
             openAPI.getComponents()
-                   .addParameters("f4", f4);
+                   .addParameters("fVtTilesDataset", fVtTilesDataset);
             openAPI.getComponents()
                    .addParameters("tileMatrixSetId", tileMatrixSetId);
             openAPI.getComponents()
@@ -363,7 +363,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                     .addTagsItem("Tiles")
                                     .summary("retrieve all available tile tileMatrix sets")
                                     .operationId("getTileMatrixSets")
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/fVtOther"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -392,7 +392,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                     .summary("retrieve a tile tileMatrix set by id")
                                     .operationId("getTileMatrixSet")
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/tileMatrixSetId"))
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/fVtOther"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -421,7 +421,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                     .addTagsItem("Tiles")
                                     .summary("retrieve all available tile tileMatrix sets")
                                     .operationId("getTileMatrixSetsAlt")
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/fVtOther"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -451,7 +451,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                     .summary("retrieve a tile tileMatrix set used to partition the dataset into tiles")
                                     .operationId("getTileMatrixSetPartition")
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/tileMatrixSetId"))
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/fVtOther"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -490,7 +490,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/tileCol"))
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/collections"))
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/properties"))
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f4"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/fVtTilesDataset"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -529,7 +529,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                        .addTagsItem("Tiles")
                                                        .summary("retrieve all available tile tileMatrix sets from the collection " + ft.getLabel())
                                                        .operationId("getTileMatrixSetsCollection" + ft.getId())
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/fVtOther"))
                                                        //.requestBody(requestBody)
                                                        .responses(new ApiResponses()
                                                                .addApiResponse("200", success2)
@@ -567,7 +567,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                        .addParametersItem(new Parameter().$ref("#/components/parameters/tileRow"))
                                                        .addParametersItem(new Parameter().$ref("#/components/parameters/tileCol"))
                                                        .addParametersItem(new Parameter().$ref("#/components/parameters/properties"))
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/f2"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/fVtTilesCollection"))
                                                        .addParametersItem(new Parameter().$ref("#/components/parameters/datetime"))
                                                        //.requestBody(requestBody)
                                                        .responses(new ApiResponses()
