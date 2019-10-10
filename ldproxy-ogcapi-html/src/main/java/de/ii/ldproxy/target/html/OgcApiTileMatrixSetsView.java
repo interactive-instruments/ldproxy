@@ -27,13 +27,12 @@ public class OgcApiTileMatrixSetsView extends View {
     public String title;
     public String description;
     public Object tileMatrixSets;
-    public String tileMatrixSetsTitle;
-    public String tileMatrixSetsDescription;
     public String none;
 
     public OgcApiTileMatrixSetsView(OgcApiDatasetData apiData,
                                     Map<String, Object> tileMatrixSets,
-                                    List<NavigationDTO> breadCrumbs, String staticUrlPrefix,
+                                    List<NavigationDTO> breadCrumbs,
+                                    String staticUrlPrefix,
                                     HtmlConfig htmlConfig,
                                     URICustomizer uriCustomizer,
                                     I18n i18n,
@@ -42,7 +41,7 @@ public class OgcApiTileMatrixSetsView extends View {
         this.tileMatrixSets = tileMatrixSets.get("tileMatrixSets");
         this.links = tileMatrixSets.get("links");
         this.breadCrumbs = breadCrumbs;
-        this.urlPrefix = urlPrefix;
+        this.urlPrefix = staticUrlPrefix;
         this.htmlConfig = htmlConfig;
 
         this.title = i18n.get("tileMatrixSetsTitle", language);

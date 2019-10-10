@@ -38,7 +38,8 @@ public class OgcApiTileMatrixSetView extends View {
 
     public OgcApiTileMatrixSetView(OgcApiDatasetData apiData,
                                    Map<String, Object> tileMatrixSet,
-                                   List<NavigationDTO> breadCrumbs, String staticUrlPrefix,
+                                   List<NavigationDTO> breadCrumbs,
+                                   String staticUrlPrefix,
                                    HtmlConfig htmlConfig,
                                    URICustomizer uriCustomizer,
                                    I18n i18n,
@@ -47,7 +48,7 @@ public class OgcApiTileMatrixSetView extends View {
         this.tileMatrixSet = tileMatrixSet;
         this.links = (tileMatrixSet.get("links") instanceof List ? ((List<Object>) tileMatrixSet.get("links")) : ImmutableList.of());
         this.breadCrumbs = breadCrumbs;
-        this.urlPrefix = urlPrefix;
+        this.urlPrefix = staticUrlPrefix;
         this.htmlConfig = htmlConfig;
 
         this.idTitle = i18n.get("idTitle", language);
