@@ -252,8 +252,8 @@ export default class App extends Component {
                                                   [k]: fields[k]
                                               }), {}) } onChange={ this._addFilter } />
                         <BboxFilter bbox={ bbox } onChange={ this._addFilter } />
-                        <TimeFilter start={ datetime.start }
-                            end={ datetime.end }
+                        <TimeFilter start={ time.start }
+                            end={ time.end }
                             filter={ filters.datetime ? filters.datetime.value : null }
                             onChange={ this._addFilter } />
                         </Col>
