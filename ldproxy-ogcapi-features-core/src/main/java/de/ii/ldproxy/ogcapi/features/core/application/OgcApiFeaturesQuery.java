@@ -198,7 +198,7 @@ public class OgcApiFeaturesQuery {
             BoundingBox bbox = new BoundingBox(val1, val2, val3, val4, crs);
             BoundingBox transformedBbox = service.transformBoundingBox(bbox);
             return String
-                    .format(Locale.US, "BBOX(%s, %.3f, %.3f, %.3f, %.3f, '%s')", geometryField, transformedBbox.getXmin(), transformedBbox.getYmin(), transformedBbox.getXmax(), transformedBbox.getYmax(), transformedBbox.getEpsgCrs()
+                    .format(Locale.US,"BBOX(%s, %f, %f, %f, %f, '%s')", geometryField, transformedBbox.getXmin(), transformedBbox.getYmin(), transformedBbox.getXmax(), transformedBbox.getYmax(), transformedBbox.getEpsgCrs()
                     .getAsSimple());
         } catch (NumberFormatException e) {
             throw new BadRequestException("Error processing the coordinates of the bounding box '" + getBbox(bboxArray) + "'");
