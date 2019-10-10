@@ -23,6 +23,10 @@ dependencies {
     bundle subprojects
 }
 
+configurations.all {
+    resolutionStrategy.cacheDynamicVersionsFor 10, 'minutes'
+}
+
 repositories {
     maven {
         url "https://repo.boundlessgeo.com/main/"
