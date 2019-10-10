@@ -28,9 +28,9 @@ public class OgcApiCollectionView extends View {
 
     private final OgcApiCollection collection;
     private final List<NavigationDTO> breadCrumbs;
-    private final String urlPrefix;
     private final OgcApiDatasetData datasetData;
     public final HtmlConfig htmlConfig;
+    public String urlPrefix;
     public String itemType;
     public boolean spatialSearch;
     public Map<String, String> bbox2;

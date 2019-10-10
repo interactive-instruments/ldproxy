@@ -25,7 +25,7 @@ import static de.ii.xtraplatform.api.functional.LambdaWithException.mayThrow;
 public class OgcApiLandingPageView extends View {
     private final LandingPage apiLandingPage;
     private final List<NavigationDTO> breadCrumbs;
-    private final String urlPrefix;
+    public String urlPrefix;
     public final HtmlConfig htmlConfig;
     public String title;
     public String description;

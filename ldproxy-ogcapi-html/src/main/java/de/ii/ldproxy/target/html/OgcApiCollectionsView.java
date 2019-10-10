@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 public class OgcApiCollectionsView extends View {
     private final List<OgcApiCollection> collections;
     private final List<NavigationDTO> breadCrumbs;
-    private final String urlPrefix;
     private final OgcApiDatasetData datasetData;
     public final HtmlConfig htmlConfig;
+    public String urlPrefix;
     public String title;
     public String description;
     public String dataSourceUrl;
