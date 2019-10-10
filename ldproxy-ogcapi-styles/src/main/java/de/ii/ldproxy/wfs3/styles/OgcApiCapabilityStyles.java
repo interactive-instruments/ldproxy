@@ -25,7 +25,7 @@ public class OgcApiCapabilityStyles implements OgcApiCapabilityExtension {
         switch (preset) {
             case OGCAPI:
             case GSFS:
-                config.enabled(true);
+                config.enabled(false);
                 break;
         }
 
