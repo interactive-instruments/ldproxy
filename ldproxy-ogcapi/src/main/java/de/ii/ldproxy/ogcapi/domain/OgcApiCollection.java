@@ -18,9 +18,7 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableOgcApiCollection.Builder.class)
-public abstract class OgcApiCollection extends PageRepresentation {
-
-    public abstract String getId();
+public abstract class OgcApiCollection extends PageRepresentationWithId {
 
     public abstract Optional<OgcApiExtent> getExtent();
 

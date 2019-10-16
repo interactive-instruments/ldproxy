@@ -31,7 +31,9 @@
     var map = olms.apply('map-container', '{{{.}}}');
     {{/styleUrl}}
     {{^styleUrl}}
-      var tilesUrl = document.getElementById('tilesUrl').innerText.replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}")
+      const template = "{{{tilesUrl}}}";
+      const tileMatrixSetId = document.getElementById('tileMatrixSetId').innerText;
+      var tilesUrl = template.replace("{tileMatrixSetId}",tileMatrixSetId).replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}")
       var map = new ol.Map({
         target: 'map-container',
                 view: new ol.View({
@@ -45,7 +47,7 @@
 					}),
                     new ol.layer.VectorTile({
 			            declutter: true,
-                    	title: "TODO",
+                    	title: "Vector Tiles",
                         source: new ol.source.VectorTile({
                             format: new ol.format.MVT(),
                             url: tilesUrl

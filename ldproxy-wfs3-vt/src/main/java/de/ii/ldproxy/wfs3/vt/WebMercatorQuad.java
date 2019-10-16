@@ -11,11 +11,10 @@ import de.ii.xtraplatform.crs.api.*;
 
 /**
  * This is the most commonly used tiling scheme. It is used by Google Maps and most other web mapping applications.
- * In WMTS it is called "Google Maps Compatible".
- *
+ * In WMTS it is called "Google Maps Compatible", in the Tile Matrix Set standard "WebMercatorQuad".
  *
  */
-public class DefaultTileMatrixSet implements TileMatrixSet {
+public class WebMercatorQuad implements TileMatrixSet {
 
     /**
      * Web Mercator is the coordinate reference system of the tiling scheme, EPSG code is 3857
@@ -32,6 +31,12 @@ public class DefaultTileMatrixSet implements TileMatrixSet {
      * more details in a "pixel" of the 256x256 tile
      */
     private static final int TILE_EXTENT = 4096;
+
+    private TileMatrixSetData data;
+
+    WebMercatorQuad() {
+        // TODO
+    }
 
     /**
      * @return for the default tiling scheme, a fixed id "WebMercatorQuad" is used

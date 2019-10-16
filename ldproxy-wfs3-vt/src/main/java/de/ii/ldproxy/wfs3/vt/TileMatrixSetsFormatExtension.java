@@ -12,7 +12,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 
 import javax.ws.rs.core.Response;
-import java.util.Map;
 
 public interface TileMatrixSetsFormatExtension extends FormatExtension {
 
@@ -21,11 +20,11 @@ public interface TileMatrixSetsFormatExtension extends FormatExtension {
         return "^/tileMatrixSets(?:/\\w+)?/?$";
     }
 
-    Response getTileMatrixSetsResponse(Map<String, Object> tileMatrixSets,
+    Response getTileMatrixSetsResponse(TileMatrixSets tileMatrixSets,
                                        OgcApiDataset api,
                                        OgcApiRequestContext requestContext);
 
-    Response getTileMatrixSetResponse(Map<String, Object> tileMatrixSet,
+    Response getTileMatrixSetResponse(TileMatrixSetData tileMatrixSet,
                                       OgcApiDataset api,
                                       OgcApiRequestContext requestContext);
 

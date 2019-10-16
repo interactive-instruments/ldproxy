@@ -23,6 +23,8 @@ public abstract class TileCollection extends PageRepresentation {
     public abstract Optional<String> getTileMatrixSet();
     public abstract Optional<String> getTileMatrixSetURI();
 
+    // TODO add tileMatrixSetLimits
+
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
 }

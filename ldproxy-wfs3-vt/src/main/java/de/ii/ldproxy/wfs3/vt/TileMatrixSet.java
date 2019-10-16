@@ -13,24 +13,12 @@ import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 
 /**
- * This interface specifies the characteristics of tiling schemes / tile matrix sets for vector tiles.
- *
- * TODO: This is preliminary and will change as a result of discussions in the OGC Vector Tile Pilot.
- *
- *
+ * This class provides derived information from a tile matrix set.
  */
 public interface TileMatrixSet {
 
-    /**
-     * fetch the identifier of the scheme; the id is used in the URI path
-     * @return the identifier
-     */
     String getId();
 
-    /**
-     * fetch the coordinate reference system that is the basis of this tiling scheme
-     * @return the coordinate reference system
-     */
     EpsgCrs getCrs();
 
     /**

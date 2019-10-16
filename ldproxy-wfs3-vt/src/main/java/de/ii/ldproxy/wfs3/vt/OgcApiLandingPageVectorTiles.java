@@ -42,7 +42,7 @@ public class OgcApiLandingPageVectorTiles implements OgcApiLandingPageExtension 
 
         if (checkTilesEnabled(apiData)) {
             final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-            List<OgcApiLink> ogcApiLinks = vectorTilesLinkGenerator.generateDatasetLinks(uriCustomizer, i18n, language);
+            List<OgcApiLink> ogcApiLinks = vectorTilesLinkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
             landingPageBuilder.addAllLinks(ogcApiLinks);
         }
         return landingPageBuilder;

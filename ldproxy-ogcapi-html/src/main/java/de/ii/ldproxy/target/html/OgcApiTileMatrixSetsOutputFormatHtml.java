@@ -10,6 +10,8 @@ package de.ii.ldproxy.target.html;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.wfs3.vt.TileMatrixSetData;
+import de.ii.ldproxy.wfs3.vt.TileMatrixSets;
 import de.ii.ldproxy.wfs3.vt.TileMatrixSetsFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -19,7 +21,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @Provides
@@ -53,7 +54,7 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
     }
 
     @Override
-    public Response getTileMatrixSetsResponse(Map<String, Object> tileMatrixSets,
+    public Response getTileMatrixSetsResponse(TileMatrixSets tileMatrixSets,
                                               OgcApiDataset api,
                                               OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
@@ -81,12 +82,12 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
     }
 
     @Override
-    public Response getTileMatrixSetResponse(Map<String, Object> tileMatrixSet,
+    public Response getTileMatrixSetResponse(TileMatrixSetData tileMatrixSet,
                                              OgcApiDataset api,
                                              OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
-        String title = tileMatrixSet.get("identifier")!=null ? tileMatrixSet.get("identifier").toString() : "?";
+        String title = tileMatrixSet.getTitle().orElse(tileMatrixSet.getIdentifier());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,

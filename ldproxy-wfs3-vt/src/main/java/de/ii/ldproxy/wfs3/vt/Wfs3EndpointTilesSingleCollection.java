@@ -9,7 +9,6 @@ package de.ii.ldproxy.wfs3.vt;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
@@ -167,20 +166,18 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                 .stream()
                                 .map(tileMatrixSetId -> ImmutableTileCollection.builder()
                                         .tileMatrixSet(tileMatrixSetId)
-                                        .links(vectorTilesLinkGenerator.generateTileMatrixSetLinks(
-                                                requestContext.getUriCustomizer(),
-                                                tileMatrixSetId,
-                                                VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", true),
-                                                VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/geo+json", true),
-                                                i18n, requestContext.getLanguage()))
                                         .build())
                                 .collect(Collectors.toList()))
-                .links(new DefaultLinksGenerator()
-                        .generateLinks(requestContext.getUriCustomizer(),
-                                requestContext.getMediaType(),
-                                requestContext.getAlternateMediaTypes(),
-                                i18n,
-                                requestContext.getLanguage()))
+                .links(vectorTilesLinkGenerator.generateTilesLinks(
+                        requestContext.getUriCustomizer(),
+                        requestContext.getMediaType(),
+                        requestContext.getAlternateMediaTypes(),
+                        false, // TODO
+                        true,
+                        VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", true),
+                        VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/geo+json", true),
+                        i18n,
+                        requestContext.getLanguage()))
                 .build();
 
         if (requestContext.getMediaType().matches(MediaType.TEXT_HTML_TYPE)) {

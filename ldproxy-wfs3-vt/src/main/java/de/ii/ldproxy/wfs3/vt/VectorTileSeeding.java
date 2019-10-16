@@ -249,7 +249,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
             Map<String, Integer> minMax = null;
             try {
-                minMax = computeMinMax(z, new DefaultTileMatrixSet(), crsTransformation, xMinDataset, xMaxDataset, yMinDataset, yMaxDataset, OgcApiDatasetData.DEFAULT_CRS);
+                minMax = computeMinMax(z, new WebMercatorQuad(), crsTransformation, xMinDataset, xMaxDataset, yMinDataset, yMaxDataset, OgcApiDatasetData.DEFAULT_CRS);
             } catch (CrsTransformationException e) {
                 e.printStackTrace();
             }

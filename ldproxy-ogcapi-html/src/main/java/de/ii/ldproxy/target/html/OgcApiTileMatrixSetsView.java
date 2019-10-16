@@ -12,7 +12,9 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.wfs3.vt.TileMatrixSets;
 import io.dropwizard.views.View;
 
 import java.util.*;
@@ -26,11 +28,11 @@ public class OgcApiTileMatrixSetsView extends View {
     public String urlPrefix;
     public String title;
     public String description;
-    public Object tileMatrixSets;
+    public List<PageRepresentationWithId> tileMatrixSets;
     public String none;
 
     public OgcApiTileMatrixSetsView(OgcApiDatasetData apiData,
-                                    Map<String, Object> tileMatrixSets,
+                                    TileMatrixSets tileMatrixSets,
                                     List<NavigationDTO> breadCrumbs,
                                     String staticUrlPrefix,
                                     HtmlConfig htmlConfig,
@@ -38,8 +40,8 @@ public class OgcApiTileMatrixSetsView extends View {
                                     I18n i18n,
                                     Optional<Locale> language) {
         super("tileMatrixSets.mustache", Charsets.UTF_8);
-        this.tileMatrixSets = tileMatrixSets.get("tileMatrixSets");
-        this.links = tileMatrixSets.get("links");
+        this.tileMatrixSets = tileMatrixSets.getTileMatrixSets();
+        this.links = tileMatrixSets.getLinks();
         this.breadCrumbs = breadCrumbs;
         this.urlPrefix = staticUrlPrefix;
         this.htmlConfig = htmlConfig;

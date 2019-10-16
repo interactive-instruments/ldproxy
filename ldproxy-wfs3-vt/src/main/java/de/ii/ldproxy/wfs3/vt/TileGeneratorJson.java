@@ -267,6 +267,8 @@ public class TileGeneratorJson {
                 .isFeatureCollection(true)
                 .maxAllowableOffset(maxAllowableOffsetCrs84)
                 .outputStream(outputStream)
+                .limit(0) // TODO
+                .offset(0)
                 .build();
 
         Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, wfs3Request.getLanguage());

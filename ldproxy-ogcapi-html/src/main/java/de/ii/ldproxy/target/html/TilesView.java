@@ -13,7 +13,6 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.wfs3.vt.ImmutableTileCollection;
 import de.ii.ldproxy.wfs3.vt.TileCollection;
 import de.ii.ldproxy.wfs3.vt.TileCollections;
 import io.dropwizard.views.View;
@@ -27,6 +26,7 @@ public class TilesView extends View {
     public List<NavigationDTO> formats;
     public List<TileCollection> tileCollections;
     public final HtmlConfig htmlConfig;
+    public String tilesUrl;
     public List<OgcApiLink> links;
     public String urlPrefix;
     public String title;
@@ -51,20 +51,14 @@ public class TilesView extends View {
 
         // TODO this is quick and dirty - the view needs to be improved
 
-        this.tileCollections = tiles.getTileMatrixSetLinks()
-                .stream()
-                .map(tileCollection ->
-                        ImmutableTileCollection.builder()
-                                .tileMatrixSetURI(tileCollection.getTileMatrixSetURI())
-                                .tileMatrixSet(tileCollection.getTileMatrixSet())
-                                .addLinks(tileCollection.getLinks()
-                                        .stream()
-                                        .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
-                                        .findFirst()
-                                        .orElse(null))
-                                .build())
-                .collect(Collectors.toList());
+        this.tileCollections = tiles.getTileMatrixSetLinks();
         this.links = tiles.getLinks();
+        this.tilesUrl = links.stream()
+                .filter(link -> Objects.equals(link.getRel(),"tiles"))
+                .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
+                .map(link -> link.getHref())
+                .findFirst()
+                .orElse(null);
         this.breadCrumbs = breadCrumbs;
         this.urlPrefix = staticUrlPrefix;
         this.htmlConfig = htmlConfig;

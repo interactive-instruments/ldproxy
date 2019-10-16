@@ -7,11 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
@@ -30,7 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -152,18 +151,18 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                 .stream()
                                 .map(tileMatrixSetId -> ImmutableTileCollection.builder()
                                     .tileMatrixSet(tileMatrixSetId)
-                                        .links(vectorTilesLinkGenerator.generateTileMatrixSetLinks(
-                                                requestContext.getUriCustomizer(),
-                                                tileMatrixSetId,
-                                                true, false, i18n, requestContext.getLanguage()))
-                                        .build())
+                                    .build())
                                 .collect(Collectors.toList()))
-                .links(new DefaultLinksGenerator()
-                        .generateLinks(requestContext.getUriCustomizer(),
-                                requestContext.getMediaType(),
-                                requestContext.getAlternateMediaTypes(),
-                                i18n,
-                                requestContext.getLanguage()))
+                .links(vectorTilesLinkGenerator.generateTilesLinks(
+                        requestContext.getUriCustomizer(),
+                        requestContext.getMediaType(),
+                        requestContext.getAlternateMediaTypes(),
+                        false, // TODO
+                        false,
+                        true,
+                        false,
+                        i18n,
+                        requestContext.getLanguage()))
                 .build();
 
         if (requestContext.getMediaType().matches(MediaType.TEXT_HTML_TYPE)) {
@@ -185,6 +184,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
      * @param tileMatrixSetId the local identifier of a specific tiling scheme
      * @return the tiling scheme in a json file
      */
+    /* TODO delete
     @Path("/{tileMatrixSetId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -198,7 +198,6 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         List<OgcApiLink> ogcApiLink = vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), null, true, false, i18n, wfs3Request.getLanguage());
 
 
-        /*read the json file to add links*/
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> jsonTileMatrixSet;
         BufferedReader br = null;
@@ -219,6 +218,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         return Response.ok(jsonTileMatrixSet)
                        .build();
     }
+    */
 
     /**
      * The tile in the requested tiling scheme, on the requested zoom level in the tiling scheme, with the requested grid coordinates (row, column) is returned.

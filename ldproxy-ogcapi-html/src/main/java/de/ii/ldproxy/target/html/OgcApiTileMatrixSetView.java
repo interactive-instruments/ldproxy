@@ -8,11 +8,11 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.wfs3.vt.TileMatrixSetData;
 import io.dropwizard.views.View;
 
 import java.util.*;
@@ -23,8 +23,8 @@ public class OgcApiTileMatrixSetView extends View {
     private final List<NavigationDTO> breadCrumbs;
     public final HtmlConfig htmlConfig;
     public String urlPrefix;
-    public Map<String, Object> tileMatrixSet;
-    public List<Object> links;
+    public TileMatrixSetData tileMatrixSet;
+    public List<OgcApiLink> links;
     public String idTitle;
     public String boundingBoxTitle;
     public String wellKnownScaleSetTitle;
@@ -37,7 +37,7 @@ public class OgcApiTileMatrixSetView extends View {
     public String matrixHeightTitle;
 
     public OgcApiTileMatrixSetView(OgcApiDatasetData apiData,
-                                   Map<String, Object> tileMatrixSet,
+                                   TileMatrixSetData tileMatrixSet,
                                    List<NavigationDTO> breadCrumbs,
                                    String staticUrlPrefix,
                                    HtmlConfig htmlConfig,
@@ -46,7 +46,7 @@ public class OgcApiTileMatrixSetView extends View {
                                    Optional<Locale> language) {
         super("tileMatrixSet.mustache", Charsets.UTF_8);
         this.tileMatrixSet = tileMatrixSet;
-        this.links = (tileMatrixSet.get("links") instanceof List ? ((List<Object>) tileMatrixSet.get("links")) : ImmutableList.of());
+        this.links = tileMatrixSet.getLinks();
         this.breadCrumbs = breadCrumbs;
         this.urlPrefix = staticUrlPrefix;
         this.htmlConfig = htmlConfig;
@@ -72,10 +72,10 @@ public class OgcApiTileMatrixSetView extends View {
     public List<NavigationDTO> getFormats() {
         return links
                 .stream()
-                .filter(link -> link instanceof OgcApiLink && Objects.equals(((OgcApiLink)link).getRel(), "alternate"))
-                .sorted(Comparator.comparing(link -> ((OgcApiLink)link).getTypeLabel()
+                .filter(link -> Objects.equals(link.getRel(), "alternate"))
+                .sorted(Comparator.comparing(link -> link.getTypeLabel()
                         .toUpperCase()))
-                .map(link -> new NavigationDTO(((OgcApiLink)link).getTypeLabel(), ((OgcApiLink)link).getHref()))
+                .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
                 .collect(Collectors.toList());
     }
 }

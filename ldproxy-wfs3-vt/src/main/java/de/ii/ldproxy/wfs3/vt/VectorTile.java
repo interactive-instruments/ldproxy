@@ -92,7 +92,7 @@ class VectorTile {
 
         // get the Tile Matrix Set
         if (tileMatrixSetId.equalsIgnoreCase("WebMercatorQuad")) {
-            tileMatrixSet = new DefaultTileMatrixSet();
+            tileMatrixSet = new WebMercatorQuad();
         } else {
             throw new NotFoundException();
             // TODO implement loading from a file
@@ -480,7 +480,7 @@ class VectorTile {
                 } else {
                     //if there is no member "zoomLevels" in configuration
                     if (tileMatrixSetId.equals("WebMercatorQuad")) {
-                        TileMatrixSet tileMatrixSet = new DefaultTileMatrixSet();
+                        TileMatrixSet tileMatrixSet = new WebMercatorQuad();
                         minZoom = tileMatrixSet.getMinLevel();
                         maxZoom = tileMatrixSet.getMaxLevel();
                         zoomLevels.put("max", Integer.toString(maxZoom));
@@ -488,7 +488,7 @@ class VectorTile {
                     }
                 }
                 if (tileMatrixSetId.equals("WebMercatorQuad")) { //TODO only default supported
-                    TileMatrixSet tileMatrixSet = new DefaultTileMatrixSet();
+                    TileMatrixSet tileMatrixSet = new WebMercatorQuad();
                     //check if min or max zoom are valid values for the tiling scheme
                     if (minZoom > tileMatrixSet.getMaxLevel() || minZoom < tileMatrixSet.getMinLevel() || maxZoom > tileMatrixSet.getMaxLevel() || maxZoom < tileMatrixSet.getMinLevel()) {
                         throw new NotFoundException();
@@ -535,7 +535,7 @@ class VectorTile {
                 VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
                 File tileFileJSON = tile.getFile(cache, "json");
                 if (!tileFileJSON.exists()) {
-                    TileGeneratorJson.generateEmptyJSON(tileFileJSON, new DefaultTileMatrixSet(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService, i18n, wfs3Request.getLanguage());
+                    TileGeneratorJson.generateEmptyJSON(tileFileJSON, new WebMercatorQuad(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService, i18n, wfs3Request.getLanguage());
                 }
             }
             //generate empty MVT
@@ -547,9 +547,9 @@ class VectorTile {
                     VectorTile jsonTile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
                     File tileFileJSON = jsonTile.getFile(cache, "json");
                     if (!tileFileJSON.exists()) {
-                        TileGeneratorJson.generateEmptyJSON(tileFileJSON, new DefaultTileMatrixSet(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService, i18n, wfs3Request.getLanguage());
+                        TileGeneratorJson.generateEmptyJSON(tileFileJSON, new WebMercatorQuad(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService, i18n, wfs3Request.getLanguage());
                     }
-                    TileGeneratorMvt.generateEmptyMVT(tileFileMvt, new DefaultTileMatrixSet());
+                    TileGeneratorMvt.generateEmptyMVT(tileFileMvt, new WebMercatorQuad());
                 }
             }
         } catch (NullPointerException ignored) {

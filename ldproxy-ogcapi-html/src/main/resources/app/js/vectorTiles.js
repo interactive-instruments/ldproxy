@@ -6,19 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 if ($('#map').length ) {
-
     var basemapTiles = L.tileLayer(window._ldproxy.map.url, {
         attribution: window._ldproxy.map.attribution
     });
-
+    const tilesUrl = document.getElementById('tilesUrl').innerText.replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}")
+    var vectorTiles = L.vectorGrid.protobuf(tilesUrl);
     var map = L.map('map');
-
     map.fitBounds(window._ldproxy.map.bounds, {
-        padding: [30, 30],
-        maxZoom: 16
     });
-
-    var boundingBox = L.rectangle(window._ldproxy.map.bounds, {color: "#ff0000", weight: 1});
     basemapTiles.addTo(map);
-    boundingBox.addTo(map);
+    vectorTiles.addTo(map);
 }

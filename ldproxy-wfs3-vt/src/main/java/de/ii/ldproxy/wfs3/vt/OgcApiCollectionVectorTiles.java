@@ -50,7 +50,7 @@ public class OgcApiCollectionVectorTiles implements OgcApiCollectionExtension {
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
         if (!isNested && isExtensionEnabled(apiData, featureTypeConfiguration, TilesConfiguration.class)) {
-            collection.addAllLinks(vectorTilesLinkGenerator.generateTilesLinks(uriCustomizer, i18n, language));
+            collection.addAllLinks(vectorTilesLinkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
         }
 
         return collection;
