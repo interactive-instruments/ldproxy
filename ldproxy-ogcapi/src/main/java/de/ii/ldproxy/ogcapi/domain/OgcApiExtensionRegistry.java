@@ -15,4 +15,15 @@ public interface OgcApiExtensionRegistry {
     List<OgcApiExtension> getExtensions();
 
     <T extends OgcApiExtension> List<T> getExtensionsForType(Class<T> extensionType);
+
+    /* TODO delete
+    default <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, OgcApiDatasetData apiData, String path) {
+        return getExtensionsForType(extensionType)
+                .stream()
+                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
+                .filter(outputFormatExtension -> mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))
+                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                .findFirst();
+    }
+     */
 }

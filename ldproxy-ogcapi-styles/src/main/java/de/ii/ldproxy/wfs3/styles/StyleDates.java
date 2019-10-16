@@ -17,11 +17,11 @@ import java.util.Optional;
 @Value.Style(deepImmutablesDetection = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableStyleDates.class)
-public interface StyleDates {
+public abstract class StyleDates {
 
-    Optional<String> getCreation();
-    Optional<String> getPublication();
-    Optional<String> getRevision();
-    Optional<String> getValidTill();
-    Optional<String> getReceivedOn();
+    public abstract Optional<String> getCreation();
+    public abstract Optional<String> getPublication();
+    public abstract Optional<String> getRevision();
+    public abstract Optional<String> getValidTill();
+    public abstract Optional<String> getReceivedOn();
 }

@@ -91,15 +91,6 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
         return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
-    private <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, OgcApiDatasetData apiData, String path) {
-        return extensionRegistry.getExtensionsForType(extensionType)
-                .stream()
-                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
-                .filter(outputFormatExtension -> mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))
-                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-                .findFirst();
-    }
-
     /**
      * retrieve all available tile matrix sets
      *
@@ -138,10 +129,11 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
                 i18n,
                 requestContext.getLanguage());
 
+        // TODO change to proper class
         Map<String, Object> tileMatrixSets = ImmutableMap.of("tileMatrixSets", tileMatrixSetArray, "links", links);
 
         if (requestContext.getMediaType().matches(MediaType.TEXT_HTML_TYPE)) {
-            Optional<TileMatrixSetsFormatExtension> outputFormatHtml = getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), api.getData(), "/tileMatrixSets");
+            Optional<TileMatrixSetsFormatExtension> outputFormatHtml = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), "/tileMatrixSets");
             if (outputFormatHtml.isPresent())
                 return outputFormatHtml.get().getTileMatrixSetsResponse(tileMatrixSets, api, requestContext);
 
@@ -169,6 +161,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
 
         File file = cache.getTileMatrixSet(tileMatrixSetId);
 
+        // TODO change to proper class
         Map<String, Object> jsonTileMatrixSet = getTileMatrixSetFromStore(tileMatrixSetId);
 
         List<OgcApiLink> links = new TileMatrixSetsLinksGenerator().generateLinks(
@@ -182,7 +175,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
         jsonTileMatrixSet.put("links", links);
 
         if (requestContext.getMediaType().matches(MediaType.TEXT_HTML_TYPE)) {
-            Optional<TileMatrixSetsFormatExtension> outputFormatHtml = getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), api.getData(), "/tileMatrixSets/"+tileMatrixSetId);
+            Optional<TileMatrixSetsFormatExtension> outputFormatHtml = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), "/tileMatrixSets/"+tileMatrixSetId);
             if (outputFormatHtml.isPresent()) {
                 return outputFormatHtml.get().getTileMatrixSetResponse(jsonTileMatrixSet, api, requestContext);
             }

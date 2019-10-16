@@ -140,7 +140,7 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                 i18n,
                 requestContext.getLanguage());
 
-        CollectionsFormatExtension outputFormatExtension = getOutputFormat(CollectionsFormatExtension.class, requestContext.getMediaType(), requestContext.getApi().getData(), "/collections/"+collectionId)
+        CollectionsFormatExtension outputFormatExtension = api.getOutputFormat(CollectionsFormatExtension.class, requestContext.getMediaType(), "/collections/"+collectionId)
                 .orElseThrow(NotAcceptableException::new);
 
         ImmutableOgcApiCollection.Builder ogcApiCollection = ImmutableOgcApiCollection.builder()
@@ -177,15 +177,6 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
             addLinks(response, responseObject.getLinks());
 
         return response.build();
-    }
-
-    private <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, OgcApiDatasetData apiData, String path) {
-        return extensionRegistry.getExtensionsForType(extensionType)
-                                .stream()
-                                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
-                                .filter(outputFormatExtension -> mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))
-                                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-                                .findFirst();
     }
 
     private List<OgcApiCollectionExtension> getCollectionExtenders() {

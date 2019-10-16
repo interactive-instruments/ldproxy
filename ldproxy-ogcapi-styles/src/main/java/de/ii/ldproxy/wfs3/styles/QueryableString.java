@@ -17,7 +17,7 @@ import java.util.Optional;
 @Value.Style(deepImmutablesDetection = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableQueryableString.class)
-public interface QueryableString extends Queryable {
+public abstract class QueryableString extends Queryable {
 
-    Optional<String> getPattern();
+    public abstract Optional<String> getPattern();
 }

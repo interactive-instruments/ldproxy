@@ -69,10 +69,10 @@ public class OgcApiCollectionsView extends View {
 
         this.datasetData = datasetData;
 
-        this.collectionsTitle = i18n.get("collections", language);
-        this.supportedCrsTitle = i18n.get("supportedCrs", language);
-        this.additionalLinksTitle = i18n.get("additionalLinks", language);
-        this.expertInformationTitle = i18n.get ("expertInformation", language);
+        this.collectionsTitle = i18n.get("collectionsTitle", language);
+        this.supportedCrsTitle = i18n.get("supportedCrsTitle", language);
+        this.additionalLinksTitle = i18n.get("additionalLinksTitle", language);
+        this.expertInformationTitle = i18n.get ("expertInformationTitle", language);
         this.none = i18n.get ("none", language);
         this.moreInformation = i18n.get("moreInformation", language);
     }

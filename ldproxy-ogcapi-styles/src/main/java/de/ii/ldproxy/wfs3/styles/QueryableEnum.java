@@ -19,7 +19,7 @@ import java.util.Optional;
 @Value.Style(deepImmutablesDetection = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableQueryableEnum.class)
-public interface QueryableEnum extends Queryable {
+public abstract class QueryableEnum extends Queryable {
 
-    Optional<List<String>> getValues();
+    public abstract Optional<List<String>> getValues();
 }

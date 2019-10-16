@@ -9,13 +9,13 @@ package de.ii.ldproxy.wfs3.vt;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
+import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -32,6 +32,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -85,7 +86,11 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.APPLICATION_JSON_TYPE)
-                            .build());
+                            .build(),
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(MediaType.TEXT_HTML_TYPE)
+                            .build()
+                    );
         else if (subPath.matches("^/?(?:\\w+/\\w+/\\w+/\\w+)$"))
             // TODO: from tile format configuration
             return ImmutableSet.of(
@@ -132,25 +137,44 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
      */
     @Path("/")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getTileMatrixSets(@Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
+    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
+    public Response getTileMatrixSets(@Context OgcApiDataset service, @Context OgcApiRequestContext requestContext) {
 
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-        List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
 
-        for (Object tileMatrixSetId : cache.getTileMatrixSetIds()
-                                          .toArray()) {
-            Map<String, Object> wfs3LinksMap = new HashMap<>();
-            wfs3LinksMap.put("tileMatrixSet", tileMatrixSetId);
-            wfs3LinksMap.put("tileMatrixSetURI", "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad");
-            // TODO: json support
-            wfs3LinksMap.put("links", vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), tileMatrixSetId.toString(), true, false, i18n, wfs3Request.getLanguage()));
-            wfs3LinksList.add(wfs3LinksMap);
+        TileCollections tiles = ImmutableTileCollections.builder()
+                .title(requestContext.getApi().getData().getLabel())
+                .description(requestContext.getApi().getData().getDescription().orElse(""))
+                .tileMatrixSetLinks(
+                            cache.getTileMatrixSetIds()
+                                .stream()
+                                .map(tileMatrixSetId -> ImmutableTileCollection.builder()
+                                    .tileMatrixSet(tileMatrixSetId)
+                                        .links(vectorTilesLinkGenerator.generateTileMatrixSetLinks(
+                                                requestContext.getUriCustomizer(),
+                                                tileMatrixSetId,
+                                                true, false, i18n, requestContext.getLanguage()))
+                                        .build())
+                                .collect(Collectors.toList()))
+                .links(new DefaultLinksGenerator()
+                        .generateLinks(requestContext.getUriCustomizer(),
+                                requestContext.getMediaType(),
+                                requestContext.getAlternateMediaTypes(),
+                                i18n,
+                                requestContext.getLanguage()))
+                .build();
+
+        if (requestContext.getMediaType().matches(MediaType.TEXT_HTML_TYPE)) {
+            Optional<TileCollectionsFormatExtension> outputFormatHtml = requestContext.getApi().getOutputFormat(TileCollectionsFormatExtension.class, requestContext.getMediaType(), "/tiles");
+            if (outputFormatHtml.isPresent())
+                return outputFormatHtml.get().getTileCollectionsResponse(tiles, Optional.empty(), requestContext.getApi(), requestContext);
+
+            throw new NotAcceptableException();
         }
 
-        return Response.ok(ImmutableMap.of("tileMatrixSetLinks", wfs3LinksList))
+        return Response.ok(tiles)
                        .build();
     }
 
@@ -217,7 +241,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     @Path("/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
     @GET
     @Produces({"application/vnd.mapbox-vector-tile"})
-    public Response xgetTileMVT(@Auth Optional<User> optionalUser, @PathParam("tileMatrixSetId") String tileMatrixSetId,
+    public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("tileMatrixSetId") String tileMatrixSetId,
                                 @PathParam("tileMatrix") String tileMatrix, @PathParam("tileRow") String tileRow,
                                 @PathParam("tileCol") String tileCol, @QueryParam("collections") String collections,
                                 @QueryParam("properties") String properties, @Context OgcApiDataset service,

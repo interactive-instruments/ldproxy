@@ -13,8 +13,10 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.api.TargetMappingRefiner;
+import de.ii.ldproxy.ogcapi.features.core.api.Wfs3StyleGeneratorExtension;
 import de.ii.ldproxy.wfs3.Gml2Wfs3GenericMappingProvider;
-import de.ii.ldproxy.ogcapi.features.core.api.*;
 import de.ii.xtraplatform.crs.api.DefaultCoordinatesWriter;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.crs.api.JsonCoordinateFormatter;
@@ -22,43 +24,20 @@ import de.ii.xtraplatform.entity.api.EntityData;
 import de.ii.xtraplatform.entity.api.EntityDataGenerator;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.event.store.EntityDataStore;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
-import de.ii.xtraplatform.feature.provider.api.FeatureProviderMetadataConsumer;
-import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
-import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
-import de.ii.xtraplatform.feature.provider.api.FeatureStream;
-import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
-import de.ii.xtraplatform.feature.provider.api.MultiFeatureProviderMetadataConsumer;
-import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.provider.api.TargetMapping;
+import de.ii.xtraplatform.feature.provider.api.*;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.transformer.api.FeatureProviderDataTransformer;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService;
-import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureTypeMapping;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableMappingStatus;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
-import de.ii.xtraplatform.feature.transformer.api.MappingStatus;
-import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
-import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
+import de.ii.xtraplatform.feature.transformer.api.*;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_GEOMETRY_TYPE;
-import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.kvstore.api.WriteTransaction;
-import de.ii.xtraplatform.scheduler.api.Scheduler;
-import de.ii.xtraplatform.scheduler.api.Task;
-import de.ii.xtraplatform.scheduler.api.TaskContext;
 import de.ii.xtraplatform.scheduler.api.TaskQueue;
-import de.ii.xtraplatform.scheduler.api.TaskStatus;
+import de.ii.xtraplatform.scheduler.api.*;
+import de.ii.xtraplatform.service.api.ImmutableNotification;
+import de.ii.xtraplatform.service.api.Notification;
 import de.ii.xtraplatform.service.api.ServiceBackgroundTasks;
 import de.ii.xtraplatform.service.api.ServiceData;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.ipojo.whiteboard.Wbp;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -71,13 +50,7 @@ import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -234,18 +207,45 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
             checkGenerateMapping(ref);
             checkRefineMapping(ref);
         } catch (Throwable e) {
-            LOGGER.debug("E", e);
-        }
+            LOGGER.error("Error starting a service. ", e);
 
+            // deactivate service
+            final FeatureTransformerService featureTransformerService = bundleContext.getService(ref);
+            if (featureTransformerService instanceof OgcApiDataset) {
+                final OgcApiDataset wfs3Service = (OgcApiDataset) featureTransformerService;
+                ImmutableOgcApiDatasetData updated = new ImmutableOgcApiDatasetData.Builder().from(wfs3Service.getData())
+                        .shouldStart(false)
+                        .build();
+
+                serviceRepository.put(wfs3Service.getId(), updated);
+                LOGGER.error("The service {} has been deactivated.", updated.getId());
+            }
+        }
     }
 
     private synchronized void onDeparture(ServiceReference<FeatureTransformerService> ref) {
     }
 
     private synchronized void onModification(ServiceReference<FeatureTransformerService> ref) {
-        LOGGER.debug("MOD");
-        checkGenerateMapping(ref);
-        checkRefineMapping(ref);
+        LOGGER.debug("Modifying a service");
+        try {
+            checkGenerateMapping(ref);
+            checkRefineMapping(ref);
+        } catch (Throwable e) {
+            LOGGER.error("Error modifying a service. ", e);
+
+            // deactivate service
+            final FeatureTransformerService featureTransformerService = bundleContext.getService(ref);
+            if (featureTransformerService instanceof OgcApiDataset) {
+                final OgcApiDataset wfs3Service = (OgcApiDataset) featureTransformerService;
+                ImmutableOgcApiDatasetData updated = new ImmutableOgcApiDatasetData.Builder().from(wfs3Service.getData())
+                        .shouldStart(false)
+                        .build();
+
+                serviceRepository.put(wfs3Service.getId(), updated);
+                LOGGER.error("The service {} has been deactivated.", updated.getId());
+            }
+        }
     }
 
     private void checkGenerateMapping(ServiceReference<FeatureTransformerService> ref) {
@@ -319,16 +319,25 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                 continue;
             }
 
-            boolean needsRefinement = data.getFeatureProvider()
-                                          .getMappings()
-                                          .get(featureType.getId())
-                                          .getMappingsWithPathAsList()
-                                          .values()
-                                          .stream()
-                                          .anyMatch(sourcePathMapping -> mappingRefiners.stream()
-                                                                                        .anyMatch(targetMappingRefiner -> targetMappingRefiner.needsRefinement(sourcePathMapping)));
-            if (needsRefinement) {
-                return true;
+            FeatureTypeMapping ftMapping = data.getFeatureProvider()
+                    .getMappings()
+                    .get(featureType.getId());
+
+            if (ftMapping!=null) {
+                Map<List<String>, SourcePathMapping> mappingsWithPathAsList = ftMapping.getMappingsWithPathAsList();
+
+                boolean needsRefinement = mappingsWithPathAsList
+                        .values()
+                        .stream()
+                        .anyMatch(sourcePathMapping -> mappingRefiners.stream()
+                                .anyMatch(targetMappingRefiner -> targetMappingRefiner.needsRefinement(sourcePathMapping)));
+                if (needsRefinement) {
+                    return true;
+                }
+            } else {
+                LOGGER.error("No mapping for feature type {} in service {}.", featureType.getId(), data.getId());
+                // for now throw internal error to deactivate the service
+                throw new RuntimeException("No mapping for feature type "+featureType.getId()+" in service "+data.getId()+".");
             }
         }
 
@@ -395,9 +404,27 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
             schemaAware.getSchema(dataGenerator.getMappingGenerator(featureProviderData, builder, getMappingProviders()), featureProviderData.getLocalFeatureTypeNames(), taskContext);
 
-            ImmutableOgcApiDatasetData updated = new ImmutableOgcApiDatasetData.Builder().from(wfs3Service.getData())
-                                                                                         .featureProvider(builder.build())
-                                                                                         .build();
+            // check that the schema analysis was successful, otherwise deactive service
+            ImmutableFeatureProviderDataTransformer updatedFeatureProvider = builder.build();
+            ImmutableMappingStatus updatedMappingStatus = updatedFeatureProvider.getMappingStatus();
+            ImmutableOgcApiDatasetData updated;
+
+            if (updatedMappingStatus.getSupported()) {
+                updated = new ImmutableOgcApiDatasetData.Builder().from(wfs3Service.getData())
+                        .featureProvider(builder.build())
+                        .build();
+            } else {
+                // Failure during schema analysis
+                Notification newNotification = ImmutableNotification.builder()
+                            .level(Notification.LEVEL.ERROR)
+                            .putMessages("en",updatedMappingStatus.getErrorMessage())
+                            .build();
+                updated = new ImmutableOgcApiDatasetData.Builder().from(wfs3Service.getData())
+                        .featureProvider(builder.build())
+                        .shouldStart(false)
+                        // .addNotifications(newNotification) TODO notification leads to Jackson errors, so it is commented out for now
+                        .build();
+            }
 
             serviceRepository.put(wfs3Service.getId(), updated);
 

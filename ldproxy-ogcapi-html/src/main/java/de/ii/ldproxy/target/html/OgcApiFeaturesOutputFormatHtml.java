@@ -136,7 +136,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     public Response getCollectionsResponse(Collections collections, OgcApiDataset api, OgcApiRequestContext requestContext) {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String collectionsTitle = i18n.get("collections", requestContext.getLanguage());
+        String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
@@ -163,7 +163,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                           OgcApiRequestContext requestContext) {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String collectionsTitle = i18n.get("collections", requestContext.getLanguage());
+        String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
@@ -292,8 +292,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                            String staticUrlPrefix, Optional<Locale> language) {
 
         String rootTitle = i18n.get("root", language);
-        String collectionsTitle = i18n.get("collections", language);
-        String itemsTitle = i18n.get("items", language);
+        String collectionsTitle = i18n.get("collectionsTitle", language);
+        String itemsTitle = i18n.get("itemsTitle", language);
 
         URI requestUri = null;
         try {
@@ -343,8 +343,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                       Optional<Locale> language) {
 
         String rootTitle = i18n.get("root", language);
-        String collectionsTitle = i18n.get("collections", language);
-        String itemsTitle = i18n.get("items", language);
+        String collectionsTitle = i18n.get("collectionsTitle", language);
+        String itemsTitle = i18n.get("itemsTitle", language);
 
         URICustomizer uriBuilder = uriCustomizer
                 .clearParameters()

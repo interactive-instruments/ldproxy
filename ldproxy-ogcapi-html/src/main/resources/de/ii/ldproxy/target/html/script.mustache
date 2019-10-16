@@ -5,15 +5,24 @@
             url: '{{{leafletUrl}}}',
             attribution: '{{{leafletAttribution}}}',
             {{/htmlConfig}}
-    {{#bbox2}}
+            {{#bbox2}}
             bounds: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]]
             {{/bbox2}}
         },
+        ol_map: {
+            {{#htmlConfig}}
+            url: '{{{openLayersUrl}}}',
+            attribution: '{{{openlayersAttribution}}}',
+            {{/htmlConfig}}
+            {{#bbox2}}
+            extent: [{{minLat}},{{minLng}},{{maxLat}},{{maxLng}}]
+            {{/bbox2}}
+        },
         time: {
-             {{#temporalExtent}}
-             start: {{start}},
-             end: {{computedEnd}}
-    {{/temporalExtent}}
+            {{#temporalExtent}}
+            start: {{start}},
+            end: {{computedEnd}}
+            {{/temporalExtent}}
          },
         fields: {
             {{#filterFields}}

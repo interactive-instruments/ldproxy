@@ -136,7 +136,7 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                 i18n,
                 requestContext.getLanguage());
 
-        CommonFormatExtension outputFormatExtension = getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), requestContext.getApi().getData(), "/conformance")
+        CommonFormatExtension outputFormatExtension = requestContext.getApi().getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), "/conformance")
                 .orElseThrow(NotAcceptableException::new);
 
         ImmutableConformanceDeclaration.Builder conformanceDeclaration = new ImmutableConformanceDeclaration.Builder()
@@ -190,15 +190,6 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
             return outputFormatExtension.getApiDefinitionFile(requestContext.getApi().getData(), requestContext, subPath);
 
         return outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(), requestContext);
-    }
-
-    private <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, OgcApiDatasetData apiData, String path) {
-        return extensionRegistry.getExtensionsForType(extensionType)
-                                .stream()
-                                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
-                                .filter(outputFormatExtension -> mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))
-                                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-                                .findFirst();
     }
 
     private List<OgcApiLandingPageExtension> getDatasetExtenders() {

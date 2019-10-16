@@ -19,18 +19,18 @@ import java.util.Optional;
 @Value.Style(deepImmutablesDetection = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableStyleSheet.class)
-public interface StyleSheet {
+public abstract class StyleSheet {
 
-    Optional<String> getTitle();
+    public abstract Optional<String> getTitle();
 
-    Optional<String> getVersion();
+    public abstract Optional<String> getVersion();
 
-    Optional<String> getSpecification();
+    public abstract  Optional<String> getSpecification();
 
     @JsonProperty("native")
-    Optional<Boolean> native_();
+    public abstract Optional<Boolean> native_();
 
-    Optional<String> getTileMatrixSet();
+    public abstract Optional<String> getTileMatrixSet();
 
-    Optional<OgcApiLink> getLink();
+    public abstract Optional<OgcApiLink> getLink();
 }

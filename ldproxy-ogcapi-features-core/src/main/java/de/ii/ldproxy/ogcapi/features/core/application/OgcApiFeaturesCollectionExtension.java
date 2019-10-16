@@ -147,7 +147,13 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     language);
         }
 
-        return ogcApiCollection.build();
+        ImmutableOgcApiCollection result = null;
+        try {
+            result = ogcApiCollection.build();
+        } catch (Throwable e) {
+            result = null;
+        }
+        return result;
     }
 
 }

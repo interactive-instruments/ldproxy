@@ -81,25 +81,29 @@ public class OgcApiCollectionView extends View {
         this.storageCrs = collection
                 .getStorageCrs()
                 .orElse("");
-        OgcApiExtentSpatial spatialExtent = collection
-                .getExtent()
-                .getSpatial();
-        if (Objects.nonNull(spatialExtent)) {
-            double[] boundingBox = spatialExtent.getBbox()[0]; // TODO just the first bbox and it is assumed to be in CRS84
-            this.bbox2 = ImmutableMap.of(
-                    "minLng", Double.toString(boundingBox[1]),
-                    "minLat", Double.toString(boundingBox[0]),
-                    "maxLng", Double.toString(boundingBox[3]),
-                    "maxLat", Double.toString(boundingBox[2])); // TODO is axis order mixed up in script.mustache?
-        }
-        OgcApiExtentTemporal temporalExtent = collection
-                .getExtent()
-                .getTemporal();
-        if (Objects.nonNull(temporalExtent)) {
-            String[] interval = temporalExtent.getInterval()[0]; // TODO just the first interval and it is assumed to be in Gregorian calendar
-            this.temporalExtent = interval == null ? null : ImmutableMap.of(
-                    "start", interval[0] == null ? String.valueOf(Instant.EPOCH.toEpochMilli()) : String.valueOf(Instant.parse(interval[0]).toEpochMilli()),
-                    "computedEnd", interval[1] == null ? String.valueOf(Instant.now().toEpochMilli()) : String.valueOf(Instant.parse(interval[1]).toEpochMilli()));
+        Optional<OgcApiExtent> extent = collection.getExtent();
+        if (extent.isPresent()) {
+            OgcApiExtentSpatial spatialExtent = extent.get()
+                    .getSpatial();
+            if (Objects.nonNull(spatialExtent)) {
+                double[] boundingBox = spatialExtent.getBbox()[0]; // TODO just the first bbox and it is assumed to be in CRS84
+                this.bbox2 = ImmutableMap.of(
+                        "minLng", Double.toString(boundingBox[1]),
+                        "minLat", Double.toString(boundingBox[0]),
+                        "maxLng", Double.toString(boundingBox[3]),
+                        "maxLat", Double.toString(boundingBox[2])); // TODO is axis order mixed up in script.mustache?
+            }
+            OgcApiExtentTemporal temporalExtent = extent.get()
+                    .getTemporal();
+            if (Objects.nonNull(temporalExtent)) {
+                String[] interval = temporalExtent.getInterval()[0]; // TODO just the first interval and it is assumed to be in Gregorian calendar
+                this.temporalExtent = interval == null ? null : ImmutableMap.of(
+                        "start", interval[0] == null ? String.valueOf(Instant.EPOCH.toEpochMilli()) : String.valueOf(Instant.parse(interval[0]).toEpochMilli()),
+                        "computedEnd", interval[1] == null ? String.valueOf(Instant.now().toEpochMilli()) : String.valueOf(Instant.parse(interval[1]).toEpochMilli()));
+            }
+        } else {
+            this.bbox2 = null;
+            this.temporalExtent = null;
         }
         this.spatialSearch = false;
         this.itemType = collection.getItemType()
@@ -108,22 +112,29 @@ public class OgcApiCollectionView extends View {
         this.datasetData = datasetData;
 
         this.itemTypeTitle = i18n.get("itemType", language);
-        this.dataTitle = i18n.get("dataLink", language);
-        this.licenseTitle = i18n.get("license", language);
-        this.spatialExtentTitle = i18n.get("spatialExtent", language);
-        this.temporalExtentTitle = i18n.get("temporalExtent", language);
-        this.supportedCrsTitle = i18n.get("supportedCrs", language);
-        this.storageCrsTitle = i18n.get("storageCrs", language);
-        this.additionalLinksTitle = i18n.get("additionalLinks", language);
-        this.expertInformationTitle = i18n.get ("expertInformation", language);
+        this.dataTitle = i18n.get("dataTitle", language);
+        this.licenseTitle = i18n.get("licenseTitle", language);
+        this.spatialExtentTitle = i18n.get("spatialExtentTitle", language);
+        this.temporalExtentTitle = i18n.get("temporalExtentTitle", language);
+        this.supportedCrsTitle = i18n.get("supportedCrsTitle", language);
+        this.storageCrsTitle = i18n.get("storageCrsTitle", language);
+        this.additionalLinksTitle = i18n.get("additionalLinksTitle", language);
+        this.expertInformationTitle = i18n.get ("expertInformationTitle", language);
         this.none = i18n.get ("none", language);
     }
 
     public List<OgcApiLink> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|home)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|home)$"))
                 .collect(Collectors.toList());
+    }
+
+    public Optional<OgcApiLink> getTiles() {
+        return links
+                .stream()
+                .filter(link -> Objects.equals(link.getRel(), "tiles"))
+                .findFirst();
     }
 
     public OgcApiCollection getCollection() { return collection; }

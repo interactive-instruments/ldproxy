@@ -10,7 +10,9 @@ package de.ii.ldproxy.target.html;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.wfs3.vt.TileMatrixSetsFormatExtension;
+import de.ii.ldproxy.wfs3.styles.StyleMetadata;
+import de.ii.ldproxy.wfs3.styles.Styles;
+import de.ii.ldproxy.wfs3.styles.StylesFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -19,12 +21,11 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @Provides
 @Instantiate
-public class OgcApiTilesOutputFormatHtml implements TileMatrixSetsFormatExtension {
+public class StylesOutputFormatHtml implements StylesFormatExtension {
 
     static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
@@ -39,7 +40,7 @@ public class OgcApiTilesOutputFormatHtml implements TileMatrixSetsFormatExtensio
 
     @Override
     public String getPathPattern() {
-        return "^/tileMatrixSets(?:/\\w+)?/?$";
+        return "^/styles(?:/\\w+)?/?$";
     }
 
     @Override
@@ -53,11 +54,11 @@ public class OgcApiTilesOutputFormatHtml implements TileMatrixSetsFormatExtensio
     }
 
     @Override
-    public Response getTileMatrixSetsResponse(Map<String, Object> tileMatrixSets,
-                                              OgcApiDataset api,
-                                              OgcApiRequestContext requestContext) {
+    public Response getStylesResponse(Styles styles,
+                                      OgcApiDataset api,
+                                      OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
+        String stylesTitle = i18n.get("stylesTitle", requestContext.getLanguage());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
@@ -69,48 +70,54 @@ public class OgcApiTilesOutputFormatHtml implements TileMatrixSetsFormatExtensio
                                 .copy()
                                 .removeLastPathSegments(1)
                                 .toString()))
-                .add(new NavigationDTO(tileMatrixSetsTitle))
+                .add(new NavigationDTO(stylesTitle))
                 .build();
 
-        OgcApiTileMatrixSetsView tileMatrixSetsView = new OgcApiTileMatrixSetsView(api.getData(), tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        StylesView stylesView = new StylesView(api.getData(), styles, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
-                .entity(tileMatrixSetsView)
+                .entity(stylesView)
                 .build();
     }
 
     @Override
-    public Response getTileMatrixSetResponse(Map<String, Object> tileMatrixSet,
+    public Response getStyleMetadataResponse(StyleMetadata metadata,
                                              OgcApiDataset api,
                                              OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
-        String title = tileMatrixSet.get("identifier")!=null ? tileMatrixSet.get("identifier").toString() : "?";
+        String stylesTitle = i18n.get("stylesTitle", requestContext.getLanguage());
+        String styleTitle = metadata.getTitle().orElse(metadata.getId().orElse("?"));
+        String metadataTitle = i18n.get("metadataTitle", requestContext.getLanguage());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(3)
+                                .removeLastPathSegments(4)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()
                                 .copy()
+                                .removeLastPathSegments(3)
+                                .toString()))
+                .add(new NavigationDTO(stylesTitle,
+                        requestContext.getUriCustomizer()
+                                .copy()
                                 .removeLastPathSegments(2)
                                 .toString()))
-                .add(new NavigationDTO(tileMatrixSetsTitle,
+                .add(new NavigationDTO(styleTitle,
                         requestContext.getUriCustomizer()
                                 .copy()
                                 .removeLastPathSegments(1)
                                 .toString()))
-                .add(new NavigationDTO(title))
+                .add(new NavigationDTO(metadataTitle))
                 .build();
 
-        OgcApiTileMatrixSetView tileMatrixSetView = new OgcApiTileMatrixSetView(api.getData(), tileMatrixSet, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        StyleMetadataView metadataView = new StyleMetadataView(api.getData(), metadata, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
-                .entity(tileMatrixSetView)
+                .entity(metadataView)
                 .build();
     }
 }

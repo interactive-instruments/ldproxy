@@ -19,15 +19,15 @@ import java.util.Optional;
 @Value.Style(deepImmutablesDetection = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableStyleLayer.class)
-public interface StyleLayer {
+public abstract class StyleLayer {
 
-    String getId();
+    public abstract String getId();
 
-    Optional<String> getDescription();
+    public abstract Optional<String> getDescription();
 
-    Optional<String> getType();
+    public abstract Optional<String> getType();
 
-    Optional<List<Queryable>> getAttributes();
+    public abstract Optional<List<Queryable>> getAttributes();
 
-    Optional<OgcApiLink> getSampleData();
+    public abstract Optional<OgcApiLink> getSampleData();
 }

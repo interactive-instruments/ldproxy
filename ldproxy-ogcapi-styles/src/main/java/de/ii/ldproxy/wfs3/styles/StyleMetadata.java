@@ -9,39 +9,33 @@ package de.ii.ldproxy.wfs3.styles;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Optional;
 
 @Value.Immutable
-@Value.Style(deepImmutablesDetection = true)
+@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableStyleMetadata.class)
-public interface StyleMetadata {
+public abstract class StyleMetadata extends PageRepresentation {
 
-    Optional<String> getId();
+    public abstract Optional<String> getId();
 
-    Optional<String> getTitle();
+    public abstract Optional<List<String>> getKeywords();
 
-    Optional<String> getDescription();
+    public abstract Optional<String> getPointOfContact();
 
-    Optional<List<String>> getKeywords();
+    public abstract Optional<String> getAccessConstraints();
 
-    Optional<String> getPointOfContact();
+    public abstract Optional<StyleDates> getDates();
 
-    Optional<String> getAccessConstraints();
+    public abstract Optional<String> getScope();
 
-    Optional<StyleDates> getDates();
+    public abstract Optional<String> getVersion();
 
-    Optional<String> getScope();
+    public abstract Optional<List<StyleSheet>> getStylesheets();
 
-    Optional<String> getVersion();
-
-    Optional<List<StyleSheet>> getStylesheets();
-
-    Optional<List<StyleLayer>> getLayers();
-
-    Optional<List<OgcApiLink>> getLinks();
+    public abstract Optional<List<StyleLayer>> getLayers();
 }

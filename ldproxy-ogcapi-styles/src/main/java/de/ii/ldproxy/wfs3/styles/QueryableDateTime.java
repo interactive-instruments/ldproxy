@@ -18,7 +18,7 @@ import java.util.Optional;
 @Value.Style(deepImmutablesDetection = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableQueryableDateTime.class)
-public interface QueryableDateTime extends Queryable {
+public abstract class QueryableDateTime extends Queryable {
 
-    Optional<List<String>> getRange();
+    public abstract Optional<List<String>> getRange();
 }

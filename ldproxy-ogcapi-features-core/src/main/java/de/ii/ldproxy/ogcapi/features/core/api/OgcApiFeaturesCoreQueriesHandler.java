@@ -93,16 +93,6 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
         }
     }
 
-    // TODO this should apply to all handlers, move this abstract superclass?
-    private <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, OgcApiDatasetData apiData, String path) {
-        return extensionRegistry.getExtensionsForType(extensionType)
-                .stream()
-                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
-                .filter(outputFormatExtension -> mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))
-                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-                .findFirst();
-    }
-
     private Response getItemsResponse(OgcApiQueryInputFeatures queryInput, OgcApiRequestContext requestContext) {
 
         OgcApiDataset api = requestContext.getApi();
@@ -112,10 +102,9 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
         Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
         boolean onlyHitsIfMore = false; // TODO check
 
-        OgcApiFeatureFormatExtension outputFormat = getOutputFormat(
+        OgcApiFeatureFormatExtension outputFormat = api.getOutputFormat(
                     OgcApiFeatureFormatExtension.class,
                     requestContext.getMediaType(),
-                    apiData,
                     "/collections/"+collectionId+"/items")
                 .orElseThrow(NotAcceptableException::new);
 
@@ -132,10 +121,9 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
         String featureId = queryInput.getFeatureId();
         FeatureQuery query = queryInput.getQuery();
 
-        OgcApiFeatureFormatExtension outputFormat = getOutputFormat(
+        OgcApiFeatureFormatExtension outputFormat = api.getOutputFormat(
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
-                apiData,
                 "/collections/"+collectionId+"/items/"+featureId)
                 .orElseThrow(NotAcceptableException::new);
 

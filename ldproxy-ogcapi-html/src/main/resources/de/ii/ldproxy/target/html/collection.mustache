@@ -5,22 +5,15 @@
     <span>{{{description}}}</span>
     <br/>
     <br/>
-
-    <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">{{dataTitle}}</div>
-        <div class="col-md-10">
-            <ul class="list-unstyled">
-                {{#items}}
-                <li>
-                    <a itemprop="url" href="{{href}}">{{title}}</a>
-                </li>
-                {{/items}}
-                {{^items}}
-                    <li>{{none}}</li>
-                {{/items}}
-            </ul>
-        </div>
-    </div>
+    {{#items}}
+        <span><big><a href="{{href}}">{{title}}</a></big></span>
+        <br/>
+    {{/items}}
+    {{#tiles}}
+        <span><big><a href="{{href}}">{{title}}</a></big></span>
+        <br/>
+    {{/tiles}}
+    <br/>
 
     {{#bbox2}}
     <div class="row my-3">

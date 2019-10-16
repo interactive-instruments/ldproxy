@@ -8,7 +8,6 @@
 package de.ii.ldproxy.wfs3.styles;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
@@ -19,7 +18,7 @@ import java.util.Optional;
 @Value.Style(deepImmutablesDetection = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableQueryableNumber.class)
-public interface QueryableNumber extends Queryable {
+public abstract class QueryableNumber extends Queryable {
 
-    Optional<List<Number>> getRange();
+    public abstract Optional<List<Number>> getRange();
 }

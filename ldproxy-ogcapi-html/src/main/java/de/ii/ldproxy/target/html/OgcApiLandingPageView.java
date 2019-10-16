@@ -112,23 +112,23 @@ public class OgcApiLandingPageView extends View {
 
         this.datasetData = datasetData;
 
-        this.dataTitle = i18n.get("dataLink", language);
-        this.apiDefinitionTitle = i18n.get("apiDefinition", language);
-        this.apiDocumentationTitle = i18n.get("apiDocumentation", language);
-        this.providerTitle = i18n.get("provider", language);
-        this.licenseTitle = i18n.get("license", language);
-        this.spatialExtentTitle = i18n.get("spatialExtent", language);
-        this.temporalExtentTitle = i18n.get("temporalExtent", language);
-        this.dataSourceTitle = i18n.get("dataSource", language);
-        this.additionalLinksTitle = i18n.get("additionalLinks", language);
-        this.expertInformationTitle = i18n.get ("expertInformation", language);
+        this.dataTitle = i18n.get("dataTitle", language);
+        this.apiDefinitionTitle = i18n.get("apiDefinitionTitle", language);
+        this.apiDocumentationTitle = i18n.get("apiDocumentationTitle", language);
+        this.providerTitle = i18n.get("providerTitle", language);
+        this.licenseTitle = i18n.get("licenseTitle", language);
+        this.spatialExtentTitle = i18n.get("spatialExtentTitle", language);
+        this.temporalExtentTitle = i18n.get("temporalExtentTitle", language);
+        this.dataSourceTitle = i18n.get("dataSourceTitle", language);
+        this.additionalLinksTitle = i18n.get("additionalLinksTitle", language);
+        this.expertInformationTitle = i18n.get ("expertInformationTitle", language);
         this.none = i18n.get ("none", language);
     }
 
     public List<OgcApiLink> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|data|service-desc|service-doc)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|data|tiles|service-desc|service-doc)$"))
                 .collect(Collectors.toList());
     }
 
@@ -136,6 +136,13 @@ public class OgcApiLandingPageView extends View {
         return links
                 .stream()
                 .filter(link -> Objects.equals(link.getRel(), "data"))
+                .findFirst();
+    }
+
+    public Optional<OgcApiLink> getTiles() {
+        return links
+                .stream()
+                .filter(link -> Objects.equals(link.getRel(), "tiles"))
                 .findFirst();
     }
 

@@ -15,15 +15,7 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import static de.ii.ldproxy.target.html.HtmlConfig.DATASET_DESCRIPTION;
-import static de.ii.ldproxy.target.html.HtmlConfig.DATASET_LABEL;
-import static de.ii.ldproxy.target.html.HtmlConfig.FOOTER_TEXT;
-import static de.ii.ldproxy.target.html.HtmlConfig.LEAFLET_ATTRIBUTION;
-import static de.ii.ldproxy.target.html.HtmlConfig.LEAFLET_URL;
-import static de.ii.ldproxy.target.html.HtmlConfig.LEGAL_NAME;
-import static de.ii.ldproxy.target.html.HtmlConfig.LEGAL_URL;
-import static de.ii.ldproxy.target.html.HtmlConfig.PRIVACY_NAME;
-import static de.ii.ldproxy.target.html.HtmlConfig.PRIVACY_URL;
+import static de.ii.ldproxy.target.html.HtmlConfig.*;
 
 /**
  * @author zahnen
@@ -37,8 +29,10 @@ import static de.ii.ldproxy.target.html.HtmlConfig.PRIVACY_URL;
         @ConfigPropertyDescriptor(name = PRIVACY_NAME, label = "Label for privacy notice", defaultValue = "Privacy notice"),
         @ConfigPropertyDescriptor(name = PRIVACY_URL, label = "URL for privacy notice", defaultValue = "", uiType = ConfigPropertyDescriptor.UI_TYPE.URL),
         @ConfigPropertyDescriptor(name = LEAFLET_URL, label = "URL for leaflet background tiles", defaultValue = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", uiType = ConfigPropertyDescriptor.UI_TYPE.URL),
+        @ConfigPropertyDescriptor(name = OPEN_LAYERS_URL, label = "URL for OpenLayers background tiles", defaultValue = "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png", uiType = ConfigPropertyDescriptor.UI_TYPE.URL),
         //TODO: single quotes do not work in javascript, but double quotes are obviously not accepted by LocalBundleConfigHandler
         @ConfigPropertyDescriptor(name = LEAFLET_ATTRIBUTION, label = "Attribution for leaflet", defaultValue = "&copy; <a href=''http://osm.org/copyright''>OpenStreetMap</a> contributors"),
+        @ConfigPropertyDescriptor(name = OPEN_LAYERS_ATTRIBUTION, label = "Attribution for OpenLayers", defaultValue = "&copy; <a href=''http://osm.org/copyright''>OpenStreetMap</a> contributors"),
         @ConfigPropertyDescriptor(name = FOOTER_TEXT, label = "Text for footer", defaultValue = ""),
         @ConfigPropertyDescriptor(name = DATASET_LABEL, label = "Collections name for schema.org microdata", defaultValue = "Service Overview"),
         @ConfigPropertyDescriptor(name = DATASET_DESCRIPTION, label = "Collections description for schema.org microdata", defaultValue = "")
@@ -51,6 +45,8 @@ public class HtmlConfig extends BundleConfigDefault {
     static final String PRIVACY_URL = "privacyUrl";
     static final String LEAFLET_URL = "leafletUrl";
     static final String LEAFLET_ATTRIBUTION = "leafletAttribution";
+    static final String OPEN_LAYERS_URL = "openLayersUrl";
+    static final String OPEN_LAYERS_ATTRIBUTION = "openLayersAttribution";
     static final String FOOTER_TEXT = "footerText";
     static final String DATASET_LABEL = "datasetLabel";
     static final String DATASET_DESCRIPTION = "datasetDescription";
@@ -77,6 +73,14 @@ public class HtmlConfig extends BundleConfigDefault {
 
     public String getLeafletAttribution() {
         return Strings.nullToEmpty(properties.get(LEAFLET_ATTRIBUTION));
+    }
+
+    public String getOpenLayersUrl() {
+        return Strings.nullToEmpty(properties.get(OPEN_LAYERS_URL));
+    }
+
+    public String getOpenLayersAttribution() {
+        return Strings.nullToEmpty(properties.get(OPEN_LAYERS_ATTRIBUTION));
     }
 
     public String getFooterText() {

@@ -27,13 +27,13 @@ import java.util.Optional;
         @JsonSubTypes.Type(value = QueryableString.class, name = "QueryableString")
 })
 @JsonDeserialize(as = ImmutableQueryable.class)
-public interface Queryable {
+public abstract class Queryable {
 
-    String getId();
-    String getType();
-    Optional<String> getTitle();
-    Optional<String> getDescription();
-    Optional<Boolean> getRequired();
-    Optional<List<String>> getMediaTypes();
+    public abstract String getId();
+    public abstract String getType();
+    public abstract Optional<String> getTitle();
+    public abstract Optional<String> getDescription();
+    public abstract Optional<Boolean> getRequired();
+    public abstract Optional<List<String>> getMediaTypes();
 
 }

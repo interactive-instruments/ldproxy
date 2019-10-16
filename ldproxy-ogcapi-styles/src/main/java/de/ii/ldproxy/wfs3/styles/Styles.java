@@ -7,14 +7,21 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import org.immutables.value.Value;
+
+import java.util.List;
+import java.util.Map;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(as = ImmutableQueryableBoolean.class)
-public abstract class QueryableBoolean extends Queryable {
+@JsonDeserialize(builder = ImmutableStyles.Builder.class)
+public abstract class Styles extends PageRepresentation {
 
+    public abstract List<StyleEntry> getStyles();
+
+    @JsonAnyGetter
+    public abstract Map<String, Object> getExtensions();
 }

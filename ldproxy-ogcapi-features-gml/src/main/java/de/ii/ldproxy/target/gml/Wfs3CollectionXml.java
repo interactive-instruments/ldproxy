@@ -47,7 +47,7 @@ public class Wfs3CollectionXml {
 
     @XmlElement(name = "Extent")
     public Wfs3ExtentXml getExtent() {
-        return new Wfs3ExtentXml(ogcApiCollection.getExtent());
+        return new Wfs3ExtentXml(ogcApiCollection.getExtent().orElse(null));
     }
 
     @XmlElement(name = "link", namespace = "http://www.w3.org/2005/Atom")
