@@ -40,7 +40,7 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
 
     @Override
     public String getPathPattern() {
-        return "^\\/?(?:conformance|collections(/\\w+)?)?$";
+        return "^\\/?(?:conformance|collections(/[\\w\\-]+)?)?$";
     }
 
     @Override

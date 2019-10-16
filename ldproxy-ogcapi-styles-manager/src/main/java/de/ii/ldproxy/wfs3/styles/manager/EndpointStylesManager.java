@@ -62,7 +62,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("styles")
             .addMethods(HttpMethods.POST, HttpMethods.PUT, HttpMethods.DELETE, HttpMethods.PATCH)
-            .subPathPattern("^/?(?:\\w*(?:/metadata)?)?$")
+            .subPathPattern("^/?(?:\\w+(?:/metadata)?)?$")
             .putSubPathsAndMethods("^/?$", Arrays.asList(new HttpMethods[]{HttpMethods.POST}))
             .putSubPathsAndMethods("^/?\\w+$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.DELETE}))
             .putSubPathsAndMethods("^/?\\w+/metadata$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.PATCH}))
@@ -148,7 +148,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
         String styleId = requestBodyJson.get("name")
                                         .asText();
 
-        Pattern styleNamePattern = Pattern.compile("[^a-z0-9\\-_]", Pattern.CASE_INSENSITIVE);
+        Pattern styleNamePattern = Pattern.compile("[^\\w]", Pattern.CASE_INSENSITIVE);
         Matcher styleNameMatcher = styleNamePattern.matcher(styleId);
         if (!isNewStyle(datasetId, styleId)) {
             throw new WebApplicationException(Response.Status.CONFLICT); // TODO
@@ -191,6 +191,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                              @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
+        checkStyleId(styleId);
 
         boolean newStyle = isNewStyle(dataset.getId(), styleId);
         String contentType = request.getContentType();
@@ -233,6 +234,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                                      @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
+        checkStyleId(styleId);
 
         boolean newStyle = isNewStyle(dataset.getId(), styleId);
         if (newStyle) {
@@ -269,6 +271,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                                        @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
+        checkStyleId(styleId);
 
         boolean newStyle = isNewStyle(dataset.getId(), styleId);
         if (newStyle) {
@@ -359,6 +362,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                                 @Context OgcApiDataset dataset) {
 
         checkAuthorization(dataset.getData(), optionalUser);
+        checkStyleId(styleId);
 
         deleteStyle(dataset.getId(), styleId);
 
@@ -372,6 +376,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
      * @param styleId     the id of the style, that should be deleted
      */
     private void deleteStyle(String datasetId, String styleId) {
+
         boolean styleFound = false;
         File apiDir = new File(stylesStore + File.separator + datasetId);
 
@@ -398,6 +403,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
      */
     private void putStyleDocument(String datasetId, String styleId, String fileExtension, byte[] payload) {
 
+        checkStyleId(styleId);
         String key = styleId + "." + fileExtension;
         File styleFile = new File(stylesStore + File.separator + datasetId + File.separator + styleId + "." + fileExtension);
 
@@ -505,6 +511,12 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
             // not a valid type, fall back to wildcard
             return MediaType.WILDCARD_TYPE;
         }
+    }
 
+    private static void checkStyleId(String styleId) {
+        if (!styleId.matches("\\w+")) {
+            throw new BadRequestException("Only character 0-9, A-Z, a-z and underscore are allowed in a style identifier. Found: "+styleId);
+
+        }
     }
 }

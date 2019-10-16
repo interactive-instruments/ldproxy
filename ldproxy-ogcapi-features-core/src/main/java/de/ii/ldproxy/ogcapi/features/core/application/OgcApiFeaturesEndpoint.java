@@ -44,7 +44,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/\\w+/items(?:/\\w+)?/?$")
+            .subPathPattern("^/[\\w\\-]+/items(?:/[^/\\s]+)?/?$")
             .build();
 
     private final OgcApiExtensionRegistry extensionRegistry;
@@ -66,7 +66,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
 
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
-        if (subPath.matches("^/\\w+/items(?:/\\w+)?/?$"))
+        if (subPath.matches("^/[\\w\\-]+/items(?:/[^/\\s]+)?/?$"))
             return extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
                                     .stream()
                                     .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))
@@ -89,14 +89,14 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                 .collect(Collectors.toSet()))
             .build();
 
-        if (subPath.matches("^/\\w+/items/?$")) {
+        if (subPath.matches("^/[\\w\\-]+/items/?$")) {
             // Features
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
                     .add("datetime", "bbox", "limit", "offset")
                     .addAll(parametersFromExtensions)
                     .build();
-        } else if (subPath.matches("^/\\w+/items/\\w+/?$")) {
+        } else if (subPath.matches("^/[\\w\\-]+/items/[^/\\s]+/?$")) {
             // Feature
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))

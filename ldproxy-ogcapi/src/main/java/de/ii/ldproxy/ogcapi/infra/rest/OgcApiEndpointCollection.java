@@ -34,7 +34,7 @@ public class OgcApiEndpointCollection implements OgcApiEndpointExtension {
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/\\w+/?$")
+            .subPathPattern("^/[\\w\\-]+/?$")
             .build();
 
     @Requires
@@ -53,7 +53,7 @@ public class OgcApiEndpointCollection implements OgcApiEndpointExtension {
 
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
-        if (subPath.matches("^/\\w+/?$"))
+        if (subPath.matches("^/[\\w\\-]+/?$"))
             return extensionRegistry.getExtensionsForType(CollectionsFormatExtension.class)
                                     .stream()
                                     .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))

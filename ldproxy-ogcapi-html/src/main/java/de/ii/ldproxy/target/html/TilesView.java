@@ -127,13 +127,11 @@ public class TilesView extends View {
     }
 
     public List<NavigationDTO> getFormats() {
-        List<NavigationDTO> x = links.stream()
+        return links.stream()
                 .filter(link -> Objects.equals(link.getRel(), "alternate"))
                 .sorted(Comparator.comparing(link -> link.getTypeLabel()
                         .toUpperCase()))
                 .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
                 .collect(Collectors.toList());
-
-        return x;
     }
 }

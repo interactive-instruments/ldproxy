@@ -69,7 +69,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     @Override
     public String getPathPattern() {
-        return "^/?(?:conformance|collections(?:/\\w+(?:/items(?:/\\w+)?)?)?)?$";
+        return "^/?(?:conformance|collections(?:/[\\w\\-]+(?:/items(?:/[^/\\s]+)?)?)?)?$";
     }
 
     @Override

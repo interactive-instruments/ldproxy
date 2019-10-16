@@ -47,7 +47,7 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
-        if (subPath.matches("^/\\w+/items/?$")) {
+        if (subPath.matches("^/[\\w\\-]+/items/?$")) {
             // Features
             Optional<FeatureTypeConfigurationOgcApi> ft = apiData.getFeatureTypes()
                     .values()
@@ -63,7 +63,7 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
                         .build();
             }
             return ImmutableSet.of();
-        } else if (subPath.matches("^/\\w+/items/\\w+/?$")) {
+        } else if (subPath.matches("^/[\\w\\-]+/items/[^/\\s]+/?$")) {
             // Feature
             return ImmutableSet.of();
         }

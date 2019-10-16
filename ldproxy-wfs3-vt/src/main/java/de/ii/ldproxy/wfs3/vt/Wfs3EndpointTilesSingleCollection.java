@@ -52,7 +52,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
-            .subPathPattern("^/?\\w+/tiles(?:/\\w+(?:/\\w+/\\w+/\\w+)?)?/?$")
+            .subPathPattern("^/?[[\\w\\-]\\-]+/tiles(?:/\\w+(?:/\\w+/\\w+/\\w+)?)?/?$")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .build();
 
@@ -83,7 +83,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
-        if (subPath.matches("^/?\\w+/tiles(?:/\\w+)?/?$"))
+        if (subPath.matches("^/?[\\w\\-]+/tiles(?:/\\w+)?/?$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.APPLICATION_JSON_TYPE)
@@ -91,7 +91,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.TEXT_HTML_TYPE)
                             .build());
-        else if (subPath.matches("^/?(?:\\w+)/tiles/(?:\\w+/\\w+/\\w+/\\w+)$"))
+        else if (subPath.matches("^/?(?:[\\w\\-]+)/tiles/(?:\\w+/\\w+/\\w+/\\w+)$"))
             // TODO: from tile format configuration
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
@@ -109,9 +109,9 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     @Override
     public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
-        if (subPath.matches("^/?\\w+/tiles(?:/\\w+)?/?$")) {
+        if (subPath.matches("^/?[\\w\\-]+/tiles(?:/\\w+)?/?$")) {
             return OgcApiEndpointExtension.super.getParameters(apiData, subPath);
-        } else if (subPath.matches("^/?(?:\\w+)/tiles/(?:\\w+/\\w+/\\w+/\\w+)$")) {
+        } else if (subPath.matches("^/?(?:[\\w\\-]+)/tiles/(?:\\w+/\\w+/\\w+/\\w+)$")) {
             ImmutableSet<String> parametersFromExtensions = new ImmutableSet.Builder<String>()
                     .addAll(wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)
                             .stream()

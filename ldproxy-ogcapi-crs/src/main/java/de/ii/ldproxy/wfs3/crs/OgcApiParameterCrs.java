@@ -46,10 +46,10 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
-        if (subPath.matches("^/\\w+/items/?$")) {
+        if (subPath.matches("^/[\\w\\-]+/items/?$")) {
             // Features
             return ImmutableSet.of("crs", "bbox-crs");
-        } else if (subPath.matches("^/\\w+/items/\\w+/?$")) {
+        } else if (subPath.matches("^/[\\w\\-]+/items/[^/\\s]+/?$")) {
             // Feature
             return ImmutableSet.of("crs");
         }

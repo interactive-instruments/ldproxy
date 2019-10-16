@@ -31,7 +31,7 @@ public class Wfs3OutputFormatJson implements CollectionsFormatExtension, CommonF
 
     @Override
     public String getPathPattern() {
-        return "^\\/?(?:conformance|collections(/\\w+)?)?$";
+        return "^\\/?(?:conformance|collections(/[\\w\\-]+)?)?$";
     }
 
     @Override
