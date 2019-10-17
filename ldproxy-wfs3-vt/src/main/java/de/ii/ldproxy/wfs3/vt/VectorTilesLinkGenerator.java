@@ -178,6 +178,15 @@ public class VectorTilesLinkGenerator {
                     .templated("true")
                     .build());
         }
+        builder.add(new ImmutableOgcApiLink.Builder()
+                .href(uriBuilder.copy()
+                        .clearParameters()
+                        .ensureNoTrailingSlash()
+                        .toString() + (tileMatrixSetId==null ? "" : "/"+tileMatrixSetId))
+                .rel("multitiles")
+                .type("application/geo+json")
+                .description("description")
+                .build());
 
         return builder.build();
     }
