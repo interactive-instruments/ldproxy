@@ -82,6 +82,11 @@ export default {
             //Tiles: FeatureTypeEditTiles
         }
     },
-    theme: customTheme
+    theme: customTheme,
+    user: {
+        sub: 'admin',
+        role: 'ADMIN',
+        dummy: true
+    }
 };
 
