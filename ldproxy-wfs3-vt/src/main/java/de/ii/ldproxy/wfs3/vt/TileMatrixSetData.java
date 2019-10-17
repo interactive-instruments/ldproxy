@@ -23,6 +23,8 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableTileMatrixSetData.Builder.class)
 public abstract class TileMatrixSetData {
 
+    // TODO need to merge the capabilities of TileMatrixSet and TileMatrixSetData
+
     public abstract String getIdentifier();
 
     public abstract Optional<String> getTitle();
