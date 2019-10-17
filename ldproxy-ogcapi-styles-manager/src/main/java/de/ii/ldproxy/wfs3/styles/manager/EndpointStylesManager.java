@@ -129,7 +129,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
      */
     @Path("/")
     @POST
-    @Consumes(StyleFormatMbStyles.MEDIA_TYPE_STRING)
+    @Consumes(StyleFormatMbStyle.MEDIA_TYPE_STRING)
     public Response postStyle(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
                               @Context OgcApiRequestContext ogcApiRequest, @Context HttpServletRequest request,
                               byte[] requestBody) {
@@ -137,7 +137,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
         checkAuthorization(api.getData(), optionalUser);
 
         String datasetId = api.getId();
-        StyleFormatExtension format = new StyleFormatMbStyles();
+        StyleFormatExtension format = new StyleFormatMbStyle();
 
         // TODO: update
         JsonNode requestBodyJson = validateRequestBodyJSON(requestBody);
@@ -185,7 +185,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
      */
     @Path("/{styleId}")
     @PUT
-    @Consumes({StyleFormatMbStyles.MEDIA_TYPE_STRING,StyleFormatSld10.MEDIA_TYPE_STRING,StyleFormatSld11.MEDIA_TYPE_STRING})
+    @Consumes({StyleFormatMbStyle.MEDIA_TYPE_STRING,StyleFormatSld10.MEDIA_TYPE_STRING,StyleFormatSld11.MEDIA_TYPE_STRING})
     public Response putStyle(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
                              @Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest,
                              @Context HttpServletRequest request, byte[] requestBody) {
@@ -201,7 +201,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
             MediaType formatMediaType = format.getMediaType().type();
             if (format.isEnabledForApi(dataset.getData()) && requestMediaType.isCompatible(formatMediaType)) {
 
-                if (format instanceof StyleFormatMbStyles) {
+                if (format instanceof StyleFormatMbStyle) {
                     JsonNode requestBodyJson = validateRequestBodyJSON(requestBody);
 
                     if (requestBodyJson == null || !validateRequestBody(requestBodyJson))
