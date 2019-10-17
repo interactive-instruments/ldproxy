@@ -14,6 +14,10 @@ import MappingEditGeneral from './components/presentational/MappingEditGeneral'
 import MappingEditGeoJson from './components/presentational/MappingEditGeoJson'
 import MappingEditHtml from './components/presentational/MappingEditHtml'
 import { customTheme } from './theme'
+import ServiceEditExtensions from './components/presentational/ServiceEditExtensions'
+import ServiceEditTiles from './components/presentational/ServiceEditTiles'
+import ServiceActionsOgcApi from './components/presentational/ServiceActionsOgcApi'
+import FeatureTypeEditTiles from './components/presentational/FeatureTypeEditTiles'
 
 export default {
     applicationName: 'ldproxy',
@@ -64,6 +68,18 @@ export default {
             'application/geo+json': MappingEditGeoJson,
             'application/ld+json': MappingEditHtml,
             'text/html': MappingEditHtml
+        },
+        ServiceActionsView: {
+            default: ServiceActionsOgcApi
+        }
+    },
+    extendableComponents: {
+        ServiceEdit: {
+            Api: ServiceEditExtensions,
+            Tiles: ServiceEditTiles
+        },
+        FeatureTypeEdit: {
+            //Tiles: FeatureTypeEditTiles
         }
     },
     theme: customTheme

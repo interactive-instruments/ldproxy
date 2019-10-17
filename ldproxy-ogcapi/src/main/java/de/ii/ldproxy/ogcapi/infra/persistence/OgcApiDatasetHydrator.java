@@ -97,6 +97,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Exception:", e);
                 }
+                throw e;
             }
 
         } catch (IllegalStateException e) {
