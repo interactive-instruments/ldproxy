@@ -16,7 +16,7 @@ export default class LeafletBboxSelect extends Component {
             //keepAspectRatio: true
             bounds: bounds
         });
-        this.bboxSelect.addTo(this.bundleContext.map);
+        this.bboxSelect.addTo(this.context.map);
 
         this.bboxSelect.on("change", this._updateBbox);
         this.bboxSelect.fire("change");
