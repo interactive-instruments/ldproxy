@@ -20,7 +20,7 @@ import javax.ws.rs.core.MediaType;
 @Component
 @Provides
 @Instantiate
-public class StyleFormatMbStyles implements ConformanceClass, StyleFormatExtension {
+public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtension {
 
     public static final String MEDIA_TYPE_STRING = "application/vnd.mapbox.style+json" ;
     static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
@@ -36,7 +36,9 @@ public class StyleFormatMbStyles implements ConformanceClass, StyleFormatExtensi
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        return getExtensionConfiguration(apiData, StylesConfiguration.class).map(StylesConfiguration::getMbStyleEnabled).orElse(false);
+        return getExtensionConfiguration(apiData, StylesConfiguration.class)
+                .map(StylesConfiguration::getMbStyleEnabled)
+                .orElse(false);
     }
 
     @Override
@@ -69,5 +71,5 @@ public class StyleFormatMbStyles implements ConformanceClass, StyleFormatExtensi
     @Override
     public String getTitle(OgcApiDatasetData datasetData, String styleId) {
         return "TODO";
-    }
+    } // TODO
 }
