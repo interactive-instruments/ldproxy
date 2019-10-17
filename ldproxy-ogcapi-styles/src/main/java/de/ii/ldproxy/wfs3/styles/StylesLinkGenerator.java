@@ -9,10 +9,12 @@ package de.ii.ldproxy.wfs3.styles;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
+import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -54,6 +56,7 @@ public class StylesLinkGenerator {
     public List<OgcApiLink> generateStyleLinks(URICustomizer uriBuilder,
                                                String styleId,
                                                List<OgcApiMediaType> mediaTypes,
+                                               boolean maps,
                                                I18n i18n,
                                                Optional<Locale> language) {
 
@@ -81,6 +84,20 @@ public class StylesLinkGenerator {
                         .rel("describedBy")
                         .description(i18n.get("styleMetadataLink",language))
                         .build());
+
+        if (maps && mediaTypes.stream()
+                              .filter(mediaType -> mediaType.matches(new MediaType("application","vnd.mapbox.style+json")))
+                              .count() > 0) {
+            builder.add(new ImmutableOgcApiLink.Builder()
+                    .href(uriBuilder.copy()
+                            .ensureLastPathSegments("styles", styleId, "map")
+                            .removeParameters("f")
+                            .toString()
+                    )
+                    .rel("map")
+                    .description(i18n.get("styleMapLink",language))
+                    .build());
+        }
 
         return builder.build();
     }

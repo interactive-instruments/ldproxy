@@ -7,9 +7,15 @@
  */
 package de.ii.ldproxy.resources;
 
+import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  * This class is responsible for generating the links to the resources.
@@ -31,8 +37,33 @@ public class ResourcesLinkGenerator {
                                 .ensureLastPathSegment(resourceId)
                                 .toString()
                         )
+                        .description(resourceId)
                         .rel("item");
 
         return builder.build();
     }
+
+    /**
+     * generates the links on the service landing page /{serviceId}?f=json
+     *
+     * @param uriBuilder the URI, split in host, path and query
+     * @return a list with links
+     */
+    public List<OgcApiLink> generateLandingPageLinks(URICustomizer uriBuilder,
+                                                     I18n i18n,
+                                                     Optional<Locale> language) {
+
+        return ImmutableList.<OgcApiLink>builder()
+                .add(new ImmutableOgcApiLink.Builder()
+                        .href(uriBuilder.copy()
+                                .ensureLastPathSegment("resources")
+                                .removeParameters("f")
+                                .toString())
+                        .rel("resources")
+                        .description(i18n.get("resourcesLink",language))
+                        .build())
+                .build();
+    }
+
+
 }

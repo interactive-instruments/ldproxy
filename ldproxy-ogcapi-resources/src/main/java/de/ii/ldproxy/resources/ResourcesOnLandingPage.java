@@ -5,10 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.wfs3.styles;
+package de.ii.ldproxy.resources;
 
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -23,29 +24,36 @@ import java.util.Optional;
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
 /**
- * add styles information to the landing page
+ * add resources link to the landing page
  *
  */
 @Component
 @Provides
 @Instantiate
-public class StylesOnLandingPage implements OgcApiLandingPageExtension {
+public class ResourcesOnLandingPage implements OgcApiLandingPageExtension {
 
     @Requires
     I18n i18n;
 
-    private final File stylesStore;
+    private final File resourcesStore;
 
-    public StylesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
-        this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
-        if (!stylesStore.exists()) {
-            stylesStore.mkdirs();
+    public ResourcesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
+        this.resourcesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "resources");
+        if (!resourcesStore.exists()) {
+            resourcesStore.mkdirs();
         }
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class);
+        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+
+        if (stylesExtension.isPresent() &&
+                stylesExtension.get()
+                        .getResourcesEnabled()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -60,13 +68,13 @@ public class StylesOnLandingPage implements OgcApiLandingPageExtension {
             return landingPageBuilder;
         }
 
-        final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
+        final ResourcesLinkGenerator linkGenerator = new ResourcesLinkGenerator();
 
-        List<OgcApiLink> ogcApiLinks = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
+        List<OgcApiLink> ogcApiLinks = linkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
         landingPageBuilder.addAllLinks(ogcApiLinks);
 
         final String datasetId = apiData.getId();
-        File apiDir = new File(stylesStore + File.separator + datasetId);
+        File apiDir = new File(resourcesStore + File.separator + datasetId);
         if (!apiDir.exists()) {
             apiDir.mkdirs();
         }

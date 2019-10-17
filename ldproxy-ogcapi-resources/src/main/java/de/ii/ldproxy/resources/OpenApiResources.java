@@ -98,7 +98,7 @@ public class OpenApiResources implements OpenApiExtension {
             openAPI.getComponents()
                    .addParameters("f-resources", fResources);
 
-            description = "the Resources resource";
+            description = "the Resource resource";
             openAPI.getPaths()
                    .addPathItem("/resources", new PathItem().description(description));
             PathItem pathItemResources = openAPI.getPaths()

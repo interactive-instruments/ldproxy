@@ -7,9 +7,10 @@
  */
 package de.ii.ldproxy.resources;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteSource;
+import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
@@ -27,8 +28,6 @@ import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -41,6 +40,9 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Provides
 @Instantiate
 public class EndpointResources implements OgcApiEndpointExtension, ConformanceClass {
+
+    @Requires
+    I18n i18n;
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("resources")
@@ -75,6 +77,9 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.APPLICATION_JSON_TYPE)
+                            .build(),
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(MediaType.TEXT_HTML_TYPE)
                             .build());
         else if (subPath.matches("^/?[^/]+$"))
             return ImmutableSet.of(
@@ -118,33 +123,44 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
      */
     @Path("/")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getResources(@Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest) {
+    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
+    public Response getResources(@Context OgcApiDataset api, @Context OgcApiRequestContext requestContext) {
         final ResourcesLinkGenerator resourcesLinkGenerator = new ResourcesLinkGenerator();
 
-        final String datasetId = dataset.getId();
-        File apiDir = new File(resourcesStore + File.separator + datasetId);
+        final String apiId = api.getId();
+        File apiDir = new File(resourcesStore + File.separator + apiId);
         if (!apiDir.exists()) {
             apiDir.mkdirs();
         }
 
-        List<Map<String, Object>> resources = Arrays.stream(apiDir.listFiles())
+        Resources resources = ImmutableResources.builder()
+            .resources(
+                Arrays.stream(apiDir.listFiles())
                 .filter(file -> !file.isHidden())
                 .map(File::getName)
                 .sorted()
-                .map(filename -> ImmutableMap.<String, Object>builder()
-                                .put("id", filename)
-                                .put("link", resourcesLinkGenerator.generateResourceLink(ogcApiRequest.getUriCustomizer(), filename))
-                                .build())
-                                .collect(Collectors.toList());
+                .map(filename -> ImmutableResource.builder()
+                        .id(filename)
+                        .link(resourcesLinkGenerator.generateResourceLink(requestContext.getUriCustomizer(), filename))
+                        .build())
+                .collect(Collectors.toList()))
+            .links(new DefaultLinksGenerator()
+                    .generateLinks(requestContext.getUriCustomizer(),
+                            requestContext.getMediaType(),
+                            requestContext.getAlternateMediaTypes(),
+                            i18n,
+                            requestContext.getLanguage()))
+            .build();
 
-        if (resources.size() == 0) {
-            return Response.ok("{\"resources\":[]}")
-                    .type(MediaType.APPLICATION_JSON_TYPE)
-                    .build();
+        if (requestContext.getMediaType().matches(MediaType.TEXT_HTML_TYPE)) {
+            Optional<ResourcesFormatExtension> outputFormatHtml = api.getOutputFormat(ResourcesFormatExtension.class, requestContext.getMediaType(), "/resources");
+            if (outputFormatHtml.isPresent())
+                return outputFormatHtml.get().getResourcesResponse(resources, api, requestContext);
+
+            throw new NotAcceptableException();
         }
 
-        return Response.ok(ImmutableMap.of("resources", resources))
+        return Response.ok(resources)
                        .type(MediaType.APPLICATION_JSON_TYPE)
                        .build();
     }

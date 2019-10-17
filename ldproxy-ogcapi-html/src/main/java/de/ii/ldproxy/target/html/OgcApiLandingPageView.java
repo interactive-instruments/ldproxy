@@ -128,7 +128,7 @@ public class OgcApiLandingPageView extends View {
     public List<OgcApiLink> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|data|tiles|service-desc|service-doc)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|data|tiles|styles|service-desc|service-doc)$"))
                 .collect(Collectors.toList());
     }
 
@@ -143,6 +143,13 @@ public class OgcApiLandingPageView extends View {
         return links
                 .stream()
                 .filter(link -> Objects.equals(link.getRel(), "tiles"))
+                .findFirst();
+    }
+
+    public Optional<OgcApiLink> getStyles() {
+        return links
+                .stream()
+                .filter(link -> Objects.equals(link.getRel(), "styles"))
                 .findFirst();
     }
 

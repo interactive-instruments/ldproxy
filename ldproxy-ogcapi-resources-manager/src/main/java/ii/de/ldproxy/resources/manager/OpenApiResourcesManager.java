@@ -36,7 +36,7 @@ import java.util.Optional;
 @Instantiate
 public class OpenApiResourcesManager implements OpenApiExtension {
 
-    private static final String TAG = "Manage Resources";
+    private static final String TAG = "Manage Resource";
 
     @Override
     public int getSortPriority() {

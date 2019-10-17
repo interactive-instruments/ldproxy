@@ -143,6 +143,9 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
             apiDir.mkdirs();
         }
 
+        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(api.getData(), StylesConfiguration.class);
+        boolean maps = stylesExtension.isPresent() && stylesExtension.get()
+                                                                     .getMapsEnabled();
         Styles styles = ImmutableStyles.builder()
                 .styles(
                         Arrays.stream(apiDir.listFiles())
@@ -158,6 +161,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
                                                                          getMediaTypes(api.getData(),
                                                                                  apiDir,
                                                                                  Files.getNameWithoutExtension(filename)),
+                                                                         maps,
                                                                          i18n,
                                                                          requestContext.getLanguage()))
                                     .build())

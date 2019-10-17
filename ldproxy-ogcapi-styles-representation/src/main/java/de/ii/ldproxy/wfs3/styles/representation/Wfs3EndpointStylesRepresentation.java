@@ -8,14 +8,7 @@
 package de.ii.ldproxy.wfs3.styles.representation;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.server.CoreServerConfig;
@@ -28,7 +21,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -37,9 +29,9 @@ import java.util.Optional;
 public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension {
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("maps")
+            .apiEntrypoint("styles")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/?\\w+$")
+            .subPathPattern("^/?\\w+/map$")
             .build();
     private static final ImmutableSet<OgcApiMediaType> API_MEDIA_TYPES = ImmutableSet.of(
             new ImmutableOgcApiMediaType.Builder()
@@ -59,7 +51,7 @@ public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension
 
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
-        if (subPath.matches("^/?\\w+$"))
+        if (subPath.matches("^/?\\w+/map$"))
             return API_MEDIA_TYPES;
 
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
@@ -86,7 +78,7 @@ public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension
      * @param wfs3Request the request
      * @return
      */
-    @Path("/{styleId}")
+    @Path("/{styleId}/map")
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response getStyles(@Context OgcApiDataset service, @PathParam("styleId") String styleId, @Context OgcApiRequestContext wfs3Request) {
@@ -97,18 +89,12 @@ public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension
             throw new NotFoundException();
         }
 
-        KeyValueStore stylesStore = keyValueStore.getChildStore("styles")
-                                                 .getChildStore(service.getId());
-        List<String> styles = stylesStore.getKeys();
-        // TODO EndpointStyles.getStyleDocument(stylesStore, styleId, "mbs");
-
         String prefix = coreServerConfig.getExternalUrl();
 
         String styleUri = prefix + "/" + service.getData()
-                                                .getId() + "/" + "styles" + "/" + styleId;
+                                                .getId() + "/" + "styles" + "/" + styleId + "?f=mbs";
 
-        StyleView styleView = new StyleView(styleUri, service.getData()
-                                                             .getId());
+        StyleView styleView = new StyleView(styleUri, service, styleId);
 
         return Response.ok()
                        .entity(styleView)

@@ -14,6 +14,7 @@ dependencies {
     provided project(":ldproxy-wfs3-around-relations")
     provided project(":ldproxy-string-templates")
     provided project(":ldproxy-ogcapi-styles")
+    provided project(":ldproxy-ogcapi-resources")
     provided project(":ldproxy-ogcapi-oas30")
     provided project(":ldproxy-wfs3-vt")
 

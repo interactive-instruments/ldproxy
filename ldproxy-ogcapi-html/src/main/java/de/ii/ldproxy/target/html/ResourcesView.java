@@ -13,17 +13,17 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.wfs3.styles.StyleEntry;
-import de.ii.ldproxy.wfs3.styles.Styles;
+import de.ii.ldproxy.resources.Resource;
+import de.ii.ldproxy.resources.Resources;
 import io.dropwizard.views.View;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class StylesView extends View {
+public class ResourcesView extends View {
     private final OgcApiDatasetData apiData;
     private final List<NavigationDTO> breadCrumbs;
-    private List<StyleEntry> styleEntries;
+    private List<Resource> resourceList;
     public final HtmlConfig htmlConfig;
     public List<OgcApiLink> links;
     public String urlPrefix;
@@ -31,28 +31,27 @@ public class StylesView extends View {
     public String description;
     public String none;
 
-    public StylesView(OgcApiDatasetData apiData,
-                      Styles styles,
-                      List<NavigationDTO> breadCrumbs,
-                      String staticUrlPrefix,
-                      HtmlConfig htmlConfig,
-                      URICustomizer uriCustomizer,
-                      I18n i18n,
-                      Optional<Locale> language) {
-        super("styles.mustache", Charsets.UTF_8);
+    public ResourcesView(OgcApiDatasetData apiData,
+                         Resources resources,
+                         List<NavigationDTO> breadCrumbs,
+                         String staticUrlPrefix,
+                         HtmlConfig htmlConfig,
+                         URICustomizer uriCustomizer,
+                         I18n i18n,
+                         Optional<Locale> language) {
+        super("resources.mustache", Charsets.UTF_8);
 
         // TODO this is quick and dirty - the view needs to be improved
 
-        this.styleEntries = styles.getStyles();
-        this.links = styles.getLinks();
+        this.resourceList = resources.getResources();
+        this.links = resources.getLinks();
         this.breadCrumbs = breadCrumbs;
         this.urlPrefix = staticUrlPrefix;
         this.htmlConfig = htmlConfig;
 
-        this.title = i18n.get("stylesTitle", language);
-        this.description = i18n.get("stylesDescription", language);
+        this.title = i18n.get("resourcesTitle", language);
+        this.description = i18n.get("resourcesDescription", language);
         this.none = i18n.get ("none", language);
-
 
         this.apiData = apiData;
     }
@@ -61,8 +60,8 @@ public class StylesView extends View {
         return breadCrumbs;
     }
 
-    public List<StyleEntry> getStyles() {
-        return styleEntries;
+    public List<Resource> getResources() {
+        return resourceList;
     }
 
     public List<NavigationDTO> getFormats() {
