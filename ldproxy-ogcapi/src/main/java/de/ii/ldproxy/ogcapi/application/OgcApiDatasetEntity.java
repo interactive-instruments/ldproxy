@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ImmutableDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OutputFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.Wfs3DatasetMetadataExtension;
@@ -45,6 +46,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -124,7 +126,7 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
     }
 
     private List<Wfs3DatasetMetadataExtension> getDatasetExtenders() {
-        return extensionRegistry.getExtensionsForType(Wfs3DatasetMetadataExtension.class);
+        return extensionRegistry.getExtensionsForType(Wfs3DatasetMetadataExtension.class).stream().sorted(Comparator.comparingInt(OgcApiExtension::getSortPriority)).collect(Collectors.toList());
     }
 
     private List<ConformanceClass> getConformanceClasses() {

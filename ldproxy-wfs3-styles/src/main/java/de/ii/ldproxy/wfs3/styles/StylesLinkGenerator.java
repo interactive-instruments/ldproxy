@@ -12,7 +12,6 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableWfs3Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
-import de.ii.ldproxy.wfs3.Wfs3MediaTypes;
 
 import java.util.List;
 

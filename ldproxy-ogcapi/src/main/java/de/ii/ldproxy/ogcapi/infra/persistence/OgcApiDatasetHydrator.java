@@ -95,6 +95,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
 
             } catch (Throwable e) {
                 LOGGER.error("CRS transformer could not be created"/*, e*/);
+                throw e;
             }
 
 

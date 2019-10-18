@@ -16,6 +16,10 @@ public interface OgcApiExtension {
 
     boolean isEnabledForDataset(OgcApiDatasetData dataset);
 
+    default int getSortPriority() {
+        return 0;
+    }
+
     default <T extends ExtensionConfiguration> Optional<T> getExtensionConfiguration(
             ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
 

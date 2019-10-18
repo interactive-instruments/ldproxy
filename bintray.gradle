@@ -9,7 +9,8 @@ allprojects { p ->
             key = project.bintrayApiKey
             publications = p.extensions.publishing.publications.collect { it.name }
             publish = true
-            dryRun = true
+            override = true
+//            dryRun = true
             pkg {
                 repo = 'maven'
                 name = p.name

@@ -14,6 +14,7 @@ import de.ii.xtraplatform.service.api.Service;
 import de.ii.xtraplatform.service.api.ServiceData;
 import de.ii.xtraplatform.service.api.ServiceListingProvider;
 import org.apache.felix.ipojo.annotations.Bind;
+import org.apache.felix.ipojo.annotations.BindingPolicy;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -49,7 +50,7 @@ public class Wfs3ServiceListingProvider implements ServiceListingProvider {
     @Requires
     private HtmlConfig htmlConfig;
 
-    @Requires
+    @Requires(policy= BindingPolicy.DYNAMIC_PRIORITY)
     private I18n i18n;
 
     // TODO: move externalUri handling to XtraplatformRequestContext in ServicesResource

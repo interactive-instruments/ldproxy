@@ -1,10 +1,12 @@
 
-version = '1.4.1'
+version = '1.4.2'
 
 dependencies {
     provided project(":ldproxy-wfs3-api")
     provided project(":ldproxy-ogcapi")
     provided project(":ldproxy-wfs3-core")
+
+    provided project(":ldproxy-wfs3-styles")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'

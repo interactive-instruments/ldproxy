@@ -28,6 +28,7 @@ import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
+import org.apache.felix.ipojo.annotations.BindingPolicy;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -80,7 +81,7 @@ public class Wfs3OutputFormatHtml implements ConformanceClass, Wfs3OutputFormatE
     @Requires
     private KeyValueStore keyValueStore;
 
-    @Requires
+    @Requires(policy= BindingPolicy.DYNAMIC_PRIORITY)
     private I18n i18n;
 
     @Override

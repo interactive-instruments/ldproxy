@@ -49,7 +49,7 @@ public class Wfs3DatasetView extends View {
 
     public Wfs3DatasetView(OgcApiDatasetData datasetData, Dataset wfs3Dataset,
                            final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig) {
-        super("service.mustache", Charsets.UTF_8);
+        super("/templates/service.mustache", Charsets.UTF_8);
         this.wfs3Dataset = wfs3Dataset;
         this.breadCrumbs = breadCrumbs;
         this.urlPrefix = urlPrefix;
@@ -90,7 +90,8 @@ public class Wfs3DatasetView extends View {
                 .title(wfs3Dataset.getTitle())
                 .description(wfs3Dataset.getDescription())
                 .addAllLinks(wfs3Dataset.getLinks())
-                                                                         .addAllCrs(wfs3Dataset.getCrs());
+                .addAllCrs(wfs3Dataset.getCrs())
+                .sectionsFirst(wfs3Dataset.getSectionsFirst());
 
         List<Map<String, Object>> collect = wfs3Dataset.getSections()
                                                        .stream()
@@ -134,7 +135,7 @@ public class Wfs3DatasetView extends View {
         return wfs3Dataset.getLinks()
                           .stream()
                           .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "service-doc") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
-                                                                                                                                                                .toString()))
+                                                                                                                                                                    .toString()))
                           .map(Wfs3Link::getHref)
                           .findFirst()
                           .orElse("");
@@ -151,7 +152,7 @@ public class Wfs3DatasetView extends View {
                 .flatMap(wfs3Collection -> wfs3Collection.getLinks()
                                                          .stream())
                 .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "items") && !Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
-                                                                                                                                                    .toString()))
+                                                                                                                                                     .toString()))
                 .map(wfs3Link -> new Distribution(wfs3Link.getTitle(), wfs3Link.getType(), wfs3Link.getHref()))
                 .collect(Collectors.toList());
     }
@@ -219,7 +220,7 @@ public class Wfs3DatasetView extends View {
             return this.getLinks()
                        .stream()
                        .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "items") && Objects.equals(wfs3Link.getType(), Wfs3OutputFormatHtml.MEDIA_TYPE.main()
-                                                                                                                                                          .toString()))
+                                                                                                                                                           .toString()))
                        .map(Wfs3Link::getHref)
                        .findFirst()
                        .orElse("");

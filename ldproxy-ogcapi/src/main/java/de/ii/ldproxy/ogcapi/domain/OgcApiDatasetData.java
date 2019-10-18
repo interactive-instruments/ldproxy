@@ -80,6 +80,16 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
                                    .getLoading();
     }
 
+    @Override
+    @Value.Derived
+    public boolean hasError() {
+        //TODO: not set?
+        return Objects.nonNull(getFeatureProvider().getMappingStatus())
+                && getFeatureProvider().getMappingStatus().getEnabled()
+                && !getFeatureProvider().getMappingStatus().getSupported()
+                && Objects.nonNull(getFeatureProvider().getMappingStatus().getErrorMessage());
+    }
+
     public boolean isFeatureTypeEnabled(final String featureType) {
         return getFeatureProvider().isFeatureTypeEnabled(featureType);
     }

@@ -15,6 +15,8 @@ import io.swagger.v3.oas.models.OpenAPI;
  * @author zahnen
  */
 public interface Wfs3OpenApiExtension extends OgcApiExtension {
+
+    @Override
     int getSortPriority();
 
     OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData);

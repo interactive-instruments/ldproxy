@@ -24,6 +24,8 @@ import de.ii.ldproxy.wfs3.api.TargetMappingRefiner;
 import de.ii.ldproxy.wfs3.api.Wfs3CapabilityExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3OutputFormatExtension;
 import de.ii.ldproxy.wfs3.api.Wfs3StyleGeneratorExtension;
+import de.ii.ldproxy.wfs3.styles.StylesStore;
+import de.ii.xtraplatform.api.exceptions.BadRequest;
 import de.ii.xtraplatform.crs.api.DefaultCoordinatesWriter;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.crs.api.JsonCoordinateFormatter;
@@ -54,8 +56,6 @@ import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_GEOMETRY_TYPE;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
-import de.ii.xtraplatform.kvstore.api.KeyValueStore;
-import de.ii.xtraplatform.kvstore.api.WriteTransaction;
 import de.ii.xtraplatform.scheduler.api.Scheduler;
 import de.ii.xtraplatform.scheduler.api.Task;
 import de.ii.xtraplatform.scheduler.api.TaskContext;
@@ -87,6 +87,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -120,7 +121,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
     private final EntityDataStore<ServiceData> serviceRepository;
 
     @Requires
-    private KeyValueStore rootKeyValueStore;
+    private StylesStore stylesStore;
 
     private final TaskQueue taskQueue;
 
@@ -211,7 +212,10 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
             if (e instanceof WebApplicationException) {
                 throw e;
             }
-            throw new IllegalArgumentException(e);
+            if (e instanceof CompletionException) {
+                throw new IllegalStateException(e.getCause());
+            }
+            throw new IllegalStateException(e);
         }
     }
 
@@ -328,12 +332,15 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
             boolean needsRefinement = data.getFeatureProvider()
                                           .getMappings()
-                                          .get(featureType.getId())
-                                          .getMappingsWithPathAsList()
-                                          .values()
-                                          .stream()
-                                          .anyMatch(sourcePathMapping -> mappingRefiners.stream()
-                                                                                        .anyMatch(targetMappingRefiner -> targetMappingRefiner.needsRefinement(sourcePathMapping)));
+                                          .containsKey(featureType.getId()) &&
+                    data.getFeatureProvider()
+                        .getMappings()
+                        .get(featureType.getId())
+                        .getMappingsWithPathAsList()
+                        .values()
+                        .stream()
+                        .anyMatch(sourcePathMapping -> mappingRefiners.stream()
+                                                                      .anyMatch(targetMappingRefiner -> targetMappingRefiner.needsRefinement(sourcePathMapping)));
             if (needsRefinement) {
                 return true;
             }
@@ -409,9 +416,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
             serviceRepository.put(wfs3Service.getId(), updated);
 
             //TODO: generate GSFS styles
-            KeyValueStore stylesStore = rootKeyValueStore.getChildStore("styles")
-                                                         .getChildStore(wfs3Service.getData()
-                                                                                   .getId());
+            String datasetId = wfs3Service.getId();
 
             for (Wfs3StyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3StyleGeneratorExtension.class)) {
                 int i = 0;
@@ -422,14 +427,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
                     if (!Strings.isNullOrEmpty(style)) {
                         String styleId = "gsfs_" + featureTypeConfiguration.getId();
-                        WriteTransaction<String> writeTransaction = stylesStore.openWriteTransaction(styleId);
-                        try {
-                            writeTransaction.write(style);
-                            writeTransaction.execute();
-                            writeTransaction.commit();
-                        } catch (IOException e) {
-                            writeTransaction.rollback();
-                        }
+                        stylesStore.put(styleId, style.getBytes(), datasetId);
                     }
                 }
             }
@@ -581,9 +579,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                             }
 
                             //TODO: use StylesStore
-                            KeyValueStore stylesStore = rootKeyValueStore.getChildStore("styles")
-                                                                         .getChildStore(wfs3Service.getData()
-                                                                                                   .getId());
+                            String datasetId = wfs3Service.getId();
 
                             for (Wfs3StyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3StyleGeneratorExtension.class)) {
 
@@ -591,14 +587,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
                                 if (!Strings.isNullOrEmpty(style)) {
                                     String styleId = "gsfs_" + featureTypeConfigurationOgcApi.getId();
-                                    WriteTransaction<String> writeTransaction = stylesStore.openWriteTransaction(styleId);
-                                    try {
-                                        writeTransaction.write(style);
-                                        writeTransaction.execute();
-                                        writeTransaction.commit();
-                                    } catch (IOException e) {
-                                        writeTransaction.rollback();
-                                    }
+                                    stylesStore.put(styleId, style.getBytes(), datasetId);
                                 }
                             }
 
