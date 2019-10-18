@@ -165,7 +165,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
 
         return multitileGenerator.getMultitiles(tileMatrixSetId, bboxParam, scaleDenominatorParam, multiTileType,
-                                                wfs3Request.getUriCustomizer());
+                                                wfs3Request.getUriCustomizer(), crsTransformation);
     }
 
     /**
