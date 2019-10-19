@@ -55,10 +55,12 @@ const tilesExt = props => props.capabilities.find(ext => ext.extensionType === '
             ) : true,
         formatMvtEnabled: () => null,
 
-        maxZoomLevel: (props) => tilesExt(props) && tilesExt(props).zoomLevels ? tilesExt(props).zoomLevels.default.max : 22,
-        minZoomLevel: (props) => tilesExt(props) && tilesExt(props).zoomLevels ? tilesExt(props).zoomLevels.default.min : 0,
-        maxSeeding: (props) => tilesExt(props) && tilesExt(props).seeding ? tilesExt(props).seeding.default.max : 0,
-        minSeeding: (props) => tilesExt(props) && tilesExt(props).seeding ? tilesExt(props).seeding.default.min : 0,
+        // TODO needs to be adaptable to other TileMatrixSets
+        // TODO Default seeding should be no seeding, not seeding level 0
+        maxZoomLevel: (props) => tilesExt(props) && tilesExt(props).zoomLevels ? tilesExt(props).zoomLevels.WebMercatorQuad.max : 22,
+        minZoomLevel: (props) => tilesExt(props) && tilesExt(props).zoomLevels ? tilesExt(props).zoomLevels.WebMercatorQuad.min : 0,
+        maxSeeding: (props) => tilesExt(props) && tilesExt(props).seeding ? tilesExt(props).seeding.WebMercatorQuad.max : 0,
+        minSeeding: (props) => tilesExt(props) && tilesExt(props).seeding ? tilesExt(props).seeding.WebMercatorQuad.min : 0,
     }
 })
 

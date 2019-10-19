@@ -91,7 +91,8 @@ class VectorTile {
         this.collectionId = collectionId;
 
         // get the Tile Matrix Set
-        if (tileMatrixSetId.equalsIgnoreCase("WebMercatorQuad")) {
+        // TODO temporary fix, because seeding still uses a fixed value of "default"
+        if (tileMatrixSetId.equalsIgnoreCase("WebMercatorQuad") || tileMatrixSetId.equalsIgnoreCase("default")) {
             tileMatrixSet = new WebMercatorQuad();
         } else {
             throw new NotFoundException();

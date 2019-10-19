@@ -244,6 +244,10 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                      .orElseThrow(NoSuchElementException::new);
         /*Comupation end*/
 
+        // TODO temporary fix to avoid seeding when the default by the manager (min=0, max=0) is detected
+        if (minZoomDataset==0 && maxZoomDataset==0)
+            return;
+
         /*Begin seeding*/
         for (int z = minZoomDataset; z <= maxZoomDataset; z++) {
 
