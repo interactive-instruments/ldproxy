@@ -8,6 +8,7 @@
 package de.ii.ldproxy.admin.rest;
 
 import de.ii.ldproxy.codelists.CodelistData;
+import de.ii.ldproxy.codelists.CodelistImporter;
 import de.ii.xtraplatform.api.exceptions.BadRequest;
 import de.ii.xtraplatform.entity.api.EntityData;
 import de.ii.xtraplatform.event.store.EntityDataStore;
@@ -47,9 +48,12 @@ public class CodelistEndpoint implements Endpoint {
     private static final Logger LOGGER = LoggerFactory.getLogger(CodelistEndpoint.class);
 
     private final EntityDataStore<CodelistData> codelistRepository;
+    private final CodelistImporter codelistImporter;
 
-    CodelistEndpoint(@Requires EntityDataStore<EntityData> entityRepository) {
+    CodelistEndpoint(@Requires EntityDataStore<EntityData> entityRepository,
+                     @Requires CodelistImporter codelistImporter) {
         this.codelistRepository = entityRepository.forType(CodelistData.class);
+        this.codelistImporter = codelistImporter;
     }
 
     @GET
@@ -70,24 +74,22 @@ public class CodelistEndpoint implements Endpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @CacheControl(noCache = true)
     public CodelistData addCodelist(/*@Auth(minRole = Role.PUBLISHER) AuthenticatedUser user,*/
-            Map<String, Object> request) {
+            Map<String, String> request) {
 
-        if (!request.containsKey("id")) {
-            throw new BadRequest("No id given");
+        CodelistData codelistData;
+        try {
+            codelistData = codelistImporter.generate(request);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequest();
         }
 
-        String id = (String) request.get("id");
 
-        if (codelistRepository.has(id)) {
-            throw new BadRequest("A codelist with id '" + id + "' already exists");
+        if (codelistRepository.has(codelistData.getId())) {
+            throw new BadRequest("A codelist with id '" + codelistData.getId() + "' already exists");
         }
 
         try {
-            //TODO: codelist generator
-            CodelistData codelistData = null;// codelistRepository.generateEntity(request);
-            //throw BadRequest
-
-            CodelistData added = codelistRepository.put(id, codelistData)
+            CodelistData added = codelistRepository.put(codelistData.getId(), codelistData)
                                                    .get();
 
             return added;

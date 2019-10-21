@@ -68,11 +68,8 @@ export default class CodelistIndex extends Component {
         return (
             <div>
                 <Box>
-                    <Header size='large' pad={{ horizontal: 'medium' }}>
-                        <Text weight='bold'>
-                            {navControl}
-                            <span>Codelists</span>
-                        </Text>
+                    <Header justify="start" size='large' pad={{ horizontal: 'medium' }}>
+                        <Text size="large" weight={500}>Codelists</Text>
                         <Anchor icon={<AddIcon />} path={{ pathname: '/codelists/add' }} title={`Add codelist`} />
                     </Header>
                     <Box as='section'>
@@ -81,7 +78,8 @@ export default class CodelistIndex extends Component {
                                 <ListItem key={key}
                                     pad={{ vertical: 'none' }}
                                     separator={index === 0 ? 'horizontal' : 'bottom'}
-                                    onClick={() => showCodelist(key)}>
+                                    onClick={() => showCodelist(key)}
+                                    style={{ cursor: 'pointer' }}>
                                     <Box direction='row' size="medium">
                                         <Box pad='small'>
                                             {codelists[key].label || codelists[key].id}
