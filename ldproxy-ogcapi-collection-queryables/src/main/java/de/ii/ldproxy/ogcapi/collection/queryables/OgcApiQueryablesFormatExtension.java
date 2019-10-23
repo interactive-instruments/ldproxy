@@ -8,6 +8,10 @@
 package de.ii.ldproxy.ogcapi.collection.queryables;
 
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+
+import javax.ws.rs.core.Response;
 
 public interface OgcApiQueryablesFormatExtension extends FormatExtension {
 
@@ -15,4 +19,5 @@ public interface OgcApiQueryablesFormatExtension extends FormatExtension {
         return "^\\/?collections\\/[^\\/]+\\/queryables/?$";
     }
 
+    Response getResponse(Queryables queryables, String collectionId, OgcApiDataset api, OgcApiRequestContext requestContext);
 }

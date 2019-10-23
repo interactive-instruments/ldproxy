@@ -18,7 +18,7 @@ import javax.ws.rs.core.Response;
 @Component
 @Provides
 @Instantiate
-public class OgcApiQueryablesJson implements OgcApiQueryablesFormatExtension {
+public class OgcApiQueryablesHtml implements OgcApiQueryablesFormatExtension {
 
     public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(new MediaType("application", "json"))

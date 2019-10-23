@@ -111,7 +111,7 @@ public class OgcApiCollectionView extends View {
 
         this.datasetData = datasetData;
 
-        this.itemTypeTitle = i18n.get("itemType", language);
+        this.itemTypeTitle = i18n.get("itemTypeTitle", language);
         this.dataTitle = i18n.get("dataTitle", language);
         this.licenseTitle = i18n.get("licenseTitle", language);
         this.spatialExtentTitle = i18n.get("spatialExtentTitle", language);

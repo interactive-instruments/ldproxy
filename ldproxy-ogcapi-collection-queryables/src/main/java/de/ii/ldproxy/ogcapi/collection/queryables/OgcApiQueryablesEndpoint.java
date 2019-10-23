@@ -19,21 +19,15 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 @Provides
 @Instantiate
-public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension {
+public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiQueryablesEndpoint.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
@@ -69,6 +63,11 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension {
     }
 
     @Override
+    public String getConformanceClass() {
+        return "http://www.opengis.net/t15/opf-styles-1/1.0/conf/queryables";
+    }
+
+    @Override
     public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
@@ -92,8 +91,14 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension {
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
+    @Override
+    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+        return isExtensionEnabled(apiData, QueryablesConfiguration.class);
+    }
+
     @GET
     @Path("/{collectionId}/queryables")
+    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getQueryables(@Auth Optional<User> optionalUser,
                              @Context OgcApiDataset api,
                              @Context OgcApiRequestContext requestContext,

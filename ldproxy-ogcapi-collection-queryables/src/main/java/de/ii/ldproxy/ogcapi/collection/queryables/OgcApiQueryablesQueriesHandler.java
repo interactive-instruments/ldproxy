@@ -156,26 +156,30 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
         queryables.links(links);
 
-        return response(queryables.build(),
-                        requestContext.getMediaType(),
-                        requestContext.getLanguage(),
-                        queryInput.getIncludeLinkHeader()? links : null);
+        Optional<OgcApiQueryablesFormatExtension> outputFormatExtension = api.getOutputFormat(
+                OgcApiQueryablesFormatExtension.class,
+                requestContext.getMediaType(),
+                "/collections/"+collectionId+"/queryables");
+
+        if (outputFormatExtension.isPresent()) {
+            Response queryablesResponse = outputFormatExtension.get().getResponse(queryables.build(), collectionId, api, requestContext);
+
+            Response.ResponseBuilder response = Response.ok()
+                    .entity(queryablesResponse.getEntity())
+                    .type(requestContext
+                            .getMediaType()
+                            .type());
+
+            Optional<Locale> language = requestContext.getLanguage();
+            if (language.isPresent())
+                response.language(language.get());
+
+            if (queryInput.getIncludeLinkHeader() && links != null)
+                links.stream().forEach(link -> response.links(link.getLink()));
+
+            return response.build();
+        }
+
+        throw new NotAcceptableException();
     }
-
-    private Response response(Object entity, OgcApiMediaType mediaType, Optional<Locale> language, List<OgcApiLink> links) {
-        Response.ResponseBuilder response = Response.ok()
-                .entity(entity);
-
-        if (mediaType != null)
-            response.type(mediaType.type().toString());
-
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (links != null)
-            links.stream().forEach(link -> response.links(link.getLink()));
-
-        return response.build();
-    }
-
 }

@@ -19,6 +19,6 @@ public abstract class QueryablesConfiguration implements ExtensionConfiguration 
     @Value.Default
     @Override
     public boolean getEnabled() {
-        return true;
+        return false;
     }
 }
