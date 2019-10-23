@@ -177,7 +177,7 @@ public class OgcApiLandingPageView extends View {
                         .description(featureType.getLabel())
                         .href(uriCustomizer.removeParameters().ensureLastPathSegments("collections",featureType.getId(),"items").toString())
                         .type("application/geo+json") // TODO: determine from extensions
-                        .rel("first")
+                        .rel("start")
                         .build())
                 .collect(Collectors.toList());
     }

@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.styles;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ldproxy.ogcapi.collection.queryables.Queryable;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import org.immutables.value.Value;
 
