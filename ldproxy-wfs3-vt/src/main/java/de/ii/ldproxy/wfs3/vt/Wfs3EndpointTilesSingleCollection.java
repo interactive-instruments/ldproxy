@@ -156,7 +156,6 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
      */
     @Path("/{collectionId}/tiles/{tileMatrixSetId}")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getMultitiles(@Context OgcApiRequestContext wfs3Request, @Context OgcApiDataset service,
                                   @PathParam("collectionId") String collectionId, @PathParam("tileMatrixSetId") String tileMatrixSetId,
                                   @QueryParam("bbox") String bboxParam, @QueryParam("scaleDenominator") String scaleDenominatorParam,

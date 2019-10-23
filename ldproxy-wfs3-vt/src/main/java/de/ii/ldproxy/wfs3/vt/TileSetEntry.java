@@ -11,8 +11,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@JsonDeserialize(builder = ImmutableTileSet.Builder.class)
-public interface TileSet {
+@JsonDeserialize(builder = ImmutableTileSetEntry.Builder.class)
+public interface TileSetEntry {
 
     String getTileURL();
     int getTileMatrix();

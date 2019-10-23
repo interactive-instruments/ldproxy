@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -33,8 +34,6 @@ import java.util.stream.Stream;
 @Provides
 @Instantiate
 public class MultitilesGenerator implements ConformanceClass {
-
-    private CrsTransformer crsTransformer;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MultitilesGenerator.class);
 
@@ -66,25 +65,35 @@ public class MultitilesGenerator implements ConformanceClass {
      * @param uriCustomizer uri customizer
      * @return tileSet document in json format
      */
-    Response getMultitiles(String tileMatrixSetId, String bboxParam, String scaleDenominatorParam, String multiTileType,
+    protected Response getMultitiles(String tileMatrixSetId, String bboxParam, String scaleDenominatorParam, String multiTileType,
                            URICustomizer uriCustomizer, CrsTransformation crsTransformation) {
 
-        crsTransformer = crsTransformation.getTransformer(new EpsgCrs(4326), new EpsgCrs(3857));
         checkTileMatrixSet(tileMatrixSetId);
-        checkMultiTileTypeParameter(multiTileType);
         List<Integer> tileMatrices = parseScaleDenominator(scaleDenominatorParam);
         double[] bbox = parseBbox(bboxParam);
         LOGGER.debug("GET TILE MULTISETS {} {}-{} {}", bbox, tileMatrices.get(0), tileMatrices.get(tileMatrices.size()-1), multiTileType);
-        List<TileSet> tileSets = generateTilesets(bbox, tileMatrices, uriCustomizer);
+        CrsTransformer crsTransformer = crsTransformation.getTransformer(new EpsgCrs(4326), new EpsgCrs(3857));
+        List<TileSetEntry> tileSetEntries = generateTilesets(bbox, tileMatrices, uriCustomizer, crsTransformer);
 
-        return Response.ok(ImmutableMap.of("tileSet", tileSets)).build();
+        if ("url".equals(multiTileType)) {
+            return Response.ok(ImmutableMap.of("tileSet", tileSetEntries))
+                    .type("application/geo+json")
+                    .build();
+        } else {
+            //generateZip(tileSetEntries)
+            return Response.ok(null)
+                    .type("application/zip")
+                    .build();
+
+        }
+
     }
 
     /**
      * Check if tileMatrixSet is supported
-     * @param tileMatrixSetId
+     * @param tileMatrixSetId the local identifier of a specific tile matrix set
      */
-    private void checkTileMatrixSet(String tileMatrixSetId) {
+    protected void checkTileMatrixSet(String tileMatrixSetId) {
         if (!TILE_MATRIX_SET.getId().equals(tileMatrixSetId)) {
             throw new NotFoundException("Unsupported tile matrix set");
         }
@@ -96,7 +105,7 @@ public class MultitilesGenerator implements ConformanceClass {
      * @return true if the value is supported
      * @throws NotFoundException when the value is unsupported or incorrect
      */
-    private boolean checkMultiTileTypeParameter(String multiTileType) {
+    protected boolean checkMultiTileTypeParameter(String multiTileType) {
         if (multiTileType == null || "url".equals(multiTileType) || "tiles".equals(multiTileType) || "full".equals(multiTileType)) {
             return true;
         }
@@ -109,17 +118,18 @@ public class MultitilesGenerator implements ConformanceClass {
      * @param sd scale denominator
      * @return list of all possible scales/tile matrices where tiles will be retrieved
      */
-    private List<Integer> parseScaleDenominator(String sd) {
+    protected List<Integer> parseScaleDenominator(String sd) {
         Double[] values = {(double) TILE_MATRIX_SET.getMinLevel(), (double) TILE_MATRIX_SET.getMaxLevel()};
         if (sd != null) {
             values = Stream.of(sd.split(","))
                     .map(Double::parseDouble)
                     .toArray(Double[]::new);
         }
-        List<Integer> tileMatrices = new ArrayList<>();
-        if (values[0] >= values[1] || values[0] < 0 || values[1] > 24) {
+        if (values.length != 2 || values[0] >= values[1] || values[0] < TILE_MATRIX_SET.getMinLevel()
+                || values[1] > TILE_MATRIX_SET.getMaxLevel()) {
             throw new NotFoundException("Scale denominator invalid or out-of-range");
         }
+        List<Integer> tileMatrices = new ArrayList<>();
         for(int i = (int) Math.ceil(values[0]); i < values[1]; i++) {
             tileMatrices.add(i);
 
@@ -134,14 +144,17 @@ public class MultitilesGenerator implements ConformanceClass {
      * @param csv comma-separated string with coordinates
      * @return bounding box as an array of doubles
      */
-    private double[] parseBbox(String csv) {
+    protected double[] parseBbox(String csv) {
         if (csv == null) {
             return new double[]{-179.9999, -85.05, 180.0, 85.05};
         }
-        // TODO: validation for missing/out-of-range values
-        return Stream.of(csv.split(","))
+        double[] bbox = Stream.of(csv.split(","))
                 .mapToDouble(Double::parseDouble)
                 .toArray();
+        if (bbox.length != 4) {
+            throw new NotFoundException("Incorrect number of arguments in the bbox parameter");
+        }
+        return bbox;
     }
 
     /**
@@ -151,14 +164,14 @@ public class MultitilesGenerator implements ConformanceClass {
      * @param uriCustomizer uri customizer
      * @return list of TileSet objects
      */
-    private List<TileSet> generateTilesets(double[] bbox, List<Integer> tileMatrices, URICustomizer uriCustomizer) {
-        List<TileSet> tileSets = new ArrayList<>();
+    protected List<TileSetEntry> generateTilesets(double[] bbox, List<Integer> tileMatrices, URICustomizer uriCustomizer, CrsTransformer crsTransformer) {
+        List<TileSetEntry> tileSets = new ArrayList<>();
         for (int tileMatrix : tileMatrices) {
-            List<Integer> bottomTile = pointToTile(bbox[0], bbox[1], tileMatrix);
-            List<Integer> topTile = pointToTile(bbox[2], bbox[3], tileMatrix);
+            List<Integer> bottomTile = pointToTile(bbox[0], bbox[1], tileMatrix, crsTransformer);
+            List<Integer> topTile = pointToTile(bbox[2], bbox[3], tileMatrix, crsTransformer);
             for (int row = bottomTile.get(0); row <= topTile.get(0); row++){
                 for (int col = topTile.get(1); col <= bottomTile.get(1); col++) {
-                    tileSets.add(ImmutableTileSet.builder()
+                    tileSets.add(ImmutableTileSetEntry.builder()
                             .tileURL(uriCustomizer.copy()
                                     .clearParameters()
                                     .ensureLastPathSegments(Integer.toString(tileMatrix), Integer.toString(row), col + ".json")
@@ -185,12 +198,12 @@ public class MultitilesGenerator implements ConformanceClass {
      * @param tileMatrix zoom level
      * @return list with XY coordinates of the tile in the grid
      */
-    private List<Integer> pointToTile(double lon, double lat, int tileMatrix) {
-        double originShift = 2 * Math.PI * 6378137 / 2.0;
+    protected List<Integer> pointToTile(double lon, double lat, int tileMatrix, CrsTransformer crsTransformer) {
         // convert longitude and latitude coordinates from WGS 84/EPSG:4326 to EPSG:3857
         CoordinateTuple coordinates = crsTransformer.transform(lat, lon);
         // convert the point from EPSG:3857 to pyramid pixel coordinates in given zoom level
         double resolution = initialResolution / Math.pow(2, tileMatrix);
+        double originShift = 2 * Math.PI * 6378137 / 2.0;
         double px = (coordinates.getX() + originShift) / resolution;
         double py = (coordinates.getY() + originShift) / resolution;
         // convert pyramid pixel coordinates to the coordinates of the enclosing tile
@@ -204,10 +217,15 @@ public class MultitilesGenerator implements ConformanceClass {
      * @param tileMatrix zoom level
      * @return list with XY coordinates of the tile in the grid
      */
-    private List<Integer> pixelsToTile(double px, double py, int tileMatrix) {
+    protected List<Integer> pixelsToTile(double px, double py, int tileMatrix) {
         int tx = (int) (Math.ceil(px / TILE_MATRIX_SET.getTileSize()) - 1);
         int ty = (int) (Math.pow(2, tileMatrix) - Math.ceil(py / TILE_MATRIX_SET.getTileSize()));
         return ImmutableList.of(tx, ty);
+    }
+
+    private File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId, boolean isFull) {
+
+        return null;
     }
 
 
