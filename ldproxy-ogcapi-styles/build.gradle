@@ -6,6 +6,7 @@ dependencies {
     provided project(":ldproxy-ogcapi")
     provided project(":ldproxy-ogcapi-features-core")
     provided project(":ldproxy-ogcapi-oas30")
+    provided project(":ldproxy-ogcapi-collection-queryables")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'

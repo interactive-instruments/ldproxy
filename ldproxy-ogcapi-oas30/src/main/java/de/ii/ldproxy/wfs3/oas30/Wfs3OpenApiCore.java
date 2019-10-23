@@ -23,6 +23,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -63,18 +64,18 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
                        .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                        .forEach(ft -> {
 
-                           PathItem clonedPathItem1 = clonePathItem(collectionPathItem);
+                           PathItem clonedPathItem1 = clonePathItem(collectionPathItem, true);
                            clonedPathItem1
                                    .get(clonedPathItem1.getGet()
                                                        .summary("describe the " + ft.getLabel() + " feature collection")
                                                        .description(null)
                                                        .operationId("describeCollection" + ft.getId())
                                    );
+
                            openAPI.getPaths()
                                   .addPathItem("/collections/" + ft.getId(), clonedPathItem1);
 
-
-                           PathItem clonedPathItem = clonePathItem(featuresPathItem);
+                           PathItem clonedPathItem = clonePathItem(featuresPathItem, true);
                            clonedPathItem
                                    .get(clonedPathItem.getGet()
                                                       .summary("retrieve features of " + ft.getLabel() + " feature collection")
@@ -102,8 +103,7 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
                            openAPI.getPaths()
                                   .addPathItem("/collections/" + ft.getId() + "/items", clonedPathItem);
 
-
-                           PathItem clonedPathItem2 = clonePathItem(featurePathItem);
+                           PathItem clonedPathItem2 = clonePathItem(featurePathItem, true);
                            clonedPathItem2 = clonedPathItem2
                                    .get(clonedPathItem2.getGet()
                                                        .summary("retrieve a " + ft.getLabel())
@@ -120,7 +120,7 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
         return openAPI;
     }
 
-    private PathItem clonePathItem(PathItem pathItem) {
+    private PathItem clonePathItem(PathItem pathItem, boolean withoutCollectionId) {
         PathItem clonedPathItem = new PathItem();
 
         clonedPathItem.set$ref(pathItem.get$ref());
@@ -137,7 +137,7 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
             Operation op = ops.get(key);
             final Set<String> tags;
             //op = filterOperation(filter, op, resourcePath, key.toString(), params, cookies, headers);
-            clonedPathItem.operation(key, cloneOperation(op));
+            clonedPathItem.operation(key, cloneOperation(op, withoutCollectionId));
             /*if (op != null) {
                 tags = allowedTags;
             } else {
@@ -154,7 +154,7 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
         return clonedPathItem;
     }
 
-    private Operation cloneOperation(Operation operation) {
+    private Operation cloneOperation(Operation operation, boolean withoutCollectionId) {
         Operation clonedOperation = new Operation();
 
         clonedOperation.setCallbacks(operation.getCallbacks());
@@ -164,7 +164,10 @@ public class Wfs3OpenApiCore implements OpenApiExtension {
         clonedOperation.setExternalDocs(operation.getExternalDocs());
         clonedOperation.setOperationId(operation.getOperationId());
         if (operation.getParameters() != null)
-            clonedOperation.setParameters(Lists.newArrayList(operation.getParameters()));
+            clonedOperation.setParameters(Lists.newArrayList(operation.getParameters()
+                    .stream()
+                    .filter(param -> !withoutCollectionId || param.get$ref()==null || !param.get$ref().equalsIgnoreCase("#/components/parameters/collectionId"))
+                    .collect(Collectors.toList())));
         clonedOperation.setRequestBody(operation.getRequestBody());
         clonedOperation.setResponses(operation.getResponses());
         clonedOperation.setSecurity(operation.getSecurity());

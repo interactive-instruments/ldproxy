@@ -39,7 +39,15 @@ public class OgcApiParameterProjections implements OgcApiParameterExtension {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
-        return ImmutableSet.of("properties");
+        if (subPath.matches("^/[\\w\\-]+/items/?$")) {
+            // Features
+            return ImmutableSet.of("properties");
+        } else if (subPath.matches("^/[\\w\\-]+/items/[^/\\s]+/?$")) {
+            // Feature
+            return ImmutableSet.of("properties");
+        }
+
+        return ImmutableSet.of();
     }
 
     @Override

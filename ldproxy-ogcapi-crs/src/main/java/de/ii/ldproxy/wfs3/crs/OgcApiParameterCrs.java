@@ -18,7 +18,6 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -54,7 +53,7 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension {
             return ImmutableSet.of("crs");
         }
 
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
+        return ImmutableSet.of();
     }
 
     @Override

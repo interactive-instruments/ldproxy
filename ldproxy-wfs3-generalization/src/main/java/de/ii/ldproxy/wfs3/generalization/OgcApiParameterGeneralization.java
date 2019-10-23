@@ -36,7 +36,15 @@ public class OgcApiParameterGeneralization implements OgcApiParameterExtension {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
-        return ImmutableSet.of("maxAllowableOffset");
+        if (subPath.matches("^/[\\w\\-]+/items/?$")) {
+            // Features
+            return ImmutableSet.of("maxAllowableOffset");
+        } else if (subPath.matches("^/[\\w\\-]+/items/[^/\\s]+/?$")) {
+            // Feature
+            return ImmutableSet.of("maxAllowableOffset");
+        }
+
+        return ImmutableSet.of();
     }
 
     @Override
