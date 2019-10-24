@@ -41,7 +41,7 @@ public class StylesLinkGenerator {
                                         .removeParameters("f")
                                         .toString())
                         .rel("styles")
-                        .description(i18n.get("stylesLink",language))
+                        .title(i18n.get("stylesLink",language))
                         .build())
                 .build();
     }
@@ -71,7 +71,7 @@ public class StylesLinkGenerator {
                     )
                     .rel("stylesheet")
                     .type(mediaType.type().toString())
-                    .description(i18n.get("stylesheetLink",language).replace("{{format}}", mediaType.label()))
+                    .title(i18n.get("stylesheetLink",language).replace("{{format}}", mediaType.label()))
                     .build());
         }
 
@@ -82,7 +82,7 @@ public class StylesLinkGenerator {
                                 .toString()
                         )
                         .rel("describedBy")
-                        .description(i18n.get("styleMetadataLink",language))
+                        .title(i18n.get("styleMetadataLink",language))
                         .build());
 
         if (maps && mediaTypes.stream()
@@ -95,7 +95,7 @@ public class StylesLinkGenerator {
                             .toString()
                     )
                     .rel("map")
-                    .description(i18n.get("styleMapLink",language))
+                    .title(i18n.get("styleMapLink",language))
                     .build());
         }
 
@@ -115,7 +115,7 @@ public class StylesLinkGenerator {
                                 .toString()
                         )
                         .rel("stylesheet")
-                        .description(i18n.get("stylesheetLink",language).replace("{{format}}", mediaType.label()))
+                        .title(i18n.get("stylesheetLink",language).replace("{{format}}", mediaType.label()))
                         .type(mediaType.type().toString());
 
         return builder.build();

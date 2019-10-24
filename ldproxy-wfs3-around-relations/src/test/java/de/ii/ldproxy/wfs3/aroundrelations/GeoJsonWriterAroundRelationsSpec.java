@@ -134,7 +134,7 @@ public class GeoJsonWriterAroundRelationsSpec {
 
                         OgcApiLink expectedLink = new ImmutableOgcApiLink.Builder()
                                                                  .rel("test1")
-                                                                 .description("test1")
+                                                                 .title("test1")
                                                                  .type("application/geo+json")
                                                                  .href("RELATION")
                                                                  .build();

@@ -40,7 +40,7 @@ public class LandingPageLinksGenerator extends DefaultLinksGenerator {
                                         .toString())
                         .rel("service-desc")
                         .type("application/vnd.oai.openapi+json;version=3.0")
-                        .description(i18n.get("serviceDescLink",language))
+                        .title(i18n.get("serviceDescLink",language))
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
@@ -49,7 +49,7 @@ public class LandingPageLinksGenerator extends DefaultLinksGenerator {
                                         .toString())
                         .rel("service-doc")
                         .type("text/html")
-                        .description(i18n.get("serviceDocLink",language))
+                        .title(i18n.get("serviceDocLink",language))
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
@@ -57,7 +57,7 @@ public class LandingPageLinksGenerator extends DefaultLinksGenerator {
                                         .removeParameters("f")
                                         .toString())
                         .rel("conformance")
-                        .description(i18n.get("conformanceLink",language))
+                        .title(i18n.get("conformanceLink",language))
                         .build());
 
         return builder.build();

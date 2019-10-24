@@ -5,24 +5,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.wfs3.styles;
+package de.ii.ldproxy.ogcapi.collection.styleinfo;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import de.ii.ldproxy.ogcapi.domain.StyleEntry;
 import org.immutables.value.Value;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableStyles.Builder.class)
-public abstract class Styles extends PageRepresentation {
+@JsonDeserialize(builder = ImmutableStyleInfos.Builder.class)
+public abstract class StyleInfos {
 
-    public abstract List<StyleEntry> getStyles();
-
-    @JsonAnyGetter
-    public abstract Map<String, Object> getExtensions();
+    public abstract Optional<List<StyleEntry>> getStyles();
+    public abstract Optional<String> getDefaultStyle();
 }

@@ -35,16 +35,7 @@ public abstract class OgcApiLink {
 
     @Nullable
     @XmlAttribute
-    @Value.Derived
-    public String getTitle() {
-        if (getDescription() == null) {
-            return null;
-        }
-        if (getTypeLabel() == null) {
-            return getDescription();
-        }
-        return String.format("%s %s", getDescription(), getTypeLabel());
-    }
+    public abstract String getTitle();
 
     @XmlAttribute
     public abstract String getHref();
@@ -56,16 +47,6 @@ public abstract class OgcApiLink {
     @Nullable
     @XmlAttribute
     public abstract Integer getLength();
-
-    @Nullable
-    @JsonIgnore
-    @XmlTransient
-    public abstract String getTypeLabel();
-
-    @Nullable
-    @JsonIgnore
-    @XmlTransient
-    abstract String getDescription();
 
     @Nullable
     @XmlAttribute
@@ -85,4 +66,23 @@ public abstract class OgcApiLink {
 
         return link.build();
     };
+
+    @JsonIgnore
+    @XmlTransient
+    @Value.Derived
+    public String getTypeLabel() {
+        String mediaType = getType();
+        if (mediaType == null)
+            return "";
+        else if (mediaType.toLowerCase().startsWith("application/gml+xml"))
+            return "GML";
+        else if (mediaType.toLowerCase().startsWith("application/geo+json"))
+            return "GeoJSON";
+        else if (mediaType.toLowerCase().startsWith("application/json"))
+            return "JSON";
+        else if (mediaType.toLowerCase().startsWith("application/xml"))
+            return "XML";
+
+        return mediaType;
+    }
 }

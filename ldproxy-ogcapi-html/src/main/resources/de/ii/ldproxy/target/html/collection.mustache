@@ -48,6 +48,41 @@
     </div>
     {{/temporalExtent}}
 
+    {{#withStyleInfos}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{styleInfosTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    {{#styles}}
+                        <li>
+                            {{#title}}{{.}} ({{id}}){{/title}}{{^title}}{{id}}{{/title}}
+                            <ul>
+                                {{#links}}
+                                    <li class="list-unstyled"><a href="{{href}}">{{title}}</a></li>
+                                {{/links}}
+                            </ul>
+                            <br/>
+                        </li>
+                    {{/styles}}
+                    {{^styles}}
+                        <li>{{none}}</li>
+                    {{/styles}}
+                </ul>
+            </div>
+        </div>
+
+    {{#defaultStyle}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{defaultStyleTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    <li>{{.}}</li>
+                </ul>
+            </div>
+        </div>
+    {{/defaultStyle}}
+    {{/withStyleInfos}}
+
     <h2>Expert information</h2>
 
     <div class="row my-3">

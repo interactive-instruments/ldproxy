@@ -174,7 +174,7 @@ public class OgcApiLandingPageView extends View {
                 .filter(featureType -> datasetData.isFeatureTypeEnabled(featureType.getId()))
                 .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
                 .map(featureType -> new ImmutableOgcApiLink.Builder()
-                        .description(featureType.getLabel())
+                        .title(featureType.getLabel())
                         .href(uriCustomizer.removeParameters().ensureLastPathSegments("collections",featureType.getId(),"items").toString())
                         .type("application/geo+json") // TODO: determine from extensions
                         .rel("start")

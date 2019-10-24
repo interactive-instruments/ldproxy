@@ -51,7 +51,7 @@ public class OgcApiFeaturesLandingPageExtension implements OgcApiLandingPageExte
                                 .removeParameters("f")
                                 .toString())
                         .rel("data")
-                        .description(i18n.get("dataLink",language))
+                        .title(i18n.get("dataLink",language))
                         .build());
 
         return landingPageBuilder;

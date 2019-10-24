@@ -61,7 +61,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                             .removeParameters("f")
                             .toString())
                     .rel("self")
-                    .description(i18n.get("selfLinkCollection",language).replace("{{collection}}",featureType.getLabel()))
+                    .title(i18n.get("selfLinkCollection",language).replace("{{collection}}",featureType.getLabel()))
                     .build());
         }
 
@@ -79,7 +79,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                                 .toString())
                         .rel("items")
                         .type(mtype.type().toString())
-                        .description(i18n.get("itemsLink",language).replace("{{collection}}",featureType.getLabel()))
+                        .title(i18n.get("itemsLink",language).replace("{{collection}}",featureType.getLabel()))
                         .build()));
 
         // TODO add support for schemas
@@ -89,7 +89,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     .href(describeFeatureTypeUrl.get())
                     .rel("describedBy")
                     .type("application/xml")
-                    .description(i18n.get("describedByXsdLink",language))
+                    .title(i18n.get("describedByXsdLink",language))
                     .build());
         }
 

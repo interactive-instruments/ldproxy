@@ -42,7 +42,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                         .removeParameters("f")
                                         .toString())
                         .rel("tileMatrixSets")
-                        .description(i18n.get("tileMatrixSetsLink", language))
+                        .title(i18n.get("tileMatrixSetsLink", language))
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
@@ -51,7 +51,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                 .removeParameters("f")
                                 .toString())
                         .rel("tiles")
-                        .description(i18n.get("tilesLink", language))
+                        .title(i18n.get("tilesLink", language))
                         .build())
                 .build();
     }
@@ -76,7 +76,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                         .toString())
                         .rel("tileMatrixSet")
                         .type("application/json")
-                        .description(i18n.get("tileMatrixSetLink", language).replace("{{tileMatrixSetId}}", tileMatrixSetId))
+                        .title(i18n.get("tileMatrixSetLink", language).replace("{{tileMatrixSetId}}", tileMatrixSetId))
                         .build())
                 .build();
     }
@@ -117,7 +117,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                     .rel("self")
                     .type(mediaType.type()
                                    .toString())
-                    .description(i18n.get("selfLink", language))
+                    .title(i18n.get("selfLink", language))
                     .build());
         }
         if (mvt) {
@@ -129,8 +129,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                     .toString())
                     .rel("alternate")
                     .type("application/vnd.mapbox-vector-tile")
-                    .description(i18n.get("alternateLink", language))
-                    .typeLabel("MVT")
+                    .title(i18n.get("alternateLink", language)+" MVT")
                     .build());
         }
         return builder.build();
@@ -169,7 +168,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                             .clearParameters()
                             .toString())
                     .rel("home")
-                    .description(i18n.get("homeLink",language))
+                    .title(i18n.get("homeLink",language))
                     .build());
 
         if (json) {
@@ -180,7 +179,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                     .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f=json")
                     .rel("tiles")
                     .type("application/geo+json")
-                    .description(i18n.get("tilesLinkTemplateGeoJSON", language))
+                    .title(i18n.get("tilesLinkTemplateGeoJSON", language))
                     .templated("true")
                     .build());
         }
@@ -192,7 +191,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                     .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f=mvt")
                     .rel("tiles")
                     .type("application/vnd.mapbox-vector-tile")
-                    .description(i18n.get("tilesLinkTemplateMVT", language))
+                    .title(i18n.get("tilesLinkTemplateMVT", language))
                     .templated("true")
                     .build());
         }
@@ -219,7 +218,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                 .toString()
                         )
                         .rel("tiles")
-                        .description(i18n.get("tilesLink", language))
+                        .title(i18n.get("tilesLink", language))
                         .build())
                 .build();
     }

@@ -13,7 +13,7 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.wfs3.styles.StyleEntry;
+import de.ii.ldproxy.ogcapi.domain.StyleEntry;
 import de.ii.ldproxy.wfs3.styles.Styles;
 import io.dropwizard.views.View;
 

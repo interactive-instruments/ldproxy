@@ -43,7 +43,7 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                 .rel("next")
                 .type(mediaType.type()
                         .toString())
-                .description(i18n.get("nextLink",language))
+                .title(i18n.get("nextLink",language))
                 .build());
         if (offset > 0) {
             builder.add(new ImmutableOgcApiLink.Builder()
@@ -51,14 +51,14 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                     .rel("prev")
                     .type(mediaType.type()
                             .toString())
-                    .description(i18n.get("prevLink",language))
+                    .title(i18n.get("prevLink",language))
                     .build());
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(getUrlWithPageAndCount(uriBuilder.copy(), 0, limit, defaultLimit))
                     .rel("first")
                     .type(mediaType.type()
                             .toString())
-                    .description(i18n.get("firstLink",language))
+                    .title(i18n.get("firstLink",language))
                     .build());
         }
 
@@ -71,7 +71,7 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                             .clearParameters()
                             .toString())
                     .rel("home")
-                    .description(i18n.get("homeLink",language))
+                    .title(i18n.get("homeLink",language))
                     .build());
 
         return builder.build();

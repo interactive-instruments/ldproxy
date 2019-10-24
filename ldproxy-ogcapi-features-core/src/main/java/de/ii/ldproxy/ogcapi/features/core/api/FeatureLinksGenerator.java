@@ -38,7 +38,7 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
                         .removeLastPathSegments(2)
                         .toString())
                 .rel("collection")
-                .description(i18n.get("collectionLink",language))
+                .title(i18n.get("collectionLink",language))
                 .build());
 
         if (homeLink)
@@ -50,7 +50,7 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
                             .clearParameters()
                             .toString())
                     .rel("home")
-                    .description(i18n.get("homeLink",language))
+                    .title(i18n.get("homeLink",language))
                     .build());
 
         return builder.build();

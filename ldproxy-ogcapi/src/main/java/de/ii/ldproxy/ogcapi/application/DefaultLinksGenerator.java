@@ -41,7 +41,7 @@ public class DefaultLinksGenerator {
                         .rel("self")
                         .type(mediaType.type()
                                        .toString())
-                        .description(i18n.get("selfLink",language))
+                        .title(i18n.get("selfLink",language))
                         .build())
                 .addAll(alternateMediaTypes.stream()
                                              .map(generateAlternateLink(uriBuilder.copy(), i18n, language))
@@ -59,8 +59,7 @@ public class DefaultLinksGenerator {
                 .type(mediaType
                         .type()
                         .toString())
-                .description(i18n.get("alternateLink",language))
-                .typeLabel(mediaType.label())
+                .title(i18n.get("alternateLink",language)+" "+mediaType.label())
                 .build();
     }
 }

@@ -130,8 +130,11 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     @Path("/")
     @POST
     @Consumes(StyleFormatMbStyle.MEDIA_TYPE_STRING)
-    public Response postStyle(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
-                              @Context OgcApiRequestContext ogcApiRequest, @Context HttpServletRequest request,
+    public Response postStyle(@Auth Optional<User> optionalUser,
+                              @QueryParam("validate") String validate,
+                              @Context OgcApiDataset api,
+                              @Context OgcApiRequestContext ogcApiRequest,
+                              @Context HttpServletRequest request,
                               byte[] requestBody) {
 
         checkAuthorization(api.getData(), optionalUser);
@@ -186,9 +189,13 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     @Path("/{styleId}")
     @PUT
     @Consumes({StyleFormatMbStyle.MEDIA_TYPE_STRING,StyleFormatSld10.MEDIA_TYPE_STRING,StyleFormatSld11.MEDIA_TYPE_STRING})
-    public Response putStyle(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                             @Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest,
-                             @Context HttpServletRequest request, byte[] requestBody) {
+    public Response putStyle(@Auth Optional<User> optionalUser,
+                             @PathParam("styleId") String styleId,
+                             @QueryParam("validate") String validate,
+                             @Context OgcApiDataset dataset,
+                             @Context OgcApiRequestContext ogcApiRequest,
+                             @Context HttpServletRequest request,
+                             byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
         checkStyleId(styleId);

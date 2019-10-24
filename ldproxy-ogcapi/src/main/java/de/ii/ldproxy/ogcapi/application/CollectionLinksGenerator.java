@@ -40,7 +40,7 @@ public class CollectionLinksGenerator extends DefaultLinksGenerator {
                             .clearParameters()
                             .toString())
                     .rel("home")
-                    .description(i18n.get("homeLink",language))
+                    .title(i18n.get("homeLink",language))
                     .build());
 
         return builder.build();

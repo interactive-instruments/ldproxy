@@ -37,7 +37,7 @@ public class ResourcesLinkGenerator {
                                 .ensureLastPathSegment(resourceId)
                                 .toString()
                         )
-                        .description(resourceId)
+                        .title(resourceId)
                         .rel("item");
 
         return builder.build();
@@ -60,7 +60,7 @@ public class ResourcesLinkGenerator {
                                 .removeParameters("f")
                                 .toString())
                         .rel("resources")
-                        .description(i18n.get("resourcesLink",language))
+                        .title(i18n.get("resourcesLink",language))
                         .build())
                 .build();
     }

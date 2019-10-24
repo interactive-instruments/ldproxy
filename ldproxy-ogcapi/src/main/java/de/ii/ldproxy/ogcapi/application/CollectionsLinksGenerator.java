@@ -39,7 +39,7 @@ public class CollectionsLinksGenerator extends DefaultLinksGenerator {
                             .clearParameters()
                             .toString())
                     .rel("home")
-                    .description(i18n.get("homeLink",language))
+                    .title(i18n.get("homeLink",language))
                     .build());
 
         if (describeFeatureTypeUrl.isPresent()) {
@@ -47,7 +47,7 @@ public class CollectionsLinksGenerator extends DefaultLinksGenerator {
                         .href(describeFeatureTypeUrl.get())
                         .rel("describedBy")
                         .type("application/xml")
-                        .description(i18n.get("describedByXsdLink",language))
+                        .title(i18n.get("describedByXsdLink",language))
                         .build());
         }
 

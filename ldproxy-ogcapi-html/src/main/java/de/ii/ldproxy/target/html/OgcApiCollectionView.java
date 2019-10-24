@@ -11,6 +11,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.StyleEntry;
 import io.dropwizard.views.View;
 import org.apache.felix.ipojo.annotations.Requires;
 
@@ -42,6 +43,9 @@ public class OgcApiCollectionView extends View {
     public Metadata metadata;
     public List<OgcApiLink> links;
     public OgcApiLink items;
+    private List<StyleEntry> styleEntries;
+    public String defaultStyle;
+    public boolean withStyleInfos;
     public String itemTypeTitle;
     public String dataTitle;
     public String licenseTitle;
@@ -51,6 +55,9 @@ public class OgcApiCollectionView extends View {
     public String storageCrsTitle;
     public String additionalLinksTitle;
     public String expertInformationTitle;
+    public String defaultStyleTitle;
+    public String styleInfosTitle;
+
     public String none;
 
     public OgcApiCollectionView(OgcApiDatasetData datasetData, OgcApiCollection collection,
@@ -81,6 +88,13 @@ public class OgcApiCollectionView extends View {
         this.storageCrs = collection
                 .getStorageCrs()
                 .orElse("");
+        this.defaultStyle = collection
+                .getDefaultStyle()
+                .orElse(null);
+        this.styleEntries = collection
+                .getStyles()
+                .orElse(null);
+        this.withStyleInfos = (this.styleEntries!=null);
         Optional<OgcApiExtent> extent = collection.getExtent();
         if (extent.isPresent()) {
             OgcApiExtentSpatial spatialExtent = extent.get()
@@ -120,6 +134,9 @@ public class OgcApiCollectionView extends View {
         this.storageCrsTitle = i18n.get("storageCrsTitle", language);
         this.additionalLinksTitle = i18n.get("additionalLinksTitle", language);
         this.expertInformationTitle = i18n.get ("expertInformationTitle", language);
+        this.defaultStyleTitle = i18n.get ("defaultStyleTitle", language);
+        this.styleInfosTitle = i18n.get ("styleInfosTitle", language);
+
         this.none = i18n.get ("none", language);
     }
 
@@ -141,6 +158,10 @@ public class OgcApiCollectionView extends View {
 
     public List<NavigationDTO> getBreadCrumbs() {
         return breadCrumbs;
+    }
+
+    public List<StyleEntry> getStyles() {
+        return styleEntries;
     }
 
     public List<NavigationDTO> getFormats() {

@@ -40,7 +40,7 @@ public class QueryablesLinkGenerator {
                                 .toString()
                         )
                         .rel("queryables")
-                        .description(i18n.get("queryablesLink", language))
+                        .title(i18n.get("queryablesLink", language))
                         .build())
                 .build();
     }
