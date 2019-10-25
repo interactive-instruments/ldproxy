@@ -220,6 +220,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             bbox.setRequired(false);
             bbox.setStyle(Parameter.StyleEnum.FORM);
             bbox.setExplode(false);
+            bbox.setExample(new Double[]{333469.2232,6565023.4598,815328.2182,7298818.9635});
             bbox.setSchema(new ArraySchema().items(new NumberSchema().format("double").minItems(4).maxItems(4)));
 
             Parameter scaleDenominator = new Parameter();
@@ -230,6 +231,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             scaleDenominator.setRequired(false);
             scaleDenominator.setStyle(Parameter.StyleEnum.FORM);
             scaleDenominator.setExplode(false);
+            scaleDenominator.example(new Double[]{2.5, 4.5});
             scaleDenominator.setSchema(new ArraySchema().items(new NumberSchema().format("double").minItems(2).maxItems(2)));
 
             Parameter multiTileType = new Parameter();
@@ -241,6 +243,17 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             List<String> multiTileTypeEnum = new ArrayList<>(ImmutableList.of("url", "tiles", "full"));
             multiTileType.example("url");
             multiTileType.setSchema(new StringSchema()._enum(multiTileTypeEnum));
+
+            Parameter ftile = new Parameter();
+            ftile.name("f-tile");
+            ftile.in("query");
+            ftile.description("Specify the tile format in the multitiles request");
+            ftile.setRequired(false);
+            ftile.setStyle(Parameter.StyleEnum.FORM);
+            List<String> ftileEnum = new ArrayList<>(ImmutableList.of("json", "mvt"));
+            ftile.example("json");
+            ftile.setSchema(new StringSchema()._enum(ftileEnum));
+
 
             /*Add the parameters to definition*/
             openAPI.getComponents()
@@ -267,6 +280,8 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                     .addParameters("scaleDenominator", scaleDenominator);
             openAPI.getComponents()
                     .addParameters("multiTileType", multiTileType);
+            openAPI.getComponents()
+                    .addParameters("f-tile", ftile);
 
             Schema keywords = new ArraySchema().items(new StringSchema());
 
@@ -678,6 +693,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                        .addParametersItem(new Parameter().$ref("#/components/parameters/bbox"))
                                                        .addParametersItem(new Parameter().$ref("#/components/parameters/scaleDenominator"))
                                                        .addParametersItem(new Parameter().$ref("#/components/parameters/multiTileType"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/f-tile"))
                                                        .responses(new ApiResponses()
                                                                .addApiResponse("200", success2)
                                                                .addApiResponse("default", exception2))

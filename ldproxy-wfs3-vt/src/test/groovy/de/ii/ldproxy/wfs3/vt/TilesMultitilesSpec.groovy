@@ -7,36 +7,28 @@
  */
 package de.ii.ldproxy.wfs3.vt
 
-import de.ii.xtraplatform.crs.api.BoundingBox
-import de.ii.xtraplatform.crs.api.CoordinateTuple
-import de.ii.xtraplatform.crs.api.CrsTransformationException
-import de.ii.xtraplatform.crs.api.CrsTransformer
-import de.ii.xtraplatform.crs.api.EpsgCrs
 import spock.lang.Specification
 
 import javax.ws.rs.NotFoundException
 
 class TilesMultitilesSpec extends Specification {
 
-    MultitilesGenerator multitiles = new MultitilesGenerator()
-    CollectionsMultitilesGenerator collectionsMultitiles = new CollectionsMultitilesGenerator();
-    CrsTransformer transformer = createCrsTransformer()
-
     def "Test bbox parameter parsing"() {
         when:
-        def bbox = multitiles.parseBbox(bboxString)
+        def bbox = MultitilesGenerator.parseBbox(bboxString)
         then:
         bbox == expectedResult
 
         where:
         bboxString                  | expectedResult
         "50.0, 140.0, 110.24, 175"  | [50.0, 140.0, 110.24, 175.0] as double[]
-        null                        | [-179.9999, -85.05, 180.0, 85.05] as double[]
+        ""                          | [-20026376.39, -20048966.10, 20026376.39, 20048966.10] as double[]
+        null                        | [-20026376.39, -20048966.10, 20026376.39, 20048966.10] as double[]
     }
 
     def "Incorrect values of bbox parameter"() {
         when:
-        def bbox = multitiles.parseBbox("50.0, 140.0, 110.24")
+        def bbox = MultitilesGenerator.parseBbox("50.0, 140.0, 110.24")
 
         then:
         thrown(NotFoundException)
@@ -50,7 +42,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Test scaleDenominator parameter parsing"() {
         when:
-        def tileMatrices = multitiles.parseScaleDenominator(scaleDenominator)
+        def tileMatrices = MultitilesGenerator.parseScaleDenominator(scaleDenominator)
 
         then:
         tileMatrices == expectedResult
@@ -61,11 +53,12 @@ class TilesMultitilesSpec extends Specification {
         "0.5, 4.5"          | [1,2,3,4]
         "3, 10"             | [3,4,5,6,7,8,9]
         null                | [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+        ""                  | [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
     }
 
     def "Incorrect of out-of-range values of scaleDenominator parameter"() {
         when:
-        def tileMatrices = multitiles.parseScaleDenominator(scaleDenominator)
+        def tileMatrices = MultitilesGenerator.parseScaleDenominator(scaleDenominator)
 
         then:
         thrown(NotFoundException)
@@ -81,78 +74,47 @@ class TilesMultitilesSpec extends Specification {
 
     def "Conversion of longitude/latitude coordinates to tile coordinates for different tile matrix(level) values"() {
         when:
-        def tile = multitiles.pointToTile(lon, lat, tileMatrix, transformer)
+        def tile = MultitilesGenerator.pointToTile(lon, lat, tileMatrix)
 
         then:
         tile == expectedResult
 
         where:
-        lon           | lat           | tileMatrix    | expectedResult
-        -0.222        | 51.52         | 1             | [0, 0]
-        -0.222        | 51.52         | 3             | [3, 2]
-        151.22        | -33.95        | 10            | [942, 614]
-        -72.986584    | -51.039667    | 12            | [1217, 2725]
-        151.215256    | -33.856159    | 18            | [241183, 157299]
+        lon             | lat               | tileMatrix    | expectedResult
+        -960864.3911    | 6920710.4554      | 1             | [0, 0]
+        3368936.9408    | 8388097.0703      | 4             | [9,4]
+        15556463.9966   | 4256829.0788      | 9             | [454, 201]
+        -152.8554       | -305.7353         | 10            | [511, 512]
+        -8123599.9684   | -6627491.6467     | 13            | [2435,5450]
+        16833220.5430   | -4009537.5609     | 18            | [241183, 157299]
     }
 
+    def "f-tile request query parameter parsing"() {
+        when:
+        def tileFormat = MultitilesGenerator.getTileFormat(ftileParam)
 
+        then:
+        tileFormat == expectedResult
 
-    def createCrsTransformer() {
-        return new CrsTransformer() {
-            @Override
-            EpsgCrs getSourceCrs() {
-                return null
-            }
+        where:
+        ftileParam      | expectedResult
+        null            | "json"
+        ""              | "json"
+        "mvt"           | "mvt"
+        "json"          | "json"
+    }
 
-            @Override
-            EpsgCrs getTargetCrs() {
-                return null
-            }
+    def "incorrect/unsupported f-tile request parameter"() {
+        when:
+        MultitilesGenerator.getTileFormat(ftileParam)
 
-            @Override
-            boolean isTargetMetric() {
-                return false
-            }
+        then:
+        thrown(NotFoundException)
 
-            @Override
-            CoordinateTuple transform(double lat, double lon) {
-                double originShift = 2 * Math.PI * 6378137 / 2.0;
-                double mx = lon * originShift / 180.0;
-                double my = Math.log(Math.tan((90 + lat) * Math.PI / 360.0)) / (Math.PI / 180.0);
-                my = my * originShift / 180.0;
-                return new CoordinateTuple(mx, my)
-            }
-
-            @Override
-            CoordinateTuple transform(CoordinateTuple coordinateTuple, boolean swap) {
-                return null
-            }
-
-            @Override
-            double[] transform(double[] coordinates, int numberOfPoints, boolean swap) {
-                return new double[0]
-            }
-
-            @Override
-            BoundingBox transformBoundingBox(BoundingBox boundingBox) throws CrsTransformationException {
-                return null
-            }
-
-            @Override
-            double getSourceUnitEquivalentInMeters() {
-                return 0
-            }
-
-            @Override
-            double getTargetUnitEquivalentInMeters() {
-                return 0
-            }
-
-            @Override
-            boolean needsCoordinateSwap() {
-                return false
-            }
-        }
+        where:
+        ftileParam      | _
+        "gif"           | _
+        "jsonx"         | _
     }
 
 }

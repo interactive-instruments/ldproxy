@@ -22,6 +22,7 @@ class VectorTilesRESTApiSpec extends Specification{
     static final String SUT_PATH = "/rest/services/daraa"
     static final String SUT_TILE_MATRIX_SET_ID = "WebMercatorQuad"
     static final String SUT_COLLECTION = "aeronauticcrv"
+    static final String SUT_COLLECTION2 = "aeronauticsrf"
 
     RESTClient restClient = new RESTClient(SUT_URL)
 
@@ -77,25 +78,6 @@ class VectorTilesRESTApiSpec extends Specification{
                 .get(0)
                 .get("href")
                 .contains("/tiles/WebMercatorQuad/{tileMatrix}/{tileRow}/{tileCol}")
-    }
-
-    def 'GET Request for the tile matrix set Page from tiles'(){
-
-        when:
-        def response = restClient.get( path: SUT_PATH + '/tiles/'+ SUT_TILE_MATRIX_SET_ID)
-
-        then:
-        response.status == 200
-
-        and:
-        response.responseData.containsKey("tileMatrix")
-        response.responseData.containsKey("boundingBox")
-        response.responseData.containsKey("identifier")
-        response.responseData.containsKey("supportedCRS")
-        response.responseData.containsKey("title")
-        response.responseData.containsKey("type")
-        response.responseData.containsKey("wellKnownScaleSet")
-        response.responseData.get("identifier") == "WebMercatorQuad"
     }
 
     def 'GET Request for a empty tile of the dataset'(){
@@ -205,6 +187,7 @@ class VectorTilesRESTApiSpec extends Specification{
         response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/collections' }
         response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tmxs' }
         response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/multitiles' }
+        response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/cols-multitiles' }
     }
 
     def 'Landing page request'() {
@@ -242,7 +225,7 @@ class VectorTilesRESTApiSpec extends Specification{
         when: "request multitiles for a single collection"
         def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
             uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/" + SUT_TILE_MATRIX_SET_ID
-            uri.query = [scaleDenominator:'6.5,7.5', bbox:'2.995605,50.680797,7.324218,54.673831', multiTileType:'url']
+            uri.query = [scaleDenominator:'6.5,7.5', bbox:'333469.2232,6565023.4598,815328.2182,7298818.9635', multiTileType:'url']
             headers.Accept = 'application/json'
         })
 
@@ -256,19 +239,15 @@ class VectorTilesRESTApiSpec extends Specification{
         response.responseData.get("tileSet").get(0).containsKey("tileMatrix")
         response.responseData.get("tileSet").get(0).containsKey("tileRow")
         response.responseData.get("tileSet").get(0).containsKey("tileCol")
-        response.responseData.get("tileSet").get(0).containsKey("width")
-        response.responseData.get("tileSet").get(0).containsKey("height")
-        response.responseData.get("tileSet").get(0).containsKey("top")
-        response.responseData.get("tileSet").get(0).containsKey("left")
-
+        response.responseData.get("tileSet").get(0).get("tileURL").contains("f=json")
     }
 
-    @Ignore
     def 'Tiles collection multitiles request'() {
         when: "request multitiles for a single collection"
         def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
-            uri.path = SUT_PATH + '/collections/tiles/' + SUT_TILE_MATRIX_SET_ID + '?collections=' + SUT_COLLECTION
-            +'&scaleDenominator=6.5,7.5&bbox=2.995605,50.680797,7.324218,54.673831&multiTileType=url'
+            uri.path = SUT_PATH + '/tiles/' + SUT_TILE_MATRIX_SET_ID
+            uri.query = [scaleDenominator:'6.5,7.5', bbox:'333469.2232,6565023.4598,815328.2182,7298818.9635', multiTileType:'url',
+                                collections:SUT_COLLECTION + ',' + SUT_COLLECTION2]
             headers.Accept = 'application/json'
         })
 
@@ -282,10 +261,7 @@ class VectorTilesRESTApiSpec extends Specification{
         response.responseData.get("tileSet").get(0).containsKey("tileMatrix")
         response.responseData.get("tileSet").get(0).containsKey("tileRow")
         response.responseData.get("tileSet").get(0).containsKey("tileCol")
-        response.responseData.get("tileSet").get(0).containsKey("width")
-        response.responseData.get("tileSet").get(0).containsKey("height")
-        response.responseData.get("tileSet").get(0).containsKey("top")
-        response.responseData.get("tileSet").get(0).containsKey("left")
+        response.responseData.get("tileSet").get(0).get("tileURL").contains("collections=" + SUT_COLLECTION + "," + SUT_COLLECTION2)
     }
 
     def 'GET Request to the Tiles page for multitiles URI template'(){
