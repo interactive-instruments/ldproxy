@@ -16,9 +16,10 @@ import spock.lang.Specification
 
 import javax.ws.rs.NotFoundException
 
-class TilesMultitileSpec extends Specification {
+class TilesMultitilesSpec extends Specification {
 
     MultitilesGenerator multitiles = new MultitilesGenerator()
+    CollectionsMultitilesGenerator collectionsMultitiles = new CollectionsMultitilesGenerator();
     CrsTransformer transformer = createCrsTransformer()
 
     def "Test bbox parameter parsing"() {

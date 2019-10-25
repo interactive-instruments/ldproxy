@@ -7,10 +7,15 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
+
+
 @Value.Immutable
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = ImmutableTileSetEntry.Builder.class)
 public interface TileSetEntry {
 
@@ -18,9 +23,9 @@ public interface TileSetEntry {
     int getTileMatrix();
     int getTileRow();
     int getTileCol();
-    int getWidth();
-    int getHeight();
-    int getTop();
-    int getLeft();
+    @Nullable Integer getWidth();
+    @Nullable Integer getHeight();
+    @Nullable Integer getTop();
+    @Nullable Integer getLeft();
 
 }

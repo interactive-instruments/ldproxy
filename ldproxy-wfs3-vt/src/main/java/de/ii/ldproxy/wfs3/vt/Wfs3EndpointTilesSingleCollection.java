@@ -71,7 +71,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     private final VectorTilesCache cache;
 
-    private final MultitilesGenerator multitileGenerator = new MultitilesGenerator();
+    private final MultitilesGenerator multitilesGenerator = new MultitilesGenerator();
 
     Wfs3EndpointTilesSingleCollection(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
@@ -111,7 +111,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         if (subPath.matches("^/?\\w+/tiles(?:/\\w+)?/?$")) {
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
-                    .add("bbox", "scaleDenominator", "multiTileType")
+                    .add("bbox", "scaleDenominator", "multiTileType", "f-tile")
                     .build();
         } else if (subPath.matches("^/?(?:\\w+)/tiles/(?:\\w+/\\w+/\\w+/\\w+)$")) {
             ImmutableSet<String> parametersFromExtensions = new ImmutableSet.Builder<String>()
@@ -159,12 +159,12 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
     public Response getMultitiles(@Context OgcApiRequestContext wfs3Request, @Context OgcApiDataset service,
                                   @PathParam("collectionId") String collectionId, @PathParam("tileMatrixSetId") String tileMatrixSetId,
                                   @QueryParam("bbox") String bboxParam, @QueryParam("scaleDenominator") String scaleDenominatorParam,
-                                  @QueryParam("multiTileType") String multiTileType) {
+                                  @QueryParam("multiTileType") String multiTileType, @QueryParam("f-tile") String tileFormat) {
 
         checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
 
-        return multitileGenerator.getMultitiles(tileMatrixSetId, bboxParam, scaleDenominatorParam, multiTileType,
-                                                wfs3Request.getUriCustomizer(), crsTransformation);
+        return multitilesGenerator.getMultitiles(tileMatrixSetId, bboxParam, scaleDenominatorParam, multiTileType,
+                                                wfs3Request.getUriCustomizer(), tileFormat);
     }
 
     /**

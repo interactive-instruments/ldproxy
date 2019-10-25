@@ -185,7 +185,6 @@ public class VectorTilesLinkGenerator {
                         .toString() + (tileMatrixSetId==null ? "" : "/"+tileMatrixSetId))
                 .rel("multitiles")
                 .type("application/geo+json")
-                .description("description")
                 .build());
 
         return builder.build();

@@ -7,8 +7,6 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
@@ -32,6 +30,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -64,6 +63,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
     private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
 
+    private final CollectionsMultitilesGenerator collectionsMultitilesGenerator = new CollectionsMultitilesGenerator();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
 
@@ -105,7 +105,10 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     @Override
     public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
         if (subPath.matches("^/?(?:\\w+(?:/)?)?$"))
-            return OgcApiEndpointExtension.super.getParameters(apiData, subPath);
+            return new ImmutableSet.Builder<String>()
+                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
+                    .add("bbox", "scaleDenominator", "multiTileType", "collections")
+                    .build();
         else if (subPath.matches("^/?(?:\\w+/\\w+/\\w+/\\w+)$"))
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
@@ -155,45 +158,55 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     }
 
     /**
-     * retrieve a tiling scheme to partition the dataset into tiles
-     *
-     * @param optionalUser the user
-     * @param tileMatrixSetId the local identifier of a specific tiling scheme
-     * @return the tiling scheme in a json file
+     * Retrieve multiple tiles from multiple collections
+     * @param optionalUser          the user
+     * @param wfs3Request           the request
+     * @param service               the wfs3 service
+     * @param tileMatrixSetId       the local identifier of a specific tile matrix set
+     * @param bboxParam             bounding box specified in WGS 84 longitude/latitude format
+     * @param scaleDenominatorParam value of the scaleDenominator request parameter
+     * @param multiTileType         value of the multiTileType request parameter
+     * @param collectionsParam      value of the collections request parameter
+     * @return multiple tiles from multiple collections
      */
     @Path("/{tileMatrixSetId}")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getTileMatrixSet(@Auth Optional<User> optionalUser,
-                                    @PathParam("tileMatrixSetId") String tileMatrixSetId, @Context OgcApiDataset service,
-                                    @Context OgcApiRequestContext wfs3Request) throws IOException {
-        checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
-        File file = cache.getTileMatrixSet(tileMatrixSetId);
-
-        final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-        List<OgcApiLink> ogcApiLink = vectorTilesLinkGenerator.generateTileMatrixSetLinks(wfs3Request.getUriCustomizer(), null, true, false, i18n, wfs3Request.getLanguage());
-
-
-        /*read the json file to add links*/
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> jsonTileMatrixSet;
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+    public Response getCollectionsMultitiles(@Auth Optional<User> optionalUser, @Context OgcApiRequestContext wfs3Request,
+                                             @Context OgcApiDataset service, @PathParam("tileMatrixSetId") String tileMatrixSetId,
+                                             @QueryParam("bbox") String bboxParam, @QueryParam("scaleDenominator") String scaleDenominatorParam,
+                                             @QueryParam("multiTileType") String multiTileType, @QueryParam("collections") String collectionsParam) throws UnsupportedEncodingException {
+        Map<String, Boolean> enabledMap = vectorTileMapGenerator.getEnabledMap(service.getData());
+        Set<String> collections = new HashSet<>();
+        Set<String> requestedCollections = parseCsv(collectionsParam);
+        if (enabledMap != null && !enabledMap.isEmpty()) {
+            if (requestedCollections == null || requestedCollections.isEmpty()) {
+                collections = enabledMap.keySet();
+            } else {
+                collections = requestedCollections.stream()
+                        .filter(enabledMap::containsKey)
+                        .filter(enabledMap::get)
+                        .collect(Collectors.toSet());
+            }
         }
-        if (br.readLine() == null) {
-            jsonTileMatrixSet = null;
-        } else {
-            jsonTileMatrixSet = mapper.readValue(file, new TypeReference<LinkedHashMap>() {
-            });
+        return collectionsMultitilesGenerator.getCollectionsMultitiles(tileMatrixSetId, bboxParam, scaleDenominatorParam,
+                multiTileType, wfs3Request.getUriCustomizer(), collections);
+    }
+
+    /**
+     * Parse the list of comma separated values into a Set of Strings
+     * @param csv string with comma separated parameter values
+     * @return Set of parameter values
+     */
+    private Set<String> parseCsv(String csv) {
+        Set<String> result = null;
+        if (csv != null && !csv.trim().isEmpty()) {
+            String[] sa = csv.trim().split(",");
+            result = new HashSet<>();
+            for (String s : sa) {
+                result.add(s.trim());
+            }
         }
-
-        jsonTileMatrixSet.put("links", ogcApiLink);
-
-        return Response.ok(jsonTileMatrixSet)
-                       .build();
+        return result;
     }
 
     /**
@@ -234,27 +247,8 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         cache.cleanup(); // TODO centralize this
 
         // check and process parameters
-        Set<String> requestedProperties = null;
-        if (properties != null && !properties.trim()
-                                             .isEmpty()) {
-            String[] sa = properties.trim()
-                                    .split(",");
-            requestedProperties = new HashSet<>();
-            for (String s : sa) {
-                requestedProperties.add(s.trim());
-            }
-        }
-
-        Set<String> requestedCollections = null;
-        if (collections != null && !collections.trim()
-                                               .isEmpty()) {
-            String[] sa = collections.trim()
-                                     .split(",");
-            requestedCollections = new HashSet<>();
-            for (String s : sa) {
-                requestedCollections.add(s.trim());
-            }
-        }
+        Set<String> requestedProperties = parseCsv(properties);
+        Set<String> requestedCollections = parseCsv(collections);
 
         boolean doNotCache = (requestedProperties != null || requestedCollections != null);
 
