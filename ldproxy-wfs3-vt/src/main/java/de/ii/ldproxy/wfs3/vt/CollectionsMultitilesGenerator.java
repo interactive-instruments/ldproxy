@@ -17,7 +17,9 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -69,13 +71,13 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
             return Response.ok(ImmutableMap.of("tileSet", tileSetEntries))
                     .type("application/geo+json")
                     .build();
-        } else {
-            //generateZip(tileSetEntries)
-            return Response.ok(null)
+        } else if (multiTileType == null || "tiles".equals(multiTileType) || "full".equals(multiTileType)) {
+            File zip = MultitilesGenerator.generateZip(tileSetEntries, tileMatrixSetId, "full".equals(multiTileType));
+            return Response.ok(zip)
                     .type("application/zip")
                     .build();
-
         }
+        throw new NotFoundException("Unknown multiTileType");
     }
 
     /**

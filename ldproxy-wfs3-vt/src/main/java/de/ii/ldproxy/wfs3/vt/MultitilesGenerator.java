@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
@@ -21,10 +22,17 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Component
 @Provides
@@ -73,14 +81,13 @@ public class MultitilesGenerator implements ConformanceClass {
             return Response.ok(ImmutableMap.of("tileSet", tileSetEntries))
                     .type("application/geo+json")
                     .build();
-        } else {
-            //generateZip(tileSetEntries)
-            return Response.ok(null)
+        } else if (multiTileType == null || "tiles".equals(multiTileType) || "full".equals(multiTileType)) {
+            File zip = generateZip(tileSetEntries, tileMatrixSetId, "full".equals(multiTileType));
+            return Response.ok(zip)
                     .type("application/zip")
                     .build();
-
         }
-
+        throw new NotFoundException("Unknown multiTileType");
     }
 
     /**
@@ -91,19 +98,6 @@ public class MultitilesGenerator implements ConformanceClass {
         if (!TILE_MATRIX_SET.getId().equals(tileMatrixSetId)) {
             throw new NotFoundException("Unsupported tile matrix set");
         }
-    }
-
-    /**
-     * Check if the value of multiTileType is valid
-     * @param multiTileType multiTileType parameter's value
-     * @return true if the value is supported
-     * @throws NotFoundException when the value is unsupported or incorrect
-     */
-    protected boolean checkMultiTileTypeParameter(String multiTileType) {
-        if (multiTileType == null || "url".equals(multiTileType) || "tiles".equals(multiTileType) || "full".equals(multiTileType)) {
-            return true;
-        }
-        throw new NotFoundException("Invalid value of multiTileType parameter");
     }
 
     /**
@@ -222,9 +216,57 @@ public class MultitilesGenerator implements ConformanceClass {
         return ImmutableList.of(tileX, tileY);
     }
 
-    private File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId, boolean isFull) {
+    protected static File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId, boolean isFull) {
+        FileOutputStream fout;
+        ZipOutputStream zout;
+        File zip = null;
 
-        return null;
+        try {
+            zip = File.createTempFile(tileMatrixSetId, ".zip");
+            fout = new FileOutputStream(zip);
+            zout = new ZipOutputStream(fout);
+
+            if (isFull) {
+                ObjectMapper mapper = new ObjectMapper();
+                String jsonString = mapper.writeValueAsString(ImmutableMap.of("tileSet", tileSetEntries));
+                File tmpFile = File.createTempFile(tileMatrixSetId, ".json");
+                FileWriter writer = new FileWriter(tmpFile);
+                writer.write(jsonString);
+                writer.close();
+
+                FileInputStream fis = new FileInputStream(tmpFile.getAbsolutePath());
+                BufferedInputStream bis = new BufferedInputStream(fis, 1024);
+                byte[] data = new byte[1024];
+
+                zout.putNextEntry(new ZipEntry(tileMatrixSetId + ".json"));
+                int count;
+                while ((count = bis.read(data, 0, 1024)) != -1) {
+                    zout.write(data, 0, count);
+                }
+                bis.close();
+                fis.close();
+                zout.closeEntry();
+
+            }
+            for (TileSetEntry entry : tileSetEntries) {
+                zout.putNextEntry(new ZipEntry(new StringBuilder(tileMatrixSetId)
+                        .append(File.separator)
+                        .append(entry.getTileMatrix())
+                        .append(File.separator)
+                        .append(entry.getTileRow())
+                        .append(File.separator)
+                        .append(entry.getTileCol())
+                        .append(".json")
+                        .toString()));
+                zout.closeEntry();
+            }
+            zout.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return zip;
     }
 
 
