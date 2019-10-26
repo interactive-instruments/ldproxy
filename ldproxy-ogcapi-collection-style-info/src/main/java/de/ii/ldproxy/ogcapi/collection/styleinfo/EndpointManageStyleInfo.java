@@ -112,6 +112,12 @@ public class EndpointManageStyleInfo implements OgcApiEndpointExtension, Conform
         checkAuthorization(dataset.getData(), optionalUser);
         checkCollectionId(collectionId);
 
+        final String apiId = dataset.getData().getId();
+        File apiDir = new File(styleInfosStore + File.separator + apiId);
+        if (!apiDir.exists()) {
+            apiDir.mkdirs();
+        }
+
         boolean newStyleInfos = isNewStyleInfo(dataset.getId(), collectionId);
 
         // prepare Jackson mapper for deserialization
