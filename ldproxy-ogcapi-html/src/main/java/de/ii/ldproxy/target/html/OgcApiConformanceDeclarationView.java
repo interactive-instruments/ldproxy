@@ -43,10 +43,7 @@ public class OgcApiConformanceDeclarationView extends View {
                 .getDescription()
                 .orElse(i18n.get("conformanceDeclarationDescription", language));
         this.links = conformanceDeclaration
-                .getLinks()
-                .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|home)$"))
-                .collect(Collectors.toList());
+                .getLinks();
     }
 
     public List<String> getClasses() {

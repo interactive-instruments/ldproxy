@@ -8,7 +8,6 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
@@ -24,7 +23,7 @@ public class OgcApiTileMatrixSetsView extends View {
     private final OgcApiDatasetData apiData;
     private final List<NavigationDTO> breadCrumbs;
     public final HtmlConfig htmlConfig;
-    public Object links;
+    public List<OgcApiLink> links;
     public String urlPrefix;
     public String title;
     public String description;
@@ -58,15 +57,11 @@ public class OgcApiTileMatrixSetsView extends View {
     }
 
     public List<NavigationDTO> getFormats() {
-        if (links instanceof List)
-            return ((List<Object>)links)
-                    .stream()
-                    .filter(link -> link instanceof OgcApiLink && Objects.equals(((OgcApiLink)link).getRel(), "alternate"))
-                    .sorted(Comparator.comparing(link -> ((OgcApiLink)link).getTypeLabel()
-                            .toUpperCase()))
-                    .map(link -> new NavigationDTO(((OgcApiLink)link).getTypeLabel(), ((OgcApiLink)link).getHref()))
-                    .collect(Collectors.toList());
-
-        return ImmutableList.of();
+        return links.stream()
+                .filter(link -> Objects.equals(link.getRel(), "alternate"))
+                .sorted(Comparator.comparing(link -> link.getTypeLabel()
+                        .toUpperCase()))
+                .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
+                .collect(Collectors.toList());
     }
 }

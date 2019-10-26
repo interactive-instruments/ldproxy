@@ -8,12 +8,11 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.domain.StyleEntry;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.wfs3.styles.Styles;
 import io.dropwizard.views.View;
 
@@ -66,13 +65,11 @@ public class StylesView extends View {
     }
 
     public List<NavigationDTO> getFormats() {
-        links.stream()
+        return links.stream()
             .filter(link -> Objects.equals(link.getRel(), "alternate"))
             .sorted(Comparator.comparing(link -> link.getTypeLabel()
                     .toUpperCase()))
             .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
             .collect(Collectors.toList());
-
-        return ImmutableList.of();
     }
 }
