@@ -27,6 +27,7 @@ public class OpenApiYaml implements ApiDefinitionFormatExtension {
     private static Logger LOGGER = LoggerFactory.getLogger(OpenApiYaml.class);
     private static OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(new MediaType("application", "vnd.oai.openapi", ImmutableMap.of("version", "3.0")))
+            .parameter("yaml")
             .label("YAML")
             .build();
 

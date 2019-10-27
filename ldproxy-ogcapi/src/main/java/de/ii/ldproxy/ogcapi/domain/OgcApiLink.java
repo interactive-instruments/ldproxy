@@ -74,14 +74,20 @@ public abstract class OgcApiLink {
         String mediaType = getType();
         if (mediaType == null)
             return "";
-        else if (mediaType.toLowerCase().startsWith("application/gml+xml"))
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/gml+xml"))
             return "GML";
-        else if (mediaType.toLowerCase().startsWith("application/geo+json"))
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/geo+json"))
             return "GeoJSON";
-        else if (mediaType.toLowerCase().startsWith("application/json"))
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/json"))
             return "JSON";
-        else if (mediaType.toLowerCase().startsWith("application/xml"))
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/xml"))
             return "XML";
+        else if (mediaType.toLowerCase().split(";")[0].equals("text/html"))
+            return "HTML";
+        else if (mediaType.toLowerCase().split(";")[0].endsWith("+xml"))
+            return "XML";
+        else if (mediaType.toLowerCase().split(";")[0].startsWith("+json"))
+            return "JSON";
 
         return mediaType;
     }
