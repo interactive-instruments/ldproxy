@@ -306,7 +306,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             tileMatrixSet.addProperties("title", new StringSchema());
             tileMatrixSet.addProperties("abstract", new StringSchema());
             tileMatrixSet.addProperties("keywords", new Schema().$ref("#/components/schemas/keywords"));
-            tileMatrixSet.addProperties("supportedCrs", new StringSchema());
+            tileMatrixSet.addProperties("supportedCRS", new StringSchema());
             tileMatrixSet.addProperties("wellKnownScaleSet", new StringSchema());
             tileMatrixSet.addProperties("tileMatrix", new ArraySchema().items(new Schema().$ref("#/components/schemas/tileMatrix")));
             tileMatrixSet.addProperties("boundingBox", new ArraySchema().items(new Schema().$ref("#/components/schemas/boundingBox")));
