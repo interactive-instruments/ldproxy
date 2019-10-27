@@ -193,7 +193,7 @@ public class OpenApiResources implements OpenApiExtension {
         resourceEntry.setRequired(required);
 
         resourceEntry.addProperties("id", new StringSchema());
-        resourceEntry.addProperties("links", new Schema().$ref("#/components/schemas/link"));
+        resourceEntry.addProperties("link", new Schema().$ref("#/components/schemas/link"));
 
         openAPI.getComponents()
                .addSchemas("resourceEntry", resourceEntry);
