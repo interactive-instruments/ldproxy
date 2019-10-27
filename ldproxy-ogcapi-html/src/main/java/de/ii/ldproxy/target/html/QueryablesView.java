@@ -12,22 +12,14 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.collection.queryables.Queryable;
 import de.ii.ldproxy.ogcapi.collection.queryables.Queryables;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import io.dropwizard.views.View;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
-public class QueryablesView extends View {
-    private final OgcApiDatasetData apiData;
-    private final List<NavigationDTO> breadCrumbs;
-    public final HtmlConfig htmlConfig;
+public class QueryablesView extends LdproxyView {
     public List<Queryable> queryables;
-    public List<OgcApiLink> links;
-    public String urlPrefix;
-    public String title;
-    public String description;
     public String typeTitle;
     public String none;
 
@@ -39,34 +31,13 @@ public class QueryablesView extends View {
                           URICustomizer uriCustomizer,
                           I18n i18n,
                           Optional<Locale> language) {
-        super("queryables.mustache", Charsets.UTF_8);
-
-        // TODO this is quick and dirty - the view needs to be improved
+        super("queryables.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, staticUrlPrefix,
+                queryables.getLinks(),
+                i18n.get("queryablesTitle", language),
+                i18n.get("queryablesDescription", language));
 
         this.queryables = queryables.getQueryables();
-        this.links = queryables.getLinks();
-        this.breadCrumbs = breadCrumbs;
-        this.urlPrefix = staticUrlPrefix;
-        this.htmlConfig = htmlConfig;
-
-        this.title = i18n.get("queryablesTitle", language);
-        this.description = i18n.get("queryablesDescription", language);
         this.typeTitle = i18n.get("typeTitle", language);
         this.none = i18n.get ("none", language);
-
-        this.apiData = apiData;
-    }
-
-    public List<NavigationDTO> getBreadCrumbs() {
-        return breadCrumbs;
-    }
-
-    public List<NavigationDTO> getFormats() {
-        return links.stream()
-            .filter(link -> Objects.equals(link.getRel(), "alternate"))
-            .sorted(Comparator.comparing(link -> link.getTypeLabel()
-                    .toUpperCase()))
-            .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
-            .collect(Collectors.toList());
     }
 }

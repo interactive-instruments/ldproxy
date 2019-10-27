@@ -10,23 +10,15 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.wfs3.vt.TileMatrixSets;
-import io.dropwizard.views.View;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
-public class OgcApiTileMatrixSetsView extends View {
-    private final OgcApiDatasetData apiData;
-    private final List<NavigationDTO> breadCrumbs;
-    public final HtmlConfig htmlConfig;
-    public List<OgcApiLink> links;
-    public String urlPrefix;
-    public String title;
-    public String description;
+public class OgcApiTileMatrixSetsView extends LdproxyView {
     public List<PageRepresentationWithId> tileMatrixSets;
     public String none;
 
@@ -38,30 +30,11 @@ public class OgcApiTileMatrixSetsView extends View {
                                     URICustomizer uriCustomizer,
                                     I18n i18n,
                                     Optional<Locale> language) {
-        super("tileMatrixSets.mustache", Charsets.UTF_8);
+        super("tileMatrixSets.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, staticUrlPrefix,
+                tileMatrixSets.getLinks(),
+                i18n.get("tileMatrixSetsTitle", language),
+                i18n.get("tileMatrixSetsDescription", language));
         this.tileMatrixSets = tileMatrixSets.getTileMatrixSets();
-        this.links = tileMatrixSets.getLinks();
-        this.breadCrumbs = breadCrumbs;
-        this.urlPrefix = staticUrlPrefix;
-        this.htmlConfig = htmlConfig;
-
-        this.title = i18n.get("tileMatrixSetsTitle", language);
-        this.description = i18n.get("tileMatrixSetsDescription", language);
         this.none = i18n.get ("none", language);
-
-        this.apiData = apiData;
-    }
-
-    public List<NavigationDTO> getBreadCrumbs() {
-        return breadCrumbs;
-    }
-
-    public List<NavigationDTO> getFormats() {
-        return links.stream()
-                .filter(link -> Objects.equals(link.getRel(), "alternate"))
-                .sorted(Comparator.comparing(link -> link.getTypeLabel()
-                        .toUpperCase()))
-                .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
-                .collect(Collectors.toList());
     }
 }

@@ -30,7 +30,7 @@ public abstract class LdproxyView extends View {
 
     protected LdproxyView(String templateName, @Nullable Charset charset, @Nullable OgcApiDatasetData apiData,
                           List<NavigationDTO> breadCrumbs, HtmlConfig htmlConfig, String urlPrefix,
-                          List<OgcApiLink> links, String title, String description) {
+                          @Nullable List<OgcApiLink> links, @Nullable String title, @Nullable String description) {
         super(templateName, charset);
         this.apiData = apiData;
         this.breadCrumbs = breadCrumbs;

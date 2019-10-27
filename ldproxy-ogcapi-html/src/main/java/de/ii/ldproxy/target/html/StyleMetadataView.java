@@ -13,19 +13,15 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.wfs3.styles.StyleMetadata;
-import io.dropwizard.views.View;
 
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class StyleMetadataView extends View {
-    private final OgcApiDatasetData apiData;
-    private final List<NavigationDTO> breadCrumbs;
+public class StyleMetadataView extends LdproxyView {
     public StyleMetadata metadata;
-    public final HtmlConfig htmlConfig;
-    public String urlPrefix;
-    public String title;
-    public String description;
     public String none;
     public String metadataTitle;
     public String specificationTitle;
@@ -61,14 +57,14 @@ public class StyleMetadataView extends View {
                              URICustomizer uriCustomizer,
                              I18n i18n,
                              Optional<Locale> language) {
-        super("styleMetadata.mustache", Charsets.UTF_8);
+        super("styleMetadata.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, staticUrlPrefix,
+                metadata.getLinks(),
+                null,
+                null);
 
-        // TODO this is quick and dirty - the view needs to be improved
+        // TODO the view could be improved
 
         this.metadata = metadata;
-        this.breadCrumbs = breadCrumbs;
-        this.urlPrefix = staticUrlPrefix;
-        this.htmlConfig = htmlConfig;
 
         this.none = i18n.get ("none", language);
 
@@ -97,38 +93,18 @@ public class StyleMetadataView extends View {
         this.requiredTitle = i18n.get ("requiredTitle", language);
         this.mediaTypesTitle = i18n.get ("mediaTypesTitle", language);
         this.thumbnailTitle = i18n.get ("thumbnailTitle", language);
-
-        this.apiData = apiData;
     }
 
     public OgcApiLink getThumbnail() {
-        return metadata.getLinks()
-                .stream()
+        return links.stream()
                 .filter(link -> Objects.equals(link.getRel(), "preview"))
                 .findFirst()
                 .orElse(null);
     }
 
     public List<OgcApiLink> getAdditionalLinks() {
-        return metadata.getLinks()
-                .stream()
+        return links.stream()
                 .filter(link -> !link.getRel().matches("^(?:self|alternate|preview|home)$"))
-                .collect(Collectors.toList());
-    }
-
-    // TODO move to abstract class
-    public List<NavigationDTO> getBreadCrumbs() {
-        return breadCrumbs;
-    }
-
-    // TODO move to abstract class
-    public List<NavigationDTO> getFormats() {
-        return metadata.getLinks()
-                .stream()
-                .filter(link -> link instanceof OgcApiLink && Objects.equals(((OgcApiLink)link).getRel(), "alternate"))
-                .sorted(Comparator.comparing(link -> ((OgcApiLink)link).getTypeLabel()
-                        .toUpperCase()))
-                .map(link -> new NavigationDTO(((OgcApiLink)link).getTypeLabel(), ((OgcApiLink)link).getHref()))
                 .collect(Collectors.toList());
     }
 }

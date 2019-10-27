@@ -11,37 +11,25 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.StyleEntry;
-import io.dropwizard.views.View;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * @author zahnen
- */
-public class OgcApiCollectionView extends View {
+public class OgcApiCollectionView extends LdproxyView {
 
     @Requires
     private I18n i18n;
 
     private final OgcApiCollection collection;
-    private final List<NavigationDTO> breadCrumbs;
-    private final OgcApiDatasetData datasetData;
-    public final HtmlConfig htmlConfig;
-    public String urlPrefix;
     public String itemType;
     public boolean spatialSearch;
     public Map<String, String> bbox2;
     public Map<String, String> temporalExtent;
-    public String title;
-    public String description;
     public List<String> crs;
     public String storageCrs;
     public Metadata metadata;
-    public List<OgcApiLink> links;
     public OgcApiLink items;
     private List<StyleEntry> styleEntries;
     public String defaultStyle;
@@ -60,22 +48,19 @@ public class OgcApiCollectionView extends View {
 
     public String none;
 
-    public OgcApiCollectionView(OgcApiDatasetData datasetData, OgcApiCollection collection,
+    public OgcApiCollectionView(OgcApiDatasetData apiData, OgcApiCollection collection,
                                 final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig,
                                 I18n i18n, Optional<Locale> language) {
-        super("collection.mustache", Charsets.UTF_8);
+        super("collection.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, urlPrefix,
+                collection.getLinks(),
+                collection
+                        .getTitle()
+                        .orElse(collection.getId()),
+                collection
+                        .getDescription()
+                        .orElse(""));
         this.collection = collection;
-        this.breadCrumbs = breadCrumbs;
-        this.urlPrefix = urlPrefix;
-        this.htmlConfig = htmlConfig;
 
-        this.title = collection
-                .getTitle()
-                .orElse(collection.getId());
-        this.description = collection
-                .getDescription()
-                .orElse("");
-        this.links = collection.getLinks();
         this.items = collection
                 .getLinks()
                 .stream()
@@ -123,8 +108,6 @@ public class OgcApiCollectionView extends View {
         this.itemType = collection.getItemType()
                 .orElse("feature");
 
-        this.datasetData = datasetData;
-
         this.itemTypeTitle = i18n.get("itemTypeTitle", language);
         this.dataTitle = i18n.get("dataTitle", language);
         this.licenseTitle = i18n.get("licenseTitle", language);
@@ -156,21 +139,7 @@ public class OgcApiCollectionView extends View {
 
     public OgcApiCollection getCollection() { return collection; }
 
-    public List<NavigationDTO> getBreadCrumbs() {
-        return breadCrumbs;
-    }
-
     public List<StyleEntry> getStyles() {
         return styleEntries;
-    }
-
-    public List<NavigationDTO> getFormats() {
-        return links
-                .stream()
-                .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "alternate"))
-                .sorted(Comparator.comparing(link -> link.getTypeLabel()
-                        .toUpperCase()))
-                .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
-                .collect(Collectors.toList());
     }
 }

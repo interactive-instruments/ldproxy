@@ -10,21 +10,15 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.wfs3.vt.TileMatrixSetData;
-import io.dropwizard.views.View;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
-public class OgcApiTileMatrixSetView extends View {
-    private final OgcApiDatasetData apiData;
-    private final List<NavigationDTO> breadCrumbs;
-    public final HtmlConfig htmlConfig;
-    public String urlPrefix;
+public class OgcApiTileMatrixSetView extends LdproxyView {
     public TileMatrixSetData tileMatrixSet;
-    public List<OgcApiLink> links;
     public String idTitle;
     public String boundingBoxTitle;
     public String wellKnownScaleSetTitle;
@@ -44,12 +38,11 @@ public class OgcApiTileMatrixSetView extends View {
                                    URICustomizer uriCustomizer,
                                    I18n i18n,
                                    Optional<Locale> language) {
-        super("tileMatrixSet.mustache", Charsets.UTF_8);
+        super("tileMatrixSet.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, staticUrlPrefix,
+                tileMatrixSet.getLinks(),
+                null,
+                null);
         this.tileMatrixSet = tileMatrixSet;
-        this.links = tileMatrixSet.getLinks();
-        this.breadCrumbs = breadCrumbs;
-        this.urlPrefix = staticUrlPrefix;
-        this.htmlConfig = htmlConfig;
 
         this.idTitle = i18n.get("idTitle", language);
         this.boundingBoxTitle = i18n.get("boundingBoxTitle", language);
@@ -61,21 +54,5 @@ public class OgcApiTileMatrixSetView extends View {
         this.tileHeightTitle = i18n.get("tileHeightTitle", language);
         this.matrixWidthTitle = i18n.get("matrixWidthTitle", language);
         this.matrixHeightTitle = i18n.get("matrixHeightTitle", language);
-
-        this.apiData = apiData;
-    }
-
-    public List<NavigationDTO> getBreadCrumbs() {
-        return breadCrumbs;
-    }
-
-    public List<NavigationDTO> getFormats() {
-        return links
-                .stream()
-                .filter(link -> Objects.equals(link.getRel(), "alternate"))
-                .sorted(Comparator.comparing(link -> link.getTypeLabel()
-                        .toUpperCase()))
-                .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
-                .collect(Collectors.toList());
     }
 }

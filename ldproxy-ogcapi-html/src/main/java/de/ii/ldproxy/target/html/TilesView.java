@@ -11,26 +11,15 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.wfs3.vt.TileCollection;
 import de.ii.ldproxy.wfs3.vt.TileCollections;
-import io.dropwizard.views.View;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class TilesView extends View {
-    private final OgcApiDatasetData apiData;
-    private final List<NavigationDTO> breadCrumbs;
-    public List<NavigationDTO> formats;
+public class TilesView extends LdproxyView {
     public List<TileCollection> tileCollections;
-    public final HtmlConfig htmlConfig;
     public String tilesUrl;
-    public List<OgcApiLink> links;
-    public String urlPrefix;
-    public String title;
-    public String description;
     public String mapTitle;
     public String none;
     public boolean withOlMap;
@@ -42,33 +31,28 @@ public class TilesView extends View {
                      TileCollections tiles,
                      Optional<String> collectionId,
                      List<NavigationDTO> breadCrumbs,
-                     String staticUrlPrefix,
+                     String urlPrefix,
                      HtmlConfig htmlConfig,
                      URICustomizer uriCustomizer,
                      I18n i18n,
                      Optional<Locale> language) {
-        super("tiles.mustache", Charsets.UTF_8);
+        super("tiles.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, urlPrefix,
+                tiles.getLinks(),
+                tiles.getTitle()
+                     .orElse(apiData.getId()),
+                tiles.getDescription()
+                     .orElse(""));
 
         // TODO this is quick and dirty - the view needs to be improved
 
         this.tileCollections = tiles.getTileMatrixSetLinks();
-        this.links = tiles.getLinks();
         this.tilesUrl = links.stream()
                 .filter(link -> Objects.equals(link.getRel(),"tiles"))
                 .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
                 .map(link -> link.getHref())
                 .findFirst()
                 .orElse(null);
-        this.breadCrumbs = breadCrumbs;
-        this.urlPrefix = staticUrlPrefix;
-        this.htmlConfig = htmlConfig;
 
-        this.title = tiles
-                .getTitle()
-                .orElse(apiData.getId());
-        this.description = tiles
-                .getDescription()
-                .orElse("");
         this.mapTitle = i18n.get("mapTitle", language);
         this.none = i18n.get ("none", language);
 
@@ -106,26 +90,5 @@ public class TilesView extends View {
         this.temporalExtent = interval==null ? null : ImmutableMap.of(
                 "start", interval[0].toString(),
                 "computedEnd", interval[1].toString());
-        this.formats = links.stream()
-                    .filter(link -> Objects.equals(link.getRel(), "alternate"))
-                    .sorted(Comparator.comparing(link -> link.getTypeLabel()
-                            .toUpperCase()))
-                    .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
-                    .collect(Collectors.toList());
-
-        this.apiData = apiData;
-    }
-
-    public List<NavigationDTO> getBreadCrumbs() {
-        return breadCrumbs;
-    }
-
-    public List<NavigationDTO> getFormats() {
-        return links.stream()
-                .filter(link -> Objects.equals(link.getRel(), "alternate"))
-                .sorted(Comparator.comparing(link -> link.getTypeLabel()
-                        .toUpperCase()))
-                .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
-                .collect(Collectors.toList());
     }
 }

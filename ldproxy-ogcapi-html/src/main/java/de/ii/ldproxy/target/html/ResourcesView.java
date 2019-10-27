@@ -10,24 +10,16 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.resources.Resource;
 import de.ii.ldproxy.resources.Resources;
-import io.dropwizard.views.View;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
-public class ResourcesView extends View {
-    private final OgcApiDatasetData apiData;
-    private final List<NavigationDTO> breadCrumbs;
+public class ResourcesView extends LdproxyView {
     private List<Resource> resourceList;
-    public final HtmlConfig htmlConfig;
-    public List<OgcApiLink> links;
-    public String urlPrefix;
-    public String title;
-    public String description;
     public String none;
 
     public ResourcesView(OgcApiDatasetData apiData,
@@ -38,37 +30,16 @@ public class ResourcesView extends View {
                          URICustomizer uriCustomizer,
                          I18n i18n,
                          Optional<Locale> language) {
-        super("resources.mustache", Charsets.UTF_8);
-
-        // TODO this is quick and dirty - the view needs to be improved
+        super("resources.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, staticUrlPrefix,
+                resources.getLinks(),
+                i18n.get("resourcesTitle", language),
+                i18n.get("resourcesDescription", language));
 
         this.resourceList = resources.getResources();
-        this.links = resources.getLinks();
-        this.breadCrumbs = breadCrumbs;
-        this.urlPrefix = staticUrlPrefix;
-        this.htmlConfig = htmlConfig;
-
-        this.title = i18n.get("resourcesTitle", language);
-        this.description = i18n.get("resourcesDescription", language);
         this.none = i18n.get ("none", language);
-
-        this.apiData = apiData;
-    }
-
-    public List<NavigationDTO> getBreadCrumbs() {
-        return breadCrumbs;
     }
 
     public List<Resource> getResources() {
         return resourceList;
-    }
-
-    public List<NavigationDTO> getFormats() {
-        return links.stream()
-            .filter(link -> Objects.equals(link.getRel(), "alternate"))
-            .sorted(Comparator.comparing(link -> link.getTypeLabel()
-                    .toUpperCase()))
-            .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
-            .collect(Collectors.toList());
     }
 }
