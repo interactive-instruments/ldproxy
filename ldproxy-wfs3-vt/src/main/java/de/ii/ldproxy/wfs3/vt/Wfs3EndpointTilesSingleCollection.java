@@ -70,6 +70,8 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     private final VectorTilesCache cache;
 
+    private final MultitilesGenerator multitilesGenerator = new MultitilesGenerator();
+
     Wfs3EndpointTilesSingleCollection(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
         cache = new VectorTilesCache(dataDirectory);
@@ -109,7 +111,10 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
     @Override
     public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
         if (subPath.matches("^/?[\\w\\-]+/tiles(?:/\\w+)?/?$")) {
-            return OgcApiEndpointExtension.super.getParameters(apiData, subPath);
+            return new ImmutableSet.Builder<String>()
+                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
+                    .add("bbox", "scaleDenominator", "multiTileType", "f-tile")
+                    .build();
         } else if (subPath.matches("^/?(?:[\\w\\-]+)/tiles/(?:\\w+/\\w+/\\w+/\\w+)$")) {
             ImmutableSet<String> parametersFromExtensions = new ImmutableSet.Builder<String>()
                     .addAll(wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)
@@ -139,6 +144,32 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
         return isExtensionEnabled(apiData, TilesConfiguration.class);
+    }
+
+    /**
+     * Retrieve more than one tile from a single collection in a single request
+     * @param service               the wfs3 service
+     * @param collectionId          the id of the collection to which the tiles belong
+     * @param tileMatrixSetId       the local identifier of a specific tile matrix set
+     * @param bboxParam             bounding box specified in WGS 84 longitude/latitude format
+     * @param scaleDenominatorParam value of the scaleDenominator request parameter
+     * @param multiTileType         value of the multiTileType request parameter
+     * @return                      tileSet document
+     */
+    @Path("/{collectionId}/tiles/{tileMatrixSetId}")
+    @GET
+    public Response getMultitiles(@Context OgcApiRequestContext wfs3Request, @Context OgcApiDataset service, @Context UriInfo uriInfo,
+                                  @PathParam("collectionId") String collectionId, @PathParam("tileMatrixSetId") String tileMatrixSetId,
+                                  @QueryParam("bbox") String bboxParam, @QueryParam("scaleDenominator") String scaleDenominatorParam,
+                                  @QueryParam("multiTileType") String multiTileType, @QueryParam("f-tile") String tileFormat) {
+
+        checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
+        OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE)
+                .orElseThrow(NotAcceptableException::new);
+
+        return multitilesGenerator.getMultitiles(tileMatrixSetId, bboxParam, scaleDenominatorParam, multiTileType,
+                wfs3Request.getUriCustomizer(), tileFormat, collectionId, crsTransformation, uriInfo, i18n,
+                wfs3Request.getLanguage(), service, cache, wfs3OutputFormatGeoJson);
     }
 
     /**
@@ -279,7 +310,8 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                 }
             } else {
                 if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                   TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage());
+                   TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, filterableFields,
+                           wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage());
                 }
             }
 

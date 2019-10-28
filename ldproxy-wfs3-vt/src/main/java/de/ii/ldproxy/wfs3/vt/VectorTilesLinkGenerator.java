@@ -195,6 +195,14 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                     .templated("true")
                     .build());
         }
+        builder.add(new ImmutableOgcApiLink.Builder()
+                .href(uriBuilder.copy()
+                        .clearParameters()
+                        .ensureNoTrailingSlash()
+                        .toString() + (tileMatrixSetId==null ? "" : "/"+tileMatrixSetId))
+                .rel("multitiles")
+                .type("application/geo+json")
+                .build());
 
         return builder.build();
     }
