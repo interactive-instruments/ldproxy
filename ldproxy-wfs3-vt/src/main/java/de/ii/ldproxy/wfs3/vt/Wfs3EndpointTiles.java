@@ -174,7 +174,11 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     public Response getCollectionsMultitiles(@Auth Optional<User> optionalUser, @Context OgcApiRequestContext wfs3Request,
                                              @Context OgcApiDataset service, @PathParam("tileMatrixSetId") String tileMatrixSetId,
                                              @QueryParam("bbox") String bboxParam, @QueryParam("scaleDenominator") String scaleDenominatorParam,
-                                             @QueryParam("multiTileType") String multiTileType, @QueryParam("collections") String collectionsParam) throws UnsupportedEncodingException {
+                                             @QueryParam("multiTileType") String multiTileType, @QueryParam("collections") String collectionsParam,
+                                             @Context UriInfo uriInfo) throws UnsupportedEncodingException {
+
+        OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE)
+                .orElseThrow(NotAcceptableException::new);
         Map<String, Boolean> enabledMap = vectorTileMapGenerator.getEnabledMap(service.getData());
         Set<String> collections = new HashSet<>();
         Set<String> requestedCollections = parseCsv(collectionsParam);
@@ -189,7 +193,8 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             }
         }
         return collectionsMultitilesGenerator.getCollectionsMultitiles(tileMatrixSetId, bboxParam, scaleDenominatorParam,
-                multiTileType, wfs3Request.getUriCustomizer(), collections);
+                multiTileType, wfs3Request.getUriCustomizer(), collections, crsTransformation, uriInfo, service,
+                wfs3Request, cache, wfs3OutputFormatGeoJson);
     }
 
     /**
@@ -266,7 +271,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         Set<String> collectionIds = getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(service.getData()), vectorTileMapGenerator.getEnabledMap(service.getData()),
                 vectorTileMapGenerator.getFormatsMap(service.getData()), vectorTileMapGenerator.getMinMaxMap(service.getData(), true), false, false, false);
         if (!tileFileMvt.exists()) {
-            generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections, requestedProperties, service, tileMatrix, tileRow, tileCol, tileMatrixSetId, doNotCache, cache, wfs3Request, crsTransformation, uriInfo, false, wfs3OutputFormatGeoJson);
+            generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections, requestedProperties, service, tileMatrix, tileRow, tileCol, tileMatrixSetId, doNotCache, cache, wfs3Request, crsTransformation, uriInfo, false, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator);
         } else {
             boolean invalid = false;
 
@@ -286,7 +291,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             }
 
             if (invalid) {
-                generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections, requestedProperties, service, tileMatrix, tileRow, tileCol, tileMatrixSetId, doNotCache, cache, wfs3Request, crsTransformation, uriInfo, true, wfs3OutputFormatGeoJson);
+                generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections, requestedProperties, service, tileMatrix, tileRow, tileCol, tileMatrixSetId, doNotCache, cache, wfs3Request, crsTransformation, uriInfo, true, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator);
             }
         }
 
@@ -430,13 +435,14 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         return collectionIdsFilter;
     }
 
-    private void generateTileDataset(VectorTile tile, File tileFileMvt, Map<String, File> layers,
+    protected static void generateTileDataset(VectorTile tile, File tileFileMvt, Map<String, File> layers,
                                      Set<String> collectionIds, Set<String> requestedCollections,
                                      Set<String> requestedProperties, OgcApiDataset wfsService, String level,
                                      String row, String col, String tileMatrixSetId, boolean doNotCache,
                                      VectorTilesCache cache, OgcApiRequestContext wfs3Request,
                                      CrsTransformation crsTransformation, UriInfo uriInfo, boolean invalid,
-                                     OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
+                                     OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, I18n i18n,
+                                     VectorTileMapGenerator vectorTileMapGenerator) throws FileNotFoundException {
 
         for (String collectionId : collectionIds) {
             // include only the requested layers / collections

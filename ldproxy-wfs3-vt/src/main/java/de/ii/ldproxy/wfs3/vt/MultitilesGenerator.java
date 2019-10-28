@@ -10,9 +10,10 @@ package de.ii.ldproxy.wfs3.vt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -20,7 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -30,6 +33,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -69,20 +74,24 @@ public class MultitilesGenerator implements ConformanceClass {
      * @return multiple tiles
      */
     Response getMultitiles(String tileMatrixSetId, String bboxParam, String scaleDenominatorParam, String multiTileType,
-                           URICustomizer uriCustomizer, String tileFormat) {
+                           URICustomizer uriCustomizer, String tileFormatParam, String collectionId, CrsTransformation crsTransformation,
+                           UriInfo uriInfo, I18n i18n, Optional<Locale> language, OgcApiDataset service, VectorTilesCache cache,
+                           OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) {
 
+        String tileFormat = parseTileFormat(tileFormatParam);
         checkTileMatrixSet(tileMatrixSetId);
         List<Integer> tileMatrices = parseScaleDenominator(scaleDenominatorParam);
         double[] bbox = parseBbox(bboxParam);
-        LOGGER.debug("GET TILE MULTITILES {} {}-{} {}", bbox, tileMatrices.get(0), tileMatrices.get(tileMatrices.size()-1), multiTileType);
-        List<TileSetEntry> tileSetEntries = generateTilesetEntries(bbox, tileMatrices, uriCustomizer, getTileFormat(tileFormat));
+        LOGGER.debug("GET TILE MULTITILES {} {}-{} {} {}", bbox, tileMatrices.get(0), tileMatrices.get(tileMatrices.size()-1), multiTileType, tileFormat);
+        List<TileSetEntry> tileSetEntries = generateTilesetEntries(bbox, tileMatrices, uriCustomizer, parseTileFormat(tileFormat));
 
         if ("url".equals(multiTileType)) {
             return Response.ok(ImmutableMap.of("tileSet", tileSetEntries))
                     .type("application/geo+json")
                     .build();
         } else if (multiTileType == null || "tiles".equals(multiTileType) || "full".equals(multiTileType)) {
-            File zip = generateZip(tileSetEntries, tileMatrixSetId, "full".equals(multiTileType));
+            File zip = generateZip(tileSetEntries, tileMatrixSetId, collectionId, "full".equals(multiTileType), crsTransformation,
+                    uriInfo, i18n, language, uriCustomizer, service, cache, wfs3OutputFormatGeoJson, tileFormat);
             return Response.ok(zip)
                     .type("application/zip")
                     .build();
@@ -145,11 +154,16 @@ public class MultitilesGenerator implements ConformanceClass {
         return bbox;
     }
 
-    protected static String getTileFormat(String tileFormat) {
-        if (tileFormat == null || tileFormat.trim().isEmpty() || "json".equals(tileFormat)) {
+    /**
+     * Parse the value of the request parameter f-tile
+     * @param tileFormatParam parameter value
+     * @return tile format
+     */
+    protected static String parseTileFormat(String tileFormatParam) {
+        if (tileFormatParam == null || tileFormatParam.trim().isEmpty() || "json".equals(tileFormatParam)) {
             return "json";
-        } else if ("mvt".equals(tileFormat)) {
-            return tileFormat;
+        } else if ("mvt".equals(tileFormatParam)) {
+            return tileFormatParam;
         }
         throw new NotFoundException("Unknown value of the tile format parameter");
     }
@@ -167,8 +181,8 @@ public class MultitilesGenerator implements ConformanceClass {
         for (int tileMatrix : tileMatrices) {
             List<Integer> bottomTile = pointToTile(bbox[0], bbox[1], tileMatrix);
             List<Integer> topTile = pointToTile(bbox[2], bbox[3], tileMatrix);
-            for (int row = bottomTile.get(0); row <= topTile.get(0); row++){
-                for (int col = topTile.get(1); col <= bottomTile.get(1); col++) {
+            for (int row = topTile.get(0); row <= bottomTile.get(0); row++){
+                for (int col = bottomTile.get(1); col <= topTile.get(1); col++) {
                     tileSets.add(ImmutableTileSetEntry.builder()
                             .tileURL(uriCustomizer.copy()
                                     .clearParameters()
@@ -211,22 +225,25 @@ public class MultitilesGenerator implements ConformanceClass {
      * @return list with XY coordinates of the tile in the grid
      */
     protected static List<Integer> pixelsToTile(double px, double py, int tileMatrix) {
-        int tileX = (int) (Math.ceil(px / TILE_MATRIX_SET.getTileSize()) - 1);
-        int tileY = (int) (Math.pow(2, tileMatrix) - Math.ceil(py / TILE_MATRIX_SET.getTileSize()));
+        int tileX = (int) (Math.pow(2, tileMatrix) - Math.ceil(py / TILE_MATRIX_SET.getTileSize()));
+        int tileY = (int) (Math.ceil(px / TILE_MATRIX_SET.getTileSize()) - 1);
         return ImmutableList.of(tileX, tileY);
     }
 
-    protected static File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId, boolean isFull) {
-        FileOutputStream fout;
-        ZipOutputStream zout;
+    private File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId, String collectionId,
+                                    boolean isFull, CrsTransformation crsTransformation, UriInfo uriInfo, I18n i18n,
+                                    Optional<Locale> language, URICustomizer uriCustomizer, OgcApiDataset service,
+                                    VectorTilesCache cache, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
+                                    String tileFormat) {
         File zip = null;
 
         try {
             zip = File.createTempFile(tileMatrixSetId, ".zip");
-            fout = new FileOutputStream(zip);
-            zout = new ZipOutputStream(fout);
+            FileOutputStream fout = new FileOutputStream(zip);
+            ZipOutputStream zout = new ZipOutputStream(fout);
 
             if (isFull) {
+                // add tileSet response document in the archive
                 ObjectMapper mapper = new ObjectMapper();
                 String jsonString = mapper.writeValueAsString(ImmutableMap.of("tileSet", tileSetEntries));
                 File tmpFile = File.createTempFile(tileMatrixSetId, ".json");
@@ -234,33 +251,70 @@ public class MultitilesGenerator implements ConformanceClass {
                 writer.write(jsonString);
                 writer.close();
 
-                FileInputStream fis = new FileInputStream(tmpFile.getAbsolutePath());
-                BufferedInputStream bis = new BufferedInputStream(fis, 1024);
-                byte[] data = new byte[1024];
-
                 zout.putNextEntry(new ZipEntry(tileMatrixSetId + ".json"));
-                int count;
-                while ((count = bis.read(data, 0, 1024)) != -1) {
-                    zout.write(data, 0, count);
+
+                try (FileInputStream fis = new FileInputStream(tmpFile.getAbsolutePath());
+                     BufferedInputStream bis = new BufferedInputStream(fis, 1024)) {
+                    int count;
+                    byte[] data = new byte[1024];
+                    while ((count = bis.read(data, 0, 1024)) != -1) {
+                        zout.write(data, 0, count);
+                    }
                 }
-                bis.close();
-                fis.close();
                 zout.closeEntry();
+                tmpFile.deleteOnExit();
 
             }
             for (TileSetEntry entry : tileSetEntries) {
-                zout.putNextEntry(new ZipEntry(new StringBuilder(tileMatrixSetId)
-                        .append(File.separator)
-                        .append(entry.getTileMatrix())
-                        .append(File.separator)
-                        .append(entry.getTileRow())
-                        .append(File.separator)
-                        .append(entry.getTileCol())
-                        .append(".json")
-                        .toString()));
+                File tileFile;
+                VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, String.valueOf(entry.getTileMatrix()),
+                        String.valueOf(entry.getTileRow()), String.valueOf(entry.getTileCol()), service, false, cache,
+                        service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                File tileFileJson = tile.getFile(cache, "json");
+
+                if (!tileFileJson.exists()) {
+                    OgcApiMediaType geoJsonMediaType = new ImmutableOgcApiMediaType.Builder()
+                            .type(new MediaType("application", "geo+json"))
+                            .label("GeoJSON")
+                            .build();
+                    TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, uriCustomizer,
+                            geoJsonMediaType, true, tile, i18n, language);
+                }
+
+                    // add the generated tile to the archive
+                    String path = new StringBuilder(tileMatrixSetId)
+                            .append(File.separator)
+                            .append(entry.getTileMatrix())
+                            .append(File.separator)
+                            .append(entry.getTileRow())
+                            .append(File.separator)
+                            .append(entry.getTileCol())
+                            .append(".")
+                            .append(tileFormat)
+                            .toString();
+                zout.putNextEntry(new ZipEntry(path));
+
+                tileFile = tileFileJson;
+                if ("mvt".equals(tileFormat)) {
+                    File tileFileMvt = tile.getFile(cache, "pbf");
+                    Wfs3EndpointTilesSingleCollection.generateTileCollection(collectionId, tileFileJson, tileFileMvt,
+                            tile, null, crsTransformation);
+                    tileFile = tileFileMvt;
+                }
+
+                try (FileInputStream fis = new FileInputStream(tileFile.getAbsolutePath());
+                     BufferedInputStream bis = new BufferedInputStream(fis, 1024)) {
+                    int count;
+                    byte[] data = new byte[1024];
+                    while ((count = bis.read(data, 0, 1024)) != -1) {
+                        zout.write(data, 0, count);
+                    }
+                }
                 zout.closeEntry();
+                tileFile.delete();
             }
             zout.close();
+            fout.close();
 
         } catch (IOException e) {
             e.printStackTrace();

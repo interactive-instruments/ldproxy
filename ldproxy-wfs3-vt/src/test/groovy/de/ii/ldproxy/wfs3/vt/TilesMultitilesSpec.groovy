@@ -82,16 +82,16 @@ class TilesMultitilesSpec extends Specification {
         where:
         lon             | lat               | tileMatrix    | expectedResult
         -960864.3911    | 6920710.4554      | 1             | [0, 0]
-        3368936.9408    | 8388097.0703      | 4             | [9,4]
-        15556463.9966   | 4256829.0788      | 9             | [454, 201]
-        -152.8554       | -305.7353         | 10            | [511, 512]
-        -8123599.9684   | -6627491.6467     | 13            | [2435,5450]
-        16833220.5430   | -4009537.5609     | 18            | [241183, 157299]
+        3368936.9408    | 8388097.0703      | 4             | [4, 9]
+        15556463.9966   | 4256829.0788      | 9             | [201, 454]
+        -152.8554       | -305.7353         | 10            | [512, 511]
+        -8123599.9684   | -6627491.6467     | 13            | [5450, 2435]
+        16833220.5430   | -4009537.5609     | 18            | [157299, 241183]
     }
 
     def "f-tile request query parameter parsing"() {
         when:
-        def tileFormat = MultitilesGenerator.getTileFormat(ftileParam)
+        def tileFormat = MultitilesGenerator.parseTileFormat(ftileParam)
 
         then:
         tileFormat == expectedResult
@@ -106,7 +106,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "incorrect/unsupported f-tile request parameter"() {
         when:
-        MultitilesGenerator.getTileFormat(ftileParam)
+        MultitilesGenerator.parseTileFormat(ftileParam)
 
         then:
         thrown(NotFoundException)

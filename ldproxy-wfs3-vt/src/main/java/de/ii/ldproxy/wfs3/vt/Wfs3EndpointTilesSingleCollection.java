@@ -156,15 +156,18 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
      */
     @Path("/{collectionId}/tiles/{tileMatrixSetId}")
     @GET
-    public Response getMultitiles(@Context OgcApiRequestContext wfs3Request, @Context OgcApiDataset service,
+    public Response getMultitiles(@Context OgcApiRequestContext wfs3Request, @Context OgcApiDataset service, @Context UriInfo uriInfo,
                                   @PathParam("collectionId") String collectionId, @PathParam("tileMatrixSetId") String tileMatrixSetId,
                                   @QueryParam("bbox") String bboxParam, @QueryParam("scaleDenominator") String scaleDenominatorParam,
                                   @QueryParam("multiTileType") String multiTileType, @QueryParam("f-tile") String tileFormat) {
 
         checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
+        OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE)
+                .orElseThrow(NotAcceptableException::new);
 
         return multitilesGenerator.getMultitiles(tileMatrixSetId, bboxParam, scaleDenominatorParam, multiTileType,
-                                                wfs3Request.getUriCustomizer(), tileFormat);
+                wfs3Request.getUriCustomizer(), tileFormat, collectionId, crsTransformation, uriInfo, i18n,
+                wfs3Request.getLanguage(), service, cache, wfs3OutputFormatGeoJson);
     }
 
     /**
@@ -284,7 +287,8 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                 }
             } else {
                 if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                   TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage());
+                   TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, filterableFields,
+                           wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage());
                 }
             }
 
