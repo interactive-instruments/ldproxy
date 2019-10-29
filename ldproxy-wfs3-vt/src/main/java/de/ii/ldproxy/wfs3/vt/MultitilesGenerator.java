@@ -46,7 +46,7 @@ public class MultitilesGenerator implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MultitilesGenerator.class);
 
-    private static final TileMatrixSet TILE_MATRIX_SET = new DefaultTileMatrixSet();
+    private static final TileMatrixSet TILE_MATRIX_SET = new WebMercatorQuad();
 
     private static final double INITIAL_RESOLUTION = 2 * Math.PI * 6378137 / TILE_MATRIX_SET.getTileSize();
 

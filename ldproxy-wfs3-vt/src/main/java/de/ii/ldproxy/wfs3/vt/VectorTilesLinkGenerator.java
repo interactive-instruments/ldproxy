@@ -199,9 +199,9 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                 .href(uriBuilder.copy()
                         .clearParameters()
                         .ensureNoTrailingSlash()
-                        .toString() + (tileMatrixSetId==null ? "" : "/"+tileMatrixSetId))
-                .rel("multitiles")
-                .type("application/geo+json")
+                        .toString() + "/{tileMatrixSetId}")
+                .rel("items")
+                .templated("true")
                 .build());
 
         return builder.build();
