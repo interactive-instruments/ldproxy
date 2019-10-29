@@ -63,6 +63,7 @@ import de.ii.xtraplatform.scheduler.api.TaskQueue;
 import de.ii.xtraplatform.scheduler.api.TaskStatus;
 import de.ii.xtraplatform.service.api.ServiceBackgroundTasks;
 import de.ii.xtraplatform.service.api.ServiceData;
+import de.ii.xtraplatform.service.api.ServiceGenerator;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -102,7 +103,7 @@ import java.util.stream.Stream;
         onArrival = "onArrival",
         onDeparture = "onDeparture",
         onModification = "onModification")
-public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetData>, ServiceBackgroundTasks {
+public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>, ServiceBackgroundTasks {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3ServiceGenerator.class);
 

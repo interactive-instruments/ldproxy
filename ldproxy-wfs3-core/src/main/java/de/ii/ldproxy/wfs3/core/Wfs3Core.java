@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.core;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -277,7 +278,14 @@ public class Wfs3Core implements ConformanceClass {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
                 }
-                throw new IllegalStateException("Feature stream error", e.getCause());
+                //throw new IllegalStateException("Feature stream error", e.getCause());
+
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Feature stream error, client gone? ({})", Throwables.getRootCause(e).getMessage());
+                }
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("Exception", e.getCause());
+                }
             }
         };
     }
@@ -293,7 +301,14 @@ public class Wfs3Core implements ConformanceClass {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
                 }
-                throw new IllegalStateException("Feature stream error", e.getCause());
+                //throw new IllegalStateException("Feature stream error", e.getCause());
+
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Feature stream error, client gone? ({})", Throwables.getRootCause(e).getMessage());
+                }
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("Exception", e.getCause());
+                }
             }
         };
     }

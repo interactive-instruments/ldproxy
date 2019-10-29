@@ -173,7 +173,12 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
             if (currentGeometryType == GEO_JSON_GEOMETRY_TYPE.GENERIC) {
                 currentGeometryType = GEO_JSON_GEOMETRY_TYPE.forGmlType(type);
             } else if (currentGeometryType != GEO_JSON_GEOMETRY_TYPE.forGmlType(type)) {
-                return;
+                // TODO: only for gsfs, make extendable, maybe per transformationContext
+                GEO_JSON_GEOMETRY_TYPE currentAsMulti = GEO_JSON_GEOMETRY_TYPE.fromString("Multi" + currentGeometryType.toString());
+                if (currentAsMulti != GEO_JSON_GEOMETRY_TYPE.forGmlType(type)) {
+                    return;
+                }
+                currentGeometryType = currentAsMulti;
             }
 
             CoordinatesWriterType.Builder cwBuilder = CoordinatesWriterType.builder();

@@ -55,6 +55,16 @@ public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
             return NONE;
         }
 
+        public static GEO_JSON_GEOMETRY_TYPE fromString(String type) {
+            for (GEO_JSON_GEOMETRY_TYPE geoJsonType : GEO_JSON_GEOMETRY_TYPE.values()) {
+                    if (geoJsonType.toString().equals(type)) {
+                        return geoJsonType;
+                    }
+            }
+
+            return NONE;
+        }
+
         @Override
         public SimpleFeatureGeometry toSimpleFeatureGeometry() {
             SimpleFeatureGeometry simpleFeatureGeometry = SimpleFeatureGeometry.NONE;
