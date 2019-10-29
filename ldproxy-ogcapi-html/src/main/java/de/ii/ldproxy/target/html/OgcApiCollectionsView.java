@@ -8,6 +8,7 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.Collections;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -66,5 +67,22 @@ public class OgcApiCollectionsView extends LdproxyView {
                 .collect(Collectors.toList());
     }
 
-    public List<OgcApiCollection> getCollections() { return collections; }
+    public List<Map<String, String>> getCollections() {
+        return collections.stream()
+                .map(collection -> ImmutableMap.of("title", collection.getTitle().orElse(collection.getId()),
+                        "id", collection.getId(),
+                        "hrefcollection", collection.getLinks()
+                                .stream()
+                                .filter(link -> link.getRel().equalsIgnoreCase("self"))
+                                .findFirst()
+                                .map(link -> link.getHref())
+                                .orElse(""),
+                        "hrefitems", collection.getLinks()
+                                .stream()
+                                .filter(link -> link.getRel().equalsIgnoreCase("self"))
+                                .findFirst()
+                                .map(link -> link.getHref() + "/items")
+                                .orElse("")))
+                .collect(Collectors.toList());
+    }
 }
