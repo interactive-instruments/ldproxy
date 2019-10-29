@@ -14,13 +14,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCapabilityExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.api.TargetMappingRefiner;
+import de.ii.ldproxy.ogcapi.features.core.api.Wfs3StyleGeneratorExtension;
 import de.ii.ldproxy.wfs3.Gml2Wfs3GenericMappingProvider;
-import de.ii.ldproxy.wfs3.api.*;
 import de.ii.xtraplatform.crs.api.DefaultCoordinatesWriter;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.crs.api.JsonCoordinateFormatter;
@@ -60,6 +63,7 @@ import de.ii.xtraplatform.scheduler.api.TaskQueue;
 import de.ii.xtraplatform.scheduler.api.TaskStatus;
 import de.ii.xtraplatform.service.api.ServiceBackgroundTasks;
 import de.ii.xtraplatform.service.api.ServiceData;
+import de.ii.xtraplatform.service.api.ServiceGenerator;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -84,6 +88,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -98,7 +103,9 @@ import java.util.stream.Stream;
         onArrival = "onArrival",
         onDeparture = "onDeparture",
         onModification = "onModification")
-public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetData>, ServiceBackgroundTasks {
+public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>, ServiceBackgroundTasks {
+
+    // TODO review
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3ServiceGenerator.class);
 
@@ -174,10 +181,10 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
             wfs3ConformanceClassRegistry.getExtensions()
                                         .stream()
-                                        .filter(wfs3Extension -> wfs3Extension instanceof Wfs3CapabilityExtension)
+                                        .filter(wfs3Extension -> wfs3Extension instanceof OgcApiCapabilityExtension)
                                         .sorted(Comparator.comparing(wfs3Extension -> wfs3Extension.getClass()
                                                                                                    .getSimpleName()))
-                                        .map(wfs3Extension -> (Wfs3CapabilityExtension) wfs3Extension)
+                                        .map(wfs3Extension -> (OgcApiCapabilityExtension) wfs3Extension)
                                         .forEach(wfs3Capability -> {
                                             wfs3ServiceData.addCapabilities(wfs3Capability.getDefaultConfiguration(preset));
                                         });
@@ -208,16 +215,19 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
             if (e instanceof WebApplicationException) {
                 throw e;
             }
-            throw new IllegalArgumentException(e);
+            if (e instanceof CompletionException) {
+                throw new IllegalStateException(e.getCause());
+            }
+            throw new IllegalStateException(e);
         }
     }
 
     private List<TargetMappingProviderFromGml> getMappingProviders() {
         return Stream.concat(
                 Stream.of(new Gml2Wfs3GenericMappingProvider()),
-                wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
+                wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
                                             .stream()
-                                            .map(Wfs3FeatureFormatExtension::getMappingGenerator)
+                                            .map(OgcApiFeatureFormatExtension::getMappingGenerator)
                                             .filter(Optional::isPresent)
                                             .map(Optional::get)
         )
@@ -225,9 +235,9 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
     }
 
     private List<TargetMappingRefiner> getMappingRefiners() {
-        return wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3FeatureFormatExtension.class)
+        return wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
                                            .stream()
-                                           .map(Wfs3FeatureFormatExtension::getMappingRefiner)
+                                           .map(OgcApiFeatureFormatExtension::getMappingRefiner)
                                            .filter(Optional::isPresent)
                                            .map(Optional::get)
                                            .collect(Collectors.toList());
@@ -238,18 +248,20 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
             checkGenerateMapping(ref);
             checkRefineMapping(ref);
         } catch (Throwable e) {
-            LOGGER.debug("E", e);
+            LOGGER.error("Error starting a service. ", e);
         }
-
     }
 
     private synchronized void onDeparture(ServiceReference<FeatureTransformerService> ref) {
     }
 
     private synchronized void onModification(ServiceReference<FeatureTransformerService> ref) {
-        LOGGER.debug("MOD");
-        checkGenerateMapping(ref);
-        checkRefineMapping(ref);
+        try {
+            checkGenerateMapping(ref);
+            checkRefineMapping(ref);
+        } catch (Throwable e) {
+            LOGGER.error("Error modifying a service. ", e);
+        }
     }
 
     private void checkGenerateMapping(ServiceReference<FeatureTransformerService> ref) {
@@ -325,12 +337,15 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
 
             boolean needsRefinement = data.getFeatureProvider()
                                           .getMappings()
-                                          .get(featureType.getId())
-                                          .getMappingsWithPathAsList()
-                                          .values()
-                                          .stream()
-                                          .anyMatch(sourcePathMapping -> mappingRefiners.stream()
-                                                                                        .anyMatch(targetMappingRefiner -> targetMappingRefiner.needsRefinement(sourcePathMapping)));
+                                          .containsKey(featureType.getId()) &&
+                    data.getFeatureProvider()
+                        .getMappings()
+                        .get(featureType.getId())
+                        .getMappingsWithPathAsList()
+                        .values()
+                        .stream()
+                        .anyMatch(sourcePathMapping -> mappingRefiners.stream()
+                                                                      .anyMatch(targetMappingRefiner -> targetMappingRefiner.needsRefinement(sourcePathMapping)));
             if (needsRefinement) {
                 return true;
             }
@@ -624,7 +639,7 @@ public class Wfs3ServiceGenerator implements EntityDataGenerator<OgcApiDatasetDa
                     //TODO
                     HashMap<String, TargetMapping> map = Maps.newHashMap(next.build()
                                                                              .getMappings());
-                    ((Wfs3GenericMapping) map.get(TargetMapping.BASE_TYPE)).setEnabled(false);
+                    ((OgcApiFeaturesGenericMapping) map.get(TargetMapping.BASE_TYPE)).setEnabled(false);
                     next.mappings(map);
 
                 }

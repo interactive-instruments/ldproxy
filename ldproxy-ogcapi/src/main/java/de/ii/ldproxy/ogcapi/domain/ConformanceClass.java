@@ -7,9 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-/**
- * @author zahnen
- */
+
 public interface ConformanceClass extends OgcApiExtension {
     String getConformanceClass();
 

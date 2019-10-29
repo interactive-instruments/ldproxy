@@ -9,9 +9,6 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.Optional;
 
-/**
- * @author zahnen
- */
 public interface OgcApiExtension {
 
     boolean isEnabledForApi(OgcApiDatasetData apiData);

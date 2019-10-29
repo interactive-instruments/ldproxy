@@ -7,21 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import com.google.common.collect.ImmutableList;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-/**
- * @author portele
- */
 public class OgcApiExtentTemporal {
     private String[][] interval;
     private String trs;
-
-    public OgcApiExtentTemporal() {
-
-    }
 
     public OgcApiExtentTemporal(long begin, long end) {
         this.interval = new String[][]{{

@@ -10,8 +10,6 @@ package de.ii.ldproxy.ogcapi.infra.rest;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.rest.InjectableContext;
 
-/**
- * @author zahnen
- */
+
 public interface OgcApiRequestInjectableContext extends InjectableContext<OgcApiRequestContext> {
 }

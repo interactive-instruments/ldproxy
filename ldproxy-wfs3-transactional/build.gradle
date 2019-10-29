@@ -3,9 +3,9 @@ version = '1.4.1'
 
 dependencies {
     provided project(":ldproxy-wfs3")
-    provided project(":ldproxy-wfs3-oas30")
-    provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-ogcapi-oas30")
     provided project(":ldproxy-ogcapi")
+    provided project(":ldproxy-ogcapi-features-core")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'

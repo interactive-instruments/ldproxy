@@ -10,17 +10,9 @@ package de.ii.ldproxy.ogcapi.infra.rest;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputConformance;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.CommonQuery;
+import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.OgcApiQueryInputConformance;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.CommonFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -36,9 +28,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
 
-/**
- * @author zahnen
- */
+
 @Component
 @Provides
 @Instantiate
@@ -48,12 +38,12 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("conformance")
-            .addMethods(OgcApiContext.HttpMethods.GET)
+            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?$")
             .build();
 
     private final OgcApiExtensionRegistry extensionRegistry;
-    //TODO
+
     @Requires
     private OgcApiQueriesHandlerCommon queryHandler;
 
@@ -71,6 +61,7 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
         if (subPath.matches("^/?$"))
             return extensionRegistry.getExtensionsForType(CommonFormatExtension.class)
                                     .stream()
+                                    .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))
                                     .map(CommonFormatExtension::getMediaType)
                                     .collect(ImmutableSet.toImmutableSet());
 
@@ -78,11 +69,21 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
     }
 
     @GET
-    public Response getConformanceClasses(@Auth Optional<User> optionalUser, @Context OgcApiDataset service,
+    public Response getConformanceClasses(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
                                           @Context OgcApiRequestContext requestContext) {
 
-        OgcApiQueryInputConformance queryInputConformance = new ImmutableOgcApiQueryInputConformance.Builder().build();
+        boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+                .orElse(false);
+        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+                .orElse(false);
 
-        return queryHandler.handle(CommonQuery.CONFORMANCE, queryInputConformance, requestContext);
+        OgcApiQueryInputConformance queryInput = new ImmutableOgcApiQueryInputConformance.Builder()
+                .includeHomeLink(includeHomeLink)
+                .includeLinkHeader(includeLinkHeader)
+                .build();
+
+        return queryHandler.handle(Query.CONFORMANCE_DECLARATION, queryInput, requestContext);
     }
 }

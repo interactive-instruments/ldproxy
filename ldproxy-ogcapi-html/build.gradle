@@ -1,0 +1,37 @@
+
+version = '1.4.1'
+
+repositories {
+    maven {
+        url "https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases"
+    }
+}
+
+dependencies {
+    provided project(":ldproxy-codelists")
+    provided project(":ldproxy-ogcapi")
+    provided project(":ldproxy-ogcapi-features-core")
+    provided project(":ldproxy-wfs3-around-relations")
+    provided project(":ldproxy-string-templates")
+    provided project(":ldproxy-ogcapi-styles")
+    provided project(":ldproxy-ogcapi-resources")
+    provided project(":ldproxy-ogcapi-collection-queryables")
+    provided project(":ldproxy-ogcapi-oas30")
+    provided project(":ldproxy-wfs3-vt")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-rest'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
+}
+
+jar {
+    manifest {
+        attributes('X-Web-Resource-Version': '1.1')
+        attributes('X-Web-Resource': '/app/js;/app/js, /app/css;/app/css, /app/img;/app/img')
+    }
+}

@@ -19,6 +19,6 @@ public abstract class GeneralizationConfiguration implements ExtensionConfigurat
     @Value.Default
     @Override
     public boolean getEnabled() {
-        return true;
+        return false;
     }
 }

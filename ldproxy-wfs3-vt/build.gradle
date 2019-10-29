@@ -9,11 +9,11 @@ repositories {
 
 dependencies {
     provided project(":ldproxy-wfs3")
-    provided project(":ldproxy-wfs3-oas30")
-    provided project(":ldproxy-wfs3-api")
+    provided project(":ldproxy-ogcapi-oas30")
     provided project(":ldproxy-ogcapi")
-    provided project(":ldproxy-wfs3-geojson")
-    provided project(":ldproxy-wfs3-core")
+    provided project(":ldproxy-ogcapi-features-core")
+    provided project(":ldproxy-ogcapi-features-geojson")
+    provided project(":ldproxy-wfs3-filter-transformer")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'

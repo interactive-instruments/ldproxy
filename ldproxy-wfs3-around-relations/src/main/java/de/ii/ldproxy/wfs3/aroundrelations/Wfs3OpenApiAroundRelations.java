@@ -47,98 +47,103 @@ public class Wfs3OpenApiAroundRelations implements OpenApiExtension {
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
 
-        ObjectSchema collectionInfo = (ObjectSchema) openAPI.getComponents()
-                                                            .getSchemas()
-                                                            .get("collectionInfo");
+        // TODO: review, do not add in /collections, for example
 
-        collectionInfo.getProperties()
-                      .put("relations", new ObjectSchema().description("Related collections that may be retrieved for this collection")
-                                                          .example("{\"id\": \"label\"}"));
+        if (isEnabledForApi(datasetData)) {
 
+            ObjectSchema collectionInfo = (ObjectSchema) openAPI.getComponents()
+                    .getSchemas()
+                    .get("collection");
 
-        Parameter limitList = new Parameter().name("limit")
-                                             .in("query")
-                                             .required(false)
-                                             .style(Parameter.StyleEnum.FORM)
-                                             .explode(false)
-                                             .description("Comma-separated list of limits for related collections")
-                                             .schema(new ArraySchema().items(new IntegerSchema()._default(5)
-                                                                                                .minimum(BigDecimal.valueOf(0))
-                                                                                                .maximum(BigDecimal.valueOf(10000))));
-
-        Parameter offsetList = new Parameter().name("offset")
-                                              .in("query")
-                                              .required(false)
-                                              .style(Parameter.StyleEnum.FORM)
-                                              .explode(false)
-                                              .description("Comma-separated list of offsets for related collections")
-                                              .schema(new ArraySchema().items(new IntegerSchema()._default(0)
-                                                                                                 .minimum(BigDecimal.valueOf(0))));
-
-        Parameter relations = new Parameter().name("relations")
-                                             .in("query")
-                                             .required(false)
-                                             .style(Parameter.StyleEnum.FORM)
-                                             .explode(false)
-                                             .description("Comma-separated list of related collections that should be shown for this feature")
-                                             .schema(new ArraySchema().items(new StringSchema()));
-
-        Parameter resolve = new Parameter().name("resolve")
-                                           .in("query")
-                                           .required(false)
-                                           .style(Parameter.StyleEnum.FORM)
-                                           .explode(false)
-                                           .description("Only provide links to related collections by default, resolve the links when true")
-                                           .schema(new BooleanSchema()._default(false));
-
-        openAPI.getComponents()
-               .addParameters(relations.getName(), relations)
-               .addParameters(resolve.getName(), resolve)
-               .addParameters("limitList", limitList)
-               .addParameters("offsetList", offsetList);
-
-        datasetData.getFeatureTypes()
-                   .values()
-                   .stream()
-                   .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                   .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()) && ft.getExtension(AroundRelationsConfiguration.class)
-                                                                                   .isPresent())
-                   .forEach(ft -> {
-
-                       final AroundRelationsConfiguration aroundRelationConfiguration = ft.getExtension(AroundRelationsConfiguration.class)
-                                                                                          .get();
-                       if (!aroundRelationConfiguration.getRelations()
-                                                       .isEmpty()) {
+            collectionInfo.getProperties()
+                    .put("relations", new ObjectSchema().description("Related collections that may be retrieved for this collection")
+                            .example("{\"id\": \"label\"}"));
 
 
-                           PathItem pathItem2 = openAPI.getPaths()
-                                                       .get(String.format("/collections/%s/items/{featureId}", ft.getId()));
+            Parameter limitList = new Parameter().name("limit")
+                    .in("query")
+                    .required(false)
+                    .style(Parameter.StyleEnum.FORM)
+                    .explode(false)
+                    .description("Comma-separated list of limits for related collections")
+                    .schema(new ArraySchema().items(new IntegerSchema()._default(5)
+                            .minimum(BigDecimal.valueOf(0))
+                            .maximum(BigDecimal.valueOf(10000))));
 
-                           if (Objects.nonNull(pathItem2)) {
+            Parameter offsetList = new Parameter().name("offset")
+                    .in("query")
+                    .required(false)
+                    .style(Parameter.StyleEnum.FORM)
+                    .explode(false)
+                    .description("Comma-separated list of offsets for related collections")
+                    .schema(new ArraySchema().items(new IntegerSchema()._default(0)
+                            .minimum(BigDecimal.valueOf(0))));
 
-                               ImmutableSet<String> relationSet = aroundRelationConfiguration.getRelations()
-                                                                                             .stream()
-                                                                                             .map(relation -> relation.getId())
-                                                                                             .collect(ImmutableSet.toImmutableSet());
+            Parameter relations = new Parameter().name("relations")
+                    .in("query")
+                    .required(false)
+                    .style(Parameter.StyleEnum.FORM)
+                    .explode(false)
+                    .description("Comma-separated list of related collections that should be shown for this feature")
+                    .schema(new ArraySchema().items(new StringSchema()));
 
-                               Parameter relationsForFeatureType = new Parameter().name("relations")
-                                                                                  .in("query")
-                                                                                  .required(false)
-                                                                                  .style(Parameter.StyleEnum.FORM)
-                                                                                  .explode(false)
-                                                                                  .description("Comma-separated list of related collections that should be shown for this feature")
-                                                                                  .schema(new ArraySchema().items(new StringSchema()._enum(relationSet.asList())));
+            Parameter resolve = new Parameter().name("resolve")
+                    .in("query")
+                    .required(false)
+                    .style(Parameter.StyleEnum.FORM)
+                    .explode(false)
+                    .description("Only provide links to related collections by default, resolve the links when true")
+                    .schema(new BooleanSchema()._default(false));
 
-                               pathItem2.getGet()
+            openAPI.getComponents()
+                    .addParameters(relations.getName(), relations)
+                    .addParameters(resolve.getName(), resolve)
+                    .addParameters("limitList", limitList)
+                    .addParameters("offsetList", offsetList);
+
+            datasetData.getFeatureTypes()
+                    .values()
+                    .stream()
+                    .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+                    .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()) && ft.getExtension(AroundRelationsConfiguration.class)
+                            .isPresent())
+                    .forEach(ft -> {
+
+                        final AroundRelationsConfiguration aroundRelationConfiguration = ft.getExtension(AroundRelationsConfiguration.class)
+                                .get();
+                        if (!aroundRelationConfiguration.getRelations()
+                                .isEmpty()) {
+
+
+                            PathItem pathItem2 = openAPI.getPaths()
+                                    .get(String.format("/collections/%s/items/{featureId}", ft.getId()));
+
+                            if (Objects.nonNull(pathItem2)) {
+
+                                ImmutableSet<String> relationSet = aroundRelationConfiguration.getRelations()
+                                        .stream()
+                                        .map(relation -> relation.getId())
+                                        .collect(ImmutableSet.toImmutableSet());
+
+                                Parameter relationsForFeatureType = new Parameter().name("relations")
+                                        .in("query")
+                                        .required(false)
+                                        .style(Parameter.StyleEnum.FORM)
+                                        .explode(false)
+                                        .description("Comma-separated list of related collections that should be shown for this feature")
+                                        .schema(new ArraySchema().items(new StringSchema()._enum(relationSet.asList())));
+
+                                pathItem2.getGet()
                                         //.addParametersItem(new Parameter().$ref(relations.getName()))
                                         .addParametersItem(relationsForFeatureType)
                                         .addParametersItem(new Parameter().$ref(resolve.getName()))
                                         .addParametersItem(new Parameter().$ref("limitList"))
                                         .addParametersItem(new Parameter().$ref("offsetList"));
-                           }
-                       }
+                            }
+                        }
 
-                   });
+                    });
+        }
 
         return openAPI;
     }

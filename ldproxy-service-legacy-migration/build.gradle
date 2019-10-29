@@ -3,11 +3,11 @@ version = '1.4.1'
 
 dependencies {
     provided project(":ldproxy-wfs3")
-    provided project(":ldproxy-wfs3-api")
     provided project(":ldproxy-ogcapi")
-    provided project(":ldproxy-wfs3-geojson")
-    provided project(":ldproxy-wfs3-html")
-    provided project(":ldproxy-wfs3-gml")
+    provided project(":ldproxy-ogcapi-features-core")
+    provided project(":ldproxy-ogcapi-features-geojson")
+    provided project(":ldproxy-ogcapi-html")
+    provided project(":ldproxy-ogcapi-features-gml")
     provided project(":ldproxy-wfs3-jsonld")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'

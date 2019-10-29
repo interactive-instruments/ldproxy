@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
@@ -23,18 +24,12 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * extend API definition with tile resources
  *
- * @author portele
+ *
  */
 @Component
 @Provides
@@ -90,106 +85,107 @@ public class OpenApiVectorTiles implements OpenApiExtension {
 
         if (enableTilesInAPI) {
             /*specify all new parameters. They are:
-             * tilingSchemeId
-             * zoomLevel
-             * row
-             * column
-             * f2/f3/f4
+             * tileMatrixSetId
+             * tileMatrix
+             * tileRow
+             * tileCol
+             * fVtTilesCollection/fVtOther/fVtTilesDataset
              * collections
              * properties*/
 
-            Parameter tilingSchemeId = new Parameter();
-            tilingSchemeId.setName("tilingSchemeId");
-            tilingSchemeId.in("path");
-            tilingSchemeId.description("Local identifier of a specific tiling scheme. A list of all available tilingSchemeIds can be found under the /tiles path or below. The default Tiling Scheme is the Google Maps Tiling Scheme.");
-            tilingSchemeId.setRequired(true);
-            Schema tilingSchemeIdSchema = new Schema();
-            tilingSchemeIdSchema.setType("string");
+            Parameter tileMatrixSetId = new Parameter();
+            tileMatrixSetId.setName("tileMatrixSetId");
+            tileMatrixSetId.in("path");
+            tileMatrixSetId.description("Local identifier of a specific tiling scheme. A list of all available tileMatrixSetIds can be found under the /tiles path or below. The default Tile Matrix Set is the Google Maps Tile Matrix Set.");
+            tileMatrixSetId.setRequired(true);
+            Schema tileMatrixSetIdSchema = new Schema();
+            tileMatrixSetIdSchema.setType("string");
 
-            List<String> tilingSchemeEnum = new ArrayList<String>();
-            tilingSchemeEnum.add("default");
+            List<String> tileMatrixSetEnum = new ArrayList<>(); // TODO determine dynamically
+            tileMatrixSetEnum.add("WebMercatorQuad");
 
-            tilingSchemeId.setSchema(new StringSchema()._enum(tilingSchemeEnum));
-            tilingSchemeId.example("default");
+            tileMatrixSetId.setSchema(new StringSchema()._enum(tileMatrixSetEnum));
+            tileMatrixSetId.example("WebMercatorQuad");
 
 
-            Parameter zoomLevel = new Parameter();
-            zoomLevel.setName("level");
-            zoomLevel.in("path");
-            zoomLevel.description("Level of the tile. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps Tiling Scheme. \\\n \\\n" +
+            Parameter tileMatrixParameter = new Parameter();
+            tileMatrixParameter.setName("tileMatrix");
+            tileMatrixParameter.in("path");
+            tileMatrixParameter.description("Level of the tile. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps Tile Matrix Set. \\\n \\\n" +
                     "Example: Ireland is fully within the Tile with the following values: Level 5, Row 10 and Col 15");
-            zoomLevel.setRequired(true);
-            zoomLevel.setSchema(tilingSchemeIdSchema);
-            zoomLevel.setExample("11");
+            tileMatrixParameter.setRequired(true);
+            tileMatrixParameter.setSchema(tileMatrixSetIdSchema);
+            tileMatrixParameter.setExample("11");
 
             Parameter row = new Parameter();
-            row.setName("row");
+            row.setName("tileRow");
             row.in("path");
-            row.description("Row index of the tile on the selected zoom level. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps Tiling Scheme.\\\n \\\n" +
+            row.description("Row index of the tile on the selected zoom level. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps Tile Matrix Set.\\\n \\\n" +
                     "Example: Ireland is fully within the Tile with the following values: Level 5, Row 10 and Col 15");
             row.setRequired(true);
-            row.setSchema(tilingSchemeIdSchema);
+            row.setSchema(tileMatrixSetIdSchema);
             row.setExample("827");
 
             Parameter column = new Parameter();
-            column.setName("col");
+            column.setName("tileCol");
             column.in("path");
-            column.description("Column index of the tile on the selected zoom level. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps Tiling Scheme.\\\n \\\n" +
+            column.description("Column index of the tile on the selected zoom level. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps Tile Matrix Set.\\\n \\\n" +
                     "Example: Ireland is fully within the Tile with the following values: Level 5, Row 10 and Col 15");
             column.setRequired(true);
-            column.setSchema(tilingSchemeIdSchema);
+            column.setSchema(tileMatrixSetIdSchema);
             column.setExample("1231");
 
 
-            Parameter f2 = new Parameter();
-            f2.setName("f");
-            f2.in("query");
-            f2.description("\\\n" +
+            Parameter fVtTilesCollection = new Parameter();
+            fVtTilesCollection.setName("f");
+            fVtTilesCollection.in("query");
+            fVtTilesCollection.description("\\\n" +
                     "        The format of the response. If no value is provided, the standard http rules apply, i.e., the accept header shall be used to determine the format.\\\n" +
                     "        Pre-defined values are \"json\" and \"mvt\". The response to other values is determined by the server.");
-            f2.setRequired(false);
-            f2.setStyle(Parameter.StyleEnum.FORM);
-            f2.setExplode(false);
-            List<String> f2Enum = new ArrayList<String>();
-            f2Enum.add("json");
-            f2Enum.add("mvt");
-            f2.setSchema(new StringSchema()._enum(f2Enum));
-            f2.example("json");
+            fVtTilesCollection.setRequired(false);
+            fVtTilesCollection.setStyle(Parameter.StyleEnum.FORM);
+            fVtTilesCollection.setExplode(false);
+            List<String> fVtTilesCollectionEnum = new ArrayList<String>(); // TODO determine dynamically
+            fVtTilesCollectionEnum.add("json");
+            fVtTilesCollectionEnum.add("mvt");
+            fVtTilesCollection.setSchema(new StringSchema()._enum(fVtTilesCollectionEnum));
+            fVtTilesCollection.example("json");
 
-            Parameter f3 = new Parameter();
-            f3.setName("f");
-            f3.in("query");
-            f3.description("\\\n" +
+            Parameter fVtOther = new Parameter();
+            fVtOther.setName("f");
+            fVtOther.in("query");
+            fVtOther.description("\\\n" +
                     "        The format of the response. If no value is provided, the standard http rules apply, i.e., the accept header shall be used to determine the format.\\\n" +
                     "        The only pre-defined value is \"json\". The response to other values is determined by the server.");
-            f3.setRequired(false);
-            f3.setStyle(Parameter.StyleEnum.FORM);
-            f3.setExplode(false);
-            Schema f3Schema = new Schema();
-            f3Schema.setType("string");
-            List<String> f3Enum = new ArrayList<String>();
-            f3Enum.add("json");
-            f3.setSchema(new StringSchema()._enum(f3Enum));
-            f3.example("json");
+            fVtOther.setRequired(false);
+            fVtOther.setStyle(Parameter.StyleEnum.FORM);
+            fVtOther.setExplode(false);
+            Schema fVtOtherSchema = new Schema();
+            fVtOtherSchema.setType("string");
+            List<String> fVtOtherEnum = new ArrayList<String>(); // TODO determine dynamically
+            fVtOtherEnum.add("json");
+            fVtOther.setSchema(new StringSchema()._enum(fVtOtherEnum));
+            fVtOther.example("json");
 
-            Parameter f4 = new Parameter();
-            f4.setName("f");
-            f4.in("query");
-            f4.description("\\\n" +
+            Parameter fVtTilesDataset = new Parameter();
+            fVtTilesDataset.setName("f");
+            fVtTilesDataset.in("query");
+            fVtTilesDataset.description("\\\n" +
                     "        The format of the response. If no value is provided, the standard http rules apply, i.e., the accept header shall be used to determine the format.\\\n" +
                     "        The only pre-defined value is \"mvt\". The response to other values is determined by the server.");
-            f4.setRequired(false);
-            f4.setStyle(Parameter.StyleEnum.FORM);
-            f4.setExplode(false);
-            List<String> f4Enum = new ArrayList<String>();
-            f4Enum.add("mvt");
-            f4.setSchema(new StringSchema()._enum(f4Enum));
-            f4.example("mvt");
+            fVtTilesDataset.setRequired(false);
+            fVtTilesDataset.setStyle(Parameter.StyleEnum.FORM);
+            fVtTilesDataset.setExplode(false);
+            List<String> fVtTilesDatasetEnum = new ArrayList<String>(); // TODO determine dynamically
+            fVtTilesDatasetEnum.add("mvt");
+            fVtTilesDataset.setSchema(new StringSchema()._enum(fVtTilesDatasetEnum));
+            fVtTilesDataset.example("mvt");
 
             Parameter collections = new Parameter();
             collections.setName("collections");
             collections.in("query");
-            collections.description("The collections that should be included in the tile. The parameter value is a list of collection identifiers.");
+            collections.description("The collections that should be included in the tile. The parameter value is a list of collection identifiers. " +
+                    "If not specified, all collections supporting the {tileMatrixSetId} parameter value will be considered");
             collections.setRequired(false);
             collections.setStyle(Parameter.StyleEnum.FORM);
             collections.setExplode(false);
@@ -200,7 +196,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
                        .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
                        .forEach(ft -> collectionsEnum.add(ft.getId()));
-            Schema collectionsArrayItems = new Schema().type("string");
+            Schema collectionsArrayItems = new StringSchema();
             collectionsArrayItems.setEnum(collectionsEnum);
             Schema collectionsSchema = new ArraySchema().items(collectionsArrayItems);
             collections.setSchema(collectionsSchema);
@@ -212,115 +208,178 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             properties.setRequired(false);
             properties.setStyle(Parameter.StyleEnum.FORM);
             properties.setExplode(false);
-            Schema propertiesSchema = new ArraySchema().items(new Schema().type("string"));
+            Schema propertiesSchema = new ArraySchema().items(new StringSchema());
             properties.setSchema(propertiesSchema);
+
+            Parameter bbox = new Parameter();
+            bbox.name("bbox");
+            bbox.in("query");
+            bbox.description("Only elements that have a geometry that intersects the bounding box are selected." +
+                    "The bounding box is provided as four or six numbers, depending on whether the coordinate reference system includes a vertical axis (elevation or depth). " +
+                    "If not specified, the bounding box is set to the whole extent of the map");
+            bbox.setRequired(false);
+            bbox.setStyle(Parameter.StyleEnum.FORM);
+            bbox.setExplode(false);
+            bbox.setExample(new Double[]{333469.2232,6565023.4598,815328.2182,7298818.9635});
+            bbox.setSchema(new ArraySchema().items(new NumberSchema().format("double").minItems(4).maxItems(4)));
+
+            Parameter scaleDenominator = new Parameter();
+            scaleDenominator.name("scaleDenominator");
+            scaleDenominator.in("query");
+            scaleDenominator.description("A range of scale denominators (that can be used to generate a list of tileMatrix names). " +
+                    "If not specified, all tile matrices (scales) are returned.");
+            scaleDenominator.setRequired(false);
+            scaleDenominator.setStyle(Parameter.StyleEnum.FORM);
+            scaleDenominator.setExplode(false);
+            scaleDenominator.example(new Double[]{2.5, 4.5});
+            scaleDenominator.setSchema(new ArraySchema().items(new NumberSchema().format("double").minItems(2).maxItems(2)));
+
+            Parameter multiTileType = new Parameter();
+            multiTileType.name("multiTileType");
+            multiTileType.in("query");
+            multiTileType.description("The type of the response. If not specified, the parameter value defaults to `tiles`.");
+            multiTileType.setRequired(false);
+            multiTileType.setStyle(Parameter.StyleEnum.FORM);
+            List<String> multiTileTypeEnum = new ArrayList<>(ImmutableList.of("url", "tiles", "full"));
+            multiTileType.example("url");
+            multiTileType.setSchema(new StringSchema()._enum(multiTileTypeEnum));
+
+            Parameter ftile = new Parameter();
+            ftile.name("f-tile");
+            ftile.in("query");
+            ftile.description("Specify the tile format in the multitiles request");
+            ftile.setRequired(false);
+            ftile.setStyle(Parameter.StyleEnum.FORM);
+            List<String> ftileEnum = new ArrayList<>(ImmutableList.of("json", "mvt"));
+            ftile.example("json");
+            ftile.setSchema(new StringSchema()._enum(ftileEnum));
+
 
             /*Add the parameters to definition*/
             openAPI.getComponents()
-                   .addParameters("f2", f2);
+                   .addParameters("fVtTilesCollection", fVtTilesCollection);
             openAPI.getComponents()
-                   .addParameters("f3", f3);
+                   .addParameters("fVtOther", fVtOther);
             openAPI.getComponents()
-                   .addParameters("f4", f4);
+                   .addParameters("fVtTilesDataset", fVtTilesDataset);
             openAPI.getComponents()
-                   .addParameters("tilingSchemeId", tilingSchemeId);
+                   .addParameters("tileMatrixSetId", tileMatrixSetId);
             openAPI.getComponents()
-                   .addParameters("level", zoomLevel);
+                   .addParameters("tileMatrix", tileMatrixParameter);
             openAPI.getComponents()
-                   .addParameters("row", row);
+                   .addParameters("tileRow", row);
             openAPI.getComponents()
-                   .addParameters("col", column);
+                   .addParameters("tileCol", column);
             openAPI.getComponents()
                    .addParameters("collections", collections);
             openAPI.getComponents()
                    .addParameters("properties", properties);
+            openAPI.getComponents()
+                   .addParameters("bbox", bbox);
+            openAPI.getComponents()
+                    .addParameters("scaleDenominator", scaleDenominator);
+            openAPI.getComponents()
+                    .addParameters("multiTileType", multiTileType);
+            openAPI.getComponents()
+                    .addParameters("f-tile", ftile);
 
-            List<String> modelRequirements = new LinkedList<String>();
-            modelRequirements.add("type");
-            List<String> tilingSchemeRequirements = new LinkedList<String>();
-            tilingSchemeRequirements.add("type");
-            tilingSchemeRequirements.add("identifier");
+            Schema keywords = new ArraySchema().items(new StringSchema());
 
-            Schema tilingSchemesArray = new Schema();
-            tilingSchemesArray.setType("object");
-            tilingSchemesArray.setRequired(modelRequirements);
-            tilingSchemesArray.addProperties("identifier", new Schema().type("string")
-                                                                       .example("default"));
-            tilingSchemesArray.addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
+            Schema tileMatrixSetsArray = new Schema();
+            tileMatrixSetsArray.setType("object");
+            tileMatrixSetsArray.setRequired(ImmutableList.of("id","links"));
+            tileMatrixSetsArray.addProperties("id", new StringSchema()
+                                                                       .example("WebMercatorQuad"));
+            tileMatrixSetsArray.addProperties("title", new StringSchema()
+                    .example("Google Maps Compatible for the World"));
+            tileMatrixSetsArray.addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
 
-            Schema tilingSchemes = new Schema();
-            tilingSchemes.type("object");
-            tilingSchemes.setRequired(modelRequirements);
-            tilingSchemes.addProperties("tilingSchemes", new ArraySchema().items(new Schema().$ref("#/components/schemas/tilingSchemesArray")));
+            Schema tileMatrixSets = new Schema();
+            tileMatrixSets.type("object");
+            tileMatrixSets.setRequired(ImmutableList.of("tileMatrixSets"));
+            tileMatrixSets.addProperties("tileMatrixSets", new ArraySchema().items(new Schema().$ref("#/components/schemas/tileMatrixSetsArray")));
+
+            Schema tileMatrixSetLimits = new Schema();
+            tileMatrixSetLimits.type("object");
+            tileMatrixSetLimits.setRequired(ImmutableList.of("tileMatrix", "minTileRow", "maxTileRow", "minTileCol", "maxTileCol"));
+            tileMatrixSetLimits.addProperties("tileMatrix", new StringSchema());
+            tileMatrixSetLimits.addProperties("minTileRow", new IntegerSchema().minimum(BigDecimal.valueOf(0)));
+            tileMatrixSetLimits.addProperties("maxTileRow", new IntegerSchema().minimum(BigDecimal.valueOf(0)));
+            tileMatrixSetLimits.addProperties("minTileCol", new IntegerSchema().minimum(BigDecimal.valueOf(0)));
+            tileMatrixSetLimits.addProperties("maxTileCol", new IntegerSchema().minimum(BigDecimal.valueOf(0)));
+
+            Schema tileMatrixSetLink = new Schema();
+            tileMatrixSetLink.type("object");
+            tileMatrixSetLink.setRequired(ImmutableList.of("tileMatrixSet"));
+            tileMatrixSetLink.addProperties("tileMatrixSet", new StringSchema());
+            tileMatrixSetLink.addProperties("tileMatrixSetURI", new StringSchema());
+            tileMatrixSetLink.addProperties("tileMatrixSetLimits", new ArraySchema().items(new Schema().$ref("#/components/schemas/tileMatrixSetLimits")));
+            tileMatrixSetLink.addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
+
+            Schema tileMatrixSetLinks = new Schema();
+            tileMatrixSetLinks.type("object");
+            tileMatrixSetLinks.setRequired(ImmutableList.of("tileMatrixSetLinks"));
+            tileMatrixSetLinks.addProperties("tileMatrixSetLinks", new ArraySchema().items(new Schema().$ref("#/components/schemas/tileMatrixSetLink")));
 
             Schema boundingBox = new Schema();
             boundingBox.setType("object");
-            boundingBox.setRequired(modelRequirements);
+            boundingBox.setRequired(ImmutableList.of("type", "lowerCorner", "upperCorner"));
             List<String> boundingBoxEnum = new ArrayList<String>();
-            boundingBoxEnum.add("BoundingBox");
+            boundingBoxEnum.add("BoundingBoxType");
             boundingBox.addProperties("type", new StringSchema()._enum(boundingBoxEnum));
-            boundingBox.addProperties("crs", new Schema().type("string")
-                                                         .example("http://www.opengis.net/def/crs/EPSG/0/3857"));
-            List<Double> lowerCorner = new ArrayList<>();
-            lowerCorner.add(-20037508.3427892);
-            lowerCorner.add(-20037508.342789);
-            boundingBox.addProperties("lowerCorner", new ArraySchema().items(new NumberSchema().minItems(2).maxItems(2))
-                                                                 .example(lowerCorner));
-            List<Double> upperCorner = new ArrayList<>();
-            upperCorner.add(20037508.3427892);
-            upperCorner.add(20037508.3427892);
-            boundingBox.addProperties("upperCorner", new ArraySchema().items(new NumberSchema().minItems(2).maxItems(2))
-                                                                 .example(upperCorner));
+            boundingBox.addProperties("crs", new StringSchema());
+            boundingBox.addProperties("lowerCorner", new ArraySchema().items(new NumberSchema().minItems(2).maxItems(2)));
+            boundingBox.addProperties("upperCorner", new ArraySchema().items(new NumberSchema().minItems(2).maxItems(2)));
 
-
-            Schema matrix = new Schema();
-            matrix.setType("object");
-            matrix.setRequired(modelRequirements);
+            Schema tileMatrix = new Schema();
+            tileMatrix.setType("object");
+            tileMatrix.setRequired(ImmutableList.of("type", "identifier", "scaleDenominator", "topLeftCorner", "tileWidth", "tileHeight", "matrixWidth", "matrixHeight"));
             List<String> matrixEnum = new ArrayList<String>();
-            matrixEnum.add("TileMatrix");
-            matrix.addProperties("type", new StringSchema()._enum(matrixEnum));
-            matrix.addProperties("identifier", new Schema().type("string")
-                                                           .example('0'));
-            matrix.addProperties("MatrixHeight", new Schema().minimum(BigDecimal.valueOf(0))
-                                                             .type("integer")
-                                                             .example(1));
-            matrix.addProperties("MatrixWidth", new Schema().minimum(BigDecimal.valueOf(0))
-                                                            .type("integer")
-                                                            .example(1));
-            matrix.addProperties("TileHeight", new Schema().minimum(BigDecimal.valueOf(0))
-                                                           .type("integer")
-                                                           .example(256));
-            matrix.addProperties("TileWidth", new Schema().minimum(BigDecimal.valueOf(0))
-                                                          .type("integer")
-                                                          .example(256));
-            matrix.addProperties("scaleDenominator", new Schema().type("number")
-                                                                 .example(559082264.028717));
-            List<Double> topLeftCorner = new ArrayList<>();
-            topLeftCorner.add(-20037508.3427892);
-            topLeftCorner.add(20037508.3427892);
-            matrix.addProperties("topLeftCorner", new ArraySchema().items(new NumberSchema().minItems(2).maxItems(2))
-                                                              .example(topLeftCorner));
+            matrixEnum.add("TileMatrixType");
+            tileMatrix.addProperties("type", new StringSchema()._enum(matrixEnum));
+            tileMatrix.addProperties("identifier", new StringSchema());
+            tileMatrix.addProperties("title", new StringSchema());
+            tileMatrix.addProperties("abstract", new StringSchema());
+            tileMatrix.addProperties("keywords", new Schema().$ref("#/components/schemas/keywords"));
+            tileMatrix.addProperties("matrixHeight", new NumberSchema().minimum(BigDecimal.valueOf(1)).multipleOf(BigDecimal.valueOf(1)));
+            tileMatrix.addProperties("matrixWidth", new NumberSchema().minimum(BigDecimal.valueOf(1)).multipleOf(BigDecimal.valueOf(1)));
+            tileMatrix.addProperties("tileHeight", new NumberSchema().minimum(BigDecimal.valueOf(1)).multipleOf(BigDecimal.valueOf(1)));
+            tileMatrix.addProperties("tileWidth", new NumberSchema().minimum(BigDecimal.valueOf(1)).multipleOf(BigDecimal.valueOf(1)));
+            tileMatrix.addProperties("scaleDenominator", new NumberSchema());
+            tileMatrix.addProperties("topLeftCorner", new ArraySchema().items(new NumberSchema().minItems(2).maxItems(2)));
+            // TODO add variableMatrixWidth, currently not supported
 
-            Schema tilingScheme = new Schema();
-            tilingScheme.setType("object");
-            tilingScheme.setRequired(tilingSchemeRequirements);
-            List<String> tileMatrixSetEnum = new ArrayList<String>();
-            tileMatrixSetEnum.add("TileMatrixSet");
-            List<String> tilingSchemeSupportedCrsEnum = new ArrayList<String>();
-            tilingSchemeSupportedCrsEnum.add("http://www.opengis.net/def/crs/EPSG/0/3857");
-            List<String> tilingSchemeWellKnownEnum = new ArrayList<String>();
-            tilingSchemeWellKnownEnum.add("http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible");
-            tilingScheme.addProperties("type", new StringSchema()._enum(tileMatrixSetEnum));
-            tilingScheme.addProperties("identifier", new Schema().type("string")
-                                                                 .example("default"));
-            tilingScheme.addProperties("title", new Schema().type("string")
-                                                            .example("Google Maps Compatible for the World"));
-            tilingScheme.addProperties("supportedCrs", new StringSchema()._enum(tilingSchemeSupportedCrsEnum)
-                                                                         .example("http://www.opengis.net/def/crs/EPSG/0/3857"));
-            tilingScheme.addProperties("wellKnownScaleSet", new StringSchema()._enum(tilingSchemeWellKnownEnum)
-                                                                              .example("http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible"));
-            tilingScheme.addProperties("TileMatrix", new ArraySchema().items(new Schema().$ref("#/components/schemas/tileMatrix")));
-            tilingScheme.addProperties("boundingBox", new ArraySchema().items(new Schema().$ref("#/components/schemas/boundingBox")));
+            Schema tileMatrixSet = new Schema();
+            tileMatrixSet.setType("object");
+            tileMatrixSet.setRequired(ImmutableList.of("type", "identifier", "supportedCRS", "tileMatrix"));
+            List<String> tileMatrixSetTypeEnum = new ArrayList<>();
+            tileMatrixSetTypeEnum.add("TileMatrixSetType");
+            tileMatrixSet.addProperties("type", new StringSchema()._enum(tileMatrixSetTypeEnum));
+            tileMatrixSet.addProperties("identifier", new StringSchema());
+            tileMatrixSet.addProperties("title", new StringSchema());
+            tileMatrixSet.addProperties("abstract", new StringSchema());
+            tileMatrixSet.addProperties("keywords", new Schema().$ref("#/components/schemas/keywords"));
+            tileMatrixSet.addProperties("supportedCRS", new StringSchema());
+            tileMatrixSet.addProperties("wellKnownScaleSet", new StringSchema());
+            tileMatrixSet.addProperties("tileMatrix", new ArraySchema().items(new Schema().$ref("#/components/schemas/tileMatrix")));
+            tileMatrixSet.addProperties("boundingBox", new ArraySchema().items(new Schema().$ref("#/components/schemas/boundingBox")));
+
+            Schema tileSetEntry = new Schema();
+            tileSetEntry.setType("object");
+            tileSetEntry.addProperties("tileURL", new StringSchema());
+            tileSetEntry.addProperties("tileMatrix", new IntegerSchema());
+            tileSetEntry.addProperties("tileRow", new IntegerSchema());
+            tileSetEntry.addProperties("tileCol", new IntegerSchema());
+            tileSetEntry.addProperties("width", new IntegerSchema());
+            tileSetEntry.addProperties("height", new IntegerSchema());
+            tileSetEntry.addProperties("top", new IntegerSchema());
+            tileSetEntry.addProperties("left", new IntegerSchema());
+
+            Schema tileSet = new Schema();
+            tileSet.setType("object");
+            tileSet.setRequired(ImmutableList.of("tileSet"));
+            tileSet.addProperties("tileSet", new ArraySchema().items(new Schema().$ref("#/components/schemas/tileSetEntry")));
+
 
             Schema mvt = new Schema();
             mvt.type("string");
@@ -328,17 +387,29 @@ public class OpenApiVectorTiles implements OpenApiExtension {
 
             /*Add the schemas to definition*/
             openAPI.getComponents()
-                   .addSchemas("tilingSchemesArray", tilingSchemesArray);
+                    .addSchemas("keywords", keywords);
             openAPI.getComponents()
-                   .addSchemas("tilingSchemes", tilingSchemes);
+                   .addSchemas("tileMatrixSetsArray", tileMatrixSetsArray);
+            openAPI.getComponents()
+                   .addSchemas("tileMatrixSets", tileMatrixSets);
             openAPI.getComponents()
                    .addSchemas("boundingBox", boundingBox);
             openAPI.getComponents()
-                   .addSchemas("tileMatrix", matrix);
+                   .addSchemas("tileMatrix", tileMatrix);
             openAPI.getComponents()
-                   .addSchemas("tilingScheme", tilingScheme);
+                   .addSchemas("tileMatrixSet", tileMatrixSet);
             openAPI.getComponents()
-                   .addSchemas("mvt", mvt);
+                    .addSchemas("tileMatrixSetLimits", tileMatrixSetLimits);
+            openAPI.getComponents()
+                    .addSchemas("tileMatrixSetLink", tileMatrixSetLink);
+            openAPI.getComponents()
+                    .addSchemas("tileMatrixSetLinks", tileMatrixSetLinks);
+            openAPI.getComponents()
+                    .addSchemas("mvt", mvt);
+            openAPI.getComponents()
+                    .addSchemas("tileSetEntry", tileSetEntry);
+            openAPI.getComponents()
+                    .addSchemas("tileSet", tileSet);
 
             /*create a new tag and add it to definition*/
             openAPI.getTags()
@@ -349,14 +420,14 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             if (datasetData != null) {
 
                 openAPI.getPaths()
-                       .addPathItem("/tilingSchemes", new PathItem().description("something"));  //create a new path
+                       .addPathItem("/tileMatrixSets", new PathItem().description("something"));  //create a new path
                 PathItem pathItem = openAPI.getPaths()
-                                           .get("/tilingSchemes");
-                ApiResponse success = new ApiResponse().description("A list of tiling schemes.")
+                                           .get("/tileMatrixSets");
+                ApiResponse success = new ApiResponse().description("A list of all available tile tileMatrix sets.")
                                                        .content(new Content()
-                                                               .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tilingSchemes")))
+                                                               .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tileMatrixSets")))
                                                        );
-                ApiResponse exception = new ApiResponse().description("An error occured.")
+                ApiResponse exception = new ApiResponse().description("An error occurred.")
                                                          .content(new Content()
                                                                  .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
                                                          );
@@ -364,9 +435,9 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                     pathItem
                             .get(new Operation()
                                     .addTagsItem("Tiles")
-                                    .summary("retrieve all available tiling schemes")
-                                    .operationId("getTilingSchemes")
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                    .summary("retrieve all available tile tileMatrix sets")
+                                    .operationId("getTileMatrixSets")
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/fVtOther"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -374,17 +445,17 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                             );
                 }
                 openAPI.getPaths()
-                       .addPathItem("/tilingSchemes", pathItem); //save to Path
+                       .addPathItem("/tileMatrixSets", pathItem); //save to Path
 
                 openAPI.getPaths()
-                       .addPathItem("/tilingSchemes/{tilingSchemeId}", new PathItem().description("something"));
+                       .addPathItem("/tileMatrixSets/{tileMatrixSetId}", new PathItem().description("something"));
                 pathItem = openAPI.getPaths()
-                                  .get("/tilingSchemes/{tilingSchemeId}");
-                success = new ApiResponse().description("A tiling scheme.")
+                                  .get("/tileMatrixSets/{tileMatrixSetId}");
+                success = new ApiResponse().description("A tile tileMatrix set.")
                                            .content(new Content()
-                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tilingScheme")))
+                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tileMatrixSet")))
                                            );
-                exception = new ApiResponse().description("An error occured.")
+                exception = new ApiResponse().description("An error occurred.")
                                              .content(new Content()
                                                      .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
                                              );
@@ -392,10 +463,10 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                     pathItem
                             .get(new Operation()
                                     .addTagsItem("Tiles")
-                                    .summary("retrieve a tiling scheme by id")
-                                    .operationId("getTilingScheme")
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/tilingSchemeId"))
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                    .summary("retrieve a tile tileMatrix set by id")
+                                    .operationId("getTileMatrixSet")
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/tileMatrixSetId"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/fVtOther"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -403,18 +474,18 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                             );
                 }
                 openAPI.getPaths()
-                       .addPathItem("/tilingSchemes/{tilingSchemeId}", pathItem);
+                       .addPathItem("/tileMatrixSets/{tileMatrixSetId}", pathItem);
 
 
                 openAPI.getPaths()
                        .addPathItem("/tiles", new PathItem().description("something"));  //create a new path
                 pathItem = openAPI.getPaths()
                                   .get("/tiles");
-                success = new ApiResponse().description("A list of tiling schemes.")
+                success = new ApiResponse().description("A list of tile tileMatrix sets.")
                                            .content(new Content()
-                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tilingSchemes")))
+                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tileMatrixSetLinks")))
                                            );
-                exception = new ApiResponse().description("An error occured.")
+                exception = new ApiResponse().description("An error occurred.")
                                              .content(new Content()
                                                      .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
                                              );
@@ -422,9 +493,9 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                     pathItem
                             .get(new Operation()
                                     .addTagsItem("Tiles")
-                                    .summary("retrieve all available tiling schemes")
-                                    .operationId("getTilingSchemesAlt")
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                    .summary("retrieve all available tile tileMatrix sets")
+                                    .operationId("getTileMatrixSetsAlt")
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/fVtOther"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -436,14 +507,14 @@ public class OpenApiVectorTiles implements OpenApiExtension {
 
 
                 openAPI.getPaths()
-                       .addPathItem("/tiles/{tilingSchemeId}", new PathItem().description("something"));
+                       .addPathItem("/tiles/{tileMatrixSetId}", new PathItem().description("something"));
                 pathItem = openAPI.getPaths()
-                                  .get("/tiles/{tilingSchemeId}");
-                success = new ApiResponse().description("A tiling scheme used to partition the dataset into tiles.")
+                                  .get("/tiles/{tileMatrixSetId}");
+                success = new ApiResponse().description("Multiple tiles from multiple collections.")
                                            .content(new Content()
-                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tilingScheme")))
+                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tileSet")))
                                            );
-                exception = new ApiResponse().description("An error occured.")
+                exception = new ApiResponse().description("An error occurred.")
                                              .content(new Content()
                                                      .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
                                              );
@@ -451,10 +522,13 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                     pathItem
                             .get(new Operation()
                                     .addTagsItem("Tiles")
-                                    .summary("retrieve a tiling scheme used to partition the dataset into tiles")
-                                    .operationId("getTilingSchemePartion")
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/tilingSchemeId"))
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                    .summary("retrieve more than one tile from more than on collection in a single request")
+                                    .operationId("getCollectionMultitiles")
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/tileMatrixSetId"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/bbox"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/scaleDenominator"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/multiTileType"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/collections"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -463,18 +537,18 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                 }
 
                 openAPI.getPaths()
-                       .addPathItem("/tiles/{tilingSchemeId}", pathItem);
+                       .addPathItem("/tiles/{tileMatrixSetId}", pathItem);
 
 
                 openAPI.getPaths()
-                       .addPathItem("/tiles/{tilingSchemeId}/{level}/{row}/{col}", new PathItem().description("something"));
+                       .addPathItem("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", new PathItem().description("something"));
                 pathItem = openAPI.getPaths()
-                                  .get("/tiles/{tilingSchemeId}/{level}/{row}/{col}");
+                                  .get("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
                 success = new ApiResponse().description("A tile of the dataset.")
                                            .content(new Content()
                                                    .addMediaType("application/vnd.mapbox-vector-tile", new MediaType().schema(new Schema().$ref("#/components/schemas/mvt")))
                                            );
-                exception = new ApiResponse().description("An error occured.")
+                exception = new ApiResponse().description("An error occurred.")
                                              .content(new Content()
                                                      .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
                                              );
@@ -483,17 +557,17 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                             .get(new Operation()
                                     .addTagsItem("Tiles")
                                     .summary("retrieve a tile of the dataset")
-                                    .description("The tile in the requested tiling scheme, on the requested zoom level in the tiling scheme, with the requested grid coordinates (row, column) is returned. " +
+                                    .description("The tile in the requested tile tileMatrix set, on the requested zoom level in the tile tileMatrix set, with the requested grid coordinates (tileRow, tileCol) is returned. " +
                                             "Each collection of the dataset is returned as a separate layer. The collections and the feature properties to include in the tile representation can be limited using query" +
                                             " parameters.")
                                     .operationId("getTilesDataset")
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/tilingSchemeId"))
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/level"))
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/row"))
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/col"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/tileMatrixSetId"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/tileMatrix"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/tileRow"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/tileCol"))
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/collections"))
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/properties"))
-                                    .addParametersItem(new Parameter().$ref("#/components/parameters/f4"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/fVtTilesDataset"))
                                     //.requestBody(requestBody)
                                     .responses(new ApiResponses()
                                             .addApiResponse("200", success)
@@ -502,7 +576,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                 }
 
                 openAPI.getPaths()
-                       .addPathItem("/tiles/{tilingSchemeId}/{level}/{row}/{col}", pathItem);
+                       .addPathItem("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", pathItem);
 
                 //do for every feature type
                 datasetData.getFeatureTypes()
@@ -518,11 +592,11 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                           .addPathItem("/collections/" + ft.getId() + "/tiles", new PathItem().description("something"));  //create a new path
                                    PathItem pathItem2 = openAPI.getPaths()
                                                                .get("/collections/" + ft.getId() + "/tiles");
-                                   ApiResponse success2 = new ApiResponse().description("A list of tiling schemes from the collection" + ft.getLabel() + ".")
+                                   ApiResponse success2 = new ApiResponse().description("A list of tile tileMatrix sets from the collection" + ft.getLabel() + ".")
                                                                            .content(new Content()
-                                                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tilingSchemes")))
+                                                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tileMatrixSetLinks")))
                                                                            );
-                                   ApiResponse exception2 = new ApiResponse().description("An error occured.")
+                                   ApiResponse exception2 = new ApiResponse().description("An error occurred.")
                                                                              .content(new Content()
                                                                                      .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
                                                                              );
@@ -530,9 +604,9 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                        pathItem2
                                                .get(new Operation()
                                                        .addTagsItem("Tiles")
-                                                       .summary("retrieve all available tiling schemes from the collection " + ft.getLabel())
-                                                       .operationId("getTilingSchemesCollection" + ft.getId())
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
+                                                       .summary("retrieve all available tile tileMatrix sets from the collection " + ft.getLabel())
+                                                       .operationId("getTileMatrixSetsCollection" + ft.getId())
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/fVtOther"))
                                                        //.requestBody(requestBody)
                                                        .responses(new ApiResponses()
                                                                .addApiResponse("200", success2)
@@ -544,46 +618,15 @@ public class OpenApiVectorTiles implements OpenApiExtension {
 
 
                                    openAPI.getPaths()
-                                          .addPathItem("/collections/" + ft.getId() + "/tiles/{tilingSchemeId}", new PathItem().description("something"));
+                                          .addPathItem("/collections/" + ft.getId() + "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", new PathItem().description("something"));
                                    pathItem2 = openAPI.getPaths()
-                                                      .get("/collections/" + ft.getId() + "/tiles/{tilingSchemeId}");
-                                   success2 = new ApiResponse().description("A tiling scheme used to partition the collection " + ft.getLabel() + " into tiles.")
-                                                               .content(new Content()
-                                                                       .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tilingScheme")))
-                                                               );
-                                   exception2 = new ApiResponse().description("An error occured.")
-                                                                 .content(new Content()
-                                                                         .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
-                                                                 );
-                                   if (Objects.nonNull(pathItem2)) {
-                                       pathItem2
-                                               .get(new Operation()
-                                                       .addTagsItem("Tiles")
-                                                       .summary("retrieve a tiling scheme used to partition the collection" + ft.getLabel() + " into tiles")
-                                                       .operationId("getTilingSchemeCollection" + ft.getId())
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/tilingSchemeId"))
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/f3"))
-                                                       //.requestBody(requestBody)
-                                                       .responses(new ApiResponses()
-                                                               .addApiResponse("200", success2)
-                                                               .addApiResponse("default", exception2))
-                                               );
-                                   }
-
-                                   openAPI.getPaths()
-                                          .addPathItem("/collections/" + ft.getId() + "/tiles/{tilingSchemeId}", pathItem2);
-
-
-                                   openAPI.getPaths()
-                                          .addPathItem("/collections/" + ft.getId() + "/tiles/{tilingSchemeId}/{level}/{row}/{col}", new PathItem().description("something"));
-                                   pathItem2 = openAPI.getPaths()
-                                                      .get("/collections/" + ft.getId() + "/tiles/{tilingSchemeId}/{level}/{row}/{col}");
+                                                      .get("/collections/" + ft.getId() + "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
                                    success2 = new ApiResponse().description("A tile of the collection " + ft.getLabel() + ".")
                                                                .content(new Content()
                                                                        .addMediaType("application/geo+json", new MediaType().schema(new Schema().$ref("#/components/schemas/featureCollectionGeoJSON")))
                                                                        .addMediaType("application/vnd.mapbox-vector-tile", new MediaType().schema(new Schema().$ref("#/components/schemas/mvt")))
                                                                );
-                                   exception2 = new ApiResponse().description("An error occured.")
+                                   exception2 = new ApiResponse().description("An error occurred.")
                                                                  .content(new Content()
                                                                          .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
                                                                  );
@@ -592,17 +635,17 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                .get(new Operation()
                                                        .addTagsItem("Tiles")
                                                        .summary("retrieve a tile of the collection " + ft.getLabel())
-                                                       .description("The tile in the requested tiling scheme, on the requested zoom level in the tiling scheme, with the requested grid coordinates (row, column) is returned. " +
+                                                       .description("The tile in the requested tile tileMatrix set, on the requested zoom level in the tile tileMatrix set, with the requested grid coordinates (tileRow, tileCol) is returned. " +
                                                                "The tile has a single layer with all selected features in the bounding box of the tile. The feature properties to " +
                                                                "include in the tile representation can be limited using a query parameter.")
                                                        .operationId("getTilesCollection" + ft.getId())
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/tilingSchemeId"))
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/level"))
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/row"))
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/col"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/tileMatrixSetId"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/tileMatrix"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/tileRow"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/tileCol"))
                                                        .addParametersItem(new Parameter().$ref("#/components/parameters/properties"))
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/f2"))
-                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/time"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/fVtTilesCollection"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/datetime"))
                                                        //.requestBody(requestBody)
                                                        .responses(new ApiResponses()
                                                                .addApiResponse("200", success2)
@@ -626,7 +669,39 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                        });
                                    }
                                    openAPI.getPaths()
-                                          .addPathItem("/collections/" + ft.getId() + "/tiles/{tilingSchemeId}/{level}/{row}/{col}", pathItem2);
+                                          .addPathItem("/collections/" + ft.getId() + "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", pathItem2);
+
+                                   openAPI.getPaths()
+                                           .addPathItem("/collections/" + ft.getId() + "/tiles/{tileMatrixSetId}", new PathItem().description("something"));  //create a new path
+                                   pathItem2 = openAPI.getPaths()
+                                           .get("/collections/" + ft.getId() + "/tiles/{tileMatrixSetId}");
+                                   success2 = new ApiResponse().description("Multiple tiles from the collection " + ft.getLabel())
+                                           .content(new Content()
+                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/tileSet")))
+                                           );
+                                   exception2 = new ApiResponse().description("An error occured.")
+                                           .content(new Content()
+                                                   .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                                           );
+                                   if (Objects.nonNull(pathItem2)) {
+                                       pathItem2
+                                               .get(new Operation()
+                                                       .addTagsItem("Tiles")
+                                                       .summary("retrieve multiple tiles from the collection " + ft.getLabel())
+                                                       .operationId("getMultitiles" + ft.getId())
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/tileMatrixSetId"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/bbox"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/scaleDenominator"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/multiTileType"))
+                                                       .addParametersItem(new Parameter().$ref("#/components/parameters/f-tile"))
+                                                       .responses(new ApiResponses()
+                                                               .addApiResponse("200", success2)
+                                                               .addApiResponse("default", exception2))
+                                               );
+                                   }
+//                                   openAPI.getPaths()
+//                                           .addPathItem("/collections/" + ft.getId() + "tiles/{tileMatrixSetId}", pathItem2);
+
                                }
                            });
 

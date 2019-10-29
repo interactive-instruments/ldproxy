@@ -8,30 +8,30 @@
 package de.ii.ldproxy.wfs3.vt;
 
 
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionExtension;
+import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Locale;
+import java.util.Optional;
+
 
 /**
  * add tiling information to the collection metadata (supported tiling schemes, links)
  *
- * @author portele
+ *
  */
 @Component
 @Provides
 @Instantiate
 public class OgcApiCollectionVectorTiles implements OgcApiCollectionExtension {
+
+    @Requires
+    I18n i18n;
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
@@ -41,23 +41,16 @@ public class OgcApiCollectionVectorTiles implements OgcApiCollectionExtension {
     @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+                                                     OgcApiDatasetData apiData,
                                                      URICustomizer uriCustomizer, boolean isNested,
-                                                     OgcApiDatasetData apiData) {
+                                                     OgcApiMediaType mediaType,
+                                                     List<OgcApiMediaType> alternateMediaTypes,
+                                                     Optional<Locale> language) {
         // The hrefs are URI templates and not URIs, so the templates should not be percent encoded!
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
         if (!isNested && isExtensionEnabled(apiData, featureTypeConfiguration, TilesConfiguration.class)) {
-            List<Map<String, Object>> wfs3LinksList = new ArrayList<>();
-            TilesConfiguration tiles = getExtensionConfiguration(apiData, featureTypeConfiguration, TilesConfiguration.class).get();
-            Set<String> tilingSchemeIds = tiles.getZoomLevels()
-                                               .keySet();
-            for (String tilingSchemeId : tilingSchemeIds) {
-                Map<String, Object> tilingSchemeInCollection = new HashMap<>();
-                tilingSchemeInCollection.put("identifier", tilingSchemeId);
-                tilingSchemeInCollection.put("links", vectorTilesLinkGenerator.generateTilesLinks(uriCustomizer, tilingSchemeId));
-                wfs3LinksList.add(tilingSchemeInCollection);
-            }
-            collection.putExtensions("tilingSchemes", wfs3LinksList);
+            collection.addAllLinks(vectorTilesLinkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
         }
 
         return collection;

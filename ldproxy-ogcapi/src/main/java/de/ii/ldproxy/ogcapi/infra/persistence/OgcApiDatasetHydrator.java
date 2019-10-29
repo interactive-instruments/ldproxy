@@ -52,7 +52,6 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
     @Requires
     private CrsTransformation crsTransformerFactory;
 
-
     @Override
     public Map<String, Object> getInstanceConfiguration(OgcApiDatasetData data) {
         try {
@@ -94,9 +93,12 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
                         .build();
 
             } catch (Throwable e) {
-                LOGGER.error("CRS transformer could not be created"/*, e*/);
+                LOGGER.error("CRS transformer could not be created: {}", e.getMessage());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Exception:", e);
+                }
+                throw e;
             }
-
 
         } catch (IllegalStateException e) {
             LOGGER.error("Service with id '{}' could not be created: {}", data.getId(), e.getMessage());
@@ -105,7 +107,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
             }
         }
 
-        throw new IllegalStateException("xyz");
+        throw new IllegalStateException();
     }
 
     private boolean hasMissingBboxes(Map<String, FeatureTypeConfigurationOgcApi> featureTypes) {
@@ -138,7 +140,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
                             bbox = new BoundingBox(-180.0, -90.0, 180.0, 90.0, new EpsgCrs(4326, true));
                         }
 
-                        ImmutableFeatureTypeConfigurationOgcApi featureTypeConfigurationWfs3 = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                        ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                                 .from(entry.getValue())
                                 .extent(new ImmutableCollectionExtent.Builder()
                                         .from(entry.getValue()
@@ -149,7 +151,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
                                 .build();
 
 
-                        return new AbstractMap.SimpleEntry<>(entry.getKey(), featureTypeConfigurationWfs3);
+                        return new AbstractMap.SimpleEntry<>(entry.getKey(), featureTypeConfiguration);
                     }
                     return entry;
                 })

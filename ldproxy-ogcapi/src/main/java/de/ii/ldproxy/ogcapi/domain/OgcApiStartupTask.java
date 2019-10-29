@@ -11,12 +11,10 @@ import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 
 import java.util.Map;
 
-/**
- * @author zahnen
- */
-//TODO: ServiceBackgroundTask
+
+// TODO: support for a ServiceBackgroundTask
 public interface OgcApiStartupTask extends OgcApiExtension {
-    Runnable getTask(OgcApiDatasetData apiData, TransformingFeatureProvider featureProvider);
+    Runnable getTask(OgcApiDataset api, TransformingFeatureProvider featureProvider);
     Map<Thread,String> getThreadMap();
     void removeThreadMapEntry(Thread t);
 }

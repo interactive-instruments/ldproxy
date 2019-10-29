@@ -8,17 +8,16 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.google.common.collect.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author portele
- */
+import javax.ws.rs.InternalServerErrorException;
+
 public class OgcApiExtentSpatial {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiExtentSpatial.class);
     private double[][] bbox;
     private String crs;
-
-    public OgcApiExtentSpatial() {
-
-    }
 
     public OgcApiExtentSpatial(String xmin, String ymin, String xmax, String ymax) {
         try {
@@ -29,7 +28,8 @@ public class OgcApiExtentSpatial {
             this.bbox = new double[][]{ bbox1 };
             this.crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
         } catch (NumberFormatException e) {
-            // ignore
+            LOGGER.error(e.getMessage());
+            throw new InternalServerErrorException();
         }
     }
 

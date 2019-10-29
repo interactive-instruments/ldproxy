@@ -13,15 +13,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.core.Link;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-/**
- * @author zahnen
- */
+
 @Value.Immutable
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonDeserialize(as = ImmutableOgcApiLink.class)
 @XmlType(propOrder={"rel","type","title","href","hreflang","length","templated"})
 public abstract class OgcApiLink {
@@ -36,16 +35,7 @@ public abstract class OgcApiLink {
 
     @Nullable
     @XmlAttribute
-    @Value.Derived
-    public String getTitle() {
-        if (getDescription() == null) {
-            return null;
-        }
-        if (getTypeLabel() == null) {
-            return getDescription();
-        }
-        return String.format("%s as %s", getDescription(), getTypeLabel());
-    }
+    public abstract String getTitle();
 
     @XmlAttribute
     public abstract String getHref();
@@ -59,14 +49,46 @@ public abstract class OgcApiLink {
     public abstract Integer getLength();
 
     @Nullable
-    @JsonIgnore
-    @XmlTransient
-    public abstract String getTypeLabel();
-
-    @Nullable
-    abstract String getDescription();
-
-    @Nullable
     @XmlAttribute
     public abstract String getTemplated();
+
+    @JsonIgnore
+    @XmlTransient
+    public Link getLink() {
+        Link.Builder link = Link.fromUri(getHref());
+
+        if (getRel()!=null && !getRel().isEmpty())
+            link.rel(getRel());
+        if (getTitle()!=null && !getTitle().isEmpty())
+            link.title(getTitle());
+        if (getType()!=null && !getType().isEmpty())
+            link.type(getType());
+
+        return link.build();
+    };
+
+    @JsonIgnore
+    @XmlTransient
+    @Value.Derived
+    public String getTypeLabel() {
+        String mediaType = getType();
+        if (mediaType == null)
+            return "";
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/gml+xml"))
+            return "GML";
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/geo+json"))
+            return "GeoJSON";
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/json"))
+            return "JSON";
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/xml"))
+            return "XML";
+        else if (mediaType.toLowerCase().split(";")[0].equals("text/html"))
+            return "HTML";
+        else if (mediaType.toLowerCase().split(";")[0].endsWith("+xml"))
+            return "XML";
+        else if (mediaType.toLowerCase().split(";")[0].startsWith("+json"))
+            return "JSON";
+
+        return mediaType;
+    }
 }

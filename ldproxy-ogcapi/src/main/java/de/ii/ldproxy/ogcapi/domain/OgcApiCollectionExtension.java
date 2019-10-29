@@ -7,10 +7,20 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-/**
- * @author zahnen
- */
-public interface OgcApiCollectionExtension extends OgcApiExtension {
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
-    ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection, FeatureTypeConfigurationOgcApi featureTypeConfiguration, URICustomizer uriCustomizer, boolean isNested, OgcApiDatasetData apiData);
+public interface OgcApiCollectionExtension extends OgcApiContentExtension {
+
+    ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
+                                              FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+                                              OgcApiDatasetData apiData,
+                                              URICustomizer uriCustomizer,
+                                              boolean isNested,
+                                              OgcApiMediaType mediaType,
+                                              List<OgcApiMediaType> alternateMediaTypes,
+                                              Optional<Locale> language);
+
+    default String getResourceName() { return "Collection"; };
 }

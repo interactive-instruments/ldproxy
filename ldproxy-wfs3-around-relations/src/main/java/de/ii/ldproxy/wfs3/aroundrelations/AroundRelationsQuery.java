@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.aroundrelations;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import org.apache.http.NameValuePair;
@@ -48,7 +48,7 @@ public class AroundRelationsQuery {
         if (aroundRelationConfiguration.isPresent()) {
             this.aroundRelationConfiguration = aroundRelationConfiguration.get();
 
-            List<NameValuePair> queryParams = transformationContext.getWfs3Request()
+            List<NameValuePair> queryParams = transformationContext.getOgcApiRequest()
                                                                    .getUriCustomizer()
                                                                    .getQueryParams();
             Map<String, String> query = queryParams.stream()
@@ -194,9 +194,9 @@ public class AroundRelationsQuery {
 
     private Optional<AroundRelationsConfiguration> getAroundRelationConfiguration(FeatureTransformationContext transformationContext) {
         try {
-            return transformationContext.getServiceData()
+            return transformationContext.getApiData()
                                         .getFeatureTypes()
-                                        .get(transformationContext.getCollectionName())
+                                        .get(transformationContext.getCollectionId())
                                         .getExtension(AroundRelationsConfiguration.class);
         } catch (Throwable e) {
             return Optional.empty();

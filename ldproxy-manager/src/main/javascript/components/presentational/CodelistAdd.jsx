@@ -3,17 +3,16 @@ import { connect } from 'react-redux'
 import { push } from 'redux-little-router'
 import { mutateAsync, requestAsync } from 'redux-query';
 import ui from 'redux-ui';
+import uiValidator, { url } from 'xtraplatform-manager/src/components/common/ui-validator';
 
-import {Box, Heading, Button, Select, Form, FormField} from 'grommet';
+import { Box, Text, Button, Select, FormField } from 'grommet';
 import Header from 'xtraplatform-manager/src/components/common/Header';
-
-import {LinkPrevious as LinkPreviousIcon} from 'grommet-icons';
 
 import CodelistApi from '../../apis/CodelistApi'
 import TextInputUi from 'xtraplatform-manager/src/components/common/TextInputUi';
-import Anchor from 'xtraplatform-manager/src/components/common/AnchorLittleRouter';
+import { withAppConfig } from 'xtraplatform-manager/src/app-context';
 
-
+@withAppConfig()
 
 @ui({
     state: {
@@ -22,14 +21,18 @@ import Anchor from 'xtraplatform-manager/src/components/common/AnchorLittleRoute
     }
 })
 
+@uiValidator({
+    sourceUrl: url()
+})
+
 @connect(
     (state, props) => {
         return {}
     },
-    (dispatch) => {
+    (dispatch, props) => {
         return {
             addCodelist: (codelist) => {
-                dispatch(mutateAsync(CodelistApi.addCodelistQuery(codelist)))
+                dispatch(mutateAsync(CodelistApi.addCodelistQuery(codelist, { secured: props.appConfig.secured })))
                     .then((result) => {
                         dispatch(push('/codelists'))
                     })
@@ -41,51 +44,44 @@ export default class CodelistAdd extends Component {
 
     _addCodelist = (event) => {
         event.preventDefault();
-        const {ui, addCodelist} = this.props;
+        const { ui, addCodelist } = this.props;
 
         addCodelist(ui);
     }
 
     render() {
-        const {ui, updateUI, children} = this.props;
+        const { ui, updateUI, children, validator } = this.props;
 
         return (
-            <div>
-                <Header pad={ { horizontal: "small", vertical: "medium" } }
-                    justify="between"
-                    size="large"
-                    colorIndex="light-2">
-                    <Box direction="row"
-                        align="center"
-                        pad={ { between: 'small' } }
-                        responsive={ false }>
-                        <Anchor icon={ <LinkPreviousIcon /> } path={ '/codelists' } a11yTitle="Return" />
-                        <Heading tag="h1" margin="none">
-                            <strong>Import Codelist</strong>
-                        </Heading>
-                    </Box>
-                    { /*sidebarControl*/ }
+            <Box fill={true}>
+                <Header justify='start' border={{ side: 'bottom', size: 'small', color: 'light-4' }}
+                    size="large">
+                    <Text size='large' weight={500}>Import Codelist</Text>
                 </Header>
-                <Form compact={ false } plain={ true } pad={ { horizontal: 'large', vertical: 'medium' } }>
-                            <FormField label="URL" style={ { width: '100%' } }>
-                                <TextInputUi name="sourceUrl"
-                                    autoFocus
-                                    value={ ui.sourceUrl }
-                                    onChange={ updateUI } />
-                            </FormField>
-                            <FormField label="Format">
-                                <Select name="type"
-                                    value={ { value: 'GML_DICTIONARY', label: 'GML Dictionary' } }
-                                    options={ [{ value: 'GML_DICTIONARY', label: 'GML Dictionary' }] }
-                                    onChange={ () => {
-                                               } } />
-                            </FormField>
-                            { children }
-                    <Box as='footer' pad={ { "vertical": "medium" } }>
-                        <Button label='Add' primary={ true } onClick={ (ui.sourceUrl.length < 11) ? null : this._addCodelist } />
+                <Box pad={{ horizontal: 'small', vertical: 'medium' }}>
+                    <Box fill="vertical" overflow={{ vertical: 'auto' }} flex={false}>
+                        <FormField label="URL" style={{ width: '100%' }} error={validator.messages.sourceUrl}>
+                            <TextInputUi name="sourceUrl"
+                                autoFocus
+                                value={ui.sourceUrl}
+                                onChange={updateUI} />
+                        </FormField>
+                        <FormField label="Format">
+                            <Select name="type"
+                                labelKey="label"
+                                valueKey="value"
+                                value={{ value: 'GML_DICTIONARY', label: 'GML Dictionary' }}
+                                options={[{ value: 'GML_DICTIONARY', label: 'GML Dictionary' }]}
+                                onChange={() => {
+                                }} />
+                        </FormField>
+                        {children}
+                        <Box pad={{ "vertical": "medium" }}>
+                            <Button label='Add' primary={true} onClick={validator.valid ? this._addCodelist : null} />
+                        </Box>
                     </Box>
-                </Form>
-            </div>
+                </Box>
+            </Box>
         );
     }
 }

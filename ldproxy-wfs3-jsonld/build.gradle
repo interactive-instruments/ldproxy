@@ -2,9 +2,9 @@
 version = '1.4.1'
 
 dependencies {
-    provided project(":ldproxy-wfs3-api")
     provided project(":ldproxy-ogcapi")
-    provided project(":ldproxy-wfs3-html")
+    provided project(":ldproxy-ogcapi-features-core")
+    provided project(":ldproxy-ogcapi-html")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
 }

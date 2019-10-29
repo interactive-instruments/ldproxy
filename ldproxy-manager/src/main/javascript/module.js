@@ -9,11 +9,14 @@ import Codelists from './components/container/Codelists'
 import CodelistIndex from './components/presentational/CodelistIndex'
 import CodelistShow from './components/presentational/CodelistShow'
 import CodelistAdd from './components/presentational/CodelistAdd'
-import Console from './components/container/Console'
 import MappingEditGeneral from './components/presentational/MappingEditGeneral'
 import MappingEditGeoJson from './components/presentational/MappingEditGeoJson'
 import MappingEditHtml from './components/presentational/MappingEditHtml'
 import { customTheme } from './theme'
+import ServiceEditExtensions from './components/presentational/ServiceEditExtensions'
+import ServiceEditTiles from './components/presentational/ServiceEditTiles'
+import ServiceActionsOgcApi from './components/presentational/ServiceActionsOgcApi'
+import FeatureTypeEditTiles from './components/presentational/FeatureTypeEditTiles'
 
 export default {
     applicationName: 'ldproxy',
@@ -47,15 +50,6 @@ export default {
                     }
                 ]
             },
-            {},
-            {},
-            /*{
-                path: '/console',
-                component: Console,
-                title: 'Console',
-                menu: true,
-                roles: ['SUPERADMIN', 'ADMIN']
-            }*/
         ]
     },
     typedComponents: {
@@ -64,8 +58,21 @@ export default {
             'application/geo+json': MappingEditGeoJson,
             'application/ld+json': MappingEditHtml,
             'text/html': MappingEditHtml
+        },
+        ServiceActionsView: {
+            default: ServiceActionsOgcApi
         }
     },
-    theme: customTheme
+    extendableComponents: {
+        ServiceEdit: {
+            Api: ServiceEditExtensions,
+            Tiles: ServiceEditTiles
+        },
+        FeatureTypeEdit: {
+            //Tiles: FeatureTypeEditTiles
+        }
+    },
+    theme: customTheme,
+    secured: false,
 };
 

@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import org.glassfish.jersey.message.internal.QualitySourceMediaType;
 import org.slf4j.Logger;
@@ -18,8 +19,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Variant;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class OgcApiContentNegotiation {
@@ -27,6 +30,8 @@ public class OgcApiContentNegotiation {
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiContentNegotiation.class);
     private static final String CONTENT_TYPE_PARAMETER = "f";
     private static final String ACCEPT_HEADER = "Accept";
+    private static final String LANGUAGE_PARAMETER = "lang";
+    private static final String ACCEPT_LANGUAGE_HEADER = "Accept-Language";
 
     public OgcApiContentNegotiation() {
     }
@@ -44,6 +49,22 @@ public class OgcApiContentNegotiation {
         LOGGER.debug("accepted {}", ogcApiMediaType);
 
         return ogcApiMediaType;
+    }
+
+    public Optional<Locale> negotiate(ContainerRequestContext requestContext) {
+
+        evaluateLanguageParameter(
+                requestContext.getUriInfo()
+                    .getQueryParameters(),
+                requestContext.getHeaders());
+
+        LOGGER.debug("accept-language {}", requestContext.getHeaderString(ACCEPT_LANGUAGE_HEADER));
+
+        Optional<Locale> locale = negotiateLanguage(requestContext.getRequest());
+
+        LOGGER.debug("accepted {}", locale);
+
+        return locale;
     }
 
     private void evaluateFormatParameter(
@@ -95,4 +116,44 @@ public class OgcApiContentNegotiation {
         return Stream.of(ogcApiMediaType.type())
                      .map(mediaType -> ogcApiMediaType.qs() < 1000 ? new QualitySourceMediaType(mediaType.getType(), mediaType.getSubtype(), ogcApiMediaType.qs(), mediaType.getParameters()) : mediaType);
     }
+
+    private void evaluateLanguageParameter(
+            MultivaluedMap<String, String> queryParameters,
+            MultivaluedMap<String, String> headers) {
+
+        if (queryParameters.containsKey(LANGUAGE_PARAMETER)) {
+            String locale = queryParameters.getFirst(LANGUAGE_PARAMETER);
+
+            Optional<Locale> ogcApiLocale = I18n.getLanguages().stream()
+                    .filter(language -> Objects.equals(language.getLanguage(), locale))
+                    .findFirst();
+            if (ogcApiLocale.isPresent()) {
+                headers.putSingle(ACCEPT_LANGUAGE_HEADER, ogcApiLocale.get()
+                        .getLanguage());
+            }
+        }
+    }
+
+    private Optional<Locale> negotiateLanguage(
+            Request request) {
+        Locale[] supportedLanguagesArray = I18n.getLanguages().stream()
+                .toArray(Locale[]::new);
+
+        Variant variant = null;
+        if (supportedLanguagesArray.length > 0) {
+            variant = request.selectVariant(Variant.languages(supportedLanguagesArray)
+                    .build());
+        }
+
+        return Optional.ofNullable(variant)
+                .map(Variant::getLanguage)
+                .flatMap(locale -> findMatchingLanguage(locale, I18n.getLanguages()));
+    }
+
+    private Optional<Locale> findMatchingLanguage(Locale locale, Set<Locale> supportedLocales) {
+        return supportedLocales.stream()
+                .filter(language -> Objects.equals(language.getLanguage(),locale.getLanguage()))
+                .findFirst();
+    }
+
 }

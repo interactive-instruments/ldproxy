@@ -9,11 +9,12 @@ package de.ii.ldproxy.wfs3.vt;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
-import de.ii.ldproxy.wfs3.api.FeatureTransformationContext;
-import de.ii.ldproxy.wfs3.api.ImmutableFeatureTransformationContextGeneric;
-import de.ii.ldproxy.wfs3.api.Wfs3FeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationContextGeneric;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
@@ -58,17 +59,17 @@ public class TileGeneratorJson {
     static boolean generateTileJson(File tileFile, CrsTransformation crsTransformation, @Context UriInfo uriInfo,
                                     Map<String, String> filters, Map<String, String> filterableFields,
                                     URICustomizer uriCustomizer, OgcApiMediaType mediaType, boolean isCollection,
-                                    VectorTile tile) {
+                                    VectorTile tile, I18n i18n, Optional<Locale> language) {
         // TODO add support for multi-collection GeoJSON output
 
         String collectionId = tile.getCollectionId();
         OgcApiDatasetData serviceData = tile.getApiData();
-        TilingScheme tilingScheme = tile.getTilingScheme();
+        TileMatrixSet tileMatrixSet = tile.getTileMatrixSet();
         int level = tile.getLevel();
         int col = tile.getCol();
         int row = tile.getRow();
         TransformingFeatureProvider featureProvider = tile.getFeatureProvider();
-        Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson = tile.getWfs3OutputFormatGeoJson();
+        OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = tile.getWfs3OutputFormatGeoJson();
 
         if (collectionId == null)
             return false;
@@ -97,11 +98,11 @@ public class TileGeneratorJson {
         }
 
         // calculate maxAllowableOffset
-        double maxAllowableOffsetTilingScheme = tilingScheme.getMaxAllowableOffset(level, row, col);
-        double maxAllowableOffsetNative = maxAllowableOffsetTilingScheme; // TODO convert to native CRS units
+        double maxAllowableOffsetTileMatrixSet = tileMatrixSet.getMaxAllowableOffset(level, row, col);
+        double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units
         double maxAllowableOffsetCrs84 = 0;
         try {
-            maxAllowableOffsetCrs84 = tilingScheme.getMaxAllowableOffset(level, row, col, OgcApiDatasetData.DEFAULT_CRS, crsTransformation);
+            maxAllowableOffsetCrs84 = tileMatrixSet.getMaxAllowableOffset(level, row, col, OgcApiDatasetData.DEFAULT_CRS, crsTransformation);
         } catch (CrsTransformationException e) {
             LOGGER.error("CRS transformation error: " + e.getMessage());
             e.printStackTrace();
@@ -119,7 +120,8 @@ public class TileGeneratorJson {
                                                 .type(collectionId)
                                                 .filter(filter)
                                                 .maxAllowableOffset(maxAllowableOffsetNative)
-                                                .fields(propertiesList);
+                                                .fields(propertiesList)
+                                                .crs(OgcApiDatasetData.DEFAULT_CRS);
 
 
             if (filters != null && filterableFields != null) {
@@ -152,7 +154,7 @@ public class TileGeneratorJson {
                     .label("MVT")
                     .build();
             final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-            ogcApiLinks = vectorTilesLinkGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternateMediaType, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, "application/vnd.mapbox-vector-tile", true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, "application/json", true));
+            ogcApiLinks = vectorTilesLinkGenerator.generateGeoJSONTileLinks(uriCustomizer, mediaType, alternateMediaType, tileMatrixSet.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, "application/vnd.mapbox-vector-tile", true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(serviceData), collectionId, "application/json", true), i18n, language);
         }
 
 
@@ -160,10 +162,10 @@ public class TileGeneratorJson {
 
         try {
             FeatureTransformationContext transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
-                    .serviceData(serviceData)
-                    .collectionName(collectionId)
-                    .wfs3Request(new ImmutableOgcApiRequestContext.Builder()
-                            .api(null) // TODO, must pass OgcApiDataset variable, but we only have OgcApiDatasetData
+                    .apiData(serviceData)
+                    .collectionId(collectionId)
+                    .ogcApiRequest(new ImmutableOgcApiRequestContext.Builder()
+                            .api(tile.getApi())
                             .requestUri(uriCustomizer.build())
                             .mediaType(mediaType)
                             .build())
@@ -177,7 +179,7 @@ public class TileGeneratorJson {
                     .outputStream(outputStream)
                     .build();
 
-            Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext);
+            Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, language);
 
             if (featureTransformer.isPresent()) {
                 featureTransformStream.apply(featureTransformer.get(), null)
@@ -201,7 +203,7 @@ public class TileGeneratorJson {
      * generates an empty JSON Tile with the required links
      *
      * @param tileFile                the file object of the tile in the cache
-     * @param tilingScheme            the tilingScheme the JSON Tile should have
+     * @param tileMatrixSet           the tiling scheme the JSON Tile should have
      * @param datasetData             the Service data of the Wfs3Service
      * @param wfs3OutputFormatGeoJson the wfs3OutputFormatGeoJSON
      * @param collectionId            the id of the collection in which the Tile should be generated
@@ -214,10 +216,11 @@ public class TileGeneratorJson {
      * @param service                 the service
      * @return true, if the file was generated successfully, false, if an error occurred
      */
-    public static boolean generateEmptyJSON(File tileFile, TilingScheme tilingScheme, OgcApiDatasetData datasetData,
-                                            Wfs3FeatureFormatExtension wfs3OutputFormatGeoJson, String collectionId,
+    public static boolean generateEmptyJSON(File tileFile, TileMatrixSet tileMatrixSet, OgcApiDatasetData datasetData,
+                                            OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, String collectionId,
                                             boolean isCollection, OgcApiRequestContext wfs3Request, int level, int row,
-                                            int col, CrsTransformation crsTransformation, OgcApiDataset service) {
+                                            int col, CrsTransformation crsTransformation, OgcApiDataset service,
+                                            I18n i18n, Optional<Locale> language) {
 
         if (collectionId == null)
             return false;
@@ -233,11 +236,11 @@ public class TileGeneratorJson {
         }
 
 
-        double maxAllowableOffsetTilingScheme = tilingScheme.getMaxAllowableOffset(level, row, col);
-        double maxAllowableOffsetNative = maxAllowableOffsetTilingScheme; // TODO convert to native CRS units
+        double maxAllowableOffsetTileMatrixSet = tileMatrixSet.getMaxAllowableOffset(level, row, col);
+        double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units
         double maxAllowableOffsetCrs84 = 0;
         try {
-            maxAllowableOffsetCrs84 = tilingScheme.getMaxAllowableOffset(level, row, col, OgcApiDatasetData.DEFAULT_CRS, crsTransformation);
+            maxAllowableOffsetCrs84 = tileMatrixSet.getMaxAllowableOffset(level, row, col, OgcApiDatasetData.DEFAULT_CRS, crsTransformation);
         } catch (CrsTransformationException e) {
             LOGGER.error("CRS transformation error: " + e.getMessage());
             e.printStackTrace();
@@ -253,20 +256,22 @@ public class TileGeneratorJson {
                     .label("MVT")
                     .build();
             final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-            ogcApiLinks = vectorTilesLinkGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternateMediaType, tilingScheme.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/json", true));
+            ogcApiLinks = vectorTilesLinkGenerator.generateGeoJSONTileLinks(wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), alternateMediaType, tileMatrixSet.getId(), Integer.toString(level), Integer.toString(row), Integer.toString(col), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", true), VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/json", true), i18n, language);
         }
 
         FeatureTransformationContext transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
-                .serviceData(datasetData)
-                .collectionName(collectionId)
-                .wfs3Request(wfs3Request)
+                .apiData(datasetData)
+                .collectionId(collectionId)
+                .ogcApiRequest(wfs3Request)
                 .links(ogcApiLinks)
                 .isFeatureCollection(true)
                 .maxAllowableOffset(maxAllowableOffsetCrs84)
                 .outputStream(outputStream)
+                .limit(0) // TODO
+                .offset(0)
                 .build();
 
-        Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext);
+        Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, wfs3Request.getLanguage());
 
         if (featureTransformer.isPresent()) {
             OptionalLong numRet = OptionalLong.of(0);

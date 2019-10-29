@@ -32,9 +32,7 @@ import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.feature.provider.api.TargetMapping.BASE_TYPE;
 
-/**
- * @author zahnen
- */
+
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiDatasetData.Builder.class)
@@ -58,7 +56,7 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
     }
 
     //behaves exactly like Map<String, FeatureTypeConfigurationOgcApi>, but supports mergeable builder deserialization
-    // (immutables attributeBuilder does not work with maps yet)
+    //(immutables attributeBuilder does not work with maps yet)
     @JsonMerge
     @Override
     public abstract ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getFeatureTypes();
@@ -75,6 +73,16 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
         //TODO: not set?
         return Objects.nonNull(getFeatureProvider().getMappingStatus()) && getFeatureProvider().getMappingStatus()
                                    .getLoading();
+    }
+
+    @Override
+    @Value.Derived
+    public boolean hasError() {
+        //TODO: not set?
+        return Objects.nonNull(getFeatureProvider().getMappingStatus())
+                && getFeatureProvider().getMappingStatus().getEnabled()
+                && !getFeatureProvider().getMappingStatus().getSupported()
+                && Objects.nonNull(getFeatureProvider().getMappingStatus().getErrorMessage());
     }
 
     public boolean isFeatureTypeEnabled(final String featureType) {
@@ -151,7 +159,7 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
     private Function<Map.Entry<String, TargetMapping>, String> getParameterName() {
         return mapping -> mapping.getValue()
                 .isSpatial() ? "bbox"
-                : ((Wfs3GenericMapping) mapping.getValue()).isTemporal() ? "datetime"
+                : ((OgcApiFeaturesGenericMapping) mapping.getValue()).isTemporal() ? "datetime"
                 : mapping.getValue()
                          .getName()
                          .replaceAll("\\[\\w+\\]", "")
@@ -166,13 +174,12 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
     }
 
     private Predicate<Map.Entry<String, TargetMapping>> isFilterable(boolean withoutSpatialAndTemporal) {
-        return mapping -> ((Wfs3GenericMapping) mapping.getValue()).isFilterable() &&
+        return mapping -> ((OgcApiFeaturesGenericMapping) mapping.getValue()).isFilterable() &&
                 (mapping.getValue()
-                        .getName() != null /*TODO default name for GML geometries|| mapping.getValue()
-                                                     .isSpatial()*/) &&
+                        .getName() != null) && // TODO: default name for GML geometries|| mapping.getValue().isSpatial()
                 mapping.getValue()
                        .isEnabled() &&
                 (!withoutSpatialAndTemporal || (!mapping.getValue()
-                                                        .isSpatial() && !((Wfs3GenericMapping) mapping.getValue()).isTemporal()));
+                                                        .isSpatial() && !((OgcApiFeaturesGenericMapping) mapping.getValue()).isTemporal()));
     }
 }

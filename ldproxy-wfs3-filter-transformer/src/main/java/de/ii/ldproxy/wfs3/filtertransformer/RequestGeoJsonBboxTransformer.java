@@ -31,7 +31,6 @@ public class RequestGeoJsonBboxTransformer implements FilterTransformer {
         this.httpClient = httpClient;
     }
 
-
     @Override
     public Map<String, String> resolveParameters(Map<String, String> parameters) {
 
@@ -89,7 +88,6 @@ public class RequestGeoJsonBboxTransformer implements FilterTransformer {
                 url = url.replaceAll("\\{\\{" + parameter + "}}", "''");
             }
         }
-
 
         return url;
     }

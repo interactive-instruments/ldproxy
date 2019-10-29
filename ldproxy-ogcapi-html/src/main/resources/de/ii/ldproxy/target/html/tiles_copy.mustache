@@ -1,0 +1,32 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+    <br/>
+
+    <!--
+    {{#tileCollections}}
+        <h2>{{#tileMatrixSetURI}}<a href="{{.}}" target="blank">{{tileMatrixSet}}</a>{{/tileMatrixSetURI}}{{#tileMatrixSetURI}}{{tileMatrixSet}}{{/tileMatrixSetURI}}</h2>
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{mapTitle}}</div>
+            <div class="col-md-10">
+                <div id="map-container">
+                    <small><span id="info" class="text-muted"/></small>
+                    <div id="tilesUrl" class="d-none">{{#links}}{{{href}}}{{/links}}</div>
+                </div>
+                <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v5.3.0/build/ol.js"></script>
+                <script src="https://cdn.jsdelivr.net/gh/openlayers/ol-mapbox-style@v4.3.1/dist/olms.js"></script>
+            </div>
+        </div>
+    {{/tileCollections}}
+        {{^tileCollections}}
+        <span>{{none}}</span>
+    {{/tileCollections}}
+    -->
+</div>
+{{> script}}
+
+{{> footer}}
+

@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.jsonld;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import de.ii.ldproxy.ogcapi.domain.AbstractWfs3GenericMapping;
+import de.ii.ldproxy.ogcapi.domain.AbstractOgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.target.html.FeatureCollectionView;
 import de.ii.ldproxy.target.html.FeaturePropertyDTO;
 import de.ii.ldproxy.target.html.HtmlTransformingCoordinatesWriter;
@@ -129,7 +129,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                                                                .values()) {
                     //for (TargetMapping mapping : mappings) {
                     if (((MicrodataPropertyMapping) mapping).getItemProp() == null && mapping.isEnabled() && mapping.getName() != null && !mapping.getName()
-                                                                                                                                                  .startsWith("@") && ((MicrodataPropertyMapping) mapping).isShowInCollection() && !((AbstractWfs3GenericMapping) mapping).isSpatial()) {
+                                                                                                                                                  .startsWith("@") && ((MicrodataPropertyMapping) mapping).isShowInCollection() && !((AbstractOgcApiFeaturesGenericMapping) mapping).isSpatial()) {
                         json.writeNullField(mapping.getName());
                     }
                     //}
@@ -151,13 +151,13 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                 }
 
 
-                json.writeStringField("@type", "Dataset");
+                json.writeStringField("@type", "Collections");
                 json.writeStringField("@id", url);
                 json.writeStringField("name", name);
                 json.writeStringField("description", dataset.description);
                 json.writeStringField("url", url);
                 json.writeObjectFieldStart("isPartOf");
-                json.writeStringField("@type", "Dataset");
+                json.writeStringField("@type", "Collections");
                 json.writeStringField("url", parentUrl);
                 json.writeEndObject();
                 if (!dataset.hideMetadata) {
@@ -248,7 +248,7 @@ public class JsonLdOutputWriter extends AbstractFeatureWriter {
                                                              .values()) {
                         //for (TargetMapping m : mappings) {
                         if (((MicrodataPropertyMapping) m).getItemProp() == null && m.isEnabled() && m.getName() != null && !m.getName()
-                                                                                                                              .startsWith("@") && !((AbstractWfs3GenericMapping) m).isSpatial()) {
+                                                                                                                              .startsWith("@") && !((AbstractOgcApiFeaturesGenericMapping) m).isSpatial()) {
                             json.writeNullField(m.getName());
                         }
                         //}

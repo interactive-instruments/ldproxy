@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.Consumer;
@@ -133,7 +134,7 @@ public class GeoJsonWriterAroundRelationsSpec {
 
                         OgcApiLink expectedLink = new ImmutableOgcApiLink.Builder()
                                                                  .rel("test1")
-                                                                 .description("test1")
+                                                                 .title("test1")
                                                                  .type("application/geo+json")
                                                                  .href("RELATION")
                                                                  .build();
@@ -248,7 +249,7 @@ public class GeoJsonWriterAroundRelationsSpec {
     private FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, URI query) throws URISyntaxException {
         return ImmutableFeatureTransformationContextGeoJson.builder()
                                                            .crsTransformer(Optional.empty())
-                                                           .serviceData(new ImmutableOgcApiDatasetData.Builder()
+                                                           .apiData(new ImmutableOgcApiDatasetData.Builder()
                                                                                                 .id("s")
                                                                                                 .serviceType("WFS3")
                                                                                                 .featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
@@ -268,9 +269,9 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                                                                                                                          .extent(new ImmutableCollectionExtent.Builder()
                                                                                                                                                                                                            .temporal(new ImmutableTemporalExtent.Builder().build())
                                                                                                                                                                                                            .build())
-                                                                                                                                                                         .addCapabilities(ImmutableAroundRelationsConfiguration.builder()
+                                                                                                                                                                         .addCapabilities(new ImmutableAroundRelationsConfiguration.Builder()
                                                                                                                                                                                                                                     .enabled(true)
-                                                                                                                                                                                                                                    .addRelations(ImmutableRelation.builder()
+                                                                                                                                                                                                                                    .addRelations(new ImmutableRelation.Builder()
                                                                                                                                                                                                                                                                    .id("test1")
                                                                                                                                                                                                                                                                    .label("test1")
                                                                                                                                                                                                                                                                    .responseType("application/geo+json")
@@ -280,13 +281,13 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                                                                                                                                                                                     .build())
                                                                                                                                                                          .build()))
                                                                                                 .build())
-                                                           .collectionName("ft")
+                                                           .collectionId("ft")
                                                            .outputStream(outputStream)
                                                            .links(ImmutableList.of(new ImmutableOgcApiLink.Builder()
                                                                                                     .href("TEST")
                                                                                                     .build()))
                                                            .isFeatureCollection(false)
-                                                           .wfs3Request(new OgcApiRequestContext() {
+                                                           .ogcApiRequest(new OgcApiRequestContext() {
                                                                @Override
                                                                public OgcApiMediaType getMediaType() {
                                                                    return null;
@@ -295,6 +296,11 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                @Override
                                                                public List<OgcApiMediaType> getAlternateMediaTypes() {
                                                                    return null;
+                                                               }
+
+                                                               @Override
+                                                               public Optional<Locale> getLanguage() {
+                                                                   return Optional.empty();
                                                                }
 
                                                                @Override

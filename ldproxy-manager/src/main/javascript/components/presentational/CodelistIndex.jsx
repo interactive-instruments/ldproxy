@@ -66,27 +66,26 @@ export default class CodelistIndex extends Component {
         }
 
         return (
-            <div>
-                <Box>
-                    <Header size='large' pad={{ horizontal: 'medium' }}>
-                        <Text weight='bold'>
-                            {navControl}
-                            <span>Codelists</span>
-                        </Text>
-                        <Anchor icon={<AddIcon />} path={{ pathname: '/codelists/add' }} title={`Add codelist`} />
-                    </Header>
-                    <Box as='section'>
+            <Box fill={true}>
+                <Header justify='start' border={{ side: 'bottom', size: 'small', color: 'light-4' }}
+                    size="large">
+                    <Text size="large" weight={500}>Codelists</Text>
+                    <Anchor icon={<AddIcon />} path={{ pathname: '/codelists/add' }} title={`Add codelist`} />
+                </Header>
+                <Box fill={true}>
+                    <Box fill="vertical" overflow={{ vertical: 'auto' }} pad={{ horizontal: 'small', vertical: 'medium' }} flex={false}>
                         <List>
                             {codelists && Object.keys(codelists).map((key, index) => (
                                 <ListItem key={key}
                                     pad={{ vertical: 'none' }}
                                     separator={index === 0 ? 'horizontal' : 'bottom'}
-                                    onClick={() => showCodelist(key)}>
-                                    <Box direction='row' size="medium">
+                                    onClick={() => showCodelist(key)}
+                                    style={{ cursor: 'pointer' }}>
+                                    <Box direction='row' size="medium" justify="between" fill="horizontal">
                                         <Box pad='small'>
                                             {codelists[key].label || codelists[key].id}
                                         </Box>
-                                        <Button plain={true} icon={<TrashIcon />} onClick={(event) => this._onLayerOpen(event, key)} />
+                                        <Button plain={true} icon={<TrashIcon />} onClick={(event) => this._onLayerOpen(event, key)} title="Remove" />
                                     </Box>
                                 </ListItem>
                             ))}
@@ -94,7 +93,7 @@ export default class CodelistIndex extends Component {
                     </Box>
                 </Box>
                 {layer}
-            </div>
+            </Box>
         );
     }
 }

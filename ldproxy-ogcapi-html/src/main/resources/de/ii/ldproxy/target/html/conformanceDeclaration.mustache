@@ -1,0 +1,21 @@
+{{> header}}
+
+<div class="row">
+    <div class="col-md-10">
+        <h1>{{title}}</h1>
+        <span>{{{description}}}</span>
+        <br/>
+        <br/>
+        <br/>
+        <ul class="list-unstyled">
+        {{#classes}}
+            <li>
+                {{.}}
+            </li>
+        {{/classes}}
+        </ul>
+    </div>
+</div>
+
+
+{{> footer}}

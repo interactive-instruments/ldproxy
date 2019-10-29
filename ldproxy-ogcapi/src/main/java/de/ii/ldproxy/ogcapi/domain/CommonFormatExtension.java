@@ -8,16 +8,16 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 public interface CommonFormatExtension extends FormatExtension {
 
     default String getPathPattern() {
-        return "^/?(?:conformance)?$";
+        return "^/?(?:conformance(?:/)?)?$";
     }
 
-    Response getLandingPageResponse(Dataset dataset, OgcApiDataset api, OgcApiRequestContext requestContext);
+    Response getLandingPageResponse(LandingPage apiLandingPage,
+                                    OgcApiDataset api, OgcApiRequestContext requestContext);
 
-    Response getConformanceResponse(List<ConformanceClass> ocgApiConformanceClasses,
+    Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
                                     OgcApiDataset api, OgcApiRequestContext requestContext);
 }

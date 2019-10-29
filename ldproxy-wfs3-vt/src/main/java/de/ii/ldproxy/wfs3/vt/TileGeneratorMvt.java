@@ -26,11 +26,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -48,20 +44,21 @@ public class TileGeneratorMvt {
      * @param propertyNames     a list of all property Names
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @param tile              the tile which should be generated
+     * @param seeding           flag to indicate that the tile creation is part of a seeding process
      * @return true, if the file was generated successfully, false, if an error occurred
      */
     static boolean generateTileMvt(File tileFileMvt, Map<String, File> layers, Set<String> propertyNames,
-                                   CrsTransformation crsTransformation, VectorTile tile) {
+                                   CrsTransformation crsTransformation, VectorTile tile, boolean seeding) {
 
         // Prepare MVT output
-        TilingScheme tilingScheme = tile.getTilingScheme();
+        TileMatrixSet tileMatrixSet = tile.getTileMatrixSet();
         OgcApiDatasetData serviceData = tile.getApiData();
         int level = tile.getLevel();
         int row = tile.getRow();
         int col = tile.getCol();
-        //checkZoomLevels(level, service,collectionId,tilingScheme.getId());
+        //checkZoomLevels(level, service,collectionId,tileMatrixSet.getId());
 
-        VectorTileEncoder encoder = new VectorTileEncoder(tilingScheme.getTileExtent());
+        VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         AffineTransformation transform;
         try {
             transform = tile.createTransformLonLatToTile(crsTransformation);
@@ -87,20 +84,33 @@ public class TileGeneratorMvt {
             ObjectMapper mapper = new ObjectMapper();
 
             Map<String, Object> jsonFeatureCollection = null;
-            try {
-                if (tileFileJson != null) {
-                    if (new BufferedReader(new FileReader(tileFileJson)).readLine() != null) {
-                        jsonFeatureCollection = mapper.readValue(tileFileJson, new TypeReference<LinkedHashMap>() {
-                        });
+            if (tileFileJson != null) {
+                int count = 0;
+                while (true) {
+                    try {
+                        if (new BufferedReader(new FileReader(tileFileJson)).readLine() != null) {
+                            jsonFeatureCollection = mapper.readValue(tileFileJson, new TypeReference<LinkedHashMap>() {
+                            });
+                        }
+                        break;
+                    } catch (IOException e) {
+                        if (seeding && count++ < 5) {
+                            // maybe the file is still generated, try to wait twice before giving up
+                            String msg = "Failure to read the GeoJSON file of tile {}/{}/{} in dataset '{}', layer '{}'. Trying again ...";
+                            LOGGER.info(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException ex) {
+                                // ignore and just continue
+                            }
+                        } else {
+                            String msg = "Internal server error: exception reading the GeoJSON file of tile {}/{}/{} in dataset '{}', layer '{}'.";
+                            LOGGER.error(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
+                            e.printStackTrace();
+                            return false;
+                        }
                     }
-
                 }
-
-            } catch (IOException e) {
-                String msg = "Internal server error: exception reading the GeoJSON file of tile {}/{}/{} in dataset '{}', layer {}.";
-                LOGGER.error(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
-                e.printStackTrace();
-                return false;
             }
 
             //empty Collection or no features in the collection
@@ -227,10 +237,10 @@ public class TileGeneratorMvt {
      * generates an empty MVT.
      *
      * @param tileFileMvt  the file object of the tile in the cache
-     * @param tilingScheme the tilingScheme the MVT should have
+     * @param tileMatrixSet the tile matrix set the MVT should have
      */
-    public static void generateEmptyMVT(File tileFileMvt, TilingScheme tilingScheme) {
-        VectorTileEncoder encoder = new VectorTileEncoder(tilingScheme.getTileExtent());
+    public static void generateEmptyMVT(File tileFileMvt, TileMatrixSet tileMatrixSet) {
+        VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         byte[] encoded = encoder.encode();
         try {
             Files.write(encoded, tileFileMvt);

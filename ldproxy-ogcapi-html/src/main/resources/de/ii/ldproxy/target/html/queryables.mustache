@@ -1,0 +1,26 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+    <br/>
+
+    {{#queryables}}
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{id}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#title}}<li>{{.}}{{#description}}: {{{.}}}{{/description}}</li>{{/title}}</li>
+                <li>{{typeTitle}}: {{type}}</li>
+            </ul>
+        </div>
+    </div>
+    {{/queryables}}
+    {{^queryables}}
+    <div>{{none}}</div>
+    {{/queryables}}
+</div>
+
+{{> footer}}
+

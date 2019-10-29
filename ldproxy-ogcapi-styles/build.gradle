@@ -1,0 +1,18 @@
+
+version = '1.4.1'
+
+dependencies {
+    provided project(":ldproxy-wfs3")
+    provided project(":ldproxy-ogcapi")
+    provided project(":ldproxy-ogcapi-features-core")
+    provided project(":ldproxy-ogcapi-oas30")
+    provided project(":ldproxy-ogcapi-collection-queryables")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
+
+    //TODO: to unit-tests.gradle or e2e-tests.gradle???
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+}

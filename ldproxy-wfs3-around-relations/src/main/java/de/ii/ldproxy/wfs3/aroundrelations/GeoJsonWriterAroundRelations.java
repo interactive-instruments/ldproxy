@@ -164,7 +164,7 @@ public class GeoJsonWriterAroundRelations implements GeoJsonWriter {
                                                 .href(url)
                                                 .rel(query.configuration.getId())
                                                 .type(query.configuration.getResponseType())
-                                                .description(query.configuration.getLabel())
+                                                .title(query.configuration.getLabel())
                                                 .build());
                                     }
                                 }));

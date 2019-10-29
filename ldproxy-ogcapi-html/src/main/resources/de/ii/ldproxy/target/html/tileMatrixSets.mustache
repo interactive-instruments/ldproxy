@@ -1,0 +1,27 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+    <br/>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{title}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#tileMatrixSets}}
+                    <li>
+                        <a href="tileMatrixSets/{{id}}">{{title}} ({{id}})</a>
+                    </li>
+                {{/tileMatrixSets}}
+                {{^tileMatrixSets}}
+                    <li>{{none}}</li>
+                {{/tileMatrixSets}}
+            </ul>
+        </div>
+    </div>
+</div>
+
+{{> footer}}
+

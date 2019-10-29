@@ -36,10 +36,10 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
-            .subPathPattern("^/(?:\\w+)/items/?\\w*$")
+            .subPathPattern("^/(?:[\\w\\-]+)/items/?[^/\\s]*$")
             .addMethods(HttpMethods.POST, HttpMethods.PUT, HttpMethods.DELETE)
-            .putSubPathsAndMethods("^/(?:\\w+)/items/?", Arrays.asList(new HttpMethods[]{HttpMethods.POST}))
-            .putSubPathsAndMethods("^/(?:[^/]+)/items/?(?:\\w+)$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.DELETE}))
+            .putSubPathsAndMethods("^/(?:[\\w\\-]+)/items/?", Arrays.asList(new HttpMethods[]{HttpMethods.POST}))
+            .putSubPathsAndMethods("^/(?:[\\w\\-]+)/items/?(?:[^/\\s]+)$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.DELETE}))
             .build();
 
     private final CommandHandlerTransactional commandHandler;
@@ -55,7 +55,7 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
 
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
-        if (subPath.matches("^/(?:\\w+)/items/?\\w*$"))
+        if (subPath.matches("^/(?:[\\w\\-]+)/items/?[^/\\s]*$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
                             .type(new MediaType("application", "geo+json"))

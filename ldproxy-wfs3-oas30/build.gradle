@@ -1,9 +1,0 @@
-
-version = '1.4.1'
-
-dependencies {
-    provided project(":ldproxy-wfs3-api")
-    provided project(":ldproxy-ogcapi")
-
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
-}
