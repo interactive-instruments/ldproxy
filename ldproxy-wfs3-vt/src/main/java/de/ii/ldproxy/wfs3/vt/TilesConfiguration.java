@@ -28,6 +28,16 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
         return false;
     }
 
+    @Value.Default
+    public boolean getMultiTilesEnabled() {
+        return false;
+    }
+
+    @Value.Default
+    public boolean getMultiCollectionEnabled() {
+        return false;
+    }
+
     @JsonMerge(value = OptBoolean.FALSE)
     @Nullable
     public abstract List<String> getFormats();
