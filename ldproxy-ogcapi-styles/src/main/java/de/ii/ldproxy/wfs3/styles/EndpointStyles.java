@@ -209,6 +209,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
                                                                                   .findFirst()
                                                                                   .orElseThrow(NotAcceptableException::new);
 
+        MediaType mediaType = styleFormat.getMediaType().type();
         String key = styleId + "." + styleFormat.getFileExtension();
         String datasetId = dataset.getId();
         File stylesheet = new File( stylesStore + File.separator + datasetId + File.separator + styleId + "." + styleFormat.getFileExtension());
@@ -222,16 +223,39 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
         }
 
         try {
-            final byte[] style = java.nio.file.Files.readAllBytes(stylesheet.toPath());
+            final byte[] content = java.nio.file.Files.readAllBytes(stylesheet.toPath());
 
-            return Response.ok()
-                           .entity(style)
-                           .type(styleFormat.getMediaType()
-                                            .type())
-                           .build();
+            if (mediaType.isCompatible(new MediaType("application","vnd.mapbox.style+json"))) {
+
+                // prepare Jackson mapper for deserialization
+                final ObjectMapper mapper = new ObjectMapper();
+                mapper.registerModule(new Jdk8Module());
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                try {
+                    // parse input
+                    MbStyleStylesheet parsedContent = mapper.readValue(content, MbStyleStylesheet.class);
+
+                    // TODO add standard links to preview?
+                    return Response.ok()
+                            .entity(parsedContent)
+                            .type(mediaType)
+                            .build();
+                } catch (IOException e) {
+                    LOGGER.error("Stylesheet in the styles store is invalid: " + stylesheet.getAbsolutePath());
+                }
+            } else if (mediaType.isCompatible(new MediaType("application","vnd.ogc.sld+xml"))) {
+                // TODO
+
+                return Response.ok()
+                        .entity(content)
+                        .type(mediaType)
+                        .build();
+            }
         } catch (IOException e) {
-            throw new ServerErrorException("stylesheet could not be read: "+styleId, 500);
+            LOGGER.error("Stylesheet in the styles store could not be read: " + styleId);
         }
+
+        throw new ServerErrorException("Error fetching stylesheet: "+styleId, 500);
     }
 
     /**
@@ -297,5 +321,5 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
             LOGGER.error("Style metadata could not be read: "+styleId);
         }
         return Optional.empty();
-    };
+    }
 }

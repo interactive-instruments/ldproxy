@@ -35,7 +35,7 @@ public class CORSFilter implements ContainerResponseFilter {
             !(requestContext.getHeaderString("Origin")==null) &&
             // OPTIONS requests have their own endpoint
             !requestContext.getMethod()
-                           .equalsIgnoreCase("options")) {
+                           .equalsIgnoreCase("OPTIONS")) {
 
             String origin = requestContext.getHeaderString("Origin");
             if (origin!=null && !origin.isEmpty()) {
@@ -43,8 +43,13 @@ public class CORSFilter implements ContainerResponseFilter {
                         .add("Access-Control-Allow-Origin", "*");
                 responseContext.getHeaders()
                         .add("Access-Control-Allow-Credentials", "true");
+                String headers = "Link"; // TODO add additional headers
+                if (requestContext.getMethod().equalsIgnoreCase("POST"))
+                    headers += ", Location";
+                if (requestContext.getMethod().equalsIgnoreCase("PATCH"))
+                    headers += ", Accept-Patch";
                 responseContext.getHeaders()
-                        .add("Access-Control-Expose-Headers", "Location, Link"); // TODO add additional headers
+                        .add("Access-Control-Expose-Headers", headers);
             }
         }
     }
