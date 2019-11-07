@@ -31,7 +31,12 @@ public class OgcApiLandingPageVectorTiles implements OgcApiLandingPageExtension 
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::getMultiCollectionEnabled)
+                .isPresent();
     }
 
     @Override

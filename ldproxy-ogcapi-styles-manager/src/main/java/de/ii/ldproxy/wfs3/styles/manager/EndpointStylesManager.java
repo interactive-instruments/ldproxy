@@ -17,6 +17,8 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.ByteSource;
+import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
@@ -29,16 +31,23 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
+import org.xml.sax.SAXException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -104,6 +113,30 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
+    @Override
+    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+        if (subPath.matches("^/?\\w+/metadata$"))
+            return new ImmutableSet.Builder<String>()
+                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
+                    .build();
+        else if (subPath.matches("^/?\\w*$"))
+            if (isValidationEnabledForApi(apiData))
+                return new ImmutableSet.Builder<String>()
+                        .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
+                        .add("validate")
+                        .build();
+            else
+                return new ImmutableSet.Builder<String>()
+                        .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
+                        .build();
+        else if (subPath.matches("^/?$"))
+            return new ImmutableSet.Builder<String>()
+                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
+                    .build();
+
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
+    }
+
     private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiDatasetData dataset) {
         return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
                                 .stream()
@@ -112,14 +145,22 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+        Optional<StylesConfiguration> extension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() &&
-                stylesExtension.get()
-                               .getManagerEnabled()) {
-            return true;
-        }
-        return false;
+        return extension
+                .filter(StylesConfiguration::getEnabled)
+                .filter(StylesConfiguration::getManagerEnabled)
+                .isPresent();
+    }
+
+    private boolean isValidationEnabledForApi(OgcApiDatasetData apiData) {
+        Optional<StylesConfiguration> extension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+
+        return extension
+                .filter(StylesConfiguration::getEnabled)
+                .filter(StylesConfiguration::getManagerEnabled)
+                .filter(StylesConfiguration::getValidationEnabled)
+                .isPresent();
     }
 
     /**
@@ -129,7 +170,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
      */
     @Path("/")
     @POST
-    @Consumes(StyleFormatMbStyle.MEDIA_TYPE_STRING)
+    @Consumes({StyleFormatMbStyle.MEDIA_TYPE_STRING,StyleFormatSld10.MEDIA_TYPE_STRING,StyleFormatSld11.MEDIA_TYPE_STRING})
     public Response postStyle(@Auth Optional<User> optionalUser,
                               @QueryParam("validate") String validate,
                               @Context OgcApiDataset api,
@@ -138,32 +179,48 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                               byte[] requestBody) {
 
         checkAuthorization(api.getData(), optionalUser);
-
+        checkValidate(api.getData(), validate);
         String datasetId = api.getId();
-        StyleFormatExtension format = new StyleFormatMbStyle();
 
-        // TODO: update
-        JsonNode requestBodyJson = validateRequestBodyJSON(requestBody);
-        if (requestBodyJson == null || !validateRequestBody(requestBodyJson)) {
-            throw new BadRequestException();
-        }
+        String contentType = request.getContentType();
+        MediaType requestMediaType = EndpointStylesManager.mediaTypeFromString(contentType);
 
-        String styleId = requestBodyJson.get("name")
-                                        .asText();
+        boolean val = Objects.nonNull(validate) && validate.matches("yes|only");
+        String styleId = "*";
 
-        Pattern styleNamePattern = Pattern.compile("[^\\w]", Pattern.CASE_INSENSITIVE);
-        Matcher styleNameMatcher = styleNamePattern.matcher(styleId);
-        if (!isNewStyle(datasetId, styleId)) {
-            throw new WebApplicationException(Response.Status.CONFLICT); // TODO
-        } else if (styleId.contains(" ") || styleNameMatcher.find()) {
-            int id = 0;
-            while (!isNewStyle(datasetId, Integer.toString(id))) {
-                id++;
+        for (StyleFormatExtension format: extensionRegistry.getExtensionsForType(StyleFormatExtension.class)) {
+            MediaType formatMediaType = format.getMediaType().type();
+            if (format.isEnabledForApi(api.getData()) && requestMediaType.isCompatible(formatMediaType)) {
+
+                if (format instanceof StyleFormatMbStyle) {
+                    JsonNode requestBodyJson = validateRequestBodyMbStyle(requestBody, val);
+                    styleId = requestBodyJson.get("name")
+                            .asText();
+                } else if (format instanceof StyleFormatSld10) {
+                    URL xsd = Resources.getResource(EndpointStylesManager.class, "/sld10.xsd");
+                    validateRequestBodyMbStyle(requestBody, val, xsd);
+                }
+
+                if (val && validate.equals("only"))
+                    return Response.noContent()
+                            .build();
+
+                Pattern styleNamePattern = Pattern.compile("[^\\w]", Pattern.CASE_INSENSITIVE);
+                Matcher styleNameMatcher = styleNamePattern.matcher(styleId);
+                if (!isNewStyle(datasetId, styleId)) {
+                    throw new WebApplicationException(Response.Status.CONFLICT); // TODO
+                } else if (styleId.contains(" ") || styleNameMatcher.find()) {
+                    int id = 0;
+                    while (!isNewStyle(datasetId, Integer.toString(id))) {
+                        id++;
+                    }
+                    styleId = Integer.toString(id);
+                }
+
+                writeStylesheet(api.getData(), ogcApiRequest, styleId, format, requestBody, true);
+                break;
             }
-            styleId = Integer.toString(id);
         }
-
-        writeStylesheet(api.getData(), ogcApiRequest, styleId, format, requestBody, true);
 
         // Return 201 with Location header
         URI newURI;
@@ -198,22 +255,29 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                              byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
+        checkValidate(dataset.getData(), validate);
         checkStyleId(styleId);
 
         boolean newStyle = isNewStyle(dataset.getId(), styleId);
         String contentType = request.getContentType();
         MediaType requestMediaType = EndpointStylesManager.mediaTypeFromString(contentType);
 
+        boolean val = Objects.nonNull(validate) && validate.matches("yes|only");
+
         for (StyleFormatExtension format: extensionRegistry.getExtensionsForType(StyleFormatExtension.class)) {
             MediaType formatMediaType = format.getMediaType().type();
             if (format.isEnabledForApi(dataset.getData()) && requestMediaType.isCompatible(formatMediaType)) {
 
                 if (format instanceof StyleFormatMbStyle) {
-                    JsonNode requestBodyJson = validateRequestBodyJSON(requestBody);
-
-                    if (requestBodyJson == null || !validateRequestBody(requestBodyJson))
-                        throw new BadRequestException();
+                    JsonNode requestBodyJson = validateRequestBodyMbStyle(requestBody, val);
+                } else if (format instanceof StyleFormatSld10) {
+                    URL xsd = Resources.getResource(EndpointStylesManager.class, "/sld10.xsd");
+                    validateRequestBodyMbStyle(requestBody, val, xsd);
                 }
+
+                if (val && validate.equals("only"))
+                    return Response.noContent()
+                            .build();
 
                 writeStylesheet(dataset.getData(), ogcApiRequest, styleId, format, requestBody, newStyle);
 
@@ -427,16 +491,24 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
      * @param requestBody the new Style as a JsonNode
      * @return true if content is valid
      */
-    public static boolean validateRequestBody(JsonNode requestBody) {
+    public static void validateRequestBody(JsonNode requestBody) {
 
         // TODO: review
         JsonNode version = requestBody.get("version");
         JsonNode sources = requestBody.get("sources");
         JsonNode layers = requestBody.get("layers");
 
-
-        if (layers == null || version == null || (version.isInt() && version.intValue() != 8) || sources == null) {
-            return false;
+        if (layers == null) {
+            throw new BadRequestException("The Mapbox Style document has no layers.");
+        }
+        if (version == null) {
+            throw new BadRequestException("The Mapbox Style document has no version.");
+        }
+        if (version.isInt() && version.intValue() != 8) {
+            throw new BadRequestException("The Mapbox Style document does not have version '8'. Found: " + version.asText());
+        }
+        if (sources == null) {
+            throw new BadRequestException("The Mapbox Style document has no sources.");
         }
         int size = layers.size();
         List<String> ids = new ArrayList<>();
@@ -447,19 +519,29 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                                     .get("id");
             JsonNode typeNode = layers.get(i)
                                       .get("type");
-            if (idNode == null || typeNode == null || !typeNode.isTextual() || !idNode.isTextual()) {
-                return false;
+            if (idNode == null) {
+                throw new BadRequestException("A layer in the Mapbox Style document has no id.");
+            }
+            if (typeNode == null) {
+                throw new BadRequestException("A layer in the Mapbox Style document has no type.");
+            }
+            if (!typeNode.isTextual()) {
+                throw new BadRequestException("A layer in the Mapbox Style document has an invalid type value (not a text).");
+            }
+            if (!idNode.isTextual()) {
+                throw new BadRequestException("A layer in the Mapbox Style document has an invalid id value (not a text).");
             }
             String id = idNode.textValue();
             String type = typeNode.textValue();
 
-            if (ids.contains(id) || !types.contains(type)) {
-                return false;
+            if (ids.contains(id)) {
+                throw new BadRequestException("A layer in the Mapbox Style document has a duplicate id: " + id);
+            }
+            if (!types.contains(type)) {
+                throw new BadRequestException("A layer in the Mapbox Style document has an invalid type: " + type);
             }
             ids.add(id);
         }
-
-        return true;
     }
 
     /**
@@ -468,17 +550,23 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
      * @param requestBody the new Style as a String
      * @return the request body as Json Node, if json is valid
      */
-    public static JsonNode validateRequestBodyJSON(byte[] requestBody) { //TODO change tests
+    public static JsonNode validateRequestBodyMbStyle(byte[] requestBody, boolean validate) { //TODO change tests
 
-        // TODO: review
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module());
         objectMapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         JsonNode requestBodyNode;
         try {
             requestBodyNode = objectMapper.readTree(requestBody);
-
+            if (validate) {
+                // parse into stylesheet schema
+                MbStyleStylesheet stylesheet = objectMapper.treeToValue(requestBodyNode, MbStyleStylesheet.class);
+                // additional checks
+                validateRequestBody(requestBodyNode);
+            }
         } catch (Exception e) {
-            return null;
+            throw new BadRequestException(e.getMessage());
         }
 
         return requestBodyNode;
@@ -524,6 +612,26 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
         if (!styleId.matches("\\w+")) {
             throw new BadRequestException("Only character 0-9, A-Z, a-z and underscore are allowed in a style identifier. Found: "+styleId);
 
+        }
+    }
+
+    private static void checkValidate(OgcApiDatasetData data, String validate) {
+        if (Objects.nonNull(validate) && !validate.matches("no|yes|only"))
+            throw new BadRequestException("Parameter validate has an invalid value: " + validate);
+    }
+
+    private static void validateRequestBodyMbStyle(byte[] requestBody, boolean validate, URL xsdPath){
+
+        if (validate) {
+            try {
+                SchemaFactory factory =
+                        SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                Schema schema = factory.newSchema(xsdPath);
+                Validator validator = schema.newValidator();
+                validator.validate(new StreamSource(ByteSource.wrap(requestBody).openStream()));
+            } catch (IOException | SAXException e) {
+                throw new BadRequestException(e.getMessage());
+            }
         }
     }
 }

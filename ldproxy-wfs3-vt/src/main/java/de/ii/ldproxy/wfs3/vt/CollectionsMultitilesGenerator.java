@@ -10,11 +10,7 @@ package de.ii.ldproxy.wfs3.vt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import org.apache.felix.ipojo.annotations.Component;
@@ -35,11 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -64,7 +56,13 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::getMultiCollectionEnabled)
+                .filter(TilesConfiguration::getMultiTilesEnabled)
+                .isPresent();
     }
 
     /**

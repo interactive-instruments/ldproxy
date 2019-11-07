@@ -47,7 +47,7 @@ public class TilesView extends LdproxyView {
 
         this.tileCollections = tiles.getTileMatrixSetLinks();
         this.tilesUrl = links.stream()
-                .filter(link -> Objects.equals(link.getRel(),"tiles"))
+                .filter(link -> Objects.equals(link.getRel(),"item"))
                 .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
                 .map(link -> link.getHref())
                 .findFirst()
