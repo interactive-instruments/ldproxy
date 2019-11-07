@@ -8,25 +8,11 @@
 package de.ii.ldproxy.ogcapi
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputConformance
-import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputLandingPage
-import de.ii.ldproxy.ogcapi.application.OgcApiDatasetEntity
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.CommonQuery
-import de.ii.ldproxy.ogcapi.domain.CommonFormatExtension
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass
-import de.ii.ldproxy.ogcapi.domain.Dataset
-import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType
-import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtension
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext
+import de.ii.ldproxy.ogcapi.application.*
+import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query
+import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesLandingPageExtension
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
 import de.ii.xtraplatform.crs.api.BoundingBox
 import de.ii.xtraplatform.crs.api.EpsgCrs
@@ -43,10 +29,14 @@ import javax.ws.rs.core.Response
 class LandingPageSpec extends Specification {
 
     static final OgcApiDatasetData datasetData = createDatasetData()
-    static OgcApiDatasetEntity ogcApiDatasetEntity = createDatasetEntity()
+    static OgcApiApiEntity ogcApiApiEntity = createDatasetEntity()
     static final OgcApiRequestContext requestContext = createRequestContext()
-    OgcApiQueriesHandlerCommon queryHandler = new OgcApiQueriesHandlerCommon(createExtensionRegistry())
+    static OgcApiQueriesHandlerCommon queryHandler = new OgcApiQueriesHandlerCommon(createExtensionRegistry())
 
+
+    def setupSpec() {
+        queryHandler.i18n = new I18n()
+    }
 
     @Ignore
     def 'Requirement 1 A: GET support at /'() {
@@ -63,10 +53,12 @@ class LandingPageSpec extends Specification {
     def 'Requirement 2 B: landing page response'() {
 
         given: "a request to the landing page"
-        def queryInputDataset = new ImmutableOgcApiQueryInputLandingPage.Builder().build()
+        def queryInputDataset = new ImmutableOgcApiQueryInputLandingPage.Builder()
+                .includeLinkHeader(false)
+                .build()
 
         when: "the response is created"
-        Dataset landingPage = queryHandler.handle(CommonQuery.LANDING_PAGE, queryInputDataset, requestContext).entity as Dataset
+        LandingPage landingPage = queryHandler.handle(Query.LANDING_PAGE, queryInputDataset, requestContext).entity as LandingPage
 
         then: 'it should comply to landingPage.yml'
 
@@ -110,14 +102,17 @@ class LandingPageSpec extends Specification {
     def 'Requirement 6B'() {
 
         given: 'a request to the conformance page'
-        def queryInputConformance = new ImmutableOgcApiQueryInputConformance.Builder().build()
+        def queryInputConformance = new ImmutableOgcApiQueryInputConformance.Builder()
+                .includeLinkHeader(false)
+                .includeHomeLink(false)
+                .build()
 
         when: 'the response is created'
-        List<ConformanceClass> conformancePage = queryHandler
-                .handle(CommonQuery.CONFORMANCE, queryInputConformance, requestContext).entity as List<ConformanceClass>
+        ConformanceDeclaration conformanceDeclaration = queryHandler.handle(Query.CONFORMANCE_DECLARATION,
+                queryInputConformance, requestContext).entity as ConformanceDeclaration
 
         then: 'it should return a list of conformance classes that the server conforms to'
-        conformancePage.any { it.getConformanceClass() == 'foo bar 1234' }
+        conformanceDeclaration.conformsTo.any { it == 'foo bar 1234' }
 
     }
 
@@ -132,12 +127,11 @@ class LandingPageSpec extends Specification {
         then: 'the server shall also conform to HTTP over TLS'
     }
 
-    @PendingFeature
     def 'Requirement 8 A: query parameter not specified in the API definition'() {
         when: 'a request to the landing page with a parameter not specified in the API definition'
         def queryInputDataset = new ImmutableOgcApiQueryInputLandingPage.Builder().build()
-        Dataset landingPage = queryHandler.handle(CommonQuery.LANDING_PAGE, queryInputDataset,
-                createRequestContext('http://example.com?abc=true')).entity as Dataset
+        queryHandler.handle(Query.LANDING_PAGE, queryInputDataset,
+                createRequestContext('http://example.com?foo=bar')).entity as LandingPage
 
         then: 'an exception is thrown resulting in a response with HTTP status code 400'
         thrown(IllegalStateException)
@@ -147,8 +141,8 @@ class LandingPageSpec extends Specification {
     def 'Requirement 9 A: invalid query parameter value'() {
         when: 'a request to the landing page with a URI that has an invalid parameter value'
         def queryInputDataset = new ImmutableOgcApiQueryInputLandingPage.Builder().build()
-        Dataset landingPage = queryHandler.handle(CommonQuery.LANDING_PAGE, queryInputDataset,
-                createRequestContext('http://example.com?f=abcdf')).entity as Dataset
+        queryHandler.handle(Query.LANDING_PAGE, queryInputDataset,
+                createRequestContext('http://example.com?f=foobar')).entity as LandingPage
 
         then: 'an exception is thrown resulting in a response with HTTP status code 400'
         thrown(IllegalArgumentException)
@@ -183,11 +177,12 @@ class LandingPageSpec extends Specification {
                                 .temporal(new ImmutableTemporalExtent.Builder().build())
                                 .build())
                         .build())
+                .addCapabilities(new ImmutableOgcApiFeaturesCoreConfiguration.Builder().build())
                 .build()
     }
 
     static def createDatasetEntity() {
-        def entity = new OgcApiDatasetEntity(createExtensionRegistry(), null, null, null, null, null)
+        def entity = new OgcApiApiEntity(createExtensionRegistry(), null, null, null, null, null)
         entity.setData(datasetData)
         return entity
     }
@@ -197,7 +192,7 @@ class LandingPageSpec extends Specification {
                 .mediaType(new ImmutableOgcApiMediaType.Builder()
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build())
-                .api(ogcApiDatasetEntity)
+                .api(ogcApiApiEntity)
                 .requestUri(new URI(uri))
                 .build()
     }
@@ -205,10 +200,6 @@ class LandingPageSpec extends Specification {
 
     static def createExtensionRegistry() {
         new OgcApiExtensionRegistry() {
-            @Override
-            void addExtension(OgcApiExtension extension) {
-
-            }
 
             @Override
             List<OgcApiExtension> getExtensions() {
@@ -217,8 +208,24 @@ class LandingPageSpec extends Specification {
 
             @Override
             <T extends OgcApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
+                if (extensionType == OgcApiLandingPageExtension.class) {
+                    OgcApiFeaturesLandingPageExtension landingPage = new OgcApiFeaturesLandingPageExtension()
+                    landingPage.i18n = new I18n()
+                    return ImmutableList.of((T) landingPage)
+                }
                 if (extensionType == CommonFormatExtension.class) {
                     return ImmutableList.of((T) new CommonFormatExtension() {
+
+                        @Override
+                        Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                            return Response.ok(apiLandingPage).build()
+                        }
+
+                        @Override
+                        Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                            return Response.ok(conformanceDeclaration).build()
+                        }
+
                         @Override
                         OgcApiMediaType getMediaType() {
                             return new ImmutableOgcApiMediaType.Builder()
@@ -227,13 +234,8 @@ class LandingPageSpec extends Specification {
                         }
 
                         @Override
-                        Response getLandingPageResponse(Dataset dataset, OgcApiDataset api, OgcApiRequestContext requestContext) {
-                            return Response.ok().entity(dataset).build()
-                        }
-
-                        @Override
-                        Response getConformanceResponse(List<ConformanceClass> ocgApiConformanceClasses, OgcApiDataset api, OgcApiRequestContext requestContext) {
-                            return Response.ok().entity(ocgApiConformanceClasses).build()
+                        boolean isEnabledForApi(OgcApiDatasetData apiData) {
+                            return true
                         }
                     })
                 }

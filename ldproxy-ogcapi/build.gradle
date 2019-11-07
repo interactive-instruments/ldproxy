@@ -18,4 +18,6 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-service-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-crs-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
+
+    testImplementation project(':ldproxy-ogcapi-features-core')
 }
