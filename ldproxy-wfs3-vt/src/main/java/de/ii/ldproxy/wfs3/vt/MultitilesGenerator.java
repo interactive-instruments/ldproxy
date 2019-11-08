@@ -53,15 +53,19 @@ public class MultitilesGenerator implements ConformanceClass {
     MultitilesGenerator() {
     }
 
-
     @Override
     public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/multitiles";
+        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/multitiles";
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::getMultiTilesEnabled)
+                .isPresent();
     }
 
     /**
