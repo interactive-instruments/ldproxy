@@ -10,15 +10,20 @@ package de.ii.ldproxy.ogcapi.features.core
 import groovyx.net.http.ContentType
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
+import groovyx.net.http.URIBuilder
 import spock.lang.Requires
 import spock.lang.Specification
+
+import java.time.ZonedDateTime
+import java.time.ZoneOffset
+import  java.time.format.DateTimeFormatter
 
 @Requires({env['SUT_URL'] != null})
 class OgcApiCoreRestApiSpec extends Specification {
 
     static final String SUT_URL = System.getenv('SUT_URL')
     static final String SUT_PATH = "/rest/services/daraa"
-    static final String SUT_COLLECTION = "aeronauticcrv"
+    static final String SUT_COLLECTION = "agriculturesrf"
     static final String SUT_ID = "1"
 
     RESTClient restClient = new RESTClient(SUT_URL)
@@ -128,7 +133,7 @@ class OgcApiCoreRestApiSpec extends Specification {
         response.responseData.containsKey("crs")
         response.responseData.containsKey("extent")
 
-        and: "The response shall be consistent with the content in the /collections response (id, title, description, extent)"
+        and: "Requirement 18B: The response shall be consistent with the content in the /collections response (id, title, description, extent)"
         collection.title == response.responseData.title
         collection.description == response.responseData.description
         if (collection.extent.containsKey("spatial")) {
@@ -144,12 +149,13 @@ class OgcApiCoreRestApiSpec extends Specification {
     }
 
     def "GET request to one collection's items page"() {
-        int limit = 5
+
+        ZonedDateTime timestamp = ZonedDateTime.now(ZoneOffset.UTC)
+        String formattedTimestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").format(timestamp)
 
         when:
         def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
             uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/items"
-            uri.query = [limit:Integer.toString(limit)]
             headers.Accept = 'application/geo+json'
         })
 
@@ -160,10 +166,116 @@ class OgcApiCoreRestApiSpec extends Specification {
         response.responseData.containsKey("type")
         response.responseData.containsKey("links")
         response.responseData.containsKey("numberReturned")
+        response.responseData.containsKey("features")
+        and: "Requirement 27: include a link to this response document and a link to the response document in other supported formats"
+        response.responseData.links.any{ it.rel == "self" }
+        response.responseData.links.any{ it.rel == "alternate" }
+        and: "Requirement 28: all links shall include the rel and type link parameters"
+        response.responseData.link.every{ it.rel?.trim() }
+        response.responseData.link.every{ it.type?.trim() }
+        and: "Requirement 29: if included, 'timestamp' shall be set to the time stamp when the response was generated"
+        if (response.responseData.containsKey("timestamp")) {
+            response.responseData.timestamp >= formattedTimestamp
+        }
+    }
+
+    def "GET request to one collection's items page (limit filter parameter)"() {
+
+        given:
+        int limit = 5
+
+        when:
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/items"
+            uri.query = [limit:Integer.toString(limit)]
+            headers.Accept = 'application/geo+json'
+        })
+
+        then: "Requirement 20: limit parameter support"
+        response.status == 200
+
+        and: "Requirement 21: the response shall not contain more features than specified by the optional limit parameter"
         response.responseData.numberReturned == limit
-        response.responseData.containsKey("numberMatched")
         response.responseData.containsKey("features")
         response.responseData.features.size() == limit
+    }
+
+    def "GET request to one collection's items page (bbox filter parameter)"() {
+
+        given:
+        def bbox = "35.898213,32.675795,36.023426,32.8370158"
+
+        when:
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/items"
+            uri.query = [bbox:bbox, limit:30]
+            headers.Accept = 'application/geo+json'
+        })
+
+        then: "bbox parameter support"
+        response.status == 200
+
+        and: "Requirement 23: only features that have a spatial geometry that intersects the bounding box shall be part of the result set"
+        response.responseData.numberReturned == 15
+        response.responseData.numberMatched == 15
+        response.responseData.containsKey("features")
+        response.responseData.features.size() == 15
+    }
+
+    def "GET request to one collection's items page (dateTime filter parameter)"() {
+
+        given: "Time interval between November 1, 2014 and November 1, 2019"
+        def interval = "2014-11-01T00%3A00%3A00Z%2F2019-11-01T00%3A00%3A00Z"
+
+        when:
+        def datetimeUri = new URIBuilder(
+                new URI(SUT_URL + SUT_PATH + '/collections/' + SUT_COLLECTION + '/items?limit=30&datetime=' + interval)
+        )
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri = datetimeUri
+            headers.Accept = 'application/geo+json'
+        })
+
+        then: "Requirement 24: datetime parameter support"
+        response.status == 200
+
+        and: "Requirement 25: only features that have a temporal geometry that intersects the temporal information" +
+                " in the datetime parameter shall be part of the result set"
+        response.responseData.numberMatched == 12
+        response.responseData.numberReturned == 12
+        response.responseData.containsKey("features")
+        response.responseData.features.size() == 12
+    }
+
+    def "GET request to one collection's items page (combination of filter parameters)" () {
+
+        given:
+        int limit = 5
+        String interval = "2014-11-01T00%3A00%3A00Z%2F2019-11-01T00%3A00%3A00Z"
+        String bbox = "36.097641,32.586742,36.259689,32.776306"
+
+        when:
+        def fullUri = new URIBuilder(
+                new URI(SUT_URL + SUT_PATH + '/collections/' + SUT_COLLECTION + '/items?limit=' + limit +
+                        '&datetime=' + interval + '&bbox=' + bbox)
+        )
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri = fullUri
+            headers.Accept = 'application/geo+json'
+        })
+
+        then:
+        response.status == 200
+
+        and: "Requirement 30: if included, 'numberMatched' shall be identical to the number of features that match the filter parameters"
+        if (response.responseData.containsKey("numberMatched")) {
+            response.responseData.numberMatched == 9
+        }
+        and: "Requirement 31: if included, 'numberReturned' shall be identical to the number of features returned in the response"
+        if (response.responseData.containsKey("numberReturned")) {
+            response.responseData.numberReturned == limit
+            response.responseData.features.size() == limit
+        }
 
     }
 
@@ -175,7 +287,7 @@ class OgcApiCoreRestApiSpec extends Specification {
             headers.Accept = 'application/geo+json'
         })
 
-        then:
+        then: "Requirement 32, 33: HTTP GET support at path '/collections/{collectionId}/items/{featureId}'"
         response.status == 200
 
         and:
@@ -187,6 +299,13 @@ class OgcApiCoreRestApiSpec extends Specification {
         response.responseData.containsKey("properties")
         response.responseData.containsKey("id")
         response.responseData.get("id") == SUT_ID
+        and: "Requirement 35: all links shall include the 'rel' and 'type' link parameters"
+        response.responseData.links.every{ it.rel?.trim() }
+        response.responseData.links.every{ it.type?.trim() }
+        and: "Requirement 34: links with relations 'self', 'alternate', 'collection'"
+        response.responseData.links.any{ it.rel == "self" }
+        response.responseData.links.any{ it.rel == "alternate" }
+        response.responseData.links.any{ it.rel == "collection" }
     }
 
 
