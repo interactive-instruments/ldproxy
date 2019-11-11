@@ -38,6 +38,12 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
+            .label("HTML")
+            .parameter("html")
+            .build();
+    public static final OgcApiMediaType COLLECTION_MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+            .type(MediaType.TEXT_HTML_TYPE)
+            .label("HTML")
             .parameter("html")
             .build();
 
@@ -70,6 +76,11 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     @Override
     public String getPathPattern() {
         return "^/?(?:conformance|collections(?:/[\\w\\-]+(?:/items(?:/[^/\\s]+)?)?)?)?$";
+    }
+
+    @Override
+    public OgcApiMediaType getCollectionMediaType() {
+        return COLLECTION_MEDIA_TYPE;
     }
 
     @Override

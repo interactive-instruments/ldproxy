@@ -35,6 +35,11 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
             .label("GML")
             .parameter("xml")
             .build();
+    public static final OgcApiMediaType COLLECTION_MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+            .type(new MediaType("application", "xml"))
+            .label("XML")
+            .parameter("xml")
+            .build();
 
     @Requires
     private GmlConfig gmlConfig;
@@ -55,6 +60,11 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
     @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
+    }
+
+    @Override
+    public OgcApiMediaType getCollectionMediaType() {
+        return COLLECTION_MEDIA_TYPE;
     }
 
     @Override

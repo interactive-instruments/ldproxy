@@ -24,6 +24,7 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
     public List<OgcApiLink> generateLinks(URICustomizer uriBuilder,
                                           OgcApiMediaType mediaType,
                                           List<OgcApiMediaType> alternateMediaTypes,
+                                          OgcApiMediaType collectionMediaType,
                                           boolean homeLink,
                                           I18n i18n,
                                           Optional<Locale> language)
@@ -35,9 +36,11 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
                 .href(uriBuilder
                         .copy()
                         .clearParameters()
+                        .ensureParameter("f",collectionMediaType.parameter())
                         .removeLastPathSegments(2)
                         .toString())
                 .rel("collection")
+                .type(collectionMediaType.type().toString())
                 .title(i18n.get("collectionLink",language))
                 .build());
 
