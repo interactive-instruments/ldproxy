@@ -11,6 +11,7 @@ import groovyx.net.http.ContentType
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
 import groovyx.net.http.URIBuilder
+import org.apache.http.ProtocolVersion
 import spock.lang.Requires
 import spock.lang.Specification
 
@@ -37,7 +38,7 @@ class OgcApiCoreRestApiSpec extends Specification {
             headers.Accept = 'application/json'
         })
 
-        then:
+        then: "Requirement 1, 2: HTTP GET support at '/'"
         response.status == 200
         response.getContentType() == "application/json"
 
@@ -52,9 +53,9 @@ class OgcApiCoreRestApiSpec extends Specification {
     def 'GET request to the API page'(){
 
         when:
-        def response= restClient.get(path: SUT_PATH +"/api")
+        def response = restClient.get(path: SUT_PATH +"/api")
 
-        then:
+        then: "Requirement 3: HTTP GET support at '/api'"
         response.status == 200
 
     }
@@ -67,13 +68,23 @@ class OgcApiCoreRestApiSpec extends Specification {
             headers.Accept = 'application/json'
         })
 
-        then:
+        then: "Requirement 5, 6: HTTP GET support at '/conformance'"
         response.status == 200
 
         and:
         response.responseData.containsKey("conformsTo")
         response.responseData.conformsTo.size > 0
 
+    }
+
+    def 'HTTP 1.1 Conformance'() {
+        when:
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri.path = SUT_PATH
+            headers.Accept = 'application/json'
+        })
+        then: "Requirement 7: the server shall conform to HTTP 1.1"
+        response.protocolVersion.compareToVersion(new ProtocolVersion("HTTP", 1, 1)) == 0
     }
 
 
@@ -85,12 +96,14 @@ class OgcApiCoreRestApiSpec extends Specification {
             headers.Accept = 'application/json'
         })
 
-        then:
+        then: "Requirement 11, 12A: GET support at the path '/collections'"
         response.status == 200
 
-        and:
+        and: "Requirement 12B: schema conformance"
         response.responseData.containsKey("links")
         response.responseData.containsKey("collections")
+
+        and: "Requirement 13A: links property, relations 'self' and 'alternate'"
         response.responseData.links.any{ it.rel == "self" }
         response.responseData.links.any{ it.rel == "alternate" }
 
@@ -123,7 +136,7 @@ class OgcApiCoreRestApiSpec extends Specification {
         })
         def collection = getCollection(SUT_COLLECTION, collectionsResponse.responseData.collections)
 
-        then:
+        then: "Requirement 17, 18A: HTTP GET support at th path '/collections/{collectionId}'"
         response.status == 200
 
         and:
@@ -184,7 +197,7 @@ class OgcApiCoreRestApiSpec extends Specification {
         given:
         int limit = 5
 
-        when:
+        when: "Requirement 19: HTTP GET support at the path '/collections/{collectionId}/items'"
         def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
             uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/items"
             uri.query = [limit:Integer.toString(limit)]
@@ -299,13 +312,13 @@ class OgcApiCoreRestApiSpec extends Specification {
         response.responseData.containsKey("properties")
         response.responseData.containsKey("id")
         response.responseData.get("id") == SUT_ID
-        and: "Requirement 35: all links shall include the 'rel' and 'type' link parameters"
-        response.responseData.links.every{ it.rel?.trim() }
-        response.responseData.links.every{ it.type?.trim() }
-        and: "Requirement 34: links with relations 'self', 'alternate', 'collection'"
+        and: "Requirement 34A: links with relations 'self', 'alternate', 'collection'"
         response.responseData.links.any{ it.rel == "self" }
         response.responseData.links.any{ it.rel == "alternate" }
         response.responseData.links.any{ it.rel == "collection" }
+        and: "Requirement 34B: all links shall include the 'rel' and 'type' link parameters"
+        response.responseData.links.every{ it.rel?.trim() }
+        response.responseData.links.every{ it.type?.trim() }
     }
 
 

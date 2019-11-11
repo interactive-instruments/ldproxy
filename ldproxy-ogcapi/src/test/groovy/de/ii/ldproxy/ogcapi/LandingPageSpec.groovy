@@ -19,7 +19,6 @@ import de.ii.xtraplatform.crs.api.EpsgCrs
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer
-import spock.lang.Ignore
 import spock.lang.PendingFeature
 import spock.lang.Specification
 
@@ -36,18 +35,6 @@ class LandingPageSpec extends Specification {
 
     def setupSpec() {
         queryHandler.i18n = new I18n()
-    }
-
-    @Ignore
-    def 'Requirement 1 A: GET support at /'() {
-        when: "HTTP GET request at /"
-        then: "receive a server response"
-    }
-
-    @Ignore
-    def 'Requirement 2 B: response code 200'() {
-        when: 'HTTP GET request at /'
-        then: 'the server responds with HTTP status code 200'
     }
 
     def 'Requirement 2 B: landing page response'() {
@@ -73,32 +60,6 @@ class LandingPageSpec extends Specification {
 
     }
 
-    @Ignore
-    def 'Reqiurement 3 A: HTTP GET support for returned URIs'() {
-        given: 'list of URIs from the landing page response'
-        when: 'an HTTP GET request is made to each URI'
-        then: 'a response is received'
-    }
-
-    @Ignore
-    def 'Requirement 4 A: '() {
-        given: 'GET request to the URIs linked from the landing page (link relations service-desc or service-doc)'
-        when: 'Accept header has the value of the link property "type"'
-        then: 'returned document is consistent with the requested media type'
-    }
-
-    @Ignore
-    def 'Requirement 5 A: HTTP GET support at /conformance'() {
-        when: 'HTTP GET request at /conformance'
-        then: 'a response is received'
-    }
-
-    @Ignore
-    def 'Requirement 6 A: response code 200'() {
-        when: 'HTTP GET request at /conformance'
-        then: 'the server responds with HTTP status code 200'
-    }
-
     def 'Requirement 6B'() {
 
         given: 'a request to the conformance page'
@@ -114,17 +75,6 @@ class LandingPageSpec extends Specification {
         then: 'it should return a list of conformance classes that the server conforms to'
         conformanceDeclaration.conformsTo.any { it == 'foo bar 1234' }
 
-    }
-
-    @Ignore
-    def 'Requirement 7 A: conformance to HTTP 1.1'() {
-        expect: 'the server shall conform to HTTP 1.1'
-    }
-
-    @Ignore
-    def 'Requirement 7 B: conformance to HTTP over TLS'() {
-        when: 'the server supports HTTPS'
-        then: 'the server shall also conform to HTTP over TLS'
     }
 
     def 'Requirement 8 A: query parameter not specified in the API definition'() {
@@ -147,12 +97,6 @@ class LandingPageSpec extends Specification {
         then: 'an exception is thrown resulting in a response with HTTP status code 400'
         thrown(IllegalArgumentException)
     }
-
-    @Ignore
-    def 'Requirement 10 A: coordinate reference systems'() {
-        expect: 'all spatial geometries shall be in the coordinate reference system'
-    }
-
 
     static def createDatasetData() {
         new ImmutableOgcApiDatasetData.Builder()

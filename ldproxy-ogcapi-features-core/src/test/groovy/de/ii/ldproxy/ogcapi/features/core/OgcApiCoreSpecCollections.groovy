@@ -26,7 +26,6 @@ import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureTypeMapping
 import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping
-import spock.lang.Ignore
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
@@ -47,23 +46,6 @@ class OgcApiCoreSpecCollections extends Specification {
         ogcApiQueriesHandlerCollections.i18n = new I18n()
     }
 
-    @Ignore
-    def 'Requirement 11 A: GET support at /collections'() {
-        when: 'HTTP GET request at /collections'
-        then: 'the server returns a response'
-    }
-
-    @Ignore
-    def 'Requirement 12 A: response code 200'() {
-        when: 'HTTP GET request at /collections'
-        then: 'the server responds with HTTP status code 200'
-    }
-
-    @Ignore
-    def 'Requirement 12 B: collections response schema'() {
-        when: 'HTTP GET request at /collections'
-        then: 'the content of the response conforms to OpenAPI 3.0 schema'
-    }
 
     def 'Requirement 13 A: collections response'() {
         given: 'A request to the server at /collections'
@@ -123,24 +105,6 @@ class OgcApiCoreSpecCollections extends Specification {
         result.collections.any { it.extent.get().getSpatial().bbox[0] == ([-180.0, -90.0, 180.0, 90.0] as double[])}
     }
 
-    @Ignore
-    def 'Requirement 17 A: GET support at /collections/{collectionId}'() {
-        when: 'HTTP GET request at /collections/{collectionId}'
-        then: 'the server returns a response'
-    }
-
-    @Ignore
-    def 'Requirement 17 B: feature collection request: {collectionId} parameter'() {
-        when: 'HTTP GET request at /collections/{collectionId}'
-        then: 'the parameter {collectionId} is each id property in the feature collections response'
-    }
-
-    @Ignore
-    def 'Requirement 18 A: feature collection response code 200'() {
-        when: 'HTTP GET request at /collections/{collectionId}'
-        then: 'the server responds with HTTP status code 200'
-    }
-
 
     def 'Requirement 18 B: feature collection response'() {
         given: 'A request to the server at /collections'
@@ -157,24 +121,6 @@ class OgcApiCoreSpecCollections extends Specification {
         allCollections.getCollections().get(0).extent.get().getSpatial().crs == singleCollection.extent.get().getSpatial().crs
         allCollections.getCollections().get(0).extent.get().getTemporal().interval == singleCollection.extent.get().getTemporal().interval
         allCollections.getCollections().get(0).extent.get().getTemporal().trs == singleCollection.extent.get().getTemporal().trs
-    }
-
-    @Ignore
-    def 'Requirement 19 A: GET support at /collections/{collectionId}/items'() {
-        when: 'HTTP GET request at /collections/{collectionId}/items'
-        then: 'the server returns a response'
-    }
-
-    @Ignore
-    def 'Requirement 19 B: {collectionId} parameter'() {
-        when: 'HTTP GET request at /collections/{collectionId}/items'
-        then: 'the parameter {collectionId} is each id property in the feature collections response'
-    }
-
-    @Ignore
-    def 'Requirement 20 A: limit parameter support'() {
-        when: 'A request at /collections/{collectionId}/items?limit={num} where {num} is an integer between 1 and 10000'
-        then: 'the server returns a response'
     }
 
 
