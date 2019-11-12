@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.aroundrelations;
 
+import com.fasterxml.jackson.annotation.JsonMerge;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
@@ -21,7 +23,7 @@ import java.util.OptionalDouble;
 @Value.Immutable
 @Value.Modifiable
 @Value.Style(builder = "new")
-@JsonDeserialize(as = ModifiableAroundRelationsConfiguration.class)
+@JsonDeserialize(as = ImmutableAroundRelationsConfiguration.class)
 public abstract class AroundRelationsConfiguration implements ExtensionConfiguration {
 
     @Value.Default
@@ -30,6 +32,7 @@ public abstract class AroundRelationsConfiguration implements ExtensionConfigura
         return false;
     }
 
+    @JsonMerge(value = OptBoolean.FALSE)
     @Value.Default
     public List<Relation> getRelations() { return ImmutableList.of(); };
 
