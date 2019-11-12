@@ -21,6 +21,8 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -48,20 +50,31 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
 
         if (subPath.matches("^/[\\w\\-]+/items/?$")) {
             // Features
+
+            ImmutableSet.Builder<String> parameters = new ImmutableSet.Builder<>();
+            Set<String> parametersFromConfiguration = apiData.getFeatureTypes()
+                    .values()
+                    .stream()
+                    .flatMap(featureTypeConfigurationOgcApi -> featureTypeConfigurationOgcApi.getCapabilities().stream())
+                    .filter(extensionConfiguration -> extensionConfiguration instanceof FilterTransformersConfiguration)
+                    .flatMap(extensionConfiguration -> ((FilterTransformersConfiguration) extensionConfiguration).getTransformers().stream())
+                    .filter(filterTransformerConfiguration -> filterTransformerConfiguration instanceof RequestGeoJsonBboxConfiguration)
+                    .flatMap(filterTransformerConfiguration -> ((RequestGeoJsonBboxConfiguration) filterTransformerConfiguration).getParameters().stream())
+                    .collect(Collectors.toSet());
+            parameters.addAll(parametersFromConfiguration);
+
             Optional<FeatureTypeConfigurationOgcApi> ft = apiData.getFeatureTypes()
                     .values()
                     .stream()
                     .filter(ftype -> apiData.isFeatureTypeEnabled(ftype.getId()))
                     .filter(ftype -> subPath.matches("^/" + ftype.getId() + "/items/?$"))
                     .findFirst();
-
             if (ft.isPresent()) {
                 Map<String, String> filterableFields = apiData.getFilterableFieldsForFeatureType(ft.get().getId(), true);
-                return new ImmutableSet.Builder<String>()
-                        .addAll(filterableFields.keySet())
-                        .build();
+                parameters.addAll(filterableFields.keySet());
             }
-            return ImmutableSet.of();
+
+            return parameters.build();
         } else if (subPath.matches("^/[\\w\\-]+/items/[^/\\s]+/?$")) {
             // Feature
             return ImmutableSet.of();
