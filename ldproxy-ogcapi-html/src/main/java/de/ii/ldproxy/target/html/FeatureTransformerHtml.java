@@ -10,6 +10,7 @@ package de.ii.ldproxy.target.html;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.CodelistData;
+import de.ii.ldproxy.codelists.CodelistEntity;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.target.html.MicrodataMapping.MICRODATA_TYPE;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationResolver;
@@ -73,7 +74,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
     protected int pageSize;
     protected CrsTransformer crsTransformer;
     //protected SparqlAdapter sparqlAdapter;
-    protected Codelist[] codelists;
+    protected CodelistEntity[] codelists;
 
     //public String title;
     //public List<FeatureDTO> features;

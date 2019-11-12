@@ -10,6 +10,7 @@ package de.ii.ldproxy.target.html;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.codelists.Codelist;
+import de.ii.ldproxy.codelists.CodelistEntity;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.Collections;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -57,7 +58,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     private Dropwizard dropwizard;
 
     @Requires(optional = true)
-    private Codelist[] codelists;
+    private CodelistEntity[] codelists;
 
     @Requires
     private Http http;
