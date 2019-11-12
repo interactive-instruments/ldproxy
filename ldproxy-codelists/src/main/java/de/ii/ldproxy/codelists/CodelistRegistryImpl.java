@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.codelists;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
@@ -18,11 +17,9 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Component
@@ -37,7 +34,7 @@ public class CodelistRegistryImpl implements CodelistRegistry {
 
     private final BundleContext bundleContext;
 
-    private final Map<String, CodelistEntity> codelists;
+    private final Map<String, Codelist> codelists;
 
     CodelistRegistryImpl(@Context BundleContext bundleContext) {
         this.bundleContext = bundleContext;
@@ -45,18 +42,18 @@ public class CodelistRegistryImpl implements CodelistRegistry {
     }
 
     @Override
-    public Map<String,CodelistEntity> getCodelists() {
+    public Map<String, Codelist> getCodelists() {
         return ImmutableMap.copyOf(codelists);
     }
 
     @Override
-    public Optional<CodelistEntity> getCodelist(String id) {
+    public Optional<Codelist> getCodelist(String id) {
         return Optional.ofNullable(codelists.get(id));
     }
 
-    private synchronized void onArrival(ServiceReference<CodelistEntity> ref) {
+    private synchronized void onArrival(ServiceReference<Codelist> ref) {
         try {
-            final CodelistEntity codelist = bundleContext.getService(ref);
+            final Codelist codelist = bundleContext.getService(ref);
 
             codelists.put(codelist.getId(), codelist);
         } catch (Throwable e) {
@@ -64,8 +61,8 @@ public class CodelistRegistryImpl implements CodelistRegistry {
         }
     }
 
-    private synchronized void onDeparture(ServiceReference<CodelistEntity> ref) {
-        final CodelistEntity codelist = bundleContext.getService(ref);
+    private synchronized void onDeparture(ServiceReference<Codelist> ref) {
+        final Codelist codelist = bundleContext.getService(ref);
 
         if (Objects.nonNull(codelist)) {
             codelists.remove(codelist.getId());

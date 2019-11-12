@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.target.html;
 
-import de.ii.ldproxy.codelists.CodelistEntity;
+import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import io.dropwizard.views.ViewRenderer;
 import org.immutables.value.Value;
@@ -23,7 +23,7 @@ public abstract class FeatureTransformationContextHtml implements FeatureTransfo
 
     public abstract FeatureCollectionView getFeatureTypeDataset();
 
-    public abstract Map<String,CodelistEntity> getCodelists();
+    public abstract Map<String, Codelist> getCodelists();
 
     public abstract ViewRenderer getMustacheRenderer();
 }

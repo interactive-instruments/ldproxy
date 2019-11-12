@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface CodelistRegistry {
 
-    Map<String, CodelistEntity> getCodelists();
+    Map<String, Codelist> getCodelists();
 
-    Optional<CodelistEntity> getCodelist(String id);
+    Optional<Codelist> getCodelist(String id);
 }
