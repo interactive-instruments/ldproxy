@@ -35,7 +35,7 @@ public class OgcApiParameterAroundRelations implements OgcApiParameterExtension 
             return ImmutableSet.of();
 
         if (subPath.matches("^/[\\w\\-]+/items/[^/\\s]+/?$")) {
-            return ImmutableSet.of("relations", "resolve");
+            return ImmutableSet.of("relations", "resolve", "offset", "limit");
         }
 
         return ImmutableSet.of();
