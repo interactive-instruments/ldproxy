@@ -8,7 +8,6 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.CodelistData;
 import de.ii.ldproxy.codelists.CodelistEntity;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
@@ -42,8 +41,8 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
@@ -74,7 +73,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
     protected int pageSize;
     protected CrsTransformer crsTransformer;
     //protected SparqlAdapter sparqlAdapter;
-    protected CodelistEntity[] codelists;
+    protected Map<String, CodelistEntity> codelists;
 
     //public String title;
     //public List<FeatureDTO> features;
@@ -283,11 +282,11 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
         currentFeature.itemProp = ((MicrodataPropertyMapping) mapping).getItemProp();
 
         if (isFeatureCollection && !aroundRelationsQuery.getRelations()
-                                 .isEmpty()) {
+                                                        .isEmpty()) {
             currentFeature.additionalParams = "&relations=" + aroundRelationsQuery.getRelations()
-                                                                  .stream()
-                                                                  .map(AroundRelationsConfiguration.Relation::getId)
-                                                                  .collect(Collectors.joining(",")) + "&resolve=true";
+                                                                                  .stream()
+                                                                                  .map(AroundRelationsConfiguration.Relation::getId)
+                                                                                  .collect(Collectors.joining(",")) + "&resolve=true";
         }
     }
 
@@ -521,26 +520,17 @@ public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransf
                 }
 
 
-                if (mapping.getCodelist() != null) {
-                    //TODO: read into map in OgcApiFeaturesOutputFormatHtml with @Bind(aggregate=true)
-                    //  private void bindHello(Hello h) { m_hellos.add(h); }
+                if (Objects.nonNull(mapping.getCodelist()) && codelists.containsKey(mapping.getCodelist())) {
+                    CodelistEntity cl = codelists.get(mapping.getCodelist());
+                    String resolvedValue = cl.getValue(property.value);
 
-                    property.value = Arrays.stream(codelists)
-                                           .filter(cl -> cl.getId()
-                                                           .equals(mapping.getCodelist()))
-                                           .findFirst()
-                                           .map(cl -> {
-                                               String resolvedValue = cl.getValue(property.value);
+                    if (cl.getData()
+                          .getSourceType() == CodelistData.IMPORT_TYPE.TEMPLATES) {
+                        resolvedValue = StringTemplateFilters.applyFilterMarkdown(StringTemplateFilters.applyTemplate(resolvedValue, property.value));
+                        property.isHtml = true;
+                    }
 
-                                               if (cl.getData()
-                                                     .getSourceType() == CodelistData.IMPORT_TYPE.TEMPLATES) {
-                                                   resolvedValue = StringTemplateFilters.applyFilterMarkdown(StringTemplateFilters.applyTemplate(resolvedValue, property.value));
-                                                   property.isHtml = true;
-                                               }
-
-                                               return resolvedValue;
-                                           })
-                                           .orElse(property.value);
+                    property.value = resolvedValue;
                 }
 
                 if (mapping.getType() == MICRODATA_TYPE.DATE) {
