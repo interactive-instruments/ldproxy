@@ -9,7 +9,11 @@ package de.ii.ldproxy.wfs3.crs;
 
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableCollections;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionsExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -18,7 +22,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * add CRS information to the collection information (default list of coordinate reference systems)
@@ -42,15 +46,21 @@ public class OgcApiCollectionsCrs implements OgcApiCollectionsExtension {
                                                 Optional<Locale> language) {
         if (isExtensionEnabled(apiData, CrsConfiguration.class)) {
             // list all CRSs as the list of default CRSs
-            ImmutableList<String> crsList = ImmutableList.<String>builder()
-                        .add(apiData.getFeatureProvider()
-                                .getNativeCrs()
-                                .getAsUri())
-                        .addAll(apiData.getAdditionalCrs()
-                                .stream()
-                                .map(EpsgCrs::getAsUri)
-                                .collect(Collectors.toList()))
-                        .build();
+            ImmutableList<String> crsList =
+                    Stream.concat(
+                            Stream.of(
+                                    OgcApiDatasetData.DEFAULT_CRS_URI,
+                                    apiData.getFeatureProvider()
+                                           .getNativeCrs()
+                                           .getAsUri()
+                            ),
+                            apiData.getAdditionalCrs()
+                                   .stream()
+                                   .map(EpsgCrs::getAsUri)
+                    )
+                          .distinct()
+                          .collect(ImmutableList.toImmutableList());
+
             collectionsBuilder.crs(crsList);
         }
 

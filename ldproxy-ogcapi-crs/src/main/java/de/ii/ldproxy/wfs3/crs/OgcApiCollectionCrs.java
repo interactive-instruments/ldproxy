@@ -9,7 +9,12 @@ package de.ii.ldproxy.wfs3.crs;
 
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -18,7 +23,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * add CRS information to the collection information
@@ -46,27 +51,29 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
             ImmutableList<String> crsList;
             if (isNested) {
                 // just reference the default list of coordinate reference systems
-                crsList = ImmutableList.<String>builder()
-                        .add("#/crs")
-                        .build();
+                crsList = ImmutableList.of("#/crs");
             } else {
                 // this is just the collection resource, so no default to reference; include all CRSs
-                crsList = ImmutableList.<String>builder()
-                        .add(apiData.getFeatureProvider()
-                                    .getNativeCrs()
-                                    .getAsUri())
-                        .addAll(apiData.getAdditionalCrs()
-                                .stream()
-                                .map(EpsgCrs::getAsUri)
-                                .collect(Collectors.toList()))
-                        .build();
+                crsList = Stream.concat(
+                        Stream.of(
+                                OgcApiDatasetData.DEFAULT_CRS_URI,
+                                apiData.getFeatureProvider()
+                                       .getNativeCrs()
+                                       .getAsUri()
+                        ),
+                        apiData.getAdditionalCrs()
+                               .stream()
+                               .map(EpsgCrs::getAsUri)
+                )
+                                .distinct()
+                                .collect(ImmutableList.toImmutableList());
             }
             collection.crs(crsList);
 
             // add native CRS as storageCRS
             String storageCrs = apiData.getFeatureProvider()
-                                .getNativeCrs()
-                                .getAsUri();
+                                       .getNativeCrs()
+                                       .getAsUri();
             collection.storageCrs(storageCrs);
         }
 
