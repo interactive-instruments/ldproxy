@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
-
+import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS;
 
 
 @EntityComponent
@@ -133,14 +133,15 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
         if (featureProvider.supportsCrs(crs)) {
             return Optional.empty();
         }
+        if (Objects.isNull(crs) || Objects.equals(crs, DEFAULT_CRS)) {
+            return Optional.of(defaultTransformer);
+        }
 
-        CrsTransformer crsTransformer = crs != null ? additionalTransformers.get(crs.getAsUri()) : defaultTransformer;
-
-        if (crsTransformer == null) {
+        if (!additionalTransformers.containsKey(crs.getAsUri())) {
             throw new BadRequestException("Invalid CRS");
         }
 
-        return Optional.of(crsTransformer);
+        return Optional.of(additionalTransformers.get(crs.getAsUri()));
     }
 
     @Override
@@ -167,7 +168,7 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
 
     @Override
     public BoundingBox transformBoundingBox(BoundingBox bbox) throws CrsTransformationException {
-        if (Objects.equals(bbox.getEpsgCrs(), OgcApiDatasetData.DEFAULT_CRS)) {
+        if (Objects.equals(bbox.getEpsgCrs(), DEFAULT_CRS)) {
             return defaultReverseTransformer.transformBoundingBox(bbox);
         }
 
@@ -179,7 +180,7 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
     @Override
     public List<List<Double>> transformCoordinates(List<List<Double>> coordinates,
                                                    EpsgCrs crs) throws CrsTransformationException {
-        CrsTransformer transformer = Objects.equals(crs, OgcApiDatasetData.DEFAULT_CRS) ? this.defaultReverseTransformer : additionalReverseTransformers.get(crs.getAsUri());
+        CrsTransformer transformer = Objects.equals(crs, DEFAULT_CRS) ? this.defaultReverseTransformer : additionalReverseTransformers.get(crs.getAsUri());
         if (Objects.nonNull(transformer)) {
             double[] transformed = transformer.transform(coordinates.stream()
                                                                     .flatMap(Collection::stream)
