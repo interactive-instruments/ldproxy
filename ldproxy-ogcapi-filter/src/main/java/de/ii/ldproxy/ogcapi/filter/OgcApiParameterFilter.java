@@ -8,15 +8,13 @@
 package de.ii.ldproxy.ogcapi.filter;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
-import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import java.util.Map;
+import java.util.Set;
 
 @Component
 @Provides
@@ -41,6 +39,18 @@ public class OgcApiParameterFilter implements OgcApiParameterExtension {
     }
 
     @Override
+    public Set<String> getFilterParameters(Set<String> filterParameters, OgcApiDatasetData apiData) {
+        if (!isEnabledForApi(apiData))
+            return filterParameters;
+
+        return new ImmutableSet.Builder<String>()
+                .addAll(filterParameters)
+                .add("filter")
+                .build();
+    }
+
+    /* TODO
+    @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDatasetData datasetData) {
@@ -55,6 +65,7 @@ public class OgcApiParameterFilter implements OgcApiParameterExtension {
 
         return queryBuilder;
     }
+     */
 
 
 }

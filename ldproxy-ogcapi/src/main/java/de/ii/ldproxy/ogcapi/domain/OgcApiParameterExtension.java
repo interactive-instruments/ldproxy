@@ -11,10 +11,15 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface OgcApiParameterExtension extends OgcApiExtension {
 
     ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath);
+
+    default Set<String> getFilterParameters(Set<String> filterParameters, OgcApiDatasetData serviceData) {
+        return filterParameters;
+    }
 
     default Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfigurationWfs3,
                                                     Map<String, String> parameters, OgcApiDatasetData serviceData) {
