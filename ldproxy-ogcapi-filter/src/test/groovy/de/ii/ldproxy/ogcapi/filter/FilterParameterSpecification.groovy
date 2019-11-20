@@ -56,7 +56,7 @@ class FilterParameterSpecification extends Specification {
 
     @Ignore
     def "Filter using text"() {
-        when: "Request all items with property value greater or less than a given value"
+        when: "Request all items with property value similar to the given pattern"
         def uri = SUT_URL + PATH + COLLECTION_FLURSTUECK + "?filter=lagebeztxt LIKE 'Argelanderstr%'"
         then: "Return all items that match the request"
         // result: supported
@@ -148,7 +148,7 @@ class FilterParameterSpecification extends Specification {
     def "EXISTS operator"() {
         when: "Request with EXISTS"
         def uri = SUT_URL + PATH + COLLECTION_GEBAEUDEBAUWERK + "?filter=name EXISTS"
-        then: "Return items with that have property 'name'"
+        then: "Return items that have property 'name'"
         // result: not supported
     }
 
@@ -181,6 +181,22 @@ class FilterParameterSpecification extends Specification {
         when: "Request with bounding box"
         def uri = SUT_URL + PATH + COLLECTION_FLURSTUECK + "?filter=BBOX(geometry,50.65,7.02,50.85,7.25)"
         then: "Return only the items within the bounding box"
+        // result: supported
+    }
+
+    @Ignore
+    def "Logical AND"() {
+        when: "Request with bounding box and date interval"
+        def uri = SUT_URL + PATH + COLLECTION_FLURSTUECK + "?filter=BBOX(geometry,50.65,7.02,50.85,7.25) AND aktualit DURING 2016-08-01T00:00:00Z/2016-09-30T00:00:00Z"
+        then: "Return only the items within the bounding box with last update date between 01.08.2016 and 30.09.2016"
+        // result: supported
+    }
+
+    @Ignore
+    def "Logical OR"() {
+        when: "Request with OR"
+        def uri = SUT_URL + PATH + COLLECTION_FLURSTUECK + "?filter=flur='008' OR flur='009'"
+        then: "Return only the items with 'flur' equal to 008 or 009"
         // result: supported
     }
 
