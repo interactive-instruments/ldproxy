@@ -46,7 +46,6 @@ import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.transformer.api.FeatureProviderDataTransformer;
 import de.ii.xtraplatform.feature.transformer.api.FeatureProviderGenerator;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableMappingStatus;
@@ -99,7 +98,7 @@ import java.util.stream.Stream;
 @Provides
 @Instantiate
 @Wbp(
-        filter = "(objectClass=de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService)",
+        filter = "(objectClass=de.ii.ldproxy.ogcapi.domain.OgcApiDataset)",
         onArrival = "onArrival",
         onDeparture = "onDeparture",
         onModification = "onModification")
@@ -243,7 +242,7 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
                                            .collect(Collectors.toList());
     }
 
-    private synchronized void onArrival(ServiceReference<FeatureTransformerService> ref) {
+    private synchronized void onArrival(ServiceReference<OgcApiDataset> ref) {
         try {
             checkGenerateMapping(ref);
             checkRefineMapping(ref);
@@ -252,10 +251,10 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
         }
     }
 
-    private synchronized void onDeparture(ServiceReference<FeatureTransformerService> ref) {
+    private synchronized void onDeparture(ServiceReference<OgcApiDataset> ref) {
     }
 
-    private synchronized void onModification(ServiceReference<FeatureTransformerService> ref) {
+    private synchronized void onModification(ServiceReference<OgcApiDataset> ref) {
         try {
             checkGenerateMapping(ref);
             checkRefineMapping(ref);
@@ -264,37 +263,35 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
         }
     }
 
-    private void checkGenerateMapping(ServiceReference<FeatureTransformerService> ref) {
-        final FeatureTransformerService featureTransformerService = bundleContext.getService(ref);
+    private void checkGenerateMapping(ServiceReference<OgcApiDataset> ref) {
+        final OgcApiDataset ogcApiDataset = bundleContext.getService(ref);
 
-        if (featureTransformerService instanceof OgcApiDataset) {
-            final OgcApiDataset wfs3Service = (OgcApiDataset) featureTransformerService;
-            final FeatureProviderDataTransformer featureProviderData = wfs3Service.getData()
+        if (Objects.nonNull(ogcApiDataset)) {
+            final FeatureProviderDataTransformer featureProviderData = ogcApiDataset.getData()
                                                                                   .getFeatureProvider();
 
-            if (canGenerateMapping(wfs3Service.getFeatureProvider()) && shouldGenerateMapping(featureProviderData
-                    .getMappingStatus(), wfs3Service.getId())) {
+            if (canGenerateMapping(ogcApiDataset.getFeatureProvider()) && shouldGenerateMapping(featureProviderData
+                    .getMappingStatus(), ogcApiDataset.getId())) {
 
-                taskQueue.launch(new AnalyzeSchemaTask(wfs3Service, featureProviderData));
+                taskQueue.launch(new AnalyzeSchemaTask(ogcApiDataset, featureProviderData));
             }
         }
     }
 
-    private void checkRefineMapping(ServiceReference<FeatureTransformerService> ref) {
-        final FeatureTransformerService featureTransformerService = bundleContext.getService(ref);
+    private void checkRefineMapping(ServiceReference<OgcApiDataset> ref) {
+        final OgcApiDataset ogcApiDataset = bundleContext.getService(ref);
 
-        if (featureTransformerService instanceof OgcApiDataset) {
-            final OgcApiDataset wfs3Service = (OgcApiDataset) featureTransformerService;
-            final FeatureProviderDataTransformer featureProviderData = wfs3Service.getData()
+        if (Objects.nonNull(ogcApiDataset)) {
+            final FeatureProviderDataTransformer featureProviderData = ogcApiDataset.getData()
                                                                                   .getFeatureProvider();
             final List<TargetMappingRefiner> mappingRefiners = getMappingRefiners();
 
-            if (wfs3Service.getFeatureProvider()
+            if (ogcApiDataset.getFeatureProvider()
                            .supportsQueries()
-                    && canGenerateMapping(wfs3Service.getFeatureProvider())
-                    && shouldRefineMapping(wfs3Service.getData(), featureProviderData.getMappingStatus(), wfs3Service.getId(), mappingRefiners)) {
+                    && canGenerateMapping(ogcApiDataset.getFeatureProvider())
+                    && shouldRefineMapping(ogcApiDataset.getData(), featureProviderData.getMappingStatus(), ogcApiDataset.getId(), mappingRefiners)) {
 
-                taskQueue.launch(new AnalyzeDataTask(wfs3Service, featureProviderData, mappingRefiners));
+                taskQueue.launch(new AnalyzeDataTask(ogcApiDataset, featureProviderData, mappingRefiners));
             }
         }
     }
