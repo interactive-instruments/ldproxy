@@ -46,7 +46,7 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
         }
 
         json.setCodec(new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL));
-        if (getGeoJsonConfig().getUseFormattedJsonOutput()) {
+        if (getGeoJsonConfig().getUseFormattedJsonOutput() || getPrettify()) {
             json.useDefaultPrettyPrinter();
         }
         if (getDebugJson()) {
@@ -59,6 +59,11 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
 
     @Value.Default
     public boolean getDebugJson() {
+        return false;
+    }
+
+    @Value.Default
+    public boolean getPrettify() {
         return false;
     }
 

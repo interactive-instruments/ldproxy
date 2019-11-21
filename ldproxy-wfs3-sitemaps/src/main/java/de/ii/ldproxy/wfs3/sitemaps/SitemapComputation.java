@@ -12,8 +12,11 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
+import de.ii.xtraplatform.feature.provider.api.FeatureSourceStream;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
+import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.slf4j.Logger;
@@ -184,7 +187,11 @@ class SitemapComputation {
     }
 
 
-    static Map<String, Long> getFeatureCounts(Set<String> collectionIds, FeatureProvider featureProvider) {
+    static Map<String, Long> getFeatureCounts(Set<String> collectionIds, FeatureProvider2 featureProvider) {
+
+        if (!featureProvider.supportsPassThrough()) {
+            throw new IllegalStateException();
+        }
 
         Map<String, Long> featureCounts = new HashMap<>();
 
@@ -196,8 +203,8 @@ class SitemapComputation {
                                                              .limit(22500000) //TODO fix limit (without limit, the limit and count is 0)
                                                              .build();
 
-            FeatureStream<FeatureConsumer> featureStream = featureProvider.getFeatureStream(featureQuery);
-            featureStream.apply(featureCountReader, null)
+            FeatureSourceStream featureStream = featureProvider.passThrough().getFeatureSourceStream(featureQuery);
+            featureStream.runWith(featureCountReader)
                          .toCompletableFuture()
                          .join();
 

@@ -13,7 +13,8 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMay
 /**
  * @author zahnen
  */
-public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTransformer.OnTheFly {
+public class FeatureTransformerGeoJson implements FeatureTransformer, OnTheFly {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerGeoJson.class);
 

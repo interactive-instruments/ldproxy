@@ -8,16 +8,32 @@
 package de.ii.ldproxy.wfs3.transactional;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransactions;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.NotAllowedException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -80,7 +96,7 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.postItemsResponse(service.getFeatureProvider(), wfs3Request.getMediaType(), wfs3Request.getUriCustomizer()
+        return commandHandler.postItemsResponse((FeatureTransactions) service.getFeatureProvider(), wfs3Request.getMediaType(), wfs3Request.getUriCustomizer()
                                                                                                                      .copy(), id, service.getData()
                                                                                                                                          .getFeatureProvider()
                                                                                                                                          .getMappings()
@@ -98,7 +114,7 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.putItemResponse(service.getFeatureProvider(), wfs3Request.getMediaType(), id, featureId, service.getData()
+        return commandHandler.putItemResponse((FeatureTransactions) service.getFeatureProvider(), wfs3Request.getMediaType(), id, featureId, service.getData()
                                                                                                                               .getFeatureProvider()
                                                                                                                               .getMappings()
                                                                                                                               .get(id), service.getCrsReverseTransformer(null), requestBody);
@@ -112,14 +128,12 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.deleteItemResponse(service.getFeatureProvider(), id, featureId);
+        return commandHandler.deleteItemResponse((FeatureTransactions) service.getFeatureProvider(), id, featureId);
     }
 
-    private void checkTransactional(OgcApiDataset wfs3Service) {
-        if (!wfs3Service.getData()
-                        .getFeatureProvider()
-                        .supportsTransactions()) {
-            throw new NotFoundException();
+    private void checkTransactional(OgcApiDataset service) {
+        if (!(service.getFeatureProvider() instanceof FeatureTransactions)) {
+            throw new NotAllowedException("GET");
         }
     }
 }

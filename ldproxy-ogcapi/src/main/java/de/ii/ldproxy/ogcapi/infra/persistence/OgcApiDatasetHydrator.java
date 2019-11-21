@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,9 +19,8 @@ import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.event.store.EntityHydrator;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
-import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -55,7 +54,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
     @Override
     public Map<String, Object> getInstanceConfiguration(OgcApiDatasetData data) {
         try {
-            TransformingFeatureProvider featureProvider = (TransformingFeatureProvider) featureProviderFactory.createFeatureProvider(data.getFeatureProvider());
+            FeatureProvider2 featureProvider = featureProviderFactory.createFeatureProvider(data.getFeatureProvider());
 
             try {
                 EpsgCrs sourceCrs = data.getFeatureProvider()
@@ -121,7 +120,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
 
     //TODO Test
     private ImmutableMap<String, FeatureTypeConfigurationOgcApi> computeMissingBboxes(
-            Map<String, FeatureTypeConfigurationOgcApi> featureTypes, FeatureProvider featureProvider,
+            Map<String, FeatureTypeConfigurationOgcApi> featureTypes, FeatureProvider2 featureProvider,
             CrsTransformer defaultTransformer) throws IllegalStateException {
         return featureTypes
                 .entrySet()
@@ -133,10 +132,19 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
                                             .getSpatial())) {
                         boolean isComputed = true;
                         BoundingBox bbox = null;
-                        try {
-                            bbox = defaultTransformer.transformBoundingBox(featureProvider.getSpatialExtent(entry.getValue()
-                                                                                                                 .getId()));
-                        } catch (CrsTransformationException | CompletionException e) {
+
+                        if (featureProvider.supportsExtents()) {
+                            BoundingBox spatialExtent = featureProvider.extents()
+                                                                       .getSpatialExtent(entry.getValue()
+                                                                                              .getId());
+                            try {
+                                bbox = defaultTransformer.transformBoundingBox(spatialExtent);
+                            } catch (CrsTransformationException | CompletionException e) {
+                                //ignore
+                            }
+                        }
+
+                        if (Objects.isNull(bbox)) {
                             bbox = new BoundingBox(-180.0, -90.0, 180.0, 90.0, new EpsgCrs(4326, true));
                         }
 

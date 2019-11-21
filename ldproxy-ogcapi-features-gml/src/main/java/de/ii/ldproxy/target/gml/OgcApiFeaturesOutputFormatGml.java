@@ -14,10 +14,15 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.ServiceController;
+import org.apache.felix.ipojo.annotations.Validate;
 
 import javax.ws.rs.core.MediaType;
 import java.util.Optional;
@@ -68,7 +73,7 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
     }
 
     @Override
-    public Optional<GmlConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
+    public Optional<FeatureConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
         return Optional.of(new FeatureTransformerGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
                                                                                                     .from(transformationContext)
                                                                                                     .namespaces(((ConnectionInfoWfsHttp) transformationContext.getApiData()

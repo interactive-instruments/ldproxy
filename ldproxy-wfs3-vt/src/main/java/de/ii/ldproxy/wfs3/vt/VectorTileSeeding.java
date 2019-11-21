@@ -12,7 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.*;
-import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.server.CoreServerConfig;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -77,7 +77,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @return the runnable process
      */
     @Override
-    public Runnable getTask(OgcApiDataset api, TransformingFeatureProvider featureProvider) {
+    public Runnable getTask(OgcApiDataset api, FeatureProvider2 featureProvider) {
 
         Optional<OgcApiFeatureFormatExtension> wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE);
         OgcApiDatasetData apiData = api.getData();
@@ -166,7 +166,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      */
     private void seedingDataset(Set<String> collectionIdsDataset, OgcApiDataset service,
                                 CrsTransformation crsTransformation, VectorTilesCache cache,
-                                TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
+                                FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                                 OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language)
             throws FileNotFoundException {
 
@@ -339,7 +339,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      */
     private File generateMVT(OgcApiDataset service, String collectionId, String tileMatrixSetId, int z, int x,
                              int y, VectorTilesCache cache, CrsTransformation crsTransformation,
-                             TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
+                             FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
 
         try {
@@ -381,7 +381,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      */
     private File generateJSON(OgcApiDataset service, String collectionId, String tileMatrixSetId, int z, int x,
                               int y, VectorTilesCache cache, CrsTransformation crsTransformation,
-                              TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
+                              FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                               OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
 
         try {

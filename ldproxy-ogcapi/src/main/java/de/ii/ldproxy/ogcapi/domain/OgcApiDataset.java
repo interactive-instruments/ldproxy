@@ -11,16 +11,21 @@ import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService;
+import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.service.api.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 
-public interface OgcApiDataset extends FeatureTransformerService, Service {
+public interface OgcApiDataset extends Service {
+
+    FeatureProvider2 getFeatureProvider();
 
     // TODO: move the following 3 methods to OgcApiApi, split generic parts of OgcApiDatasetData to OgcApiApiData (requires a change in xtraplatform)
+    @Override
     OgcApiDatasetData getData();
     <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, String path);
     <T extends FormatExtension> List<T> getAllOutputFormats(Class<T> extensionType, OgcApiMediaType mediaType, String path, Optional<T> excludeFormat);

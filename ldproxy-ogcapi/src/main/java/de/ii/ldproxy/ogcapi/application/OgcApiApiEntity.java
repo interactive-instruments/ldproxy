@@ -16,6 +16,8 @@ import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.entity.api.EntityComponent;
 import de.ii.xtraplatform.entity.api.handler.Entity;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.service.api.AbstractService;
@@ -32,7 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
-
+import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS;
 
 
 @EntityComponent
@@ -44,7 +46,7 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
 
     private final OgcApiExtensionRegistry extensionRegistry;
     //TODO: only needed for OGC API Features, enable APIs that do not implement features, too
-    private TransformingFeatureProvider featureProvider;
+    private FeatureProvider2 featureProvider;
     //TODO: encapsulate
     private CrsTransformer defaultTransformer;
     private CrsTransformer defaultReverseTransformer;
@@ -52,7 +54,7 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
     private final Map<String, CrsTransformer> additionalReverseTransformers;
 
     public OgcApiApiEntity(@Requires OgcApiExtensionRegistry extensionRegistry,
-                           @Property TransformingFeatureProvider featureProvider,
+                           @Property FeatureProvider2 featureProvider,
                            @Property CrsTransformer defaultTransformer,
                            @Property CrsTransformer defaultReverseTransformer,
                            @Property Map<String, CrsTransformer> additionalTransformers,
@@ -134,7 +136,7 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
             return Optional.empty();
         }
 
-        CrsTransformer crsTransformer = crs != null ? additionalTransformers.get(crs.getAsUri()) : defaultTransformer;
+        CrsTransformer crsTransformer = Objects.isNull(crs) || Objects.equals(crs, DEFAULT_CRS) ? defaultTransformer : additionalTransformers.get(crs.getAsUri());
 
         if (crsTransformer == null) {
             throw new BadRequestException("Invalid CRS");
@@ -155,19 +157,13 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
     }
 
     @Override
-    public Optional<FeatureTypeConfiguration> getFeatureTypeByName(String name) {
-        return Optional.ofNullable(getData().getFeatureTypes()
-                                            .get(name));
-    }
-
-    @Override
-    public TransformingFeatureProvider getFeatureProvider() {
+    public FeatureProvider2 getFeatureProvider() {
         return featureProvider;
     }
 
     @Override
     public BoundingBox transformBoundingBox(BoundingBox bbox) throws CrsTransformationException {
-        if (Objects.equals(bbox.getEpsgCrs(), OgcApiDatasetData.DEFAULT_CRS)) {
+        if (Objects.equals(bbox.getEpsgCrs(), DEFAULT_CRS)) {
             return defaultReverseTransformer.transformBoundingBox(bbox);
         }
 
@@ -179,7 +175,7 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
     @Override
     public List<List<Double>> transformCoordinates(List<List<Double>> coordinates,
                                                    EpsgCrs crs) throws CrsTransformationException {
-        CrsTransformer transformer = Objects.equals(crs, OgcApiDatasetData.DEFAULT_CRS) ? this.defaultReverseTransformer : additionalReverseTransformers.get(crs.getAsUri());
+        CrsTransformer transformer = Objects.equals(crs, DEFAULT_CRS) ? this.defaultReverseTransformer : additionalReverseTransformers.get(crs.getAsUri());
         if (Objects.nonNull(transformer)) {
             double[] transformed = transformer.transform(coordinates.stream()
                                                                     .flatMap(Collection::stream)

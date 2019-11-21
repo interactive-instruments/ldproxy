@@ -15,12 +15,11 @@ import com.google.common.xml.XmlEscapers;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
+import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
 import de.ii.xtraplatform.util.xml.XMLNamespaceNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.namespace.QName;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -34,12 +33,13 @@ import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
 
+import static de.ii.xtraplatform.util.functional.LambdaWithException.biConsumerMayThrow;
 import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMayThrow;
 
 /**
  * @author zahnen
  */
-public class FeatureTransformerGmlUpgrade implements GmlConsumer {
+public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerGmlUpgrade.class);
     private static final List<String> GEOMETRY_COORDINATES = new ImmutableList.Builder<String>()
@@ -84,7 +84,8 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
     }
 
     @Override
-    public void onStart(OptionalLong numberReturned, OptionalLong numberMatched) throws Exception {
+    public void onStart(OptionalLong numberReturned, OptionalLong numberMatched,
+                        Map<String, String> additionalInfos) throws Exception {
         writer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
         if (isFeatureCollection) {
             writer.append("\n<feat:FeatureCollection");
@@ -118,6 +119,8 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
 
             isLastPage = numberReturned.orElse(0) < pageSize;
             inCurrentStart = true;
+
+            additionalInfos.forEach(biConsumerMayThrow(this::onGmlAttribute));
         }
     }
 
@@ -140,7 +143,7 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
     }
 
     @Override
-    public void onFeatureStart(List<String> path) throws Exception {
+    public void onFeatureStart(List<String> path, Map<String, String> additionalInfos) throws Exception {
         LOGGER.debug("{}", path);
 
         if (inCurrentStart) {
@@ -177,6 +180,8 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
         }
 
         inCurrentFeatureStart = true;
+
+        additionalInfos.forEach(biConsumerMayThrow(this::onGmlAttribute));
     }
 
     @Override
@@ -192,7 +197,11 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
         writer.flush();
     }
 
-    @Override
+    private void onGmlAttribute(String name, String value) throws Exception {
+        onGmlAttribute(getNamespaceUri(name), getLocalName(name), ImmutableList.of(), value, ImmutableList.of());
+    }
+
+    //@Override
     public void onGmlAttribute(String namespace, String localName, List<String> path, String value, List<Integer> multiplicities) throws Exception {
         LOGGER.debug("ATTR {} {} {}", path, localName, value);
 
@@ -236,7 +245,8 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
     }
 
     @Override
-    public void onPropertyStart(List<String> path, List<Integer> multiplicities) throws Exception {
+    public void onPropertyStart(List<String> path, List<Integer> multiplicities,
+                                Map<String, String> additionalInfos) throws Exception {
         LOGGER.debug("START {} {}", path, getLocalName(path));
 
         if (inCurrentFeatureStart) {
@@ -256,6 +266,8 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
         if (GEOMETRY_COORDINATES.contains(getLocalName(path))) {
             inCoordinates = true;
         }
+
+        additionalInfos.forEach(biConsumerMayThrow(this::onGmlAttribute));
     }
 
     @Override
@@ -315,10 +327,10 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
         inCoordinates = false;
     }
 
-    @Override
+    /*@Override
     public void onNamespaceRewrite(QName featureType, String namespace) throws Exception {
 
-    }
+    }*/
 
     private String adjustSchemaLocation(String schemaLocation) {
         List<String> split = Splitter.on(' ').splitToList(schemaLocation);
@@ -344,10 +356,18 @@ public class FeatureTransformerGmlUpgrade implements GmlConsumer {
     }
 
     private String getLocalName(List<String> path) {
-        return path.isEmpty() ? null : path.get(path.size()-1).substring(path.get(path.size()-1).lastIndexOf(":")+1);
+        return path.isEmpty() ? null : getLocalName(path.get(path.size()-1));
+    }
+
+    private String getLocalName(String name) {
+        return name.substring(name.lastIndexOf(":") + 1);
     }
 
     private String getNamespaceUri(List<String> path) {
-        return path.isEmpty() ? null : path.get(path.size()-1).substring(0, path.get(path.size()-1).lastIndexOf(":"));
+        return path.isEmpty() ? null : getNamespaceUri(path.get(path.size()-1));
+    }
+
+    private String getNamespaceUri(String name) {
+        return name.substring(0, name.lastIndexOf(":"));
     }
 }

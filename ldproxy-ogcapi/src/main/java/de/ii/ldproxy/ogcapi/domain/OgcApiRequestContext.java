@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 public interface OgcApiRequestContext {
@@ -23,4 +24,6 @@ public interface OgcApiRequestContext {
     URICustomizer getUriCustomizer();
 
     String getStaticUrlPrefix();
+
+    Map<String,String> getParameters();
 }

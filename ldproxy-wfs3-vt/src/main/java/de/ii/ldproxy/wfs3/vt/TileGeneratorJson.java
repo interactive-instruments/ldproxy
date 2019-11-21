@@ -17,9 +17,11 @@ import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationCont
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
+import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import org.slf4j.LoggerFactory;
 
@@ -68,11 +70,12 @@ public class TileGeneratorJson {
         int level = tile.getLevel();
         int col = tile.getCol();
         int row = tile.getRow();
-        TransformingFeatureProvider featureProvider = tile.getFeatureProvider();
+        FeatureProvider2 featureProvider = tile.getFeatureProvider();
         OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = tile.getWfs3OutputFormatGeoJson();
 
-        if (collectionId == null)
+        if (collectionId == null || !featureProvider.supportsQueries()) {
             return false;
+        }
 
 
         OutputStream outputStream = null;
@@ -158,7 +161,7 @@ public class TileGeneratorJson {
         }
 
 
-        FeatureStream<FeatureTransformer> featureTransformStream = featureProvider.getFeatureTransformStream(queryBuilder.build());
+        FeatureStream2 featureTransformStream = featureProvider.queries().getFeatureStream2(queryBuilder.build());
 
         try {
             FeatureTransformationContext transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
@@ -182,7 +185,7 @@ public class TileGeneratorJson {
             Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, language);
 
             if (featureTransformer.isPresent()) {
-                featureTransformStream.apply(featureTransformer.get(), null)
+                featureTransformStream.runWith(featureTransformer.get())
                                       .toCompletableFuture()
                                       .join();
             } else {

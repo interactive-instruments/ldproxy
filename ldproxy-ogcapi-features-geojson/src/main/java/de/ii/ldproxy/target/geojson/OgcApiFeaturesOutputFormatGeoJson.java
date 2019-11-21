@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.TargetMappingRefiner;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
@@ -28,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -73,7 +74,8 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
     }
 
     @Override
-    public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext, Optional<Locale> language) {
+    public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext,
+                                                              Optional<Locale> language) {
 
         // TODO support language
         ImmutableSortedSet<GeoJsonWriter> geoJsonWriters = geoJsonWriterRegistry.getGeoJsonWriters()
@@ -84,6 +86,16 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
         return Optional.of(new FeatureTransformerGeoJson(ImmutableFeatureTransformationContextGeoJson.builder()
                                                                                                      .from(transformationContext)
                                                                                                      .geoJsonConfig(geoJsonConfig)
+                                                                                                     .prettify(Optional.ofNullable(transformationContext.getOgcApiRequest()
+                                                                                                                                                        .getParameters()
+                                                                                                                                                        .get("pretty"))
+                                                                                                                       .filter(value -> Objects.equals(value, "true"))
+                                                                                                                       .isPresent())
+                                                                                                     .debugJson(Optional.ofNullable(transformationContext.getOgcApiRequest()
+                                                                                                                                                        .getParameters()
+                                                                                                                                                        .get("debug"))
+                                                                                                                       .filter(value -> Objects.equals(value, "true"))
+                                                                                                                       .isPresent())
                                                                                                      .build(), geoJsonWriters));
     }
 
@@ -98,7 +110,7 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
             @Override
             public boolean needsRefinement(SourcePathMapping sourcePathMapping) {
                 if (!sourcePathMapping.hasMappingForType(Gml2GeoJsonMappingProvider.MIME_TYPE)
-                || !(sourcePathMapping.getMappingForType(Gml2GeoJsonMappingProvider.MIME_TYPE) instanceof GeoJsonGeometryMapping)) {
+                        || !(sourcePathMapping.getMappingForType(Gml2GeoJsonMappingProvider.MIME_TYPE) instanceof GeoJsonGeometryMapping)) {
                     return false;
                 }
                 GeoJsonGeometryMapping geoJsonGeometryMapping = (GeoJsonGeometryMapping) sourcePathMapping.getMappingForType(Gml2GeoJsonMappingProvider.MIME_TYPE);

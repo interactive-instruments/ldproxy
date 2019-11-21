@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -28,14 +28,16 @@ import de.ii.xtraplatform.crs.api.DefaultCoordinatesWriter;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.crs.api.JsonCoordinateFormatter;
 import de.ii.xtraplatform.entity.api.EntityData;
-import de.ii.xtraplatform.entity.api.EntityDataGenerator;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.event.store.EntityDataStore;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
+import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
+import de.ii.xtraplatform.feature.provider.api.FeatureMetadata;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderMetadataConsumer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
-import de.ii.xtraplatform.feature.provider.api.FeatureStream;
+import de.ii.xtraplatform.feature.provider.api.FeatureSchema;
+import de.ii.xtraplatform.feature.provider.api.FeatureSourceStream;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.MultiFeatureProviderMetadataConsumer;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
@@ -43,8 +45,8 @@ import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.transformer.api.FeatureProviderDataTransformer;
+import de.ii.xtraplatform.feature.transformer.api.FeatureProviderGenerator;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerService;
-import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableMappingStatus;
@@ -53,7 +55,6 @@ import de.ii.xtraplatform.feature.transformer.api.MappingStatus;
 import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_GEOMETRY_TYPE;
-import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.kvstore.api.WriteTransaction;
 import de.ii.xtraplatform.scheduler.api.Scheduler;
@@ -77,7 +78,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
-import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
@@ -190,9 +190,9 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
                                         });
 
 
-            FeatureProvider featureProvider = featureProviderRegistry.createFeatureProvider(provider);
+            FeatureProvider2 featureProvider = featureProviderRegistry.createFeatureProvider(provider);
 
-            if (!(featureProvider instanceof FeatureProvider.MetadataAware && featureProvider instanceof TransformingFeatureProvider.SchemaAware)) {
+            if (!(featureProvider instanceof FeatureMetadata && featureProvider instanceof FeatureSchema)) {
                 throw new IllegalArgumentException("feature provider not metadata aware");
             }
 
@@ -200,8 +200,8 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
                 LOGGER.debug("Generating service of type {} with id {}", OgcApiDatasetData.class, partialData.get("id"));
             }
 
-            FeatureProvider.MetadataAware metadataAware = (FeatureProvider.MetadataAware) featureProvider;
-            TransformingFeatureProvider.DataGenerator dataGenerator = (TransformingFeatureProvider.DataGenerator) featureProvider;
+            FeatureMetadata metadataAware = (FeatureMetadata) featureProvider;
+            FeatureProviderGenerator dataGenerator = (FeatureProviderGenerator) featureProvider;
 
             FeatureProviderMetadataConsumer metadataConsumer = new MultiFeatureProviderMetadataConsumer(new Metadata2Wfs3(wfs3ServiceData), dataGenerator.getDataGenerator(provider, wfs3ServiceData.featureProviderBuilder()));
             //TODO: getMetadata(partialData.getFeatureProvider(), FeatureProviderMetadataConsumer... additionalConsumers)
@@ -289,15 +289,18 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
                                                                                   .getFeatureProvider();
             final List<TargetMappingRefiner> mappingRefiners = getMappingRefiners();
 
-            if (canGenerateMapping(wfs3Service.getFeatureProvider()) && shouldRefineMapping(wfs3Service.getData(), featureProviderData.getMappingStatus(), wfs3Service.getId(), mappingRefiners)) {
+            if (wfs3Service.getFeatureProvider()
+                           .supportsQueries()
+                    && canGenerateMapping(wfs3Service.getFeatureProvider())
+                    && shouldRefineMapping(wfs3Service.getData(), featureProviderData.getMappingStatus(), wfs3Service.getId(), mappingRefiners)) {
 
                 taskQueue.launch(new AnalyzeDataTask(wfs3Service, featureProviderData, mappingRefiners));
             }
         }
     }
 
-    private boolean canGenerateMapping(TransformingFeatureProvider featureProvider) {
-        return featureProvider instanceof TransformingFeatureProvider.SchemaAware && featureProvider instanceof TransformingFeatureProvider.DataGenerator;
+    private boolean canGenerateMapping(FeatureProvider2 featureProvider) {
+        return featureProvider instanceof FeatureSchema && featureProvider instanceof FeatureProviderGenerator;
     }
 
     private boolean shouldGenerateMapping(MappingStatus mappingStatus, String id) {
@@ -406,8 +409,8 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
             //TODO: to onServiceStart queue
             //TODO: set mappingStatus.enabled to false for catalog services
             //TODO: reactivate on-the-fly mapping
-            TransformingFeatureProvider.SchemaAware schemaAware = (TransformingFeatureProvider.SchemaAware) wfs3Service.getFeatureProvider();
-            TransformingFeatureProvider.DataGenerator dataGenerator = (TransformingFeatureProvider.DataGenerator) wfs3Service.getFeatureProvider();
+            FeatureSchema schemaAware = (FeatureSchema) wfs3Service.getFeatureProvider();
+            FeatureProviderGenerator dataGenerator = (FeatureProviderGenerator) wfs3Service.getFeatureProvider();
             //TODO: getSchema(partialData.getFeatureProvider(), getMappingProviders(), FeatureProviderSchemaConsumer... additionalConsumers)
 
             ImmutableFeatureProviderDataTransformer.Builder builder = new ImmutableFeatureProviderDataTransformer.Builder().from(featureProviderData);
@@ -505,24 +508,14 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
                                                           .limit(5)
                                                           .build();
 
-                FeatureStream<GmlConsumer> featureStream = wfs3Service.getFeatureProvider()
-                                                                      .getFeatureStream(query);
-                featureStream.apply(new GmlConsumer() {
-                    @Override
-                    public void onGmlAttribute(String namespace, String localName, List<String> path,
-                                               String value,
-                                               List<Integer> multiplicities) throws Exception {
-
-                    }
-
-                    @Override
-                    public void onNamespaceRewrite(QName featureType, String namespace) throws Exception {
-
-                    }
-
+                FeatureSourceStream featureStream = wfs3Service.getFeatureProvider()
+                                                               .passThrough()
+                                                               .getFeatureSourceStream(query);
+                featureStream.runWith(new FeatureConsumer() {
                     @Override
                     public void onStart(OptionalLong numberReturned,
-                                        OptionalLong numberMatched) throws Exception {
+                                        OptionalLong numberMatched,
+                                        Map<String, String> additionalInfos) throws Exception {
 
                     }
 
@@ -532,7 +525,8 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
                     }
 
                     @Override
-                    public void onFeatureStart(List<String> path) throws Exception {
+                    public void onFeatureStart(List<String> path,
+                                               Map<String, String> additionalInfos) throws Exception {
                         hasData[0] = true;
                     }
 
@@ -543,7 +537,8 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
 
                     @Override
                     public void onPropertyStart(List<String> path,
-                                                List<Integer> multiplicities) throws Exception {
+                                                List<Integer> multiplicities,
+                                                Map<String, String> additionalInfos) throws Exception {
                         if (foundGeometry[0]) {
                             return;
                         }
@@ -624,7 +619,7 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
                     public void onPropertyEnd(List<String> path) throws Exception {
 
                     }
-                }, null)
+                })
                              .toCompletableFuture()
                              .join();
 

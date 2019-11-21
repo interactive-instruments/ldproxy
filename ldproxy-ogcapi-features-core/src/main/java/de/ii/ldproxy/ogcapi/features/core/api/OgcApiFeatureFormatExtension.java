@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.features.core.api;
 
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
-import de.ii.xtraplatform.feature.transformer.api.GmlConsumer;
+import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 
 import java.util.Locale;
@@ -29,7 +29,7 @@ public interface OgcApiFeatureFormatExtension extends FormatExtension {
         return false;
     }
 
-    default Optional<GmlConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
+    default Optional<FeatureConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
         return Optional.empty();
     }
 

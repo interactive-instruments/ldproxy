@@ -114,8 +114,10 @@ public class JsonNestingTracker {
             //omit when already inside of object array
             boolean inObjectArray = openObject && inArray && i == nextPathDiffersAt;
             boolean openArray = element.contains("[") && !inArray && !inObjectArray;
+            boolean openField = !openObject &&!openArray && (!inArray || i > nextPathDiffersAt);
 
             List<String> a = new ArrayList<>();
+
             if (openArray) {
                 if (element.contains("[")) {
                     // array field
@@ -136,13 +138,14 @@ public class JsonNestingTracker {
                 }
                 a.add("OBJECT");
             }
-            if (!openObject &&!openArray && !inArray) {
+            if (openField) {
                 nestingStrategy.openField(json, element);
                 a.add("VALUE");
             }
 
             actions.add(a);
         }
+
         nestingStrategy.open(json, nextPathDiffersAt);
 
         return actions;

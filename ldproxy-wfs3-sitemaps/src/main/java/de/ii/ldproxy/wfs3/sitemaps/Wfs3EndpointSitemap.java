@@ -13,9 +13,8 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreQueriesHandler;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
-import de.ii.xtraplatform.feature.provider.api.FeatureStream;
+import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
 import de.ii.xtraplatform.server.CoreServerConfig;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -79,7 +78,11 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     public Response getCollectionSitemap(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                                          @PathParam("from") Long from, @PathParam("to") Long to,
                                          @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
-        OgcApiFeaturesCoreQueriesHandler.checkCollectionId(service.getData(), id);
+        OgcApiFeaturesCoreQueriesHandler.ensureCollectionIdExists(service.getData(), id);
+
+        if (!service.getFeatureProvider().supportsQueries()) {
+            throw new IllegalStateException();
+        }
 
         List<Site> sites = new ArrayList<>();
 
@@ -95,9 +98,10 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
                                                          .limit(to.intValue() - from.intValue() + 1)
                                                          .fields(ImmutableList.of("ID")) //TODO only get id field
                                                          .build();
-        FeatureStream<FeatureTransformer> featureStream = service.getFeatureProvider()
-                                                                 .getFeatureTransformStream(featureQuery);
-        featureStream.apply(itemSitesReader, null)
+        FeatureStream2 featureStream = service.getFeatureProvider()
+                                              .queries()
+                                              .getFeatureStream2(featureQuery);
+        featureStream.runWith(itemSitesReader)
                      .toCompletableFuture()
                      .join();
 

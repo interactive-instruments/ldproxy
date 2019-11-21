@@ -17,9 +17,10 @@ import akka.util.ByteString;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransactions;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
-import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.feature.transformer.geojson.GeoJsonStreamParser;
 import de.ii.xtraplatform.feature.transformer.geojson.MappingSwapper;
 
@@ -36,7 +37,7 @@ public class CommandHandlerTransactional {
 
 
     public Response postItemsResponse(
-            TransformingFeatureProvider featureProvider,
+            FeatureTransactions featureProvider,
             OgcApiMediaType mediaType, URICustomizer uriCustomizer, String collectionName,
             FeatureTypeMapping featureTypeMapping, CrsTransformer defaultReverseTransformer,
             InputStream requestBody) {
@@ -59,7 +60,7 @@ public class CommandHandlerTransactional {
     }
 
     public Response putItemResponse(
-            TransformingFeatureProvider featureProvider,
+            FeatureTransactions featureProvider,
             OgcApiMediaType mediaType, String collectionName, String featureId,
             FeatureTypeMapping featureTypeMapping, CrsTransformer defaultReverseTransformer,
             InputStream requestBody) {
@@ -70,7 +71,7 @@ public class CommandHandlerTransactional {
     }
 
     public Response deleteItemResponse(
-            TransformingFeatureProvider featureProvider,
+            FeatureTransactions featureProvider,
             String collectionName, String featureId) {
         featureProvider.deleteFeature(collectionName, featureId);
 

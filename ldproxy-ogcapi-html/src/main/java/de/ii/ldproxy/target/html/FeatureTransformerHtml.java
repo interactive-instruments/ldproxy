@@ -24,7 +24,8 @@ import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import io.dropwizard.views.ViewRenderer;
@@ -53,7 +54,7 @@ import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMay
 /**
  * @author zahnen
  */
-public class FeatureTransformerHtml implements FeatureTransformer, FeatureTransformer.OnTheFly {
+public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerHtml.class);
 

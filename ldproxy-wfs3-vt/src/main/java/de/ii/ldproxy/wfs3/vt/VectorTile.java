@@ -14,6 +14,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.*;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.slf4j.LoggerFactory;
@@ -50,7 +52,7 @@ class VectorTile {
     private final TileMatrixSet tileMatrixSet;
     private final OgcApiDatasetData apiData;
     private final OgcApiDataset api;
-    private final TransformingFeatureProvider featureProvider;
+    private final FeatureProvider2 featureProvider;
     private final boolean temporary;
     private final String fileName;
     private final OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson;
@@ -72,7 +74,7 @@ class VectorTile {
 
     VectorTile(String collectionId, String tileMatrixSetId, String level, String row, String col,
                OgcApiDataset api, boolean temporary, VectorTilesCache cache,
-               TransformingFeatureProvider featureProvider,
+               FeatureProvider2 featureProvider,
                OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
         this.wfs3OutputFormatGeoJson = wfs3OutputFormatGeoJson;
         this.api = api;
@@ -160,7 +162,7 @@ class VectorTile {
         return apiData;
     }
 
-    public TransformingFeatureProvider getFeatureProvider() {
+    public FeatureProvider2 getFeatureProvider() {
         return featureProvider;
     }
 

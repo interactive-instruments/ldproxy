@@ -10,6 +10,7 @@ package de.ii.ldproxy.wfs3.sitemaps;
 import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
 
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalLong;
 
 /**
@@ -23,7 +24,8 @@ public class FeatureCountReader implements FeatureConsumer {
     }
 
     @Override
-    public void onStart(OptionalLong numberReturned, OptionalLong numberMatched) throws Exception {
+    public void onStart(OptionalLong numberReturned, OptionalLong numberMatched,
+                        Map<String, String> additionalInfos) throws Exception {
         this.featureCount = numberMatched;
     }
 
@@ -33,7 +35,7 @@ public class FeatureCountReader implements FeatureConsumer {
     }
 
     @Override
-    public void onFeatureStart(List<String> list) throws Exception {
+    public void onFeatureStart(List<String> list, Map<String, String> additionalInfos) throws Exception {
 
     }
 
@@ -43,7 +45,8 @@ public class FeatureCountReader implements FeatureConsumer {
     }
 
     @Override
-    public void onPropertyStart(List<String> list, List<Integer> list1) throws Exception {
+    public void onPropertyStart(List<String> list, List<Integer> list1,
+                                Map<String, String> additionalInfos) throws Exception {
 
     }
 
