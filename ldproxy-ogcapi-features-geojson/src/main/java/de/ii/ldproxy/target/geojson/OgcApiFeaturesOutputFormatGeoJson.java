@@ -44,6 +44,12 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
     public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(new MediaType("application", "geo+json"))
             .label("GeoJSON")
+            .parameter("json")
+            .build();
+    public static final OgcApiMediaType COLLECTION_MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+            .type(new MediaType("application", "json"))
+            .label("JSON")
+            .parameter("json")
             .build();
 
     @Requires
@@ -66,6 +72,11 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
     @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
+    }
+
+    @Override
+    public OgcApiMediaType getCollectionMediaType() {
+        return COLLECTION_MEDIA_TYPE;
     }
 
     @Override

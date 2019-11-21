@@ -47,4 +47,9 @@ public class CodelistEntity extends AbstractPersistentEntity<CodelistData> imple
     public CodelistData getData() {
         return super.getData();
     }
+
+    @Override
+    protected boolean shouldRegister() {
+        return true;
+    }
 }

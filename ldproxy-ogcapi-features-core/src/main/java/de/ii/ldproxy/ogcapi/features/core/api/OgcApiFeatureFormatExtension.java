@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core.api;
 
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
@@ -20,6 +21,8 @@ public interface OgcApiFeatureFormatExtension extends FormatExtension {
     default String getPathPattern() {
         return "^\\/?collections\\/[^\\/]+\\/items(?:\\/[^\\/]+)?$";
     }
+
+    OgcApiMediaType getCollectionMediaType();
 
     default boolean canPassThroughFeatures() {
         return false;

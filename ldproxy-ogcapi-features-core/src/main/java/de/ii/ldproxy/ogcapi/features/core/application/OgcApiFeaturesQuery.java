@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.application;
 
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
@@ -74,16 +75,20 @@ public class OgcApiFeaturesQuery {
     public FeatureQuery requestToFeatureQuery(OgcApiDataset api, String collectionId, int minimumPageSize, int defaultPageSize, int maxPageSize, Map<String, String> parameters) {
 
         final Map<String, String> filterableFields = api.getData()
-                                                            .getFilterableFieldsForFeatureType(collectionId);
+                                                        .getFilterableFieldsForFeatureType(collectionId);
+
+        Set<String> filterParameters = ImmutableSet.of();
+        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
+            filterParameters = parameterExtension.getFilterParameters(filterParameters, api.getData());
+        }
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
             parameters = parameterExtension.transformParameters(api.getData()
-                                                                       .getFeatureTypes()
-                                                                       .get(collectionId), parameters,api.getData());
+                                                                   .getFeatureTypes()
+                                                                   .get(collectionId), parameters, api.getData());
         }
 
-
-        final Map<String, String> filters = getFiltersFromQuery(parameters, filterableFields);
+        final Map<String, String> filters = getFiltersFromQuery(parameters, filterableFields, filterParameters);
 
         boolean hitsOnly = parameters.containsKey("resultType") && parameters.get("resultType")
                                                                              .toLowerCase()
@@ -118,7 +123,7 @@ public class OgcApiFeaturesQuery {
 
 
         if (!filters.isEmpty()) {
-            String cql = getCQLFromFilters(api, filters, filterableFields);
+            String cql = getCQLFromFilters(api, filters, filterableFields, filterParameters);
             LOGGER.debug("CQL {}", cql);
             queryBuilder.filter(cql);
         }
@@ -127,12 +132,15 @@ public class OgcApiFeaturesQuery {
 
     }
 
-    private Map<String, String> getFiltersFromQuery(Map<String, String> query, Map<String, String> filterableFields) {
+    private Map<String, String> getFiltersFromQuery(Map<String, String> query, Map<String, String> filterableFields, Set<String> filterParameters) {
 
         Map<String, String> filters = new LinkedHashMap<>();
 
         for (String filterKey : query.keySet()) {
-            if (filterableFields.containsKey(filterKey.toLowerCase())) {
+            if (filterParameters.contains(filterKey.toLowerCase())) {
+                String filterValue = query.get(filterKey);
+                filters.put(filterKey.toLowerCase(), filterValue);
+            } else if (filterableFields.containsKey(filterKey.toLowerCase())) {
                 String filterValue = query.get(filterKey);
                 filters.put(filterKey.toLowerCase(), filterValue);
             }
@@ -141,7 +149,7 @@ public class OgcApiFeaturesQuery {
         return filters;
     }
 
-    private String getCQLFromFilters(OgcApiDataset service, Map<String, String> filters, Map<String, String> filterableFields) {
+    private String getCQLFromFilters(OgcApiDataset service, Map<String, String> filters, Map<String, String> filterableFields, Set<String> filterParameters) {
         return filters.entrySet()
                       .stream()
                       .map(f -> {
@@ -152,6 +160,9 @@ public class OgcApiFeaturesQuery {
                           if (f.getKey()
                                .equals("datetime")) {
                               return timeToCql(filterableFields.get(f.getKey()), f.getValue());
+                          }
+                          if (filterParameters.contains(f.getKey())) {
+                              return f.getValue();
                           }
                           if (f.getValue()
                                .contains("*")) {

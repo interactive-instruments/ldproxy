@@ -12,6 +12,8 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import io.dropwizard.views.ViewRenderer;
 import org.immutables.value.Value;
 
+import java.util.Map;
+
 /**
  * @author zahnen
  */
@@ -20,6 +22,8 @@ import org.immutables.value.Value;
 public abstract class FeatureTransformationContextHtml implements FeatureTransformationContext {
 
     public abstract FeatureCollectionView getFeatureTypeDataset();
-    public abstract Codelist[] getCodelists();
+
+    public abstract Map<String, Codelist> getCodelists();
+
     public abstract ViewRenderer getMustacheRenderer();
 }

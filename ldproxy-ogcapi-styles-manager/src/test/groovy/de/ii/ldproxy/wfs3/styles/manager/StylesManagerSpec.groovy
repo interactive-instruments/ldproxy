@@ -9,6 +9,8 @@ package de.ii.ldproxy.wfs3.styles.manager
 
 import spock.lang.Specification
 
+import javax.ws.rs.BadRequestException
+
 class StylesManagerSpec extends Specification{
 
 
@@ -18,13 +20,13 @@ class StylesManagerSpec extends Specification{
 
         def requestBody=null
 
-        when: "validateRequestBodyJSON is called"
+        when: "validateRequestBodyMbStyle is called"
 
-        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody)
+        def result = EndpointStylesManager.validateRequestBodyMbStyle(requestBody, true)
 
-        then:'it should return null'
+        then:'it should throw a Bad Request exception'
 
-        result==null
+        thrown BadRequestException
 
     }
 
@@ -34,13 +36,13 @@ class StylesManagerSpec extends Specification{
 
         def requestBody=""
 
-        when: "validateRequestBodyJSON is called"
+        when: "validateRequestBodyMbStyle is called"
 
-        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(),true)
 
-        then:'it should return null'
+        then:'it should throw a Bad Request exception'
 
-        result==null
+        thrown BadRequestException
 
 
     }
@@ -51,13 +53,13 @@ class StylesManagerSpec extends Specification{
 
         def requestBody="{\"id\": \"default}"
 
-        when: "validateRequestBodyJSON is called"
+        when: "validateRequestBodyMbStyle is called"
 
-        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(), true)
 
-        then:'it should return null'
+        then:'it should throw a Bad Request exception'
 
-        result==null
+        thrown BadRequestException
 
     }
 
@@ -67,13 +69,13 @@ class StylesManagerSpec extends Specification{
 
         def requestBody="{\"id\": \"default\"}"
 
-        when: "validateRequestBodyJSON is called"
+        when: "validateRequestBodyMbStyle is called"
 
-        def result = EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(), true)
 
-        then:'it should not return null'
+        then:'it should throw a Bad Request exception'
 
-        result!=null
+        thrown BadRequestException
 
     }
 
@@ -103,15 +105,13 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
-
         when: "validateRequestBody is called"
 
-        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(), true)
 
-        then:'it should return false'
+        then:'it should throw a Bad Request exception'
 
-        !result
+        thrown BadRequestException
 
     }
 
@@ -142,17 +142,13 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-
-
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
-
         when: "validateRequestBody is called"
 
-        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(), true)
 
-        then:'it should return false'
+        then:'it should throw a Bad Request exception'
 
-        !result
+        thrown BadRequestException
 
     }
 
@@ -178,16 +174,13 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
-
         when: "validateRequestBody is called"
 
-        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(), true)
 
-        then:'it should return false'
+        then:'it should throw a Bad Request exception'
 
-        !result
+        thrown BadRequestException
 
     }
 
@@ -206,16 +199,13 @@ class StylesManagerSpec extends Specification{
                 "  \"sprite\": \"mapbox://sprites/mapbox/bright-v8\"\n" +
                 "}"
 
-        def requestBodyJsonNode = EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
-
         when: "validateRequestBody is called"
 
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(), true)
 
-        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        then:'it should throw a Bad Request exception'
 
-        then:'it should return false'
-
-        !result
+        thrown BadRequestException
 
     }
 
@@ -245,15 +235,13 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
-
         when: "validateRequestBody is called"
 
-        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(), true)
 
-        then:'it should return false'
+        then:'it should throw a Bad Request exception'
 
-        !result
+        thrown BadRequestException
     }
 
     def'validate request body with layer - type incorrect'(){
@@ -282,15 +270,13 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
-
         when: "validateRequestBody is called"
 
-        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(), true)
 
-        then:'it should return false'
+        then:'it should throw a Bad Request exception'
 
-        !result
+        thrown BadRequestException
     }
 
     def'validate request body with layers - not unique ids'(){
@@ -330,15 +316,13 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
-
         when: "validateRequestBody is called"
 
-        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(), true)
 
-        then:'it should return false'
+        then:'it should throw a Bad Request exception'
 
-        !result
+        thrown BadRequestException
     }
 
 
@@ -380,18 +364,14 @@ class StylesManagerSpec extends Specification{
                 "  ]\n" +
                 "}"
 
-        def requestBodyJsonNode= EndpointStylesManager.validateRequestBodyJSON(requestBody.getBytes())
-
         when: "validateRequestBody is called"
 
-        def result = EndpointStylesManager.validateRequestBody(requestBodyJsonNode)
+        EndpointStylesManager.validateRequestBodyMbStyle(requestBody.getBytes(), true)
 
-        then:'it should return true'
+        then:'it should not throw a Bad Request exception'
 
-        result
-
+        notThrown BadRequestException
 
     }
-
 
 }

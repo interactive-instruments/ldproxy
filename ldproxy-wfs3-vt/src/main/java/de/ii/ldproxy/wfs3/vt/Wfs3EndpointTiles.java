@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.application.I18n;
@@ -83,16 +84,35 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
-        if (subPath.matches("^/?(?:\\w+(?:/)?)?$"))
+        if (subPath.matches("^/?$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.APPLICATION_JSON_TYPE)
                             .build(),
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.TEXT_HTML_TYPE)
+                            .build());
+        else if (subPath.matches("^/?\\w+/?$")) {
+            if (!isMultiTilesEnabledForApi(dataset))
+                return ImmutableSet.of();
+
+            final Map<String, String> parameterMapMvt = ImmutableMap.of(
+                    "container", "application/zip",
+                    "tiles", "application/vnd.mapbox-vector-tile");
+            final Map<String, String> parameterMapGeoJson = ImmutableMap.of(
+                    "container", "application/zip",
+                    "tiles", "application/geo+json");
+            return ImmutableSet.of(
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(new MediaType("application", "vnd.ogc.multipart", parameterMapMvt))
+                            .parameter("zipmvt")
+                            .build(),
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(new MediaType("application", "vnd.ogc.multipart", parameterMapGeoJson))
+                            .parameter("zipjson")
                             .build()
-                    );
-        else if (subPath.matches("^/?(?:\\w+/\\w+/\\w+/\\w+)$"))
+            );
+        } else if (subPath.matches("^/?\\w+/\\w+/\\w+/\\w+$"))
             // TODO: from tile format configuration
             return ImmutableSet.of(
                 new ImmutableOgcApiMediaType.Builder()
@@ -110,12 +130,19 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
     @Override
     public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
-        if (subPath.matches("^/?(?:\\w+(?:/)?)?$"))
+        if (subPath.matches("^/?$")) {
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
-                    .add("bbox", "scaleDenominator", "multiTileType", "collections")
                     .build();
-        else if (subPath.matches("^/?(?:\\w+/\\w+/\\w+/\\w+)$"))
+        } else if (subPath.matches("^/?\\w+/?$")) {
+            if (!isMultiTilesEnabledForApi(apiData))
+                return ImmutableSet.of();
+
+            return new ImmutableSet.Builder<String>()
+                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
+                    .add("bbox", "scaleDenominator", "multiTileType", "f-tile")
+                    .build();
+        } else if (subPath.matches("^/?(?:\\w+/\\w+/\\w+/\\w+)$"))
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
                     .add("properties", "collections")
@@ -131,7 +158,23 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::getMultiCollectionEnabled)
+                .isPresent();
+    }
+
+    private boolean isMultiTilesEnabledForApi(OgcApiDatasetData apiData) {
+        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::getMultiCollectionEnabled)
+                .filter(TilesConfiguration::getMultiTilesEnabled)
+                .isPresent();
+
     }
 
     /**
@@ -202,6 +245,8 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                              @QueryParam("multiTileType") String multiTileType, @QueryParam("collections") String collectionsParam,
                                              @Context UriInfo uriInfo) throws UnsupportedEncodingException {
 
+        if (!isMultiTilesEnabledForApi(service.getData()))
+            throw new NotFoundException();
         OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE)
                 .orElseThrow(NotAcceptableException::new);
         Map<String, Boolean> enabledMap = vectorTileMapGenerator.getEnabledMap(service.getData());
@@ -534,6 +579,4 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                                                                               .equals(mediaType))
                                 .findFirst();
     }
-
-
 }
