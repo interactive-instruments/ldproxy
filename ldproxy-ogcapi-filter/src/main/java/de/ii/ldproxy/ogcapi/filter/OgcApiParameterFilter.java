@@ -8,18 +8,24 @@
 package de.ii.ldproxy.ogcapi.filter;
 
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
+import javax.ws.rs.BadRequestException;
+import java.util.Map;
 import java.util.Set;
 
 @Component
 @Provides
 @Instantiate
 public class OgcApiParameterFilter implements OgcApiParameterExtension {
+
+    private static final String FILTER_LANG_CQL = "cql-text";
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
@@ -33,7 +39,7 @@ public class OgcApiParameterFilter implements OgcApiParameterExtension {
 
         if (subPath.matches("^/[\\w\\-]+/items/?$")) {
             // Features
-            return ImmutableSet.of("filter");
+            return ImmutableSet.of("filter", "filter-lang");
         }
         return ImmutableSet.of();
     }
@@ -49,23 +55,19 @@ public class OgcApiParameterFilter implements OgcApiParameterExtension {
                 .build();
     }
 
-    /* TODO
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDatasetData datasetData) {
 
-        if (!isEnabledForApi(datasetData)) {
-            return queryBuilder;
-        }
-
-        if (parameters.containsKey("filter")) {
-            queryBuilder.filter(parameters.get("filter"));
+        if (parameters.containsKey("filter-lang") && !FILTER_LANG_CQL.equals(parameters.get("filter-lang"))) {
+            throw new BadRequestException(
+                    String.format("The following value for query parameter filter-lang is rejected: %s. Valid parameter value is: %s",
+                            parameters.get("filter-lang"), FILTER_LANG_CQL));
         }
 
         return queryBuilder;
     }
-     */
 
 
 }
