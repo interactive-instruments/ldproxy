@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.Consumer;
@@ -315,6 +316,11 @@ public class GeoJsonWriterAroundRelationsSpec {
 
                                                                @Override
                                                                public String getStaticUrlPrefix() {
+                                                                   return null;
+                                                               }
+
+                                                               @Override
+                                                               public Map<String, String> getParameters() {
                                                                    return null;
                                                                }
                                                            })

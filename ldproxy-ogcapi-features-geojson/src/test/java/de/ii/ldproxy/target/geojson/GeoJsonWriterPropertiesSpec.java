@@ -335,6 +335,11 @@ public class GeoJsonWriterPropertiesSpec {
                                                                public String getStaticUrlPrefix() {
                                                                    return null;
                                                                }
+
+                                                               @Override
+                                                               public Map<String, String> getParameters() {
+                                                                   return null;
+                                                               }
                                                            })
                                                            .limit(10)
                                                            .offset(20)
