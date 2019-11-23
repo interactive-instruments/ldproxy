@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.crs;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
@@ -29,11 +30,16 @@ import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS_URI;
 @Component
 @Provides
 @Instantiate
-public class OgcApiParameterCrs implements OgcApiParameterExtension {
+public class OgcApiParameterCrs implements OgcApiParameterExtension, ConformanceClass {
 
     public static final String BBOX_CRS = "bbox-crs";
     public static final String BBOX = "bbox";
     public static final String CRS = "crs";
+
+    @Override
+    public String getConformanceClass() {
+        return "http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs";
+    }
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
