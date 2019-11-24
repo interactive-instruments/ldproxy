@@ -91,9 +91,26 @@
             <div class="row my-3">
                 <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
                 <div class="col-md-10">
-                    <div itemprop="license">{{{.}}}</div>
+                    <ul class="list-unstyled">
+                        <li>{{{.}}}</li>
+                        {{#licenseUrl}}
+                        <li itemprop="license"><a href="{{.}}">{{.}}</a></li>
+                        {{/licenseUrl}}
+                    </ul>
                 </div>
             </div>
+        {{/licenseName}}
+        {{^licenseName}}
+            {{#licenseUrl}}
+            <div class="row my-3">
+                <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
+                <div class="col-md-10">
+                    <ul class="list-unstyled">
+                        <li itemprop="license"><a href="{{.}}">{{.}}</a></li>
+                    </ul>
+                </div>
+            </div>
+            {{/licenseUrl}}
         {{/licenseName}}
     {{/metadata}}
 
