@@ -31,12 +31,12 @@ public class OgcApiExtent {
         this.temporal = new OgcApiExtentTemporal(begin, end);
     }
 
-    public OgcApiExtent(long begin, long end) {
+    public OgcApiExtent(Long begin, Long end) {
         this.spatial = null;
         this.temporal = new OgcApiExtentTemporal(begin, end);
     }
 
-    public OgcApiExtent(long begin, long end, double xmin, double ymin, double xmax, double ymax) {
+    public OgcApiExtent(Long begin, Long end, double xmin, double ymin, double xmax, double ymax) {
         this.spatial = new OgcApiExtentSpatial(xmin, ymin, xmax, ymax);
         this.temporal = new OgcApiExtentTemporal(begin, end);
     }

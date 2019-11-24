@@ -104,7 +104,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     .getTemporal();
             collection.extent(new OgcApiExtent(
                     temporal.getStart(),
-                    temporal.getEnd() == 0 ? temporal.getComputedEnd() : temporal.getEnd(),
+                    temporal.getEnd(),
                     spatial.getXmin(),
                     spatial.getYmin(),
                     spatial.getXmax(),
@@ -122,7 +122,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     .getTemporal();
             collection.extent(new OgcApiExtent(
                     temporal.getStart(),
-                    temporal.getEnd() == 0 ? temporal.getComputedEnd() : temporal.getEnd()));
+                    temporal.getEnd()));
         }
 
         return collection;

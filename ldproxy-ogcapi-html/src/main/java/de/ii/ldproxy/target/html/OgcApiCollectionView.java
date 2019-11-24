@@ -13,7 +13,6 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -96,9 +95,20 @@ public class OgcApiCollectionView extends LdproxyView {
                     .getTemporal();
             if (Objects.nonNull(temporalExtent)) {
                 String[] interval = temporalExtent.getInterval()[0]; // TODO just the first interval and it is assumed to be in Gregorian calendar
-                this.temporalExtent = interval == null ? null : ImmutableMap.of(
-                        "start", interval[0] == null ? String.valueOf(Instant.EPOCH.toEpochMilli()) : String.valueOf(Instant.parse(interval[0]).toEpochMilli()),
-                        "computedEnd", interval[1] == null ? String.valueOf(Instant.now().toEpochMilli()) : String.valueOf(Instant.parse(interval[1]).toEpochMilli()));
+                if (interval==null)
+                    this.temporalExtent = null;
+                else if (interval[0]==null && interval[1]==null)
+                    this.temporalExtent = ImmutableMap.of();
+                else if (interval[0]==null)
+                    this.temporalExtent = interval==null ? null : ImmutableMap.of(
+                            "end", interval[1]==null ? null : interval[1].toString());
+                else if (interval[1]==null)
+                    this.temporalExtent = interval==null ? null : ImmutableMap.of(
+                            "start", interval[0]==null ? null : interval[0].toString());
+                else
+                    this.temporalExtent = interval==null ? null : ImmutableMap.of(
+                            "start", interval[0]==null ? null : interval[0].toString(),
+                            "end", interval[1]==null ? null : interval[1].toString());
             }
         } else {
             this.bbox2 = null;

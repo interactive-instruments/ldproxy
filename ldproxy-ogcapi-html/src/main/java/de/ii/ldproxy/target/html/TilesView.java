@@ -83,13 +83,24 @@ public class TilesView extends LdproxyView {
                 .filter(featureTypeConfiguration -> !collectionId.isPresent() || Objects.equals(featureTypeConfiguration.getId(),collectionId.get()))
                 .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
                         .getTemporal())
-                .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getComputedEnd()})
+                .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})
                 .reduce((longs, longs2) -> new Long[]{
-                        Math.min(longs[0], longs2[0]),
-                        Math.max(longs[1], longs2[1])})
+                        longs[0]==null || longs2[0]==null ? null : Math.min(longs[0], longs2[0]),
+                        longs[1]==null || longs2[1]==null ? null : Math.max(longs[1], longs2[1])})
                 .orElse(null);
-        this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                "start", interval[0].toString(),
-                "computedEnd", interval[1].toString());
+        if (interval==null)
+            this.temporalExtent = null;
+        else if (interval[0]==null && interval[1]==null)
+            this.temporalExtent = ImmutableMap.of();
+        else if (interval[0]==null)
+            this.temporalExtent = interval==null ? null : ImmutableMap.of(
+                    "end", interval[1]==null ? null : interval[1].toString());
+        else if (interval[1]==null)
+            this.temporalExtent = interval==null ? null : ImmutableMap.of(
+                    "start", interval[0]==null ? null : interval[0].toString());
+        else
+            this.temporalExtent = interval==null ? null : ImmutableMap.of(
+                    "start", interval[0]==null ? null : interval[0].toString(),
+                    "end", interval[1]==null ? null : interval[1].toString());
     }
 }

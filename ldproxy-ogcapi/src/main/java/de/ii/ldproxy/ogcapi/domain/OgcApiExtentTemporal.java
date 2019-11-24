@@ -14,11 +14,11 @@ public class OgcApiExtentTemporal {
     private String[][] interval;
     private String trs;
 
-    public OgcApiExtentTemporal(long begin, long end) {
+    public OgcApiExtentTemporal(Long begin, Long end) {
         this.interval = new String[][]{{
-                                begin>=0 ? Instant.ofEpochMilli(begin).truncatedTo(ChronoUnit.SECONDS).toString() : null,
-                                end>=0 ? Instant.ofEpochMilli(end).truncatedTo(ChronoUnit.SECONDS).toString() : null
-                            }};
+                (begin!=null && begin>0) ? Instant.ofEpochMilli(begin).truncatedTo(ChronoUnit.SECONDS).toString() : null,
+                (end!=null && end>0) ? Instant.ofEpochMilli(end).truncatedTo(ChronoUnit.SECONDS).toString() : null
+        }};
         this.trs = "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian";
     }
 

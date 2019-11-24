@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilder;
@@ -16,7 +15,6 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 
 
 @Value.Immutable
@@ -36,6 +34,7 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
     @JsonDeserialize(builder = ImmutableCollectionExtent.Builder.class)
     interface CollectionExtent {
 
+        @Nullable
         TemporalExtent getTemporal();
 
         @Nullable
@@ -44,8 +43,6 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
         @Value.Default
         default boolean getSpatialComputed(){return false;}
 
-        // TODO: temporal: support computed temporal extent; do not use EPOCH for open start; do not use now for open end
-
     }
 
     @Value.Immutable
@@ -53,21 +50,18 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
     interface TemporalExtent {
 
         @Value.Default
-        default long getStart() {
-            return 0;
+        @Nullable
+        default Long getStart() {
+            return null;
         }
 
         @Value.Default
-        default long getEnd() {
-            return 0;
+        @Nullable
+        default Long getEnd() {
+            return null;
         }
 
-        @JsonIgnore
-        @Value.Derived
-        default long getComputedEnd() {
-            return getEnd() == 0 ? Instant.now().toEpochMilli() : getEnd();
-        }
-
+        // TODO: temporal: support computed temporal extent
     }
 
 }

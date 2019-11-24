@@ -107,8 +107,8 @@ public class Metadata2Wfs3 extends AbstractFeatureProviderMetadataConsumer {
     public void analyzeFeatureTypeBoundingBox(String featureTypeName, String xmin, String ymin, String xmax,
                                               String ymax) {
         currentFeatureType.extent(new ImmutableCollectionExtent.Builder()
-                .temporal(new ImmutableTemporalExtent.Builder().start(0)
-                                                               .end(0)
+                .temporal(new ImmutableTemporalExtent.Builder().start(null)
+                                                               .end(null)
                                                                .build())
                 .spatial(new BoundingBox(Double.valueOf(xmin), Double.valueOf(ymin), Double.valueOf(xmax), Double.valueOf(ymax), new EpsgCrs(4326)))
                 .build());

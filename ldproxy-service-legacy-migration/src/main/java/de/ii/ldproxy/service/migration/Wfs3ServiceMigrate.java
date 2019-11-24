@@ -194,7 +194,7 @@ public class Wfs3ServiceMigrate {
                                     if (temporal != null) {
                                         featureTypeConfigurationWfs3.extent(new ImmutableCollectionExtent.Builder()
                                                 .temporal(new ImmutableTemporalExtent.Builder().start((Long) temporal.get("start"))
-                                                                                               .end((Integer) temporal.get("end"))
+                                                                                               .end((Long) temporal.get("end"))
                                                                                                .build())
                                                 .build());
                                     }

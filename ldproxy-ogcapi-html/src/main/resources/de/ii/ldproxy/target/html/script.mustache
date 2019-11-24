@@ -20,8 +20,8 @@
         },
         time: {
             {{#temporalExtent}}
-            start: {{start}},
-            end: {{computedEnd}}
+            start: {{#start}}{{.}}{{/start}}{{^start}}0{{/start}},
+            end: {{#end}}{{.}}{{/end}}{{^end}}Date.now(){{/end}}
             {{/temporalExtent}}
          },
         fields: {
