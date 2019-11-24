@@ -27,10 +27,11 @@ public class ResourcesView extends LdproxyView {
                          List<NavigationDTO> breadCrumbs,
                          String staticUrlPrefix,
                          HtmlConfig htmlConfig,
+                         boolean noIndex,
                          URICustomizer uriCustomizer,
                          I18n i18n,
                          Optional<Locale> language) {
-        super("resources.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, staticUrlPrefix,
+        super("resources.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
                 resources.getLinks(),
                 i18n.get("resourcesTitle", language),
                 i18n.get("resourcesDescription", language));

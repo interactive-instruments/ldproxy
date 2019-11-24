@@ -21,7 +21,7 @@ import java.util.Optional;
 public class ServiceOverviewView extends DatasetView {
     public URI uri;
     public ServiceOverviewView(URI uri, Object data, String urlPrefix, HtmlConfig htmlConfig, I18n i18n, Optional<Locale> language) {
-        super("services", uri, data, urlPrefix, htmlConfig);
+        super("services", uri, data, urlPrefix, htmlConfig, htmlConfig.isNoIndex());
         this.uri = uri;
         this.title = i18n.get("rootTitle", language);
         this.description = i18n.get("rootDescription", language);

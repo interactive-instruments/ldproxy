@@ -28,10 +28,11 @@ public class QueryablesView extends LdproxyView {
                           List<NavigationDTO> breadCrumbs,
                           String staticUrlPrefix,
                           HtmlConfig htmlConfig,
+                          boolean noIndex,
                           URICustomizer uriCustomizer,
                           I18n i18n,
                           Optional<Locale> language) {
-        super("queryables.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, staticUrlPrefix,
+        super("queryables.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
                 queryables.getLinks(),
                 i18n.get("queryablesTitle", language),
                 i18n.get("queryablesDescription", language));

@@ -41,8 +41,8 @@ public class OgcApiLandingPageView extends LdproxyView {
 
     public OgcApiLandingPageView(OgcApiDatasetData apiData, LandingPage apiLandingPage,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig,
-                                 URICustomizer uriCustomizer, I18n i18n, Optional<Locale> language) {
-        super("landingPage.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, urlPrefix,
+                                 boolean noIndex, URICustomizer uriCustomizer, I18n i18n, Optional<Locale> language) {
+        super("landingPage.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
                 apiLandingPage.getLinks(),
                 apiLandingPage.getTitle()
                         .orElse(apiData.getId()),

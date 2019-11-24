@@ -21,4 +21,7 @@ public abstract class HtmlConfiguration implements ExtensionConfiguration {
     public boolean getEnabled() {
         return true;
     }
+
+    @Value.Default
+    public boolean getNoIndexEnabled() { return true; }
 }

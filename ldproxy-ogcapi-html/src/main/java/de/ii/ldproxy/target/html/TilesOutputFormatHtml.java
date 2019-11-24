@@ -53,6 +53,12 @@ public class TilesOutputFormatHtml implements TileCollectionsFormatExtension {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
+    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+                .map(HtmlConfiguration::getNoIndexEnabled)
+                .orElse(true);
+    }
+
     @Override
     public Response getTileCollectionsResponse(TileCollections tiles,
                                                Optional<String> collectionId,
@@ -91,7 +97,7 @@ public class TilesOutputFormatHtml implements TileCollectionsFormatExtension {
                         .add(new NavigationDTO(tilesTitle))
                         .build();
 
-        TilesView tilesView = new TilesView(api.getData(), tiles, collectionId, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        TilesView tilesView = new TilesView(api.getData(), tiles, collectionId, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())

@@ -27,10 +27,11 @@ public class StylesView extends LdproxyView {
                       List<NavigationDTO> breadCrumbs,
                       String staticUrlPrefix,
                       HtmlConfig htmlConfig,
+                      boolean noIndex,
                       URICustomizer uriCustomizer,
                       I18n i18n,
                       Optional<Locale> language) {
-        super("styles.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, staticUrlPrefix,
+        super("styles.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
                 styles.getLinks(),
                 i18n.get("stylesTitle", language),
                 i18n.get("stylesDescription", language));

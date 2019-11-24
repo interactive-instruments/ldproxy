@@ -52,6 +52,12 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
+    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+                .map(HtmlConfiguration::getNoIndexEnabled)
+                .orElse(true);
+    }
+
     @Override
     public Response getResponse(Queryables queryables,
                                 String collectionId,
@@ -80,7 +86,7 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
                 .add(new NavigationDTO(queryablesTitle))
                 .build();
 
-        QueryablesView view = new QueryablesView(api.getData(), queryables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        QueryablesView view = new QueryablesView(api.getData(), queryables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .entity(view)

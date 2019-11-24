@@ -93,6 +93,12 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
+    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+                .map(HtmlConfiguration::getNoIndexEnabled)
+                .orElse(true);
+    }
+
     @Override
     public Response getLandingPageResponse(LandingPage apiLandingPage,
                                            OgcApiDataset api,
@@ -107,7 +113,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .add(new NavigationDTO(api.getData().getLabel()))
                 .build();
 
-        OgcApiLandingPageView landingPageView = new OgcApiLandingPageView(api.getData(), apiLandingPage, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        OgcApiLandingPageView landingPageView = new OgcApiLandingPageView(api.getData(), apiLandingPage, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
@@ -136,7 +142,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .build();
 
         OgcApiConformanceDeclarationView ogcApiConformanceDeclarationView =
-                new OgcApiConformanceDeclarationView(conformanceDeclaration, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, i18n, requestContext.getLanguage());
+                new OgcApiConformanceDeclarationView(conformanceDeclaration, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
         return Response.ok()
                        .type(getMediaType().type())
                        .entity(ogcApiConformanceDeclarationView)
@@ -159,7 +165,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .add(new NavigationDTO(collectionsTitle))
                 .build();
 
-        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, i18n, requestContext.getLanguage());
+        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
@@ -189,7 +195,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .add(new NavigationDTO(ogcApiCollection.getTitle().orElse(ogcApiCollection.getId())))
                 .build();
 
-        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, i18n, requestContext.getLanguage());
+        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
@@ -222,14 +228,14 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         if (transformationContext.isFeatureCollection()) {
             featureTypeDataset = createFeatureCollectionView(serviceData.getFeatureTypes()
-                                                                        .get(collectionName), uriCustomizer.copy(), serviceData.getFilterableFieldsForFeatureType(collectionName, true), serviceData.getHtmlNamesForFeatureType(collectionName), staticUrlPrefix, bare, language);
+                                                                        .get(collectionName), uriCustomizer.copy(), serviceData.getFilterableFieldsForFeatureType(collectionName, true), serviceData.getHtmlNamesForFeatureType(collectionName), staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData));
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getFeatureTypes()
                                                                                         .get(collectionName)
                                                                                         .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language);
         } else {
             featureTypeDataset = createFeatureDetailsView(serviceData.getFeatureTypes()
-                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language);
+                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData));
         }
 
         //TODO
@@ -252,7 +258,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                               URICustomizer uriCustomizer,
                                                               Map<String, String> filterableFields,
                                                               Map<String, String> htmlNames, String staticUrlPrefix,
-                                                              boolean bare, Optional<Locale> language) {
+                                                              boolean bare, Optional<Locale> language,
+                                                              boolean noIndex) {
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
@@ -264,9 +271,9 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                 .ensureParameter("f", MEDIA_TYPE.parameter())
                                                 .ensureLastPathSegment("items");
 
-        DatasetView dataset = new DatasetView("", requestUri, null, staticUrlPrefix, htmlConfig);
+        DatasetView dataset = new DatasetView("", requestUri, null, staticUrlPrefix, htmlConfig, noIndex);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, i18n, language.orElse(Locale.ENGLISH));
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, noIndex, i18n, language.orElse(Locale.ENGLISH));
 
         //TODO featureTypeDataset.uriBuilder = uriBuilder;
         dataset.featureTypes.add(featureTypeDataset);
@@ -300,7 +307,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     private FeatureCollectionView createFeatureDetailsView(FeatureTypeConfigurationOgcApi featureType,
                                                            URICustomizer uriCustomizer, List<OgcApiLink> links,
                                                            String apiLabel, String featureId,
-                                                           String staticUrlPrefix, Optional<Locale> language) {
+                                                           String staticUrlPrefix, Optional<Locale> language,
+                                                           boolean noIndex) {
 
         String rootTitle = i18n.get("root", language);
         String collectionsTitle = i18n.get("collectionsTitle", language);
@@ -316,7 +324,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                 .clearParameters()
                                                 .removeLastPathSegments(1);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, i18n, language.orElse(Locale.ENGLISH));
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, noIndex, i18n, language.orElse(Locale.ENGLISH));
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());
 

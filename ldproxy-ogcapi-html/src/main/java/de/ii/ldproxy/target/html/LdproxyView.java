@@ -27,15 +27,17 @@ public abstract class LdproxyView extends View {
     protected final String urlPrefix;
     protected final String title;
     protected final String description;
+    protected final boolean noIndex;
 
     protected LdproxyView(String templateName, @Nullable Charset charset, @Nullable OgcApiDatasetData apiData,
-                          List<NavigationDTO> breadCrumbs, HtmlConfig htmlConfig, String urlPrefix,
+                          List<NavigationDTO> breadCrumbs, HtmlConfig htmlConfig, boolean noIndex, String urlPrefix,
                           @Nullable List<OgcApiLink> links, @Nullable String title, @Nullable String description) {
         super(templateName, charset);
         this.apiData = apiData;
         this.breadCrumbs = breadCrumbs;
         this.links = links;
         this.htmlConfig = htmlConfig;
+        this.noIndex = noIndex;
         this.urlPrefix = urlPrefix;
         this.title = title;
         this.description = description;

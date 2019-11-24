@@ -48,8 +48,9 @@ public class FeatureCollectionView extends DatasetView {
     public boolean spatialSearch;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String description,
-                                 String urlPrefix, HtmlConfig htmlConfig, I18n i18n, Locale language) {
-        super(template, uri, name, title, description, urlPrefix, htmlConfig);
+                                 String urlPrefix, HtmlConfig htmlConfig, boolean noIndex,
+                                 I18n i18n, Locale language) {
+        super(template, uri, name, title, description, urlPrefix, htmlConfig, noIndex);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
         this.uri = uri; // TODO need to overload getPath() as it currently forces trailing slashes while OGC API uses no trailing slashes

@@ -54,10 +54,11 @@ public class StyleMetadataView extends LdproxyView {
                              List<NavigationDTO> breadCrumbs,
                              String staticUrlPrefix,
                              HtmlConfig htmlConfig,
+                             boolean noIndex,
                              URICustomizer uriCustomizer,
                              I18n i18n,
                              Optional<Locale> language) {
-        super("styleMetadata.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, staticUrlPrefix,
+        super("styleMetadata.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
                 metadata.getLinks(),
                 null,
                 null);

@@ -53,6 +53,12 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
+    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+                .map(HtmlConfiguration::getNoIndexEnabled)
+                .orElse(true);
+    }
+
     @Override
     public Response getTileMatrixSetsResponse(TileMatrixSets tileMatrixSets,
                                               OgcApiDataset api,
@@ -73,7 +79,7 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
                 .add(new NavigationDTO(tileMatrixSetsTitle))
                 .build();
 
-        OgcApiTileMatrixSetsView tileMatrixSetsView = new OgcApiTileMatrixSetsView(api.getData(), tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        OgcApiTileMatrixSetsView tileMatrixSetsView = new OgcApiTileMatrixSetsView(api.getData(), tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
@@ -107,7 +113,7 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
                 .add(new NavigationDTO(title))
                 .build();
 
-        OgcApiTileMatrixSetView tileMatrixSetView = new OgcApiTileMatrixSetView(api.getData(), tileMatrixSet, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        OgcApiTileMatrixSetView tileMatrixSetView = new OgcApiTileMatrixSetView(api.getData(), tileMatrixSet, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())

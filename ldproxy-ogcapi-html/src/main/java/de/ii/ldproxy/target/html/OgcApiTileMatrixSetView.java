@@ -35,10 +35,11 @@ public class OgcApiTileMatrixSetView extends LdproxyView {
                                    List<NavigationDTO> breadCrumbs,
                                    String staticUrlPrefix,
                                    HtmlConfig htmlConfig,
+                                   boolean noIndex,
                                    URICustomizer uriCustomizer,
                                    I18n i18n,
                                    Optional<Locale> language) {
-        super("tileMatrixSet.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, staticUrlPrefix,
+        super("tileMatrixSet.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
                 tileMatrixSet.getLinks(),
                 null,
                 null);

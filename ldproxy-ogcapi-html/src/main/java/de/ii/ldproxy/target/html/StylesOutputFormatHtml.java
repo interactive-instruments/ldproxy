@@ -53,6 +53,12 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
+    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+                .map(HtmlConfiguration::getNoIndexEnabled)
+                .orElse(true);
+    }
+
     @Override
     public Response getStylesResponse(Styles styles,
                                       OgcApiDataset api,
@@ -73,7 +79,7 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
                 .add(new NavigationDTO(stylesTitle))
                 .build();
 
-        StylesView stylesView = new StylesView(api.getData(), styles, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        StylesView stylesView = new StylesView(api.getData(), styles, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
@@ -113,7 +119,7 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
                 .add(new NavigationDTO(metadataTitle))
                 .build();
 
-        StyleMetadataView metadataView = new StyleMetadataView(api.getData(), metadata, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        StyleMetadataView metadataView = new StyleMetadataView(api.getData(), metadata, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())

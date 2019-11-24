@@ -35,32 +35,34 @@ public class DatasetView extends GenericView {
     public String bbox;
     public String url;
     public String metadataUrl;
+    public boolean noIndex;
     public List<DatasetView> featureTypes;
     public List<NavigationDTO> breadCrumbs;
     public List<NavigationDTO> formats;
     public String urlPrefix;
     public HtmlConfig htmlConfig;
 
-    public DatasetView(String template, URI uri, String urlPrefix, HtmlConfig htmlConfig) {
-        this(template, uri, null, urlPrefix, htmlConfig);
+    public DatasetView(String template, URI uri, String urlPrefix, HtmlConfig htmlConfig, boolean noIndex) {
+        this(template, uri, null, urlPrefix, htmlConfig, noIndex);
     }
 
-    public DatasetView(String template, URI uri, Object data, String urlPrefix, HtmlConfig htmlConfig) {
+    public DatasetView(String template, URI uri, Object data, String urlPrefix, HtmlConfig htmlConfig, boolean noIndex) {
         super(template, uri, data);
         this.keywords = new ArrayList<>();
         this.featureTypes = new ArrayList<>();
         this.urlPrefix = urlPrefix;
         this.htmlConfig = htmlConfig;
+        this.noIndex = noIndex;
     }
 
-    public DatasetView(String template, URI uri, String name, String title, String urlPrefix, HtmlConfig htmlConfig) {
-        this(template, uri, urlPrefix, htmlConfig);
+    public DatasetView(String template, URI uri, String name, String title, String urlPrefix, HtmlConfig htmlConfig, boolean noIndex) {
+        this(template, uri, urlPrefix, htmlConfig, noIndex);
         this.name = name;
         this.title = title;
     }
 
-    public DatasetView(String template, URI uri, String name, String title, String description, String urlPrefix, HtmlConfig htmlConfig) {
-        this(template, uri, urlPrefix, htmlConfig);
+    public DatasetView(String template, URI uri, String name, String title, String description, String urlPrefix, HtmlConfig htmlConfig, boolean noIndex) {
+        this(template, uri, urlPrefix, htmlConfig, noIndex);
         this.name = name;
         this.title = title;
         this.description = description;

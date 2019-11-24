@@ -35,7 +35,8 @@ import static de.ii.ldproxy.target.html.HtmlConfig.*;
         @ConfigPropertyDescriptor(name = OPEN_LAYERS_ATTRIBUTION, label = "Attribution for OpenLayers", defaultValue = "&copy; <a href=''http://osm.org/copyright''>OpenStreetMap</a> contributors"),
         @ConfigPropertyDescriptor(name = FOOTER_TEXT, label = "Text for footer", defaultValue = ""),
         @ConfigPropertyDescriptor(name = DATASET_LABEL, label = "Collections name for schema.org microdata", defaultValue = "Service Overview"),
-        @ConfigPropertyDescriptor(name = DATASET_DESCRIPTION, label = "Collections description for schema.org microdata", defaultValue = "")
+        @ConfigPropertyDescriptor(name = DATASET_DESCRIPTION, label = "Collections description for schema.org microdata", defaultValue = ""),
+        @ConfigPropertyDescriptor(name = NOINDEX, label = "Search engines should not index the datasets?", defaultValue = "true", uiType = ConfigPropertyDescriptor.UI_TYPE.CHECKBOX)
 })
 public class HtmlConfig extends BundleConfigDefault {
 
@@ -50,6 +51,7 @@ public class HtmlConfig extends BundleConfigDefault {
     static final String FOOTER_TEXT = "footerText";
     static final String DATASET_LABEL = "datasetLabel";
     static final String DATASET_DESCRIPTION = "datasetDescription";
+    static final String NOINDEX = "noIndex";
 
     public String getLegalName() {
         return Strings.nullToEmpty(properties.get(LEGAL_NAME));
@@ -94,4 +96,6 @@ public class HtmlConfig extends BundleConfigDefault {
     public String getDatasetDescription() {
         return Strings.nullToEmpty(properties.get(DATASET_DESCRIPTION));
     }
+
+    public boolean isNoIndex() { return properties.get(NOINDEX)==null || properties.get(NOINDEX).equalsIgnoreCase("true"); }
 }

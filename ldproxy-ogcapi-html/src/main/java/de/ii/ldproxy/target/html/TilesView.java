@@ -33,10 +33,11 @@ public class TilesView extends LdproxyView {
                      List<NavigationDTO> breadCrumbs,
                      String urlPrefix,
                      HtmlConfig htmlConfig,
+                     boolean noIndex,
                      URICustomizer uriCustomizer,
                      I18n i18n,
                      Optional<Locale> language) {
-        super("tiles.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, urlPrefix,
+        super("tiles.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
                 tiles.getLinks(),
                 tiles.getTitle()
                      .orElse(apiData.getId()),

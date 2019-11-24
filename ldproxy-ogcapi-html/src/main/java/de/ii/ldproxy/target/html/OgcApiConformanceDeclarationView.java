@@ -21,8 +21,8 @@ public class OgcApiConformanceDeclarationView extends LdproxyView {
     private final ConformanceDeclaration conformanceDeclaration;
 
     public OgcApiConformanceDeclarationView(ConformanceDeclaration conformanceDeclaration, final List<NavigationDTO> breadCrumbs,
-                                            String urlPrefix, HtmlConfig htmlConfig, I18n i18n, Optional<Locale> language) {
-        super("conformanceDeclaration.mustache", Charsets.UTF_8, null, breadCrumbs, htmlConfig, urlPrefix,
+                                            String urlPrefix, HtmlConfig htmlConfig, boolean noIndex, I18n i18n, Optional<Locale> language) {
+        super("conformanceDeclaration.mustache", Charsets.UTF_8, null, breadCrumbs, htmlConfig, noIndex, urlPrefix,
                 conformanceDeclaration.getLinks(),
                 conformanceDeclaration
                         .getTitle()

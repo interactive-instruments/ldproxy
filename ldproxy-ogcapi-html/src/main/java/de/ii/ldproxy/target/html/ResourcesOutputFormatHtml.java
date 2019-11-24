@@ -52,6 +52,12 @@ public class ResourcesOutputFormatHtml implements ResourcesFormatExtension {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
+    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+                .map(HtmlConfiguration::getNoIndexEnabled)
+                .orElse(true);
+    }
+
     @Override
     public Response getResourcesResponse(Resources resources,
                                          OgcApiDataset api,
@@ -72,7 +78,7 @@ public class ResourcesOutputFormatHtml implements ResourcesFormatExtension {
                 .add(new NavigationDTO(resourcesTitle))
                 .build();
 
-        ResourcesView view = new ResourcesView(api.getData(), resources, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        ResourcesView view = new ResourcesView(api.getData(), resources, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return Response.ok()
                 .type(getMediaType().type())
