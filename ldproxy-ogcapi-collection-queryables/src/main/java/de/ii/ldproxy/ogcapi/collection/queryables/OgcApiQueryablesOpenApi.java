@@ -18,7 +18,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OpenApiQueryables implements OpenApiExtension {
+public class OgcApiQueryablesOpenApi implements OpenApiExtension {
     @Override
     public int getSortPriority() {
         return 600;
@@ -32,7 +32,7 @@ public class Wfs3OpenApiQueryables implements OpenApiExtension {
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
         if (isEnabledForApi(datasetData)) {
-            /* TODO
+            /* TODO add queryables to OpenAPI definition
 
             ImmutableSet<String> crsSet = ImmutableSet.<String>builder()
                     .add(datasetData.getFeatureProvider()

@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OpenApiCore implements OpenApiExtension {
+public class OgcApiOpenApiCore implements OpenApiExtension {
 
     // TODO update
 

@@ -32,7 +32,7 @@ import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.CRS;
 @Component
 @Provides
 @Instantiate
-public class Wfs3OpenApiCrs implements OpenApiExtension {
+public class OgcApiCrsOpenApi implements OpenApiExtension {
     @Override
     public int getSortPriority() {
         return 500;

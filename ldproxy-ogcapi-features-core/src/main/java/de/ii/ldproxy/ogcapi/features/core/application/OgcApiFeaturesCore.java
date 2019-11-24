@@ -33,7 +33,7 @@ public class OgcApiFeaturesCore implements ConformanceClass {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 
-    /* TODO
+    /* TODO cleanup
     private final OgcApiExtensionRegistry extensionRegistry;
 
     public OgcApiFeaturesCore(@Requires OgcApiExtensionRegistry extensionRegistry) {

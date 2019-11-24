@@ -19,9 +19,9 @@ import javax.ws.rs.core.Response;
  * @author zahnen
  */
 @Component
-@Provides(specifications = {Wfs3OutputFormatJson.class, CollectionsFormatExtension.class, CommonFormatExtension.class, FormatExtension.class, OgcApiExtension.class})
+@Provides(specifications = {OgcApiOutputFormatJson.class, CollectionsFormatExtension.class, CommonFormatExtension.class, FormatExtension.class, OgcApiExtension.class})
 @Instantiate
-public class Wfs3OutputFormatJson implements CollectionsFormatExtension, CommonFormatExtension {
+public class OgcApiOutputFormatJson implements CollectionsFormatExtension, CommonFormatExtension {
 
     public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(new MediaType("application", "json"))

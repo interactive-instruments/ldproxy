@@ -26,7 +26,7 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension {
+public class OgcApiEndpointStylesRepresentation implements OgcApiEndpointExtension {
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("styles")

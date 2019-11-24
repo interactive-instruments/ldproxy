@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 @Component
 @Provides
 @Instantiate
-public class Wfs3EndpointOpenApi implements ConformanceClass {
+public class OgcApiEndpointOpenApi implements ConformanceClass {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointOpenApi.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(OgcApiEndpointOpenApi.class);
 
     @Override
     public String getConformanceClass() {

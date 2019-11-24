@@ -11,24 +11,10 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueriesHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryIdentifier;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
-import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
-import de.ii.xtraplatform.feature.provider.api.FeatureSourceStream;
-import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -38,7 +24,6 @@ import org.immutables.value.Value;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
@@ -222,7 +207,7 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
             throw new NotAcceptableException();
         }
 
-        // TODO add OGC-CRS header, if the CRS extension is active
+        // TODO add Content-Crs header
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
 
         return response(streamingOutput,
