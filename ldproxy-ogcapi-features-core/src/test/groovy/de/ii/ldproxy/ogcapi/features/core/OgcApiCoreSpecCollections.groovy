@@ -178,6 +178,13 @@ class OgcApiCoreSpecCollections extends Specification {
                         boolean isEnabledForApi(OgcApiDatasetData apiData) {
                             return true
                         }
+
+                        @Override
+                        OgcApiMediaType getCollectionMediaType() {
+                            return new ImmutableOgcApiMediaType.Builder()
+                                    .type(MediaType.APPLICATION_JSON_TYPE)
+                                    .build()
+                        }
                     })
                 }
                 return ImmutableList.of()
