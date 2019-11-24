@@ -19,17 +19,24 @@ import java.util.Optional;
 
 public class CollectionLinksGenerator extends DefaultLinksGenerator {
 
-    // TODO add license link to configuration and here
-
     public List<OgcApiLink> generateLinks(URICustomizer uriBuilder,
                                           OgcApiMediaType mediaType,
                                           List<OgcApiMediaType> alternateMediaTypes,
+                                          Optional<String> licenseUrl,
                                           boolean homeLink,
                                           I18n i18n,
                                           Optional<Locale> language)
     {
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
+
+        if (licenseUrl.isPresent()) {
+            builder.add(new ImmutableOgcApiLink.Builder()
+                    .href(licenseUrl.get())
+                    .rel("license")
+                    .title(i18n.get("licenseLink",language))
+                    .build());
+        }
 
         if (homeLink)
             builder.add(new ImmutableOgcApiLink.Builder()

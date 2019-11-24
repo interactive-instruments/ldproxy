@@ -131,11 +131,14 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
             throw new NotFoundException();
         }
 
+        Metadata metadata = apiData.getMetadata();
+        Optional<String> licenseUrl = metadata!=null ? metadata.getLicenseUrl() : Optional.empty();
         List<OgcApiLink> ogcApiLinks = new CollectionLinksGenerator().generateLinks(
                 requestContext.getUriCustomizer()
                     .copy(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
+                licenseUrl,
                 queryInput.getIncludeHomeLink(),
                 i18n,
                 requestContext.getLanguage());
