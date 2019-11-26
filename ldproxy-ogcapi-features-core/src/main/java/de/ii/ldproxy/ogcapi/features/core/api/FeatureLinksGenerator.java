@@ -25,12 +25,20 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
                                           OgcApiMediaType mediaType,
                                           List<OgcApiMediaType> alternateMediaTypes,
                                           OgcApiMediaType collectionMediaType,
+                                          String canonicalUri,
                                           boolean homeLink,
                                           I18n i18n,
                                           Optional<Locale> language)
     {
         final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
+
+        if (canonicalUri!=null)
+            builder.add(new ImmutableOgcApiLink.Builder()
+                    .href(canonicalUri)
+                    .rel("canonical")
+                    .title(i18n.get("persistentLink",language))
+                    .build());
 
         builder.add(new ImmutableOgcApiLink.Builder()
                 .href(uriBuilder

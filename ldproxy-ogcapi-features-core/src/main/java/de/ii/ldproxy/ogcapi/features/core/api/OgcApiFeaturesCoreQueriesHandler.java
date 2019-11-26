@@ -123,7 +123,7 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
                     "/collections/"+collectionId+"/items")
                 .orElseThrow(NotAcceptableException::new);
 
-        return getItemsResponse(api, requestContext, collectionId, query, true, outputFormat, onlyHitsIfMore, defaultPageSize,
+        return getItemsResponse(api, requestContext, collectionId, query, true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
                 queryInput.getIncludeHomeLink(), queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader());
     }
 
@@ -142,12 +142,18 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
                 "/collections/"+collectionId+"/items/"+featureId)
                 .orElseThrow(NotAcceptableException::new);
 
-        return getItemsResponse(api, requestContext, collectionId, query, false, outputFormat, false, Optional.empty(),
+        String canonicalUri = null;
+        Optional<String> template = api.getData().getFeatureTypes().get(collectionId).getPersistentUriTemplate();
+        if (template.isPresent()) {
+            canonicalUri = template.get().replace("{featureId}", featureId);
+        }
+
+        return getItemsResponse(api, requestContext, collectionId, query, false, canonicalUri, outputFormat, false, Optional.empty(),
                 queryInput.getIncludeHomeLink(), false, queryInput.getIncludeLinkHeader());
     }
 
     private Response getItemsResponse(OgcApiDataset api, OgcApiRequestContext requestContext, String collectionId,
-                                      FeatureQuery query, boolean isCollection,
+                                      FeatureQuery query, boolean isCollection, String canonicalUri,
                                       OgcApiFeatureFormatExtension outputFormat,
                                       boolean onlyHitsIfMore, Optional<Integer> defaultPageSize,
                                       boolean includeHomeLink,
@@ -165,7 +171,7 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
         List<OgcApiLink> links =
                 isCollection ?
                         new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes, includeHomeLink, i18n, requestContext.getLanguage()):
-                        new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, outputFormat.getCollectionMediaType(), includeHomeLink, i18n, requestContext.getLanguage());
+                        new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, outputFormat.getCollectionMediaType(), canonicalUri, includeHomeLink, i18n, requestContext.getLanguage());
 
         ImmutableFeatureTransformationContextGeneric.Builder transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
                 .apiData(api.getData())

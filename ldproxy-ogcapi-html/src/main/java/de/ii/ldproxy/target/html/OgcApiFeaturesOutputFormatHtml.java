@@ -273,7 +273,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         DatasetView dataset = new DatasetView("", requestUri, null, staticUrlPrefix, htmlConfig, noIndex);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, noIndex, i18n, language.orElse(Locale.ENGLISH));
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH));
 
         //TODO featureTypeDataset.uriBuilder = uriBuilder;
         dataset.featureTypes.add(featureTypeDataset);
@@ -324,7 +324,13 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                 .clearParameters()
                                                 .removeLastPathSegments(1);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, noIndex, i18n, language.orElse(Locale.ENGLISH));
+        Optional<String> persistentUri = featureType.getPersistentUriTemplate();
+        if (persistentUri.isPresent()) {
+            // we have a template and need to replace the local feature id
+            persistentUri = Optional.of(persistentUri.get().replace("{featureId}", featureId));
+        }
+
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri.orElse(null), noIndex, i18n, language.orElse(Locale.ENGLISH));
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());
 
