@@ -43,10 +43,10 @@ public class OgcApiParameterJson implements OgcApiParameterExtension {
 
         if (subPath.matches("^/[\\w\\-]+/items/?$")) {
             // Features
-            return allowDebug ? ImmutableSet.of("pretty", "debug") : ImmutableSet.of("pretty");
+            return allowDebug ? ImmutableSet.of("pretty", "debug") : ImmutableSet.of();
         } else if (subPath.matches("^/[\\w\\-]+/items/[^/\\s]+/?$")) {
             // Feature
-            return allowDebug ? ImmutableSet.of("pretty", "debug") : ImmutableSet.of("pretty");
+            return allowDebug ? ImmutableSet.of("pretty", "debug") : ImmutableSet.of();
         }
 
         return ImmutableSet.of();
