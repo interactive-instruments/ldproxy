@@ -10,16 +10,17 @@ package de.ii.ldproxy.ogcapi.filter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import io.swagger.v3.oas.models.OpenAPI;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 @Component
@@ -38,12 +39,23 @@ public class OpenApiFilter implements OpenApiExtension {
             Parameter filter = new Parameter()
                     .name("filter")
                     .in("query")
-                    .description("Filter the collection using CQL query specifiend in the parameter value.")
+                    .description("Filter the features in the collection using the query expression in the parameter value.")
                     .required(false)
-                    .schema(new ArraySchema().items(new Schema().type("String")))
+                    .schema(new StringSchema())
                     .style(Parameter.StyleEnum.FORM)
                     .explode(false);
             openAPI.getComponents().addParameters("filter", filter);
+            List<String> fEnum = new ArrayList<>();
+            fEnum.add("cql-text");
+            Parameter filterLang = new Parameter()
+                    .name("filter-lang")
+                    .in("query")
+                    .description("Language of the query expression in the 'filter' parameter.")
+                    .required(false)
+                    .schema(new StringSchema()._enum(fEnum)._default("cql-text"))
+                    .style(Parameter.StyleEnum.FORM)
+                    .explode(false);
+            openAPI.getComponents().addParameters("filter-lang", filterLang);
 
             apiData.getFeatureTypes()
                     .values()
@@ -53,7 +65,9 @@ public class OpenApiFilter implements OpenApiExtension {
                     .forEach(ft -> {
                         PathItem pathItem = openAPI.getPaths().get(String.format("/collections/%s/items", ft.getId()));
                         if (Objects.nonNull(pathItem)) {
-                            pathItem.getGet().addParametersItem(new Parameter().$ref("#/components/parameters/filter"));
+                            pathItem.getGet()
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/filter"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/filter-lang"));
                         }
                     });
         }
