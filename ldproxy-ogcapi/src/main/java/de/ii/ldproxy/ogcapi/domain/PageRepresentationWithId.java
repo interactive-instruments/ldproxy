@@ -7,12 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
-
-@Value.Immutable
-@Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutablePageRepresentationWithId.Builder.class)
 public abstract class PageRepresentationWithId extends PageRepresentation {
 
     public abstract String getId();

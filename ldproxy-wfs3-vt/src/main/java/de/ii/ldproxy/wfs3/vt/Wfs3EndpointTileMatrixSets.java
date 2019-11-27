@@ -119,7 +119,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
                 .tileMatrixSets(
                     cache.getTileMatrixSetIds()
                         .stream()
-                        .map(tileMatrixSetId -> ImmutablePageRepresentationWithId.builder()
+                        .map(tileMatrixSetId -> ImmutableTileMatrixSetLinks.builder()
                             .id(tileMatrixSetId)
                             .title(deriveTitle(tileMatrixSetId))
                             .links(vectorTilesLinkGenerator.generateTileMatrixSetsLinks(

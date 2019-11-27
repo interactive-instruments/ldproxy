@@ -7,21 +7,14 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
+import de.ii.ldproxy.ogcapi.domain.ImmutableStyleEntry;
+import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
-
-import java.util.List;
-import java.util.Map;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableTileMatrixSets.Builder.class)
-public abstract class TileMatrixSets extends PageRepresentation {
+@JsonDeserialize(builder = ImmutableStyleEntry.Builder.class)
+public abstract class TileMatrixSetLinks extends PageRepresentationWithId {
 
-    public abstract List<TileMatrixSetLinks> getTileMatrixSets();
-
-    @JsonAnyGetter
-    public abstract Map<String, Object> getExtensions();
 }
