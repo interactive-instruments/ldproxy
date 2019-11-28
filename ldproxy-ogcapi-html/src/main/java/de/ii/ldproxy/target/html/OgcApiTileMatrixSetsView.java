@@ -10,8 +10,8 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.wfs3.vt.TileMatrixSetLinks;
 import de.ii.ldproxy.wfs3.vt.TileMatrixSets;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class OgcApiTileMatrixSetsView extends LdproxyView {
-    public List<PageRepresentationWithId> tileMatrixSets;
+    public List<TileMatrixSetLinks> tileMatrixSets;
     public String none;
 
     public OgcApiTileMatrixSetsView(OgcApiDatasetData apiData,

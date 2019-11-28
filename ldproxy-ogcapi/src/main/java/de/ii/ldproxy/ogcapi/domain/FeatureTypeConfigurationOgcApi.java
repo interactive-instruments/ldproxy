@@ -15,6 +15,7 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 
 @Value.Immutable
@@ -27,6 +28,8 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
     default ImmutableFeatureTypeConfigurationOgcApi.Builder toBuilder() {
         return new ImmutableFeatureTypeConfigurationOgcApi.Builder().from(this);
     }
+
+    Optional<String> getPersistentUriTemplate();
 
     CollectionExtent getExtent();
 

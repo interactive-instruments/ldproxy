@@ -45,15 +45,17 @@ public class FeatureCollectionView extends DatasetView {
     public boolean bare;
     public List<FeaturePropertyDTO> additionalFeatures;
     public boolean isCollection;
+    public String persistentUri;
     public boolean spatialSearch;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String description,
-                                 String urlPrefix, HtmlConfig htmlConfig, boolean noIndex,
+                                 String urlPrefix, HtmlConfig htmlConfig, String persistentUri, boolean noIndex,
                                  I18n i18n, Locale language) {
         super(template, uri, name, title, description, urlPrefix, htmlConfig, noIndex);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
         this.uri = uri; // TODO need to overload getPath() as it currently forces trailing slashes while OGC API uses no trailing slashes
+        this.persistentUri = persistentUri;
     }
 
     @Override
@@ -63,6 +65,9 @@ public class FeatureCollectionView extends DatasetView {
     }
 
     public Optional<String> getCanonicalUrl() throws URISyntaxException {
+        if (!isCollection && persistentUri!=null)
+            return Optional.of(persistentUri);
+
         String bla = uriBuilder2.copy()
                                 .clearParameters()
                                 .ensureNoTrailingSlash()
