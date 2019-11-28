@@ -7,10 +7,14 @@
  */
 package de.ii.ldproxy.wfs3.oas30;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import de.ii.ldproxy.codelists.CodelistRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -19,6 +23,7 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -32,6 +37,9 @@ import java.util.stream.Collectors;
 public class OgcApiOpenApiCore implements OpenApiExtension {
 
     // TODO update
+
+    @Requires
+    private CodelistRegistry codelistRegistry;
 
     @Override
     public int getSortPriority() {
@@ -84,8 +92,28 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
                                    );
 
                            Map<String, String> filterableFields = datasetData.getFilterableFieldsForFeatureType(ft.getId(), true);
+
+                           FeatureTypeMapping featureTypeMapping = datasetData.getFeatureProvider().getMappings().get(ft.getId());
+
+
                            filterableFields.keySet()
                                            .forEach(field -> {
+                                               StringSchema schema = new StringSchema();
+                                               featureTypeMapping.getMappings()
+                                                       .values()
+                                                       .stream()
+                                                       .map(value -> value.getMappingForType("general"))
+                                                       .filter(mapping -> mapping.getName()!=null && mapping.getName().equals(field))
+                                                       .filter(mapping -> mapping instanceof OgcApiFeaturesGenericMapping &&
+                                                               ((OgcApiFeaturesGenericMapping) mapping).isFilterable() &&
+                                                               ((OgcApiFeaturesGenericMapping) mapping).isValue())
+                                                       .findFirst()
+                                                       .map(mapping -> ((OgcApiFeaturesGenericMapping) mapping).getCodelist())
+                                                       .filter(codelistName -> codelistName!=null)
+                                                       .map(codelistName -> codelistRegistry.getCodelist(codelistName))
+                                                       .ifPresent(codelist -> {
+                                                               schema._enum(ImmutableList.copyOf(codelist.get().getData().getEntries().keySet()));
+                                                       });
                                                clonedPathItem.getGet()
                                                              .addParametersItem(
                                                                      new Parameter()
@@ -94,7 +122,7 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
                                                                              .description("Filter the collection by property '" + field + "'")
                                                                              .required(false)
                                                                              // TODO
-                                                                             .schema(new StringSchema())
+                                                                             .schema(schema)
                                                                              .style(Parameter.StyleEnum.FORM)
                                                                              .explode(false)
                                                              );
