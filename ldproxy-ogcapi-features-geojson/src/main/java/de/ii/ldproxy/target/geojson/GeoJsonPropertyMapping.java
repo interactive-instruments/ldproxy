@@ -11,12 +11,19 @@ import de.ii.ldproxy.ogcapi.domain.AbstractOgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 
+import java.util.List;
+
 /**
  * @author zahnen
  */
 public class GeoJsonPropertyMapping extends AbstractOgcApiFeaturesGenericMapping<GeoJsonMapping.GEO_JSON_TYPE> implements GeoJsonMapping {
 
     private GEO_JSON_TYPE type;
+
+    private String ldContext;
+    private List<String> ldType;
+    private boolean idAsProperty;
+    private String idPrefix;
 
     public GeoJsonPropertyMapping() {
     }
@@ -29,6 +36,11 @@ public class GeoJsonPropertyMapping extends AbstractOgcApiFeaturesGenericMapping
         this.codelist = mapping.codelist;
         //TODO
         this.baseMapping = mapping.baseMapping;
+
+        this.ldContext = mapping.ldContext;
+        this.ldType = mapping.ldType;
+        this.idAsProperty = mapping.idAsProperty;
+        this.idPrefix = mapping.idPrefix;
     }
 
     @Override
@@ -64,5 +76,37 @@ public class GeoJsonPropertyMapping extends AbstractOgcApiFeaturesGenericMapping
         copy.codelist = baseMapping.getCodelist();
 
         return copy;
+    }
+
+    public String getLdContext() {
+        return ldContext;
+    }
+
+    public void setLdContext(String ldContext) {
+        this.ldContext = ldContext;
+    }
+
+    public List<String> getLdType() {
+        return ldType;
+    }
+
+    public void setLdType(List<String> ldType) {
+        this.ldType = ldType;
+    }
+
+    public boolean isIdAsProperty() {
+        return idAsProperty;
+    }
+
+    public void setIdAsProperty(boolean idAsProperty) {
+        this.idAsProperty = idAsProperty;
+    }
+
+    public String getIdPrefix() {
+        return idPrefix;
+    }
+
+    public void setIdPrefix(String idPrefix) {
+        this.idPrefix = idPrefix;
     }
 }

@@ -128,10 +128,12 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                                                                                    .getCurrentMapping()
                                                                                    .get()
                                                                                    .getName())
-                || transformationContext.getState()
-                                        .getCurrentMapping()
-                                        .get()
-                                        .getType() == GEO_JSON_TYPE.ID;
+                || (transformationContext.getState()
+                                         .getCurrentMapping()
+                                         .get()
+                                         .getType() == GEO_JSON_TYPE.ID && !((GeoJsonPropertyMapping) transformationContext.getState()
+                                                                                                                           .getCurrentMapping()
+                                                                                                                           .get()).isIdAsProperty());
     }
 
     protected boolean hasMappingAndValue(FeatureTransformationContextGeoJson transformationContext) {

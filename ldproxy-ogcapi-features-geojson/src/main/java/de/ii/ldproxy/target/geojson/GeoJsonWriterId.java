@@ -43,14 +43,16 @@ public class GeoJsonWriterId implements GeoJsonWriter {
     }
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onStart(FeatureTransformationContextGeoJson transformationContext,
+                        Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         reset();
 
         next.accept(transformationContext);
     }
 
     @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
+                             Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
 
         if (writeAtFeatureEnd) {
             this.writeAtFeatureEnd = false;
@@ -69,13 +71,14 @@ public class GeoJsonWriterId implements GeoJsonWriter {
     }
 
     @Override
-    public void onProperty(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onProperty(FeatureTransformationContextGeoJson transformationContext,
+                           Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (transformationContext.getState()
-                                  .getCurrentMapping()
-                                  .isPresent()
+                                 .getCurrentMapping()
+                                 .isPresent()
                 || transformationContext.getState()
-                                         .getCurrentValue()
-                                         .isPresent()) {
+                                        .getCurrentValue()
+                                        .isPresent()) {
 
             final GeoJsonPropertyMapping currentMapping = (GeoJsonPropertyMapping) transformationContext.getState()
                                                                                                         .getCurrentMapping()
@@ -83,6 +86,12 @@ public class GeoJsonWriterId implements GeoJsonWriter {
             String currentValue = transformationContext.getState()
                                                        .getCurrentValue()
                                                        .get();
+
+            if (Objects.nonNull(currentMapping.getIdPrefix())) {
+                currentValue = currentMapping.getIdPrefix()
+                                             .replace("{{serviceUrl}}", transformationContext.getServiceUrl())
+                                             .replace("{{collectionId}}", transformationContext.getCollectionId()) + currentValue;
+            }
 
 
             if (Objects.equals(currentMapping.getType(), GEO_JSON_TYPE.ID)) {
@@ -94,7 +103,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
                     writeLink(transformationContext, currentValue);
                 }
                 // don't pass through
-                return;
+                //return;
 
             } else {
 
@@ -107,32 +116,34 @@ public class GeoJsonWriterId implements GeoJsonWriter {
     }
 
     @Override
-    public void onCoordinates(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onCoordinates(FeatureTransformationContextGeoJson transformationContext,
+                              Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         this.writeAtFeatureEnd = true;
 
         // next chain for extensions
         next.accept(transformationContext);
     }
 
-    private void writeLink(FeatureTransformationContextGeoJson transformationContext, String featureId) throws IOException {
+    private void writeLink(FeatureTransformationContextGeoJson transformationContext,
+                           String featureId) throws IOException {
         if (transformationContext.isFeatureCollection() &&
                 transformationContext.getShowsFeatureSelfLink() &&
                 Objects.nonNull(featureId) &&
                 !featureId.isEmpty()) {
             transformationContext.getJson()
-                    .writeFieldName("links");
+                                 .writeFieldName("links");
             transformationContext.getJson()
-                    .writeStartArray(1);
+                                 .writeStartArray(1);
             transformationContext.getJson()
-                    .writeStartObject();
+                                 .writeStartObject();
             transformationContext.getJson()
-                    .writeStringField("rel", "self");
+                                 .writeStringField("rel", "self");
             transformationContext.getJson()
-                    .writeStringField("href", transformationContext.getServiceUrl()+"/collections/"+transformationContext.getCollectionId()+"/items/"+featureId);
+                                 .writeStringField("href", transformationContext.getServiceUrl() + "/collections/" + transformationContext.getCollectionId() + "/items/" + featureId);
             transformationContext.getJson()
-                    .writeEndObject();
+                                 .writeEndObject();
             transformationContext.getJson()
-                    .writeEndArray();
+                                 .writeEndArray();
         }
     }
 }
