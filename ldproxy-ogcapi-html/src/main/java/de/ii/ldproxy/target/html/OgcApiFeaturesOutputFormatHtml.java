@@ -15,6 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.Collections;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
@@ -324,13 +325,14 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                 .clearParameters()
                                                 .removeLastPathSegments(1);
 
-        Optional<String> persistentUri = featureType.getPersistentUriTemplate();
-        if (persistentUri.isPresent()) {
+        Optional<String> template = featureType.getPersistentUriTemplate();
+        String persistentUri = null;
+        if (template.isPresent()) {
             // we have a template and need to replace the local feature id
-            persistentUri = Optional.of(persistentUri.get().replace("{featureId}", featureId));
+            persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
         }
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri.orElse(null), noIndex, i18n, language.orElse(Locale.ENGLISH));
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH));
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());
 

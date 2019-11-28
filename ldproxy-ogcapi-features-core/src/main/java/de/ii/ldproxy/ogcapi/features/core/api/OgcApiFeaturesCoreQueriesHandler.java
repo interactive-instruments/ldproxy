@@ -12,6 +12,7 @@ import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.feature.provider.api.*;
@@ -142,13 +143,13 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
                 "/collections/"+collectionId+"/items/"+featureId)
                 .orElseThrow(NotAcceptableException::new);
 
-        String canonicalUri = null;
+        String persistentUri = null;
         Optional<String> template = api.getData().getFeatureTypes().get(collectionId).getPersistentUriTemplate();
         if (template.isPresent()) {
-            canonicalUri = template.get().replace("{featureId}", featureId);
+            persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
         }
 
-        return getItemsResponse(api, requestContext, collectionId, query, false, canonicalUri, outputFormat, false, Optional.empty(),
+        return getItemsResponse(api, requestContext, collectionId, query, false, persistentUri, outputFormat, false, Optional.empty(),
                 queryInput.getIncludeHomeLink(), false, queryInput.getIncludeLinkHeader());
     }
 
