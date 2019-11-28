@@ -48,7 +48,9 @@ public interface FeatureTransformationContext {
     boolean isFeatureCollection();
 
     @Value.Default
-    default boolean getShowsFeatureSelfLink() { return true; }
+    default boolean getShowsFeatureSelfLink() {
+        return true;
+    }
 
     @Value.Default
     default boolean isHitsOnly() {
@@ -87,11 +89,20 @@ public interface FeatureTransformationContext {
     // to ValueTransformerContext
     @Value.Derived
     default String getServiceUrl() {
+        if (getApiData().getApiVersion()
+                        .isPresent()) {
+            return getOgcApiRequest().getUriCustomizer()
+                                     .copy()
+                                     .cutPathAfterSegments(getApiData().getId(), String.format("v%d", getApiData().getApiVersion()
+                                                                                                                  .get()))
+                                     .clearParameters()
+                                     .toString();
+        }
         return getOgcApiRequest().getUriCustomizer()
-                               .copy()
-                               .cutPathAfterSegments(getApiData().getId())
-                               .clearParameters()
-                               .toString();
+                                 .copy()
+                                 .cutPathAfterSegments(getApiData().getId())
+                                 .clearParameters()
+                                 .toString();
     }
 
     // TODO: to generalization module

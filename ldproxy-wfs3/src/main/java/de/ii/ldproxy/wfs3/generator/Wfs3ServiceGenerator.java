@@ -140,8 +140,10 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
         return OgcApiDatasetData.class;
     }
 
+    //TODO: depends on provider, this is for WFS based services
     @Override
     public OgcApiDatasetData generate(Map<String, String> partialData) {
+
         if (Objects.isNull(partialData) || !partialData.containsKey("id") || !partialData.containsKey("url")) {
             throw new BadRequestException();
         }

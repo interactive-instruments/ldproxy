@@ -108,7 +108,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(1)
+                        .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 2 : 1)
                         .toString()))
                 .add(new NavigationDTO(api.getData().getLabel()))
                 .build();
@@ -132,7 +132,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                                        uriCustomizer.copy()
-                                                     .removeLastPathSegments(2)
+                                                     .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 3 : 2)
                                                      .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                                        uriCustomizer.copy()
@@ -157,7 +157,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(2)
+                        .removeLastPathSegments(api.getData().getApiVersion().isPresent() ?  3 : 2)
                         .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(1)
@@ -184,7 +184,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(3)
+                        .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 4 : 3)
                         .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(2)
@@ -232,10 +232,10 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getFeatureTypes()
                                                                                         .get(collectionName)
-                                                                                        .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language);
+                                                                                        .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language, serviceData.getApiVersion());
         } else {
             featureTypeDataset = createFeatureDetailsView(serviceData.getFeatureTypes()
-                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData));
+                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getApiVersion());
         }
 
         //TODO
@@ -308,7 +308,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                            URICustomizer uriCustomizer, List<OgcApiLink> links,
                                                            String apiLabel, String featureId,
                                                            String staticUrlPrefix, Optional<Locale> language,
-                                                           boolean noIndex) {
+                                                           boolean noIndex,
+                                                           Optional<Integer> apiVersion) {
 
         String rootTitle = i18n.get("root", language);
         String collectionsTitle = i18n.get("collectionsTitle", language);
@@ -336,7 +337,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, uriBuilder.copy()
-                        .removeLastPathSegments(4)
+                        .removeLastPathSegments(apiVersion.isPresent() ? 5 : 4)
                         .toString()))
                 .add(new NavigationDTO(apiLabel, uriBuilder.copy()
                         .removeLastPathSegments(3)
@@ -365,7 +366,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     private void addDatasetNavigation(FeatureCollectionView featureCollectionView, String apiLabel,
                                       String collectionLabel, List<OgcApiLink> links, URICustomizer uriCustomizer,
-                                      Optional<Locale> language) {
+                                      Optional<Locale> language, Optional<Integer> apiVersion) {
 
         String rootTitle = i18n.get("root", language);
         String collectionsTitle = i18n.get("collectionsTitle", language);
@@ -377,7 +378,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         featureCollectionView.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, uriBuilder.copy()
-                        .removeLastPathSegments(3)
+                        .removeLastPathSegments(apiVersion.isPresent() ? 4 : 3)
                         .toString()))
                 .add(new NavigationDTO(apiLabel, uriBuilder.copy()
                         .removeLastPathSegments(2)

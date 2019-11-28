@@ -49,6 +49,12 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
     //@Nullable
     //public abstract ValueBuilderMap<Test, ImmutableTest.Builder> getTestMap();
 
+
+    @Override
+    public long getCurrentEntityDataVersion() {
+        return 1;
+    }
+
     @Value.Default
     @Override
     public String getLabel() {

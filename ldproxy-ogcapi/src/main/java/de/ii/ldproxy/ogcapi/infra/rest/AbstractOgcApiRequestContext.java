@@ -63,8 +63,8 @@ public abstract class AbstractOgcApiRequestContext implements OgcApiRequestConte
                     .cutPathAfterSegments("rest", "services")
                     .replaceInPath("/rest/services", getExternalUri().get()
                                                                      .getPath())
-                    .ensureTrailingSlash()
                     .ensureLastPathSegment("___static___")
+                    .ensureTrailingSlash()
                     .getPath();
         }
 
