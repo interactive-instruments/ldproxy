@@ -74,7 +74,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
             // check, if this may be an issue of special characters in the path, replace all non-Word characters with an underscore and test the sub path again
             String subPathReduced = subPath.replaceAll("\\W","_");
             if (findEndpoint(service.getData(), entrypoint, subPathReduced, null).isPresent())
-                throw new BadRequestException("The sub path '"+subPath+"' includes characters that not supported by the server. Resource ids typically only support word characters (ASCII letters, digits, underscore) for the resource names.");
+                throw new BadRequestException("The sub path '"+subPath+"' includes characters that are not supported for a resource. Resource ids typically only support word characters (ASCII letters, digits, underscore) for the resource names.");
             throw new NotFoundException();
         }
 
