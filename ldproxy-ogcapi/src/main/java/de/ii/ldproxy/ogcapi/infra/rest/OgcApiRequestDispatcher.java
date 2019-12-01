@@ -70,6 +70,11 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         if (ogcApiEndpoint==null) {
             if (findEndpoint(service.getData(), entrypoint, subPath, null).isPresent())
                 throw new NotAllowedException("Method "+method+" is not supported for this resource.");
+            // TODO does this belong here or should this be done by the resources?
+            // check, if this may be an issue of special characters in the path, replace all non-Word characters with an underscore and test the sub path again
+            String subPathReduced = subPath.replaceAll("\\W","_");
+            if (findEndpoint(service.getData(), entrypoint, subPathReduced, null).isPresent())
+                throw new BadRequestException("The sub path '"+subPath+"' includes characters that not supported by the server. Resource ids typically only support word characters (ASCII letters, digits, underscore) for the resource names.");
             throw new NotFoundException();
         }
 
