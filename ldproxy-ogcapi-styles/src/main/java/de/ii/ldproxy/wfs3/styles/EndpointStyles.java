@@ -266,7 +266,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
      */
     @Path("/{styleId}/metadata")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getStyleMetadata(@PathParam("styleId") String styleId,
                                      @Context OgcApiDataset api,
                                      @Context OgcApiRequestContext requestContext) {
