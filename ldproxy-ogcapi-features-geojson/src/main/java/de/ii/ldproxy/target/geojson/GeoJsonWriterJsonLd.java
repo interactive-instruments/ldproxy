@@ -40,6 +40,7 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
                                Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         Optional<GeoJsonPropertyMapping> mappingWithLdContext = transformationContext.getState()
                                                                                      .getCurrentMapping()
+                                                                                     .filter(targetMapping -> targetMapping instanceof GeoJsonPropertyMapping)
                                                                                      .map(targetMapping -> (GeoJsonPropertyMapping) targetMapping)
                                                                                      .filter(targetMapping -> Objects.nonNull(targetMapping.getLdContext()));
 
