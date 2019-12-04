@@ -8,6 +8,7 @@
 package de.ii.ldproxy.target.geojson;
 
 import de.ii.ldproxy.target.geojson.GeoJsonMapping.GEO_JSON_TYPE;
+import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -87,14 +88,14 @@ public class GeoJsonWriterId implements GeoJsonWriter {
                                                        .getCurrentValue()
                                                        .get();
 
-            if (Objects.nonNull(currentMapping.getIdPrefix())) {
-                currentValue = currentMapping.getIdPrefix()
-                                             .replace("{{serviceUrl}}", transformationContext.getServiceUrl())
-                                             .replace("{{collectionId}}", transformationContext.getCollectionId()) + currentValue;
-            }
-
-
             if (Objects.equals(currentMapping.getType(), GEO_JSON_TYPE.ID)) {
+                String idTemplate = currentMapping.getIdTemplate();
+                if (Objects.nonNull(idTemplate)) {
+                    currentValue = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {}, "featureId");
+                    currentValue = StringTemplateFilters.applyTemplate(currentValue, transformationContext.getServiceUrl(), isHtml -> {}, "serviceUrl");
+                    currentValue = StringTemplateFilters.applyTemplate(currentValue, transformationContext.getCollectionId(), isHtml -> {}, "collectionId");
+                }
+
                 if (writeAtFeatureEnd) {
                     currentId = currentValue;
                 } else {

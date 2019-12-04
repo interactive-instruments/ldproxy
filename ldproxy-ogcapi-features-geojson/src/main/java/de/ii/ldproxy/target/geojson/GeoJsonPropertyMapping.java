@@ -23,7 +23,7 @@ public class GeoJsonPropertyMapping extends AbstractOgcApiFeaturesGenericMapping
     private String ldContext;
     private List<String> ldType;
     private boolean idAsProperty;
-    private String idPrefix;
+    private String idTemplate;
 
     public GeoJsonPropertyMapping() {
     }
@@ -40,7 +40,7 @@ public class GeoJsonPropertyMapping extends AbstractOgcApiFeaturesGenericMapping
         this.ldContext = mapping.ldContext;
         this.ldType = mapping.ldType;
         this.idAsProperty = mapping.idAsProperty;
-        this.idPrefix = mapping.idPrefix;
+        this.idTemplate = mapping.idTemplate;
     }
 
     @Override
@@ -102,11 +102,11 @@ public class GeoJsonPropertyMapping extends AbstractOgcApiFeaturesGenericMapping
         this.idAsProperty = idAsProperty;
     }
 
-    public String getIdPrefix() {
-        return idPrefix;
+    public String getIdTemplate() {
+        return idTemplate;
     }
 
-    public void setIdPrefix(String idPrefix) {
-        this.idPrefix = idPrefix;
+    public void setIdTemplate(String idTemplate) {
+        this.idTemplate = idTemplate;
     }
 }
