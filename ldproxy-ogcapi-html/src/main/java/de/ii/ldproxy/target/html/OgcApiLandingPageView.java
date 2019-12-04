@@ -51,18 +51,7 @@ public class OgcApiLandingPageView extends LdproxyView {
         this.apiLandingPage = apiLandingPage;
         this.uriCustomizer = uriCustomizer;
 
-        double[] spatialExtent = apiData.getFeatureTypes()
-                .values()
-                .stream()
-                .map(featureTypeConfigurationWfs3 -> featureTypeConfigurationWfs3.getExtent()
-                        .getSpatial()
-                        .getCoords())
-                .reduce((doubles, doubles2) -> new double[]{
-                        Math.min(doubles[0], doubles2[0]),
-                        Math.min(doubles[1], doubles2[1]),
-                        Math.max(doubles[2], doubles2[2]),
-                        Math.max(doubles[3], doubles2[3])})
-                .orElse(null);
+        double[] spatialExtent = apiData.getSpatialExtent();
         this.bbox2 = spatialExtent==null ? null : ImmutableMap.of(
                 "minLng", Double.toString(spatialExtent[1]),
                 "minLat", Double.toString(spatialExtent[0]),

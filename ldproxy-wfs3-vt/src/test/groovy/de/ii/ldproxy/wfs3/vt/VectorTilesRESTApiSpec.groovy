@@ -38,7 +38,7 @@ class VectorTilesRESTApiSpec extends Specification{
         and:
         response.responseData.containsKey("tileMatrixSets")
         response.responseData.get("tileMatrixSets").get(0).get("id") == "WebMercatorQuad"
-        response.responseData.get("tileMatrixSets").get(0).get("links").get(0).get("rel") == "tileMatrixSet"
+        response.responseData.get("tileMatrixSets").get(0).get("links").get(0).get("rel") == "item"
         response.responseData.get("tileMatrixSets").get(0).get("links").get(0).get("href") == SUT_URL + SUT_PATH + "/tileMatrixSets/WebMercatorQuad"
     }
 
@@ -72,12 +72,8 @@ class VectorTilesRESTApiSpec extends Specification{
         and:
         response.responseData.containsKey("tileMatrixSetLinks")
         response.responseData.get("tileMatrixSetLinks").get(0).get("tileMatrixSet") == "WebMercatorQuad"
-        response.responseData.get("tileMatrixSetLinks")
-                .get(0)
-                .get("links")
-                .get(0)
-                .get("href")
-                .contains("/tiles/WebMercatorQuad/{tileMatrix}/{tileRow}/{tileCol}")
+        response.responseData.get("links").any{ it.href.contains("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") }
+        response.responseData.get("tileMatrixSetLinks").get(0).get("tileMatrixSetLimits").size() > 0
     }
 
     def 'GET Request for a empty tile of the dataset'(){
@@ -114,7 +110,7 @@ class VectorTilesRESTApiSpec extends Specification{
         status == 200
     }
 
-    def 'GET Request for a tile matrix set Page from a collection'(){
+    def 'GET Request for a tiles Page from a collection'(){
 
         when:
         def response = restClient.get( path: SUT_PATH + '/collections/'+ SUT_COLLECTION +"/tiles")
@@ -125,12 +121,8 @@ class VectorTilesRESTApiSpec extends Specification{
         and:
         response.responseData.containsKey("tileMatrixSetLinks")
         response.responseData.get("tileMatrixSetLinks").get(0).get("tileMatrixSet") == "WebMercatorQuad"
-        response.responseData.get("tileMatrixSetLinks")
-                .get(0)
-                .get("links")
-                .get(0)
-                .get("href")
-                .contains("/tiles/WebMercatorQuad/{tileMatrix}/{tileRow}/{tileCol}")
+        response.responseData.get("links").any{ it.href.contains("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") }
+        response.responseData.get("tileMatrixSetLinks").get(0).get("tileMatrixSetLimits").size() > 0
     }
 
     def 'GET Request for a tile of a collection in json format'(){

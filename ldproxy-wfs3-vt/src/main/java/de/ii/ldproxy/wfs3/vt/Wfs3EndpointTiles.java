@@ -66,6 +66,8 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
     private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
 
+    private final TileMatrixSetLimitsGenerator limitsGenerator = new TileMatrixSetLimitsGenerator();
+
     private final CollectionsMultitilesGenerator collectionsMultitilesGenerator = new CollectionsMultitilesGenerator();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
@@ -199,6 +201,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                 .stream()
                                 .map(tileMatrixSetId -> ImmutableTileCollection.builder()
                                     .tileMatrixSet(tileMatrixSetId)
+                                    .addAllTileMatrixSetLimits(limitsGenerator.getTileMatrixSetLimits(service.getData(), tileMatrixSetId, crsTransformation))
                                     .build())
                                 .collect(Collectors.toList()))
                 .links(vectorTilesLinkGenerator.generateTilesLinks(
