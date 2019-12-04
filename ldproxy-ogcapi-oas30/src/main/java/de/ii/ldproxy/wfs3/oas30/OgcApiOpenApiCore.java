@@ -112,8 +112,11 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
                                                        .filter(codelistName -> codelistName!=null)
                                                        .map(codelistName -> codelistRegistry.getCodelist(codelistName))
                                                        .ifPresent(codelist -> {
-                                                           if (codelist.isPresent())
-                                                               schema._enum(ImmutableList.copyOf(codelist.get().getData().getEntries().keySet()));
+                                                           if (codelist.isPresent()) {
+                                                               ImmutableList<String> values = ImmutableList.copyOf(codelist.get().getData().getEntries().keySet());
+                                                               if (!values.isEmpty())
+                                                                   schema._enum(values);
+                                                           }
                                                        });
                                                clonedPathItem.getGet()
                                                              .addParametersItem(

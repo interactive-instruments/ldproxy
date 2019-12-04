@@ -109,7 +109,7 @@ public class StringTemplateFilters {
                     filteredValue = parameters.get(0) + filteredValue;
                 } else if (filter.equals("append") && parameters.size() >= 1) {
                     filteredValue = filteredValue + parameters.get(0);
-                } else if (filter.equals("urlEncode") || /*TODO where is this used???*/filter.equals("urlencode")) {
+                } else if (filter.equals("urlEncode") || filter.equals("urlencode")) {
                     try {
                         filteredValue = URLEncoder.encode(filteredValue, Charsets.UTF_8.toString());
                     } catch (UnsupportedEncodingException e) {
