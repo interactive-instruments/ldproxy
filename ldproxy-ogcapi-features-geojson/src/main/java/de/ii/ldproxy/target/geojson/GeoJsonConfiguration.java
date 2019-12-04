@@ -21,4 +21,5 @@ public abstract class GeoJsonConfiguration implements ExtensionConfiguration {
     public boolean getEnabled() {
         return false;
     }
+
 }
