@@ -70,7 +70,7 @@ public class JsonLdContextEndpoint implements OgcApiEndpointExtension {
 
     @Path("/{collectionId}/context")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces("application/ld+json")
     public Response getContext(@Context OgcApiRequestContext wfs3Request, @Context OgcApiDataset service,
                                @PathParam("collectionId") String collectionId) throws IOException {
 
@@ -80,8 +80,7 @@ public class JsonLdContextEndpoint implements OgcApiEndpointExtension {
             throw new NotFoundException();
         }
 
-        return Response.ok()
-                       .entity(Files.newInputStream(context))
+        return Response.ok(Files.newInputStream(context),"application/ld+json")
                        .build();
     }
 }
