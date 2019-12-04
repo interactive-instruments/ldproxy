@@ -188,4 +188,24 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
                 (!withoutSpatialAndTemporal || (!mapping.getValue()
                                                         .isSpatial() && !((OgcApiFeaturesGenericMapping) mapping.getValue()).isTemporal()));
     }
+
+    /**
+     * Determine spatial extent of all collections in the dataset.
+     * @return array of coordinates of the bounding box in the following format:
+     * [minimum longitude, minimum latitude, maximum longitude, maximum latitude]
+     */
+    public double[] getSpatialExtent() {
+        double[] spatialExtent = getFeatureTypes().values()
+                .stream()
+                .map(featureTypeConfigurationWfs3 -> featureTypeConfigurationWfs3.getExtent()
+                        .getSpatial()
+                        .getCoords())
+                .reduce((doubles, doubles2) -> new double[]{
+                        Math.min(doubles[0], doubles2[0]),
+                        Math.min(doubles[1], doubles2[1]),
+                        Math.max(doubles[2], doubles2[2]),
+                        Math.max(doubles[3], doubles2[3])})
+                .orElse(null);
+        return spatialExtent;
+    }
 }

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import org.immutables.value.Value;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,9 +23,18 @@ public abstract class TileCollection extends PageRepresentation {
 
     public abstract Optional<String> getTileMatrixSet();
     public abstract Optional<String> getTileMatrixSetURI();
-
-    // TODO add tileMatrixSetLimits
+    public abstract List<TileMatrixSetLimits> getTileMatrixSetLimits();
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
+
+    @Value.Immutable
+    @JsonDeserialize(builder = ImmutableTileMatrixSetLimits.Builder.class)
+    public static abstract class TileMatrixSetLimits {
+        public abstract String getTileMatrix();
+        public abstract Integer getMinTileRow();
+        public abstract Integer getMaxTileRow();
+        public abstract Integer getMinTileCol();
+        public abstract Integer getMaxTileCol();
+    }
 }

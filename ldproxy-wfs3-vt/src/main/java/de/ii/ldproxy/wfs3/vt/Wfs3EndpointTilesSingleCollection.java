@@ -67,6 +67,8 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
 
+    private final TileMatrixSetLimitsGenerator limitsGenerator = new TileMatrixSetLimitsGenerator();
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTilesSingleCollection.class);
 
     private final VectorTilesCache cache;
@@ -236,6 +238,8 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                 .stream()
                                 .map(tileMatrixSetId -> ImmutableTileCollection.builder()
                                         .tileMatrixSet(tileMatrixSetId)
+                                        .tileMatrixSetLimits(limitsGenerator.generateCollectionTileMatrixSetLimits(
+                                                service.getData(), collectionId, tileMatrixSetId, crsTransformation))
                                         .build())
                                 .collect(Collectors.toList()))
                 .links(vectorTilesLinkGenerator.generateTilesLinks(
