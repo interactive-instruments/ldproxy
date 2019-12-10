@@ -31,6 +31,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
     }
 
     private String currentId;
+    private String currentUriId;
     private boolean writeAtFeatureEnd = false;
 
     @Override
@@ -90,17 +91,23 @@ public class GeoJsonWriterId implements GeoJsonWriter {
 
             if (Objects.equals(currentMapping.getType(), GEO_JSON_TYPE.ID)) {
                 String idTemplate = currentMapping.getIdTemplate();
+                String currentUri = null;
                 if (Objects.nonNull(idTemplate)) {
-                    currentValue = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {}, "featureId");
-                    currentValue = StringTemplateFilters.applyTemplate(currentValue, transformationContext.getServiceUrl(), isHtml -> {}, "serviceUrl");
-                    currentValue = StringTemplateFilters.applyTemplate(currentValue, transformationContext.getCollectionId(), isHtml -> {}, "collectionId");
+                    currentUri = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {}, "featureId");
+                    currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getServiceUrl(), isHtml -> {}, "serviceUrl");
+                    currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getCollectionId(), isHtml -> {}, "collectionId");
                 }
 
                 if (writeAtFeatureEnd) {
                     currentId = currentValue;
+                    currentUriId = currentUri;
                 } else {
                     transformationContext.getJson()
                                          .writeStringField("id", currentValue);
+                    if (currentUri!=null)
+                        transformationContext.getJson()
+                                .writeStringField("@id", currentUri);
+
                     writeLink(transformationContext, currentValue);
                 }
                 // don't pass through
