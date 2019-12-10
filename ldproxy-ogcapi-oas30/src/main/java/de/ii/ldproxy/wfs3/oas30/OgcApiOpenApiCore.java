@@ -18,6 +18,7 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import org.apache.felix.ipojo.annotations.Component;
@@ -25,8 +26,10 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,8 +58,7 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
         if (datasetData != null) {
 
-            // TODO dynamically add limit - min/max/default, feature formats, other formats, parameters, collectionId values
-
+            // TODO dynamically add feature formats, other formats, parameters, collectionId values
 
             PathItem collectionPathItem = openAPI.getPaths()
                                                .remove("/collections/{collectionId}");
@@ -65,6 +67,25 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
             PathItem featurePathItem = openAPI.getPaths()
                                               .remove("/collections/{collectionId}/items/{featureId}");
 
+            // update limit parameter from configuration
+            Schema limitSchema = openAPI.getComponents().getParameters().get("limit").getSchema();
+
+            Optional<Integer> minimumPageSize = getExtensionConfiguration(datasetData, OgcApiFeaturesCoreConfiguration.class)
+                    .map(OgcApiFeaturesCoreConfiguration::getMinimumPageSize);
+            if (minimumPageSize.isPresent())
+                limitSchema.minimum(BigDecimal.valueOf(minimumPageSize.get()));
+
+            Optional<Integer> defaultPageSize = getExtensionConfiguration(datasetData, OgcApiFeaturesCoreConfiguration.class)
+                    .map(OgcApiFeaturesCoreConfiguration::getDefaultPageSize);
+            if (defaultPageSize.isPresent())
+                limitSchema.setDefault(BigDecimal.valueOf(defaultPageSize.get()));
+
+            Optional<Integer> maxPageSize = getExtensionConfiguration(datasetData, OgcApiFeaturesCoreConfiguration.class)
+                    .map(OgcApiFeaturesCoreConfiguration::getMaxPageSize);
+            if (maxPageSize.isPresent())
+                limitSchema.maximum(BigDecimal.valueOf(maxPageSize.get()));
+
+            // process feature types
             datasetData.getFeatureTypes()
                        .values()
                        .stream()
