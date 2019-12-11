@@ -22,6 +22,16 @@ public class WebMercatorQuad implements TileMatrixSet {
     private static final EpsgCrs CRS = new EpsgCrs(3857);
 
     /**
+     * The bounding box of the tiling scheme
+     */
+    private static final double BBOX_MIN_X = -20037508.3427892;
+    private static final double BBOX_MAX_X = 20037508.3427892;
+    private static final double BBOX_MIN_Y = -20037508.3427892;
+    private static final double BBOX_MAX_Y = 20037508.3427892;
+    private static final double BBOX_DX = BBOX_MAX_X - BBOX_MIN_X;
+    private static final double BBOX_DY = BBOX_MAX_Y - BBOX_MIN_Y;
+
+    /**
      * The tile size is fixed to 256x256
      */
     private static final int TILE_SIZE = 256;
@@ -46,7 +56,6 @@ public class WebMercatorQuad implements TileMatrixSet {
         return "WebMercatorQuad";
     };
 
-
     /**
      * @return the coordinate reference system of the default tiling scheme is EPSG 3857
      */
@@ -66,22 +75,16 @@ public class WebMercatorQuad implements TileMatrixSet {
     @Override
     public BoundingBox getBoundingBox(int level, int col, int row) {
 
-        // TODO optimize computations
-        double x1 = -20037508.3427892;
-        double x2 = 20037508.3427892;
-        double y1 = -20037508.3427892;
-        double y2 = 20037508.3427892;
         double rows = Math.pow(2, level);
         double cols = Math.pow(2, level);
-        double tileWidth = (x2 - x1) / cols;
-        double tileHeight = (y2 - y1) / rows;
-        double minX = x1 + tileWidth * col;
+        double tileWidth = BBOX_DX / cols;
+        double tileHeight = BBOX_DY / rows;
+        double minX = BBOX_MIN_X + tileWidth * col;
         double maxX = minX + tileWidth;
-        double maxY = y2 - tileHeight * row;
+        double maxY = BBOX_MAX_Y - tileHeight * row;
         double minY = maxY - tileHeight;
         return new BoundingBox(minX, minY, maxX, maxY, CRS);
     };
-
 
     /**
      * determine the Douglas-Peucker distance parameter for a tile
@@ -93,7 +96,7 @@ public class WebMercatorQuad implements TileMatrixSet {
      */
     @Override
     public double getMaxAllowableOffset(int level, int row, int col) {
-        return 40075016.6856 / Math.pow(2, level) / TILE_EXTENT;
+        return BBOX_DX / Math.pow(2, level) / TILE_EXTENT;
     }
     /**
      * determine the Douglas-Peucker distance parameter for a tile
