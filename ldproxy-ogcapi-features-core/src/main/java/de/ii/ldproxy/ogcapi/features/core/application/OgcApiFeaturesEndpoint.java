@@ -197,18 +197,5 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public static Map<String, String> getFiltersFromQuery(Map<String, String> query,
-                                                          Map<String, String> filterableFields) {
 
-        Map<String, String> filters = new LinkedHashMap<>();
-
-        for (String filterKey : query.keySet()) {
-            if (filterableFields.containsKey(filterKey.toLowerCase())) {
-                String filterValue = query.get(filterKey);
-                filters.put(filterKey.toLowerCase(), filterValue);
-            }
-        }
-
-        return filters;
-    }
 }

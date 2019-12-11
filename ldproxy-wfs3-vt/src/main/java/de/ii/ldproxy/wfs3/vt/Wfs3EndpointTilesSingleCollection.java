@@ -19,6 +19,7 @@ import de.ii.ldproxy.wfs3.filtertransformer.OgcApiParameterFilterTransformer;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -149,9 +150,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             ImmutableSet<String> parametersFromExtensions = new ImmutableSet.Builder<String>()
                     .addAll(wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)
                             .stream()
-                            // TODO: this is a hack, we need a more flexible mechanism to determine where the parameters apply
-                            .filter(ext -> ext.getClass()==OgcApiParameterFilterTransformer.class)
-                            .map(ext -> ext.getParameters(apiData, subPath.split("/tiles/",2)[0] + "/items"))
+                            .map(ext -> ext.getParameters(apiData, subPath))
                             .flatMap(Collection::stream)
                             .collect(Collectors.toSet()))
                     .build();
@@ -308,10 +307,25 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         final Map<String, String> filterableFields = service.getData()
                                                             .getFilterableFieldsForFeatureType(collectionId);
-        final Map<String, String> filters = OgcApiFeaturesEndpoint.getFiltersFromQuery(OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields);
-        if (!filters.isEmpty() || queryParameters.containsKey("properties"))
-            doNotCache = true;
 
+        Set<String> filterParameters = ImmutableSet.of();
+        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
+            filterParameters = parameterExtension.getFilterParameters(filterParameters, service.getData());
+        }
+
+        final Map<String, String> filters = getFiltersFromQuery(OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields, filterParameters);
+        if (!filters.isEmpty() || queryParameters.containsKey("properties")) {
+            doNotCache = true;
+        }
+
+        final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
+                .type(collectionId);
+
+        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
+            parameterExtension.transformQuery(service.getData()
+                    .getFeatureTypes()
+                    .get(collectionId), queryBuilder, OgcApiFeaturesEndpoint.toFlatMap(queryParameters), service.getData());
+        }
 
         VectorTile.checkZoomLevel(Integer.parseInt(tileMatrix), vectorTileMapGenerator.getMinMaxMap(service.getData(), false), service, wfs3OutputFormatGeoJson, collectionId, tileMatrixSetId, "application/vnd.mapbox-vector-tile", tileRow, tileCol, doNotCache, cache, true, wfs3Request, crsTransformation, i18n);
 
@@ -410,11 +424,27 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         															.orElseThrow(NotAcceptableException::new);
 
         checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
-        VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/geo+json", false);
+        VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/json", false);
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+
+        Set<String> filterParameters = ImmutableSet.of();
+        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
+            filterParameters = parameterExtension.getFilterParameters(filterParameters, service.getData());
+        }
+
         final Map<String, String> filterableFields = service.getData()
                                                             .getFilterableFieldsForFeatureType(collectionId);
-        final Map<String, String> filters = OgcApiFeaturesEndpoint.getFiltersFromQuery(OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields);
+        final Map<String, String> filters = getFiltersFromQuery(OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields, filterParameters);
+
+        final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
+                .type(collectionId);
+
+        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
+            parameterExtension.transformQuery(service.getData()
+                    .getFeatureTypes()
+                    .get(collectionId), queryBuilder, OgcApiFeaturesEndpoint.toFlatMap(queryParameters), service.getData());
+        }
+
 
         boolean doNotCache = false;
         if (!filters.isEmpty() || queryParameters.containsKey("properties"))
@@ -467,6 +497,25 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         }
         throw new NotFoundException();
 
+    }
+
+    public static Map<String, String> getFiltersFromQuery(Map<String, String> query, Map<String, String> filterableFields,
+                                                    Set<String> filterParameters) {
+
+
+        Map<String, String> filters = new LinkedHashMap<>();
+
+        for (String filterKey : query.keySet()) {
+            if (filterParameters.contains(filterKey.toLowerCase())) {
+                String filterValue = query.get(filterKey);
+                filters.put(filterKey.toLowerCase(), filterValue);
+            } else if (filterableFields.containsKey(filterKey.toLowerCase())) {
+                String filterValue = query.get(filterKey);
+                filters.put(filterKey.toLowerCase(), filterValue);
+            }
+
+        }
+        return filters;
     }
 
 
