@@ -182,7 +182,7 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
                     Wfs3EndpointTiles.generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections,
                             null, service, String.valueOf(entry.getTileMatrix()), String.valueOf(entry.getTileRow()),
                             String.valueOf(entry.getTileCol()), tileMatrixSetId, false, cache, wfs3Request, crsTransformation,
-                            uriInfo, false, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator);
+                            uriInfo, false, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, null);
                 } else {
                     boolean invalid = false;
 
@@ -206,7 +206,7 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
                         Wfs3EndpointTiles.generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections,
                                 null, service, String.valueOf(entry.getTileMatrix()), String.valueOf(entry.getTileRow()),
                                 String.valueOf(entry.getTileCol()), tileMatrixSetId, false, cache, wfs3Request, crsTransformation,
-                                uriInfo, true, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator);
+                                uriInfo, true, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, null);
                     }
                 }
 

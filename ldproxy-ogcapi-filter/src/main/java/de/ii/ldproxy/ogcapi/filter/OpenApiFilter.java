@@ -39,7 +39,7 @@ public class OpenApiFilter implements OpenApiExtension {
             Parameter filter = new Parameter()
                     .name("filter")
                     .in("query")
-                    .description("Filter the features in the collection using the query expression in the parameter value.")
+                    .description("Filter features in the collection using the query expression in the parameter value.")
                     .required(false)
                     .schema(new StringSchema())
                     .style(Parameter.StyleEnum.FORM)
@@ -57,15 +57,30 @@ public class OpenApiFilter implements OpenApiExtension {
                     .explode(false);
             openAPI.getComponents().addParameters("filter-lang", filterLang);
 
+            PathItem pathItem = openAPI.getPaths().get("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
+            if (Objects.nonNull(pathItem)) {
+                pathItem.getGet()
+                        .addParametersItem(new Parameter().$ref("#/components/parameters/filter"))
+                        .addParametersItem(new Parameter().$ref("#/components/parameters/filter-lang"));
+            }
+
             apiData.getFeatureTypes()
                     .values()
                     .stream()
                     .sorted(Comparator.comparing(FeatureTypeConfiguration::getId))
                     .filter(ft -> apiData.isFeatureTypeEnabled(ft.getId()))
                     .forEach(ft -> {
-                        PathItem pathItem = openAPI.getPaths().get(String.format("/collections/%s/items", ft.getId()));
-                        if (Objects.nonNull(pathItem)) {
-                            pathItem.getGet()
+                        PathItem pathItem2 = openAPI.getPaths().get(String.format("/collections/%s/items", ft.getId()));
+                        if (Objects.nonNull(pathItem2)) {
+                            pathItem2.getGet()
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/filter"))
+                                    .addParametersItem(new Parameter().$ref("#/components/parameters/filter-lang"));
+                        }
+                        pathItem2 = openAPI.getPaths()
+                                .get(String.format("/collections/%s/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+                                        ft.getId()));
+                        if (Objects.nonNull(pathItem2)) {
+                            pathItem2.getGet()
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/filter"))
                                     .addParametersItem(new Parameter().$ref("#/components/parameters/filter-lang"));
                         }

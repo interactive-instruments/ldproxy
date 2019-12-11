@@ -357,6 +357,9 @@ class VectorTile {
         return filters.entrySet()
                       .stream()
                       .map(f -> {
+                          if (f.getKey().equals("filter")) {
+                              return f.getValue();
+                          }
                           if (f.getKey()
                                .equals("datetime")) {
                               // TODO: define constants and filtering rules only once

@@ -41,6 +41,14 @@ public class OgcApiParameterFilter implements OgcApiParameterExtension {
             // Features
             return ImmutableSet.of("filter", "filter-lang");
         }
+        if (subPath.matches("^/[\\w\\-]+/tiles/[\\w\\-]+/[\\w\\-]+/[\\w\\-]+/[\\w\\-]+$")) {
+            // Collection Tiles
+            return ImmutableSet.of("filter", "filter-lang");
+        }
+        if (subPath.matches("^/[\\w\\-]+/[\\w\\-]+/[\\w\\-]+/[\\w\\-]+$")) {
+            // Tiles from more than one collection
+            return ImmutableSet.of("filter", "filter-lang");
+        }
         return ImmutableSet.of();
     }
 

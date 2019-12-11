@@ -273,5 +273,42 @@ class VectorTilesRESTApiSpec extends Specification{
 
     }
 
+    def 'filter parameter support'() {
+
+        when:
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/WebMercatorQuad/10/413/615"
+            uri.query = [filter:'fcsubtype=100454']
+            headers.Accept = 'application/json'
+        })
+
+        then:
+        response.status == 200
+
+        and:
+        response.responseData.features.size() > 0
+
+    }
+
+    def 'filter-lang parameter support'() {
+
+        when:
+        def response_correct = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/WebMercatorQuad/10/413/615"
+            uri.query = ['filter-lang':'cql-text']
+            headers.Accept = 'application/json'
+        })
+        def response_incorrect = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/WebMercatorQuad/10/413/615"
+            uri.query = ['filter-lang':'foobar']
+            headers.Accept = 'application/json'
+        })
+
+        then:
+        response_correct.status == 200
+        response_incorrect.status == 400
+
+    }
+
 
 }
