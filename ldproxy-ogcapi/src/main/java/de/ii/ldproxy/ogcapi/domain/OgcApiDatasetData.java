@@ -130,9 +130,8 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
                                                                                                            .getName() != null)
                         .map(mapping -> new AbstractMap.SimpleImmutableEntry<>(/*TODO getParamterValue()*/baseMappings.get(mapping.getKey())
                                                                                                                       .getName()
-                                                                                                                      .replaceAll("\\[\\w+\\]", "")
-                                                                                                                      .toLowerCase(), mapping.getValue()
-                                                                                                                                             .getName()))
+                                                                                                                      .replaceAll("\\[\\w+\\]", ""), mapping.getValue()
+                                                                                                                                                                                .getName()))
                         .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue, (s, s2) -> s));
     }
 
@@ -168,15 +167,13 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
                 : ((OgcApiFeaturesGenericMapping) mapping.getValue()).isTemporal() ? "datetime"
                 : mapping.getValue()
                          .getName()
-                         .replaceAll("\\[\\w+\\]", "")
-                         .toLowerCase();
+                         .replaceAll("\\[\\w+\\]", "");
     }
 
     private Function<Map.Entry<String, TargetMapping>, String> getParameterValue() {
         return mapping -> mapping.getValue()
                                  .getName()
-                                 .replaceAll("\\[\\w+\\]", "")
-                                 .toLowerCase();
+                                 .replaceAll("\\[\\w+\\]", "");
     }
 
     private Predicate<Map.Entry<String, TargetMapping>> isFilterable(boolean withoutSpatialAndTemporal) {

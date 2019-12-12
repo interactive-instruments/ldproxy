@@ -146,9 +146,9 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
         Map<String, String> filters = new LinkedHashMap<>();
 
         for (String filterKey : query.keySet()) {
-            if (filterableFields.containsKey(filterKey.toLowerCase())) {
+            if (filterableFields.containsKey(filterKey)) {
                 String filterValue = query.get(filterKey);
-                filters.put(filterKey.toLowerCase(), filterValue);
+                filters.put(filterKey, filterValue);
             }
         }
 

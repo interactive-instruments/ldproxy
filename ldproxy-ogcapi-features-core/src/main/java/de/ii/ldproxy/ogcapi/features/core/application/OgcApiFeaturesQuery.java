@@ -137,12 +137,12 @@ public class OgcApiFeaturesQuery {
         Map<String, String> filters = new LinkedHashMap<>();
 
         for (String filterKey : query.keySet()) {
-            if (filterParameters.contains(filterKey.toLowerCase())) {
+            if (filterParameters.contains(filterKey)) {
                 String filterValue = query.get(filterKey);
-                filters.put(filterKey.toLowerCase(), filterValue);
-            } else if (filterableFields.containsKey(filterKey.toLowerCase())) {
+                filters.put(filterKey, filterValue);
+            } else if (filterableFields.containsKey(filterKey)) {
                 String filterValue = query.get(filterKey);
-                filters.put(filterKey.toLowerCase(), filterValue);
+                filters.put(filterKey, filterValue);
             }
         }
 

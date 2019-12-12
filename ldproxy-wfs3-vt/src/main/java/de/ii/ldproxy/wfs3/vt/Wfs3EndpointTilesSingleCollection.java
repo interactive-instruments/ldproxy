@@ -15,7 +15,6 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesEndpoint;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
-import de.ii.ldproxy.wfs3.filtertransformer.OgcApiParameterFilterTransformer;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -506,12 +505,12 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         Map<String, String> filters = new LinkedHashMap<>();
 
         for (String filterKey : query.keySet()) {
-            if (filterParameters.contains(filterKey.toLowerCase())) {
+            if (filterParameters.contains(filterKey)) {
                 String filterValue = query.get(filterKey);
-                filters.put(filterKey.toLowerCase(), filterValue);
-            } else if (filterableFields.containsKey(filterKey.toLowerCase())) {
+                filters.put(filterKey, filterValue);
+            } else if (filterableFields.containsKey(filterKey)) {
                 String filterValue = query.get(filterKey);
-                filters.put(filterKey.toLowerCase(), filterValue);
+                filters.put(filterKey, filterValue);
             }
 
         }
