@@ -562,6 +562,9 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
                     VectorTile layerTile = new VectorTile(collectionId, tileMatrixSetId, level, row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
 
+                    Map<String, String> filterableFields = wfsService.getData()
+                                                                     .getFilterableFieldsForFeatureType(collectionId);
+
                     File tileFileJson = layerTile.getFile(cache, "json");
                     if (!tileFileJson.exists()) {
                         OgcApiMediaType geojsonMediaType;
@@ -569,7 +572,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                 .type(new MediaType("application", "geo+json"))
                                 .label("GeoJSON")
                                 .build();
-                        boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, null, wfs3Request.getUriCustomizer(), geojsonMediaType, false, layerTile, i18n, wfs3Request.getLanguage());
+                        boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), geojsonMediaType, false, layerTile, i18n, wfs3Request.getLanguage());
                         if (!success) {
                             String msg = "Internal server error: could not generate GeoJSON for a tile.";
                             LOGGER.error(msg);
@@ -577,7 +580,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                         }
                     } else {
                         if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, null, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, layerTile, i18n, wfs3Request.getLanguage());
+                            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, layerTile, i18n, wfs3Request.getLanguage());
                         }
                     }
                     layers.put(collectionId, tileFileJson);
