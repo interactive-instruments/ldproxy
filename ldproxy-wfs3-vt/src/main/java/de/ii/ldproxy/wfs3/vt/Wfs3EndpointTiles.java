@@ -148,6 +148,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                     .build();
         } else if (subPath.matches("^/?(?:\\w+/\\w+/\\w+/\\w+)$"))
             return new ImmutableSet.Builder<String>()
+                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
                     .addAll(extensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)
                             .stream()
                             .map(ext -> ext.getParameters(apiData, subPath))
