@@ -11,18 +11,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
-import de.ii.xtraplatform.feature.provider.api.FeatureStream;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
-import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
-import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.WebApplicationException;
@@ -130,9 +128,10 @@ public class TileGeneratorJson {
             if (filters != null && filterableFields != null) {
                 if (!filters.isEmpty()) {
                     String cql = tile.getCQLFromFilters(filters, filterableFields);
-                    LOGGER.debug("CQL {}", cql);
+                    String combinedFilter = "(" + cql + ") AND (" + filter + ")";
+                    LOGGER.debug("CQL {}", combinedFilter);
                     queryBuilder
-                            .filter(cql + " AND " + filter)
+                            .filter(combinedFilter)
                             .type(collectionId)
                             .maxAllowableOffset(maxAllowableOffsetNative)
                             .fields(propertiesList);
