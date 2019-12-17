@@ -8,10 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core.application;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
@@ -26,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -83,9 +81,15 @@ public class OgcApiFeaturesQuery {
         }
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            parameters = parameterExtension.transformParameters(api.getData()
-                                                                   .getFeatureTypes()
-                                                                   .get(collectionId), parameters, api.getData());
+
+            FeatureTypeConfigurationOgcApi featureTypeConfiguration = api.getData()
+                    .getFeatureTypes()
+                    .get(collectionId);
+            // check, if the requested collection exists
+            if (Objects.isNull(featureTypeConfiguration))
+                throw new NotFoundException();
+
+            parameters = parameterExtension.transformParameters(featureTypeConfiguration, parameters, api.getData());
         }
 
         final Map<String, String> filters = getFiltersFromQuery(parameters, filterableFields, filterParameters);
