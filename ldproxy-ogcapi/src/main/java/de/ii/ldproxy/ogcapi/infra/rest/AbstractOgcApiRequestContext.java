@@ -12,18 +12,17 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import org.immutables.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 
 @Value.Immutable
 public abstract class AbstractOgcApiRequestContext implements OgcApiRequestContext {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOgcApiRequestContext.class);
 
     abstract URI getRequestUri();
 
@@ -77,6 +76,10 @@ public abstract class AbstractOgcApiRequestContext implements OgcApiRequestConte
         return getUriCustomizer().getQueryParams()
                                  .stream()
                                  .map(nameValuePair -> new AbstractMap.SimpleImmutableEntry<>(nameValuePair.getName(), nameValuePair.getValue()))
-                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> {
+                                     // TODO for now ignore multiple parameters with the same name
+                                     LOGGER.error("Duplicate parameter found, the following value is ignored: " + value2);
+                                     return value1;
+                                 }));
     }
 }

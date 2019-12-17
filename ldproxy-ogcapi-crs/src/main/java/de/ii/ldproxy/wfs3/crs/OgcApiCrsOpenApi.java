@@ -35,7 +35,7 @@ import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.CRS;
 public class OgcApiCrsOpenApi implements OpenApiExtension {
     @Override
     public int getSortPriority() {
-        return 500;
+        return 700;
     }
 
     @Override

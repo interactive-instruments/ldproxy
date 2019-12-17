@@ -50,9 +50,14 @@ public class OgcApiFeaturesQuery {
     public FeatureQuery requestToFeatureQuery(OgcApiDataset api, String collectionId, Map<String, String> parameters, String featureId) {
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            parameters = parameterExtension.transformParameters(api.getData()
-                                                                       .getFeatureTypes()
-                                                                       .get(collectionId), parameters,api.getData());
+            FeatureTypeConfigurationOgcApi featureTypeConfiguration = api.getData()
+                    .getFeatureTypes()
+                    .get(collectionId);
+            // check, if the requested collection exists
+            if (Objects.isNull(featureTypeConfiguration))
+                throw new NotFoundException();
+
+            parameters = parameterExtension.transformParameters(featureTypeConfiguration, parameters, api.getData());
         }
 
         final String filter = String.format("IN ('%s')", featureId);

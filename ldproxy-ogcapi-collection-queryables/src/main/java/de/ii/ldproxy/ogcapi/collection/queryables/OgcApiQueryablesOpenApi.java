@@ -21,7 +21,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class OgcApiQueryablesOpenApi implements OpenApiExtension {
     @Override
     public int getSortPriority() {
-        return 600;
+        return 800;
     }
 
     @Override

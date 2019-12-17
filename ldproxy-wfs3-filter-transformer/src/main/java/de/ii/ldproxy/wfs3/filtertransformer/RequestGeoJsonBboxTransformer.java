@@ -68,6 +68,10 @@ public class RequestGeoJsonBboxTransformer implements FilterTransformer {
 
         GeoJsonReader geoJsonReader = new GeoJsonReader();
         Geometry geometry = geoJsonReader.read(response);
+        // no result is the same as no bbox filter
+        if (geometry.isEmpty())
+            return ImmutableMap.of();
+
         Envelope envelope = geometry.getEnvelopeInternal();
         //TODO bufferInMeters
         envelope.expandBy(0.0001);
