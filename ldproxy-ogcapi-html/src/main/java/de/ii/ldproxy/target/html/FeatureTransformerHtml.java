@@ -479,9 +479,11 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                             currentProperty.value = value;
                         }
 
-                        int pos = currentFeature.name.indexOf("{{" + currentProperty.name + "}}");
-                        if (pos > -1) {
-                            currentFeature.name = currentFeature.name.substring(0, pos) + prefix + value + currentFeature.name.substring(pos);
+                        if (currentFeature.name != null) {
+                            int pos = currentFeature.name.indexOf("{{" + currentProperty.name + "}}");
+                            if (pos > -1) {
+                                currentFeature.name = currentFeature.name.substring(0, pos) + prefix + value + currentFeature.name.substring(pos);
+                            }
                         }
 
                         // TODO
@@ -515,11 +517,12 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                 property.itemType = mapping.getItemType();
                 property.itemProp = mapping.getItemProp();
 
-                int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
-                if (pos > -1) {
-                    currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
+                if (currentFeature.name != null) {
+                    int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
+                    if (pos > -1) {
+                        currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
+                    }
                 }
-
 
                 if (Objects.nonNull(mapping.getCodelist()) && codelists.containsKey(mapping.getCodelist())) {
                     Codelist cl = codelists.get(mapping.getCodelist());
