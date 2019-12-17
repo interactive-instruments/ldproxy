@@ -128,7 +128,7 @@ public class TileGeneratorJson {
             if (filters != null && filterableFields != null) {
                 if (!filters.isEmpty()) {
                     String cql = tile.getCQLFromFilters(filters, filterableFields);
-                    String combinedFilter = "(" + cql + ") AND (" + filter + ")";
+                    String combinedFilter = cql + " AND " + filter;
                     LOGGER.debug("CQL {}", combinedFilter);
                     queryBuilder
                             .filter(combinedFilter)
