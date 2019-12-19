@@ -423,7 +423,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         															.orElseThrow(NotAcceptableException::new);
 
         checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
-        VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/json", false);
+        VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/geo+json", false);
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 
         Set<String> filterParameters = ImmutableSet.of();
