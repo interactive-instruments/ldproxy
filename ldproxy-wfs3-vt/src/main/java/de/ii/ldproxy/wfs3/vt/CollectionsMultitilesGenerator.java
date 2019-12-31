@@ -44,7 +44,7 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
     @Requires
     I18n i18n;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MultitilesGenerator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CollectionsMultitilesGenerator.class);
 
     CollectionsMultitilesGenerator() {
     }
@@ -81,12 +81,12 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
                                       OgcApiRequestContext wfs3Request, VectorTilesCache cache,
                                       OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws UnsupportedEncodingException {
 
-        MultitilesGenerator.checkTileMatrixSet(tileMatrixSetId);
-        List<Integer> tileMatrices = MultitilesGenerator.parseScaleDenominator(scaleDenominatorParam);
-        double[] bbox = MultitilesGenerator.parseBbox(bboxParam);
+        TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
+        List<Integer> tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominatorParam, tileMatrixSet);
+        double[] bbox = MultitilesUtils.parseBbox(bboxParam, tileMatrixSet);
         String collectoinsCsv = String.join(",", collections);
         LOGGER.debug("GET TILES COLLECTIONS MULTITILES {} {}-{} {} {}", bbox, tileMatrices.get(0), tileMatrices.get(tileMatrices.size() - 1), multiTileType, collectoinsCsv);
-        List<TileSetEntry> tileSetEntries = generateCollectionsTileSetEntries(bbox, tileMatrices, uriCustomizer, collectoinsCsv);
+        List<TileSetEntry> tileSetEntries = generateCollectionsTileSetEntries(bbox, tileMatrices, uriCustomizer, collectoinsCsv, tileMatrixSet);
 
         if ("url".equals(multiTileType)) {
             return Response.ok(ImmutableMap.of("tileSet", tileSetEntries))
@@ -110,11 +110,12 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
      * @return list of TileSet objects
      */
     private List<TileSetEntry> generateCollectionsTileSetEntries(double[] bbox, List<Integer> tileMatrices,
-                                                                 URICustomizer uriCustomizer, String collections) throws UnsupportedEncodingException {
+                                                                 URICustomizer uriCustomizer, String collections,
+                                                                 TileMatrixSet tileMatrixSet) throws UnsupportedEncodingException {
         List<TileSetEntry> tileSets = new ArrayList<>();
         for (int tileMatrix : tileMatrices) {
-            List<Integer> bottomTile = MultitilesGenerator.pointToTile(bbox[0], bbox[1], tileMatrix);
-            List<Integer> topTile = MultitilesGenerator.pointToTile(bbox[2], bbox[3], tileMatrix);
+            List<Integer> bottomTile = MultitilesUtils.pointToTile(bbox[0], bbox[1], tileMatrix, tileMatrixSet);
+            List<Integer> topTile = MultitilesUtils.pointToTile(bbox[2], bbox[3], tileMatrix, tileMatrixSet);
             for (int row = topTile.get(0); row <= bottomTile.get(0); row++){
                 for (int col = bottomTile.get(1); col <= topTile.get(1); col++) {
                     tileSets.add(ImmutableTileSetEntry.builder()

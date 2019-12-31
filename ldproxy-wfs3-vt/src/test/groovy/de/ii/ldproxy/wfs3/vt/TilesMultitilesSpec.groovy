@@ -15,20 +15,22 @@ class TilesMultitilesSpec extends Specification {
 
     def "Test bbox parameter parsing"() {
         when:
-        def bbox = MultitilesGenerator.parseBbox(bboxString)
+        TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet("WebMercatorQuad")
+        def bbox = MultitilesUtils.parseBbox(bboxString, tileMatrixSet)
+
         then:
         bbox == expectedResult
 
         where:
         bboxString                  | expectedResult
         "50.0, 140.0, 110.24, 175"  | [50.0, 140.0, 110.24, 175.0] as double[]
-        ""                          | [-20026376.39, -20048966.10, 20026376.39, 20048966.10] as double[]
-        null                        | [-20026376.39, -20048966.10, 20026376.39, 20048966.10] as double[]
+        ""                          | [-20037508.3427892, -20037508.3427892, 20037508.3427892, 20037508.3427892] as double[]
+        null                        | [-20037508.3427892, -20037508.3427892, 20037508.3427892, 20037508.3427892] as double[]
     }
 
     def "Incorrect values of bbox parameter"() {
         when:
-        def bbox = MultitilesGenerator.parseBbox("50.0, 140.0, 110.24")
+        def bbox = MultitilesUtils.parseBbox(bboxString, TileMatrixSetCache.getTileMatrixSet("WebMercatorQuad"))
 
         then:
         thrown(NotFoundException)
@@ -42,7 +44,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Test scaleDenominator parameter parsing"() {
         when:
-        def tileMatrices = MultitilesGenerator.parseScaleDenominator(scaleDenominator)
+        def tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominator, TileMatrixSetCache.getTileMatrixSet("WebMercatorQuad"))
 
         then:
         tileMatrices == expectedResult
@@ -58,7 +60,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Incorrect of out-of-range values of scaleDenominator parameter"() {
         when:
-        def tileMatrices = MultitilesGenerator.parseScaleDenominator(scaleDenominator)
+        def tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominator, TileMatrixSetCache.getTileMatrixSet("WebMercatorQuad"))
 
         then:
         thrown(NotFoundException)
@@ -74,7 +76,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Conversion of longitude/latitude coordinates to tile coordinates for different tile matrix(level) values"() {
         when:
-        def tile = MultitilesGenerator.pointToTile(lon, lat, tileMatrix)
+        def tile = MultitilesUtils.pointToTile(lon, lat, tileMatrix, TileMatrixSetCache.getTileMatrixSet("WebMercatorQuad"))
 
         then:
         tile == expectedResult
@@ -91,7 +93,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "f-tile request query parameter parsing"() {
         when:
-        def tileFormat = MultitilesGenerator.parseTileFormat(ftileParam)
+        def tileFormat = MultitilesUtils.parseTileFormat(ftileParam)
 
         then:
         tileFormat == expectedResult
@@ -106,7 +108,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "incorrect/unsupported f-tile request parameter"() {
         when:
-        MultitilesGenerator.parseTileFormat(ftileParam)
+        MultitilesUtils.parseTileFormat(ftileParam)
 
         then:
         thrown(NotFoundException)

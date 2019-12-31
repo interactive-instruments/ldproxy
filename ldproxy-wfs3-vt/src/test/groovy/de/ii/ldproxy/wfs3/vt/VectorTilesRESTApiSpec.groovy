@@ -129,7 +129,7 @@ class VectorTilesRESTApiSpec extends Specification{
 
         when:
         def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
-            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/" + SUT_TILE_MATRIX_SET_ID + "/10/413/614"
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/" + SUT_TILE_MATRIX_SET_ID + "/10/413/615"
             headers.Accept = 'application/geo+json'
         })
 
@@ -144,6 +144,54 @@ class VectorTilesRESTApiSpec extends Specification{
         response.responseData.containsKey("numberMatched")
         response.responseData.containsKey("timeStamp")
         response.responseData.containsKey("features")
+        response.responseData.features.size() > 0
+
+    }
+
+    def 'GET Request for a tile of a collection in json format, tile matrix set WorldCRS84Quad'(){
+
+        when:
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/WorldCRS84Quad/10/325/1231"
+            headers.Accept = 'application/geo+json'
+        })
+
+        then:
+        response.status == 200
+
+        and:
+        response.responseData.containsKey("type")
+        response.responseData.get("type") == "FeatureCollection"
+        response.responseData.containsKey("links")
+        response.responseData.containsKey("numberReturned")
+        response.responseData.containsKey("numberMatched")
+        response.responseData.containsKey("timeStamp")
+        response.responseData.containsKey("features")
+        response.responseData.features.size() > 0
+
+    }
+
+    def 'GET Request for a tile of a collection in json format, tile matrix set WorldMercatorWGS84Quad'(){
+
+        when:
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/WorldMercatorWGS84Quad/10/414/615"
+            headers.Accept = 'application/geo+json'
+        })
+
+        then:
+        response.status == 200
+
+        and:
+        response.responseData.containsKey("type")
+        response.responseData.get("type") == "FeatureCollection"
+        response.responseData.containsKey("links")
+        response.responseData.containsKey("numberReturned")
+        response.responseData.containsKey("numberMatched")
+        response.responseData.containsKey("timeStamp")
+        response.responseData.containsKey("features")
+        response.responseData.features.size() > 0
+
     }
 
     def 'GET Request for a tile of a collection in mvt format'() {
@@ -188,13 +236,12 @@ class VectorTilesRESTApiSpec extends Specification{
             uri.path = SUT_PATH
             headers.Accept = 'application/json'
         })
-        then: "the response should contain links to TileMatrixSets"
-        response.responseData.get("links").any {it.rel == "tileMatrixSets" && it.href.contains("/tileMatrixSets")}
+        then: "the response shall contain links to the tileMatrixSets page"
+        response.responseData.get("links").any {it.rel == "tiling-schemes" && it.href.contains("/tileMatrixSets")}
 
     }
 
-    @Ignore // TODO: remove ignore when row and col validation is implemented
-    def 'Unsupported request parameters'() {
+    def 'Unsupported request parameters (tileMatrixSet, tileMatrix, tileRow, tileCol)'() {
         when: "request tiles for a single collection"
         def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
             uri.path = requestPath
@@ -212,6 +259,7 @@ class VectorTilesRESTApiSpec extends Specification{
         SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/" + SUT_TILE_MATRIX_SET_ID + "/3/5/614"       | "tileCol out of range"
     }
 
+    @Ignore
     def 'Tiles multitiles request'() {
 
         when: "request multitiles for a single collection"
@@ -234,6 +282,7 @@ class VectorTilesRESTApiSpec extends Specification{
         response.responseData.get("tileSet").get(0).get("tileURL").contains("f=json")
     }
 
+    @Ignore
     def 'Tiles collection multitiles request'() {
         when: "request multitiles for a single collection"
         def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
@@ -266,10 +315,16 @@ class VectorTilesRESTApiSpec extends Specification{
 
         and:
         response.responseData.containsKey("tileMatrixSetLinks")
-        response.responseData.get("tileMatrixSetLinks")
-                .get(0)
-                .get("links")
-                .any {it.rel == "multitiles" && it.href.contains(SUT_COLLECTION + "/tiles/WebMercatorQuad")}
+        response.responseData
+                .get("tileMatrixSetLinks")
+                .any{it.tileMatrixSet == "WebMercatorQuad"}
+        response.responseData
+                .get("tileMatrixSetLinks")
+                .any{it.tileMatrixSet == "WorldCRS84Quad"}
+        response.responseData
+                .get("tileMatrixSetLinks")
+                .any{it.tileMatrixSet == "WorldMercatorWGS84Quad"}
+
 
     }
 
@@ -279,7 +334,7 @@ class VectorTilesRESTApiSpec extends Specification{
         def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
             uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/WebMercatorQuad/10/413/615"
             uri.query = [filter:'fcsubtype=100454']
-            headers.Accept = 'application/json'
+            headers.Accept = 'application/geo+json'
         })
 
         then:
@@ -290,23 +345,31 @@ class VectorTilesRESTApiSpec extends Specification{
 
     }
 
-    def 'filter-lang parameter support'() {
+    def 'filter-lang parameter'() {
 
         when:
         def response_correct = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
             uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/WebMercatorQuad/10/413/615"
             uri.query = ['filter-lang':'cql-text']
-            headers.Accept = 'application/json'
+            headers.Accept = 'application/geo+json'
         })
-        def response_incorrect = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
-            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/WebMercatorQuad/10/413/615"
-            uri.query = ['filter-lang':'foobar']
-            headers.Accept = 'application/json'
-        })
+
 
         then:
         response_correct.status == 200
-        response_incorrect.status == 400
+
+    }
+
+    def 'invalid filter-lang parameter'() {
+        when:
+        def response_incorrect = restClient.request(SUT_URL, Method.GET, ContentType.JSON, {req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION + "/tiles/WebMercatorQuad/10/413/615"
+            uri.query = ['filter-lang':'foobar']
+            headers.Accept = 'application/geo+json'
+        })
+
+        then:
+        thrown(HttpResponseException)
 
     }
 

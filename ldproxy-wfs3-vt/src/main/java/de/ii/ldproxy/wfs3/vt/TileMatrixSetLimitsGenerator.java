@@ -13,12 +13,11 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.wfs3.vt.TileCollection.TileMatrixSetLimits;
 import de.ii.ldproxy.wfs3.vt.TilesConfiguration.MinMax;
 import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 
-import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,18 +40,26 @@ public class TileMatrixSetLimitsGenerator {
                                                                            String tileMatrixSetId,
                                                                            CrsTransformation crsTransformation) {
 
+        MinMax tileMatrixRange = getTileMatrixRange(tileMatrixSetId, data);
+        TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
+
         List<FeatureTypeConfigurationOgcApi> collectionData = data.getFeatureTypes()
                 .values()
                 .stream()
                 .filter(featureType -> collectionId.equals(featureType.getId()))
                 .collect(Collectors.toList());
         BoundingBox bbox = collectionData.get(0).getExtent().getSpatial();
-        CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), new EpsgCrs(3857));
-        CoordinateTuple lowerLeftCorner = transformer.transform(bbox.getYmin(), bbox.getXmin());
-        CoordinateTuple upperRightCorner = transformer.transform(bbox.getYmax(), bbox.getXmax());
 
-        MinMax tileMatrixRange = getTileMatrixRange(tileMatrixSetId, data);
-        return generateLimitsList(tileMatrixRange, lowerLeftCorner, upperRightCorner);
+        if (!bbox.getEpsgCrs().equals(tileMatrixSet.getCrs())) {
+            CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
+            try {
+                bbox = transformer.transformBoundingBox(bbox);
+            } catch (CrsTransformationException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return generateLimitsList(tileMatrixRange, bbox, tileMatrixSet);
     }
 
     /**
@@ -65,14 +72,21 @@ public class TileMatrixSetLimitsGenerator {
     public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDatasetData data, String tileMatrixSetId,
                                                             CrsTransformation crsTransformation) {
 
-        double[] spatialExtent = data.getSpatialExtent();
-        BoundingBox bbox = new BoundingBox(spatialExtent[1], spatialExtent[0], spatialExtent[3], spatialExtent[2], new EpsgCrs(4326));
-        CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), new EpsgCrs(3857));
-        CoordinateTuple lowerCorner = transformer.transform(bbox.getXmin(), bbox.getYmin());
-        CoordinateTuple upperCorner = transformer.transform(bbox.getXmax(), bbox.getYmax());
-
         MinMax tileMatrixRange = getTileMatrixRange(tileMatrixSetId, data);
-        return generateLimitsList(tileMatrixRange, lowerCorner, upperCorner);
+        TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
+
+        double[] spatialExtent = data.getSpatialExtent();
+        BoundingBox bbox = new BoundingBox(spatialExtent[0], spatialExtent[1], spatialExtent[2], spatialExtent[3], new EpsgCrs(4326));
+        if (!bbox.getEpsgCrs().equals(tileMatrixSet.getCrs())) {
+            CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
+            try {
+                bbox = transformer.transformBoundingBox(new BoundingBox(spatialExtent[1], spatialExtent[0], spatialExtent[3], spatialExtent[2], new EpsgCrs(4326)));
+            } catch (CrsTransformationException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return generateLimitsList(tileMatrixRange, bbox, tileMatrixSet);
     }
 
     /**
@@ -97,7 +111,7 @@ public class TileMatrixSetLimitsGenerator {
             return minMaxFromConfig.get();
         }
 
-        TileMatrixSet tileMatrixSet = getTileMatrixSet(tileMatrixSetId);
+        TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
         return new ImmutableMinMax.Builder()
                 .min(tileMatrixSet.getMinLevel())
                 .max(tileMatrixSet.getMaxLevel())
@@ -105,31 +119,16 @@ public class TileMatrixSetLimitsGenerator {
     }
 
     /**
-     * Return tileMatrixSet class for the given tileMatrixSetId
-     * @param tileMatrixSetId identifier of a specific tile matrix set
-     * @return TileMatrixSet
-     */
-    private TileMatrixSet getTileMatrixSet(String tileMatrixSetId) {
-        if (tileMatrixSetId.equalsIgnoreCase("WebMercatorQuad") || tileMatrixSetId.equalsIgnoreCase("default")) {
-            return new WebMercatorQuad();
-        } else {
-            throw new NotFoundException();
-        }
-    }
-
-    /**
      * Construct a list of TileMatrixSetLimits for the given bounding box and tileMatrix range
      * @param tileMatrixRange range of tileMatrix values
-     * @param lowerCorner coordinates of the lower left corner point of the bounding box
-     * @param upperCorner coordinates of the upper right corner point of the bounding box
+     * @param bbox bounding box
      * @return list of TileMatrixSetLimits
      */
-    private List<TileMatrixSetLimits> generateLimitsList(MinMax tileMatrixRange, CoordinateTuple lowerCorner,
-                                                         CoordinateTuple upperCorner) {
+    private List<TileMatrixSetLimits> generateLimitsList(MinMax tileMatrixRange, BoundingBox bbox, TileMatrixSet tileMatrixSet) {
         ImmutableList.Builder<TileMatrixSetLimits> limits = new ImmutableList.Builder<>();
         for (int tileMatrix = tileMatrixRange.getMin(); tileMatrix <= tileMatrixRange.getMax(); tileMatrix++) {
-            List<Integer> upperLeftCornerTile = MultitilesGenerator.pointToTile(lowerCorner.getX(), upperCorner.getY(), tileMatrix);
-            List<Integer> lowerRightCornerTile = MultitilesGenerator.pointToTile(upperCorner.getX(), lowerCorner.getY(), tileMatrix);
+            List<Integer> upperLeftCornerTile = MultitilesUtils.pointToTile(bbox.getXmin(), bbox.getYmax(), tileMatrix, tileMatrixSet);
+            List<Integer> lowerRightCornerTile = MultitilesUtils.pointToTile(bbox.getXmax(), bbox.getYmin(), tileMatrix, tileMatrixSet);
             limits.add(ImmutableTileMatrixSetLimits.builder()
                     .minTileRow(upperLeftCornerTile.get(0))
                     .maxTileRow(lowerRightCornerTile.get(0))

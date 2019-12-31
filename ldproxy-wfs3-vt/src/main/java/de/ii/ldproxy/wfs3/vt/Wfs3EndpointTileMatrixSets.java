@@ -7,9 +7,6 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -25,8 +22,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -117,7 +112,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
 
         TileMatrixSets tileMatrixSets = ImmutableTileMatrixSets.builder()
                 .tileMatrixSets(
-                    cache.getTileMatrixSetIds()
+                    TileMatrixSetCache.getTileMatrixSetIds()
                         .stream()
                         .map(tileMatrixSetId -> ImmutableTileMatrixSetLinks.builder()
                             .id(tileMatrixSetId)
@@ -145,7 +140,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
     }
 
     private Optional<String> deriveTitle(String tileMatrixSetId) {
-        TileMatrixSetData tileMatrixSet = getTileMatrixSetFromStore(tileMatrixSetId);
+        TileMatrixSetData tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId).getTileMatrixSetData();
         return tileMatrixSet.getTitle();
     }
 
@@ -164,9 +159,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
 
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(api.getData()));
 
-        File file = cache.getTileMatrixSet(tileMatrixSetId);
-
-        TileMatrixSetData jsonTileMatrixSet = getTileMatrixSetFromStore(tileMatrixSetId);
+        TileMatrixSetData jsonTileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId).getTileMatrixSetData();
 
         List<OgcApiLink> links = new TileMatrixSetsLinksGenerator().generateLinks(
                 requestContext.getUriCustomizer(),
@@ -195,30 +188,4 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
                        .build();
     }
 
-    private  TileMatrixSetData getTileMatrixSetFromStore(String tileMatrixSetId) {
-        File file = cache.getTileMatrixSet(tileMatrixSetId);
-
-        try {
-            final byte[] content = java.nio.file.Files.readAllBytes(file.toPath());
-
-            // prepare Jackson mapper for deserialization
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new Jdk8Module());
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            try {
-                // parse input
-                TileMatrixSetData tileMatrixSet = mapper.readValue(content, TileMatrixSetData.class);
-
-                return tileMatrixSet;
-            } catch (IOException e) {
-                LOGGER.error("Tile Matrix Set file in store is invalid: "+file.getAbsolutePath());
-                LOGGER.error("Reason: "+e.getMessage());
-            }
-        } catch (IOException e) {
-            LOGGER.error("Tile Matrix Set could not be read: "+tileMatrixSetId);
-            LOGGER.error("Reason: "+e.getMessage());
-        }
-
-        throw new InternalServerErrorException();
-    }
 }

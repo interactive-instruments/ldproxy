@@ -7,29 +7,39 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
-import de.ii.xtraplatform.crs.api.*;
+
+import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
+
+import java.net.URI;
+import java.util.Objects;
 
 /**
- * This is the most commonly used tiling scheme. It is used by Google Maps and most other web mapping applications.
+ * This is the most commonly used tile matrix set. It is used by Google Maps and most other web mapping applications.
  * In WMTS it is called "Google Maps Compatible", in the Tile Matrix Set standard "WebMercatorQuad".
  *
  */
 public class WebMercatorQuad implements TileMatrixSet {
 
     /**
-     * Web Mercator is the coordinate reference system of the tiling scheme, EPSG code is 3857
+     * Web Mercator is the coordinate reference system of the tile matrix set, EPSG code is 3857
      */
     private static final EpsgCrs CRS = new EpsgCrs(3857);
 
     /**
-     * The bounding box of the tiling scheme
+     * The bounding box of the tile matrix set
      */
     private static final double BBOX_MIN_X = -20037508.3427892;
     private static final double BBOX_MAX_X = 20037508.3427892;
     private static final double BBOX_MIN_Y = -20037508.3427892;
     private static final double BBOX_MAX_Y = 20037508.3427892;
+    private static final BoundingBox BBOX = new BoundingBox(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
     private static final double BBOX_DX = BBOX_MAX_X - BBOX_MIN_X;
     private static final double BBOX_DY = BBOX_MAX_Y - BBOX_MIN_Y;
+    private static final double[] TOP_LEFT_CORNER = {BBOX_MIN_X, BBOX_MAX_Y};
 
     /**
      * The tile size is fixed to 256x256
@@ -49,7 +59,7 @@ public class WebMercatorQuad implements TileMatrixSet {
     }
 
     /**
-     * @return for the default tiling scheme, a fixed id "WebMercatorQuad" is used
+     * @return for this tile matrix set, a fixed id "WebMercatorQuad" is used
      */
     @Override
     public String getId() {
@@ -57,7 +67,7 @@ public class WebMercatorQuad implements TileMatrixSet {
     };
 
     /**
-     * @return the coordinate reference system of the default tiling scheme is EPSG 3857
+     * @return the coordinate reference system of this tile matrix set is EPSG 3857
      */
     @Override
     public EpsgCrs getCrs() {
@@ -70,10 +80,10 @@ public class WebMercatorQuad implements TileMatrixSet {
      * @param level the zoom level
      * @param row the row number
      * @param col the column number
-     * @return the bounding box of the tiling scheme in the coordinate reference system EPSG 3857
+     * @return the bounding box of the tile matrix set in the coordinate reference system EPSG 3857
      */
     @Override
-    public BoundingBox getBoundingBox(int level, int col, int row) {
+    public BoundingBox getTileBoundingBox(int level, int col, int row) {
 
         double rows = Math.pow(2, level);
         double cols = Math.pow(2, level);
@@ -92,7 +102,7 @@ public class WebMercatorQuad implements TileMatrixSet {
      * @param level the zoom level
      * @param row the row number
      * @param col the column number
-     * @return the distance in the units of measure of the coordinate references system EPSG 3857 of the tiling scheme
+     * @return the distance in the units of measure of the coordinate references system EPSG 3857 of the tile matrix set
      */
     @Override
     public double getMaxAllowableOffset(int level, int row, int col) {
@@ -111,7 +121,7 @@ public class WebMercatorQuad implements TileMatrixSet {
      */
     @Override
     public double getMaxAllowableOffset(int level, int row, int col, EpsgCrs crs, CrsTransformation crsTransformation) throws CrsTransformationException {
-        BoundingBox bbox = getBoundingBox(level, col, row);
+        BoundingBox bbox = getTileBoundingBox(level, col, row);
         if (crs!=null && !crs.equals(CRS)) {
             CrsTransformer transformer = crsTransformation.getTransformer(CRS, crs);
             BoundingBox bboxCrs = transformer.transformBoundingBox(bbox);
@@ -121,14 +131,14 @@ public class WebMercatorQuad implements TileMatrixSet {
     }
 
     /**
-     * @return the maximum zoom level for the default tiling scheme is 24
+     * @return the maximum zoom level for the WebMercatorQuad tile matrix set is 24
      */
     @Override
     public int getMaxLevel() {
         return 24;
     };
     /**
-     * @return the minimum zoom level for the default tiling schemes is 0
+     * @return the minimum zoom level for the WebMercatorQuad tile matrix set is 0
      */
     @Override
     public int getMinLevel() {
@@ -151,28 +161,48 @@ public class WebMercatorQuad implements TileMatrixSet {
     public int getTileExtent() {
         return TILE_EXTENT;
     }
-    /**
-     * validate, whether the row is valid for the zoom level
-     * @param level the zoom level
-     * @param row the row
-     * @return {@code true}, if the row is valid for the zoom level
-     */
+
     @Override
-    public boolean validateRow(int level, int row) {
-        if (level<getMinLevel() || level>getMaxLevel())
-            return false;
-        return true;
+    public double getInitialScaleDenominator() {
+        return 559082264.0287178;
     }
-    /**
-     * validate, whether the column is valid for the zoom level
-     * @param level the zoom level
-     * @param col the column
-     * @return {@code true}, if the column is valid for the zoom level
-     */
+
     @Override
-    public boolean validateCol(int level, int col) {
-        if (level<getMinLevel() || level>getMaxLevel())
-            return false;
-        return true;
+    public int getInitialWidth() {
+        return 1;
     }
+
+    @Override
+    public int getInitialHeight() {
+        return 1;
+    }
+
+    @Override
+    public BoundingBox getBoundingBox() {
+        return BBOX;
+    }
+
+    @Override
+    public TileMatrixSetData getTileMatrixSetData() {
+
+        if (Objects.nonNull(data)) {
+            return data;
+        }
+
+        data = ImmutableTileMatrixSetData.builder()
+                .identifier(getId())
+                .title("Google Maps Compatible for the World")
+                .supportedCRS(CRS.getAsUri())
+                .wellKnownScaleSet(URI.create("http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible"))
+                .boundingBox(ImmutableTileMatrixSetBoundingBox.builder()
+                        .lowerCorner(BBOX_MIN_X, BBOX_MIN_Y)
+                        .upperCorner(BBOX_MAX_X, BBOX_MAX_Y)
+                        .build())
+                .tileMatrix(generateTileMatrices(getMaxLevel(), getInitialScaleDenominator(), TOP_LEFT_CORNER))
+                .build();
+
+        return data;
+    }
+
+
 }

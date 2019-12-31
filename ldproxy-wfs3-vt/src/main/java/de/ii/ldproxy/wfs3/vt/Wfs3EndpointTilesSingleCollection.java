@@ -73,7 +73,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     private final VectorTilesCache cache;
 
-    private final MultitilesGenerator multitilesGenerator = new MultitilesGenerator();
+    private final CollectionMultitilesGenerator multitilesGenerator = new CollectionMultitilesGenerator();
 
     Wfs3EndpointTilesSingleCollection(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
@@ -232,7 +232,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                 .title(featureTypeConfiguration.getLabel())
                 .description(featureTypeConfiguration.getDescription().orElse(""))
                 .tileMatrixSetLinks(
-                        cache.getTileMatrixSetIds()
+                        TileMatrixSetCache.getTileMatrixSetIds()
                                 .stream()
                                 .map(tileMatrixSetId -> ImmutableTileCollection.builder()
                                         .tileMatrixSet(tileMatrixSetId)

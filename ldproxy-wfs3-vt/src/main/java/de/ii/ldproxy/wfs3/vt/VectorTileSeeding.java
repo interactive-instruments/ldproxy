@@ -504,25 +504,25 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                                    EpsgCrs targetCrs) throws CrsTransformationException {
         double cornerValue = 0;
 
-        if (crsTransformation == null || targetCrs.equals(tileMatrixSet.getBoundingBox(zoomLevel, col, row)
+        if (crsTransformation == null || targetCrs.equals(tileMatrixSet.getTileBoundingBox(zoomLevel, col, row)
                                                                       .getEpsgCrs())) {
             if (x && min)
-                cornerValue = tileMatrixSet.getBoundingBox(zoomLevel, col, row)
+                cornerValue = tileMatrixSet.getTileBoundingBox(zoomLevel, col, row)
                                           .getXmin();
             if (x && !min)
-                cornerValue = tileMatrixSet.getBoundingBox(zoomLevel, col, row)
+                cornerValue = tileMatrixSet.getTileBoundingBox(zoomLevel, col, row)
                                           .getXmax();
             if (!x && min)
-                cornerValue = tileMatrixSet.getBoundingBox(zoomLevel, col, row)
+                cornerValue = tileMatrixSet.getTileBoundingBox(zoomLevel, col, row)
                                           .getYmin();
             if (!x && !min)
-                cornerValue = tileMatrixSet.getBoundingBox(zoomLevel, col, row)
+                cornerValue = tileMatrixSet.getTileBoundingBox(zoomLevel, col, row)
                                           .getYmax();
 
         } else {
-            CrsTransformer crsTransformer = crsTransformation.getTransformer(tileMatrixSet.getBoundingBox(zoomLevel, col, row)
+            CrsTransformer crsTransformer = crsTransformation.getTransformer(tileMatrixSet.getTileBoundingBox(zoomLevel, col, row)
                                                                                          .getEpsgCrs(), targetCrs);
-            BoundingBox bbox = tileMatrixSet.getBoundingBox(zoomLevel, col, row);
+            BoundingBox bbox = tileMatrixSet.getTileBoundingBox(zoomLevel, col, row);
             BoundingBox boundingBox = crsTransformer.transformBoundingBox(bbox);
 
             if (x && min)

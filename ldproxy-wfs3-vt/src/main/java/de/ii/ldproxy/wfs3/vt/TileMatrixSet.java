@@ -7,10 +7,13 @@
  */
 package de.ii.ldproxy.wfs3.vt;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+
+import java.util.List;
 
 /**
  * This class provides derived information from a tile matrix set.
@@ -28,7 +31,7 @@ public interface TileMatrixSet {
      * @param col the column
      * @return the bounding box in the coordinate reference system of the tiling scheme
      */
-    BoundingBox getBoundingBox(int level, int col, int row);
+    BoundingBox getTileBoundingBox(int level, int col, int row);
 
     /**
      * determine the Douglas-Peucker distance parameter for a tile
@@ -77,18 +80,89 @@ public interface TileMatrixSet {
     int getTileExtent();
 
     /**
+     * Fetch tile matrix set data (e.g. id, crs, bounding box, tile matrices, etc.)
+     * @return tile matrix set data
+     */
+    TileMatrixSetData getTileMatrixSetData();
+
+    /**
+     * Fetch the scale denominator on level 0
+     * @return scale denominator on level 0
+     */
+    double getInitialScaleDenominator();
+
+    /**
+     * Fetch the width of the tile grid on level 0
+     * @return initial width in tiles
+     */
+    int getInitialWidth();
+
+    /**
+     * Fetch the height of the tile grid on level 0 in tiles
+     * @return initial height in tiles
+     */
+    int getInitialHeight();
+
+    /**
+     * Fetch the bounding box of the tile matrix set
+     * @return bounding box
+     */
+    BoundingBox getBoundingBox();
+
+    /**
      * validate, whether the row is valid for the zoom level
      * @param level the zoom level
      * @param row the row
      * @return {@code true}, if the row is valid for the zoom level
      */
-    boolean validateRow(int level, int row);
+    default boolean validateRow(int level, int row) {
+        if (level < getMinLevel() || level > getMaxLevel()) {
+            return false;
+        }
+        if (row < 0 || row > getInitialHeight() * Math.pow(2, level)) {
+            return false;
+        }
+        return true;
+    }
 
     /**
-     * validate, whether the column is valid for the zoom level
+     * Validate, whether the column is valid for the zoom level
      * @param level the zoom level
      * @param col the column
      * @return {@code true}, if the column is valid for the zoom level
      */
-    boolean validateCol(int level, int col);
+
+    default boolean validateCol(int level, int col) {
+        if (level < getMinLevel() || level > getMaxLevel()) {
+            return false;
+        }
+        if (col < 0 || col > getInitialWidth() * Math.pow(2, level)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Generate tile matrix information
+     * @param maxLevel maximum tile matrix level
+     * @param initScaleDenominator value of the scale denominator on level 0
+     * @param topLeftCorner coordinates of the top left corner of the map
+     * @return list of tile matrices
+     */
+    default List<TileMatrix> generateTileMatrices(int maxLevel, double initScaleDenominator, double[] topLeftCorner) {
+        ImmutableList.Builder<TileMatrix> tileMatrices = new ImmutableList.Builder<>();
+        for (int i = 0; i <= maxLevel; i++) {
+            TileMatrix tileMatrix = ImmutableTileMatrix.builder()
+                    .identifier(String.valueOf(i))
+                    .tileWidth(getTileSize())
+                    .tileHeight(getTileSize())
+                    .matrixWidth(getInitialWidth() * Math.pow(2, i))
+                    .matrixHeight(getInitialHeight() * Math.pow(2, i))
+                    .scaleDenominator(initScaleDenominator / Math.pow(2, i))
+                    .topLeftCorner(topLeftCorner)
+                    .build();
+            tileMatrices.add(tileMatrix);
+        }
+        return tileMatrices.build();
+    }
 }

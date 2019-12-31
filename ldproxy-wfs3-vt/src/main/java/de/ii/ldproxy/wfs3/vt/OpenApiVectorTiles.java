@@ -127,8 +127,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             Schema tileMatrixSetIdSchema = new Schema();
             tileMatrixSetIdSchema.setType("string");
 
-            List<String> tileMatrixSetEnum = new ArrayList<>(); // TODO determine dynamically
-            tileMatrixSetEnum.add("WebMercatorQuad");
+            List<String> tileMatrixSetEnum = new ArrayList<>(TileMatrixSetCache.getTileMatrixSetIds());
 
             tileMatrixSetId.setSchema(new StringSchema()._enum(tileMatrixSetEnum));
             tileMatrixSetId.example("WebMercatorQuad");

@@ -204,7 +204,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                 .title(requestContext.getApi().getData().getLabel())
                 .description(requestContext.getApi().getData().getDescription().orElse(""))
                 .tileMatrixSetLinks(
-                            cache.getTileMatrixSetIds()
+                        TileMatrixSetCache.getTileMatrixSetIds()
                                 .stream()
                                 .map(tileMatrixSetId -> ImmutableTileCollection.builder()
                                     .tileMatrixSet(tileMatrixSetId)
