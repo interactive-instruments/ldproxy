@@ -266,7 +266,7 @@ class VectorTile {
         // calculate bbox in the native CRS of the dataset
         BoundingBox bboxNativeCrs = getBoundingBoxNativeCrs(crsTransformation);
 
-        return String.format(Locale.US, "BBOX(%s, %.3f, %.3f, %.3f, %.3f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs()
+        return String.format(Locale.US, "BBOX(%s, %f, %f, %f, %f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs()
                                                                                                                                                                                                                   .getAsSimple());
     }
 
@@ -299,7 +299,7 @@ class VectorTile {
 
 
     /**
-     * @return the bounding box of the tile matrix set object
+     * @return the bounding box of the tile in the native CRS of the tile
      */
     private BoundingBox getBoundingBox() {
         return tileMatrixSet.getTileBoundingBox(level, col, row);
