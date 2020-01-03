@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,6 +23,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -110,9 +111,12 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
                 i18n,
                 requestContext.getLanguage());
 
+        Map<String, TilesConfiguration.MinMax> tileMatrixSetZoomLevels = Wfs3EndpointTiles.getTileMatrixSetZoomLevels(api.getData());
+
         TileMatrixSets tileMatrixSets = ImmutableTileMatrixSets.builder()
                 .tileMatrixSets(
-                    TileMatrixSetCache.getTileMatrixSetIds()
+                    tileMatrixSetZoomLevels
+                        .keySet()
                         .stream()
                         .map(tileMatrixSetId -> ImmutableTileMatrixSetLinks.builder()
                             .id(tileMatrixSetId)
@@ -158,6 +162,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
                                      @Context OgcApiRequestContext requestContext) {
 
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(api.getData()));
+        Wfs3EndpointTiles.checkTileMatrixSet(api.getData(), tileMatrixSetId);
 
         TileMatrixSetData jsonTileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId).getTileMatrixSetData();
 

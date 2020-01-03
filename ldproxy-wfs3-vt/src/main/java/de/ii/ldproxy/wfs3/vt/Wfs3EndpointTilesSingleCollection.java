@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -227,17 +227,19 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
         FeatureTypeConfigurationOgcApi featureTypeConfiguration = requestContext.getApi().getData().getFeatureTypes().get(collectionId);
-
+        Map<String, TilesConfiguration.MinMax> tileMatrixSetZoomLevels = getTileMatrixSetZoomLevels(service.getData(), collectionId);
         TileCollections tiles = ImmutableTileCollections.builder()
                 .title(featureTypeConfiguration.getLabel())
                 .description(featureTypeConfiguration.getDescription().orElse(""))
                 .tileMatrixSetLinks(
-                        TileMatrixSetCache.getTileMatrixSetIds()
+                        tileMatrixSetZoomLevels
+                                .keySet()
                                 .stream()
                                 .map(tileMatrixSetId -> ImmutableTileCollection.builder()
                                         .tileMatrixSet(tileMatrixSetId)
                                         .tileMatrixSetLimits(limitsGenerator.generateCollectionTileMatrixSetLimits(
-                                                service.getData(), collectionId, tileMatrixSetId, crsTransformation))
+                                                service.getData(), collectionId, tileMatrixSetId,
+                                                tileMatrixSetZoomLevels.get(tileMatrixSetId), crsTransformation))
                                         .build())
                                 .collect(Collectors.toList()))
                 .links(vectorTilesLinkGenerator.generateTilesLinks(
@@ -300,7 +302,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
         checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
         VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", false);
-
+        checkTileMatrixSetId(tileMatrixSetId, collectionId, service.getData());
         boolean doNotCache = false;
 
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
@@ -425,6 +427,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
         VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/geo+json", false);
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+        checkTileMatrixSetId(tileMatrixSetId, collectionId, service.getData());
 
         Set<String> filterParameters = ImmutableSet.of();
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
@@ -537,5 +540,17 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                     .filter(wfs3OutputFormatExtension -> wfs3OutputFormatExtension.getMediaType()
                                                                                                   .equals(mediaType))
                                     .findFirst();
+    }
+
+    private Map<String, TilesConfiguration.MinMax> getTileMatrixSetZoomLevels(OgcApiDatasetData data, String collectionId) {
+        TilesConfiguration tilesConfiguration = getExtensionConfiguration(data, data.getFeatureTypes().get(collectionId), TilesConfiguration.class).get();
+        return tilesConfiguration.getZoomLevels();
+    }
+
+    private void checkTileMatrixSetId(String tileMatrixSetId, String collectionId, OgcApiDatasetData data) {
+        Set<String> tileMatrixSets = getTileMatrixSetZoomLevels(data, collectionId).keySet();
+        if (!tileMatrixSets.contains(tileMatrixSetId)) {
+            throw new NotFoundException("Unsupported tile matrix set: " + tileMatrixSetId);
+        }
     }
 }

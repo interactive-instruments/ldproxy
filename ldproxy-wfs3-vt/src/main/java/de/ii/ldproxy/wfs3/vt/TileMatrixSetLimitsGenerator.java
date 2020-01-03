@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,8 +19,6 @@ import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -37,10 +35,9 @@ public class TileMatrixSetLimitsGenerator {
      * @return list of TileMatrixSetLimits
      */
     public List<TileMatrixSetLimits> generateCollectionTileMatrixSetLimits(OgcApiDatasetData data, String collectionId,
-                                                                           String tileMatrixSetId,
+                                                                           String tileMatrixSetId, MinMax tileMatrixRange,
                                                                            CrsTransformation crsTransformation) {
 
-        MinMax tileMatrixRange = getTileMatrixRange(tileMatrixSetId, data);
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
         List<FeatureTypeConfigurationOgcApi> collectionData = data.getFeatureTypes()
@@ -53,12 +50,11 @@ public class TileMatrixSetLimitsGenerator {
         if (!bbox.getEpsgCrs().equals(tileMatrixSet.getCrs())) {
             CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
             try {
-                bbox = transformer.transformBoundingBox(bbox);
+                bbox = transformer.transformBoundingBox(new BoundingBox(bbox.getYmin(), bbox.getXmin(), bbox.getYmax(), bbox.getXmax(), bbox.getEpsgCrs()));
             } catch (CrsTransformationException e) {
                 e.printStackTrace();
             }
         }
-
         return generateLimitsList(tileMatrixRange, bbox, tileMatrixSet);
     }
 
@@ -70,9 +66,8 @@ public class TileMatrixSetLimitsGenerator {
      * @return list of TileMatrixSetLimits
      */
     public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDatasetData data, String tileMatrixSetId,
-                                                            CrsTransformation crsTransformation) {
+                                                            MinMax tileMatrixRange, CrsTransformation crsTransformation) {
 
-        MinMax tileMatrixRange = getTileMatrixRange(tileMatrixSetId, data);
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
         double[] spatialExtent = data.getSpatialExtent();
@@ -89,34 +84,6 @@ public class TileMatrixSetLimitsGenerator {
         return generateLimitsList(tileMatrixRange, bbox, tileMatrixSet);
     }
 
-    /**
-     * Return minimum and maximum tileMatrix values specified in the configuration.
-     * If tileMatrix range is absent in the configuration, returns the whole extent supported by tileMatrixSetId.
-     * @param tileMatrixSetId identifier of a specific tile matrix set
-     * @param data service dataset
-     * @return range of tile matrix values
-     */
-    private MinMax getTileMatrixRange(String tileMatrixSetId, OgcApiDatasetData data) {
-
-        Optional<MinMax> minMaxFromConfig = data.getCapabilities()
-                .stream()
-                .filter(extensionConfiguration -> extensionConfiguration instanceof TilesConfiguration)
-                .map(tilesConfiguration -> ((TilesConfiguration) tilesConfiguration).getZoomLevels())
-                .filter(Objects::nonNull)
-                .filter(minMaxMap -> minMaxMap.containsKey(tileMatrixSetId))
-                .map(minMaxMap -> minMaxMap.get(tileMatrixSetId))
-                .findFirst();
-
-        if (minMaxFromConfig.isPresent()) {
-            return minMaxFromConfig.get();
-        }
-
-        TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
-        return new ImmutableMinMax.Builder()
-                .min(tileMatrixSet.getMinLevel())
-                .max(tileMatrixSet.getMaxLevel())
-                .build();
-    }
 
     /**
      * Construct a list of TileMatrixSetLimits for the given bounding box and tileMatrix range

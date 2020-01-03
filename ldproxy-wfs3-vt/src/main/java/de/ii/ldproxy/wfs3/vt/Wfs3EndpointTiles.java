@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -199,16 +199,19 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
+        Map<String, TilesConfiguration.MinMax> tileMatrixSetZoomLevels = getTileMatrixSetZoomLevels(service.getData());
 
         TileCollections tiles = ImmutableTileCollections.builder()
                 .title(requestContext.getApi().getData().getLabel())
                 .description(requestContext.getApi().getData().getDescription().orElse(""))
                 .tileMatrixSetLinks(
-                        TileMatrixSetCache.getTileMatrixSetIds()
+                        tileMatrixSetZoomLevels
+                                .keySet()
                                 .stream()
                                 .map(tileMatrixSetId -> ImmutableTileCollection.builder()
                                     .tileMatrixSet(tileMatrixSetId)
-                                    .addAllTileMatrixSetLimits(limitsGenerator.getTileMatrixSetLimits(service.getData(), tileMatrixSetId, crsTransformation))
+                                    .addAllTileMatrixSetLimits(limitsGenerator.getTileMatrixSetLimits(service.getData(),
+                                            tileMatrixSetId, tileMatrixSetZoomLevels.get(tileMatrixSetId), crsTransformation))
                                     .build())
                                 .collect(Collectors.toList()))
                 .links(vectorTilesLinkGenerator.generateTilesLinks(
@@ -255,8 +258,10 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                              @QueryParam("multiTileType") String multiTileType, @QueryParam("collections") String collectionsParam,
                                              @Context UriInfo uriInfo) throws UnsupportedEncodingException {
 
-        if (!isMultiTilesEnabledForApi(service.getData()))
+        if (!isMultiTilesEnabledForApi(service.getData())) {
             throw new NotFoundException();
+        }
+        checkTileMatrixSet(service.getData(), tileMatrixSetId);
         OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE)
                 .orElseThrow(NotAcceptableException::new);
         Map<String, Boolean> enabledMap = vectorTileMapGenerator.getEnabledMap(service.getData());
@@ -318,6 +323,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         // TODO support other filter parameters
         Map<String, Boolean> enabledMap = vectorTileMapGenerator.getEnabledMap(service.getData());
         checkTilesParameterDataset(enabledMap);
+        checkTileMatrixSet(service.getData(), tileMatrixSetId);
 
         LOGGER.debug("GET TILE MVT {} {} {} {} {} {}", service.getId(), "all", tileMatrixSetId, tileMatrix, tileRow, tileCol);
         cache.cleanup(); // TODO centralize this
@@ -636,5 +642,21 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             }
         }
         return collections;
+    }
+
+    public static Map<String, TilesConfiguration.MinMax> getTileMatrixSetZoomLevels(OgcApiDatasetData data) {
+        return data.getCapabilities()
+                .stream()
+                .filter(extensionConfiguration -> extensionConfiguration instanceof TilesConfiguration)
+                .map(tilesConfiguration -> ((TilesConfiguration) tilesConfiguration).getZoomLevels())
+                .findAny()
+                .orElse(null);
+    }
+
+    public static void checkTileMatrixSet(OgcApiDatasetData data, String tileMatrixSetId) {
+        Set<String> tileMatrixSets = getTileMatrixSetZoomLevels(data).keySet();
+        if (!tileMatrixSets.contains(tileMatrixSetId)) {
+            throw new NotFoundException("Unsupported tile matrix set: " + tileMatrixSetId);
+        }
     }
 }
