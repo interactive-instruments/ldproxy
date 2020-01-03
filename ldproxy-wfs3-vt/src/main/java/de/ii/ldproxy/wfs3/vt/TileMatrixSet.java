@@ -8,21 +8,44 @@
 package de.ii.ldproxy.wfs3.vt;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
-import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.crs.api.*;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This class provides derived information from a tile matrix set.
  */
 public interface TileMatrixSet {
 
+    /**
+     * fetch the local identifier for the tiling scheme
+     * @return the identifier, e.g. "WebMercatorQuad"
+     */
     String getId();
 
+    /**
+     * fetch a title of the tiling scheme for presentation to humans
+     * @return the title, e.g. "Google Maps Compatible for the World"
+     */
+    default Optional<String> getTitle() {
+        return Optional.empty();
+    }
+
+    /**
+     * fetch the base coordinate reference system of the tiling scheme
+     * @return the CRS
+     */
     EpsgCrs getCrs();
+
+    /**
+     * fetch a well known scale set URI, if one exists
+     * @return the URI
+     */
+    default Optional<URI> getWellKnownScaleSet() {
+        return Optional.empty();
+    }
 
     /**
      * fetch the bounding box of a tile
@@ -31,7 +54,36 @@ public interface TileMatrixSet {
      * @param col the column
      * @return the bounding box in the coordinate reference system of the tiling scheme
      */
-    BoundingBox getTileBoundingBox(int level, int col, int row);
+    default BoundingBox getTileBoundingBox(int level, int col, int row) {
+        BoundingBox bbox = getBoundingBox();
+        double rows = getRows(level);
+        double cols = getCols(level);
+        double tileWidth = (bbox.getXmax()-bbox.getXmin()) / cols;
+        double tileHeight = (bbox.getYmax()-bbox.getYmin()) / rows;
+        double minX = bbox.getXmin() + tileWidth * col;
+        double maxX = minX + tileWidth;
+        double maxY = bbox.getYmax() - tileHeight * row;
+        double minY = maxY - tileHeight;
+        return new BoundingBox(minX, minY, maxX, maxY, getCrs());
+    }
+
+    /**
+     * determine the number of columns for a tile matrix
+     * @param level the zoom level
+     * @return the number of columns
+     */
+    default int getCols(int level) {
+        return (int) Math.round(Math.pow(2, level) * getInitialWidth());
+    }
+
+    /**
+     * determine the number of rows for a tile matrix
+     * @param level the zoom level
+     * @return the number of rows
+     */
+    default int getRows(int level) {
+        return (int) Math.round(Math.pow(2, level) * getInitialHeight());
+    }
 
     /**
      * determine the Douglas-Peucker distance parameter for a tile
@@ -40,7 +92,10 @@ public interface TileMatrixSet {
      * @param col the column
      * @return the distance in the units of measure of the coordinate references system of the tiling scheme
      */
-    double getMaxAllowableOffset(int level, int row, int col);
+    default double getMaxAllowableOffset(int level, int row, int col) {
+        BoundingBox bbox = getBoundingBox();
+        return (bbox.getXmax()-bbox.getXmin()) / getCols(level) / getTileExtent();
+    }
 
     /**
      * determine the Douglas-Peucker distance parameter for a tile
@@ -52,7 +107,15 @@ public interface TileMatrixSet {
      * @return the distance in the units of measure of the target coordinate references system
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
-    double getMaxAllowableOffset(int level, int row, int col, EpsgCrs crs, CrsTransformation crsTransformation) throws CrsTransformationException;
+    default double getMaxAllowableOffset(int level, int row, int col, EpsgCrs crs, CrsTransformation crsTransformation) throws CrsTransformationException {
+        BoundingBox bbox = getTileBoundingBox(level, col, row);
+        if (crs!=null && !crs.equals(getCrs())) {
+            CrsTransformer transformer = crsTransformation.getTransformer(getCrs(), crs);
+            BoundingBox bboxCrs = transformer.transformBoundingBox(bbox);
+            bbox = bboxCrs;
+        }
+        return (bbox.getXmax()-bbox.getXmin())/getTileExtent();
+    }
 
     /**
      * fetch the maximum zoom level, typically 24 or less
@@ -64,20 +127,26 @@ public interface TileMatrixSet {
      * fetch the minimum zoom level, typically 0 or more
      * @return the minimum zoom level
      */
-    int getMinLevel();
+    default int getMinLevel() {
+        return 0;
+    }
 
     /**
      * fetch the width/height of a tile, typically 256x256
      * @return the width/height of a tile
      */
-    int getTileSize();
+    default int getTileSize() {
+        return 256;
+    }
 
     /**
      * to produce a smoother visualization, internally tiles may use a different coordinate system than the
      * width/height of a tile, typically 4096x4096
      * @return the width/height of a tile in the internal coordinate system
      */
-    int getTileExtent();
+    default int getTileExtent() {
+        return 4096;
+    }
 
     /**
      * Fetch tile matrix set data (e.g. id, crs, bounding box, tile matrices, etc.)
@@ -119,7 +188,7 @@ public interface TileMatrixSet {
         if (level < getMinLevel() || level > getMaxLevel()) {
             return false;
         }
-        if (row < 0 || row > getInitialHeight() * Math.pow(2, level)) {
+        if (row < 0 || row > getRows(level)) {
             return false;
         }
         return true;
@@ -136,7 +205,7 @@ public interface TileMatrixSet {
         if (level < getMinLevel() || level > getMaxLevel()) {
             return false;
         }
-        if (col < 0 || col > getInitialWidth() * Math.pow(2, level)) {
+        if (col < 0 || col > getCols(level)) {
             return false;
         }
         return true;
@@ -144,25 +213,38 @@ public interface TileMatrixSet {
 
     /**
      * Generate tile matrix information
+     * @param minLevel minimum tile matrix level
      * @param maxLevel maximum tile matrix level
-     * @param initScaleDenominator value of the scale denominator on level 0
-     * @param topLeftCorner coordinates of the top left corner of the map
      * @return list of tile matrices
      */
-    default List<TileMatrix> generateTileMatrices(int maxLevel, double initScaleDenominator, double[] topLeftCorner) {
+    default List<TileMatrix> getTileMatrices(int minLevel, int maxLevel) {
+        double initScaleDenominator = getInitialScaleDenominator();
+        BoundingBox bbox = getBoundingBox();
         ImmutableList.Builder<TileMatrix> tileMatrices = new ImmutableList.Builder<>();
-        for (int i = 0; i <= maxLevel; i++) {
-            TileMatrix tileMatrix = ImmutableTileMatrix.builder()
-                    .identifier(String.valueOf(i))
-                    .tileWidth(getTileSize())
-                    .tileHeight(getTileSize())
-                    .matrixWidth(getInitialWidth() * Math.pow(2, i))
-                    .matrixHeight(getInitialHeight() * Math.pow(2, i))
-                    .scaleDenominator(initScaleDenominator / Math.pow(2, i))
-                    .topLeftCorner(topLeftCorner)
-                    .build();
+        for (int i = minLevel; i <= maxLevel; i++) {
+            TileMatrix tileMatrix = getTileMatrix(i);
             tileMatrices.add(tileMatrix);
         }
         return tileMatrices.build();
+    }
+
+    /**
+     * Generate tile matrix information for a single level
+     * @param level the tile matrix level
+     * @return the tile matrix
+     */
+    default TileMatrix getTileMatrix(int level) {
+        double initScaleDenominator = getInitialScaleDenominator();
+        BoundingBox bbox = getBoundingBox();
+        TileMatrix tileMatrix = ImmutableTileMatrix.builder()
+                .identifier(String.valueOf(level))
+                .tileWidth(getTileSize())
+                .tileHeight(getTileSize())
+                .matrixWidth(getCols(level))
+                .matrixHeight(getRows(level))
+                .scaleDenominator(initScaleDenominator / Math.pow(2, level))
+                .topLeftCorner(new double[]{bbox.getXmin(), bbox.getYmax()})
+                .build();
+        return tileMatrix;
     }
 }
