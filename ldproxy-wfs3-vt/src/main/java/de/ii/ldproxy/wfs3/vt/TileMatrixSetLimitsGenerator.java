@@ -17,14 +17,19 @@ import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
  * This class is responsible for generating a list of tileMatrixSetLimits in json responses for /tiles and /collections/{collectionsId}/tiles requests.
  */
 public class TileMatrixSetLimitsGenerator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TileMatrixSetLimitsGenerator.class);
 
     /**
      * Return a list of tileMatrixSetLimits for a single collection.
@@ -34,7 +39,7 @@ public class TileMatrixSetLimitsGenerator {
      * @param crsTransformation crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public List<TileMatrixSetLimits> generateCollectionTileMatrixSetLimits(OgcApiDatasetData data, String collectionId,
+    public static List<TileMatrixSetLimits> generateCollectionTileMatrixSetLimits(OgcApiDatasetData data, String collectionId,
                                                                            String tileMatrixSetId, MinMax tileMatrixRange,
                                                                            CrsTransformation crsTransformation) {
 
@@ -50,12 +55,13 @@ public class TileMatrixSetLimitsGenerator {
         if (!bbox.getEpsgCrs().equals(tileMatrixSet.getCrs())) {
             CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
             try {
-                bbox = transformer.transformBoundingBox(new BoundingBox(bbox.getYmin(), bbox.getXmin(), bbox.getYmax(), bbox.getXmax(), bbox.getEpsgCrs()));
+                bbox = transformer.transformBoundingBox(bbox);
             } catch (CrsTransformationException e) {
-                e.printStackTrace();
+                LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().getAsSimple()));
+                return ImmutableList.of();
             }
         }
-        return generateLimitsList(tileMatrixRange, bbox, tileMatrixSet);
+        return getLimitsList(tileMatrixRange, bbox, tileMatrixSet);
     }
 
     /**
@@ -65,46 +71,73 @@ public class TileMatrixSetLimitsGenerator {
      * @param crsTransformation crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDatasetData data, String tileMatrixSetId,
+    public static List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDatasetData data, String tileMatrixSetId,
                                                             MinMax tileMatrixRange, CrsTransformation crsTransformation) {
 
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
         double[] spatialExtent = data.getSpatialExtent();
-        BoundingBox bbox = new BoundingBox(spatialExtent[0], spatialExtent[1], spatialExtent[2], spatialExtent[3], new EpsgCrs(4326));
+        BoundingBox bbox = new BoundingBox(spatialExtent[0], spatialExtent[1], spatialExtent[2], spatialExtent[3], new EpsgCrs(4326, true));
         if (!bbox.getEpsgCrs().equals(tileMatrixSet.getCrs())) {
             CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
             try {
-                bbox = transformer.transformBoundingBox(new BoundingBox(spatialExtent[1], spatialExtent[0], spatialExtent[3], spatialExtent[2], new EpsgCrs(4326)));
+                bbox = transformer.transformBoundingBox(bbox);
             } catch (CrsTransformationException e) {
-                e.printStackTrace();
+                LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().getAsSimple()));
+                return ImmutableList.of();
             }
         }
 
-        return generateLimitsList(tileMatrixRange, bbox, tileMatrixSet);
+        return getLimitsList(tileMatrixRange, bbox, tileMatrixSet);
     }
 
+    /**
+     * Construct the TileMatrixSetLimits for the given bounding box and a tile matrix
+     * @param level tile matrix / zoom level
+     * @param bbox bounding box in the CRS of the tile matrix set
+     * @return list of TileMatrixSetLimits
+     */
+    public static TileMatrixSetLimits getLimits(TileMatrixSet tileMatrixSet, int level, BoundingBox bbox) {
+        List<Integer> upperLeftCornerTile = MultitilesUtils.pointToTile(bbox.getXmin(), bbox.getYmax(), level, tileMatrixSet);
+        List<Integer> lowerRightCornerTile = MultitilesUtils.pointToTile(bbox.getXmax(), bbox.getYmin(), level, tileMatrixSet);
+        return ImmutableTileMatrixSetLimits.builder()
+                .minTileRow(upperLeftCornerTile.get(0))
+                .maxTileRow(lowerRightCornerTile.get(0))
+                .minTileCol(upperLeftCornerTile.get(1))
+                .maxTileCol(lowerRightCornerTile.get(1))
+                .tileMatrix(Integer.toString(level))
+                .build();
+    }
 
     /**
      * Construct a list of TileMatrixSetLimits for the given bounding box and tileMatrix range
      * @param tileMatrixRange range of tileMatrix values
-     * @param bbox bounding box
+     * @param bbox bounding box in the CRS of the tile matrix set
      * @return list of TileMatrixSetLimits
      */
-    private List<TileMatrixSetLimits> generateLimitsList(MinMax tileMatrixRange, BoundingBox bbox, TileMatrixSet tileMatrixSet) {
+    private static List<TileMatrixSetLimits> getLimitsList(MinMax tileMatrixRange, BoundingBox bbox, TileMatrixSet tileMatrixSet) {
         ImmutableList.Builder<TileMatrixSetLimits> limits = new ImmutableList.Builder<>();
         for (int tileMatrix = tileMatrixRange.getMin(); tileMatrix <= tileMatrixRange.getMax(); tileMatrix++) {
-            List<Integer> upperLeftCornerTile = MultitilesUtils.pointToTile(bbox.getXmin(), bbox.getYmax(), tileMatrix, tileMatrixSet);
-            List<Integer> lowerRightCornerTile = MultitilesUtils.pointToTile(bbox.getXmax(), bbox.getYmin(), tileMatrix, tileMatrixSet);
-            limits.add(ImmutableTileMatrixSetLimits.builder()
-                    .minTileRow(upperLeftCornerTile.get(0))
-                    .maxTileRow(lowerRightCornerTile.get(0))
-                    .minTileCol(upperLeftCornerTile.get(1))
-                    .maxTileCol(lowerRightCornerTile.get(1))
-                    .tileMatrix(Integer.toString(tileMatrix))
-                    .build());
+            limits.add(getLimits(tileMatrix, bbox, tileMatrixSet));
         }
         return limits.build();
     }
 
+    /**
+     * Construct the TileMatrixSetLimits for the given bounding box and a tile matrix
+     * @param tileMatrix tile matrix / zoom level
+     * @param bbox bounding box in the CRS of the tile matrix set
+     * @return list of TileMatrixSetLimits
+     */
+    private static TileMatrixSetLimits getLimits(int tileMatrix, BoundingBox bbox, TileMatrixSet tileMatrixSet) {
+        List<Integer> upperLeftCornerTile = MultitilesUtils.pointToTile(bbox.getXmin(), bbox.getYmax(), tileMatrix, tileMatrixSet);
+        List<Integer> lowerRightCornerTile = MultitilesUtils.pointToTile(bbox.getXmax(), bbox.getYmin(), tileMatrix, tileMatrixSet);
+        return ImmutableTileMatrixSetLimits.builder()
+                .minTileRow(upperLeftCornerTile.get(0))
+                .maxTileRow(lowerRightCornerTile.get(0))
+                .minTileCol(upperLeftCornerTile.get(1))
+                .maxTileCol(lowerRightCornerTile.get(1))
+                .tileMatrix(Integer.toString(tileMatrix))
+                .build();
+    }
 }
