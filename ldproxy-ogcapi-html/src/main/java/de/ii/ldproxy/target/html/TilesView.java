@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.wfs3.vt.TileCollection;
-import de.ii.ldproxy.wfs3.vt.TileCollections;
+import de.ii.ldproxy.ogcapi.tiles.TileCollection;
+import de.ii.ldproxy.ogcapi.tiles.TileCollections;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 
 import java.util.*;

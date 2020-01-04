@@ -11,8 +11,8 @@ import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.wfs3.vt.TileMatrixSetLinks;
-import de.ii.ldproxy.wfs3.vt.TileMatrixSets;
+import de.ii.ldproxy.ogcapi.tiles.TileMatrixSetLinks;
+import de.ii.ldproxy.ogcapi.tiles.TileMatrixSets;
 
 import java.util.List;
 import java.util.Locale;
