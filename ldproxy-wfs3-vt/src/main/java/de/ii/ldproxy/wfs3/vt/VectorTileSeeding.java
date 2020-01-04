@@ -170,15 +170,144 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                 OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language)
             throws FileNotFoundException {
 
-        /*Computation of the minimum and maximum values for x and y from the minimum/maximum spatial extent
-         * TODO: Maybe a spatial extent for the whole dataset in the config?*/
-
-        List<Integer> minZoomList = new ArrayList<>();
-        List<Integer> maxZoomList = new ArrayList<>();
         Set<String> tileMatrixSetIdsCollection = null;
         OgcApiDatasetData datasetData = service.getData();
         Map<String, Map<String, TilesConfiguration.MinMax>> seedingMap = vectorTileMapGenerator.getMinMaxMap(datasetData, true);
 
+        Map<String,Map<String,File>> fileMap = new HashMap<>();
+        // first generate GeoJSON/MVT tiles for all the collections and tiling schemes
+        for (String collectionId : collectionIdsDataset) {
+            if (!Objects.isNull(seedingMap) && seedingMap.containsKey(collectionId)) {
+                Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
+                tileMatrixSetIdsCollection = seeding.keySet();
+                for (String tileMatrixSetId : tileMatrixSetIdsCollection) {
+                    TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
+                    if (seeding.size() != 0) {
+                        int maxZoom = seeding.get(tileMatrixSetId)
+                                .getMax();
+                        int minZoom = seeding.get(tileMatrixSetId)
+                                .getMin();
+                        for (int z = minZoom; z <= maxZoom; z++) {
+                            BoundingBox bbox = null;
+                            try {
+                                bbox = datasetData.getSpatialExtent(collectionId, crsTransformation, tileMatrixSet.getCrs());
+                                TileCollection.TileMatrixSetLimits limits = TileMatrixSetLimitsGenerator.getLimits(tileMatrixSet, z, bbox);
+                                int rowMin = limits.getMinTileRow();
+                                int rowMax = limits.getMaxTileRow();
+                                int colMin = limits.getMinTileCol();
+                                int colMax = limits.getMaxTileCol();
+
+                                for (int y = rowMin; y <= rowMax; y++) {
+                                    for (int x = colMin; x <= colMax; x++) {
+
+                                        String tileKey = String.format("%s;%s;%s;%s", tileMatrixSetId, Integer.toString(z), Integer.toString(y), Integer.toString(x));
+                                        if (!fileMap.containsKey(tileKey)) {
+                                            fileMap.put(tileKey, new HashMap<String, File>());
+                                        }
+
+                                        // generates both GeoJSON and MVT files
+                                        generateMVT(service, collectionId, tileMatrixSetId, z, y, x, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
+
+                                        VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(z), Integer.toString(y), Integer.toString(x), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+                                        File tileFileJson = tile.getFile(cache, "json");
+                                        if (tileFileJson!=null) {
+                                            Map<String,File> layers = fileMap.get(tileKey);
+                                            layers.put(collectionId, tileFileJson);
+                                        }
+                                    }
+                                }
+                            } catch (CrsTransformationException e) {
+                                // simple skip tiles
+                                LOGGER.error(String.format("Could not seed tiles due to a CRS transformation error: scheme=%s level=%s", tileMatrixSetId, Integer.toString(z)));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // now generate the multi-collection tiles
+        for (Map.Entry<String, Map<String, File>> entry : fileMap.entrySet()) {
+            String tileKey = entry.getKey();
+            String[] keys = tileKey.split(";");
+            String tileMatrixSetId = keys[0];
+            int z = Integer.parseInt(keys[1]);
+            int y = Integer.parseInt(keys[2]);
+            int x = Integer.parseInt(keys[3]);
+
+            Map<String, File> layers = entry.getValue();
+            VectorTile tile = new VectorTile(null, tileMatrixSetId, Integer.toString(z), Integer.toString(y), Integer.toString(x), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+            File tileFileMvt = tile.getFile(cache, "pbf");
+            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile, true);
+            if (!success) {
+                String msg = "Internal server error: could not generate protocol buffer for a tile.";
+                LOGGER.error(msg);
+                // throw new InternalServerErrorException(msg);
+            }
+        }
+
+        /* FIXME
+
+                                        // generate tile
+                                        File tileFileMvt = tile.getFile(cache, "pbf");
+                                        if (!tileFileMvt.exists()) {
+
+                                            Map<String, File> layers = new HashMap<String, File>();
+
+                                            Set<String> collectionIdsMVTEnabled = Wfs3EndpointTiles.getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(datasetData), vectorTileMapGenerator.getEnabledMap(datasetData),
+                                                    vectorTileMapGenerator.getFormatsMap(datasetData), vectorTileMapGenerator.getMinMaxMap(datasetData, true), true, false, false);
+
+
+                                            for (String collectionId : collectionIdsMVTEnabled) {
+                                                Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
+                                                if (!Objects.isNull(seeding)) {
+                                                    int collectionMax = seeding.get(tileMatrixSetId)
+                                                            .getMax();
+                                                    int collectionMin = seeding.get(tileMatrixSetId)
+                                                            .getMin();
+                                                    if (collectionMin <= z && z <= collectionMax) {
+                                                        File tileFileMvtCollection = generateMVT(service, collectionId, tileMatrixSetId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
+                                                        layers.put(collectionId, tileFileMvtCollection);
+                                                    }
+                                                }
+                                            }
+
+                                            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile, true);
+                                            if (!success) {
+                                                String msg = "Internal server error: could not generate protocol buffer for a tile.";
+                                                LOGGER.error(msg);
+                                                // throw new InternalServerErrorException(msg);
+                                            }
+
+                                            Set<String> collectionIdsOnlyJSON = Wfs3EndpointTiles.getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(datasetData), vectorTileMapGenerator.getEnabledMap(datasetData),
+                                                    vectorTileMapGenerator.getFormatsMap(datasetData), vectorTileMapGenerator.getMinMaxMap(datasetData, true), false, true, false);
+
+                                            for (String collectionId : collectionIdsOnlyJSON) {
+                                                Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
+                                                if (!Objects.isNull(seeding)) {
+                                                    int collectionMax = seeding.get(tileMatrixSetId)
+                                                            .getMax();
+                                                    int collectionMin = seeding.get(tileMatrixSetId)
+                                                            .getMin();
+                                                    if (collectionMin <= z && z <= collectionMax) {
+                                                        generateJSON(service, collectionId, tileMatrixSetId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                    }
+                }
+            }
+        }
+
+
+
+        List<Integer> minZoomList = new ArrayList<>();
+        List<Integer> maxZoomList = new ArrayList<>();
         for (String collectionId : collectionIdsDataset) {
             if (!Objects.isNull(seedingMap) && seedingMap.containsKey(collectionId)) {
                 Map<String, TilesConfiguration.MinMax> seeding = seedingMap.get(collectionId);
@@ -212,7 +341,6 @@ public class VectorTileSeeding implements OgcApiStartupTask {
             return;
         }
 
-        /*Begin seeding*/
         for (int z = minZoomDataset; z <= maxZoomDataset; z++) {
 
             for (String tileMatrixSetId : tileMatrixSetIdsCollection) {
@@ -285,10 +413,11 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                 }
             }
         }
+         */
     }
 
     /**
-     * generates the MVT for the specified parameters
+     * generates the GeoJSON and MVT files for the specified parameters
      *
      * @param service           the service data of the Wfs3 Service
      * @param collectionId      the id of the collection of the tile
@@ -486,8 +615,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                           .getYmax();
 
         } else {
-            CrsTransformer crsTransformer = crsTransformation.getTransformer(tileMatrixSet.getTileBoundingBox(zoomLevel, col, row)
-                                                                                         .getEpsgCrs(), targetCrs);
+            CrsTransformer crsTransformer = crsTransformation.getTransformer(tileMatrixSet.getCrs(), targetCrs);
             BoundingBox bbox = tileMatrixSet.getTileBoundingBox(zoomLevel, col, row);
             BoundingBox boundingBox = crsTransformer.transformBoundingBox(bbox);
 

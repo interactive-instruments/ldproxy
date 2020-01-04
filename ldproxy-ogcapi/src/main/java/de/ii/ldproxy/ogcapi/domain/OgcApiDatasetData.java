@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.crs.api.*;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
@@ -203,6 +203,42 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
                         Math.max(doubles[2], doubles2[2]),
                         Math.max(doubles[3], doubles2[3])})
                 .orElse(null);
+        return spatialExtent;
+    }
+
+    /**
+     * Determine spatial extent of a collection in the dataset.
+     * @param collectionId the name of the feature type
+     * @return the bounding box
+     */
+    public BoundingBox getSpatialExtent(String collectionId) {
+        BoundingBox spatialExtent = getFeatureTypes().values()
+                .stream()
+                .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
+                .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
+                        .getSpatial())
+                .findFirst()
+                .orElse(null);
+        return spatialExtent;
+    }
+
+    /**
+     * Determine spatial extent of a collection in the dataset in another CRS.
+     * @param collectionId the name of the feature type
+     * @param crsTransformation the factory for CRS transformers
+     * @param targetCrs the target CRS
+     * @return the bounding box in the target CRS
+     */
+    public BoundingBox getSpatialExtent(String collectionId, CrsTransformation crsTransformation, EpsgCrs targetCrs) throws CrsTransformationException {
+        BoundingBox spatialExtent = getFeatureTypes().values()
+                .stream()
+                .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
+                .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
+                        .getSpatial())
+                .findFirst()
+                .orElse(null);
+        CrsTransformer crsTransformer = crsTransformation.getTransformer(DEFAULT_CRS, targetCrs);
+        spatialExtent = crsTransformer.transformBoundingBox(spatialExtent);
         return spatialExtent;
     }
 }
