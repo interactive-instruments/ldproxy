@@ -12,6 +12,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.xtraplatform.crs.api.BoundingBox;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,12 +52,12 @@ public class OgcApiLandingPageView extends LdproxyView {
         this.apiLandingPage = apiLandingPage;
         this.uriCustomizer = uriCustomizer;
 
-        double[] spatialExtent = apiData.getSpatialExtent();
+        BoundingBox spatialExtent = apiData.getSpatialExtent();
         this.bbox2 = spatialExtent==null ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent[0]),
-                "minLat", Double.toString(spatialExtent[1]),
-                "maxLng", Double.toString(spatialExtent[2]),
-                "maxLat", Double.toString(spatialExtent[3]));
+                "minLng", Double.toString(spatialExtent.getXmin()),
+                "minLat", Double.toString(spatialExtent.getYmin()),
+                "maxLng", Double.toString(spatialExtent.getXmax()),
+                "maxLat", Double.toString(spatialExtent.getYmax()));
         Long[] interval = apiData.getFeatureTypes()
                 .values()
                 .stream()

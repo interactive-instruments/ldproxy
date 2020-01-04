@@ -10,6 +10,7 @@ package de.ii.ldproxy.wfs3.styles.representation;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.rest.views.GenericView;
 
 import java.util.Map;
@@ -28,12 +29,11 @@ public class StyleView extends GenericView {
         this.styleId = styleId;
         this.apiData = api.getData();
 
-        double[] spatialExtent = apiData.getSpatialExtent();
+        BoundingBox spatialExtent = apiData.getSpatialExtent();
         this.bbox = spatialExtent==null ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent[0]),
-                "minLat", Double.toString(spatialExtent[1]),
-                "maxLng", Double.toString(spatialExtent[2]),
-                "maxLat", Double.toString(spatialExtent[3]));
-
+                "minLng", Double.toString(spatialExtent.getXmin()),
+                "minLat", Double.toString(spatialExtent.getYmin()),
+                "maxLng", Double.toString(spatialExtent.getXmax()),
+                "maxLat", Double.toString(spatialExtent.getYmax()));
     }
 }

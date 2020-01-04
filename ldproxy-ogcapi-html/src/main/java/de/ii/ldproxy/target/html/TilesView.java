@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.wfs3.vt.TileCollection;
 import de.ii.ldproxy.wfs3.vt.TileCollections;
+import de.ii.xtraplatform.crs.api.BoundingBox;
 
 import java.util.*;
 
@@ -59,12 +60,12 @@ public class TilesView extends LdproxyView {
 
         this.withOlMap = true;
         this.spatialSearch = false;
-        double[] spatialExtent = apiData.getSpatialExtent();
+        BoundingBox spatialExtent = apiData.getSpatialExtent();
         this.bbox2 = spatialExtent==null ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent[0]),
-                "minLat", Double.toString(spatialExtent[1]),
-                "maxLng", Double.toString(spatialExtent[2]),
-                "maxLat", Double.toString(spatialExtent[3]));
+                "minLng", Double.toString(spatialExtent.getXmin()),
+                "minLat", Double.toString(spatialExtent.getYmin()),
+                "maxLng", Double.toString(spatialExtent.getXmax()),
+                "maxLat", Double.toString(spatialExtent.getYmax()));
         Long[] interval = apiData.getFeatureTypes()
                 .values()
                 .stream()

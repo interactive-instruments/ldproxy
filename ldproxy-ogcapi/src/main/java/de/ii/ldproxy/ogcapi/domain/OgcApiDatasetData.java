@@ -188,11 +188,10 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
 
     /**
      * Determine spatial extent of all collections in the dataset.
-     * @return array of coordinates of the bounding box in the following format:
-     * [minimum longitude, minimum latitude, maximum longitude, maximum latitude]
+     * @return the bounding box in the default CRS
      */
-    public double[] getSpatialExtent() {
-        double[] spatialExtent = getFeatureTypes().values()
+    public BoundingBox getSpatialExtent() {
+        double[] val = getFeatureTypes().values()
                 .stream()
                 .map(featureTypeConfigurationWfs3 -> featureTypeConfigurationWfs3.getExtent()
                         .getSpatial()
@@ -203,13 +202,38 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
                         Math.max(doubles[2], doubles2[2]),
                         Math.max(doubles[3], doubles2[3])})
                 .orElse(null);
+        BoundingBox spatialExtent = new BoundingBox(val[0], val[1], val[2], val[3], DEFAULT_CRS);
+        return spatialExtent;
+    }
+
+    /**
+     * Determine spatial extent of all collections in the dataset in another CRS.
+     * @param crsTransformation the factory for CRS transformers
+     * @param targetCrs the target CRS
+     * @return the bounding box
+     */
+    public BoundingBox getSpatialExtent(CrsTransformation crsTransformation, EpsgCrs targetCrs) throws CrsTransformationException {
+        double[] val = getFeatureTypes().values()
+                .stream()
+                .map(featureTypeConfigurationWfs3 -> featureTypeConfigurationWfs3.getExtent()
+                        .getSpatial()
+                        .getCoords())
+                .reduce((doubles, doubles2) -> new double[]{
+                        Math.min(doubles[0], doubles2[0]),
+                        Math.min(doubles[1], doubles2[1]),
+                        Math.max(doubles[2], doubles2[2]),
+                        Math.max(doubles[3], doubles2[3])})
+                .orElse(null);
+        BoundingBox spatialExtent = new BoundingBox(val[0], val[1], val[2], val[3], DEFAULT_CRS);
+        CrsTransformer crsTransformer = crsTransformation.getTransformer(DEFAULT_CRS, targetCrs);
+        spatialExtent = crsTransformer.transformBoundingBox(spatialExtent);
         return spatialExtent;
     }
 
     /**
      * Determine spatial extent of a collection in the dataset.
      * @param collectionId the name of the feature type
-     * @return the bounding box
+     * @return the bounding box in the default CRS
      */
     public BoundingBox getSpatialExtent(String collectionId) {
         BoundingBox spatialExtent = getFeatureTypes().values()
