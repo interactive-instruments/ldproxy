@@ -284,7 +284,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         BoundingBox bbox = featureType.getExtent()
                                       .getSpatial();
-        featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getYmin()), "minLat", Double.toString(bbox.getXmin()), "maxLng", Double.toString(bbox.getYmax()), "maxLat", Double.toString(bbox.getXmax()));
+        featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax()));
 
         featureTypeDataset.filterFields = filterableFields.entrySet()
                                                           .stream()

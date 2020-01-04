@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public class WorldCRS84Quad extends AbstractTileMatrixSet implements TileMatrixSet {
 
-    private static final EpsgCrs CRS = new EpsgCrs(4326);
+    private static final EpsgCrs CRS = new EpsgCrs(4326, true);
 
     /**
      * The bounding box of the tiling scheme

@@ -53,10 +53,10 @@ public class OgcApiLandingPageView extends LdproxyView {
 
         double[] spatialExtent = apiData.getSpatialExtent();
         this.bbox2 = spatialExtent==null ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent[1]),
-                "minLat", Double.toString(spatialExtent[0]),
-                "maxLng", Double.toString(spatialExtent[3]),
-                "maxLat", Double.toString(spatialExtent[2])); // TODO is axis order mixed up in script.mustache?
+                "minLng", Double.toString(spatialExtent[0]),
+                "minLat", Double.toString(spatialExtent[1]),
+                "maxLng", Double.toString(spatialExtent[2]),
+                "maxLat", Double.toString(spatialExtent[3]));
         Long[] interval = apiData.getFeatureTypes()
                 .values()
                 .stream()
