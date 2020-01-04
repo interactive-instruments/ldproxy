@@ -11,6 +11,9 @@ package de.ii.ldproxy.wfs3.vt;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 
+import java.net.URI;
+import java.util.Optional;
+
 /**
  * This is the most commonly used tile matrix set. It is used by Google Maps and most other web mapping applications.
  * In WMTS it is called "Google Maps Compatible", in the Tile Matrix Set standard "WebMercatorQuad".
@@ -43,6 +46,12 @@ public class WebMercatorQuad extends AbstractTileMatrixSet implements TileMatrix
     public EpsgCrs getCrs() {
         return CRS;
     };
+
+    @Override
+    public Optional<String> getTitle() { return Optional.of("Google Maps Compatible for the World"); }
+
+    @Override
+    public Optional<URI> getWellKnownScaleSet() { return Optional.of(URI.create("http://www.opengis.net/def/wkss/OGC/1.0/GoogleMapsCompatible")); }
 
     @Override
     public int getMaxLevel() {

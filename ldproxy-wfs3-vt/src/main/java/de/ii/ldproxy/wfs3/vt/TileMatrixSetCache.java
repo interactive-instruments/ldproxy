@@ -22,10 +22,6 @@ public final class TileMatrixSetCache {
     private static final TileMatrixSet WORLD_CRS84_QUAD = new WorldCRS84Quad();
     private static final TileMatrixSet WORLD_MERCATOR_WGS84_QUAD = new WorldMercatorWGS84Quad();
 
-    private TileMatrixSetCache() {
-
-    }
-
     public static Set<String> getTileMatrixSetIds() {
         return TILE_MATRIX_SET_IDS;
     }
