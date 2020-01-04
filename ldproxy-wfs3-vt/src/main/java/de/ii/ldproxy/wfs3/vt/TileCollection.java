@@ -28,13 +28,4 @@ public abstract class TileCollection extends PageRepresentation {
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
 
-    @Value.Immutable
-    @JsonDeserialize(builder = ImmutableTileMatrixSetLimits.Builder.class)
-    public static abstract class TileMatrixSetLimits {
-        public abstract String getTileMatrix();
-        public abstract Integer getMinTileRow();
-        public abstract Integer getMaxTileRow();
-        public abstract Integer getMinTileCol();
-        public abstract Integer getMaxTileCol();
-    }
 }

@@ -7,10 +7,10 @@
  */
 package de.ii.ldproxy.wfs3.vt
 
-import com.google.common.collect.ImmutableMap
+
+import de.ii.xtraplatform.crs.api.BoundingBox
 import de.ii.xtraplatform.crs.api.EpsgCrs
 import spock.lang.Specification
-
 
 class VectorTileSeedingSpec extends Specification{
 
@@ -31,15 +31,19 @@ class VectorTileSeedingSpec extends Specification{
         def yMax = 3913575.8482010253
 
         def targetCrs = new EpsgCrs(3857)
+        def bbox = new BoundingBox(xMin, yMin, xMax, yMax, targetCrs)
 
 
-        when: "computeMinMax is called"
+        when: "getLimits is called"
 
-        def result = VectorTileSeeding.computeMinMax(zoomLevel,tilingScheme, crsTransformation,xMin,xMax,yMin,yMax,targetCrs)
+        def result = tilingScheme.getLimits(zoomLevel,bbox)
 
         then: 'it should return a map with min/max row/col with values of 0'
 
-        result == new HashMap(ImmutableMap.of("rowMax",0,"rowMin",0,"colMax",0, "colMin",0))
+        result.minTileCol == 0
+        result.maxTileCol == 0
+        result.minTileRow == 0
+        result.maxTileRow == 0
 
     }
     def 'Compute the minimum and maximum rows and cols for no specified spatial extent'(){
@@ -58,15 +62,18 @@ class VectorTileSeedingSpec extends Specification{
         def yMax = 20037508.342789244
 
         def targetCrs = new EpsgCrs(3857)
+        def bbox = new BoundingBox(xMin, yMin, xMax, yMax, targetCrs)
 
+        when: "getLimits is called"
 
-        when: "computeMinMax is called"
-
-        def result = VectorTileSeeding.computeMinMax(zoomLevel,tilingScheme, crsTransformation,xMin,xMax,yMin,yMax,targetCrs)
+        def result = tilingScheme.getLimits(zoomLevel,bbox)
 
         then: 'it should return a map with and the minimum and maximum values for the row and col for that specific zoom level'
 
-        result == new HashMap(ImmutableMap.of("rowMax",1023,"rowMin",0,"colMax",1023, "colMin",0))
+        result.minTileCol == 0
+        result.maxTileCol == 1023
+        result.minTileRow == 0
+        result.maxTileRow == 1023
 
     }
 
@@ -87,14 +94,18 @@ class VectorTileSeedingSpec extends Specification{
         def yMax = 3913575.8482010253
 
         def targetCrs = new EpsgCrs(3857)
+        def bbox = new BoundingBox(xMin, yMin, xMax, yMax, targetCrs)
 
+        when: "getLimits is called"
 
-        when: "computeMinMax is called"
-
-        def minMaxMap = VectorTileSeeding.computeMinMax(zoomLevel,tilingScheme, crsTransformation,xMin,xMax,yMin,yMax,targetCrs)
+        def result = tilingScheme.getLimits(zoomLevel,bbox)
 
         then: 'it should return a map with min/max row/col values'
 
-        minMaxMap == new HashMap(ImmutableMap.of("rowMax",1663,"rowMin",1647,"colMax",2464, "colMin",2448))
+        result.minTileCol == 2448
+        result.maxTileCol == 2464
+        result.minTileRow == 1647
+        result.maxTileRow == 1663
+
     }
 }

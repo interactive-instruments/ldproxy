@@ -247,4 +247,56 @@ public interface TileMatrixSet {
                 .build();
         return tileMatrix;
     }
+
+    /**
+     * Get the tile coordinates for a point (in the CRS of the tile matrix set) and a zoom level
+     * @param x first coordinate of the point
+     * @param y second coordinate of the point
+     * @param level zoom level
+     * @return list with row/col coordinates of the tile in the grid
+     */
+    default List<Integer> getRowCol(double x, double y, int level) {
+        BoundingBox bbox = getBoundingBox();
+        int cols = getCols(level);
+        int rows = getRows(level);
+        double tileWidth = (bbox.getXmax() - bbox.getXmin()) / cols;
+        double tileHeight = (bbox.getYmax() - bbox.getYmin()) / rows;
+
+        int tileCol = (int) Math.floor((x - bbox.getXmin()) / tileWidth);
+        int tileRow = (int) Math.floor((bbox.getYmax() - y) / tileHeight);
+
+        return ImmutableList.of(Math.min(Math.max(tileRow,0),rows-1), Math.min(Math.max(tileCol,0),cols-1));
+    }
+
+    /**
+     * Construct the TileMatrixSetLimits for the given bounding box and a tile matrix
+     * @param level tile matrix / zoom level
+     * @param bbox bounding box in the CRS of the tile matrix set
+     * @return list of TileMatrixSetLimits
+     */
+    default TileMatrixSetLimits getLimits(int level, BoundingBox bbox) {
+        List<Integer> upperLeftCornerTile = getRowCol(bbox.getXmin(), bbox.getYmax(), level);
+        List<Integer> lowerRightCornerTile = getRowCol(bbox.getXmax(), bbox.getYmin(), level);
+        return ImmutableTileMatrixSetLimits.builder()
+                .minTileRow(upperLeftCornerTile.get(0))
+                .maxTileRow(lowerRightCornerTile.get(0))
+                .minTileCol(upperLeftCornerTile.get(1))
+                .maxTileCol(lowerRightCornerTile.get(1))
+                .tileMatrix(Integer.toString(level))
+                .build();
+    }
+
+    /**
+     * Construct a list of TileMatrixSetLimits for the given bounding box and tileMatrix range
+     * @param tileMatrixRange range of tileMatrix values
+     * @param bbox bounding box in the CRS of the tile matrix set
+     * @return list of TileMatrixSetLimits
+     */
+    default List<TileMatrixSetLimits> getLimitsList(TilesConfiguration.MinMax tileMatrixRange, BoundingBox bbox) {
+        ImmutableList.Builder<TileMatrixSetLimits> limits = new ImmutableList.Builder<>();
+        for (int tileMatrix = tileMatrixRange.getMin(); tileMatrix <= tileMatrixRange.getMax(); tileMatrix++) {
+            limits.add(getLimits(tileMatrix, bbox));
+        }
+        return limits.build();
+    }
 }

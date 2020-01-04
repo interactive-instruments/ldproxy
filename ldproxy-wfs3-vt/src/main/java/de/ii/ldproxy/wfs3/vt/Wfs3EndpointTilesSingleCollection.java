@@ -237,7 +237,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                 .stream()
                                 .map(tileMatrixSetId -> ImmutableTileCollection.builder()
                                         .tileMatrixSet(tileMatrixSetId)
-                                        .tileMatrixSetLimits(limitsGenerator.generateCollectionTileMatrixSetLimits(
+                                        .tileMatrixSetLimits(limitsGenerator.getCollectionTileMatrixSetLimits(
                                                 service.getData(), collectionId, tileMatrixSetId,
                                                 tileMatrixSetZoomLevels.get(tileMatrixSetId), crsTransformation))
                                         .build())

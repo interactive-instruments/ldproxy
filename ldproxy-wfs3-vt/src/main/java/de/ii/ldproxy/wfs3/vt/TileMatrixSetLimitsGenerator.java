@@ -10,7 +10,6 @@ package de.ii.ldproxy.wfs3.vt;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.wfs3.vt.TileCollection.TileMatrixSetLimits;
 import de.ii.ldproxy.wfs3.vt.TilesConfiguration.MinMax;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
@@ -39,9 +38,9 @@ public class TileMatrixSetLimitsGenerator {
      * @param crsTransformation crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public static List<TileMatrixSetLimits> generateCollectionTileMatrixSetLimits(OgcApiDatasetData data, String collectionId,
-                                                                           String tileMatrixSetId, MinMax tileMatrixRange,
-                                                                           CrsTransformation crsTransformation) {
+    public static List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiDatasetData data, String collectionId,
+                                                                             String tileMatrixSetId, MinMax tileMatrixRange,
+                                                                             CrsTransformation crsTransformation) {
 
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
@@ -61,7 +60,7 @@ public class TileMatrixSetLimitsGenerator {
                 return ImmutableList.of();
             }
         }
-        return getLimitsList(tileMatrixRange, bbox, tileMatrixSet);
+        return tileMatrixSet.getLimitsList(tileMatrixRange, bbox);
     }
 
     /**
@@ -88,56 +87,6 @@ public class TileMatrixSetLimitsGenerator {
             }
         }
 
-        return getLimitsList(tileMatrixRange, bbox, tileMatrixSet);
-    }
-
-    /**
-     * Construct the TileMatrixSetLimits for the given bounding box and a tile matrix
-     * @param level tile matrix / zoom level
-     * @param bbox bounding box in the CRS of the tile matrix set
-     * @return list of TileMatrixSetLimits
-     */
-    public static TileMatrixSetLimits getLimits(TileMatrixSet tileMatrixSet, int level, BoundingBox bbox) {
-        List<Integer> upperLeftCornerTile = MultitilesUtils.pointToTile(bbox.getXmin(), bbox.getYmax(), level, tileMatrixSet);
-        List<Integer> lowerRightCornerTile = MultitilesUtils.pointToTile(bbox.getXmax(), bbox.getYmin(), level, tileMatrixSet);
-        return ImmutableTileMatrixSetLimits.builder()
-                .minTileRow(upperLeftCornerTile.get(0))
-                .maxTileRow(lowerRightCornerTile.get(0))
-                .minTileCol(upperLeftCornerTile.get(1))
-                .maxTileCol(lowerRightCornerTile.get(1))
-                .tileMatrix(Integer.toString(level))
-                .build();
-    }
-
-    /**
-     * Construct a list of TileMatrixSetLimits for the given bounding box and tileMatrix range
-     * @param tileMatrixRange range of tileMatrix values
-     * @param bbox bounding box in the CRS of the tile matrix set
-     * @return list of TileMatrixSetLimits
-     */
-    private static List<TileMatrixSetLimits> getLimitsList(MinMax tileMatrixRange, BoundingBox bbox, TileMatrixSet tileMatrixSet) {
-        ImmutableList.Builder<TileMatrixSetLimits> limits = new ImmutableList.Builder<>();
-        for (int tileMatrix = tileMatrixRange.getMin(); tileMatrix <= tileMatrixRange.getMax(); tileMatrix++) {
-            limits.add(getLimits(tileMatrix, bbox, tileMatrixSet));
-        }
-        return limits.build();
-    }
-
-    /**
-     * Construct the TileMatrixSetLimits for the given bounding box and a tile matrix
-     * @param tileMatrix tile matrix / zoom level
-     * @param bbox bounding box in the CRS of the tile matrix set
-     * @return list of TileMatrixSetLimits
-     */
-    private static TileMatrixSetLimits getLimits(int tileMatrix, BoundingBox bbox, TileMatrixSet tileMatrixSet) {
-        List<Integer> upperLeftCornerTile = MultitilesUtils.pointToTile(bbox.getXmin(), bbox.getYmax(), tileMatrix, tileMatrixSet);
-        List<Integer> lowerRightCornerTile = MultitilesUtils.pointToTile(bbox.getXmax(), bbox.getYmin(), tileMatrix, tileMatrixSet);
-        return ImmutableTileMatrixSetLimits.builder()
-                .minTileRow(upperLeftCornerTile.get(0))
-                .maxTileRow(lowerRightCornerTile.get(0))
-                .minTileCol(upperLeftCornerTile.get(1))
-                .maxTileCol(lowerRightCornerTile.get(1))
-                .tileMatrix(Integer.toString(tileMatrix))
-                .build();
+        return tileMatrixSet.getLimitsList(tileMatrixRange, bbox);
     }
 }
