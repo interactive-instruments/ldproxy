@@ -561,24 +561,24 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
                 VectorTile tileCollection = new VectorTile(collectionId, tileMatrixSetId, level, row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
 
+                File tileFileJson = tileCollection.getFile(cache, "json");
+                layers.put(collectionId, tileFileJson);
+
                 File tileFileMvtCollection = tileCollection.getFile(cache, "pbf");
                 if (!tileFileMvtCollection.exists() || invalid) {
                     if (invalid)
                         tileFileMvtCollection.delete();
 
-                    VectorTile layerTile = new VectorTile(collectionId, tileMatrixSetId, level, row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
-
                     Map<String, String> filterableFields = wfsService.getData()
                                                                      .getFilterableFieldsForFeatureType(collectionId);
 
-                    File tileFileJson = layerTile.getFile(cache, "json");
                     if (!tileFileJson.exists()) {
                         OgcApiMediaType geojsonMediaType;
                         geojsonMediaType = new ImmutableOgcApiMediaType.Builder()
                                 .type(new MediaType("application", "geo+json"))
                                 .label("GeoJSON")
                                 .build();
-                        boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), geojsonMediaType, false, layerTile, i18n, wfs3Request.getLanguage());
+                        boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), geojsonMediaType, false, tileCollection, i18n, wfs3Request.getLanguage());
                         if (!success) {
                             String msg = "Internal server error: could not generate GeoJSON for a tile.";
                             LOGGER.error(msg);
@@ -586,18 +586,17 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                         }
                     } else {
                         if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, layerTile, i18n, wfs3Request.getLanguage());
+                            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tileCollection, i18n, wfs3Request.getLanguage());
                         }
                     }
-                    layers.put(collectionId, tileFileJson);
                     layerCollection.put(collectionId, tileFileJson);
 
-                }
-                boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvtCollection, layerCollection, requestedProperties, crsTransformation, tile, false);
-                if (!success) {
-                    String msg = "Internal server error: could not generate protocol buffers for a tile.";
-                    LOGGER.error(msg);
-                    throw new InternalServerErrorException(msg);
+                    boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvtCollection, layerCollection, requestedProperties, crsTransformation, tile, false);
+                    if (!success) {
+                        String msg = "Internal server error: could not generate protocol buffers for a tile.";
+                        LOGGER.error(msg);
+                        throw new InternalServerErrorException(msg);
+                    }
                 }
             }
         }

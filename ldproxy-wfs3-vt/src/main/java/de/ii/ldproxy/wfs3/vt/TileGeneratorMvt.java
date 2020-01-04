@@ -95,7 +95,7 @@ public class TileGeneratorMvt {
                         break;
                     } catch (IOException e) {
                         if (seeding && count++ < 5) {
-                            // maybe the file is still generated, try to wait twice before giving up
+                            // maybe the file is still generated, try to wait a few seconds before giving up
                             String msg = "Failure to read the GeoJSON file of tile {}/{}/{} in dataset '{}', layer '{}'. Trying again ...";
                             LOGGER.info(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
                             try {
@@ -103,6 +103,15 @@ public class TileGeneratorMvt {
                             } catch (InterruptedException ex) {
                                 // ignore and just continue
                             }
+                        } else if (count <= 1) {
+                                // maybe the file is still generated, try to wait once before giving up
+                                String msg = "Failure to read the GeoJSON file of tile {}/{}/{} in dataset '{}', layer '{}'. Trying again ...";
+                                LOGGER.info(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
+                                try {
+                                    Thread.sleep(3000);
+                                } catch (InterruptedException ex) {
+                                    // ignore and just continue
+                                }
                         } else {
                             String msg = "Internal server error: exception reading the GeoJSON file of tile {}/{}/{} in dataset '{}', layer '{}'.";
                             LOGGER.error(msg, Integer.toString(level), Integer.toString(row), Integer.toString(col), serviceData.getId(), layerName);
