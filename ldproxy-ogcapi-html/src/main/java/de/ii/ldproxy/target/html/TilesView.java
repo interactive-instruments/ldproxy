@@ -12,14 +12,14 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.tiles.TileCollection;
 import de.ii.ldproxy.ogcapi.tiles.TileCollections;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TilesView extends LdproxyView {
-    public List<TileCollection> tileCollections;
+    public List<Map<String,String>> tileCollections;
     public String tilesUrl;
     public String mapTitle;
     public String none;
@@ -47,7 +47,24 @@ public class TilesView extends LdproxyView {
 
         // TODO this is quick and dirty - the view needs to be improved
 
-        this.tileCollections = tiles.getTileMatrixSetLinks();
+        this.tileCollections = tiles.getTileMatrixSetLinks()
+                .stream()
+                .filter(tms -> tms.getTileMatrixSet().isPresent())
+                .map(tms -> new ImmutableMap.Builder<String,String>()
+                        .put("tileMatrixSet",tms.getTileMatrixSet().get())
+                        .put("maxLevel",tms.getTileMatrixSetLimits()
+                                .stream()
+                                .map(tmsl -> Integer.parseInt(tmsl.getTileMatrix()))
+                                .max(Comparator.naturalOrder())
+                                .orElse(-1)
+                                .toString())
+                        .put("extent",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "[-180,-90,180,90]" : "[-20037508.3427892,-20037508.3427892,20037508.3427892,20037508.3427892]")
+                        .put("resolutionAt0",Double.toString(tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? 360.0/512 : 2*20037508.3427892/256))
+                        .put("widthAtL0",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "2" : "1")
+                        .put("projection",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "EPSG:4326" : tms.getTileMatrixSet().get().equals("WorldMercatorWGS84Quad") ? "EPSG:3395" : "EPSG:3857")
+                        .build())
+                .collect(Collectors.toList());
+
         this.tilesUrl = links.stream()
                 .filter(link -> Objects.equals(link.getRel(),"item"))
                 .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
