@@ -55,7 +55,9 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
 
     @Override
     public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return response(new LandingPageXml(apiLandingPage.getLinks()));
+        String title = requestContext.getApi().getData().getLabel();
+        String description = requestContext.getApi().getData().getDescription().orElse(null);
+        return response(new LandingPageXml(apiLandingPage.getLinks(), title, description));
     }
 
     @Override
@@ -72,7 +74,9 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
     @Override
     public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
                                           OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return response(new Wfs3CollectionXml(ogcApiCollection));
+        return response(new Wfs3CollectionsXml(new ImmutableCollections.Builder()
+                .addCollections(ogcApiCollection)
+                .build()));
     }
 
     private Response response(Object entity) {

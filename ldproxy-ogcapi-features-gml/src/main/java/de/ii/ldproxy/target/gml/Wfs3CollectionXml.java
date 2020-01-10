@@ -19,7 +19,7 @@ import java.util.List;
  * @author zahnen
  */
 @XmlRootElement(name = "Collection")
-@XmlType(propOrder = {"id", "title", "description", "links", "extent", "crs"})
+@XmlType(propOrder = {"id", "title", "description", "links", "extent"})
 public class Wfs3CollectionXml {
     private final OgcApiCollection ogcApiCollection;
 
@@ -55,8 +55,4 @@ public class Wfs3CollectionXml {
         return ogcApiCollection.getLinks();
     }
 
-    @XmlElement(name = "crs")
-    public List<String> getCrs() {
-        return ogcApiCollection.getCrs();
-    }
 }

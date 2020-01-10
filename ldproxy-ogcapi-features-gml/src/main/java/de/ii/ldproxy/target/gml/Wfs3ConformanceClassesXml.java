@@ -9,6 +9,7 @@ package de.ii.ldproxy.target.gml;
 
 import de.ii.ldproxy.ogcapi.domain.ConformanceDeclaration;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
@@ -36,4 +37,15 @@ public class Wfs3ConformanceClassesXml implements Wfs3Xml {
                                      .map(Wfs3LinkXml::new)
                                      .collect(Collectors.toList());
     }
+
+    @XmlAttribute(name="service")
+    public String getService() {
+        return "OGCAPI-Features";
+    }
+
+    @XmlAttribute(name="version")
+    public String getVersion() {
+        return "1.0.0";
+    }
+
 }

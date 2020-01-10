@@ -9,8 +9,8 @@ package de.ii.ldproxy.target.gml;
 
 import de.ii.ldproxy.ogcapi.domain.Collections;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * @author zahnen
  */
 @XmlRootElement(name = "Collections")
-@XmlType(propOrder = {"links", "crs", "collections"})
+@XmlType(propOrder = {"links", "collections"})
 public class Wfs3CollectionsXml implements Wfs3Xml {
 
     private final Collections wfs3Collections;
@@ -39,19 +39,21 @@ public class Wfs3CollectionsXml implements Wfs3Xml {
         return wfs3Collections.getLinks();
     }
 
-    @XmlElement(name = "crs")
-    public List<String> getCrs() {
-        return wfs3Collections.getCrs();
-    }
-
     @XmlElement(name = "Collection")
     public List<Wfs3CollectionXml> getCollections() {
-        //TODO
-        return wfs3Collections.getSections()
-                              .stream()
-                              .filter(stringObjectMap -> stringObjectMap.containsKey("collections"))
-                              .flatMap(stringObjectMap -> ((List<OgcApiCollection>) stringObjectMap.get("collections")).stream())
-                              .map(Wfs3CollectionXml::new)
-                              .collect(Collectors.toList());
+        return wfs3Collections.getCollections()
+                .stream()
+                .map(Wfs3CollectionXml::new)
+                .collect(Collectors.toList());
+    }
+
+    @XmlAttribute(name="service")
+    public String getService() {
+        return "OGCAPI-Features";
+    }
+
+    @XmlAttribute(name="version")
+    public String getVersion() {
+        return "1.0.0";
     }
 }

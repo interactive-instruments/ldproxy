@@ -112,7 +112,6 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
     private Response getItemsResponse(OgcApiQueryInputFeatures queryInput, OgcApiRequestContext requestContext) {
 
         OgcApiDataset api = requestContext.getApi();
-        OgcApiDatasetData apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         FeatureQuery query = queryInput.getQuery();
         Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
@@ -124,15 +123,19 @@ public class OgcApiFeaturesCoreQueriesHandler implements OgcApiQueriesHandler<Og
                     "/collections/"+collectionId+"/items")
                 .orElseThrow(NotAcceptableException::new);
 
-        return getItemsResponse(api, requestContext, collectionId, query, true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
-                queryInput.getIncludeHomeLink(), queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader());
+        boolean includeLinkHeader = queryInput.getIncludeLinkHeader();
+        if (outputFormat.getClass().getSimpleName().equals("OgcApiFeaturesOutputFormatGml")) {
+            includeLinkHeader = true;
+        }
+
+        return getItemsResponse(api, requestContext, collectionId, query, true, null, outputFormat, onlyHitsIfMore,
+                defaultPageSize, queryInput.getIncludeHomeLink(), queryInput.getShowsFeatureSelfLink(), includeLinkHeader);
     }
 
     private Response getItemResponse(OgcApiQueryInputFeature queryInput,
                                            OgcApiRequestContext requestContext) {
 
         OgcApiDataset api = requestContext.getApi();
-        OgcApiDatasetData apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         String featureId = queryInput.getFeatureId();
         FeatureQuery query = queryInput.getQuery();
