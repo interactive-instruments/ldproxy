@@ -8,7 +8,15 @@
 package de.ii.ldproxy.wfs3.sitemaps;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.server.CoreServerConfig;
 import io.dropwizard.auth.Auth;
@@ -50,8 +58,15 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
                     .build()
     );
 
-    @Requires
-    private CoreServerConfig coreServerConfig;
+
+    private final CoreServerConfig coreServerConfig;
+    private final OgcApiFeatureCoreProviders providers;
+
+    public Wfs3EndpointSiteIndex(@Requires CoreServerConfig coreServerConfig,
+                                 @Requires OgcApiFeatureCoreProviders providers) {
+        this.coreServerConfig = coreServerConfig;
+        this.providers = providers;
+    }
 
     @Override
     public OgcApiContext getApiContext() {
@@ -79,7 +94,7 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
                                            .getFeatureTypes()
                                            .keySet();
 
-        Map<String, Long> featureCounts = SitemapComputation.getFeatureCounts(collectionIds, service.getFeatureProvider());
+        Map<String, Long> featureCounts = SitemapComputation.getFeatureCounts(collectionIds, providers.getFeatureProvider(service.getData()));
         long totalFeatureCount = featureCounts.values()
                                               .stream()
                                               .mapToLong(i -> i)
@@ -115,6 +130,5 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
                        .entity(sitemapIndex)
                        .build();
     }
-
 
 }

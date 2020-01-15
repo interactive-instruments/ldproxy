@@ -13,10 +13,12 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
-import de.ii.xtraplatform.crs.api.*;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
+import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
-import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
@@ -29,7 +31,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -321,8 +330,7 @@ class VectorTile {
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
     private BoundingBox getBoundingBoxNativeCrs(CrsTransformation crsTransformation) throws CrsTransformationException {
-        EpsgCrs crs = apiData
-                .getFeatureProvider()
+        EpsgCrs crs = featureProvider.getData()
                 .getNativeCrs();
         BoundingBox bboxTileMatrixSetCrs = getBoundingBox();
         if (crs == tileMatrixSet.getCrs())
@@ -445,7 +453,7 @@ class VectorTile {
      * @param zoomLevel                 the zoom level of the tile, which should be checked
      * @param zoomLevelsMap             a map with all collections that have the tiles extension and their zoomLevels
      * @param wfsService                the wfs3Service
-     * @param wfs3OutputFormatGeoJson   the wfs3OutputFormat Extension
+     * @param featureProvider
      * @param collectionId              the id of the collection of the tile
      * @param tileMatrixSetId            the id of the tileMatrixSet of the tile
      * @param mediaType                 the media type of the tile, either application/json or application/vnd.mapbox-vector-tile
@@ -456,16 +464,23 @@ class VectorTile {
      * @param isCollection              boolean collection or dataset Tile
      * @param wfs3Request               the request
      * @param crsTransformation         the coordinate reference system transformation object to transform coordinates
+     * @param wfs3OutputFormatGeoJson   the wfs3OutputFormat Extension
      * @throws FileNotFoundException
      */
     public static Map<String, String> checkZoomLevel(int zoomLevel,
                                                      Map<String, Map<String, TilesConfiguration.MinMax>> zoomLevelsMap,
                                                      OgcApiDataset wfsService,
-                                                     OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
-                                                     String collectionId, String tileMatrixSetId, String mediaType,
-                                                     String row, String col, boolean doNotCache, VectorTilesCache cache,
-                                                     boolean isCollection, OgcApiRequestContext wfs3Request,
-                                                     CrsTransformation crsTransformation, I18n i18n) throws FileNotFoundException {
+                                                     FeatureProvider2 featureProvider,
+                                                     String collectionId,
+                                                     String tileMatrixSetId,
+                                                     String mediaType,
+                                                     String row, String col,
+                                                     boolean doNotCache,
+                                                     VectorTilesCache cache,
+                                                     boolean isCollection,
+                                                     OgcApiRequestContext wfs3Request,
+                                                     CrsTransformation crsTransformation,
+                                                     I18n i18n, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
         Map<String, String> zoomLevels = new HashMap<>();
 
         try {
@@ -504,7 +519,7 @@ class VectorTile {
                 //if requested zoom Level is not in range
                 if (zoomLevel < minZoom || zoomLevel > maxZoom || minZoom > maxZoom) {
                     zoomLevels.put(collectionId, "false");
-                    generateEmptyTile(collectionId, tileMatrixSetId, zoomLevel, wfsService, wfs3OutputFormatGeoJson, mediaType, row, col, doNotCache, cache, isCollection, wfs3Request, crsTransformation, i18n);
+                    generateEmptyTile(collectionId, tileMatrixSetId, zoomLevel, wfsService, featureProvider, mediaType, row, col, doNotCache, cache, isCollection, wfs3Request, crsTransformation, i18n, wfs3OutputFormatGeoJson);
                 } else {
                     zoomLevels.put(collectionId, "true");
                 }
@@ -521,7 +536,7 @@ class VectorTile {
      * @param tileMatrixSetId            the id of the tileMatrixSet of the tile
      * @param zoomLevel                 the zoom level of the tile, which should be checked
      * @param wfsService                the wfs3Service
-     * @param wfs3OutputFormatGeoJson   the wfs3OutputFormat Extension
+     * @param featureProvider
      * @param row                       the row of the tile
      * @param col                       the column of the Tile
      * @param doNotCache                boolean value if temporary tile or not
@@ -529,16 +544,20 @@ class VectorTile {
      * @param isCollection              boolean collection or dataset Tile
      * @param wfs3Request               the request
      * @param crsTransformation         the coordinate reference system transformation object to transform coordinates
+     * @param wfs3OutputFormatGeoJson   the wfs3OutputFormat Extension
      * @throws FileNotFoundException
      */
     public static void generateEmptyTile(String collectionId, String tileMatrixSetId, int zoomLevel,
-                                         OgcApiDataset wfsService, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
-                                         String mediaType, String row, String col, boolean doNotCache,
-                                         VectorTilesCache cache, boolean isCollection, OgcApiRequestContext wfs3Request,
-                                         CrsTransformation crsTransformation, I18n i18n) throws FileNotFoundException {
+                                         OgcApiDataset wfsService, FeatureProvider2 featureProvider,
+                                         String mediaType, String row,
+                                         String col, boolean doNotCache,
+                                         VectorTilesCache cache, boolean isCollection,
+                                         OgcApiRequestContext wfs3Request,
+                                         CrsTransformation crsTransformation,
+                                         I18n i18n, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
         try {
             if (mediaType.equals("application/json")) {
-                VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, featureProvider, wfs3OutputFormatGeoJson);
                 File tileFileJSON = tile.getFile(cache, "json");
                 if (!tileFileJSON.exists()) {
                     TileGeneratorJson.generateEmptyJSON(tileFileJSON, new WebMercatorQuad(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService, i18n, wfs3Request.getLanguage());
@@ -546,11 +565,11 @@ class VectorTile {
             }
             //generate empty MVT
             if (mediaType.equals("application/vnd.mapbox-vector-tile")) {
-                VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, featureProvider, wfs3OutputFormatGeoJson);
                 File tileFileMvt = tile.getFile(cache, "pbf");
 
                 if (!tileFileMvt.exists()) {
-                    VectorTile jsonTile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                    VectorTile jsonTile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, featureProvider, wfs3OutputFormatGeoJson);
                     File tileFileJSON = jsonTile.getFile(cache, "json");
                     if (!tileFileJSON.exists()) {
                         TileGeneratorJson.generateEmptyJSON(tileFileJSON, new WebMercatorQuad(), wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService, i18n, wfs3Request.getLanguage());

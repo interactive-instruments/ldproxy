@@ -14,9 +14,12 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.entity.api.EntityRegistry;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,12 +48,14 @@ import java.util.zip.ZipOutputStream;
 public class MultitilesGenerator implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MultitilesGenerator.class);
-
     private static final TileMatrixSet TILE_MATRIX_SET = new WebMercatorQuad();
-
     private static final double INITIAL_RESOLUTION = 2 * Math.PI * 6378137 / TILE_MATRIX_SET.getTileSize();
 
-    MultitilesGenerator() {
+
+    private final EntityRegistry entityRegistry;
+
+    MultitilesGenerator(@Requires EntityRegistry entityRegistry) {
+        this.entityRegistry = entityRegistry;
     }
 
     @Override
@@ -269,11 +274,14 @@ public class MultitilesGenerator implements ConformanceClass {
                 tmpFile.deleteOnExit();
 
             }
+
+            FeatureProvider2 featureProvider = getFeatureProvider(service.getData());
+
             for (TileSetEntry entry : tileSetEntries) {
                 File tileFile;
                 VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, String.valueOf(entry.getTileMatrix()),
                         String.valueOf(entry.getTileRow()), String.valueOf(entry.getTileCol()), service, false, cache,
-                        service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                        featureProvider, wfs3OutputFormatGeoJson);
                 File tileFileJson = tile.getFile(cache, "json");
 
                 if (!tileFileJson.exists()) {
@@ -325,6 +333,13 @@ public class MultitilesGenerator implements ConformanceClass {
         }
 
         return zip;
+    }
+
+    private FeatureProvider2 getFeatureProvider(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, TilesConfiguration.class)
+                .map(TilesConfiguration::getFeatureProvider)
+                .flatMap(id -> entityRegistry.getEntity(FeatureProvider2.class, id))
+                .orElseThrow(() -> new IllegalStateException("no FeatureProvider found"));
     }
 
 

@@ -10,13 +10,9 @@ package de.ii.ldproxy.wfs3.sitemaps;
 import com.google.common.collect.Range;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureSourceStream;
-import de.ii.xtraplatform.feature.provider.api.FeatureStream;
-import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.slf4j.Logger;
@@ -181,7 +177,7 @@ class SitemapComputation {
                           .values()
                           .stream()
                           //TODO
-                          .filter(featureType -> datasetData.isFeatureTypeEnabled(featureType.getId()))
+                          .filter(featureType -> datasetData.isCollectionEnabled(featureType.getId()))
                           .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
                           .map(FeatureTypeConfiguration::getId);
     }

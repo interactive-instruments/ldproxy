@@ -203,7 +203,8 @@ public class Wfs3ServiceMigrate {
                                 })
                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
                 )
-                .featureProvider(
+                //TODO: migrate services from 1.3
+                /*.featureProvider(
                         //TODO: providerType
                         new ImmutableFeatureProviderDataTransformer.Builder()
                                 .nativeCrs(new EpsgCrs((Integer) defaultCrs.get("code"), (Boolean) defaultCrs.get("longitudeFirst")))
@@ -272,7 +273,7 @@ public class Wfs3ServiceMigrate {
                                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
                                 )
                                 .build()
-                )
+                )*/
                 .build();
     }
 

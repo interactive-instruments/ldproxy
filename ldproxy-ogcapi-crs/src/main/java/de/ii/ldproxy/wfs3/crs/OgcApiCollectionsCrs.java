@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,10 +14,12 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionsExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +33,12 @@ import java.util.stream.Stream;
 @Provides
 @Instantiate
 public class OgcApiCollectionsCrs implements OgcApiCollectionsExtension {
+
+    private final OgcApiFeatureCoreProviders providers;
+
+    public OgcApiCollectionsCrs(@Requires OgcApiFeatureCoreProviders providers) {
+        this.providers = providers;
+    }
 
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
@@ -50,9 +58,10 @@ public class OgcApiCollectionsCrs implements OgcApiCollectionsExtension {
                     Stream.concat(
                             Stream.of(
                                     OgcApiDatasetData.DEFAULT_CRS_URI,
-                                    apiData.getFeatureProvider()
-                                           .getNativeCrs()
-                                           .getAsUri()
+                                    providers.getFeatureProvider(apiData)
+                                             .getData()
+                                             .getNativeCrs()
+                                             .getAsUri()
                             ),
                             apiData.getAdditionalCrs()
                                    .stream()

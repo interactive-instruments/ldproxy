@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
@@ -21,5 +23,7 @@ public abstract class GeoJsonConfiguration implements ExtensionConfiguration {
     public boolean getEnabled() {
         return false;
     }
+
+    public abstract Optional<String> getLdContext();
 
 }

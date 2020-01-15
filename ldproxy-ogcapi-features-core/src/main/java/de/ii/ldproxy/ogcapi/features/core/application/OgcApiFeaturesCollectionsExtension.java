@@ -51,7 +51,7 @@ public class OgcApiFeaturesCollectionsExtension implements OgcApiCollectionsExte
         List<OgcApiCollection> collections = apiData.getFeatureTypes()
                                                       .values()
                                                       .stream()
-                                                      .filter(featureType -> apiData.isFeatureTypeEnabled(featureType.getId()))
+                                                      .filter(featureType -> apiData.isCollectionEnabled(featureType.getId()))
                                                       .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
                                                       .map(featureType -> OgcApiFeaturesCollectionExtension.createNestedCollection(featureType, apiData, mediaType, alternateMediaTypes, language, uriCustomizer, collectionExtenders))
                                                       .collect(Collectors.toList());

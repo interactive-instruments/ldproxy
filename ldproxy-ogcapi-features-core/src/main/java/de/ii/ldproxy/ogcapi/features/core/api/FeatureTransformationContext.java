@@ -12,6 +12,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.feature.provider.api.FeatureType;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import org.immutables.value.Value;
 
@@ -128,7 +130,9 @@ public interface FeatureTransformationContext {
 
         public abstract OptionalLong getNumberMatched();
 
-        public abstract Optional<TargetMapping> getCurrentMapping();
+        public abstract Optional<FeatureType> getCurrentFeatureType();
+
+        public abstract Optional<FeatureProperty> getCurrentFeatureProperty();
 
         public abstract List<Integer> getCurrentMultiplicity();
 

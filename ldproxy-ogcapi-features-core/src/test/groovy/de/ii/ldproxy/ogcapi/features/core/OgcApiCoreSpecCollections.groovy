@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core;
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.application.I18n
+import de.ii.ldproxy.ogcapi.application.I18nDefault
 import de.ii.ldproxy.ogcapi.application.OgcApiApiEntity
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCollections
 import de.ii.ldproxy.ogcapi.domain.*
@@ -43,7 +43,7 @@ class OgcApiCoreSpecCollections extends Specification {
     static final OgcApiEndpointCollection collectionEndpoint = createCollectionEndpoint()
 
     def setupSpec() {
-        ogcApiQueriesHandlerCollections.i18n = new I18n()
+        ogcApiQueriesHandlerCollections.i18n = new I18nDefault()
     }
 
 
@@ -161,7 +161,7 @@ class OgcApiCoreSpecCollections extends Specification {
                 }
                 if (extensionType == OgcApiCollectionExtension.class) {
                     OgcApiFeaturesCollectionExtension collectionExtension = new OgcApiFeaturesCollectionExtension(registry)
-                    collectionExtension.i18n = new I18n()
+                    collectionExtension.i18n = new I18nDefault()
                     return ImmutableList.of((T) collectionExtension)
                 }
                 if (extensionType == OgcApiFeatureFormatExtension.class) {

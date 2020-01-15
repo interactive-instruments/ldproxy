@@ -9,6 +9,7 @@ package de.ii.ldproxy.target.geojson;
 
 import de.ii.ldproxy.target.geojson.GeoJsonMapping.GEO_JSON_TYPE;
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
+import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -76,27 +77,28 @@ public class GeoJsonWriterId implements GeoJsonWriter {
     public void onProperty(FeatureTransformationContextGeoJson transformationContext,
                            Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (transformationContext.getState()
-                                 .getCurrentMapping()
+                                 .getCurrentFeatureProperty()
                                  .isPresent()
                 || transformationContext.getState()
                                         .getCurrentValue()
                                         .isPresent()) {
 
-            final GeoJsonPropertyMapping currentMapping = (GeoJsonPropertyMapping) transformationContext.getState()
-                                                                                                        .getCurrentMapping()
-                                                                                                        .get();
+            final FeatureProperty currentFeatureProperty = transformationContext.getState()
+                                                                        .getCurrentFeatureProperty()
+                                                                        .get();
             String currentValue = transformationContext.getState()
                                                        .getCurrentValue()
                                                        .get();
 
-            if (Objects.equals(currentMapping.getType(), GEO_JSON_TYPE.ID)) {
-                String idTemplate = currentMapping.getIdTemplate();
+            if (currentFeatureProperty.isId()) {
+                //TODO: new transformations handling
+                //String idTemplate = currentFeatureProperty.getIdTemplate();
                 String currentUri = null;
-                if (Objects.nonNull(idTemplate)) {
+                /*if (Objects.nonNull(idTemplate)) {
                     currentUri = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {}, "featureId");
                     currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getServiceUrl(), isHtml -> {}, "serviceUrl");
                     currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getCollectionId(), isHtml -> {}, "collectionId");
-                }
+                }*/
 
                 if (writeAtFeatureEnd) {
                     currentId = currentValue;

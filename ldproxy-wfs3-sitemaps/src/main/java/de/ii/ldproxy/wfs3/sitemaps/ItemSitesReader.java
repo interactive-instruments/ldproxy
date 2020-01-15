@@ -8,9 +8,10 @@
 package de.ii.ldproxy.wfs3.sitemaps;
 
 import de.ii.ldproxy.ogcapi.domain.AbstractOgcApiFeaturesGenericMapping;
+import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
+import de.ii.xtraplatform.feature.provider.api.FeatureType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.provider.api.TargetMapping;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.OptionalLong;
 /**
  * @author zahnen
  */
-public class ItemSitesReader implements FeatureTransformer {
+public class ItemSitesReader implements FeatureTransformer2 {
 
     private final String baseUrl;
     private List<Site> sites;
@@ -49,7 +50,7 @@ public class ItemSitesReader implements FeatureTransformer {
     }
 
     @Override
-    public void onFeatureStart(TargetMapping targetMapping) throws Exception {
+    public void onFeatureStart(FeatureType featureType) throws Exception {
 
     }
 
@@ -59,7 +60,7 @@ public class ItemSitesReader implements FeatureTransformer {
     }
 
     @Override
-    public void onPropertyStart(TargetMapping targetMapping, List<Integer> list) throws Exception {
+    public void onPropertyStart(FeatureProperty featureProperty, List<Integer> list) throws Exception {
 
     }
 
@@ -74,7 +75,7 @@ public class ItemSitesReader implements FeatureTransformer {
     }
 
     @Override
-    public void onGeometryStart(TargetMapping targetMapping, SimpleFeatureGeometry simpleFeatureGeometry, Integer integer) throws Exception {
+    public void onGeometryStart(FeatureProperty featureProperty, SimpleFeatureGeometry simpleFeatureGeometry, Integer integer) throws Exception {
 
     }
 

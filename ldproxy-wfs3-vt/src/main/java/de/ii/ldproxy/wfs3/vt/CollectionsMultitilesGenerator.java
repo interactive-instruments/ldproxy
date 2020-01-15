@@ -13,6 +13,8 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.entity.api.EntityRegistry;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -41,12 +43,15 @@ import java.util.zip.ZipOutputStream;
 @Instantiate
 public class CollectionsMultitilesGenerator implements ConformanceClass {
 
-    @Requires
-    I18n i18n;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(MultitilesGenerator.class);
 
-    CollectionsMultitilesGenerator() {
+
+    private final I18n i18n;
+    private final EntityRegistry entityRegistry;
+
+    CollectionsMultitilesGenerator(@Requires I18n i18n, @Requires EntityRegistry entityRegistry) {
+        this.i18n = i18n;
+        this.entityRegistry = entityRegistry;
     }
 
     @Override
@@ -169,10 +174,13 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
                 tmpFile.deleteOnExit();
 
             }
+
+            FeatureProvider2 featureProvider = getFeatureProvider(service.getData());
+
             for (TileSetEntry entry : tileSetEntries) {
                 VectorTile tile = new VectorTile(null, tileMatrixSetId, String.valueOf(entry.getTileMatrix()),
                         String.valueOf(entry.getTileRow()), String.valueOf(entry.getTileCol()), service, false, cache,
-                        service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                        featureProvider, wfs3OutputFormatGeoJson);
                 File tileFileMvt = tile.getFile(cache, "pbf");
                 Map<String, File> layers = new HashMap<>();
                 Set<String> collectionIds = Wfs3EndpointTiles.getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(service.getData()), vectorTileMapGenerator.getEnabledMap(service.getData()),
@@ -180,16 +188,16 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
 
                 if (!tileFileMvt.exists()) {
                     Wfs3EndpointTiles.generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections,
-                            null, service, String.valueOf(entry.getTileMatrix()), String.valueOf(entry.getTileRow()),
+                            null, service, featureProvider, String.valueOf(entry.getTileRow()),
                             String.valueOf(entry.getTileCol()), tileMatrixSetId, false, cache, wfs3Request, crsTransformation,
-                            uriInfo, false, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, null);
+                            uriInfo, false, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, null, String.valueOf(entry.getTileMatrix()));
                 } else {
                     boolean invalid = false;
 
                     for (String collectionId : collectionIds) {
                         VectorTile layerTile = new VectorTile(collectionId, tileMatrixSetId, String.valueOf(entry.getTileMatrix()),
                                 String.valueOf(entry.getTileRow()), String.valueOf(entry.getTileCol()), service, false,
-                                cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                                cache, featureProvider, wfs3OutputFormatGeoJson);
                         File tileFileJson = layerTile.getFile(cache, "json");
                         if (tileFileJson.exists()) {
                             if (TileGeneratorJson.deleteJSON(tileFileJson)) {
@@ -204,9 +212,9 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
 
                     if (invalid) {
                         Wfs3EndpointTiles.generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections,
-                                null, service, String.valueOf(entry.getTileMatrix()), String.valueOf(entry.getTileRow()),
+                                null, service, featureProvider, String.valueOf(entry.getTileRow()),
                                 String.valueOf(entry.getTileCol()), tileMatrixSetId, false, cache, wfs3Request, crsTransformation,
-                                uriInfo, true, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, null);
+                                uriInfo, true, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, null, String.valueOf(entry.getTileMatrix()));
                     }
                 }
 
@@ -240,5 +248,12 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
         }
 
         return zip;
+    }
+
+    private FeatureProvider2 getFeatureProvider(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, TilesConfiguration.class)
+                .map(TilesConfiguration::getFeatureProvider)
+                .flatMap(id -> entityRegistry.getEntity(FeatureProvider2.class, id))
+                .orElseThrow(() -> new IllegalStateException("no FeatureProvider found"));
     }
 }

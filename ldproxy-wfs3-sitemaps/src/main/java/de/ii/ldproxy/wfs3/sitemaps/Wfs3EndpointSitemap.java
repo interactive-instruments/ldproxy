@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,9 +9,18 @@ package de.ii.ldproxy.wfs3.sitemaps;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreQueriesHandler;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreQueriesHandlerImpl;
 import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
@@ -52,8 +61,15 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
                     .build()
     );
 
-    @Requires
-    private CoreServerConfig coreServerConfig;
+
+    private final CoreServerConfig coreServerConfig;
+    private final OgcApiFeatureCoreProviders providers;
+
+    public Wfs3EndpointSitemap(@Requires CoreServerConfig coreServerConfig,
+                               @Requires OgcApiFeatureCoreProviders providers) {
+        this.coreServerConfig = coreServerConfig;
+        this.providers = providers;
+    }
 
     @Override
     public OgcApiContext getApiContext() {
@@ -65,7 +81,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
         if (subPath.matches("^/?(?:/[\\w\\-]+/sitemap[_0-9]+\\.xml)$"))
             return API_MEDIA_TYPES;
 
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
+        throw new ServerErrorException("Invalid sub path: " + subPath, 500);
     }
 
     @Override
@@ -78,9 +94,10 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     public Response getCollectionSitemap(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                                          @PathParam("from") Long from, @PathParam("to") Long to,
                                          @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
-        OgcApiFeaturesCoreQueriesHandler.ensureCollectionIdExists(service.getData(), id);
+        OgcApiFeaturesCoreQueriesHandlerImpl.ensureCollectionIdExists(service.getData(), id);
 
-        if (!service.getFeatureProvider().supportsQueries()) {
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData());
+        if (!featureProvider.supportsQueries()) {
             throw new IllegalStateException();
         }
 
@@ -98,9 +115,8 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
                                                          .limit(to.intValue() - from.intValue() + 1)
                                                          .fields(ImmutableList.of("ID")) //TODO only get id field
                                                          .build();
-        FeatureStream2 featureStream = service.getFeatureProvider()
-                                              .queries()
-                                              .getFeatureStream2(featureQuery);
+        FeatureStream2 featureStream = featureProvider.queries()
+                                                      .getFeatureStream2(featureQuery);
         featureStream.runWith(itemSitesReader)
                      .toCompletableFuture()
                      .join();

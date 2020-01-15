@@ -26,9 +26,6 @@ public class OgcApiFeaturesLandingPageExtension implements OgcApiLandingPageExte
     @Requires
     I18n i18n;
 
-    @Requires
-    private OgcApiFeaturesCore ogcApiFeaturesCore;
-
     @Override
     public boolean isEnabledForApi(OgcApiDatasetData apiData) {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);

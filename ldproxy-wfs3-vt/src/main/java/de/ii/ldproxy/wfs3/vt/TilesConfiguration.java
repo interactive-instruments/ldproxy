@@ -28,6 +28,8 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
         return false;
     }
 
+    public abstract String getFeatureProvider();
+
     @Value.Default
     public boolean getMultiTilesEnabled() {
         return false;

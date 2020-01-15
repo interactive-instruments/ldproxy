@@ -7,8 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
@@ -19,7 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+/**
+ * @author zahnen
+ */
 public class URICustomizer extends URIBuilder {
     public URICustomizer() {
         super();
@@ -209,16 +209,16 @@ public class URICustomizer extends URIBuilder {
         return this;
     }
 
-    private List<String> getPathSegments() {
+    /*public List<String> getPathSegments() {
         return Splitter.on('/')
                        .omitEmptyStrings()
                        .splitToList(this.getPath());
     }
 
-    private void setPathSegments(final List<String> pathSegments) {
+    public void setPathSegments(final List<String> pathSegments) {
         this.setPath("/" + Joiner.on('/')
                            .join(pathSegments));
-    }
+    }*/
 
     public URICustomizer replaceInPath(String original, String replacement) {
         this.setPath(this.getPath().replaceFirst(original, replacement));

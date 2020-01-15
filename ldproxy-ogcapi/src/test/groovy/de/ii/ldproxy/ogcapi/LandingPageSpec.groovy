@@ -34,7 +34,7 @@ class LandingPageSpec extends Specification {
 
 
     def setupSpec() {
-        queryHandler.i18n = new I18n()
+        queryHandler.i18n = new I18nDefault()
     }
 
     def 'Requirement 2 B: landing page response'() {
@@ -154,7 +154,7 @@ class LandingPageSpec extends Specification {
             <T extends OgcApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
                 if (extensionType == OgcApiLandingPageExtension.class) {
                     OgcApiFeaturesLandingPageExtension landingPage = new OgcApiFeaturesLandingPageExtension()
-                    landingPage.i18n = new I18n()
+                    landingPage.i18n = new I18nDefault()
                     return ImmutableList.of((T) landingPage)
                 }
                 if (extensionType == CommonFormatExtension.class) {

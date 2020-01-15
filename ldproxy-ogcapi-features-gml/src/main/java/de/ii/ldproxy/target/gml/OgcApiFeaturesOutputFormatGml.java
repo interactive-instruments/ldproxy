@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
@@ -46,11 +47,17 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
             .parameter("xml")
             .build();
 
-    @Requires
-    private GmlConfig gmlConfig;
+    private final GmlConfig gmlConfig;
+    private final OgcApiFeatureCoreProviders providers;
 
     @ServiceController(value = false)
     private boolean enable;
+
+    public OgcApiFeaturesOutputFormatGml(@Requires GmlConfig gmlConfig,
+                                         @Requires OgcApiFeatureCoreProviders providers) {
+        this.gmlConfig = gmlConfig;
+        this.providers = providers;
+    }
 
     @Validate
     private void onStart() {
@@ -86,9 +93,9 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
     public Optional<FeatureConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
         return Optional.of(new FeatureTransformerGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
                                                                                                     .from(transformationContext)
-                                                                                                    .namespaces(((ConnectionInfoWfsHttp) transformationContext.getApiData()
-                                                                                                                                                              .getFeatureProvider()
-                                                                                                                                                              .getConnectionInfo())
+                                                                                                    .namespaces(((ConnectionInfoWfsHttp) providers.getFeatureProvider(transformationContext.getApiData())
+                                                                                                                                                  .getData()
+                                                                                                                                                  .getConnectionInfo())
                                                                                                             .getNamespaces())
                                                                                                     .build()));
     }

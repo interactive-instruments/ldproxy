@@ -59,7 +59,7 @@ public class Wfs3OpenApiGeneralization implements OpenApiExtension {
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                       .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
+                       .filter(ft -> datasetData.isCollectionEnabled(ft.getId()))
                        .forEach(ft -> {
 
                            PathItem pathItem = openAPI.getPaths()

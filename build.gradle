@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '2.0.3'
+    id 'de.interactive_instruments.xtraplatform-application' version '2.1.0'
     id 'com.jfrog.bintray' version '1.8.4' apply false
     id 'com.github.hierynomus.license-report' version '0.15.0' apply false
 }
@@ -27,6 +27,7 @@ configurations.all {
     resolutionStrategy.cacheDynamicVersionsFor 10, 'minutes'
 }
 
+allprojects {
 repositories {
     maven {
         url "https://repo.boundlessgeo.com/main/"
@@ -34,6 +35,7 @@ repositories {
     maven {
         url "http://maven.geomajas.org"
     }
+}
 }
 
 
@@ -91,6 +93,6 @@ task allDependencies {
     dependsOn allprojects.collect { "$it.path:dependencies" }
 }
 tasks.run {
-//    debug = true
+    debug = true
 }
 

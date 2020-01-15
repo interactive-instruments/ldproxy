@@ -154,7 +154,7 @@ public class OgcApiLandingPageView extends LdproxyView {
         return apiData.getFeatureTypes()
                 .values()
                 .stream()
-                .filter(featureType -> apiData.isFeatureTypeEnabled(featureType.getId()))
+                .filter(featureType -> apiData.isCollectionEnabled(featureType.getId()))
                 .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
                 .map(featureType -> new ImmutableOgcApiLink.Builder()
                         .title(featureType.getLabel())

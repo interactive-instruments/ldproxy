@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,13 +11,26 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesEndpoint;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.entity.api.EntityRegistry;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -28,13 +41,33 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
@@ -51,34 +84,38 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Instantiate
 public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceClass {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
+
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("tiles")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?(?:\\w+(?:/(?:\\w+/\\w+/\\w+)?)?)?$")
             .build();
 
-    @Requires
-    I18n i18n;
 
-    @Requires
-    private CrsTransformation crsTransformation;
-
-    @Requires
-    private OgcApiExtensionRegistry extensionRegistry;
-
-    private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
-
-    private final TileMatrixSetLimitsGenerator limitsGenerator = new TileMatrixSetLimitsGenerator();
-
-    private final CollectionsMultitilesGenerator collectionsMultitilesGenerator = new CollectionsMultitilesGenerator();
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
-
+    private final I18n i18n;
+    private final EntityRegistry entityRegistry;
+    private final CrsTransformation crsTransformation;
+    private final OgcApiExtensionRegistry extensionRegistry;
+    private final VectorTileMapGenerator vectorTileMapGenerator;
+    private final TileMatrixSetLimitsGenerator limitsGenerator;
+    private final CollectionsMultitilesGenerator collectionsMultitilesGenerator;
     private final VectorTilesCache cache;
 
-    Wfs3EndpointTiles(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
+    Wfs3EndpointTiles(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
+                      @Requires I18n i18n,
+                      @Requires EntityRegistry entityRegistry,
+                      @Requires CrsTransformation crsTransformation,
+                      @Requires OgcApiExtensionRegistry extensionRegistry) {
+        this.i18n = i18n;
+        this.entityRegistry = entityRegistry;
+        this.crsTransformation = crsTransformation;
+        this.extensionRegistry = extensionRegistry;
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
-        cache = new VectorTilesCache(dataDirectory);
+        this.cache = new VectorTilesCache(dataDirectory);
+        this.vectorTileMapGenerator = new VectorTileMapGenerator();
+        this.limitsGenerator = new TileMatrixSetLimitsGenerator();
+        this.collectionsMultitilesGenerator = new CollectionsMultitilesGenerator(i18n, entityRegistry);
     }
 
     @Override
@@ -119,17 +156,17 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         } else if (subPath.matches("^/?\\w+/\\w+/\\w+/\\w+$"))
             // TODO: from tile format configuration
             return ImmutableSet.of(
-                new ImmutableOgcApiMediaType.Builder()
-                        .type(new MediaType("application", "geo+json"))
-                        .parameter("json")
-                        .build(),
-                new ImmutableOgcApiMediaType.Builder()
-                        .type(new MediaType("application", "vnd.mapbox-vector-tile"))
-                        .parameter("mvt")
-                        .build()
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(new MediaType("application", "geo+json"))
+                            .parameter("json")
+                            .build(),
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(new MediaType("application", "vnd.mapbox-vector-tile"))
+                            .parameter("mvt")
+                            .build()
             );
 
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
+        throw new ServerErrorException("Invalid sub path: " + subPath, 500);
     }
 
     @Override
@@ -150,14 +187,14 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
                     .addAll(extensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)
-                            .stream()
-                            .map(ext -> ext.getParameters(apiData, subPath))
-                            .flatMap(Collection::stream)
-                            .collect(Collectors.toSet()))
+                                             .stream()
+                                             .map(ext -> ext.getParameters(apiData, subPath))
+                                             .flatMap(Collection::stream)
+                                             .collect(Collectors.toSet()))
                     .add("properties", "collections")
                     .build();
 
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
+        throw new ServerErrorException("Invalid sub path: " + subPath, 500);
     }
 
     @Override
@@ -193,7 +230,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
      */
     @Path("/")
     @GET
-    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
+    @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
     public Response getTileMatrixSets(@Context OgcApiDataset service, @Context OgcApiRequestContext requestContext) {
 
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
@@ -201,32 +238,40 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
         TileCollections tiles = ImmutableTileCollections.builder()
-                .title(requestContext.getApi().getData().getLabel())
-                .description(requestContext.getApi().getData().getDescription().orElse(""))
-                .tileMatrixSetLinks(
-                            cache.getTileMatrixSetIds()
-                                .stream()
-                                .map(tileMatrixSetId -> ImmutableTileCollection.builder()
-                                    .tileMatrixSet(tileMatrixSetId)
-                                    .addAllTileMatrixSetLimits(limitsGenerator.getTileMatrixSetLimits(service.getData(), tileMatrixSetId, crsTransformation))
-                                    .build())
-                                .collect(Collectors.toList()))
-                .links(vectorTilesLinkGenerator.generateTilesLinks(
-                        requestContext.getUriCustomizer(),
-                        requestContext.getMediaType(),
-                        requestContext.getAlternateMediaTypes(),
-                        false, // TODO
-                        false,
-                        true,
-                        false,
-                        i18n,
-                        requestContext.getLanguage()))
-                .build();
+                                                        .title(requestContext.getApi()
+                                                                             .getData()
+                                                                             .getLabel())
+                                                        .description(requestContext.getApi()
+                                                                                   .getData()
+                                                                                   .getDescription()
+                                                                                   .orElse(""))
+                                                        .tileMatrixSetLinks(
+                                                                cache.getTileMatrixSetIds()
+                                                                     .stream()
+                                                                     .map(tileMatrixSetId -> ImmutableTileCollection.builder()
+                                                                                                                    .tileMatrixSet(tileMatrixSetId)
+                                                                                                                    .addAllTileMatrixSetLimits(limitsGenerator.getTileMatrixSetLimits(service.getData(), tileMatrixSetId, crsTransformation))
+                                                                                                                    .build())
+                                                                     .collect(Collectors.toList()))
+                                                        .links(vectorTilesLinkGenerator.generateTilesLinks(
+                                                                requestContext.getUriCustomizer(),
+                                                                requestContext.getMediaType(),
+                                                                requestContext.getAlternateMediaTypes(),
+                                                                false, // TODO
+                                                                false,
+                                                                true,
+                                                                false,
+                                                                i18n,
+                                                                requestContext.getLanguage()))
+                                                        .build();
 
-        if (requestContext.getMediaType().matches(MediaType.TEXT_HTML_TYPE)) {
-            Optional<TileCollectionsFormatExtension> outputFormatHtml = requestContext.getApi().getOutputFormat(TileCollectionsFormatExtension.class, requestContext.getMediaType(), "/tiles");
+        if (requestContext.getMediaType()
+                          .matches(MediaType.TEXT_HTML_TYPE)) {
+            Optional<TileCollectionsFormatExtension> outputFormatHtml = requestContext.getApi()
+                                                                                      .getOutputFormat(TileCollectionsFormatExtension.class, requestContext.getMediaType(), "/tiles");
             if (outputFormatHtml.isPresent())
-                return outputFormatHtml.get().getTileCollectionsResponse(tiles, Optional.empty(), requestContext.getApi(), requestContext);
+                return outputFormatHtml.get()
+                                       .getTileCollectionsResponse(tiles, Optional.empty(), requestContext.getApi(), requestContext);
 
             throw new NotAcceptableException();
         }
@@ -249,10 +294,14 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
      */
     @Path("/{tileMatrixSetId}")
     @GET
-    public Response getCollectionsMultitiles(@Auth Optional<User> optionalUser, @Context OgcApiRequestContext wfs3Request,
-                                             @Context OgcApiDataset service, @PathParam("tileMatrixSetId") String tileMatrixSetId,
-                                             @QueryParam("bbox") String bboxParam, @QueryParam("scaleDenominator") String scaleDenominatorParam,
-                                             @QueryParam("multiTileType") String multiTileType, @QueryParam("collections") String collectionsParam,
+    public Response getCollectionsMultitiles(@Auth Optional<User> optionalUser,
+                                             @Context OgcApiRequestContext wfs3Request,
+                                             @Context OgcApiDataset service,
+                                             @PathParam("tileMatrixSetId") String tileMatrixSetId,
+                                             @QueryParam("bbox") String bboxParam,
+                                             @QueryParam("scaleDenominator") String scaleDenominatorParam,
+                                             @QueryParam("multiTileType") String multiTileType,
+                                             @QueryParam("collections") String collectionsParam,
                                              @Context UriInfo uriInfo) throws UnsupportedEncodingException {
 
         if (!isMultiTilesEnabledForApi(service.getData()))
@@ -274,8 +323,10 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
      */
     private Set<String> parseCsv(String csv) {
         Set<String> result = null;
-        if (csv != null && !csv.trim().isEmpty()) {
-            String[] sa = csv.trim().split(",");
+        if (csv != null && !csv.trim()
+                               .isEmpty()) {
+            String[] sa = csv.trim()
+                             .split(",");
             result = new HashSet<>();
             for (String s : sa) {
                 result.add(s.trim());
@@ -306,10 +357,10 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     @GET
     @Produces({"application/vnd.mapbox-vector-tile"})
     public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("tileMatrixSetId") String tileMatrixSetId,
-                                @PathParam("tileMatrix") String tileMatrix, @PathParam("tileRow") String tileRow,
-                                @PathParam("tileCol") String tileCol, @QueryParam("collections") String collectionsParam,
-                                @QueryParam("properties") String properties, @Context OgcApiDataset service,
-                                @Context UriInfo uriInfo, @Context OgcApiRequestContext wfs3Request)
+                               @PathParam("tileMatrix") String tileMatrix, @PathParam("tileRow") String tileRow,
+                               @PathParam("tileCol") String tileCol, @QueryParam("collections") String collectionsParam,
+                               @QueryParam("properties") String properties, @Context OgcApiDataset service,
+                               @Context UriInfo uriInfo, @Context OgcApiRequestContext wfs3Request)
             throws CrsTransformationException, FileNotFoundException, NotFoundException {
 
         OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE).orElseThrow(NotAcceptableException::new);
@@ -338,11 +389,15 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         }
 
         final Map<String, String> filterableFields = collections.stream()
-                .flatMap(collection -> service.getData()
-                        .getFilterableFieldsForFeatureType(collection)
-                        .entrySet()
-                        .stream())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x1, x2) -> x1));
+                                                                .flatMap(collection -> service.getData()
+                                                                                              .getFeatureTypes()
+                                                                                              .get(collection)
+                                                                                              .getExtension(OgcApiFeaturesCoreConfiguration.class)
+                                                                                              .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
+                                                                                              .orElse(ImmutableMap.of())
+                                                                                              .entrySet()
+                                                                                              .stream())
+                                                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x1, x2) -> x1));
 
         final Map<String, String> filters = Wfs3EndpointTilesSingleCollection.getFiltersFromQuery(
                 OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields, filterParameters);
@@ -351,8 +406,8 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         for (String collection : collections) {
             for (OgcApiParameterExtension parameterExtension : extensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
                 parameterExtension.transformQuery(service.getData()
-                        .getFeatureTypes()
-                        .get(collection), queryBuilder, OgcApiFeaturesEndpoint.toFlatMap(queryParameters), service.getData());
+                                                         .getFeatureTypes()
+                                                         .get(collection), queryBuilder, OgcApiFeaturesEndpoint.toFlatMap(queryParameters), service.getData());
             }
         }
 
@@ -360,8 +415,10 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             doNotCache = true;
         }
 
+        FeatureProvider2 featureProvider = getFeatureProvider(service.getData());
 
-        VectorTile tile = new VectorTile(null, tileMatrixSetId, tileMatrix, tileRow, tileCol, service, doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+
+        VectorTile tile = new VectorTile(null, tileMatrixSetId, tileMatrix, tileRow, tileCol, service, doNotCache, cache, featureProvider, wfs3OutputFormatGeoJson);
         // generate tile
         File tileFileMvt = tile.getFile(cache, "pbf");
 
@@ -369,12 +426,12 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         Set<String> collectionIds = getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(service.getData()), vectorTileMapGenerator.getEnabledMap(service.getData()),
                 vectorTileMapGenerator.getFormatsMap(service.getData()), vectorTileMapGenerator.getMinMaxMap(service.getData(), true), false, false, false);
         if (!tileFileMvt.exists()) {
-            generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections, requestedProperties, service, tileMatrix, tileRow, tileCol, tileMatrixSetId, doNotCache, cache, wfs3Request, crsTransformation, uriInfo, false, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, filters);
+            generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections, requestedProperties, service, featureProvider, tileRow, tileCol, tileMatrixSetId, doNotCache, cache, wfs3Request, crsTransformation, uriInfo, false, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, filters, tileMatrix);
         } else {
             boolean invalid = false;
 
             for (String collectionId : collectionIds) {
-                VectorTile layerTile = new VectorTile(collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, service, doNotCache, cache, service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                VectorTile layerTile = new VectorTile(collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, service, doNotCache, cache, featureProvider, wfs3OutputFormatGeoJson);
                 File tileFileJson = layerTile.getFile(cache, "json");
                 if (tileFileJson.exists()) {
                     if (TileGeneratorJson.deleteJSON(tileFileJson)) {
@@ -389,7 +446,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             }
 
             if (invalid) {
-                generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections, requestedProperties, service, tileMatrix, tileRow, tileCol, tileMatrixSetId, doNotCache, cache, wfs3Request, crsTransformation, uriInfo, true, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, filters);
+                generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections, requestedProperties, service, featureProvider, tileRow, tileCol, tileMatrixSetId, doNotCache, cache, wfs3Request, crsTransformation, uriInfo, true, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, filters, tileMatrix);
             }
         }
 
@@ -534,13 +591,15 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     }
 
     protected static void generateTileDataset(VectorTile tile, File tileFileMvt, Map<String, File> layers,
-                                     Set<String> collectionIds, Set<String> requestedCollections,
-                                     Set<String> requestedProperties, OgcApiDataset wfsService, String level,
-                                     String row, String col, String tileMatrixSetId, boolean doNotCache,
-                                     VectorTilesCache cache, OgcApiRequestContext wfs3Request,
-                                     CrsTransformation crsTransformation, UriInfo uriInfo, boolean invalid,
-                                     OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, I18n i18n,
-                                     VectorTileMapGenerator vectorTileMapGenerator, Map<String, String> filters)
+                                              Set<String> collectionIds, Set<String> requestedCollections,
+                                              Set<String> requestedProperties, OgcApiDataset wfsService,
+                                              FeatureProvider2 featureProvider,
+                                              String row, String col, String tileMatrixSetId, boolean doNotCache,
+                                              VectorTilesCache cache, OgcApiRequestContext wfs3Request,
+                                              CrsTransformation crsTransformation, UriInfo uriInfo, boolean invalid,
+                                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, I18n i18n,
+                                              VectorTileMapGenerator vectorTileMapGenerator,
+                                              Map<String, String> filters, String level)
             throws FileNotFoundException {
 
         for (String collectionId : collectionIds) {
@@ -549,21 +608,25 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             if (requestedCollections != null && !requestedCollections.contains(collectionId))
                 continue;
             if (VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(wfsService.getData()), collectionId, "application/vnd.mapbox-vector-tile", true)) {
-                VectorTile.checkZoomLevel(Integer.parseInt(level), vectorTileMapGenerator.getMinMaxMap(wfsService.getData(), false), wfsService, wfs3OutputFormatGeoJson, collectionId, tileMatrixSetId, "application/vnd.mapbox-vector-tile", row, col, doNotCache, cache, false, wfs3Request, crsTransformation, i18n);
+                VectorTile.checkZoomLevel(Integer.parseInt(level), vectorTileMapGenerator.getMinMaxMap(wfsService.getData(), false), wfsService, featureProvider, collectionId, tileMatrixSetId, "application/vnd.mapbox-vector-tile", row, col, doNotCache, cache, false, wfs3Request, crsTransformation, i18n, wfs3OutputFormatGeoJson);
 
                 Map<String, File> layerCollection = new HashMap<String, File>();
 
-                VectorTile tileCollection = new VectorTile(collectionId, tileMatrixSetId, level, row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                VectorTile tileCollection = new VectorTile(collectionId, tileMatrixSetId, level, row, col, wfsService, doNotCache, cache, featureProvider, wfs3OutputFormatGeoJson);
 
                 File tileFileMvtCollection = tileCollection.getFile(cache, "pbf");
                 if (!tileFileMvtCollection.exists() || invalid) {
                     if (invalid)
                         tileFileMvtCollection.delete();
 
-                    VectorTile layerTile = new VectorTile(collectionId, tileMatrixSetId, level, row, col, wfsService, doNotCache, cache, wfsService.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                    VectorTile layerTile = new VectorTile(collectionId, tileMatrixSetId, level, row, col, wfsService, doNotCache, cache, featureProvider, wfs3OutputFormatGeoJson);
 
                     Map<String, String> filterableFields = wfsService.getData()
-                                                                     .getFilterableFieldsForFeatureType(collectionId);
+                                                                     .getFeatureTypes()
+                                                                     .get(collectionId)
+                                                                     .getExtension(OgcApiFeaturesCoreConfiguration.class)
+                                                                     .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
+                                                                     .orElse(ImmutableMap.of());
 
                     File tileFileJson = layerTile.getFile(cache, "json");
                     if (!tileFileJson.exists()) {
@@ -624,17 +687,24 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         if (enabledMap != null && !enabledMap.isEmpty()) {
             if (requestedCollections == null || requestedCollections.isEmpty()) {
                 collections = enabledMap.entrySet()
-                        .stream()
-                        .filter(Map.Entry::getValue)
-                        .map(Map.Entry::getKey)
-                        .collect(Collectors.toSet());
+                                        .stream()
+                                        .filter(Map.Entry::getValue)
+                                        .map(Map.Entry::getKey)
+                                        .collect(Collectors.toSet());
             } else {
                 collections = requestedCollections.stream()
-                        .filter(enabledMap::containsKey)
-                        .filter(enabledMap::get)
-                        .collect(Collectors.toSet());
+                                                  .filter(enabledMap::containsKey)
+                                                  .filter(enabledMap::get)
+                                                  .collect(Collectors.toSet());
             }
         }
         return collections;
+    }
+
+    private FeatureProvider2 getFeatureProvider(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, TilesConfiguration.class)
+                .map(TilesConfiguration::getFeatureProvider)
+                .flatMap(id -> entityRegistry.getEntity(FeatureProvider2.class, id))
+                .orElseThrow(() -> new IllegalStateException("no FeatureProvider found"));
     }
 }

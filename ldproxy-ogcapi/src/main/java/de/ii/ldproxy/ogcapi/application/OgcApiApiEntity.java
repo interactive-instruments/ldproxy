@@ -46,29 +46,29 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
 
     private final OgcApiExtensionRegistry extensionRegistry;
     //TODO: only needed for OGC API Features, enable APIs that do not implement features, too
-    private FeatureProvider2 featureProvider;
+    //private FeatureProvider2 featureProvider;
     //TODO: encapsulate
     private CrsTransformer defaultTransformer;
     private CrsTransformer defaultReverseTransformer;
     private final Map<String, CrsTransformer> additionalTransformers;
     private final Map<String, CrsTransformer> additionalReverseTransformers;
 
-    public OgcApiApiEntity(@Requires OgcApiExtensionRegistry extensionRegistry,
-                           @Property FeatureProvider2 featureProvider,
-                           @Property CrsTransformer defaultTransformer,
-                           @Property CrsTransformer defaultReverseTransformer,
-                           @Property Map<String, CrsTransformer> additionalTransformers,
-                           @Property Map<String, CrsTransformer> additionalReverseTransformers) {
+    public OgcApiApiEntity(@Requires OgcApiExtensionRegistry extensionRegistry//,
+                           //@Property FeatureProvider2 featureProvider,
+                           //@Property CrsTransformer defaultTransformer,
+                           //@Property CrsTransformer defaultReverseTransformer,
+                           //@Property Map<String, CrsTransformer> additionalTransformers,
+                           //@Property Map<String, CrsTransformer> additionalReverseTransformers
+                           ) {
         this.extensionRegistry = extensionRegistry;
-        this.featureProvider = featureProvider;
-        this.defaultTransformer = defaultTransformer;
-        this.defaultReverseTransformer = defaultReverseTransformer;
-        this.additionalTransformers = additionalTransformers;
-        this.additionalReverseTransformers = additionalReverseTransformers;
-
-        LOGGER.debug("OgcApiDataset: {} {} {}", featureProvider, defaultTransformer, defaultReverseTransformer);
+        //this.featureProvider = featureProvider;
+        this.defaultTransformer = null;//defaultTransformer;
+        this.defaultReverseTransformer = null;//defaultReverseTransformer;
+        this.additionalTransformers = null;//additionalTransformers;
+        this.additionalReverseTransformers = null;//additionalReverseTransformers;
     }
 
+    //TODO: merge with service background tasks
     @Override
     protected void onStart() {
         List<OgcApiStartupTask> ogcApiStartupTasks = getStartupTasks();
@@ -91,7 +91,7 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
             }
         }
 
-        ogcApiStartupTasks.forEach(ogcApiStartupTask -> startupTaskExecutor.submit(ogcApiStartupTask.getTask(this, featureProvider)));
+        //ogcApiStartupTasks.forEach(ogcApiStartupTask -> startupTaskExecutor.submit(ogcApiStartupTask.getTask(this, featureProvider)));
 
     }
 
@@ -132,9 +132,10 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
 
     @Override
     public Optional<CrsTransformer> getCrsTransformer(EpsgCrs crs) {
-        if (featureProvider.supportsCrs(crs)) {
+        //TODO: move to provider
+        /*if (featureProvider.supportsCrs(crs)) {
             return Optional.empty();
-        }
+        }*/
 
         CrsTransformer crsTransformer = Objects.isNull(crs) || Objects.equals(crs, DEFAULT_CRS) ? defaultTransformer : additionalTransformers.get(crs.getAsUri());
 
@@ -156,9 +157,10 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
         return crsTransformer;
     }
 
+    //TODO: remove
     @Override
     public FeatureProvider2 getFeatureProvider() {
-        return featureProvider;
+        return null;
     }
 
     @Override

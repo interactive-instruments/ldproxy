@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.transactional;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -25,6 +26,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.Comparator;
 import java.util.Objects;
@@ -36,6 +38,13 @@ import java.util.Objects;
 @Provides
 @Instantiate
 public class Wfs3OpenApiTransactional implements OpenApiExtension {
+
+    private final OgcApiFeatureCoreProviders providers;
+
+    public Wfs3OpenApiTransactional(@Requires OgcApiFeatureCoreProviders providers) {
+        this.providers = providers;
+    }
+
     @Override
     public int getSortPriority() {
         return 10;
@@ -48,13 +57,13 @@ public class Wfs3OpenApiTransactional implements OpenApiExtension {
 
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
-        if (datasetData.getFeatureProvider().supportsTransactions() && isEnabledForApi(datasetData)) {
+        if (providers.getFeatureProvider(datasetData).supportsTransactions() && isEnabledForApi(datasetData)) {
 
             datasetData.getFeatureTypes()
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                       .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
+                       .filter(ft -> datasetData.isCollectionEnabled(ft.getId()))
                        .forEach(ft -> {
 
                            PathItem pathItem = openAPI.getPaths()

@@ -15,6 +15,7 @@ import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson.MULTIPLICITY;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson.NESTED_OBJECTS;
 import de.ii.ldproxy.target.geojson.GeoJsonMapping.GEO_JSON_TYPE;
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
+import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -125,20 +126,20 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
     protected boolean shouldSkipProperty(FeatureTransformationContextGeoJson transformationContext) {
         return !hasMappingAndValue(transformationContext)
                 || !propertyIsInFields(transformationContext, transformationContext.getState()
-                                                                                   .getCurrentMapping()
+                                                                                   .getCurrentFeatureProperty()
                                                                                    .get()
                                                                                    .getName())
                 || (transformationContext.getState()
-                                         .getCurrentMapping()
+                                         .getCurrentFeatureProperty()
                                          .get()
-                                         .getType() == GEO_JSON_TYPE.ID && !((GeoJsonPropertyMapping) transformationContext.getState()
-                                                                                                                           .getCurrentMapping()
-                                                                                                                           .get()).isIdAsProperty());
+                                         .isId() /*TODO && !((GeoJsonPropertyMapping) transformationContext.getState()
+                                                                                                                           .getCurrentFeatureType()
+                                                                                                                           .get()).isIdAsProperty()*/);
     }
 
     protected boolean hasMappingAndValue(FeatureTransformationContextGeoJson transformationContext) {
         return transformationContext.getState()
-                                    .getCurrentMapping()
+                                    .getCurrentFeatureProperty()
                                     .isPresent()
                 && transformationContext.getState()
                                         .getCurrentValue()
@@ -158,7 +159,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
     }
 
     protected void writeId(JsonGenerator json, String currentValue, String name,
-                           GEO_JSON_TYPE type, List<Integer> multiplicities,
+                           FeatureProperty.Type type, List<Integer> multiplicities,
                            NESTED_OBJECTS nestedObjectStrategy,
                            MULTIPLICITY multiplicityStrategy,
                            FeatureTransformationContextGeoJson transformationContext) throws IOException {
@@ -175,9 +176,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                            Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (shouldSkipProperty(transformationContext)) return;
 
-        final GeoJsonPropertyMapping currentMapping = (GeoJsonPropertyMapping) transformationContext.getState()
-                                                                                                    .getCurrentMapping()
-                                                                                                    .get();
+        final FeatureProperty currentFeatureProperty = transformationContext.getState()
+                                                                    .getCurrentFeatureProperty()
+                                                                    .get();
         String currentValue = transformationContext.getState()
                                                    .getCurrentValue()
                                                    .get();
@@ -202,14 +203,15 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         //TODO if REFERENCE and EMBED
         // - extract id, write buffer from map
 
-        if (currentMapping.getType() == GEO_JSON_TYPE.STRING && currentMapping.getFormat() != null && !currentMapping.getFormat()
+        //TODO: new transformations handling
+        /*if (currentFeatureProperty.getType() == GEO_JSON_TYPE.STRING && currentFeatureProperty.getFormat() != null && !currentFeatureProperty.getFormat()
                                                                                                                      .isEmpty()) {
             //TODO serviceUrl to StringTemplateFilters, additionalSubstitutions
             boolean more = false;
             String formattedValue = "";
             if (currentFormatter == null) {
 
-                formattedValue = StringTemplateFilters.applyTemplate(currentMapping.getFormat(), currentValue);
+                formattedValue = StringTemplateFilters.applyTemplate(currentFeatureProperty.getFormat(), currentValue);
 
                 formattedValue = formattedValue
                         .replace("{{serviceUrl}}", transformationContext.getServiceUrl());
@@ -233,13 +235,13 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                 currentValue = formattedValue;
                 this.currentFormatter = null;
             }
-        }
+        }*/
 
-        if (currentMapping.getType() == GEO_JSON_TYPE.ID) {
-            writeId(json, currentValue, currentMapping.getName(), currentMapping.getType(), multiplicities, nestedObjectStrategy, multiplicityStrategy, transformationContext);
+        if (currentFeatureProperty.isId()) {
+            writeId(json, currentValue, currentFeatureProperty.getName(), currentFeatureProperty.getType(), multiplicities, nestedObjectStrategy, multiplicityStrategy, transformationContext);
         } else {
-            writePropertyName(json, currentMapping.getName(), multiplicities, nestedObjectStrategy, multiplicityStrategy);
-            writeValue(json, currentValue, currentMapping.getType());
+            writePropertyName(json, currentFeatureProperty.getName(), multiplicities, nestedObjectStrategy, multiplicityStrategy);
+            writeValue(json, currentValue, currentFeatureProperty.getType());
         }
     }
 
@@ -271,7 +273,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         }
     }
 
-    private void writeValue(JsonGenerator json, String value, GEO_JSON_TYPE type) throws IOException {
+    private void writeValue(JsonGenerator json, String value, FeatureProperty.Type type) throws IOException {
         switch (type) {
 
             case BOOLEAN:
@@ -286,14 +288,14 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                 } catch (NumberFormatException e) {
                     //ignore
                 }
-            case DOUBLE:
+            case FLOAT:
                 try {
                     json.writeNumber(Double.parseDouble(value));
                     break;
                 } catch (NumberFormatException e2) {
                     //ignore
                 }
-            case NUMBER:
+            /*case NUMBER:
                 try {
                     json.writeNumber(Long.parseLong(value));
                     break;
@@ -304,7 +306,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                     } catch (NumberFormatException e2) {
                         //ignore
                     }
-                }
+                }*/
             default:
                 json.writeString(value);
         }

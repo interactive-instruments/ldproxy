@@ -96,7 +96,7 @@ public class FeatureTransformerGeoJsonTest {
                                              .ifPresent(actualValues::add);
                     case FEATURE_START:
                         transformationContext.getState()
-                                             .getCurrentMapping()
+                                             .getCurrentFeatureType()
                                              .ifPresent(actualMappings::add);
                 }
             }

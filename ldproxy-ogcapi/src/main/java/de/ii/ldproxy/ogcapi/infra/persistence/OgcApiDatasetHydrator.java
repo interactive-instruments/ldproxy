@@ -45,8 +45,8 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiDatasetHydrator.class);
 
-    @Requires
-    private FeatureProviderRegistry featureProviderFactory;
+    //@Requires
+    //private FeatureProviderRegistry featureProviderFactory;
 
     @Requires
     private CrsTransformation crsTransformerFactory;
@@ -54,41 +54,43 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
     @Override
     public Map<String, Object> getInstanceConfiguration(OgcApiDatasetData data) {
         try {
-            FeatureProvider2 featureProvider = featureProviderFactory.createFeatureProvider(data.getFeatureProvider());
+            //FeatureProvider2 featureProvider = featureProviderFactory.createFeatureProvider(data.getFeatureProvider());
 
             try {
-                EpsgCrs sourceCrs = data.getFeatureProvider()
-                                        .getNativeCrs();
-                CrsTransformer defaultTransformer = crsTransformerFactory.getTransformer(sourceCrs, OgcApiDatasetData.DEFAULT_CRS);
-                CrsTransformer defaultReverseTransformer = crsTransformerFactory.getTransformer(OgcApiDatasetData.DEFAULT_CRS, sourceCrs);
+                //TODO: move to provider
+                EpsgCrs sourceCrs = null;//data.getFeatureProvider()
+                                        //.getNativeCrs();
+                CrsTransformer defaultTransformer = null;//crsTransformerFactory.getTransformer(sourceCrs, OgcApiDatasetData.DEFAULT_CRS);
+                CrsTransformer defaultReverseTransformer = null;//crsTransformerFactory.getTransformer(OgcApiDatasetData.DEFAULT_CRS, sourceCrs);
                 Map<String, CrsTransformer> additionalTransformers = new HashMap<>();
                 Map<String, CrsTransformer> additionalReverseTransformers = new HashMap<>();
 
-                data.getAdditionalCrs()
+                /*data.getAdditionalCrs()
                     .forEach(crs -> {
                         additionalTransformers.put(crs.getAsUri(), crsTransformerFactory.getTransformer(sourceCrs, crs));
                         additionalReverseTransformers.put(crs.getAsUri(), crsTransformerFactory.getTransformer(crs, sourceCrs));
-                    });
+                    });*/
 
                 OgcApiDatasetData newData = data;
-                if (hasMissingBboxes(data.getFeatureTypes())) {
+                //TODO: move to startup task in features_core as well as tiles
+                /*if (hasMissingBboxes(data.getFeatureTypes())) {
                     ImmutableMap<String, FeatureTypeConfigurationOgcApi> featureTypesWithComputedBboxes = computeMissingBboxes(data.getFeatureTypes(), featureProvider, defaultTransformer);
 
                     newData = new ImmutableOgcApiDatasetData.Builder()
                             .from(data)
                             .featureTypes(featureTypesWithComputedBboxes)
                             .build();
-                }
+                }*/
 
-                LOGGER.debug("TRANSFORMER {} {} -> {} {}", sourceCrs.getCode(), sourceCrs.isForceLongitudeFirst() ? "lonlat" : "latlon", OgcApiDatasetData.DEFAULT_CRS.getCode(), OgcApiDatasetData.DEFAULT_CRS.isForceLongitudeFirst() ? "lonlat" : "latlon");
+                //LOGGER.debug("TRANSFORMER {} {} -> {} {}", sourceCrs.getCode(), sourceCrs.isForceLongitudeFirst() ? "lonlat" : "latlon", OgcApiDatasetData.DEFAULT_CRS.getCode(), OgcApiDatasetData.DEFAULT_CRS.isForceLongitudeFirst() ? "lonlat" : "latlon");
 
                 return ImmutableMap.<String, Object>builder()
                         .put("data", newData)
-                        .put("featureProvider", featureProvider)
-                        .put("defaultTransformer", defaultTransformer)
-                        .put("defaultReverseTransformer", defaultReverseTransformer)
-                        .put("additionalTransformers", additionalTransformers)
-                        .put("additionalReverseTransformers", additionalReverseTransformers)
+                        //.put("featureProvider", featureProvider)
+                        //.put("defaultTransformer", defaultTransformer)
+                        //.put("defaultReverseTransformer", defaultReverseTransformer)
+                        //.put("additionalTransformers", additionalTransformers)
+                        //.put("additionalReverseTransformers", additionalReverseTransformers)
                         .build();
 
             } catch (Throwable e) {

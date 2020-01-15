@@ -127,7 +127,7 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
         OgcApiDatasetData apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
 
-        if (!apiData.isFeatureTypeEnabled(collectionId)) {
+        if (!apiData.isCollectionEnabled(collectionId)) {
             throw new NotFoundException();
         }
 

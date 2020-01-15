@@ -20,6 +20,7 @@ import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.slf4j.LoggerFactory;
 
@@ -85,9 +86,7 @@ public class TileGeneratorJson {
             return false;
         }
 
-        String geometryField = serviceData
-                .getFilterableFieldsForFeatureType(collectionId)
-                .get("bbox");
+        String geometryField = filterableFields.get("bbox");
 
         String filter = null;
         try {
@@ -171,7 +170,7 @@ public class TileGeneratorJson {
                             .requestUri(uriCustomizer.build())
                             .mediaType(mediaType)
                             .build())
-                    .crsTransformer(crsTransformation.getTransformer(serviceData.getFeatureProvider()
+                    .crsTransformer(crsTransformation.getTransformer(featureProvider.getData()
                                                                                 .getNativeCrs(), OgcApiDatasetData.DEFAULT_CRS))
                     .links(ogcApiLinks)
                     .isFeatureCollection(true)
@@ -181,7 +180,7 @@ public class TileGeneratorJson {
                     .outputStream(outputStream)
                     .build();
 
-            Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, language);
+            Optional<FeatureTransformer2> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, language);
 
             if (featureTransformer.isPresent()) {
                 featureTransformStream.runWith(featureTransformer.get())
@@ -273,7 +272,7 @@ public class TileGeneratorJson {
                 .offset(0)
                 .build();
 
-        Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, wfs3Request.getLanguage());
+        Optional<FeatureTransformer2> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, wfs3Request.getLanguage());
 
         if (featureTransformer.isPresent()) {
             OptionalLong numRet = OptionalLong.of(0);

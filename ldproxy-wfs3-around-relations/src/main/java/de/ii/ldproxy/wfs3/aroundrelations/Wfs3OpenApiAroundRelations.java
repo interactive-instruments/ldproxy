@@ -105,8 +105,8 @@ public class Wfs3OpenApiAroundRelations implements OpenApiExtension {
                     .values()
                     .stream()
                     .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                    .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()) && ft.getExtension(AroundRelationsConfiguration.class)
-                            .isPresent())
+                    .filter(ft -> datasetData.isCollectionEnabled(ft.getId()) && ft.getExtension(AroundRelationsConfiguration.class)
+                                                                                   .isPresent())
                     .forEach(ft -> {
 
                         final AroundRelationsConfiguration aroundRelationConfiguration = ft.getExtension(AroundRelationsConfiguration.class)

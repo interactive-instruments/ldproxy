@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.akka.http.HttpClient;
@@ -19,6 +20,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -66,12 +68,14 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
             Optional<FeatureTypeConfigurationOgcApi> ft = apiData.getFeatureTypes()
                     .values()
                     .stream()
-                    .filter(ftype -> apiData.isFeatureTypeEnabled(ftype.getId()))
+                    .filter(ftype -> apiData.isCollectionEnabled(ftype.getId()))
                     .filter(ftype -> subPath.matches("^/" + ftype.getId() + "/items/?$"))
                     .findFirst();
-            if (ft.isPresent()) {
-                Map<String, String> filterableFields = apiData.getFilterableFieldsForFeatureType(ft.get().getId(), true);
-                parameters.addAll(filterableFields.keySet());
+            Optional<List<String>> otherQueryables = ft.flatMap(featureTypeConfigurationOgcApi -> featureTypeConfigurationOgcApi.getExtension(OgcApiFeaturesCoreConfiguration.class))
+                                               .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
+                                               .map(OgcApiFeaturesCollectionQueryables::getOther);
+            if (otherQueryables.isPresent()) {
+                parameters.addAll(otherQueryables.get());
             }
 
             return parameters.build();

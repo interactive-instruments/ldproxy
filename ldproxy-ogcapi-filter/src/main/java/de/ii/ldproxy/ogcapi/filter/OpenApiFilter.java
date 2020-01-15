@@ -68,7 +68,7 @@ public class OpenApiFilter implements OpenApiExtension {
                     .values()
                     .stream()
                     .sorted(Comparator.comparing(FeatureTypeConfiguration::getId))
-                    .filter(ft -> apiData.isFeatureTypeEnabled(ft.getId()))
+                    .filter(ft -> apiData.isCollectionEnabled(ft.getId()))
                     .forEach(ft -> {
                         PathItem pathItem2 = openAPI.getPaths().get(String.format("/collections/%s/items", ft.getId()));
                         if (Objects.nonNull(pathItem2)) {

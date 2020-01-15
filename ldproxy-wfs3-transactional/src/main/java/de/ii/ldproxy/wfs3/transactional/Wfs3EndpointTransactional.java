@@ -17,18 +17,21 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.entity.api.EntityRegistry;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransactions;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.NotAllowedException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -58,9 +61,11 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
             .putSubPathsAndMethods("^/(?:[\\w\\-]+)/items/?(?:[^/\\s]+)$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.DELETE}))
             .build();
 
+    private final OgcApiFeatureCoreProviders providers;
     private final CommandHandlerTransactional commandHandler;
 
-    public Wfs3EndpointTransactional() {
+    public Wfs3EndpointTransactional(@Requires OgcApiFeatureCoreProviders providers) {
+        this.providers = providers;
         this.commandHandler = new CommandHandlerTransactional();
     }
 
@@ -92,15 +97,15 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                               @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request,
                               @Context HttpServletRequest request, InputStream requestBody) {
-        checkTransactional(service);
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getFeatureTypes().get(id));
+
+        checkTransactional(featureProvider);
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.postItemsResponse((FeatureTransactions) service.getFeatureProvider(), wfs3Request.getMediaType(), wfs3Request.getUriCustomizer()
-                                                                                                                     .copy(), id, service.getData()
-                                                                                                                                         .getFeatureProvider()
-                                                                                                                                         .getMappings()
-                                                                                                                                         .get(id), service.getCrsReverseTransformer(null), requestBody);
+
+        return commandHandler.postItemsResponse((FeatureTransactions) featureProvider, wfs3Request.getMediaType(), wfs3Request.getUriCustomizer()
+                                                                                                                     .copy(), id, /*TODO*/null, service.getCrsReverseTransformer(null), requestBody);
     }
 
     @Path("/{id}/items/{featureid}")
@@ -110,29 +115,32 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
                             @PathParam("featureid") final String featureId, @Context OgcApiDataset service,
                             @Context OgcApiRequestContext wfs3Request, @Context HttpServletRequest request,
                             InputStream requestBody) {
-        checkTransactional(service);
+
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getFeatureTypes().get(id));
+
+        checkTransactional(featureProvider);
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.putItemResponse((FeatureTransactions) service.getFeatureProvider(), wfs3Request.getMediaType(), id, featureId, service.getData()
-                                                                                                                              .getFeatureProvider()
-                                                                                                                              .getMappings()
-                                                                                                                              .get(id), service.getCrsReverseTransformer(null), requestBody);
+        return commandHandler.putItemResponse((FeatureTransactions) featureProvider, wfs3Request.getMediaType(), id, featureId, /*TODO*/null, service.getCrsReverseTransformer(null), requestBody);
     }
 
     @Path("/{id}/items/{featureid}")
     @DELETE
     public Response deleteItem(@Auth Optional<User> optionalUser, @Context OgcApiDataset service,
                                @PathParam("id") String id, @PathParam("featureid") final String featureId) {
-        checkTransactional(service);
+
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getFeatureTypes().get(id));
+
+        checkTransactional(featureProvider);
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.deleteItemResponse((FeatureTransactions) service.getFeatureProvider(), id, featureId);
+        return commandHandler.deleteItemResponse((FeatureTransactions) featureProvider, id, featureId);
     }
 
-    private void checkTransactional(OgcApiDataset service) {
-        if (!(service.getFeatureProvider() instanceof FeatureTransactions)) {
+    private void checkTransactional(FeatureProvider2 featureProvider) {
+        if (!(featureProvider instanceof FeatureTransactions)) {
             throw new NotAllowedException("GET");
         }
     }

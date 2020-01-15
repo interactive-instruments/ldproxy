@@ -27,11 +27,14 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
             .parameter("xml")
             .build();
 
-    @Requires
-    private GmlConfig gmlConfig;
+    private final GmlConfig gmlConfig;
 
     @ServiceController(value = false)
     private boolean enable;
+
+    public Wfs3OutputFormatXml(@Requires GmlConfig gmlConfig) {
+        this.gmlConfig = gmlConfig;
+    }
 
     @Validate
     private void onStart() {

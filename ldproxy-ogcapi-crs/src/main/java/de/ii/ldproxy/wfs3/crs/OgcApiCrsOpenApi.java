@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,6 +10,7 @@ package de.ii.ldproxy.wfs3.crs;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.Comparator;
 import java.util.Objects;
@@ -33,6 +35,13 @@ import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.CRS;
 @Provides
 @Instantiate
 public class OgcApiCrsOpenApi implements OpenApiExtension {
+
+    private final OgcApiFeatureCoreProviders providers;
+
+    public OgcApiCrsOpenApi(@Requires OgcApiFeatureCoreProviders providers) {
+        this.providers = providers;
+    }
+
     @Override
     public int getSortPriority() {
         return 700;
@@ -48,9 +57,10 @@ public class OgcApiCrsOpenApi implements OpenApiExtension {
         if (isEnabledForApi(datasetData)) {
 
             ImmutableSet<String> crsSet = ImmutableSet.<String>builder()
-                    .add(datasetData.getFeatureProvider()
-                                    .getNativeCrs()
-                                    .getAsUri())
+                    .add(providers.getFeatureProvider(datasetData)
+                                  .getData()
+                                  .getNativeCrs()
+                                  .getAsUri())
                     .add(DEFAULT_CRS_URI)
                     .addAll(datasetData.getAdditionalCrs()
                                        .stream()
@@ -87,7 +97,7 @@ public class OgcApiCrsOpenApi implements OpenApiExtension {
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                       .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
+                       .filter(ft -> datasetData.isCollectionEnabled(ft.getId()))
                        .forEach(ft -> {
 
                            PathItem pathItem = openAPI.getPaths()

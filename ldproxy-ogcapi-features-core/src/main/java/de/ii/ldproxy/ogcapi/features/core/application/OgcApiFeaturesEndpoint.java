@@ -9,9 +9,19 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiQueryInputFeature;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiQueryInputFeatures;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreQueriesHandler;
 import de.ii.xtraplatform.auth.api.User;
@@ -32,7 +42,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -48,15 +61,18 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
             .build();
 
     private final OgcApiExtensionRegistry extensionRegistry;
+    private final OgcApiFeatureCoreProviders providers;
+    private final OgcApiFeaturesQuery ogcApiFeaturesQuery;
+    private final OgcApiFeaturesCoreQueriesHandler queryHandler;
 
-    @Requires
-    private OgcApiFeaturesQuery ogcApiFeaturesQuery;
-
-    @Requires
-    private OgcApiFeaturesCoreQueriesHandler queryHandler;
-
-    public OgcApiFeaturesEndpoint(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public OgcApiFeaturesEndpoint(@Requires OgcApiExtensionRegistry extensionRegistry,
+                                  @Requires OgcApiFeatureCoreProviders providers,
+                                  @Requires OgcApiFeaturesQuery ogcApiFeaturesQuery,
+                                  @Requires OgcApiFeaturesCoreQueriesHandler queryHandler) {
         this.extensionRegistry = extensionRegistry;
+        this.providers = providers;
+        this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
+        this.queryHandler = queryHandler;
     }
 
     @Override
@@ -137,16 +153,17 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
 
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api, collectionId, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()));
 
-        OgcApiFeaturesCoreQueriesHandler.OgcApiQueryInputFeatures queryInput = new ImmutableOgcApiQueryInputFeatures.Builder()
+        OgcApiFeaturesCoreQueriesHandlerImpl.OgcApiQueryInputFeatures queryInput = new ImmutableOgcApiQueryInputFeatures.Builder()
                 .collectionId(collectionId)
                 .query(query)
+                .featureProvider(providers.getFeatureProvider(api.getData(), api.getData().getFeatureTypes().get(collectionId)))
                 .defaultPageSize(Optional.of(defaultPageSize))
                 .showsFeatureSelfLink(showsFeatureSelfLink)
                 .includeHomeLink(includeHomeLink)
                 .includeLinkHeader(includeLinkHeader)
                 .build();
 
-        return queryHandler.handle(OgcApiFeaturesCoreQueriesHandler.Query.FEATURES, queryInput, requestContext);
+        return queryHandler.handle(OgcApiFeaturesCoreQueriesHandlerImpl.Query.FEATURES, queryInput, requestContext);
     }
 
     @GET
@@ -168,15 +185,16 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
 
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api, collectionId, toFlatMap(uriInfo.getQueryParameters()), featureId);
 
-        OgcApiFeaturesCoreQueriesHandler.OgcApiQueryInputFeature queryInput = new ImmutableOgcApiQueryInputFeature.Builder()
+        OgcApiFeaturesCoreQueriesHandlerImpl.OgcApiQueryInputFeature queryInput = new ImmutableOgcApiQueryInputFeature.Builder()
                 .collectionId(collectionId)
                 .featureId(featureId)
                 .query(query)
+                .featureProvider(providers.getFeatureProvider(api.getData(), api.getData().getFeatureTypes().get(collectionId)))
                 .includeHomeLink(includeHomeLink)
                 .includeLinkHeader(includeLinkHeader)
                 .build();
 
-        return queryHandler.handle(OgcApiFeaturesCoreQueriesHandler.Query.FEATURE, queryInput, requestContext);
+        return queryHandler.handle(OgcApiFeaturesCoreQueriesHandlerImpl.Query.FEATURE, queryInput, requestContext);
     }
 
     public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
@@ -196,6 +214,4 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                 })
                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
-
-
 }

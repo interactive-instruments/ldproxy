@@ -39,6 +39,8 @@ import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureSchema;
 import de.ii.xtraplatform.feature.provider.api.FeatureSourceStream;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
+import de.ii.xtraplatform.feature.provider.api.ImmutableMappingStatus;
+import de.ii.xtraplatform.feature.provider.api.MappingStatus;
 import de.ii.xtraplatform.feature.provider.api.MultiFeatureProviderMetadataConsumer;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
@@ -48,9 +50,7 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureProviderDataTransformer
 import de.ii.xtraplatform.feature.transformer.api.FeatureProviderGenerator;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureTypeMapping;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableMappingStatus;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
-import de.ii.xtraplatform.feature.transformer.api.MappingStatus;
 import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_GEOMETRY_TYPE;
@@ -104,9 +104,9 @@ import java.util.stream.Stream;
         onModification = "onModification")
 public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>, ServiceBackgroundTasks {
 
-    // TODO review
+    // TODO split into ProviderGenerator + ServiceGenerator
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3ServiceGenerator.class);
+   /* private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3ServiceGenerator.class);
 
     @Context
     private BundleContext bundleContext;
@@ -123,14 +123,14 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
     private final EntityDataStore<ServiceData> serviceRepository;
 
     @Requires
-    private KeyValueStore rootKeyValueStore;
+    private KeyValueStore rootKeyValueStore;*/
 
     private final TaskQueue taskQueue;
 
     Wfs3ServiceGenerator(
             @Requires EntityDataStore<EntityData> entityRepository,
             @Requires Scheduler scheduler) {
-        this.serviceRepository = entityRepository.forType(ServiceData.class);
+        //this.serviceRepository = entityRepository.forType(ServiceData.class);
         this.taskQueue = scheduler.createQueue(this.getType()
                                                    .getSimpleName());
     }
@@ -143,7 +143,7 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
     //TODO: depends on provider, this is for WFS based services
     @Override
     public OgcApiDatasetData generate(Map<String, String> partialData) {
-
+/*
         if (Objects.isNull(partialData) || !partialData.containsKey("id") || !partialData.containsKey("url")) {
             throw new BadRequestException();
         }
@@ -220,10 +220,11 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
                 throw new IllegalStateException(e.getCause());
             }
             throw new IllegalStateException(e);
-        }
+        }*/
+return null;
     }
 
-    private List<TargetMappingProviderFromGml> getMappingProviders() {
+    /*private List<TargetMappingProviderFromGml> getMappingProviders() {
         return Stream.concat(
                 Stream.of(new Gml2Wfs3GenericMappingProvider()),
                 wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
@@ -242,30 +243,30 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
                                            .filter(Optional::isPresent)
                                            .map(Optional::get)
                                            .collect(Collectors.toList());
-    }
+    }*/
 
     private synchronized void onArrival(ServiceReference<OgcApiDataset> ref) {
-        try {
+        /*try {
             checkGenerateMapping(ref);
             checkRefineMapping(ref);
         } catch (Throwable e) {
             LOGGER.error("Error starting a service. ", e);
-        }
+        }*/
     }
 
     private synchronized void onDeparture(ServiceReference<OgcApiDataset> ref) {
     }
 
     private synchronized void onModification(ServiceReference<OgcApiDataset> ref) {
-        try {
+        /*try {
             checkGenerateMapping(ref);
             checkRefineMapping(ref);
         } catch (Throwable e) {
             LOGGER.error("Error modifying a service. ", e);
-        }
+        }*/
     }
 
-    private void checkGenerateMapping(ServiceReference<OgcApiDataset> ref) {
+    /*private void checkGenerateMapping(ServiceReference<OgcApiDataset> ref) {
         final OgcApiDataset ogcApiDataset = bundleContext.getService(ref);
 
         if (Objects.nonNull(ogcApiDataset)) {
@@ -354,7 +355,7 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
         }
 
         return false;
-    }
+    }*/
 
 
     private Map<String, TaskStatus> lastTasks = new HashMap<>();
@@ -380,7 +381,7 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
         return optionalTaskStatus;
     }
 
-    private class AnalyzeSchemaTask implements Task {
+    /*private class AnalyzeSchemaTask implements Task {
 
         static final String LABEL = "Analyzing schema";
 
@@ -736,6 +737,6 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDatasetData>
             return ict;
         }
 
-    }
+    }*/
 
 }
