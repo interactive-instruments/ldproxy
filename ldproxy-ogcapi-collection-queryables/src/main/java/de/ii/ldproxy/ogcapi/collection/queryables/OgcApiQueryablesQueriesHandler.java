@@ -1,6 +1,6 @@
 /**
- * Copyright 2019 interactive instruments GmbH
- * <p>
+ * Copyright 2020 interactive instruments GmbH
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -93,10 +93,10 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
             throw new NotFoundException();
 
         OgcApiQueryablesFormatExtension outputFormat = api.getOutputFormat(
-                OgcApiQueryablesFormatExtension.class,
-                requestContext.getMediaType(),
-                "/collections/" + collectionId + "/queryables")
-                                                          .orElseThrow(NotAcceptableException::new);
+                    OgcApiQueryablesFormatExtension.class,
+                    requestContext.getMediaType(),
+                    "/collections/"+collectionId+"/queryables")
+                .orElseThrow(NotAcceptableException::new);
 
         checkCollectionId(api.getData(), collectionId);
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
@@ -107,7 +107,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         ImmutableQueryables.Builder queryables = ImmutableQueryables.builder();
 
         FeatureTypeConfigurationOgcApi collectionData = apiData.getFeatureTypes()
-                                                               .get(collectionId);
+                .get(collectionId);
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
         Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
 
@@ -144,21 +144,21 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                                    switch (featureProperty.getType()) {
                                        case INTEGER:
                                            type = "integer";
-                                           break;
+                                    break;
                                        case FLOAT:
                                            type = "number";
-                                           break;
+                                    break;
                                        case STRING:
                                            type = "string";
-                                           break;
+                                    break;
                                        case BOOLEAN:
                                            type = "boolean";
-                                           break;
+                                    break;
                                        default:
                                            return;
-                                   }
+                            }
 
-                                   queryables.addQueryables(ImmutableQueryable.builder()
+                        queryables.addQueryables(ImmutableQueryable.builder()
                                                                               .id(name)
                                                                               .type(type)
                                                                               .build());
@@ -166,10 +166,10 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                                } else if (temporalQueryables.contains(name)) {
                                    queryables.addQueryables(ImmutableQueryable.builder()
                                                                               .id(name)
-                                                                              .type("dateTime")
-                                                                              .build());
+                                .type("dateTime")
+                                .build());
                                    visitedProperties.add(name);
-                               }
+                    }
                            });
             }
         });
@@ -179,17 +179,17 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         Optional<OgcApiQueryablesFormatExtension> outputFormatExtension = api.getOutputFormat(
                 OgcApiQueryablesFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + "/queryables");
+                "/collections/"+collectionId+"/queryables");
 
         if (outputFormatExtension.isPresent()) {
             Response queryablesResponse = outputFormatExtension.get()
                                                                .getResponse(queryables.build(), collectionId, api, requestContext);
 
             Response.ResponseBuilder response = Response.ok()
-                                                        .entity(queryablesResponse.getEntity())
-                                                        .type(requestContext
-                                                                .getMediaType()
-                                                                .type());
+                    .entity(queryablesResponse.getEntity())
+                    .type(requestContext
+                            .getMediaType()
+                            .type());
 
             Optional<Locale> language = requestContext.getLanguage();
             if (language.isPresent())

@@ -38,66 +38,147 @@
     {{/styles}}
     {{^styles}}
       const template = "{{{tilesUrl}}}";
-      const tileMatrixSetId = document.getElementById('tileMatrixSetId').innerText;
-      var tilesUrl = template.replace("{tileMatrixSetId}",tileMatrixSetId).replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}")
-      var map = new ol.Map({
-        target: 'map-container',
-                view: new ol.View({
+      const defaultStyle = function(feature, res) {
+            return new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    width: 1,
+                    color: 'rgba(0, 102, 204, 0.6)'
                 }),
-                layers: [
-					new ol.layer.Tile({
-						source: new ol.source.XYZ({
-							attributions: window._ldproxy.ol_map.attribution,
-					  		url: window._ldproxy.ol_map.url
-						})
-					}),
-                    new ol.layer.VectorTile({
-			            declutter: true,
-                    	title: "Vector Tiles",
-                        source: new ol.source.VectorTile({
-                            format: new ol.format.MVT(),
-                            url: tilesUrl
-                        }),
-                        style: function(feature, res) {
-                            return new ol.style.Style({
-                                stroke: new ol.style.Stroke({
-                                    width: 1,
-                                    color: 'rgba(0, 102, 204, 0.6)'
-                                }),
-                                fill: new ol.style.Fill({
-                                    color: 'rgba(0, 102, 204, 0.15)'
-                                }),
-                                image: new ol.style.Circle({
-							 		radius: 3,
-									fill: new ol.style.Fill({
-										color: 'rgba(0, 102, 204, 0.15)'
-									}),
-									stroke: new ol.style.Stroke({
-										width: 1,
-										color: 'rgba(0, 102, 204, 0.8)'
-									})
-							 	})
-                            })
-                        }
+                fill: new ol.style.Fill({
+                    color: 'rgba(0, 102, 204, 0.15)'
+                }),
+                image: new ol.style.Circle({
+                    radius: 3,
+                    fill: new ol.style.Fill({
+                        color: 'rgba(0, 102, 204, 0.15)'
+                    }),
+                    stroke: new ol.style.Stroke({
+                        width: 1,
+                        color: 'rgba(0, 102, 204, 0.8)'
                     })
-                ]
-     });
-    const extent = ol.proj.transformExtent(window._ldproxy.ol_map.extent, 'EPSG:4326', 'EPSG:3857');
-    map.getView().fit(extent, map.getSize());
-
-    map.on('pointermove', showInfo);
-    var info = document.getElementById('info');
-    function showInfo(event) {
-        var features = map.getFeaturesAtPixel(event.pixel);
-        if (!features) {
-            info.innerText = '';
-            info.style.opacity = 0;
-            return;
+                })
+            })
         }
-        var properties = features[0].getProperties();
-        info.innerText = JSON.stringify(properties, null, 2);
-        info.style.opacity = 1;
-    }
+        proj4.defs('EPSG:3395', '+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs');
+        ol.proj.proj4.register(proj4);
+        ol.proj.get('EPSG:3395').setExtent([-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244]);
+      {{#tileCollections}}
+        var tilesUrl{{tileMatrixSet}} = template.replace("{tileMatrixSetId}","{{tileMatrixSet}}").replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}")
+
+        var maxLevel{{tileMatrixSet}} = {{maxLevel}};
+        var maxResolution = {{resolutionAt0}};
+        var resolutions{{tileMatrixSet}} = new Array(maxLevel{{tileMatrixSet}}+1);
+        for (var i = 0; i <= maxLevel{{tileMatrixSet}}; ++i) {
+            resolutions{{tileMatrixSet}}[i] = maxResolution / Math.pow(2, i);
+        }
+
+        var sizes{{tileMatrixSet}} = new Array(maxLevel{{tileMatrixSet}}+1);
+        for (var i = 0; i <= maxLevel{{tileMatrixSet}}; ++i) {
+            sizes{{tileMatrixSet}}[i] = [ {{widthAtL0}} * Math.pow(2, i), Math.pow(2, i) ] ;
+        }
+
+        var tileGrid{{tileMatrixSet}} = new ol.tilegrid.TileGrid({
+            extent: {{extent}},
+            resolutions: resolutions{{tileMatrixSet}},
+            sizes: sizes{{tileMatrixSet}}
+        });
+
+        var map{{tileMatrixSet}} = new ol.Map({
+            target: 'map-container-{{tileMatrixSet}}',
+                    view: new ol.View({
+                        projection: '{{projection}}',
+                    }),
+                    layers: [
+                        new ol.layer.Tile({
+                            source: new ol.source.XYZ({
+                                attributions: window._ldproxy.ol_map.attribution,
+                                url: window._ldproxy.ol_map.url
+                            })
+                        }),
+                        new ol.layer.VectorTile({
+                            declutter: true,
+                            title: "Vector Tiles",
+                            source: new ol.source.VectorTile({
+                                format: new ol.format.MVT(),
+                                maxZoom: maxLevel{{tileMatrixSet}},
+                                projection: '{{projection}}',
+                                tileGrid: tileGrid{{tileMatrixSet}},
+                                url: tilesUrl{{tileMatrixSet}}
+                            }),
+                            style: defaultStyle
+                        })
+                    ]
+        });
+        const extent{{tileMatrixSet}} = ol.proj.transformExtent(window._ldproxy.ol_map.extent, 'EPSG:4326', '{{projection}}');
+        map{{tileMatrixSet}}.getView().fit(extent{{tileMatrixSet}}, map{{tileMatrixSet}}.getSize());
+
+        map{{tileMatrixSet}}.on('pointermove', showInfo{{tileMatrixSet}});
+        var info{{tileMatrixSet}} = document.getElementById('info-{{tileMatrixSet}}');
+        function showInfo{{tileMatrixSet}}(event) {
+            var features = map{{tileMatrixSet}}.getFeaturesAtPixel(event.pixel);
+            if (!features) {
+                info{{tileMatrixSet}}.innerText = '';
+                info{{tileMatrixSet}}.style.opacity = 0;
+                return;
+            }
+            if (features[0]) {
+                var id = features[0].getId();
+                var properties = features[0].getProperties();
+                if (id) {
+                    properties.id = id;
+                }
+                info{{tileMatrixSet}}.innerText = JSON.stringify(properties, null, 2);
+                info{{tileMatrixSet}}.style.opacity = 1;
+            }
+        }
+    {{/tileCollections}}
+    {{^tileCollections}}
+         var tilesUrl = template.replace("{tileMatrixSetId}","WebMercatorQuad").replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}")
+         var map = new ol.Map({
+            target: 'map-container',
+                    view: new ol.View({
+                    }),
+                    layers: [
+                        new ol.layer.Tile({
+                            source: new ol.source.XYZ({
+                                attributions: window._ldproxy.ol_map.attribution,
+                                url: window._ldproxy.ol_map.url
+                            })
+                        }),
+                        new ol.layer.VectorTile({
+                            declutter: true,
+                            title: "Vector Tiles",
+                            source: new ol.source.VectorTile({
+                                format: new ol.format.MVT(),
+                                url: tilesUrl
+                            }),
+                            style: defaultStyle
+                        })
+                    ]
+        });
+        const extent = ol.proj.transformExtent(window._ldproxy.ol_map.extent, 'EPSG:4326', 'EPSG:3857');
+        map.getView().fit(extent, map.getSize());
+
+        map.on('pointermove', showInfo);
+        var info = document.getElementById('info');
+        function showInfo(event) {
+            var features = map.getFeaturesAtPixel(event.pixel);
+            if (!features) {
+                info.innerText = '';
+                info.style.opacity = 0;
+                return;
+            }
+            if (features[0]) {
+                var id = features[0].getId();
+                var properties = features[0].getProperties();
+                if (id) {
+                    properties.id = id;
+                }
+                info.innerText = JSON.stringify(properties, null, 2);
+                info.style.opacity = 1;
+            }
+        }
+    {{/tileCollections}}
     {{/styles}}
     </script>
     {{/withOlMap}}

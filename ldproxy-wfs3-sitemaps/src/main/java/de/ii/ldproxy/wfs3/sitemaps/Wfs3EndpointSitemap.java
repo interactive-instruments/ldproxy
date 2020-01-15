@@ -1,6 +1,6 @@
 /**
- * Copyright 2019 interactive instruments GmbH
- * <p>
+ * Copyright 2020 interactive instruments GmbH
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -81,7 +81,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
         if (subPath.matches("^/?(?:/[\\w\\-]+/sitemap[_0-9]+\\.xml)$"))
             return API_MEDIA_TYPES;
 
-        throw new ServerErrorException("Invalid sub path: " + subPath, 500);
+        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
                                                          .fields(ImmutableList.of("ID")) //TODO only get id field
                                                          .build();
         FeatureStream2 featureStream = featureProvider.queries()
-                                                      .getFeatureStream2(featureQuery);
+                                              .getFeatureStream2(featureQuery);
         featureStream.runWith(itemSitesReader)
                      .toCompletableFuture()
                      .join();

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.xtraplatform.crs.api.BoundingBox;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,12 +52,12 @@ public class OgcApiLandingPageView extends LdproxyView {
         this.apiLandingPage = apiLandingPage;
         this.uriCustomizer = uriCustomizer;
 
-        double[] spatialExtent = apiData.getSpatialExtent();
+        BoundingBox spatialExtent = apiData.getSpatialExtent();
         this.bbox2 = spatialExtent==null ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent[1]),
-                "minLat", Double.toString(spatialExtent[0]),
-                "maxLng", Double.toString(spatialExtent[3]),
-                "maxLat", Double.toString(spatialExtent[2])); // TODO is axis order mixed up in script.mustache?
+                "minLng", Double.toString(spatialExtent.getXmin()),
+                "minLat", Double.toString(spatialExtent.getYmin()),
+                "maxLng", Double.toString(spatialExtent.getXmax()),
+                "maxLat", Double.toString(spatialExtent.getYmax()));
         Long[] interval = apiData.getFeatureTypes()
                 .values()
                 .stream()

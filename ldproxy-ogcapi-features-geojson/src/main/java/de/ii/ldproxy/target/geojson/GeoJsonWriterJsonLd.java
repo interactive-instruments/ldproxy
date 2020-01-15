@@ -1,6 +1,6 @@
 /**
- * Copyright 2019 interactive instruments GmbH
- * <p>
+ * Copyright 2020 interactive instruments GmbH
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -41,7 +41,7 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
         if (transformationContext.isFeatureCollection()) {
             Optional<String> ldContext = transformationContext.getApiData()
                                                               .getFeatureTypes()
-                                                              .get(transformationContext.getCollectionId())
+                    .get(transformationContext.getCollectionId())
                                                               .getExtension(GeoJsonConfiguration.class)
                                                               .flatMap(GeoJsonConfiguration::getLdContext);
 
@@ -87,25 +87,25 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
         transformationContext.getJson()
                              .writeStringField("@context",
                                      ldContext.replace("{{serviceUrl}}", transformationContext.getServiceUrl())
-                                              .replace("{{collectionId}}", transformationContext.getCollectionId()));
+                                             .replace("{{collectionId}}", transformationContext.getCollectionId()));
 
         if (types.isEmpty()) {
             // do not write @type
-        } else if (types.size() == 1) {
+        } else if (types.size()==1) {
             transformationContext.getJson()
-                                 .writeStringField("@type", types.get(0));
+                    .writeStringField("@type", types.get(0));
         } else {
             // write @type as array
             transformationContext.getJson()
-                                 .writeArrayFieldStart("@type");
+                    .writeArrayFieldStart("@type");
 
             for (String type : types) {
                 transformationContext.getJson()
-                                     .writeString(type);
+                        .writeString(type);
             }
 
             transformationContext.getJson()
-                                 .writeEndArray();
+                    .writeEndArray();
         }
     }
 }

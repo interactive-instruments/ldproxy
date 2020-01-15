@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -58,7 +58,9 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
 
     @Override
     public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return response(new LandingPageXml(apiLandingPage.getLinks()));
+        String title = requestContext.getApi().getData().getLabel();
+        String description = requestContext.getApi().getData().getDescription().orElse(null);
+        return response(new LandingPageXml(apiLandingPage.getLinks(), title, description));
     }
 
     @Override
@@ -75,7 +77,9 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
     @Override
     public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
                                           OgcApiDataset api, OgcApiRequestContext requestContext) {
-        return response(new Wfs3CollectionXml(ogcApiCollection));
+        return response(new Wfs3CollectionsXml(new ImmutableCollections.Builder()
+                .addCollections(ogcApiCollection)
+                .build()));
     }
 
     private Response response(Object entity) {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -86,10 +86,10 @@ public class OgcApiCollectionView extends LdproxyView {
             if (Objects.nonNull(spatialExtent)) {
                 double[] boundingBox = spatialExtent.getBbox()[0]; // TODO just the first bbox and it is assumed to be in CRS84
                 this.bbox2 = ImmutableMap.of(
-                        "minLng", Double.toString(boundingBox[1]),
-                        "minLat", Double.toString(boundingBox[0]),
-                        "maxLng", Double.toString(boundingBox[3]),
-                        "maxLat", Double.toString(boundingBox[2])); // TODO is axis order mixed up in script.mustache?
+                        "minLng", Double.toString(boundingBox[0]),
+                        "minLat", Double.toString(boundingBox[1]),
+                        "maxLng", Double.toString(boundingBox[2]),
+                        "maxLat", Double.toString(boundingBox[3]));
             }
             OgcApiExtentTemporal temporalExtent = extent.get()
                     .getTemporal();

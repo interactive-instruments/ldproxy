@@ -1,6 +1,6 @@
 /**
- * Copyright 2019 interactive instruments GmbH
- * <p>
+ * Copyright 2020 interactive instruments GmbH
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -59,9 +59,9 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
             // TODO dynamically add feature formats, other formats, parameters, collectionId values
 
             PathItem collectionPathItem = openAPI.getPaths()
-                                                 .remove("/collections/{collectionId}");
+                                               .remove("/collections/{collectionId}");
             PathItem featuresPathItem = openAPI.getPaths()
-                                               .remove("/collections/{collectionId}/items");
+                                                .remove("/collections/{collectionId}/items");
             PathItem featurePathItem = openAPI.getPaths()
                                               .remove("/collections/{collectionId}/items/{featureId}");
 
@@ -215,10 +215,10 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
         clonedOperation.setOperationId(operation.getOperationId());
         if (operation.getParameters() != null)
             clonedOperation.setParameters(Lists.newArrayList(operation.getParameters()
-                                                                      .stream()
+                    .stream()
                                                                       .filter(param -> !withoutCollectionId || param.get$ref() == null || !param.get$ref()
                                                                                                                                                 .equalsIgnoreCase("#/components/parameters/collectionId"))
-                                                                      .collect(Collectors.toList())));
+                    .collect(Collectors.toList())));
         clonedOperation.setRequestBody(operation.getRequestBody());
         clonedOperation.setResponses(operation.getResponses());
         clonedOperation.setSecurity(operation.getSecurity());

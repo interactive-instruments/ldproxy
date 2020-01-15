@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,8 +24,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +76,7 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
         this.escaper = XmlEscapers.xmlAttributeEscaper();
         this.pageSize  = transformationContext.getLimit();
         this.maxAllowableOffset = transformationContext.getMaxAllowableOffset();
-        this.namespaces.addNamespace("feat", "http://www.opengis.net/ogcapi-features-1/1.0/sf", true);
+        this.namespaces.addNamespace("sf", "http://www.opengis.net/ogcapi-features-1/1.0/sf", true);
         this.namespaces.addNamespace("ogcapi", "http://www.opengis.net/ogcapi-features-1/1.0", true);
         this.namespaces.addNamespace("atom", "http://www.w3.org/2005/Atom", true);
     }
@@ -88,7 +86,7 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
                         Map<String, String> additionalInfos) throws Exception {
         writer.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
         if (isFeatureCollection) {
-            writer.append("\n<feat:FeatureCollection");
+            writer.append("\n<sf:FeatureCollection");
             namespaces.getNamespaces()
                       .keySet()
                       .forEach(consumerMayThrow(prefix -> {
@@ -97,25 +95,6 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
                               writer.append(namespaces.generateNamespaceDeclaration(prefix));
                           }
                       }));
-
-            if (numberReturned.isPresent()) {
-                writer.append(" numberReturned");
-                writer.append("=\"");
-                writer.append(String.valueOf(numberReturned.getAsLong()));
-                writer.append("\"");
-            }
-            if (numberMatched.isPresent()) {
-                writer.append(" numberMatched");
-                writer.append("=\"");
-                writer.append(String.valueOf(numberMatched.getAsLong()));
-                writer.append("\"");
-            }
-            writer.append(" timeStamp");
-            writer.append("=\"");
-            writer.append(Instant.now()
-                                 .truncatedTo(ChronoUnit.SECONDS)
-                                 .toString());
-            writer.append("\"");
 
             isLastPage = numberReturned.orElse(0) < pageSize;
             inCurrentStart = true;
@@ -130,13 +109,9 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
             if (inCurrentStart) {
                 writer.append(">");
 
-                links.stream()
-                     .filter(link -> !(isLastPage && Objects.equals(link.getRel(), "next")))
-                     .forEach(consumerMayThrow(link -> writer.append(linkAsAtom(link))));
-
                 inCurrentStart = false;
             }
-            writer.append("\n</feat:FeatureCollection>");
+            writer.append("\n</sf:FeatureCollection>");
         }
         writer.flush();
         writer.close();
@@ -149,13 +124,11 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
         if (inCurrentStart) {
             writer.append(">");
 
-            links.stream().filter(link -> !(isLastPage && Objects.equals(link.getRel(), "next"))).forEach(consumerMayThrow(link -> writer.append(linkAsAtom(link))));
-
             inCurrentStart = false;
         }
 
         if (isFeatureCollection) {
-            writer.append("\n<feat:member>");
+            writer.append("\n<sf:featureMember>");
         }
         writer.append("\n<");
         writer.append(namespaces.getNamespacePrefix(getNamespaceUri(path)));
@@ -192,7 +165,7 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
         writer.append(getLocalName(path));
         writer.append(">");
         if (isFeatureCollection) {
-            writer.append("\n</feat:member>");
+            writer.append("\n</sf:featureMember>");
         }
         writer.flush();
     }
@@ -351,9 +324,6 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
         return locations.entrySet().stream().map(entry -> entry.getKey() + " " + entry.getValue()).collect(Collectors.joining(" "));
     }
 
-    private String linkAsAtom(OgcApiLink link) {
-        return String.format("\n<atom:link rel=\"%s\" title=\"%s\" type=\"%s\" href=\"%s\"/>", link.getRel(), link.getTitle(), escaper.escape(link.getType()), escaper.escape(link.getHref()));
-    }
 
     private String getLocalName(List<String> path) {
         return path.isEmpty() ? null : getLocalName(path.get(path.size()-1));

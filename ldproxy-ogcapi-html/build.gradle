@@ -17,7 +17,7 @@ dependencies {
     provided project(":ldproxy-ogcapi-resources")
     provided project(":ldproxy-ogcapi-collection-queryables")
     provided project(":ldproxy-ogcapi-oas30")
-    provided project(":ldproxy-wfs3-vt")
+    provided project(":ldproxy-ogcapi-tiles")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'

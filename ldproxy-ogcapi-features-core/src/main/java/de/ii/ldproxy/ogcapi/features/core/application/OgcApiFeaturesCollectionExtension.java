@@ -1,6 +1,6 @@
 /**
- * Copyright 2019 interactive instruments GmbH
- * <p>
+ * Copyright 2020 interactive instruments GmbH
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -60,7 +60,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                                                      Optional<Locale> language) {
 
         collection.title(featureType.getLabel())
-                  .description(featureType.getDescription());
+                .description(featureType.getDescription());
 
         URICustomizer uriBuilder = uriCustomizer
                 .copy()
@@ -82,17 +82,17 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
         }
 
         List<OgcApiMediaType> featureMediaTypes = extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
-                                                                   .stream()
-                                                                   .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-                                                                   .map(outputFormatExtension -> outputFormatExtension.getMediaType())
-                                                                   .collect(Collectors.toList());
+                .stream()
+                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                .map(outputFormatExtension -> outputFormatExtension.getMediaType())
+                .collect(Collectors.toList());
 
         featureMediaTypes
                 .stream()
                 .forEach(mtype -> collection.addLinks(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.ensureLastPathSegments("collections", featureType.getId(), "items")
-                                        .setParameter("f", mtype.parameter())
-                                        .toString())
+                                .setParameter("f", mtype.parameter())
+                                .toString())
                         .rel("items")
                         .type(mtype.type()
                                    .toString())
@@ -107,7 +107,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     .href(describeFeatureTypeUrl.get())
                     .rel("describedBy")
                     .type("application/xml")
-                    .title(i18n.get("describedByXsdLink", language))
+                    .title(i18n.get("describedByXsdLink",language))
                     .build());
         }
 
@@ -135,7 +135,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     spatial.getYmax()));
         } else if (hasSpatialQueryable) {
             BoundingBox spatial = featureType.getExtent()
-                                             .getSpatial();
+                    .getSpatial();
             collection.extent(new OgcApiExtent(
                     spatial.getXmin(),
                     spatial.getYmin(),
@@ -143,7 +143,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     spatial.getYmax()));
         } else if (hasTemporalQueryable) {
             FeatureTypeConfigurationOgcApi.TemporalExtent temporal = featureType.getExtent()
-                                                                                .getTemporal();
+                    .getTemporal();
             collection.extent(new OgcApiExtent(
                     temporal.getStart(),
                     temporal.getEnd()));
@@ -156,11 +156,11 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                                                           OgcApiDatasetData apiData,
                                                           OgcApiMediaType mediaType,
                                                           List<OgcApiMediaType> alternateMediaTypes,
-                                                          Optional<Locale> language,
+                                                   Optional<Locale> language,
                                                           URICustomizer uriCustomizer,
                                                           List<OgcApiCollectionExtension> collectionExtenders) {
         ImmutableOgcApiCollection.Builder ogcApiCollection = ImmutableOgcApiCollection.builder()
-                                                                                      .id(featureType.getId());
+                .id(featureType.getId());
 
         for (OgcApiCollectionExtension ogcApiCollectionExtension : collectionExtenders) {
             ogcApiCollection = ogcApiCollectionExtension.process(

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,13 +12,14 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.wfs3.vt.TileCollection;
-import de.ii.ldproxy.wfs3.vt.TileCollections;
+import de.ii.ldproxy.ogcapi.tiles.TileCollections;
+import de.ii.xtraplatform.crs.api.BoundingBox;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TilesView extends LdproxyView {
-    public List<TileCollection> tileCollections;
+    public List<Map<String,String>> tileCollections;
     public String tilesUrl;
     public String mapTitle;
     public String none;
@@ -46,7 +47,24 @@ public class TilesView extends LdproxyView {
 
         // TODO this is quick and dirty - the view needs to be improved
 
-        this.tileCollections = tiles.getTileMatrixSetLinks();
+        this.tileCollections = tiles.getTileMatrixSetLinks()
+                .stream()
+                .filter(tms -> tms.getTileMatrixSet().isPresent())
+                .map(tms -> new ImmutableMap.Builder<String,String>()
+                        .put("tileMatrixSet",tms.getTileMatrixSet().get())
+                        .put("maxLevel",tms.getTileMatrixSetLimits()
+                                .stream()
+                                .map(tmsl -> Integer.parseInt(tmsl.getTileMatrix()))
+                                .max(Comparator.naturalOrder())
+                                .orElse(-1)
+                                .toString())
+                        .put("extent",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "[-180,-90,180,90]" : "[-20037508.3427892,-20037508.3427892,20037508.3427892,20037508.3427892]")
+                        .put("resolutionAt0",Double.toString(tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? 360.0/512 : 2*20037508.3427892/256))
+                        .put("widthAtL0",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "2" : "1")
+                        .put("projection",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "EPSG:4326" : tms.getTileMatrixSet().get().equals("WorldMercatorWGS84Quad") ? "EPSG:3395" : "EPSG:3857")
+                        .build())
+                .collect(Collectors.toList());
+
         this.tilesUrl = links.stream()
                 .filter(link -> Objects.equals(link.getRel(),"item"))
                 .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
@@ -59,24 +77,12 @@ public class TilesView extends LdproxyView {
 
         this.withOlMap = true;
         this.spatialSearch = false;
-        double[] spatialExtent = apiData.getFeatureTypes()
-                .values()
-                .stream()
-                .filter(featureTypeConfiguration -> !collectionId.isPresent() || Objects.equals(featureTypeConfiguration.getId(),collectionId.get()))
-                .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
-                        .getSpatial()
-                        .getCoords())
-                .reduce((doubles, doubles2) -> new double[]{
-                        Math.min(doubles[0], doubles2[0]),
-                        Math.min(doubles[1], doubles2[1]),
-                        Math.max(doubles[2], doubles2[2]),
-                        Math.max(doubles[3], doubles2[3])})
-                .orElse(null);
+        BoundingBox spatialExtent = apiData.getSpatialExtent();
         this.bbox2 = spatialExtent==null ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent[1]),
-                "minLat", Double.toString(spatialExtent[0]),
-                "maxLng", Double.toString(spatialExtent[3]),
-                "maxLat", Double.toString(spatialExtent[2])); // TODO is axis order mixed up in script.mustache?
+                "minLng", Double.toString(spatialExtent.getXmin()),
+                "minLat", Double.toString(spatialExtent.getYmin()),
+                "maxLng", Double.toString(spatialExtent.getXmax()),
+                "maxLat", Double.toString(spatialExtent.getYmax()));
         Long[] interval = apiData.getFeatureTypes()
                 .values()
                 .stream()

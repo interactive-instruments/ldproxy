@@ -1,6 +1,6 @@
 /**
- * Copyright 2019 interactive instruments GmbH
- * <p>
+ * Copyright 2020 interactive instruments GmbH
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -59,8 +59,8 @@ public class OgcApiCrsOpenApi implements OpenApiExtension {
             ImmutableSet<String> crsSet = ImmutableSet.<String>builder()
                     .add(providers.getFeatureProvider(datasetData)
                                   .getData()
-                                  .getNativeCrs()
-                                  .getAsUri())
+                                    .getNativeCrs()
+                                    .getAsUri())
                     .add(DEFAULT_CRS_URI)
                     .addAll(datasetData.getAdditionalCrs()
                                        .stream()

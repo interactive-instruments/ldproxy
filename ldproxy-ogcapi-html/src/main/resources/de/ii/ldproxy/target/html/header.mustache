@@ -31,18 +31,21 @@
     {{#withOlMap}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v5.3.0/css/ol.css" type="text/css"/>
     <style>
-    #map {
+    .map {
+        width: 100%;
+        height: 600px;
         position: relative;
+        background: #f8f4f0;
     }
 
-    #info {
+    .info {
         z-index: 1;
         opacity: 0;
         position: absolute;
         bottom: 0;
         left: 0;
         margin: 0;
-        background: rgba(0, 0, 0, 0.7);
+        background: rgba(0, 0, 0, 0.5);
         color: white;
         border: 0;
         transition: opacity 100ms ease-in;
