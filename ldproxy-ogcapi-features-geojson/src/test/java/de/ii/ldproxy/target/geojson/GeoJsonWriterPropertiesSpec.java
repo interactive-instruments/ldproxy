@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -12,6 +12,8 @@ import com.greghaskins.spectrum.Spectrum;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
@@ -37,20 +39,25 @@ import static org.testng.Assert.assertEquals;
 @RunWith(Spectrum.class)
 public class GeoJsonWriterPropertiesSpec {
 
-    static final GeoJsonPropertyMapping propertyMapping = new GeoJsonPropertyMapping();
+    static final FeatureProperty propertyMapping = new ImmutableFeatureProperty.Builder().name("p1")
+                                                                                         .path("")
+                                                                                         .build();
 
-    static final GeoJsonPropertyMapping propertyMapping2 = new GeoJsonPropertyMapping();
+    static final FeatureProperty propertyMapping2 = new ImmutableFeatureProperty.Builder().name("p2")
+                                                                                          .path("")
+                                                                                          .type(FeatureProperty.Type.INTEGER)
+                                                                                          .build();
 
     static final String value1 = "val1";
     static final String value2 = "2";
 
 
-    static {
+    /*static {
         propertyMapping.setName("p1");
         propertyMapping.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
         propertyMapping2.setName("p2");
         propertyMapping2.setType(GeoJsonMapping.GEO_JSON_TYPE.NUMBER);
-    }
+    }*/
 
     {
 
@@ -95,17 +102,18 @@ public class GeoJsonWriterPropertiesSpec {
 
                         it("it should write nested json objects", () -> {
 
-                            //TODO: immutables
-                            GeoJsonPropertyMapping mapping1 = new GeoJsonPropertyMapping();
-                            mapping1.setName("foto.bemerkung");
-                            mapping1.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
-                            GeoJsonPropertyMapping mapping2 = new GeoJsonPropertyMapping();
-                            mapping2.setName("foto.hauptfoto");
-                            mapping2.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
-                            //TODO if lastPropertyIsNested
-                            GeoJsonPropertyMapping mapping3 = new GeoJsonPropertyMapping();
-                            mapping3.setName("kennung");
-                            mapping3.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
+                            FeatureProperty mapping1 = new ImmutableFeatureProperty.Builder().name("foto.bemerkung")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
+                            FeatureProperty mapping2 = new ImmutableFeatureProperty.Builder().name("foto.hauptfoto")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
+                            FeatureProperty mapping3 = new ImmutableFeatureProperty.Builder().name("kennung")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
 
                             runTransformer(outputStream, ImmutableList.of(mapping1, mapping2, mapping3), ImmutableList.of(ImmutableList.of(), ImmutableList.of(), ImmutableList.of()));
 
@@ -130,33 +138,36 @@ public class GeoJsonWriterPropertiesSpec {
                         //TODO
                         xit("it should write nested json objects and arrays", () -> {
 
-                            //TODO: immutables
                             // multiple object
-                            GeoJsonPropertyMapping mapping1 = new GeoJsonPropertyMapping();
-                            mapping1.setName("foto[foto].bemerkung");
-                            mapping1.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
+                            FeatureProperty mapping1 = new ImmutableFeatureProperty.Builder().name("foto[foto].bemerkung")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
                             List<Integer> multiplicity11 = ImmutableList.of(1);
                             List<Integer> multiplicity12 = ImmutableList.of(2);
 
-                            GeoJsonPropertyMapping mapping2 = new GeoJsonPropertyMapping();
-                            mapping2.setName("foto[foto].hauptfoto");
-                            mapping2.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
+                            FeatureProperty mapping2 = new ImmutableFeatureProperty.Builder().name("foto[foto].hauptfoto")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
                             List<Integer> multiplicity21 = ImmutableList.of(1);
                             List<Integer> multiplicity22 = ImmutableList.of(2);
 
                             // multiple value
-                            GeoJsonPropertyMapping mapping3 = new GeoJsonPropertyMapping();
-                            mapping3.setName("fachreferenz[fachreferenz]");
-                            mapping3.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
+                            FeatureProperty mapping3 = new ImmutableFeatureProperty.Builder().name("fachreferenz[fachreferenz]")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
                             List<Integer> multiplicity31 = ImmutableList.of(1);
                             List<Integer> multiplicity32 = ImmutableList.of(2);
 
                             //TODO if lastPropertyIsNested
-                            GeoJsonPropertyMapping mapping4 = new GeoJsonPropertyMapping();
-                            mapping4.setName("kennung");
-                            mapping4.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
+                            FeatureProperty mapping4 = new ImmutableFeatureProperty.Builder().name("kennung")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
 
-                            ImmutableList<GeoJsonPropertyMapping> mappings = ImmutableList.of(mapping1, mapping2, mapping1, mapping2, mapping3, mapping3, mapping4);
+                            ImmutableList<FeatureProperty> mappings = ImmutableList.of(mapping1, mapping2, mapping1, mapping2, mapping3, mapping3, mapping4);
                             ImmutableList<List<Integer>> multiplicities = ImmutableList.of(multiplicity11, multiplicity21, multiplicity12, multiplicity22, multiplicity31, multiplicity32, ImmutableList.of());
 
                             runTransformer(outputStream, mappings, multiplicities);
@@ -185,33 +196,36 @@ public class GeoJsonWriterPropertiesSpec {
 
                         xit("it should write nested json objects and arrays", () -> {
 
-                            //TODO: immutables
                             // multiple object
-                            GeoJsonPropertyMapping mapping1 = new GeoJsonPropertyMapping();
-                            mapping1.setName("raumreferenz[raumreferenz].datumAbgleich");
-                            mapping1.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
+                            FeatureProperty mapping1 = new ImmutableFeatureProperty.Builder().name("raumreferenz[raumreferenz].datumAbgleich")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
                             List<Integer> multiplicity11 = ImmutableList.of(1);
 
-                            GeoJsonPropertyMapping mapping2 = new GeoJsonPropertyMapping();
-                            mapping2.setName("raumreferenz[raumreferenz].ortsangaben[ortsangaben].kreis");
-                            mapping2.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
+                            FeatureProperty mapping2 = new ImmutableFeatureProperty.Builder().name("raumreferenz[raumreferenz].ortsangaben[ortsangaben].kreis")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
                             List<Integer> multiplicity21 = ImmutableList.of(1, 1);
                             List<Integer> multiplicity22 = ImmutableList.of(1, 2);
 
                             // multiple value
-                            GeoJsonPropertyMapping mapping3 = new GeoJsonPropertyMapping();
-                            mapping3.setName("raumreferenz[raumreferenz].ortsangaben[ortsangaben].flurstueckskennung[ortsangaben_flurstueckskennung]");
-                            mapping3.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
+                            FeatureProperty mapping3 = new ImmutableFeatureProperty.Builder().name("raumreferenz[raumreferenz].ortsangaben[ortsangaben].flurstueckskennung[ortsangaben_flurstueckskennung]")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
                             List<Integer> multiplicity31 = ImmutableList.of(1, 1, 1);
                             List<Integer> multiplicity32 = ImmutableList.of(1, 1, 2);
                             List<Integer> multiplicity33 = ImmutableList.of(1, 2, 1);
 
                             //TODO if lastPropertyIsNested
-                            GeoJsonPropertyMapping mapping4 = new GeoJsonPropertyMapping();
-                            mapping4.setName("kennung");
-                            mapping4.setType(GeoJsonMapping.GEO_JSON_TYPE.STRING);
+                            FeatureProperty mapping4 = new ImmutableFeatureProperty.Builder().name("kennung")
+                                                                                             .path("")
+                                                                                             .type(FeatureProperty.Type.STRING)
+                                                                                             .build();
 
-                            ImmutableList<GeoJsonPropertyMapping> mappings = ImmutableList.of(mapping1, mapping2, mapping3, mapping3, mapping2, mapping3, mapping4);
+                            ImmutableList<FeatureProperty> mappings = ImmutableList.of(mapping1, mapping2, mapping3, mapping3, mapping2, mapping3, mapping4);
                             ImmutableList<List<Integer>> multiplicities = ImmutableList.of(multiplicity11, multiplicity21, multiplicity31, multiplicity32, multiplicity22, multiplicity33, ImmutableList.of());
 
                             runTransformer(outputStream, mappings, multiplicities);
@@ -245,7 +259,9 @@ public class GeoJsonWriterPropertiesSpec {
 
     }
 
-    private void runTransformer(ByteArrayOutputStream outputStream, List<GeoJsonPropertyMapping> mappings, List<List<Integer>> multiplicities, List<String> values) throws IOException, URISyntaxException {
+    private void runTransformer(ByteArrayOutputStream outputStream, List<FeatureProperty> mappings,
+                                List<List<Integer>> multiplicities,
+                                List<String> values) throws IOException, URISyntaxException {
         outputStream.reset();
         FeatureTransformationContextGeoJson transformationContext = createTransformationContext(outputStream, true, null);
         FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriterProperties()));
@@ -269,14 +285,17 @@ public class GeoJsonWriterPropertiesSpec {
         transformer.onEnd();
     }
 
-    private void runTransformer(ByteArrayOutputStream outputStream, List<GeoJsonPropertyMapping> mappings, List<List<Integer>> multiplicities) throws IOException, URISyntaxException {
+    private void runTransformer(ByteArrayOutputStream outputStream, List<FeatureProperty> mappings,
+                                List<List<Integer>> multiplicities) throws IOException, URISyntaxException {
         String value = "xyz";
         runTransformer(outputStream, mappings, multiplicities, IntStream.range(0, mappings.size())
                                                                         .mapToObj(i -> value)
                                                                         .collect(Collectors.toList()));
     }
 
-    private FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, boolean isCollection, EpsgCrs crs) throws URISyntaxException {
+    private FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream,
+                                                                            boolean isCollection,
+                                                                            EpsgCrs crs) throws URISyntaxException {
         CrsTransformer crsTransformer = null;
         if (Objects.nonNull(crs)) {
             crsTransformer = mock(CrsTransformer.class);
@@ -287,20 +306,20 @@ public class GeoJsonWriterPropertiesSpec {
         return ImmutableFeatureTransformationContextGeoJson.builder()
                                                            .crsTransformer(Optional.ofNullable(crsTransformer))
                                                            .apiData(new ImmutableOgcApiDatasetData.Builder()
-                                                                                                .id("s")
-                                                                                                .serviceType("WFS3")
-                                                                                                .featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
-                                                                                                        .providerType("WFS")
-                                                                                                        .connectorType("WFS")
-                                                                                                                                                .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
-                                                                                                                                                                                              .uri(new URI("http://localhost"))
-                                                                                                                                                                                              .method(ConnectionInfoWfsHttp.METHOD.GET)
-                                                                                                                                                                                              .version("2.0.0")
-                                                                                                                                                                                              .gmlVersion("3.2.1")
-                                                                                                                                                                                              .build())
-                                                                                                                                                .nativeCrs(new EpsgCrs())
-                                                                                                                                                .build())
-                                                                                                .build())
+                                                                   .id("s")
+                                                                   .serviceType("WFS3")
+                                                                   /*.featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
+                                                                           .providerType("WFS")
+                                                                           .connectorType("WFS")
+                                                                                                                   .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
+                                                                                                                                                                 .uri(new URI("http://localhost"))
+                                                                                                                                                                 .method(ConnectionInfoWfsHttp.METHOD.GET)
+                                                                                                                                                                 .version("2.0.0")
+                                                                                                                                                                 .gmlVersion("3.2.1")
+                                                                                                                                                                 .build())
+                                                                                                                   .nativeCrs(new EpsgCrs())
+                                                                                                                   .build())*/
+                                                                   .build())
                                                            .collectionId("xyz")
                                                            .outputStream(outputStream)
                                                            .links(ImmutableList.of())
@@ -346,7 +365,12 @@ public class GeoJsonWriterPropertiesSpec {
                                                            .maxAllowableOffset(0)
                                                            .isHitsOnly(false)
                                                            .state(ModifiableStateGeoJson.create())
-                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder().isEnabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).useFormattedJsonOutput(true).build())
+                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder()
+                                                                                                .isEnabled(true)
+                                                                                                .nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST)
+                                                                                                .multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY)
+                                                                                                .useFormattedJsonOutput(true)
+                                                                                                .build())
                                                            .build();
 
     }

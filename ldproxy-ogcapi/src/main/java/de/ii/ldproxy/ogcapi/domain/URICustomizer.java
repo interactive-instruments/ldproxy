@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -226,14 +227,14 @@ public class URICustomizer extends URIBuilder {
     }
 
     public URICustomizer ensureTrailingSlash() {
-        if (!this.getPath().endsWith("/")) {
+        if (Objects.nonNull(this.getPath()) && !this.getPath().endsWith("/")) {
             this.setPath(this.getPath() + "/");
         }
         return this;
     }
 
     public URICustomizer ensureNoTrailingSlash() {
-        if (this.getPath().endsWith("/")) {
+        if (Objects.nonNull(this.getPath()) && this.getPath().endsWith("/")) {
             this.setPath(this.getPath().substring(0,getPath().length()-1));
         }
         return this;

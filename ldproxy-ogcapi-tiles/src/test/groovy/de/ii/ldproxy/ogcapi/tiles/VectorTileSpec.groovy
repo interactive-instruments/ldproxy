@@ -129,7 +129,7 @@ class VectorTileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=VectorTile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApiDataset), Mock(FeatureProvider2), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(VectorTilesCache), true, Mock(OgcApiRequestContext), Mock(CrsTransformation), i18n, Mock(OgcApiFeatureFormatExtension))
+        def result=VectorTile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApiDataset), Mock(OgcApiFeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(VectorTilesCache), true, Mock(OgcApiRequestContext), Mock(CrsTransformation), i18n)
 
         then: "it should return the zoom levels of the tiling scheme"
 
@@ -153,7 +153,7 @@ class VectorTileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=VectorTile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApiDataset), Mock(FeatureProvider2), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(VectorTilesCache), true, Mock(OgcApiRequestContext), Mock(CrsTransformation), i18n, Mock(OgcApiFeatureFormatExtension))
+        def result=VectorTile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApiDataset), Mock(OgcApiFeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(VectorTilesCache), true, Mock(OgcApiRequestContext), Mock(CrsTransformation), i18n)
 
         then: "it should return the zoom levels of the tiling scheme"
 
@@ -184,7 +184,7 @@ class VectorTileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=VectorTile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApiDataset), Mock(FeatureProvider2), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(VectorTilesCache), true, Mock(OgcApiRequestContext), Mock(CrsTransformation), i18n, Mock(OgcApiFeatureFormatExtension))
+        def result=VectorTile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApiDataset), Mock(OgcApiFeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(VectorTilesCache), true, Mock(OgcApiRequestContext), Mock(CrsTransformation), i18n)
 
         then: "it should return a map with the max and min zoom level of the tiling scheme from the requested collection and an entry with the key \'collection1\' and the value \'true\'"
 
@@ -214,7 +214,7 @@ class VectorTileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=VectorTile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApiDataset), Mock(FeatureProvider2), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(VectorTilesCache), true, Mock(OgcApiRequestContext), Mock(CrsTransformation), i18n, Mock(OgcApiFeatureFormatExtension))
+        def result=VectorTile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApiDataset), Mock(OgcApiFeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(VectorTilesCache), true, Mock(OgcApiRequestContext), Mock(CrsTransformation), i18n)
 
         then: "it should return a map with the max and min zoom level of the requested collection and an entry with the key \'collection2\' and the value \'true\'"
 
@@ -233,13 +233,13 @@ class VectorTileSpec extends Specification{
         def zoomLevel = 10
         def collectionId='collection'
         def tilingSchemeId= 'WebMercatorQuad'
-        def zoomLevelsMap =  new HashMap<>(ImmutableMap.of(
-                "collection", ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder().max(25).min(0).build())))
+        def zoomLevelsMap =  ImmutableMap.of(
+                "collection", (Map<String,MinMax>)ImmutableMap.of("WebMercatorQuad", (MinMax)new ImmutableMinMax.Builder().max(25).min(0).build()))
         def i18n = new I18nDefault();
 
         when: "checkZoomLevel is called"
 
-        def result = VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(OgcApiDataset),Mock(FeatureProvider2),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(OgcApiRequestContext),Mock(CrsTransformation),i18n)
+        def result = VectorTile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(OgcApiDataset),Mock(OgcApiFeatureFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(VectorTilesCache),true,Mock(OgcApiRequestContext),Mock(CrsTransformation),i18n)
 
         then: "it should use the zoom level range of the tiling scheme"
 
@@ -268,7 +268,7 @@ class VectorTileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=VectorTile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApiDataset), Mock(FeatureProvider2), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(VectorTilesCache), true, Mock(OgcApiRequestContext), Mock(CrsTransformation), i18n, Mock(OgcApiFeatureFormatExtension))
+        def result=VectorTile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApiDataset), Mock(OgcApiFeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(VectorTilesCache), true, Mock(OgcApiRequestContext), Mock(CrsTransformation), i18n)
 
         then: "it should throw a NotFoundException"
 

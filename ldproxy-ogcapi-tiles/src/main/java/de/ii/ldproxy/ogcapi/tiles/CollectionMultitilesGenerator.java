@@ -16,11 +16,14 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,26 +44,15 @@ import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-@Component
-@Provides
-@Instantiate
-public class CollectionMultitilesGenerator implements ConformanceClass {
+public class CollectionMultitilesGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CollectionMultitilesGenerator.class);
 
-    @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/multitiles";
-    }
+    //TODO: OgcApiTilesProviders (use features core featureProvider id as fallback)
+    private final OgcApiFeatureCoreProviders providers;
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
-
-        return extension
-                .filter(TilesConfiguration::getEnabled)
-                .filter(TilesConfiguration::getMultiTilesEnabled)
-                .isPresent();
+    public CollectionMultitilesGenerator(OgcApiFeatureCoreProviders providers) {
+        this.providers = providers;
     }
 
     /**
@@ -166,7 +158,7 @@ public class CollectionMultitilesGenerator implements ConformanceClass {
 
             }
 
-            FeatureProvider2 featureProvider = getFeatureProvider(service.getData());
+            FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData());
 
             for (TileSetEntry entry : tileSetEntries) {
                 File tileFile;
@@ -225,13 +217,5 @@ public class CollectionMultitilesGenerator implements ConformanceClass {
 
         return zip;
     }
-
-    private FeatureProvider2 getFeatureProvider(OgcApiDatasetData apiData) {
-        return getExtensionConfiguration(apiData, TilesConfiguration.class)
-                .map(TilesConfiguration::getFeatureProvider)
-                .flatMap(id -> entityRegistry.getEntity(FeatureProvider2.class, id))
-                .orElseThrow(() -> new IllegalStateException("no FeatureProvider found"));
-    }
-
 
 }

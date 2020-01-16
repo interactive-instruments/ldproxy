@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -32,7 +32,6 @@ import java.io.FileNotFoundException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -44,8 +43,6 @@ import java.util.stream.Collectors;
 
 /**
  * This class represents a vector tile
- *
- *
  */
 class VectorTile {
 
@@ -69,6 +66,7 @@ class VectorTile {
 
     /**
      * specify the vector tile
+     *
      * @param collectionId            the id of the collection in which the tile belongs
      * @param tileMatrixSetId         the local identifier of a specific tile matrix set
      * @param level                   the zoom level as a string
@@ -94,7 +92,7 @@ class VectorTile {
         // check, if collectionId is valid
         if (collectionId != null) {
             Set<String> collectionIds = apiData.getFeatureTypes()
-                    .keySet();
+                                               .keySet();
             if (collectionId.isEmpty() || !collectionIds.contains(collectionId)) {
                 throw new NotFoundException();
             }
@@ -176,7 +174,7 @@ class VectorTile {
      * Verify that the zoom level is an integer value in the valid range for the tile matrix set
      *
      * @param tileMatrixSet the tile matrix set used in the request
-     * @param level        the zoom level as a string
+     * @param level         the zoom level as a string
      * @return the zoom level as an integer, or -1 in case of an invalid zoom level
      */
     private int checkLevel(TileMatrixSet tileMatrixSet, String level) {
@@ -196,8 +194,8 @@ class VectorTile {
      * Verify that the row number is an integer value
      *
      * @param tileMatrixSet the tile matrix set used in the request
-     * @param level        the zoom level
-     * @param row          the row number as a string
+     * @param level         the zoom level
+     * @param row           the row number as a string
      * @return the row number as an integer, or -1 in case of an invalid value
      */
     private int checkRow(TileMatrixSet tileMatrixSet, int level, String row) {
@@ -216,8 +214,8 @@ class VectorTile {
      * Verify that the column number is an integer value
      *
      * @param tileMatrixSet the tile matrix set used in the request
-     * @param level        the zoom level
-     * @param col          the column number as a string
+     * @param level         the zoom level
+     * @param col           the column number as a string
      * @return the column number as an integer, or -1 in case of an invalid value
      */
     private int checkColumn(TileMatrixSet tileMatrixSet, int level, String col) {
@@ -278,7 +276,7 @@ class VectorTile {
         BoundingBox bboxNativeCrs = getBoundingBoxNativeCrs(crsTransformation);
 
         return String.format(Locale.US, "BBOX(%s, %f, %f, %f, %f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs()
-                                                                                                                                                                                                                  .getAsSimple());
+                                                                                                                                                                                                          .getAsSimple());
     }
 
     /**
@@ -323,7 +321,7 @@ class VectorTile {
      */
     private BoundingBox getBoundingBoxNativeCrs(CrsTransformation crsTransformation) throws CrsTransformationException {
         EpsgCrs crs = featureProvider.getData()
-                .getNativeCrs();
+                                     .getNativeCrs();
         BoundingBox bboxTileMatrixSetCrs = getBoundingBox();
         if (crs == tileMatrixSet.getCrs())
             return bboxTileMatrixSetCrs;
@@ -349,15 +347,16 @@ class VectorTile {
     }
 
     /**
-     * @param filters           filters specified in the query
-     * @param filterableFields  all possible fields you can use as a filter
+     * @param filters          filters specified in the query
+     * @param filterableFields all possible fields you can use as a filter
      * @return the CQL from the delivered filters
      */
     public String getCQLFromFilters(Map<String, String> filters, Map<String, String> filterableFields) {
         return filters.entrySet()
                       .stream()
                       .map(f -> {
-                          if (f.getKey().equals("filter")) {
+                          if (f.getKey()
+                               .equals("filter")) {
                               return f.getValue();
                           }
                           if (f.getKey()
@@ -390,11 +389,11 @@ class VectorTile {
                                       return String.format("%s BEFORE %s", timeField, fromIso8601.plusSeconds(1));
                                   } else {
                                       LOGGER.error("TIME PARSER ERROR " + timeValue);
-                                      throw new BadRequestException("Invalid value for query parameter '"+timeField+"'. Found: "+timeValue);
+                                      throw new BadRequestException("Invalid value for query parameter '" + timeField + "'. Found: " + timeValue);
                                   }
                               } catch (DateTimeParseException e) {
                                   LOGGER.error("TIME PARSER ERROR", e);
-                                  throw new BadRequestException("Invalid value for query parameter '"+timeField+"'. Found: "+timeValue);
+                                  throw new BadRequestException("Invalid value for query parameter '" + timeField + "'. Found: " + timeValue);
                               }
                           }
                           if (f.getValue()
@@ -417,8 +416,8 @@ class VectorTile {
      * @param mediaType         the requested format
      * @param forLinksOrDataset boolean, false if it is requested from a collection, true if requested from Collections or Link.
      * @return false if forLinksOrDataset is true and the format is not supported.
-     *         NotAcceptableException if forLinksOrDataset is false and the format is not supported
-     *         true if the format is supported
+     * NotAcceptableException if forLinksOrDataset is false and the format is not supported
+     * true if the format is supported
      */
     public static boolean checkFormat(Map<String, List<String>> formatsMap, String collectionId, String mediaType,
                                       boolean forLinksOrDataset) {
@@ -442,31 +441,31 @@ class VectorTile {
      * checks if the zoom level is valid for the tileMatrixSet and the specified min and max values in the config. If no Value is specified in the config
      * the whole zoom level range of the TileMatrixSet is supported. If the zoom level is not valid, generate empty tile
      *
-     * @param zoomLevel                 the zoom level of the tile, which should be checked
-     * @param zoomLevelsMap             a map with all collections that have the tiles extension and their zoomLevels
-     * @param wfsService                the wfs3Service
+     * @param zoomLevel               the zoom level of the tile, which should be checked
+     * @param zoomLevelsMap           a map with all collections that have the tiles extension and their zoomLevels
+     * @param wfsService              the wfs3Service
      * @param featureProvider
-     * @param wfs3OutputFormatGeoJson   the wfs3OutputFormat Extension
-     * @param collectionId              the id of the collection of the tile
-     * @param tileMatrixSetId            the id of the tileMatrixSet of the tile
-     * @param mediaType                 the media type of the tile, either application/json or application/vnd.mapbox-vector-tile
-     * @param row                       the row of the tile
-     * @param col                       the column of the Tile
-     * @param doNotCache                boolean value if temporary tile or not
-     * @param cache                     the tile cache
-     * @param isCollection              boolean collection or dataset Tile
-     * @param wfs3Request               the request
-     * @param crsTransformation         the coordinate reference system transformation object to transform coordinates
+     * @param wfs3OutputFormatGeoJson the wfs3OutputFormat Extension
+     * @param collectionId            the id of the collection of the tile
+     * @param tileMatrixSetId         the id of the tileMatrixSet of the tile
+     * @param mediaType               the media type of the tile, either application/json or application/vnd.mapbox-vector-tile
+     * @param row                     the row of the tile
+     * @param col                     the column of the Tile
+     * @param doNotCache              boolean value if temporary tile or not
+     * @param cache                   the tile cache
+     * @param isCollection            boolean collection or dataset Tile
+     * @param wfs3Request             the request
+     * @param crsTransformation       the coordinate reference system transformation object to transform coordinates
      * @throws FileNotFoundException
      */
     public static MinMax checkZoomLevel(int zoomLevel,
-                                 Map<String, Map<String, MinMax>> zoomLevelsMap,
-                                                     OgcApiDataset wfsService,
-                                                     FeatureProvider2 featureProvider, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
-                                                     String collectionId, String tileMatrixSetId, String mediaType,
-                                                     String row, String col, boolean doNotCache, VectorTilesCache cache,
-                                                     boolean isCollection, OgcApiRequestContext wfs3Request,
-                                                     CrsTransformation crsTransformation, I18n i18n) throws FileNotFoundException {
+                                        Map<String, Map<String, MinMax>> zoomLevelsMap,
+                                        OgcApiDataset wfsService,
+                                        OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
+                                        String collectionId, String tileMatrixSetId, String mediaType,
+                                        String row, String col, boolean doNotCache, VectorTilesCache cache,
+                                        boolean isCollection, OgcApiRequestContext wfs3Request,
+                                        CrsTransformation crsTransformation, I18n i18n) throws FileNotFoundException {
         // first check, if the zoom level is valid for the tile matrix set
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
         if (zoomLevel > tileMatrixSet.getMaxLevel() || zoomLevel < tileMatrixSet.getMinLevel()) {
@@ -481,62 +480,54 @@ class VectorTile {
                         .max(tileMatrixSet.getMaxLevel())
                         .build() :
                 zoomLevelsMap.entrySet()
-                .stream()
-                .filter(entry -> collectionId==null || entry.getKey().equals(collectionId))
-                .map(entry -> entry.getValue())
-                .map(entry -> entry==null ? null : entry.get(tileMatrixSetId))
-                .filter(entry -> entry!=null)
-                .reduce((minmax1, minmax2) -> new ImmutableMinMax.Builder()
-                        .min(Math.min(minmax1.getMin(), minmax2.getMin()))
-                        .max(Math.max(minmax1.getMax(), minmax2.getMax()))
-                        .build())
-                .map(minmax -> new ImmutableMinMax.Builder()
-                        .min(Math.max(minmax.getMin(),tileMatrixSet.getMinLevel()))
-                        .max(Math.min(minmax.getMax(),tileMatrixSet.getMaxLevel()))
-                        .build())
-                .orElse(new ImmutableMinMax.Builder()
-                        .min(tileMatrixSet.getMinLevel())
-                        .max(tileMatrixSet.getMaxLevel())
-                        .build());
+                             .stream()
+                             .filter(entry -> collectionId == null || entry.getKey()
+                                                                           .equals(collectionId))
+                             .map(entry -> entry.getValue())
+                             .map(entry -> entry == null ? null : entry.get(tileMatrixSetId))
+                             .filter(entry -> entry != null)
+                             .reduce((minmax1, minmax2) -> new ImmutableMinMax.Builder()
+                                     .min(Math.min(minmax1.getMin(), minmax2.getMin()))
+                                     .max(Math.max(minmax1.getMax(), minmax2.getMax()))
+                                     .build())
+                             .map(minmax -> new ImmutableMinMax.Builder()
+                                     .min(Math.max(minmax.getMin(), tileMatrixSet.getMinLevel()))
+                                     .max(Math.min(minmax.getMax(), tileMatrixSet.getMaxLevel()))
+                                     .build())
+                             .orElse(new ImmutableMinMax.Builder()
+                                     .min(tileMatrixSet.getMinLevel())
+                                     .max(tileMatrixSet.getMaxLevel())
+                                     .build());
 
         // if requested zoom Level is not in range return 404
         if (zoomLevel < zoomLevels.getMin() || zoomLevel > zoomLevels.getMax()) {
-                        throw new NotFoundException();
-                    }
-
-                //if requested zoom Level is not in range
-                if (zoomLevel < minZoom || zoomLevel > maxZoom || minZoom > maxZoom) {
-                    zoomLevels.put(collectionId, "false");
-                    generateEmptyTile(collectionId, tileMatrixSetId, zoomLevel, wfsService, wfs3OutputFormatGeoJson, mediaType, row, col, doNotCache, cache, isCollection, wfs3Request, crsTransformation, i18n);
-                } else {
-                    zoomLevels.put(collectionId, "true");
-                }
-            }
-        } catch (NullPointerException ignored) {
+            throw new NotFoundException();
         }
+
         return zoomLevels;
     }
 
     /**
      * If the zoom Level is not valid generate empty JSON Tile or empty MVT.
      *
-     * @param collectionId              the id of the collection of the tile
-     * @param tileMatrixSetId            the id of the tileMatrixSet of the tile
-     * @param zoomLevel                 the zoom level of the tile, which should be checked
-     * @param wfsService                the wfs3Service
+     * @param collectionId            the id of the collection of the tile
+     * @param tileMatrixSetId         the id of the tileMatrixSet of the tile
+     * @param zoomLevel               the zoom level of the tile, which should be checked
+     * @param wfsService              the wfs3Service
      * @param featureProvider
-     * @param wfs3OutputFormatGeoJson   the wfs3OutputFormat Extension
-     * @param row                       the row of the tile
-     * @param col                       the column of the Tile
-     * @param doNotCache                boolean value if temporary tile or not
-     * @param cache                     the tile cache
-     * @param isCollection              boolean collection or dataset Tile
-     * @param wfs3Request               the request
-     * @param crsTransformation         the coordinate reference system transformation object to transform coordinates
+     * @param wfs3OutputFormatGeoJson the wfs3OutputFormat Extension
+     * @param row                     the row of the tile
+     * @param col                     the column of the Tile
+     * @param doNotCache              boolean value if temporary tile or not
+     * @param cache                   the tile cache
+     * @param isCollection            boolean collection or dataset Tile
+     * @param wfs3Request             the request
+     * @param crsTransformation       the coordinate reference system transformation object to transform coordinates
      * @throws FileNotFoundException
      */
     public static void generateEmptyTile(String collectionId, String tileMatrixSetId, int zoomLevel,
-                                         OgcApiDataset wfsService, FeatureProvider2 featureProvider, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
+                                         OgcApiDataset wfsService, FeatureProvider2 featureProvider,
+                                         OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                                          String mediaType, String row, String col, boolean doNotCache,
                                          VectorTilesCache cache, boolean isCollection, OgcApiRequestContext wfs3Request,
                                          CrsTransformation crsTransformation, I18n i18n) throws FileNotFoundException {

@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.application.I18nDefault
 import de.ii.ldproxy.ogcapi.application.OgcApiApiEntity
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCollections
 import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQueryables
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCollectionExtension
@@ -77,7 +78,7 @@ class OgcApiCoreSpecCollections extends Specification {
         def result = collectionsEndpoint.getCollections(Optional.empty(), ogcApiApiEntity, requestContext).entity as Collections
 
         then: 'links property of each feature shall include an item for each supported encoding with a link to the features resource'
-        def links = result.getCollections().stream().map{x -> x.getLinks()}.collect(Collectors.toList())
+        def links = result.getCollections().stream().map { x -> x.getLinks() }.collect(Collectors.toList())
         links.any { it.any { it.rel == "items" } }
     }
 
@@ -90,9 +91,9 @@ class OgcApiCoreSpecCollections extends Specification {
         then: 'all links shall include the rel and type properties'
         def links = result.getCollections()
                 .stream()
-                .map{x -> x.getLinks()}
+                .map { x -> x.getLinks() }
                 .collect(Collectors.toList())
-        links.any { it.any { it.rel == "items" && it.type == "application/json"} }
+        links.any { it.any { it.rel == "items" && it.type == "application/json" } }
     }
 
     def 'Requirement 16 A: extent property'() {
@@ -102,7 +103,7 @@ class OgcApiCoreSpecCollections extends Specification {
         Collections result = collectionsEndpoint.getCollections(Optional.empty(), ogcApiApiEntity, requestContext).entity as Collections
 
         then: 'the extent property shall provide bounding boxes that include all spatial geometries and time intervals that include all temporal geometries in this collection'
-        result.collections.any { it.extent.get().getSpatial().bbox[0] == ([-180.0, -90.0, 180.0, 90.0] as double[])}
+        result.collections.any { it.extent.get().getSpatial().bbox[0] == ([-180.0, -90.0, 180.0, 90.0] as double[]) }
     }
 
 
@@ -207,37 +208,9 @@ class OgcApiCoreSpecCollections extends Specification {
     }
 
     static def createDatasetData() {
-        OgcApiFeaturesGenericMapping spatial = new OgcApiFeaturesGenericMapping()
-        spatial.type = OgcApiFeaturesGenericMapping.GENERIC_TYPE.SPATIAL
-        spatial.name = "geometry"
-        spatial.filterable = true
-
-        OgcApiFeaturesGenericMapping temporal = new OgcApiFeaturesGenericMapping()
-        temporal.type = OgcApiFeaturesGenericMapping.GENERIC_TYPE.TEMPORAL
-        temporal.name = "datum_open"
-        temporal.filterable = true
-
         return new ImmutableOgcApiDatasetData.Builder()
                 .id('test')
                 .serviceType('WFS3')
-                .featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
-                        .providerType('WFS')
-                        .nativeCrs(new EpsgCrs())
-                        .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
-                                .uri(new URI('http://example.com'))
-                                .method(ConnectionInfoWfsHttp.METHOD.GET)
-                                .version('2.0.0')
-                                .gmlVersion('3.2.1')
-                                .build())
-                        .putMappings("featureType1", new ImmutableFeatureTypeMapping.Builder()
-                                .putMappings("http://example.com/featureType1:datum_open", new ImmutableSourcePathMapping.Builder()
-                                        .putMappings("general", temporal)
-                                        .build())
-                                .putMappings("http://example.com/featureType1:geometry", new ImmutableSourcePathMapping.Builder()
-                                        .putMappings("general", spatial)
-                                        .build())
-                                .build())
-                        .build())
                 .putFeatureTypes('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                         .id('featureType1')
                         .label('FeatureType 1')
@@ -246,6 +219,12 @@ class OgcApiCoreSpecCollections extends Specification {
                                 .spatial(new BoundingBox())
                                 .temporal(new ImmutableTemporalExtent.Builder().build())
                                 .build())
+                        .addCapabilities(new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
+                                .queryables(new ImmutableOgcApiFeaturesCollectionQueryables.Builder()
+                                        .spatial(ImmutableList.of('geometry'))
+                                        .temporal(ImmutableList.of('datum_open'))
+                                        .build())
+                                .build())
                         .build())
                 .addCapabilities(new ImmutableOgcApiFeaturesCoreConfiguration.Builder().build())
                 .build()
@@ -253,7 +232,7 @@ class OgcApiCoreSpecCollections extends Specification {
 
 
     static def createOgcApiApiEntity() {
-        def entity = new OgcApiApiEntity(registry, null, null, null, null, null)
+        def entity = new OgcApiApiEntity(registry)
         entity.setData(datasetData)
         return entity
     }

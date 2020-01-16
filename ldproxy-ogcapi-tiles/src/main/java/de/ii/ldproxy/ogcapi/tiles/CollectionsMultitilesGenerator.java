@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,13 +10,13 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,48 +31,38 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 
-@Component
-@Provides
-@Instantiate
-public class CollectionsMultitilesGenerator implements ConformanceClass {
-
-    @Requires
-    I18n i18n;
+public class CollectionsMultitilesGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CollectionsMultitilesGenerator.class);
 
-    CollectionsMultitilesGenerator() {
-    }
+    private final I18n i18n;
+    //TODO: OgcApiTilesProviders (use features core featureProvider id as fallback)
+    private final OgcApiFeatureCoreProviders providers;
 
-    @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/cols-multitiles";
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
-
-        return extension
-                .filter(TilesConfiguration::getEnabled)
-                .filter(TilesConfiguration::getMultiCollectionEnabled)
-                .filter(TilesConfiguration::getMultiTilesEnabled)
-                .isPresent();
+    CollectionsMultitilesGenerator(I18n i18n,
+                                   OgcApiFeatureCoreProviders providers) {
+        this.i18n = i18n;
+        this.providers = providers;
     }
 
     /**
      * Construct a response for a multitiles request for multiple collections
-     * @param tileMatrixSetId identifier of tile matrix set
-     * @param bboxParam value of the bbox request parameter
+     *
+     * @param tileMatrixSetId       identifier of tile matrix set
+     * @param bboxParam             value of the bbox request parameter
      * @param scaleDenominatorParam value of the scaleDenominator request parameter
-     * @param multiTileType value of the multiTileType request parameter
-     * @param uriCustomizer  uri customizer
-     * @param collections requested collections
+     * @param multiTileType         value of the multiTileType request parameter
+     * @param uriCustomizer         uri customizer
+     * @param collections           requested collections
      * @return nultiple tiles from multiple collections
      */
     Response getCollectionsMultitiles(String tileMatrixSetId, String bboxParam, String scaleDenominatorParam,
@@ -90,22 +80,23 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
 
         if ("url".equals(multiTileType)) {
             return Response.ok(ImmutableMap.of("tileSet", tileSetEntries))
-                    .type("application/geo+json")
-                    .build();
+                           .type("application/geo+json")
+                           .build();
         } else if (multiTileType == null || "tiles".equals(multiTileType) || "full".equals(multiTileType)) {
             File zip = generateZip(tileSetEntries, tileMatrixSetId, collections, "full".equals(multiTileType),
                     crsTransformation, uriInfo, service, cache, wfs3OutputFormatGeoJson, wfs3Request);
             return Response.ok(zip)
-                    .type("application/zip")
-                    .build();
+                           .type("application/zip")
+                           .build();
         }
         throw new NotFoundException("Unknown multiTileType");
     }
 
     /**
      * Generate a list of tiles that cover the bounding box for given tile matrices
-     * @param bbox bounding box specified by two points and their longitude and latitude coordinates (WGS 84)
-     * @param tileMatrices all tile matrices to be retrieved
+     *
+     * @param bbox          bounding box specified by two points and their longitude and latitude coordinates (WGS 84)
+     * @param tileMatrices  all tile matrices to be retrieved
      * @param uriCustomizer uri customizer
      * @return list of TileSet objects
      */
@@ -116,15 +107,15 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
         for (int tileMatrix : tileMatrices) {
             List<Integer> bottomTile = MultitilesUtils.pointToTile(bbox[0], bbox[1], tileMatrix, tileMatrixSet);
             List<Integer> topTile = MultitilesUtils.pointToTile(bbox[2], bbox[3], tileMatrix, tileMatrixSet);
-            for (int row = topTile.get(0); row <= bottomTile.get(0); row++){
+            for (int row = topTile.get(0); row <= bottomTile.get(0); row++) {
                 for (int col = bottomTile.get(1); col <= topTile.get(1); col++) {
                     tileSets.add(new ImmutableTileSetEntry.Builder()
                             .tileURL(URLDecoder.decode(uriCustomizer.copy()
-                                    .clearParameters()
-                                    .ensureLastPathSegments(Integer.toString(tileMatrix), Integer.toString(row), Integer.toString(col))
-                                    .ensureNoTrailingSlash()
-                                    .addParameter("collections", collections)
-                                    .toString(), "UTF-8"))
+                                                                    .clearParameters()
+                                                                    .ensureLastPathSegments(Integer.toString(tileMatrix), Integer.toString(row), Integer.toString(col))
+                                                                    .ensureNoTrailingSlash()
+                                                                    .addParameter("collections", collections)
+                                                                    .toString(), "UTF-8"))
                             .tileMatrix(tileMatrix)
                             .tileRow(row)
                             .tileCol(col)
@@ -135,8 +126,10 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
         return tileSets;
     }
 
-    private File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId, Set<String> requestedCollections,
-                             boolean isFull, CrsTransformation crsTransformation, UriInfo uriInfo, OgcApiDataset service,
+    private File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId,
+                             Set<String> requestedCollections,
+                             boolean isFull, CrsTransformation crsTransformation, UriInfo uriInfo,
+                             OgcApiDataset service,
                              VectorTilesCache cache, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                              OgcApiRequestContext wfs3Request) {
         File zip = null;
@@ -171,7 +164,7 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
 
             }
 
-            FeatureProvider2 featureProvider = getFeatureProvider(service.getData());
+            FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData());
 
             for (TileSetEntry entry : tileSetEntries) {
                 VectorTile tile = new VectorTile(null, tileMatrixSetId, String.valueOf(entry.getTileMatrix()),
@@ -198,7 +191,8 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
                         if (tileFileJson.exists()) {
                             if (TileGeneratorJson.deleteJSON(tileFileJson)) {
                                 tileFileJson.delete();
-                                layerTile.getFile(cache, "pbf").delete();
+                                layerTile.getFile(cache, "pbf")
+                                         .delete();
                                 invalid = true;
                             }
                         } else {
@@ -246,10 +240,4 @@ public class CollectionsMultitilesGenerator implements ConformanceClass {
         return zip;
     }
 
-    private FeatureProvider2 getFeatureProvider(OgcApiDatasetData apiData) {
-        return getExtensionConfiguration(apiData, TilesConfiguration.class)
-                .map(TilesConfiguration::getFeatureProvider)
-                .flatMap(id -> entityRegistry.getEntity(FeatureProvider2.class, id))
-                .orElseThrow(() -> new IllegalStateException("no FeatureProvider found"));
-    }
 }

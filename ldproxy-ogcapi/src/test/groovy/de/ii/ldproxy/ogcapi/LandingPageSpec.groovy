@@ -102,16 +102,19 @@ class LandingPageSpec extends Specification {
         new ImmutableOgcApiDatasetData.Builder()
                 .id('test')
                 .serviceType('WFS3')
-                .featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
-                        .providerType('WFS')
+                /*.featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
+                        .id("test")
+                        .providerType("FEATURE")
+                        .featureProviderType('WFS')
                         .nativeCrs(new EpsgCrs())
                         .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
+                                .connectorType("HTTP")
                                 .uri(new URI('http://example.com'))
                                 .method(ConnectionInfoWfsHttp.METHOD.GET)
                                 .version('2.0.0')
                                 .gmlVersion('3.2.1')
                                 .build())
-                        .build())
+                        .build())*/
                 .putFeatureTypes('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                         .id('featureType1')
                         .label('FeatureType 1')
@@ -126,7 +129,7 @@ class LandingPageSpec extends Specification {
     }
 
     static def createDatasetEntity() {
-        def entity = new OgcApiApiEntity(createExtensionRegistry(), null, null, null, null, null)
+        def entity = new OgcApiApiEntity(createExtensionRegistry())
         entity.setData(datasetData)
         return entity
     }

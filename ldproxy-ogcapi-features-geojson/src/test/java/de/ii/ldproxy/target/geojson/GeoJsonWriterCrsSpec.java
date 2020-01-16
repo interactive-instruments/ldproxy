@@ -186,7 +186,7 @@ public class GeoJsonWriterCrsSpec {
                                                            .apiData(new ImmutableOgcApiDatasetData.Builder()
                                                                                                 .id("s")
                                                                                                 .serviceType("WFS3")
-                                                                                                .featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
+                                                                                                /*.featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
                                                                                                         .providerType("WFS")
                                                                                                         .connectorType("HTML")
                                                                                                                                                 .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
@@ -196,7 +196,7 @@ public class GeoJsonWriterCrsSpec {
                                                                                                                                                                                               .gmlVersion("3.2.1")
                                                                                                                                                                                               .build())
                                                                                                                                                 .nativeCrs(new EpsgCrs())
-                                                                                                                                                .build())
+                                                                                                                                                .build())*/
                                                                                                 .build())
                                                            .collectionId("xyz")
                                                            .outputStream(outputStream)

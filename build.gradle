@@ -98,3 +98,4 @@ tasks.run {
     debug = true
 }
 
+tasks.check { dependsOn subprojects*.tasks*.findByPath('test') }

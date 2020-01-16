@@ -1,13 +1,10 @@
 task run {
     dependsOn gradle.includedBuild('ldproxy').task(':run')
 }
+task check {
+    dependsOn gradle.includedBuild('ldproxy').task(':check')
+}
 task manager {
     dependsOn gradle.includedBuild('ldproxy').task(':ldproxy-manager:assemble')
-}
-task deps {
-    dependsOn gradle.includedBuild('xtraplatform-store').task(':xtraplatform-kvstore-api:dependencies')
-}
-task deps2 {
-    dependsOn gradle.includedBuild('xtraplatform-base').task(':dependencies')
 }
 

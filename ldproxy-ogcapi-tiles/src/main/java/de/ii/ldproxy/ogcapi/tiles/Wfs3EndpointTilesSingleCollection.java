@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesEndpoint;
@@ -20,7 +21,6 @@ import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.entity.api.EntityRegistry;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import io.dropwizard.auth.Auth;
@@ -63,28 +63,29 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             .build();
 
     private final I18n i18n;
-    private final EntityRegistry entityRegistry;
+    //TODO: OgcApiTilesProviders (use features core featureProvider id as fallback)
+    private final OgcApiFeatureCoreProviders providers;
     private final CrsTransformation crsTransformation;
     private final OgcApiExtensionRegistry wfs3ExtensionRegistry;
     private final VectorTileMapGenerator vectorTileMapGenerator;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final VectorTilesCache cache;
-    private final CollectionMultitilesGenerator multitilesGenerator;
+    private final CollectionMultitilesGenerator multiTilesGenerator;
 
     Wfs3EndpointTilesSingleCollection(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
                                       @Requires I18n i18n,
-                                      @Requires EntityRegistry entityRegistry,
+                                      @Requires OgcApiFeatureCoreProviders providers,
                                       @Requires CrsTransformation crsTransformation,
                                       @Requires OgcApiExtensionRegistry wfs3ExtensionRegistry) {
         this.i18n = i18n;
-        this.entityRegistry = entityRegistry;
+        this.providers = providers;
         this.crsTransformation = crsTransformation;
         this.wfs3ExtensionRegistry = wfs3ExtensionRegistry;
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
         this.cache = new VectorTilesCache(dataDirectory);
         this.vectorTileMapGenerator = new VectorTileMapGenerator();
         this.limitsGenerator = new TileMatrixSetLimitsGenerator();
-        this.multitilesGenerator = new CollectionMultitilesGenerator();
+        this.multiTilesGenerator = new CollectionMultitilesGenerator(providers);
     }
 
     @Override
@@ -213,7 +214,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE)
                 .orElseThrow(NotAcceptableException::new);
 
-        return multitilesGenerator.getMultitiles(tileMatrixSetId, bboxParam, scaleDenominatorParam, multiTileType,
+        return multiTilesGenerator.getMultitiles(tileMatrixSetId, bboxParam, scaleDenominatorParam, multiTileType,
                 wfs3Request.getUriCustomizer(), tileFormat, collectionId, crsTransformation, uriInfo, i18n,
                 wfs3Request.getLanguage(), service, cache, wfs3OutputFormatGeoJson);
     }
@@ -339,7 +340,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                     .get(collectionId), queryBuilder, OgcApiFeaturesEndpoint.toFlatMap(queryParameters), service.getData());
         }
 
-        FeatureProvider2 featureProvider = getFeatureProvider(service.getData());
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData());
 
         VectorTile.checkZoomLevel(Integer.parseInt(tileMatrix), vectorTileMapGenerator.getMinMaxMap(service.getData(), false), service, wfs3OutputFormatGeoJson, collectionId, tileMatrixSetId, "application/vnd.mapbox-vector-tile", tileRow, tileCol, doNotCache, cache, true, wfs3Request, crsTransformation, i18n);
         checkTileValidity(collectionId, tileMatrixSetId, Integer.parseInt(tileMatrix), Integer.parseInt(tileRow), Integer.parseInt(tileCol), service.getData());
@@ -468,7 +469,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         if (!filters.isEmpty() || queryParameters.containsKey("properties"))
             doNotCache = true;
 
-        FeatureProvider2 featureProvider = getFeatureProvider(service.getData());
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData());
 
         VectorTile.checkZoomLevel(Integer.parseInt(tileMatrix), vectorTileMapGenerator.getMinMaxMap(service.getData(), false), service, wfs3OutputFormatGeoJson, collectionId, tileMatrixSetId, MediaType.APPLICATION_JSON, tileRow, tileCol, doNotCache, cache, true, wfs3Request, crsTransformation, i18n);
         checkTileValidity(collectionId, tileMatrixSetId, Integer.parseInt(tileMatrix), Integer.parseInt(tileRow), Integer.parseInt(tileCol), service.getData());
@@ -592,13 +593,6 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             LOGGER.error(msg);
             throw new InternalServerErrorException(msg);
         }
-    }
-
-    private FeatureProvider2 getFeatureProvider(OgcApiDatasetData apiData) {
-        return getExtensionConfiguration(apiData, TilesConfiguration.class)
-                .map(TilesConfiguration::getFeatureProvider)
-                .flatMap(id -> entityRegistry.getEntity(FeatureProvider2.class, id))
-                .orElseThrow(() -> new IllegalStateException("no FeatureProvider found"));
     }
 
 }

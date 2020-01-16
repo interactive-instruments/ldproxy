@@ -6,7 +6,7 @@ def xtraplatform = siblingDirectories.find({ it.name.toLowerCase().equals('xtrap
 def xtraplatformSdiTools = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-sdi-tools-pgis') })
 
 if (xtraplatform) {
-//    includeBuild "../../${xtraplatform.name}/xtraplatform-gradle-plugins"
+    includeBuild "../../${xtraplatform.name}/xtraplatform-gradle-plugins"
     includeBuild "../../${xtraplatform.name}/xtraplatform-base"
     includeBuild "../../${xtraplatform.name}/xtraplatform-store"
     includeBuild "../../${xtraplatform.name}/xtraplatform-web"

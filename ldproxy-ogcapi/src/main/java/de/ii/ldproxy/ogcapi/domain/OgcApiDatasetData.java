@@ -7,8 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
@@ -19,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.List;
-
+import java.util.Objects;
 
 
 @Value.Immutable
@@ -88,21 +93,67 @@ public abstract class OgcApiDatasetData implements ExtendableConfiguration, Serv
 
     /**
      * Determine spatial extent of all collections in the dataset.
-     * @return array of coordinates of the bounding box in the following format:
-     * [minimum longitude, minimum latitude, maximum longitude, maximum latitude]
+     * @return the bounding box in the default CRS
      */
-    public double[] getSpatialExtent() {
-        double[] spatialExtent = getFeatureTypes().values()
-                .stream()
-                .map(featureTypeConfigurationWfs3 -> featureTypeConfigurationWfs3.getExtent()
-                        .getSpatial()
-                        .getCoords())
-                .reduce((doubles, doubles2) -> new double[]{
-                        Math.min(doubles[0], doubles2[0]),
-                        Math.min(doubles[1], doubles2[1]),
-                        Math.max(doubles[2], doubles2[2]),
-                        Math.max(doubles[3], doubles2[3])})
-                .orElse(null);
+    @Nullable
+    @JsonIgnore
+    @Value.Derived
+    public BoundingBox getSpatialExtent() {
+        double[] val = getFeatureTypes().values()
+                                        .stream()
+                                        .map(featureTypeConfigurationWfs3 -> featureTypeConfigurationWfs3.getExtent()
+                                                                                                         .getSpatial()
+                                                                                                         .getCoords())
+                                        .reduce((doubles, doubles2) -> new double[]{
+                                                Math.min(doubles[0], doubles2[0]),
+                                                Math.min(doubles[1], doubles2[1]),
+                                                Math.max(doubles[2], doubles2[2]),
+                                                Math.max(doubles[3], doubles2[3])})
+                                        .orElse(null);
+
+        return Objects.nonNull(val) ? new BoundingBox(val[0], val[1], val[2], val[3], DEFAULT_CRS) : null;
+    }
+
+    /**
+     * Determine spatial extent of all collections in the dataset in another CRS.
+     * @param crsTransformation the factory for CRS transformers
+     * @param targetCrs the target CRS
+     * @return the bounding box
+     */
+    public BoundingBox getSpatialExtent(CrsTransformation crsTransformation, EpsgCrs targetCrs) throws CrsTransformationException {
+        BoundingBox spatialExtent = getSpatialExtent();
+        CrsTransformer crsTransformer = crsTransformation.getTransformer(DEFAULT_CRS, targetCrs);
+
+        return Objects.nonNull(spatialExtent) ? crsTransformer.transformBoundingBox(spatialExtent) : null;
+    }
+
+    /**
+     * Determine spatial extent of a collection in the dataset.
+     * @param collectionId the name of the feature type
+     * @return the bounding box in the default CRS
+     */
+    public BoundingBox getSpatialExtent(String collectionId) {
+        BoundingBox spatialExtent = getFeatureTypes().values()
+                                                     .stream()
+                                                     .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
+                                                     .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
+                                                                                                              .getSpatial())
+                                                     .findFirst()
+                                                     .orElse(null);
         return spatialExtent;
+    }
+
+    /**
+     * Determine spatial extent of a collection in the dataset in another CRS.
+     * @param collectionId the name of the feature type
+     * @param crsTransformation the factory for CRS transformers
+     * @param targetCrs the target CRS
+     * @return the bounding box in the target CRS
+     */
+    public BoundingBox getSpatialExtent(String collectionId, CrsTransformation crsTransformation, EpsgCrs targetCrs) throws CrsTransformationException {
+        BoundingBox spatialExtent = getSpatialExtent(collectionId);
+        CrsTransformer crsTransformer = crsTransformation.getTransformer(DEFAULT_CRS, targetCrs);
+
+        return Objects.nonNull(spatialExtent) ? crsTransformer.transformBoundingBox(spatialExtent) : null;
     }
 }
