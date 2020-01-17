@@ -11,7 +11,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
@@ -42,9 +44,12 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFeaturesQueryImpl.class);
 
     private final OgcApiExtensionRegistry wfs3ExtensionRegistry;
+    private final CrsTransformation crsTransformation;
 
-    public OgcApiFeaturesQueryImpl(@Requires OgcApiExtensionRegistry wfs3ExtensionRegistry) {
+    public OgcApiFeaturesQueryImpl(@Requires OgcApiExtensionRegistry wfs3ExtensionRegistry,
+                                   @Requires CrsTransformation crsTransformation) {
         this.wfs3ExtensionRegistry = wfs3ExtensionRegistry;
+        this.crsTransformation = crsTransformation;
     }
 
     @Override
@@ -198,6 +203,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         if (bboxArray.length > 5)
             throw new BadRequestException("The parameter 'bbox' has more than four values.");
 
+        //TODO: check if crs is supported by this api
         EpsgCrs crs;
         try {
             String bboxCrs = bboxArray.length > 4 ? bboxArray[4] : null;
@@ -221,7 +227,8 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                 }
             }
             BoundingBox bbox = new BoundingBox(val1, val2, val3, val4, crs);
-            BoundingBox transformedBbox = service.transformBoundingBox(bbox);
+            Optional<CrsTransformer> transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), OgcApiDatasetData.DEFAULT_CRS);
+            BoundingBox transformedBbox = transformer.isPresent() ? transformer.get().transformBoundingBox(bbox) : bbox;
             return String
                     .format(Locale.US, "BBOX(%s, %f, %f, %f, %f, '%s')", geometryField, transformedBbox.getXmin(), transformedBbox.getYmin(), transformedBbox.getXmax(), transformedBbox.getYmax(), transformedBbox.getEpsgCrs()
                                                                                                                                                                                                                    .getAsSimple());

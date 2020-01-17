@@ -154,12 +154,11 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
         ensureCollectionIdExists(api.getData(), collectionId);
         ensureFeatureProviderSupportsQueries(featureProvider);
-        //Optional<CrsTransformer> crsTransformer = api.getCrsTransformer(query.getCrs());
+
         EpsgCrs sourceCrs = featureProvider.getData().getNativeCrs();
         EpsgCrs targetCrs = Optional.ofNullable(query.getCrs()).orElse(DEFAULT_CRS);
-        //TODO: noop if source = target
-        //TODO: cache in CrsTransformations, warmup on service start
-        Optional<CrsTransformer> crsTransformer = Optional.ofNullable(crsTransformerFactory.getTransformer(sourceCrs, targetCrs));
+        //TODO: warmup on service start
+        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
 
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 

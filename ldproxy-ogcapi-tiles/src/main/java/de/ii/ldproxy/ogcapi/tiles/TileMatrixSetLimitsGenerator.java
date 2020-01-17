@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -48,11 +49,11 @@ public class TileMatrixSetLimitsGenerator {
                 .filter(featureType -> collectionId.equals(featureType.getId()))
                 .collect(Collectors.toList());
         BoundingBox bbox = collectionData.get(0).getExtent().getSpatial();
+        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
 
-        if (!bbox.getEpsgCrs().equals(tileMatrixSet.getCrs())) {
-            CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
+        if (transformer.isPresent()) {
             try {
-                bbox = transformer.transformBoundingBox(bbox);
+                bbox = transformer.get().transformBoundingBox(bbox);
             } catch (CrsTransformationException e) {
                 LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().getAsSimple()));
                 return ImmutableList.of();
@@ -74,10 +75,10 @@ public class TileMatrixSetLimitsGenerator {
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
         BoundingBox bbox = data.getSpatialExtent();
-        if (!bbox.getEpsgCrs().equals(tileMatrixSet.getCrs())) {
-            CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
+        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
+        if (transformer.isPresent()) {
             try {
-                bbox = transformer.transformBoundingBox(bbox);
+                bbox = transformer.get().transformBoundingBox(bbox);
             } catch (CrsTransformationException e) {
                 LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().getAsSimple()));
                 return ImmutableList.of();

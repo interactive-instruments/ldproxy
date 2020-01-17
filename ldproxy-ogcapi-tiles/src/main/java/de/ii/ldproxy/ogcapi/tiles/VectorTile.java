@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -323,11 +324,13 @@ class VectorTile {
         EpsgCrs crs = featureProvider.getData()
                                      .getNativeCrs();
         BoundingBox bboxTileMatrixSetCrs = getBoundingBox();
-        if (crs == tileMatrixSet.getCrs())
-            return bboxTileMatrixSetCrs;
+        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(tileMatrixSet.getCrs(), crs);
 
-        CrsTransformer transformer = crsTransformation.getTransformer(tileMatrixSet.getCrs(), crs);
-        return transformer.transformBoundingBox(bboxTileMatrixSetCrs);
+        if (!transformer.isPresent()) {
+            return bboxTileMatrixSetCrs;
+        }
+
+        return transformer.get().transformBoundingBox(bboxTileMatrixSetCrs);
     }
 
     /**
@@ -339,11 +342,13 @@ class VectorTile {
     private BoundingBox getBoundingBox(EpsgCrs crs,
                                        CrsTransformation crsTransformation) throws CrsTransformationException {
         BoundingBox bboxTileMatrixSetCrs = getBoundingBox();
-        if (crs == tileMatrixSet.getCrs())
-            return bboxTileMatrixSetCrs;
+        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(tileMatrixSet.getCrs(), crs);
 
-        CrsTransformer transformer = crsTransformation.getTransformer(tileMatrixSet.getCrs(), crs);
-        return transformer.transformBoundingBox(bboxTileMatrixSetCrs);
+        if (!transformer.isPresent()) {
+            return bboxTileMatrixSetCrs;
+        }
+
+        return transformer.get().transformBoundingBox(bboxTileMatrixSetCrs);
     }
 
     /**
@@ -444,7 +449,6 @@ class VectorTile {
      * @param zoomLevel               the zoom level of the tile, which should be checked
      * @param zoomLevelsMap           a map with all collections that have the tiles extension and their zoomLevels
      * @param wfsService              the wfs3Service
-     * @param featureProvider
      * @param wfs3OutputFormatGeoJson the wfs3OutputFormat Extension
      * @param collectionId            the id of the collection of the tile
      * @param tileMatrixSetId         the id of the tileMatrixSet of the tile

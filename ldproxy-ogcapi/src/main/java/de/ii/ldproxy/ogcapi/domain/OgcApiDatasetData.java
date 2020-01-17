@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 @Value.Immutable
@@ -122,9 +123,8 @@ public abstract class OgcApiDatasetData implements ExtendableConfiguration, Serv
      */
     public BoundingBox getSpatialExtent(CrsTransformation crsTransformation, EpsgCrs targetCrs) throws CrsTransformationException {
         BoundingBox spatialExtent = getSpatialExtent();
-        CrsTransformer crsTransformer = crsTransformation.getTransformer(DEFAULT_CRS, targetCrs);
 
-        return Objects.nonNull(spatialExtent) ? crsTransformer.transformBoundingBox(spatialExtent) : null;
+        return transformSpatialExtent(spatialExtent, crsTransformation, targetCrs);
     }
 
     /**
@@ -133,14 +133,13 @@ public abstract class OgcApiDatasetData implements ExtendableConfiguration, Serv
      * @return the bounding box in the default CRS
      */
     public BoundingBox getSpatialExtent(String collectionId) {
-        BoundingBox spatialExtent = getFeatureTypes().values()
-                                                     .stream()
-                                                     .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
-                                                     .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
+        return getFeatureTypes().values()
+                                .stream()
+                                .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
+                                .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
                                                                                                               .getSpatial())
-                                                     .findFirst()
-                                                     .orElse(null);
-        return spatialExtent;
+                                .findFirst()
+                                .orElse(null);
     }
 
     /**
@@ -152,8 +151,17 @@ public abstract class OgcApiDatasetData implements ExtendableConfiguration, Serv
      */
     public BoundingBox getSpatialExtent(String collectionId, CrsTransformation crsTransformation, EpsgCrs targetCrs) throws CrsTransformationException {
         BoundingBox spatialExtent = getSpatialExtent(collectionId);
-        CrsTransformer crsTransformer = crsTransformation.getTransformer(DEFAULT_CRS, targetCrs);
 
-        return Objects.nonNull(spatialExtent) ? crsTransformer.transformBoundingBox(spatialExtent) : null;
+        return transformSpatialExtent(spatialExtent, crsTransformation, targetCrs);
+    }
+
+    private BoundingBox transformSpatialExtent(BoundingBox spatialExtent, CrsTransformation crsTransformation, EpsgCrs targetCrs) throws CrsTransformationException {
+        Optional<CrsTransformer> crsTransformer = crsTransformation.getTransformer(DEFAULT_CRS, targetCrs);
+
+        if (Objects.nonNull(spatialExtent) && crsTransformer.isPresent()) {
+            return crsTransformer.get().transformBoundingBox(spatialExtent);
+        }
+
+        return spatialExtent;
     }
 }

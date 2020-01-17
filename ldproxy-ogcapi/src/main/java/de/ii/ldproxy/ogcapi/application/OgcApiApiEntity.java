@@ -7,34 +7,31 @@
  */
 package de.ii.ldproxy.ogcapi.application;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiStartupTask;
 import de.ii.xtraplatform.entity.api.EntityComponent;
 import de.ii.xtraplatform.entity.api.handler.Entity;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
-import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.service.api.AbstractService;
 import de.ii.xtraplatform.service.api.Service;
-import org.apache.felix.ipojo.annotations.Property;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.BadRequestException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS;
 
 
 @EntityComponent
@@ -45,27 +42,9 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
     private static final ExecutorService startupTaskExecutor = MoreExecutors.getExitingExecutorService((ThreadPoolExecutor) Executors.newFixedThreadPool(1));
 
     private final OgcApiExtensionRegistry extensionRegistry;
-    //TODO: only needed for OGC API Features, enable APIs that do not implement features, too
-    //private FeatureProvider2 featureProvider;
-    //TODO: encapsulate
-    private CrsTransformer defaultTransformer;
-    private CrsTransformer defaultReverseTransformer;
-    private final Map<String, CrsTransformer> additionalTransformers;
-    private final Map<String, CrsTransformer> additionalReverseTransformers;
 
-    public OgcApiApiEntity(@Requires OgcApiExtensionRegistry extensionRegistry//,
-                           //@Property FeatureProvider2 featureProvider,
-                           //@Property CrsTransformer defaultTransformer,
-                           //@Property CrsTransformer defaultReverseTransformer,
-                           //@Property Map<String, CrsTransformer> additionalTransformers,
-                           //@Property Map<String, CrsTransformer> additionalReverseTransformers
-                           ) {
+    public OgcApiApiEntity(@Requires OgcApiExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
-        //this.featureProvider = featureProvider;
-        this.defaultTransformer = null;//defaultTransformer;
-        this.defaultReverseTransformer = null;//defaultReverseTransformer;
-        this.additionalTransformers = null;//additionalTransformers;
-        this.additionalReverseTransformers = null;//additionalReverseTransformers;
     }
 
     //TODO: merge with service background tasks
@@ -125,72 +104,4 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
                 .collect(Collectors.toList());
     }
 
-    private boolean isConformanceEnabled(ConformanceClass conformanceClass) {
-
-        return conformanceClass.isEnabledForApi(getData());
-    }
-
-    @Override
-    public Optional<CrsTransformer> getCrsTransformer(EpsgCrs crs) {
-        //TODO: move to provider
-        /*if (featureProvider.supportsCrs(crs)) {
-            return Optional.empty();
-        }*/
-
-        CrsTransformer crsTransformer = Objects.isNull(crs) || Objects.equals(crs, DEFAULT_CRS) ? defaultTransformer : additionalTransformers.get(crs.getAsUri());
-
-        if (crsTransformer == null) {
-            throw new BadRequestException("Invalid CRS");
-        }
-
-        return Optional.of(crsTransformer);
-    }
-
-    @Override
-    public CrsTransformer getCrsReverseTransformer(EpsgCrs crs) {
-        CrsTransformer crsTransformer = crs != null ? additionalReverseTransformers.get(crs.getAsUri()) : defaultReverseTransformer;
-
-        if (crsTransformer == null) {
-            throw new BadRequestException("Invalid CRS");
-        }
-
-        return crsTransformer;
-    }
-
-    //TODO: remove
-    @Override
-    public FeatureProvider2 getFeatureProvider() {
-        return null;
-    }
-
-    @Override
-    public BoundingBox transformBoundingBox(BoundingBox bbox) throws CrsTransformationException {
-        if (Objects.equals(bbox.getEpsgCrs(), DEFAULT_CRS)) {
-            return defaultReverseTransformer.transformBoundingBox(bbox);
-        }
-
-        return additionalReverseTransformers.get(bbox.getEpsgCrs()
-                                                     .getAsUri())
-                                            .transformBoundingBox(bbox);
-    }
-
-    @Override
-    public List<List<Double>> transformCoordinates(List<List<Double>> coordinates,
-                                                   EpsgCrs crs) throws CrsTransformationException {
-        CrsTransformer transformer = Objects.equals(crs, DEFAULT_CRS) ? this.defaultReverseTransformer : additionalReverseTransformers.get(crs.getAsUri());
-        if (Objects.nonNull(transformer)) {
-            double[] transformed = transformer.transform(coordinates.stream()
-                                                                    .flatMap(Collection::stream)
-                                                                    .mapToDouble(Double::doubleValue)
-                                                                    .toArray(), coordinates.size(), false);
-            List<List<Double>> result = new ArrayList<>();
-            for (int i = 0; i < transformed.length; i += 2) {
-                result.add(ImmutableList.of(transformed[i], transformed[i + 1]));
-            }
-
-            return result;
-        }
-
-        return coordinates;
-    }
 }

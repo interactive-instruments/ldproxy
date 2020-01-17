@@ -68,23 +68,16 @@ public class FeatureCollectionView extends DatasetView {
         if (!isCollection && persistentUri!=null)
             return Optional.of(persistentUri);
 
-        String bla = uriBuilder2.copy()
-                                .clearParameters()
-                                .ensureNoTrailingSlash()
-                                .toString() + "?";
-        String bla2 = uriBuilder2.copy()
-                                 .ensureNoTrailingSlash()
-                                 .removeParameters("f")
-                                 .toString();
+        URICustomizer canonicalUri = uriBuilder2.copy()
+                                        .ensureNoTrailingSlash()
+                                        .removeParameters("f");
 
-        boolean hasOtherParams = !bla.equals(bla2);
+        boolean hasOtherParams = !canonicalUri.isQueryEmpty();
         boolean hasPrevLink = Objects.nonNull(metaPagination) && metaPagination.stream()
                                                                                .anyMatch(navigationDTO -> "prev".equals(navigationDTO.label));
 
         return !hasOtherParams && (!isCollection || !hasPrevLink)
-                ? Optional.of(uriBuilder2.copy()
-                                         .clearParameters()
-                                         .toString())
+                ? Optional.of(canonicalUri.toString())
                 : Optional.empty();
     }
 

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import org.immutables.value.Value;
@@ -26,7 +27,7 @@ import static de.ii.xtraplatform.feature.provider.api.TargetMapping.BASE_TYPE;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableOgcApiFeaturesCoreConfiguration.Builder.class)
-public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfiguration {
+public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfiguration, FeatureTransformations {
 
     static final int MINIMUM_PAGE_SIZE = 1;
     static final int DEFAULT_PAGE_SIZE = 10;
