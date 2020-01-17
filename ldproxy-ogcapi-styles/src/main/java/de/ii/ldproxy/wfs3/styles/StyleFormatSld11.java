@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.styles;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -36,7 +36,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, StylesConfiguration.class).map(StylesConfiguration::getSld11Enabled)
                                                                                 .orElse(false);
     }
@@ -69,7 +69,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
      * @return true, if the conformance class is enabled and a stylesheet is available
      */
     @Override
-    public String getTitle(OgcApiDatasetData datasetData, String styleId) {
+    public String getTitle(OgcApiApiDataV2 datasetData, String styleId) {
         return "TODO";
     }
 }

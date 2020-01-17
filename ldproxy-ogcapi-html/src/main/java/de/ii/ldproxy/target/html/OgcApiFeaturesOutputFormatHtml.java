@@ -97,11 +97,11 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
-    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
@@ -109,7 +109,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     @Override
     public Response getLandingPageResponse(LandingPage apiLandingPage,
-                                           OgcApiDataset api,
+                                           OgcApiApi api,
                                            OgcApiRequestContext requestContext) {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
@@ -131,7 +131,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     @Override
     public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
-                                           OgcApiDataset api, OgcApiRequestContext requestContext)  {
+                                           OgcApiApi api, OgcApiRequestContext requestContext)  {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String conformanceDeclarationTitle = i18n.get("conformanceDeclarationTitle", requestContext.getLanguage());
@@ -158,7 +158,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     }
 
     @Override
-    public Response getCollectionsResponse(Collections collections, OgcApiDataset api, OgcApiRequestContext requestContext) {
+    public Response getCollectionsResponse(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
@@ -184,7 +184,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     @Override
     public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
-                                          OgcApiDataset api,
+                                          OgcApiApi api,
                                           OgcApiRequestContext requestContext) {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
@@ -218,7 +218,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     @Override
     public Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContext transformationContext, Optional<Locale> language) {
-        OgcApiDatasetData serviceData = transformationContext.getApiData();
+        OgcApiApiDataV2 serviceData = transformationContext.getApiData();
         String collectionName = transformationContext.getCollectionId();
         String staticUrlPrefix = transformationContext.getOgcApiRequest()
                                                       .getStaticUrlPrefix();

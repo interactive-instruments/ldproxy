@@ -53,7 +53,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     }
 
     @Override
-    public FeatureQuery requestToFeatureQuery(OgcApiDataset api, String collectionId, Map<String, String> parameters,
+    public FeatureQuery requestToFeatureQuery(OgcApiApi api, String collectionId, Map<String, String> parameters,
                                               String featureId) {
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
@@ -83,7 +83,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     }
 
     @Override
-    public FeatureQuery requestToFeatureQuery(OgcApiDataset api, String collectionId, int minimumPageSize,
+    public FeatureQuery requestToFeatureQuery(OgcApiApi api, String collectionId, int minimumPageSize,
                                               int defaultPageSize, int maxPageSize, Map<String, String> parameters) {
 
         FeatureTypeConfigurationOgcApi featureTypeConfiguration = api.getData()
@@ -167,7 +167,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         return filters;
     }
 
-    private String getCQLFromFilters(OgcApiDataset service, Map<String, String> filters,
+    private String getCQLFromFilters(OgcApiApi service, Map<String, String> filters,
                                      Map<String, String> filterableFields, Set<String> filterParameters) {
         return filters.entrySet()
                       .stream()
@@ -194,7 +194,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                       .collect(Collectors.joining(" AND "));
     }
 
-    private String bboxToCql(OgcApiDataset service, String geometryField, String bboxValue) {
+    private String bboxToCql(OgcApiApi service, String geometryField, String bboxValue) {
         String[] bboxArray = bboxValue.split(",");
 
         if (bboxArray.length < 4)
@@ -209,7 +209,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             String bboxCrs = bboxArray.length > 4 ? bboxArray[4] : null;
             crs = Optional.ofNullable(bboxCrs)
                           .map(EpsgCrs::new)
-                          .orElse(OgcApiDatasetData.DEFAULT_CRS);
+                          .orElse(OgcApiApiDataV2.DEFAULT_CRS);
         } catch (NullPointerException e) {
             throw new BadRequestException("Error processing CRS of bounding box: '" + getBboxCrs(bboxArray) + "'");
         }
@@ -227,7 +227,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                 }
             }
             BoundingBox bbox = new BoundingBox(val1, val2, val3, val4, crs);
-            Optional<CrsTransformer> transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), OgcApiDatasetData.DEFAULT_CRS);
+            Optional<CrsTransformer> transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), OgcApiApiDataV2.DEFAULT_CRS);
             BoundingBox transformedBbox = transformer.isPresent() ? transformer.get().transformBoundingBox(bbox) : bbox;
             return String
                     .format(Locale.US, "BBOX(%s, %f, %f, %f, %f, '%s')", geometryField, transformedBbox.getXmin(), transformedBbox.getYmin(), transformedBbox.getXmax(), transformedBbox.getYmax(), transformedBbox.getEpsgCrs()
@@ -246,7 +246,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     }
 
     private String getBboxCrs(String[] bboxArray) {
-        return (bboxArray.length == 5 ? bboxArray[4] : OgcApiDatasetData.DEFAULT_CRS.getAsUri());
+        return (bboxArray.length == 5 ? bboxArray[4] : OgcApiApiDataV2.DEFAULT_CRS.getAsUri());
     }
 
     private String timeToCql(String timeField, String timeValue) {

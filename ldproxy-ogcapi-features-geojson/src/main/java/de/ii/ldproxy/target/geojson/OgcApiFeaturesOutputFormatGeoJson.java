@@ -65,7 +65,7 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, GeoJsonConfiguration.class);
     }
 

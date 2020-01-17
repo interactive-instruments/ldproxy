@@ -9,14 +9,9 @@ package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
-import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -71,7 +66,7 @@ public class GeoJsonWriterSetupUtil {
                                                                }
 
                                                                @Override
-                                                               public OgcApiDataset getApi() {
+                                                               public OgcApiApi getApi() {
                                                                    return null;
                                                                }
 

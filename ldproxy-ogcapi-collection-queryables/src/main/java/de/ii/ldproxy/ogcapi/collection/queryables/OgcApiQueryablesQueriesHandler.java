@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueriesHandler;
@@ -78,7 +78,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         return queryHandlers;
     }
 
-    public static void checkCollectionId(OgcApiDatasetData apiData, String collectionId) {
+    public static void checkCollectionId(OgcApiApiDataV2 apiData, String collectionId) {
         if (!apiData.isCollectionEnabled(collectionId)) {
             throw new NotFoundException();
         }
@@ -86,8 +86,8 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
     private Response getQueryablesResponse(OgcApiQueryInputQueryables queryInput, OgcApiRequestContext requestContext) {
 
-        OgcApiDataset api = requestContext.getApi();
-        OgcApiDatasetData apiData = api.getData();
+        OgcApiApi api = requestContext.getApi();
+        OgcApiApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         if (!apiData.isCollectionEnabled(collectionId))
             throw new NotFoundException();

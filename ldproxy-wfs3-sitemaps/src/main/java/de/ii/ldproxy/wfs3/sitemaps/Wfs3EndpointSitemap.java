@@ -11,9 +11,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
@@ -77,7 +77,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?(?:/[\\w\\-]+/sitemap[_0-9]+\\.xml)$"))
             return API_MEDIA_TYPES;
 
@@ -85,7 +85,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, SitemapsConfiguration.class);
     }
 
@@ -93,7 +93,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     @GET
     public Response getCollectionSitemap(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                                          @PathParam("from") Long from, @PathParam("to") Long to,
-                                         @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request) {
+                                         @Context OgcApiApi service, @Context OgcApiRequestContext wfs3Request) {
         OgcApiFeaturesCoreQueriesHandlerImpl.ensureCollectionIdExists(service.getData(), id);
 
         FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData());

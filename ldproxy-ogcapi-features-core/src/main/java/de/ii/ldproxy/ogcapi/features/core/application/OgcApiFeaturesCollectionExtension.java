@@ -11,9 +11,9 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
@@ -28,7 +28,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -47,14 +46,14 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 
     @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureType,
-                                                     OgcApiDatasetData apiData, URICustomizer uriCustomizer,
+                                                     OgcApiApiDataV2 apiData, URICustomizer uriCustomizer,
                                                      boolean isNested, OgcApiMediaType mediaType,
                                                      List<OgcApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
@@ -153,7 +152,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
     }
 
     public static OgcApiCollection createNestedCollection(FeatureTypeConfigurationOgcApi featureType,
-                                                          OgcApiDatasetData apiData,
+                                                          OgcApiApiDataV2 apiData,
                                                           OgcApiMediaType mediaType,
                                                           List<OgcApiMediaType> alternateMediaTypes,
                                                    Optional<Locale> language,

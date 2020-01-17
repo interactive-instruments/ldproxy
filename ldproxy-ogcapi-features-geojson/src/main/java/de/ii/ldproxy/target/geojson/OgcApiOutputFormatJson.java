@@ -35,7 +35,7 @@ public class OgcApiOutputFormatJson implements CollectionsFormatExtension, Commo
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, GeoJsonConfiguration.class);
     }
 
@@ -45,24 +45,24 @@ public class OgcApiOutputFormatJson implements CollectionsFormatExtension, Commo
     }
 
     @Override
-    public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiDataset api, OgcApiRequestContext requestContext) {
+    public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
         return response(apiLandingPage);
     }
 
     @Override
     public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
-                                           OgcApiDataset api, OgcApiRequestContext requestContext) {
+                                           OgcApiApi api, OgcApiRequestContext requestContext) {
         return response(conformanceDeclaration);
     }
 
     @Override
-    public Response getCollectionsResponse(Collections collections, OgcApiDataset api, OgcApiRequestContext requestContext) {
+    public Response getCollectionsResponse(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
         return response(collections);
     }
 
     @Override
     public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
-                                          OgcApiDataset api,
+                                          OgcApiApi api,
                                           OgcApiRequestContext requestContext) {
         return response(ogcApiCollection);
     }

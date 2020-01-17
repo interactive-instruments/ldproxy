@@ -49,11 +49,11 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
-    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
@@ -61,7 +61,7 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
 
     @Override
     public Response getStylesResponse(Styles styles,
-                                      OgcApiDataset api,
+                                      OgcApiApi api,
                                       OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String stylesTitle = i18n.get("stylesTitle", requestContext.getLanguage());
@@ -89,7 +89,7 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
 
     @Override
     public Response getStyleMetadataResponse(StyleMetadata metadata,
-                                             OgcApiDataset api,
+                                             OgcApiApi api,
                                              OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String stylesTitle = i18n.get("stylesTitle", requestContext.getLanguage());

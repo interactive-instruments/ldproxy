@@ -14,9 +14,9 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
@@ -31,7 +31,6 @@ import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.entity.api.EntityRegistry;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import io.dropwizard.auth.Auth;
@@ -126,7 +125,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
@@ -172,7 +171,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     }
 
     @Override
-    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
         if (subPath.matches("^/?$")) {
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
@@ -205,7 +204,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
 
         return extension
@@ -214,7 +213,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                 .isPresent();
     }
 
-    private boolean isMultiTilesEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isMultiTilesEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
 
         return extension
@@ -233,7 +232,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     @Path("/")
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
-    public Response getTileMatrixSets(@Context OgcApiDataset service, @Context OgcApiRequestContext requestContext) {
+    public Response getTileMatrixSets(@Context OgcApiApi service, @Context OgcApiRequestContext requestContext) {
 
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
 
@@ -301,7 +300,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     @GET
     public Response getCollectionsMultitiles(@Auth Optional<User> optionalUser,
                                              @Context OgcApiRequestContext wfs3Request,
-                                             @Context OgcApiDataset service,
+                                             @Context OgcApiApi service,
                                              @PathParam("tileMatrixSetId") String tileMatrixSetId,
                                              @QueryParam("bbox") String bboxParam,
                                              @QueryParam("scaleDenominator") String scaleDenominatorParam,
@@ -366,7 +365,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     public Response getTileMVT(@Auth Optional<User> optionalUser, @PathParam("tileMatrixSetId") String tileMatrixSetId,
                                 @PathParam("tileMatrix") String tileMatrix, @PathParam("tileRow") String tileRow,
                                 @PathParam("tileCol") String tileCol, @QueryParam("collections") String collectionsParam,
-                                @QueryParam("properties") String properties, @Context OgcApiDataset service,
+                                @QueryParam("properties") String properties, @Context OgcApiApi service,
                                 @Context UriInfo uriInfo, @Context OgcApiRequestContext wfs3Request)
             throws CrsTransformationException, FileNotFoundException, NotFoundException {
 
@@ -604,13 +603,13 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     }
 
     protected static void generateTileDataset(VectorTile tile, File tileFileMvt, Map<String, File> layers,
-                                     Set<String> collectionIds, Set<String> requestedCollections,
-                                     Set<String> requestedProperties, OgcApiDataset wfsService, FeatureProvider2 featureProvider, String level,
-                                     String row, String col, String tileMatrixSetId, boolean doNotCache,
-                                     VectorTilesCache cache, OgcApiRequestContext wfs3Request,
-                                     CrsTransformation crsTransformation, UriInfo uriInfo, boolean invalid,
-                                     OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, I18n i18n,
-                                     VectorTileMapGenerator vectorTileMapGenerator, Map<String, String> filters)
+                                              Set<String> collectionIds, Set<String> requestedCollections,
+                                              Set<String> requestedProperties, OgcApiApi wfsService, FeatureProvider2 featureProvider, String level,
+                                              String row, String col, String tileMatrixSetId, boolean doNotCache,
+                                              VectorTilesCache cache, OgcApiRequestContext wfs3Request,
+                                              CrsTransformation crsTransformation, UriInfo uriInfo, boolean invalid,
+                                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, I18n i18n,
+                                              VectorTileMapGenerator vectorTileMapGenerator, Map<String, String> filters)
             throws FileNotFoundException {
 
         for (String collectionId : collectionIds) {
@@ -711,7 +710,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         return collections;
     }
 
-    public static Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiDatasetData data) {
+    public static Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data) {
         return data.getCapabilities()
                 .stream()
                 .filter(extensionConfiguration -> extensionConfiguration instanceof TilesConfiguration)
@@ -720,14 +719,14 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                 .orElse(null);
     }
 
-    public static void checkTileMatrixSet(OgcApiDatasetData data, String tileMatrixSetId) {
+    public static void checkTileMatrixSet(OgcApiApiDataV2 data, String tileMatrixSetId) {
         Set<String> tileMatrixSets = getTileMatrixSetZoomLevels(data).keySet();
         if (!tileMatrixSets.contains(tileMatrixSetId)) {
             throw new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId);
         }
     }
 
-    private void checkTileValidity(String tileMatrixSetId, int tileMatrix, int tileRow, int tileCol, OgcApiDatasetData data) {
+    private void checkTileValidity(String tileMatrixSetId, int tileMatrix, int tileRow, int tileCol, OgcApiApiDataV2 data) {
         // tileMatrixSetId and tileMatrix have been checked already
         TileMatrixSet tileMatrixSet = null;
         try {

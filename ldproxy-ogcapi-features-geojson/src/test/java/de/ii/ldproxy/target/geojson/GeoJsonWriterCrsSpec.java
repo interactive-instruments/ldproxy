@@ -12,22 +12,18 @@ import com.greghaskins.spectrum.Spectrum;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
-import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.greghaskins.spectrum.dsl.specification.Specification.*;
-import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS;
+import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
 import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertEquals;
 
@@ -219,7 +215,7 @@ public class GeoJsonWriterCrsSpec {
                                                                }
 
                                                                @Override
-                                                               public OgcApiDataset getApi() {
+                                                               public OgcApiApi getApi() {
                                                                    return null;
                                                                }
 

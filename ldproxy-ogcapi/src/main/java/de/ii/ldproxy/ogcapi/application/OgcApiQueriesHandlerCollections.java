@@ -67,8 +67,8 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
 
     private Response getCollectionsResponse(OgcApiQueryInputCollections queryInput, OgcApiRequestContext requestContext) {
 
-        OgcApiDataset api = requestContext.getApi();
-        OgcApiDatasetData apiData = api.getData();
+        OgcApiApi api = requestContext.getApi();
+        OgcApiApiDataV2 apiData = api.getData();
 
         List<OgcApiLink> ogcApiLinks = new CollectionsLinksGenerator()
                 .generateLinks(requestContext.getUriCustomizer()
@@ -123,8 +123,8 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
     private Response getCollectionResponse(OgcApiQueryInputFeatureCollection queryInput,
                                            OgcApiRequestContext requestContext) {
 
-        OgcApiDataset api = requestContext.getApi();
-        OgcApiDatasetData apiData = api.getData();
+        OgcApiApi api = requestContext.getApi();
+        OgcApiApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
 
         if (!apiData.isCollectionEnabled(collectionId)) {

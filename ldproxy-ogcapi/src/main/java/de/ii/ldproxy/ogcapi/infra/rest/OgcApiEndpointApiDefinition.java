@@ -57,7 +57,7 @@ public class OgcApiEndpointApiDefinition implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         return extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class)
                                 .stream()
                                 .filter(formatExtension -> ("/api"+subPath).matches(formatExtension.getPathPattern()))
@@ -67,7 +67,7 @@ public class OgcApiEndpointApiDefinition implements OgcApiEndpointExtension {
 
     @GET
     @Path("/")
-    public Response getApiDefinition(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
+    public Response getApiDefinition(@Auth Optional<User> optionalUser, @Context OgcApiApi api,
                                      @Context OgcApiRequestContext ogcApiContext) {
 
         OgcApiQueryInputApiDefinition queryInput = new ImmutableOgcApiQueryInputApiDefinition.Builder()
@@ -78,7 +78,7 @@ public class OgcApiEndpointApiDefinition implements OgcApiEndpointExtension {
 
     @GET
     @Path("/{file}")
-    public Response getApiDefinition(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
+    public Response getApiDefinition(@Auth Optional<User> optionalUser, @Context OgcApiApi api,
                                           @Context OgcApiRequestContext ogcApiContext, @PathParam("file") Optional<String> file) {
 
         OgcApiQueryInputApiDefinition queryInputApiDefinition = new ImmutableOgcApiQueryInputApiDefinition.Builder()

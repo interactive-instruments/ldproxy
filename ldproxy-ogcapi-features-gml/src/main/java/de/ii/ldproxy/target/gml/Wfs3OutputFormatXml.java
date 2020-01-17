@@ -52,12 +52,12 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, GmlConfiguration.class);
     }
 
     @Override
-    public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiDataset api, OgcApiRequestContext requestContext) {
+    public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
         String title = requestContext.getApi().getData().getLabel();
         String description = requestContext.getApi().getData().getDescription().orElse(null);
         return response(new LandingPageXml(apiLandingPage.getLinks(), title, description));
@@ -65,18 +65,18 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
 
     @Override
     public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
-                                           OgcApiDataset api, OgcApiRequestContext requestContext) {
+                                           OgcApiApi api, OgcApiRequestContext requestContext) {
         return response(new Wfs3ConformanceClassesXml(conformanceDeclaration));
     }
 
     @Override
-    public Response getCollectionsResponse(Collections collections, OgcApiDataset api, OgcApiRequestContext requestContext) {
+    public Response getCollectionsResponse(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
         return response(new Wfs3CollectionsXml(collections));
     }
 
     @Override
     public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
-                                          OgcApiDataset api, OgcApiRequestContext requestContext) {
+                                          OgcApiApi api, OgcApiRequestContext requestContext) {
         return response(new Wfs3CollectionsXml(new ImmutableCollections.Builder()
                 .addCollections(ogcApiCollection)
                 .build()));

@@ -49,11 +49,11 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
-    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
@@ -61,7 +61,7 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
 
     @Override
     public Response getTileMatrixSetsResponse(TileMatrixSets tileMatrixSets,
-                                              OgcApiDataset api,
+                                              OgcApiApi api,
                                               OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
@@ -89,7 +89,7 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
 
     @Override
     public Response getTileMatrixSetResponse(TileMatrixSetData tileMatrixSet,
-                                             OgcApiDataset api,
+                                             OgcApiApi api,
                                              OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());

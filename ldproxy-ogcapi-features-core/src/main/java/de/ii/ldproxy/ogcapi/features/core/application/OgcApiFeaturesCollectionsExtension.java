@@ -31,12 +31,12 @@ public class OgcApiFeaturesCollectionsExtension implements OgcApiCollectionsExte
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 
     @Override
-    public ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder, OgcApiDatasetData apiData,
+    public ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder, OgcApiApiDataV2 apiData,
                                                 URICustomizer uriCustomizer,
                                                 OgcApiMediaType mediaType,
                                                 List<OgcApiMediaType> alternateMediaTypes,

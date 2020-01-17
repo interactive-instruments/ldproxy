@@ -45,7 +45,7 @@ public class ResourcesOnLandingPage implements OgcApiLandingPageExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
         if (stylesExtension.isPresent() &&
@@ -58,7 +58,7 @@ public class ResourcesOnLandingPage implements OgcApiLandingPageExtension {
 
     @Override
     public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
-                                                OgcApiDatasetData apiData,
+                                                OgcApiApiDataV2 apiData,
                                                 URICustomizer uriCustomizer,
                                                 OgcApiMediaType mediaType,
                                                 List<OgcApiMediaType> alternateMediaTypes,

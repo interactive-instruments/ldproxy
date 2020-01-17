@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface OgcApiLandingPageExtension extends OgcApiContentExtension {
 
     ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
-                                         OgcApiDatasetData apiData,
+                                         OgcApiApiDataV2 apiData,
                                          URICustomizer uriCustomizer,
                                          OgcApiMediaType mediaType,
                                          List<OgcApiMediaType> alternateMediaTypes,

@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3.styles;
 
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 
 /**
  * Extension for a style encoding at /{serviceId}/styles/{styleId}
@@ -16,7 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 public interface StyleFormatExtension extends FormatExtension {
 
     @Override
-    default boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return true;
     }
 
@@ -49,6 +49,6 @@ public interface StyleFormatExtension extends FormatExtension {
      * @param styleId the id of the style
      * @return the title of the style, if applicable, or null
      */
-    String getTitle(OgcApiDatasetData datasetData, String styleId);
+    String getTitle(OgcApiApiDataV2 datasetData, String styleId);
 
 };

@@ -8,16 +8,14 @@
 package de.ii.ldproxy.ogcapi.application;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiStartupTask;
 import de.ii.xtraplatform.entity.api.EntityComponent;
 import de.ii.xtraplatform.entity.api.handler.Entity;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.service.api.AbstractService;
 import de.ii.xtraplatform.service.api.Service;
 import org.apache.felix.ipojo.annotations.Requires;
@@ -35,8 +33,8 @@ import java.util.stream.Collectors;
 
 
 @EntityComponent
-@Entity(entityType = Service.class, dataType = OgcApiDatasetData.class)
-public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implements OgcApiDataset {
+@Entity(entityType = Service.class, dataType = OgcApiApiDataV2.class)
+public class OgcApiApiEntity extends AbstractService<OgcApiApiDataV2> implements OgcApiApi {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiEntity.class);
     private static final ExecutorService startupTaskExecutor = MoreExecutors.getExitingExecutorService((ThreadPoolExecutor) Executors.newFixedThreadPool(1));
@@ -75,7 +73,7 @@ public class OgcApiApiEntity extends AbstractService<OgcApiDatasetData> implemen
     }
 
     @Override
-    public OgcApiDatasetData getData() {
+    public OgcApiApiDataV2 getData() {
         return super.getData();
     }
 

@@ -1,7 +1,7 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -19,7 +19,7 @@ public class CollectionsMultiTiles implements ConformanceClass {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
 
         return extension

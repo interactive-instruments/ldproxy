@@ -11,8 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -20,7 +19,6 @@ import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.event.store.EntityHydrator;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
-import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -41,7 +39,7 @@ import java.util.concurrent.CompletionException;
         @StaticServiceProperty(name = "entityType", type = "java.lang.String", value = "services")
 })
 @Instantiate
-public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> {
+public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiApiDataV2> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiDatasetHydrator.class);
 
@@ -52,7 +50,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
     private CrsTransformation crsTransformerFactory;
 
     @Override
-    public Map<String, Object> getInstanceConfiguration(OgcApiDatasetData data) {
+    public Map<String, Object> getInstanceConfiguration(OgcApiApiDataV2 data) {
         try {
             //FeatureProvider2 featureProvider = featureProviderFactory.createFeatureProvider(data.getFeatureProvider());
 
@@ -71,7 +69,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
                         additionalReverseTransformers.put(crs.getAsUri(), crsTransformerFactory.getTransformer(crs, sourceCrs));
                     });*/
 
-                OgcApiDatasetData newData = data;
+                OgcApiApiDataV2 newData = data;
                 //TODO: move to startup task in features_core as well as tiles
                 /*if (hasMissingBboxes(data.getFeatureTypes())) {
                     ImmutableMap<String, FeatureTypeConfigurationOgcApi> featureTypesWithComputedBboxes = computeMissingBboxes(data.getFeatureTypes(), featureProvider, defaultTransformer);

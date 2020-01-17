@@ -100,7 +100,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?\\w+/metadata$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
@@ -114,7 +114,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     }
 
     @Override
-    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
         if (subPath.matches("^/?\\w+/metadata$"))
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
@@ -137,14 +137,14 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
-    private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiDatasetData dataset) {
+    private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiApiDataV2 dataset) {
         return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
                                 .stream()
                                 .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(dataset));
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> extension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
         return extension
@@ -153,7 +153,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                 .isPresent();
     }
 
-    private boolean isValidationEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isValidationEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> extension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
         return extension
@@ -173,7 +173,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     @Consumes({StyleFormatMbStyle.MEDIA_TYPE_STRING,StyleFormatSld10.MEDIA_TYPE_STRING,StyleFormatSld11.MEDIA_TYPE_STRING})
     public Response postStyle(@Auth Optional<User> optionalUser,
                               @QueryParam("validate") String validate,
-                              @Context OgcApiDataset api,
+                              @Context OgcApiApi api,
                               @Context OgcApiRequestContext ogcApiRequest,
                               @Context HttpServletRequest request,
                               byte[] requestBody) {
@@ -249,7 +249,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     public Response putStyle(@Auth Optional<User> optionalUser,
                              @PathParam("styleId") String styleId,
                              @QueryParam("validate") String validate,
-                             @Context OgcApiDataset dataset,
+                             @Context OgcApiApi dataset,
                              @Context OgcApiRequestContext ogcApiRequest,
                              @Context HttpServletRequest request,
                              byte[] requestBody) {
@@ -301,7 +301,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response putStyleMetadata(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                                     @Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest,
+                                     @Context OgcApiApi dataset, @Context OgcApiRequestContext ogcApiRequest,
                                      @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
@@ -338,7 +338,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     @PATCH
     @Consumes(MediaType.APPLICATION_JSON)
     public Response patchStyleMetadata(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                                       @Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest,
+                                       @Context OgcApiApi dataset, @Context OgcApiRequestContext ogcApiRequest,
                                        @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
@@ -381,7 +381,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
         return !metadataFile.exists();
     }
 
-    private void writeStylesheet(OgcApiDatasetData datasetData, OgcApiRequestContext ogcApiRequest, String styleId,
+    private void writeStylesheet(OgcApiApiDataV2 datasetData, OgcApiRequestContext ogcApiRequest, String styleId,
                                  StyleFormatExtension format, byte[] requestBody, boolean newStyle) {
 
         String datasetId = datasetData.getId();
@@ -430,7 +430,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
     @Path("/{styleId}")
     @DELETE
     public Response deleteStyle(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                                @Context OgcApiDataset dataset) {
+                                @Context OgcApiApi dataset) {
 
         checkAuthorization(dataset.getData(), optionalUser);
         checkStyleId(styleId);
@@ -615,7 +615,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
         }
     }
 
-    private static void checkValidate(OgcApiDatasetData data, String validate) {
+    private static void checkValidate(OgcApiApiDataV2 data, String validate) {
         if (Objects.nonNull(validate) && !validate.matches("no|yes|only"))
             throw new BadRequestException("Parameter validate has an invalid value: " + validate);
     }

@@ -9,8 +9,8 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.BoundingBox;
@@ -57,8 +57,8 @@ class VectorTile {
     private final int col;
     private final String collectionId;
     private final TileMatrixSet tileMatrixSet;
-    private final OgcApiDatasetData apiData;
-    private final OgcApiDataset api;
+    private final OgcApiApiDataV2 apiData;
+    private final OgcApiApi api;
     private final FeatureProvider2 featureProvider;
     private final boolean temporary;
     private final String fileName;
@@ -81,7 +81,7 @@ class VectorTile {
      */
 
     VectorTile(String collectionId, String tileMatrixSetId, String level, String row, String col,
-               OgcApiDataset api, boolean temporary, VectorTilesCache cache,
+               OgcApiApi api, boolean temporary, VectorTilesCache cache,
                FeatureProvider2 featureProvider,
                OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) {
         this.wfs3OutputFormatGeoJson = wfs3OutputFormatGeoJson;
@@ -154,11 +154,11 @@ class VectorTile {
         return tileMatrixSet;
     }
 
-    public OgcApiDataset getApi() {
+    public OgcApiApi getApi() {
         return api;
     }
 
-    public OgcApiDatasetData getApiData() {
+    public OgcApiApiDataV2 getApiData() {
         return apiData;
     }
 
@@ -290,7 +290,7 @@ class VectorTile {
     public AffineTransformation createTransformLonLatToTile(
             CrsTransformation crsTransformation) throws CrsTransformationException {
 
-        BoundingBox bbox = getBoundingBox(OgcApiDatasetData.DEFAULT_CRS, crsTransformation);
+        BoundingBox bbox = getBoundingBox(OgcApiApiDataV2.DEFAULT_CRS, crsTransformation);
 
         double lonMin = bbox.getXmin();
         double lonMax = bbox.getXmax();
@@ -464,7 +464,7 @@ class VectorTile {
      */
     public static MinMax checkZoomLevel(int zoomLevel,
                                         Map<String, Map<String, MinMax>> zoomLevelsMap,
-                                        OgcApiDataset wfsService,
+                                        OgcApiApi wfsService,
                                         OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                                         String collectionId, String tileMatrixSetId, String mediaType,
                                         String row, String col, boolean doNotCache, VectorTilesCache cache,
@@ -530,7 +530,7 @@ class VectorTile {
      * @throws FileNotFoundException
      */
     public static void generateEmptyTile(String collectionId, String tileMatrixSetId, int zoomLevel,
-                                         OgcApiDataset wfsService, FeatureProvider2 featureProvider,
+                                         OgcApiApi wfsService, FeatureProvider2 featureProvider,
                                          OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                                          String mediaType, String row, String col, boolean doNotCache,
                                          VectorTilesCache cache, boolean isCollection, OgcApiRequestContext wfs3Request,

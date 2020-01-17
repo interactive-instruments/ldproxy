@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
 
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import java.util.Set;
 public class VectorTileMapGenerator implements OgcApiExtension {
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
@@ -34,7 +34,7 @@ public class VectorTileMapGenerator implements OgcApiExtension {
      * @param datasetData       the service data of the Wfs3 Service
      * @return a set with all CollectionIds, which have the tiles Extension
      */
-    public Set<String> getAllCollectionIdsWithTileExtension(OgcApiDatasetData datasetData) {
+    public Set<String> getAllCollectionIdsWithTileExtension(OgcApiApiDataV2 datasetData) {
         Set<String> collectionIds = new HashSet<String>();
         for (String collectionId : datasetData.getFeatureTypes()
                                               .keySet())
@@ -51,7 +51,7 @@ public class VectorTileMapGenerator implements OgcApiExtension {
      * @param datasetData       the service data of the Wfs3 Service
      * @return a map with all CollectionIds, which have the tiles Extension and the value of the tiles Parameter  "enabled"
      */
-    public Map<String, Boolean> getEnabledMap(OgcApiDatasetData datasetData) {
+    public Map<String, Boolean> getEnabledMap(OgcApiApiDataV2 datasetData) {
         Map<String, Boolean> enabledMap = new HashMap<>();
         for (String collectionId : datasetData.getFeatureTypes()
                                               .keySet()) {
@@ -74,7 +74,7 @@ public class VectorTileMapGenerator implements OgcApiExtension {
      * @param datasetData       the service data of the Wfs3 Service
      * @return a map with all CollectionIds, which have the tiles Extension and the supported formats
      */
-    public Map<String, List<String>> getFormatsMap(OgcApiDatasetData datasetData) {
+    public Map<String, List<String>> getFormatsMap(OgcApiApiDataV2 datasetData) {
 
         Map<String, List<String>> formatsMap = new HashMap<>();
 
@@ -105,7 +105,7 @@ public class VectorTileMapGenerator implements OgcApiExtension {
      * @param seeding           if seeding true, we observe seeding MinMax, if false zoomLevel MinMax
      * @return a map with all CollectionIds, which have the tiles Extension and the zoomLevel or seeding
      */
-    public Map<String, Map<String, MinMax>> getMinMaxMap(OgcApiDatasetData datasetData,
+    public Map<String, Map<String, MinMax>> getMinMaxMap(OgcApiApiDataV2 datasetData,
                                                          Boolean seeding) {
         Map<String, Map<String, MinMax>> minMaxMap = new HashMap<>();
 

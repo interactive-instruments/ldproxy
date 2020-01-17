@@ -55,7 +55,7 @@ public class OgcApiEndpointLandingPage implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?$"))
             return extensionRegistry.getExtensionsForType(CommonFormatExtension.class)
                                     .stream()
@@ -67,7 +67,7 @@ public class OgcApiEndpointLandingPage implements OgcApiEndpointExtension {
     }
 
     @GET
-    public Response getLandingPage(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
+    public Response getLandingPage(@Auth Optional<User> optionalUser, @Context OgcApiApi api,
                                    @Context OgcApiRequestContext requestContext) {
         checkAuthorization(api.getData(), optionalUser);
 

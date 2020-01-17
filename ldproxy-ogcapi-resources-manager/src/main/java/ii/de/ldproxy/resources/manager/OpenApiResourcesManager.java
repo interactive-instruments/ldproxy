@@ -13,7 +13,7 @@ package ii.de.ldproxy.resources.manager; /**
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -51,7 +51,7 @@ public class OpenApiResourcesManager implements OpenApiExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
         if (stylesExtension.isPresent() &&
@@ -63,7 +63,7 @@ public class OpenApiResourcesManager implements OpenApiExtension {
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
 
         if (!isEnabledForApi(datasetData)) {
             return openAPI;

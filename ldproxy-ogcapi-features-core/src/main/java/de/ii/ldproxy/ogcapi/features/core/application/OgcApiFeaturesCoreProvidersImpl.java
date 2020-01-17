@@ -2,7 +2,7 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 
 import de.ii.ldproxy.ogcapi.domain.ExtendableConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.entity.api.EntityRegistry;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
@@ -25,13 +25,13 @@ public class OgcApiFeaturesCoreProvidersImpl implements OgcApiFeatureCoreProvide
     }
 
     @Override
-    public FeatureProvider2 getFeatureProvider(OgcApiDatasetData apiData) {
+    public FeatureProvider2 getFeatureProvider(OgcApiApiDataV2 apiData) {
         return getOptionalFeatureProvider(apiData)
                 .orElseThrow(() -> new IllegalStateException("no FeatureProvider found"));
     }
 
     @Override
-    public FeatureProvider2 getFeatureProvider(OgcApiDatasetData apiData, FeatureTypeConfigurationOgcApi featureType) {
+    public FeatureProvider2 getFeatureProvider(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
         return getOptionalFeatureProvider(featureType)
                 .orElse(getFeatureProvider(apiData));
     }

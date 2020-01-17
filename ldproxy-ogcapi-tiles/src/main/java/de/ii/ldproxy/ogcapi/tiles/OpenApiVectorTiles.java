@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -43,11 +43,11 @@ public class OpenApiVectorTiles implements OpenApiExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
-    private boolean isMultiTilesEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isMultiTilesEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
 
         return extension
@@ -57,7 +57,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
 
     }
 
-    private boolean isMultiCollectionEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isMultiCollectionEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
 
         return extension
@@ -75,7 +75,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
      * @return the extended OpenAPI definition
      */
     @Override
-    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
 
         boolean enableTilesInAPI = false;
 

@@ -15,7 +15,7 @@ public interface OgcApiCollectionExtension extends OgcApiContentExtension {
 
     ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                               FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                              OgcApiDatasetData apiData,
+                                              OgcApiApiDataV2 apiData,
                                               URICustomizer uriCustomizer,
                                               boolean isNested,
                                               OgcApiMediaType mediaType,

@@ -13,11 +13,11 @@ import java.util.List;
 import java.util.Optional;
 
 
-public interface OgcApiDataset extends Service {
+public interface OgcApiApi extends Service {
 
     // TODO: move the following 3 methods to OgcApiApi, split generic parts of OgcApiDatasetData to OgcApiApiData (requires a change in xtraplatform)
     @Override
-    OgcApiDatasetData getData();
+    OgcApiApiDataV2 getData();
 
     <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType,
                                                             String path);

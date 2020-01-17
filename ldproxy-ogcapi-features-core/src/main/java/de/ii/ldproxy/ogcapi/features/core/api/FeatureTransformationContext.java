@@ -8,13 +8,12 @@
 package de.ii.ldproxy.ogcapi.features.core.api;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.FeatureType;
-import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -37,7 +36,7 @@ public interface FeatureTransformationContext {
         GEOMETRY_END
     }
 
-    OgcApiDatasetData getApiData();
+    OgcApiApiDataV2 getApiData();
 
     String getCollectionId();
 

@@ -11,8 +11,8 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
@@ -53,7 +53,7 @@ import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS;
+import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
 
 @Component
 @Instantiate
@@ -85,7 +85,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         return queryHandlers;
     }
 
-    public static void ensureCollectionIdExists(OgcApiDatasetData apiData, String collectionId) {
+    public static void ensureCollectionIdExists(OgcApiApiDataV2 apiData, String collectionId) {
         if (!apiData.isCollectionEnabled(collectionId)) {
             throw new NotFoundException();
         }
@@ -99,8 +99,8 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
     private Response getItemsResponse(OgcApiQueryInputFeatures queryInput, OgcApiRequestContext requestContext) {
 
-        OgcApiDataset api = requestContext.getApi();
-        OgcApiDatasetData apiData = api.getData();
+        OgcApiApi api = requestContext.getApi();
+        OgcApiApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         FeatureQuery query = queryInput.getQuery();
         Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
@@ -119,8 +119,8 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
     private Response getItemResponse(OgcApiQueryInputFeature queryInput,
                                      OgcApiRequestContext requestContext) {
 
-        OgcApiDataset api = requestContext.getApi();
-        OgcApiDatasetData apiData = api.getData();
+        OgcApiApi api = requestContext.getApi();
+        OgcApiApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         String featureId = queryInput.getFeatureId();
         FeatureQuery query = queryInput.getQuery();
@@ -144,7 +144,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 queryInput.getIncludeHomeLink(), false, queryInput.getIncludeLinkHeader());
     }
 
-    private Response getItemsResponse(OgcApiDataset api, OgcApiRequestContext requestContext, String collectionId,
+    private Response getItemsResponse(OgcApiApi api, OgcApiRequestContext requestContext, String collectionId,
                                       FeatureQuery query, FeatureProvider2 featureProvider, boolean isCollection,
                                       String canonicalUri,
                                       OgcApiFeatureFormatExtension outputFormat,

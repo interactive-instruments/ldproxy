@@ -28,14 +28,14 @@ import java.util.Optional;
 public class OgcApiCollectionAroundRelation implements OgcApiCollectionExtension {
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, AroundRelationsConfiguration.class);
     }
 
     @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                     OgcApiDatasetData apiData,
+                                                     OgcApiApiDataV2 apiData,
                                                      URICustomizer uriCustomizer,
                                                      boolean isNested,
                                                      OgcApiMediaType mediaType,

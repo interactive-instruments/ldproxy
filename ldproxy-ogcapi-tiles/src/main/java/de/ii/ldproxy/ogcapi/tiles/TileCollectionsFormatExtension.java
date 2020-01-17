@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 
 import javax.ws.rs.core.Response;
@@ -23,7 +23,7 @@ public interface TileCollectionsFormatExtension extends FormatExtension {
 
     Response getTileCollectionsResponse(TileCollections tiles,
                                Optional<String> collectionId,
-                               OgcApiDataset api,
+                               OgcApiApi api,
                                OgcApiRequestContext requestContext);
 
 }

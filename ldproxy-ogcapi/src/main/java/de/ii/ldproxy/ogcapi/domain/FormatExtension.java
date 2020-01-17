@@ -21,7 +21,7 @@ public interface FormatExtension extends OgcApiExtension {
      */
     String getPathPattern();
 
-    default boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return true;
     }
 }

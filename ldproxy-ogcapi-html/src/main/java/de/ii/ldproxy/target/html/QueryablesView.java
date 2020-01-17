@@ -11,7 +11,7 @@ import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.collection.queryables.Queryable;
 import de.ii.ldproxy.ogcapi.collection.queryables.Queryables;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class QueryablesView extends LdproxyView {
     public String typeTitle;
     public String none;
 
-    public QueryablesView(OgcApiDatasetData apiData,
+    public QueryablesView(OgcApiApiDataV2 apiData,
                           Queryables queryables,
                           List<NavigationDTO> breadCrumbs,
                           String staticUrlPrefix,

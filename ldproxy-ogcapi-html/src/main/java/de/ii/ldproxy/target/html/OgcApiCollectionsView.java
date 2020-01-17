@@ -29,7 +29,7 @@ public class OgcApiCollectionsView extends LdproxyView {
     public String none;
     public String moreInformation;
 
-    public OgcApiCollectionsView(OgcApiDatasetData apiData, Collections collections,
+    public OgcApiCollectionsView(OgcApiApiDataV2 apiData, Collections collections,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix,
                                  HtmlConfig htmlConfig, boolean noIndex, I18n i18n, Optional<Locale> language, Optional<String> dataSourceUrl) {
         super("collections.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,

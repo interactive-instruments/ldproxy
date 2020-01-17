@@ -27,26 +27,27 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-
+@Deprecated
 @Value.Immutable
-@JsonDeserialize(builder = ImmutableOgcApiDatasetData.Builder.class)
-public abstract class OgcApiDatasetData implements ExtendableConfiguration, ServiceData {
+@JsonDeserialize(builder = ImmutableOgcApiApiDataV1.Builder.class)
+public abstract class OgcApiApiDataV1 implements ExtendableConfiguration, ServiceData {
 
     public static final String DEFAULT_CRS_URI = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
     public static final EpsgCrs DEFAULT_CRS = new EpsgCrs(4326, true);
-    private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiDatasetData.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiDataV1.class);
 
-    static abstract class Builder implements EntityDataBuilder<OgcApiDatasetData> {
+    static abstract class Builder implements EntityDataBuilder<OgcApiApiDataV1> {
     }
 
-    //@JsonMerge
-    //@Nullable
-    //public abstract ValueBuilderMap<Test, ImmutableTest.Builder> getTestMap();
-
-
     @Override
-    public long getCurrentEntityDataVersion() {
+    public long getEntitySchemaVersion() {
         return 1;
+    }
+
+    @Value.Default
+    @Override
+    public String getServiceType() {
+        return "WFS3";
     }
 
     @Value.Default
@@ -102,9 +103,11 @@ public abstract class OgcApiDatasetData implements ExtendableConfiguration, Serv
     public BoundingBox getSpatialExtent() {
         double[] val = getFeatureTypes().values()
                                         .stream()
-                                        .map(featureTypeConfigurationWfs3 -> featureTypeConfigurationWfs3.getExtent()
-                                                                                                         .getSpatial()
-                                                                                                         .getCoords())
+                                        .map(featureTypeConfigurationWfs3 -> Optional.ofNullable(featureTypeConfigurationWfs3.getExtent()
+                                                                                                         .getSpatial())
+                                                                                                         .map(BoundingBox::getCoords))
+                                        .filter(Optional::isPresent)
+                                        .map(Optional::get)
                                         .reduce((doubles, doubles2) -> new double[]{
                                                 Math.min(doubles[0], doubles2[0]),
                                                 Math.min(doubles[1], doubles2[1]),

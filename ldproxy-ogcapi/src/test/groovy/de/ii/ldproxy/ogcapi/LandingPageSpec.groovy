@@ -15,10 +15,6 @@ import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCor
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesLandingPageExtension
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
 import de.ii.xtraplatform.crs.api.BoundingBox
-import de.ii.xtraplatform.crs.api.EpsgCrs
-import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer
 import spock.lang.PendingFeature
 import spock.lang.Specification
 
@@ -27,7 +23,7 @@ import javax.ws.rs.core.Response
 
 class LandingPageSpec extends Specification {
 
-    static final OgcApiDatasetData datasetData = createDatasetData()
+    static final OgcApiApiDataV2 datasetData = createDatasetData()
     static OgcApiApiEntity ogcApiApiEntity = createDatasetEntity()
     static final OgcApiRequestContext requestContext = createRequestContext()
     static OgcApiQueriesHandlerCommon queryHandler = new OgcApiQueriesHandlerCommon(createExtensionRegistry())
@@ -164,12 +160,12 @@ class LandingPageSpec extends Specification {
                     return ImmutableList.of((T) new CommonFormatExtension() {
 
                         @Override
-                        Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                        Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
                             return Response.ok(apiLandingPage).build()
                         }
 
                         @Override
-                        Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                        Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration, OgcApiApi api, OgcApiRequestContext requestContext) {
                             return Response.ok(conformanceDeclaration).build()
                         }
 
@@ -181,7 +177,7 @@ class LandingPageSpec extends Specification {
                         }
 
                         @Override
-                        boolean isEnabledForApi(OgcApiDatasetData apiData) {
+                        boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
                             return true
                         }
                     })
@@ -195,7 +191,7 @@ class LandingPageSpec extends Specification {
                         }
 
                         @Override
-                        boolean isEnabledForApi(OgcApiDatasetData datasetData) {
+                        boolean isEnabledForApi(OgcApiApiDataV2 datasetData) {
                             return true
                         }
                     })

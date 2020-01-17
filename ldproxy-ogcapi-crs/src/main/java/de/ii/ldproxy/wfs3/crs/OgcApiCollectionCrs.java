@@ -11,8 +11,8 @@ package de.ii.ldproxy.wfs3.crs;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
@@ -42,14 +42,14 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, CrsConfiguration.class);
     }
 
     @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                     OgcApiDatasetData apiData,
+                                                     OgcApiApiDataV2 apiData,
                                                      URICustomizer uriCustomizer,
                                                      boolean isNested,
                                                      OgcApiMediaType mediaType,
@@ -68,7 +68,7 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
                 // this is just the collection resource, so no default to reference; include all CRSs
                 crsList = Stream.concat(
                         Stream.of(
-                                OgcApiDatasetData.DEFAULT_CRS_URI,
+                                OgcApiApiDataV2.DEFAULT_CRS_URI,
                                 nativeCrsUri
                         ),
                         apiData.getAdditionalCrs()

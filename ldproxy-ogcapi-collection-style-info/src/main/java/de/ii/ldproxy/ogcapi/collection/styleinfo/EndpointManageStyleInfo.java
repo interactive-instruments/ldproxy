@@ -77,7 +77,7 @@ public class EndpointManageStyleInfo implements OgcApiEndpointExtension, Conform
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         return ImmutableSet.of(
                 new ImmutableOgcApiMediaType.Builder()
                         .type(MediaType.APPLICATION_JSON_TYPE)
@@ -85,7 +85,7 @@ public class EndpointManageStyleInfo implements OgcApiEndpointExtension, Conform
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StyleInfoConfiguration> styleInfoExtension = getExtensionConfiguration(apiData, StyleInfoConfiguration.class);
 
         if (styleInfoExtension.isPresent() &&
@@ -106,7 +106,7 @@ public class EndpointManageStyleInfo implements OgcApiEndpointExtension, Conform
     @PATCH
     @Consumes(MediaType.APPLICATION_JSON)
     public Response patchStyleMetadata(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId,
-                                       @Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest,
+                                       @Context OgcApiApi dataset, @Context OgcApiRequestContext ogcApiRequest,
                                        @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);

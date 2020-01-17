@@ -10,7 +10,7 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.TileCollections;
 import de.ii.xtraplatform.crs.api.BoundingBox;
@@ -28,7 +28,7 @@ public class TilesView extends LdproxyView {
     public Map<String, String> bbox2;
     public Map<String, String> temporalExtent;
 
-    public TilesView(OgcApiDatasetData apiData,
+    public TilesView(OgcApiApiDataV2 apiData,
                      TileCollections tiles,
                      Optional<String> collectionId,
                      List<NavigationDTO> breadCrumbs,

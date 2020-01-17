@@ -21,12 +21,6 @@ import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
 import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollection
 import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollections
 import de.ii.xtraplatform.crs.api.BoundingBox
-import de.ii.xtraplatform.crs.api.EpsgCrs
-import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureTypeMapping
-import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
@@ -36,7 +30,7 @@ import java.util.stream.Collectors
 class OgcApiCoreSpecCollections extends Specification {
 
     static final OgcApiExtensionRegistry registry = createExtensionRegistry()
-    static final OgcApiDatasetData datasetData = createDatasetData()
+    static final OgcApiApiDataV2 datasetData = createDatasetData()
     static final OgcApiApiEntity ogcApiApiEntity = createOgcApiApiEntity()
     static final OgcApiRequestContext requestContext = createRequestContext()
     static OgcApiQueriesHandlerCollections ogcApiQueriesHandlerCollections = new OgcApiQueriesHandlerCollections(registry)
@@ -146,12 +140,12 @@ class OgcApiCoreSpecCollections extends Specification {
                         }
 
                         @Override
-                        Response getCollectionsResponse(Collections collections, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                        Response getCollectionsResponse(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
                             return Response.ok().entity(collections).build()
                         }
 
                         @Override
-                        Response getCollectionResponse(OgcApiCollection ogcApiCollection, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                        Response getCollectionResponse(OgcApiCollection ogcApiCollection, OgcApiApi api, OgcApiRequestContext requestContext) {
                             return Response.ok().entity(ogcApiCollection).build()
                         }
 
@@ -176,7 +170,7 @@ class OgcApiCoreSpecCollections extends Specification {
                         }
 
                         @Override
-                        boolean isEnabledForApi(OgcApiDatasetData apiData) {
+                        boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
                             return true
                         }
 

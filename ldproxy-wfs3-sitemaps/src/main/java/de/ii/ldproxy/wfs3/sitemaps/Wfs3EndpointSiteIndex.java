@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
@@ -74,7 +74,7 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?$"))
             return API_MEDIA_TYPES;
 
@@ -82,12 +82,12 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, SitemapsConfiguration.class);
     }
 
     @GET
-    public Response getDatasetSiteIndex(@Auth Optional<User> optionalUser, @Context OgcApiDataset service,
+    public Response getDatasetSiteIndex(@Auth Optional<User> optionalUser, @Context OgcApiApi service,
                                         @Context OgcApiRequestContext wfs3Request) {
 
         Set<String> collectionIds = service.getData()

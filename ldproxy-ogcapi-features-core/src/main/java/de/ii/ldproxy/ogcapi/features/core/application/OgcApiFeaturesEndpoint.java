@@ -10,10 +10,10 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiCommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
@@ -81,7 +81,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/[\\w\\-]+/items(?:/[^/\\s]+)?/?$"))
             return extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
                                     .stream()
@@ -93,7 +93,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
@@ -126,7 +126,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
     @GET
     @Path("/{collectionId}/items")
     public Response getItems(@Auth Optional<User> optionalUser,
-                             @Context OgcApiDataset api,
+                             @Context OgcApiApi api,
                              @Context OgcApiRequestContext requestContext,
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
@@ -169,7 +169,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
     @GET
     @Path("/{collectionId}/items/{featureId}")
     public Response getItem(@Auth Optional<User> optionalUser,
-                            @Context OgcApiDataset api,
+                            @Context OgcApiApi api,
                             @Context OgcApiRequestContext requestContext,
                             @Context UriInfo uriInfo,
                             @PathParam("collectionId") String collectionId,

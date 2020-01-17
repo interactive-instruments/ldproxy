@@ -9,7 +9,7 @@ package de.ii.ldproxy.wfs3.sitemaps;
 
 import com.google.common.collect.Range;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureSourceStream;
@@ -172,7 +172,7 @@ class SitemapComputation {
     }
 
     //TODO move to Wfs3ServiceData
-    static Stream<String> getCollectionIdStream(OgcApiDatasetData datasetData) {
+    static Stream<String> getCollectionIdStream(OgcApiApiDataV2 datasetData) {
         return datasetData.getFeatureTypes()
                           .values()
                           .stream()

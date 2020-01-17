@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.oas30;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.auth.api.AuthConfig;
 import io.swagger.v3.core.util.Json;
@@ -66,7 +66,7 @@ public class ExtendableOpenApiDefinition {
         return openApiExtensions;
     }
 
-    public Response getOpenApi(String type, URICustomizer requestUriCustomizer, OgcApiDatasetData apiData) {
+    public Response getOpenApi(String type, URICustomizer requestUriCustomizer, OgcApiApiDataV2 apiData) {
 
         boolean pretty = true;
 

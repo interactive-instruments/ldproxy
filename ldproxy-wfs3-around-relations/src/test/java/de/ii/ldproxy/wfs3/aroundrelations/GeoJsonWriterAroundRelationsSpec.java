@@ -15,13 +15,9 @@ import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQ
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.*;
 import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
@@ -316,7 +312,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                }
 
                                                                @Override
-                                                               public OgcApiDataset getApi() {
+                                                               public OgcApiApi getApi() {
                                                                    return null;
                                                                }
 

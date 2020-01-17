@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -37,7 +37,7 @@ public class TileMatrixSetLimitsGenerator {
      * @param crsTransformation crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public static List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiDatasetData data, String collectionId,
+    public static List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiApiDataV2 data, String collectionId,
                                                                              String tileMatrixSetId, MinMax tileMatrixRange,
                                                                              CrsTransformation crsTransformation) {
 
@@ -69,8 +69,8 @@ public class TileMatrixSetLimitsGenerator {
      * @param crsTransformation crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public static List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDatasetData data, String tileMatrixSetId,
-                                                            MinMax tileMatrixRange, CrsTransformation crsTransformation) {
+    public static List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiApiDataV2 data, String tileMatrixSetId,
+                                                                   MinMax tileMatrixRange, CrsTransformation crsTransformation) {
 
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 

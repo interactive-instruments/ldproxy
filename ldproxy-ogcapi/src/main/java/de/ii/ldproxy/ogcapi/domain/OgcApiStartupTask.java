@@ -14,7 +14,7 @@ import java.util.Map;
 
 // TODO: support for a ServiceBackgroundTask
 public interface OgcApiStartupTask extends OgcApiExtension {
-    Runnable getTask(OgcApiDataset api, FeatureProvider2 featureProvider);
+    Runnable getTask(OgcApiApi api, FeatureProvider2 featureProvider);
     Map<Thread,String> getThreadMap();
     void removeThreadMapEntry(Thread t);
 }

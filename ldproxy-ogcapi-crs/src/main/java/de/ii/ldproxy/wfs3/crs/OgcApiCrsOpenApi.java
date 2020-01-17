@@ -9,7 +9,7 @@ package de.ii.ldproxy.wfs3.crs;
 
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
@@ -26,7 +26,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS_URI;
+import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS_URI;
 import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.BBOX_CRS;
 import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.CRS;
 
@@ -48,12 +48,12 @@ public class OgcApiCrsOpenApi implements OpenApiExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, CrsConfiguration.class);
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
         if (isEnabledForApi(datasetData)) {
 
             ImmutableSet<String> crsSet = ImmutableSet.<String>builder()

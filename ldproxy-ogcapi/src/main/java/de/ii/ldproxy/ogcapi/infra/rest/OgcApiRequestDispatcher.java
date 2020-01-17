@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Provides(properties = {
-        @StaticServiceProperty(name = ServiceResource.SERVICE_TYPE_KEY, type = "java.lang.String", value = "WFS3")
+        @StaticServiceProperty(name = ServiceResource.SERVICE_TYPE_KEY, type = "java.lang.String", value = "OGC_API")
 })
 @Instantiate
 
@@ -52,14 +52,14 @@ public class OgcApiRequestDispatcher implements ServiceResource {
     }
 
     @Path("")
-    public OgcApiEndpointExtension dispatchLandingPageWithoutSlash(@PathParam("entrypoint") String entrypoint, @Context OgcApiDataset service,
+    public OgcApiEndpointExtension dispatchLandingPageWithoutSlash(@PathParam("entrypoint") String entrypoint, @Context OgcApiApi service,
                                                                    @Context ContainerRequestContext requestContext) {
         return dispatch("", service, requestContext);
 
     }
 
     @Path("/{entrypoint: [^/]*}")
-    public OgcApiEndpointExtension dispatch(@PathParam("entrypoint") String entrypoint, @Context OgcApiDataset service,
+    public OgcApiEndpointExtension dispatch(@PathParam("entrypoint") String entrypoint, @Context OgcApiApi service,
                                             @Context ContainerRequestContext requestContext) {
 
         String subPath = ((UriRoutingContext) requestContext.getUriInfo()).getFinalMatchingGroup();
@@ -139,7 +139,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                          .collect(ImmutableSet.toImmutableSet());
     }
 
-    private Optional<OgcApiEndpointExtension> findEndpoint(OgcApiDatasetData dataset,
+    private Optional<OgcApiEndpointExtension> findEndpoint(OgcApiApiDataV2 dataset,
                                                            @PathParam("entrypoint") String entrypoint,
                                                            String subPath, String method) {
         return getEndpoints().stream()

@@ -9,7 +9,7 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.TileMatrixSetData;
 
@@ -30,7 +30,7 @@ public class OgcApiTileMatrixSetView extends LdproxyView {
     public String matrixWidthTitle;
     public String matrixHeightTitle;
 
-    public OgcApiTileMatrixSetView(OgcApiDatasetData apiData,
+    public OgcApiTileMatrixSetView(OgcApiApiDataV2 apiData,
                                    TileMatrixSetData tileMatrixSet,
                                    List<NavigationDTO> breadCrumbs,
                                    String staticUrlPrefix,

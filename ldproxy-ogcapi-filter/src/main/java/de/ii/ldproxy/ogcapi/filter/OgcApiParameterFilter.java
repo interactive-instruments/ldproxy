@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.filter;
 
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
@@ -28,12 +28,12 @@ public class OgcApiParameterFilter implements OgcApiParameterExtension {
     private static final String FILTER_LANG_CQL = "cql-text";
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, FilterConfiguration.class);
     }
 
     @Override
-    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
@@ -53,7 +53,7 @@ public class OgcApiParameterFilter implements OgcApiParameterExtension {
     }
 
     @Override
-    public Set<String> getFilterParameters(Set<String> filterParameters, OgcApiDatasetData apiData) {
+    public Set<String> getFilterParameters(Set<String> filterParameters, OgcApiApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return filterParameters;
 
@@ -66,7 +66,7 @@ public class OgcApiParameterFilter implements OgcApiParameterExtension {
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
-                                                        Map<String, String> parameters, OgcApiDatasetData datasetData) {
+                                                        Map<String, String> parameters, OgcApiApiDataV2 datasetData) {
 
         if (parameters.containsKey("filter-lang") && !FILTER_LANG_CQL.equals(parameters.get("filter-lang"))) {
             throw new BadRequestException(

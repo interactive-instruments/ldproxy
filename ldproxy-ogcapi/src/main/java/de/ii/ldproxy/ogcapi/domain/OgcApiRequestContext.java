@@ -19,7 +19,7 @@ public interface OgcApiRequestContext {
 
     Optional<Locale> getLanguage();
 
-    OgcApiDataset getApi();
+    OgcApiApi getApi();
 
     URICustomizer getUriCustomizer();
 

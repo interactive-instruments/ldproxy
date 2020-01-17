@@ -23,12 +23,12 @@ import java.util.Optional;
 public class OgcApiLandingPageOpenApi implements OgcApiLandingPageExtension {
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, Oas30Configuration.class);
     }
 
     @Override
-    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiDatasetData apiData,
+    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiApiDataV2 apiData,
                                                 URICustomizer uriCustomizer, OgcApiMediaType mediaType,
                                                 List<OgcApiMediaType> alternateMediaTypes, Optional<Locale> language) {
 

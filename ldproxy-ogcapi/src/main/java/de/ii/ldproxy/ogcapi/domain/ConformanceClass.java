@@ -11,7 +11,7 @@ package de.ii.ldproxy.ogcapi.domain;
 public interface ConformanceClass extends OgcApiExtension {
     String getConformanceClass();
 
-    default boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return true;
     }
 }

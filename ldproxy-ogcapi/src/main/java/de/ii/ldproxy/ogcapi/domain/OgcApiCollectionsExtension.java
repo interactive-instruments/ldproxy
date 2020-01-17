@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface OgcApiCollectionsExtension extends OgcApiContentExtension {
 
     ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder,
-                                         OgcApiDatasetData apiData,
+                                         OgcApiApiDataV2 apiData,
                                          URICustomizer uriCustomizer,
                                          OgcApiMediaType mediaType,
                                          List<OgcApiMediaType> alternateMediaTypes,

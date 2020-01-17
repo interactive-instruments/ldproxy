@@ -50,7 +50,7 @@ public class OgcApiEndpointStylesRepresentation implements OgcApiEndpointExtensi
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?\\w+/map$"))
             return API_MEDIA_TYPES;
 
@@ -58,7 +58,7 @@ public class OgcApiEndpointStylesRepresentation implements OgcApiEndpointExtensi
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
         if (!stylesExtension.isPresent() || !stylesExtension.get()
@@ -81,7 +81,7 @@ public class OgcApiEndpointStylesRepresentation implements OgcApiEndpointExtensi
     @Path("/{styleId}/map")
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response getStyles(@Context OgcApiDataset service, @PathParam("styleId") String styleId, @Context OgcApiRequestContext wfs3Request) {
+    public Response getStyles(@Context OgcApiApi service, @PathParam("styleId") String styleId, @Context OgcApiRequestContext wfs3Request) {
 
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(service.getData(), StylesConfiguration.class);
         if (!stylesExtension.isPresent() || !stylesExtension.get()

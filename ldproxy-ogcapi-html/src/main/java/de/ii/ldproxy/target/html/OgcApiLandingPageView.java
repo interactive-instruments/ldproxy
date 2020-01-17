@@ -40,7 +40,7 @@ public class OgcApiLandingPageView extends LdproxyView {
     public String expertInformationTitle;
     public String none;
 
-    public OgcApiLandingPageView(OgcApiDatasetData apiData, LandingPage apiLandingPage,
+    public OgcApiLandingPageView(OgcApiApiDataV2 apiData, LandingPage apiLandingPage,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig,
                                  boolean noIndex, URICustomizer uriCustomizer, I18n i18n, Optional<Locale> language) {
         super("landingPage.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,

@@ -16,8 +16,8 @@ public interface CommonFormatExtension extends FormatExtension {
     }
 
     Response getLandingPageResponse(LandingPage apiLandingPage,
-                                    OgcApiDataset api, OgcApiRequestContext requestContext);
+                                    OgcApiApi api, OgcApiRequestContext requestContext);
 
     Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
-                                    OgcApiDataset api, OgcApiRequestContext requestContext);
+                                    OgcApiApi api, OgcApiRequestContext requestContext);
 }

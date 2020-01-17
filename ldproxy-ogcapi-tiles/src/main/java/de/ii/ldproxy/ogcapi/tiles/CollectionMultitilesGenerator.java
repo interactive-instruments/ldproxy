@@ -10,20 +10,14 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +60,7 @@ public class CollectionMultitilesGenerator {
      */
     Response getMultitiles(String tileMatrixSetId, String bboxParam, String scaleDenominatorParam, String multiTileType,
                            URICustomizer uriCustomizer, String tileFormatParam, String collectionId, CrsTransformation crsTransformation,
-                           UriInfo uriInfo, I18n i18n, Optional<Locale> language, OgcApiDataset service, VectorTilesCache cache,
+                           UriInfo uriInfo, I18n i18n, Optional<Locale> language, OgcApiApi service, VectorTilesCache cache,
                            OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) {
 
         String tileFormat = MultitilesUtils.parseTileFormat(tileFormatParam);
@@ -124,7 +118,7 @@ public class CollectionMultitilesGenerator {
 
     protected File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId, String collectionId,
                                     boolean isFull, CrsTransformation crsTransformation, UriInfo uriInfo, I18n i18n,
-                                    Optional<Locale> language, URICustomizer uriCustomizer, OgcApiDataset service,
+                                    Optional<Locale> language, URICustomizer uriCustomizer, OgcApiApi service,
                                     VectorTilesCache cache, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                                     String tileFormat) {
         File zip = null;

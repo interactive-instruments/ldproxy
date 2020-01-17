@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
@@ -67,7 +67,7 @@ public class CollectionsMultitilesGenerator {
      */
     Response getCollectionsMultitiles(String tileMatrixSetId, String bboxParam, String scaleDenominatorParam,
                                       String multiTileType, URICustomizer uriCustomizer, Set<String> collections,
-                                      CrsTransformation crsTransformation, UriInfo uriInfo, OgcApiDataset service,
+                                      CrsTransformation crsTransformation, UriInfo uriInfo, OgcApiApi service,
                                       OgcApiRequestContext wfs3Request, VectorTilesCache cache,
                                       OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws UnsupportedEncodingException {
 
@@ -129,7 +129,7 @@ public class CollectionsMultitilesGenerator {
     private File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId,
                              Set<String> requestedCollections,
                              boolean isFull, CrsTransformation crsTransformation, UriInfo uriInfo,
-                             OgcApiDataset service,
+                             OgcApiApi service,
                              VectorTilesCache cache, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                              OgcApiRequestContext wfs3Request) {
         File zip = null;

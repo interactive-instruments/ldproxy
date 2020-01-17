@@ -12,7 +12,7 @@ public interface OgcApiCapabilityExtension extends OgcApiExtension {
     // TODO: document the relevance of these extensions
 
     @Override
-    default boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return true;
     }
 
