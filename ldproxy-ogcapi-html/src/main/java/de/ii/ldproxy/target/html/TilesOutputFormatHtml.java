@@ -79,9 +79,9 @@ public class TilesOutputFormatHtml implements TileCollectionsFormatExtension {
                         .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
                                 .removeLastPathSegments(2)
                                 .toString()))
-                        .add(new NavigationDTO(api.getData().getFeatureTypes().get(collectionId.get()).getLabel(), requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(1)
-                                .toString()))
+                        .add(new NavigationDTO(api.getData().getCollections().get(collectionId.get()).getLabel(), requestContext.getUriCustomizer().copy()
+                                                                                                                                .removeLastPathSegments(1)
+                                                                                                                                .toString()))
                         .add(new NavigationDTO(tilesTitle))
                         .build() :
                 new ImmutableList.Builder<NavigationDTO>()

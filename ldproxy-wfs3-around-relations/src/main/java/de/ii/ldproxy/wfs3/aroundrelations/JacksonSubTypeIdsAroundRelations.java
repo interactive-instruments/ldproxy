@@ -27,7 +27,7 @@ public class JacksonSubTypeIdsAroundRelations implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(AroundRelationsConfiguration.class, ExtensionConfiguration.getExtensionType(AroundRelationsConfiguration.class))
+                .put(AroundRelationsConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(AroundRelationsConfiguration.class))
                 .build();
     }
 }

@@ -54,7 +54,7 @@ public class OgcApiLandingPageVectorTiles implements OgcApiLandingPageExtension 
     }
 
     private boolean checkTilesEnabled(OgcApiApiDataV2 datasetData) {
-        return datasetData.getFeatureTypes()
+        return datasetData.getCollections()
                           .values()
                           .stream()
                           .anyMatch(featureTypeConfigurationOgcApi -> isExtensionEnabled(datasetData, featureTypeConfigurationOgcApi, TilesConfiguration.class));

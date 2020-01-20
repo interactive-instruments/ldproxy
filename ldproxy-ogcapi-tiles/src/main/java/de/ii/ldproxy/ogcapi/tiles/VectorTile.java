@@ -92,7 +92,7 @@ class VectorTile {
 
         // check, if collectionId is valid
         if (collectionId != null) {
-            Set<String> collectionIds = apiData.getFeatureTypes()
+            Set<String> collectionIds = apiData.getCollections()
                                                .keySet();
             if (collectionId.isEmpty() || !collectionIds.contains(collectionId)) {
                 throw new NotFoundException();

@@ -59,7 +59,7 @@ public class Wfs3OpenApiTransactional implements OpenApiExtension {
     public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
         if (providers.getFeatureProvider(datasetData).supportsTransactions() && isEnabledForApi(datasetData)) {
 
-            datasetData.getFeatureTypes()
+            datasetData.getCollections()
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))

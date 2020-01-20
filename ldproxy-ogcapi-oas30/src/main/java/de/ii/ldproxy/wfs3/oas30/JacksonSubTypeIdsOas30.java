@@ -25,7 +25,7 @@ public class JacksonSubTypeIdsOas30 implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(Oas30Configuration.class, ExtensionConfiguration.getExtensionType(Oas30Configuration.class))
+                .put(Oas30Configuration.class, ExtensionConfiguration.getBuildingBlockIdentifier(Oas30Configuration.class))
                 .build();
     }
 }

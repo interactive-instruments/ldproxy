@@ -106,7 +106,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
         ImmutableQueryables.Builder queryables = ImmutableQueryables.builder();
 
-        FeatureTypeConfigurationOgcApi collectionData = apiData.getFeatureTypes()
+        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
                 .get(collectionId);
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
         Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);

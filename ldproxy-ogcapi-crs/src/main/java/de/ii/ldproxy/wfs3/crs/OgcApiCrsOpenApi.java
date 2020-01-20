@@ -93,7 +93,7 @@ public class OgcApiCrsOpenApi implements OpenApiExtension {
                            .explode(false)
                    );
 
-            datasetData.getFeatureTypes()
+            datasetData.getCollections()
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))

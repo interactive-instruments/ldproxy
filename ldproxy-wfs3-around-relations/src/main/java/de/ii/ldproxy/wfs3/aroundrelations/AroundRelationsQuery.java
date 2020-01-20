@@ -195,7 +195,7 @@ public class AroundRelationsQuery {
     private Optional<AroundRelationsConfiguration> getAroundRelationConfiguration(FeatureTransformationContext transformationContext) {
         try {
             return transformationContext.getApiData()
-                                        .getFeatureTypes()
+                                        .getCollections()
                                         .get(transformationContext.getCollectionId())
                                         .getExtension(AroundRelationsConfiguration.class);
         } catch (Throwable e) {

@@ -27,7 +27,7 @@ public class JacksonSubTypeIdsTransactional implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(TransactionalConfiguration.class, ExtensionConfiguration.getExtensionType(TransactionalConfiguration.class))
+                .put(TransactionalConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(TransactionalConfiguration.class))
                 .build();
     }
 }

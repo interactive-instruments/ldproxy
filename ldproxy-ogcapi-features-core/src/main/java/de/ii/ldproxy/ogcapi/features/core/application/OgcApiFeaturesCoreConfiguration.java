@@ -7,11 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.application;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import org.immutables.value.Value;
@@ -43,12 +46,11 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
 
     public abstract Optional<String> getFeatureType();
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Value.Default
     public List<String> getFeatureTypes() {
         return getFeatureType().isPresent() ? ImmutableList.of(getFeatureType().get()) : ImmutableList.of();
     }
-
-    public abstract Optional<OgcApiFeaturesCollectionQueryables> getQueryables();
 
     @Value.Default
     public int getMinimumPageSize() {
@@ -68,7 +70,14 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
     @Value.Default
     public boolean getShowsFeatureSelfLink() { return false; }
 
+    public abstract Optional<OgcApiFeaturesCollectionQueryables> getQueryables();
+
+    @Override
+    public abstract Map<String, FeatureTypeMapping2> getTransformations();
+
+    @JsonIgnore
     @Value.Derived
+    @Value.Auxiliary
     public Map<String, String> getAllFilterParameters() {
         if (getQueryables().isPresent()) {
             OgcApiFeaturesCollectionQueryables queryables = getQueryables().get();
@@ -88,7 +97,9 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
         return ImmutableMap.of("bbox", "NOT_AVAILABLE");
     }
 
+    @JsonIgnore
     @Value.Derived
+    @Value.Auxiliary
     public Map<String, String> getOtherFilterParameters() {
         if (getQueryables().isPresent()) {
             OgcApiFeaturesCollectionQueryables queryables = getQueryables().get();

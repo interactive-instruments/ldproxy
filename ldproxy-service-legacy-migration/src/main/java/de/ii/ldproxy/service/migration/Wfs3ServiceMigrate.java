@@ -164,7 +164,7 @@ public class Wfs3ServiceMigrate {
                 .label((String) service.get("name"))
                 .description((String) service.get("description"))
                 .lastModified((Long) service.get("lastModified"))
-                .featureTypes(
+                .collections(
                         ((Map<String, Object>) service.get("featureTypes"))
                                 .entrySet()
                                 .stream()
@@ -176,7 +176,7 @@ public class Wfs3ServiceMigrate {
                                     ImmutableFeatureTypeConfigurationOgcApi.Builder featureTypeConfigurationWfs3 = new ImmutableFeatureTypeConfigurationOgcApi.Builder();
 
                                     if (datasetData != null) {
-                                        featureTypeConfigurationWfs3.from(datasetData.getFeatureTypes()
+                                        featureTypeConfigurationWfs3.from(datasetData.getCollections()
                                                                                      .get(fid));
                                     }
                                     featureTypeConfigurationWfs3

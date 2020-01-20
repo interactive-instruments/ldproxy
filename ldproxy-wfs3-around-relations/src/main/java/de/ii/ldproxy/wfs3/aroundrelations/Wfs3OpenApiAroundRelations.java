@@ -101,7 +101,7 @@ public class Wfs3OpenApiAroundRelations implements OpenApiExtension {
                     .addParameters("limitList", limitList)
                     .addParameters("offsetList", offsetList);
 
-            datasetData.getFeatureTypes()
+            datasetData.getCollections()
                     .values()
                     .stream()
                     .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))

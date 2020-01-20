@@ -36,9 +36,9 @@ public class VectorTileMapGenerator implements OgcApiExtension {
      */
     public Set<String> getAllCollectionIdsWithTileExtension(OgcApiApiDataV2 datasetData) {
         Set<String> collectionIds = new HashSet<String>();
-        for (String collectionId : datasetData.getFeatureTypes()
+        for (String collectionId : datasetData.getCollections()
                                               .keySet())
-            if (isExtensionEnabled(datasetData, datasetData.getFeatureTypes()
+            if (isExtensionEnabled(datasetData, datasetData.getCollections()
                                                            .get(collectionId), TilesConfiguration.class)) {
                 collectionIds.add(collectionId);
             }
@@ -53,11 +53,11 @@ public class VectorTileMapGenerator implements OgcApiExtension {
      */
     public Map<String, Boolean> getEnabledMap(OgcApiApiDataV2 datasetData) {
         Map<String, Boolean> enabledMap = new HashMap<>();
-        for (String collectionId : datasetData.getFeatureTypes()
+        for (String collectionId : datasetData.getCollections()
                                               .keySet()) {
-            if (isExtensionEnabled(datasetData, datasetData.getFeatureTypes()
+            if (isExtensionEnabled(datasetData, datasetData.getCollections()
                                                            .get(collectionId), TilesConfiguration.class)) {
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(datasetData, datasetData.getFeatureTypes()
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(datasetData, datasetData.getCollections()
                                                                                                                                      .get(collectionId), TilesConfiguration.class).get();
 
 
@@ -78,13 +78,13 @@ public class VectorTileMapGenerator implements OgcApiExtension {
 
         Map<String, List<String>> formatsMap = new HashMap<>();
 
-        for (String collectionId : datasetData.getFeatureTypes()
+        for (String collectionId : datasetData.getCollections()
                                               .keySet()) {
 
-            if (isExtensionEnabled(datasetData, datasetData.getFeatureTypes()
+            if (isExtensionEnabled(datasetData, datasetData.getCollections()
                                                            .get(collectionId), TilesConfiguration.class)) {
 
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(datasetData, datasetData.getFeatureTypes()
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(datasetData, datasetData.getCollections()
                                                                                                                                      .get(collectionId), TilesConfiguration.class).get();
 
                 List<String> formatsList = tilesConfiguration.getFormats();
@@ -109,11 +109,11 @@ public class VectorTileMapGenerator implements OgcApiExtension {
                                                          Boolean seeding) {
         Map<String, Map<String, MinMax>> minMaxMap = new HashMap<>();
 
-        for (String collectionId : datasetData.getFeatureTypes()
+        for (String collectionId : datasetData.getCollections()
                                               .keySet()) {
-            if (isExtensionEnabled(datasetData, datasetData.getFeatureTypes()
+            if (isExtensionEnabled(datasetData, datasetData.getCollections()
                                                            .get(collectionId), TilesConfiguration.class)) {
-                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(datasetData, datasetData.getFeatureTypes()
+                final TilesConfiguration tilesConfiguration = (TilesConfiguration) getExtensionConfiguration(datasetData, datasetData.getCollections()
                                                                                                                                      .get(collectionId), TilesConfiguration.class).get();
                 Map<String, MinMax> minMax = null;
                 if (!seeding) {

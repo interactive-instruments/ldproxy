@@ -27,7 +27,7 @@ public class JacksonSubTypeIdsVectorTiles implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(TilesConfiguration.class, ExtensionConfiguration.getExtensionType(TilesConfiguration.class))
+                .put(TilesConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(TilesConfiguration.class))
                 .build();
     }
 }

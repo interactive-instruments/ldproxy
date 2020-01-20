@@ -91,7 +91,7 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
                                         @Context OgcApiRequestContext wfs3Request) {
 
         Set<String> collectionIds = service.getData()
-                                           .getFeatureTypes()
+                                           .getCollections()
                                            .keySet();
 
         Map<String, Long> featureCounts = SitemapComputation.getFeatureCounts(collectionIds, providers.getFeatureProvider(service.getData()));

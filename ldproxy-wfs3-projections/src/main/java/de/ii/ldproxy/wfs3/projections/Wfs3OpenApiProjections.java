@@ -53,7 +53,7 @@ public class Wfs3OpenApiProjections implements OpenApiExtension {
                            .explode(false)
                    );
 
-            datasetData.getFeatureTypes()
+            datasetData.getCollections()
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))

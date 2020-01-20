@@ -7,8 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonMerge;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
@@ -16,6 +17,7 @@ import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
+import de.ii.xtraplatform.entity.api.maptobuilder.encoding.ValueBuilderMapEncodingEnabled;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
@@ -30,7 +32,7 @@ import java.util.Optional;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiApiDataV2.Builder.class)
-public abstract class OgcApiApiDataV2 implements ExtendableConfiguration, ServiceData {
+public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfiguration {
 
     public static final String DEFAULT_CRS_URI = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
     public static final EpsgCrs DEFAULT_CRS = new EpsgCrs(4326, true);
@@ -39,11 +41,7 @@ public abstract class OgcApiApiDataV2 implements ExtendableConfiguration, Servic
     static abstract class Builder implements EntityDataBuilder<OgcApiApiDataV2> {
     }
 
-    //@JsonMerge
-    //@Nullable
-    //public abstract ValueBuilderMap<Test, ImmutableTest.Builder> getTestMap();
-
-    //TODO: version 2, migrate
+    @Value.Default
     @Override
     public long getEntitySchemaVersion() {
         return 2;
@@ -55,23 +53,18 @@ public abstract class OgcApiApiDataV2 implements ExtendableConfiguration, Servic
         return "OGC_API";
     }
 
-    @Value.Default
+    public abstract Optional<Metadata> getMetadata();
+
+    @JsonProperty(value = "api")
     @Override
-    public String getLabel() {
-        return getId();
-    }
+    public abstract List<ExtensionConfiguration> getExtensions();
 
     //behaves exactly like Map<String, FeatureTypeConfigurationOgcApi>, but supports mergeable builder deserialization
     //(immutables attributeBuilder does not work with maps yet)
-    @JsonMerge
-    //@Override
-    public abstract ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getFeatureTypes();
+    //@JsonMerge
+    public abstract ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getCollections();
 
     public abstract List<EpsgCrs> getAdditionalCrs();
-
-    //TODO: Optional does not work with nested builders
-    @Nullable
-    public abstract Metadata getMetadata();
 
     @Override
     @Value.Derived
@@ -94,7 +87,7 @@ public abstract class OgcApiApiDataV2 implements ExtendableConfiguration, Servic
     }
 
     public boolean isCollectionEnabled(final String collectionId) {
-        return getFeatureTypes().containsKey(collectionId); //TODO && getFeatureTypes().get(featureType).isEnabled();
+        return getCollections().containsKey(collectionId); //TODO && getFeatureTypes().get(featureType).isEnabled();
         //return getFeatureProvider().isFeatureTypeEnabled(featureType);
     }
 
@@ -106,19 +99,19 @@ public abstract class OgcApiApiDataV2 implements ExtendableConfiguration, Servic
     @JsonIgnore
     @Value.Derived
     public BoundingBox getSpatialExtent() {
-        double[] val = getFeatureTypes().values()
-                                        .stream()
-                                        .map(featureTypeConfigurationWfs3 -> Optional.ofNullable(featureTypeConfigurationWfs3.getExtent()
+        double[] val = getCollections().values()
+                                       .stream()
+                                       .map(featureTypeConfigurationWfs3 -> Optional.ofNullable(featureTypeConfigurationWfs3.getExtent()
                                                                                                          .getSpatial())
                                                                                                          .map(BoundingBox::getCoords))
-                                        .filter(Optional::isPresent)
-                                        .map(Optional::get)
-                                        .reduce((doubles, doubles2) -> new double[]{
+                                       .filter(Optional::isPresent)
+                                       .map(Optional::get)
+                                       .reduce((doubles, doubles2) -> new double[]{
                                                 Math.min(doubles[0], doubles2[0]),
                                                 Math.min(doubles[1], doubles2[1]),
                                                 Math.max(doubles[2], doubles2[2]),
                                                 Math.max(doubles[3], doubles2[3])})
-                                        .orElse(null);
+                                       .orElse(null);
 
         return Objects.nonNull(val) ? new BoundingBox(val[0], val[1], val[2], val[3], DEFAULT_CRS) : null;
     }
@@ -141,13 +134,13 @@ public abstract class OgcApiApiDataV2 implements ExtendableConfiguration, Servic
      * @return the bounding box in the default CRS
      */
     public BoundingBox getSpatialExtent(String collectionId) {
-        return getFeatureTypes().values()
-                                .stream()
-                                .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
-                                .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
+        return getCollections().values()
+                               .stream()
+                               .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
+                               .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
                                                                                                               .getSpatial())
-                                .findFirst()
-                                .orElse(null);
+                               .findFirst()
+                               .orElse(null);
     }
 
     /**

@@ -397,7 +397,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
         final Map<String, String> filterableFields = collections.stream()
                 .flatMap(collection -> service.getData()
-                                                                                              .getFeatureTypes()
+                                                                                              .getCollections()
                                                                                               .get(collection)
                                                                                               .getExtension(OgcApiFeaturesCoreConfiguration.class)
                                                                                               .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
@@ -413,7 +413,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         for (String collection : collections) {
             for (OgcApiParameterExtension parameterExtension : extensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
                 parameterExtension.transformQuery(service.getData()
-                        .getFeatureTypes()
+                        .getCollections()
                         .get(collection), queryBuilder, OgcApiFeaturesEndpoint.toFlatMap(queryParameters), service.getData());
             }
         }
@@ -633,7 +633,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                         tileFileMvtCollection.delete();
 
                     Map<String, String> filterableFields = wfsService.getData()
-                                                                     .getFeatureTypes()
+                                                                     .getCollections()
                                                                      .get(collectionId)
                                                                      .getExtension(OgcApiFeaturesCoreConfiguration.class)
                                                                      .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
@@ -711,7 +711,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     }
 
     public static Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data) {
-        return data.getCapabilities()
+        return data.getExtensions()
                 .stream()
                 .filter(extensionConfiguration -> extensionConfiguration instanceof TilesConfiguration)
                 .map(tilesConfiguration -> ((TilesConfiguration) tilesConfiguration).getZoomLevels())

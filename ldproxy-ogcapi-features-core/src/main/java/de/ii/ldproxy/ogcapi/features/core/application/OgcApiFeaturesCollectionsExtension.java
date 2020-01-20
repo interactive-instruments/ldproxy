@@ -48,7 +48,7 @@ public class OgcApiFeaturesCollectionsExtension implements OgcApiCollectionsExte
 
         List<OgcApiCollectionExtension> collectionExtenders = extensionRegistry.getExtensionsForType(OgcApiCollectionExtension.class);
 
-        List<OgcApiCollection> collections = apiData.getFeatureTypes()
+        List<OgcApiCollection> collections = apiData.getCollections()
                                                       .values()
                                                       .stream()
                                                       .filter(featureType -> apiData.isCollectionEnabled(featureType.getId()))

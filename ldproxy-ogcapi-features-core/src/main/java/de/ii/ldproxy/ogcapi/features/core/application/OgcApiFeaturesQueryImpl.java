@@ -58,7 +58,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
             FeatureTypeConfigurationOgcApi featureTypeConfiguration = api.getData()
-                                                                         .getFeatureTypes()
+                                                                         .getCollections()
                                                                          .get(collectionId);
             // check, if the requested collection exists
             if (Objects.isNull(featureTypeConfiguration))
@@ -75,7 +75,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
             parameterExtension.transformQuery(api.getData()
-                                                 .getFeatureTypes()
+                                                 .getCollections()
                                                  .get(collectionId), queryBuilder, parameters, api.getData());
         }
 
@@ -87,7 +87,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                               int defaultPageSize, int maxPageSize, Map<String, String> parameters) {
 
         FeatureTypeConfigurationOgcApi featureTypeConfiguration = api.getData()
-                                                                     .getFeatureTypes()
+                                                                     .getCollections()
                                                                      .get(collectionId);
         // check, if the requested collection exists
         if (Objects.isNull(featureTypeConfiguration)) {
@@ -134,7 +134,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
             parameterExtension.transformQuery(api.getData()
-                                                 .getFeatureTypes()
+                                                 .getCollections()
                                                  .get(collectionId), queryBuilder, parameters, api.getData());
         }
 

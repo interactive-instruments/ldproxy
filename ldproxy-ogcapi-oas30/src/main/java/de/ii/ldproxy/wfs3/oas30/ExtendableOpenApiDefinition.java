@@ -97,10 +97,10 @@ public class ExtendableOpenApiDefinition {
                         .description(apiData.getDescription()
                                 .orElse(""));
 
-                if (Objects.nonNull(apiData.getMetadata())) {
-                    Metadata md = apiData.getMetadata();
+                if (apiData.getMetadata().isPresent()) {
+                    Metadata md = apiData.getMetadata().get();
                     openAPI.getInfo()
-                            .version(apiData.getMetadata().getVersion().orElse("1.0.0"))
+                            .version(md.getVersion().orElse("1.0.0"))
                             .contact(new Contact().name(md.getContactName()
                                     .orElse(null))
                                     .url(md.getContactUrl()

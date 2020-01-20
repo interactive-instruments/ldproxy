@@ -58,7 +58,7 @@ public class OgcApiLandingPageView extends LdproxyView {
                 "minLat", Double.toString(spatialExtent.getYmin()),
                 "maxLng", Double.toString(spatialExtent.getXmax()),
                 "maxLat", Double.toString(spatialExtent.getYmax()));
-        Long[] interval = apiData.getFeatureTypes()
+        Long[] interval = apiData.getCollections()
                 .values()
                 .stream()
                 .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
@@ -84,15 +84,14 @@ public class OgcApiLandingPageView extends LdproxyView {
                 "end", interval[1]==null ? null : interval[1].toString());
         this.spatialSearch = false;
 
-        if (Objects.nonNull(apiData.getMetadata())) {
-            this.metadata = apiData.getMetadata();
+        if (apiData.getMetadata().isPresent()) {
+            this.metadata = apiData.getMetadata().get();
 
             if (!metadata.getKeywords()
                          .isEmpty()) {
                 this.keywords = Joiner.on(',')
                                       .skipNulls()
-                                      .join(apiData.getMetadata()
-                                                       .getKeywords());
+                                      .join(metadata.getKeywords());
             }
         }
 
@@ -152,7 +151,7 @@ public class OgcApiLandingPageView extends LdproxyView {
     }
 
     public List<OgcApiLink> getDistributions() {
-        return apiData.getFeatureTypes()
+        return apiData.getCollections()
                 .values()
                 .stream()
                 .filter(featureType -> apiData.isCollectionEnabled(featureType.getId()))

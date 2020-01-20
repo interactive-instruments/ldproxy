@@ -43,7 +43,7 @@ public class TileMatrixSetLimitsGenerator {
 
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
-        List<FeatureTypeConfigurationOgcApi> collectionData = data.getFeatureTypes()
+        List<FeatureTypeConfigurationOgcApi> collectionData = data.getCollections()
                 .values()
                 .stream()
                 .filter(featureType -> collectionId.equals(featureType.getId()))

@@ -54,10 +54,10 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
             // Features
 
             ImmutableSet.Builder<String> parameters = new ImmutableSet.Builder<>();
-            Set<String> parametersFromConfiguration = apiData.getFeatureTypes()
+            Set<String> parametersFromConfiguration = apiData.getCollections()
                     .values()
                     .stream()
-                    .flatMap(featureTypeConfigurationOgcApi -> featureTypeConfigurationOgcApi.getCapabilities().stream())
+                    .flatMap(featureTypeConfigurationOgcApi -> featureTypeConfigurationOgcApi.getExtensions().stream())
                     .filter(extensionConfiguration -> extensionConfiguration instanceof FilterTransformersConfiguration)
                     .flatMap(extensionConfiguration -> ((FilterTransformersConfiguration) extensionConfiguration).getTransformers().stream())
                     .filter(filterTransformerConfiguration -> filterTransformerConfiguration instanceof RequestGeoJsonBboxConfiguration)
@@ -65,7 +65,7 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
                     .collect(Collectors.toSet());
             parameters.addAll(parametersFromConfiguration);
 
-            Optional<FeatureTypeConfigurationOgcApi> ft = apiData.getFeatureTypes()
+            Optional<FeatureTypeConfigurationOgcApi> ft = apiData.getCollections()
                     .values()
                     .stream()
                     .filter(ftype -> apiData.isCollectionEnabled(ftype.getId()))

@@ -173,7 +173,7 @@ class SitemapComputation {
 
     //TODO move to Wfs3ServiceData
     static Stream<String> getCollectionIdStream(OgcApiApiDataV2 datasetData) {
-        return datasetData.getFeatureTypes()
+        return datasetData.getCollections()
                           .values()
                           .stream()
                           //TODO

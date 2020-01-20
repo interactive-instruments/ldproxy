@@ -27,7 +27,7 @@ public class JacksonSubTypeIdsGml implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(GmlConfiguration.class, ExtensionConfiguration.getExtensionType(GmlConfiguration.class))
+                .put(GmlConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(GmlConfiguration.class))
                 .build();
     }
 }

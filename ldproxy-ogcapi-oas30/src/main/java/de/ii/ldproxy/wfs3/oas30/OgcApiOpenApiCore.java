@@ -87,7 +87,7 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
                 limitSchema.maximum(BigDecimal.valueOf(maxPageSize.get()));
 
             // process feature types
-            datasetData.getFeatureTypes()
+            datasetData.getCollections()
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))

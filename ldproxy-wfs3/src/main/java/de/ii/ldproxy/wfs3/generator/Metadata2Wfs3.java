@@ -122,7 +122,7 @@ public class Metadata2Wfs3 extends AbstractFeatureProviderMetadataConsumer {
     private void finishLastFeatureType() {
         if (Objects.nonNull(currentFeatureType)) {
             ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration = currentFeatureType.build();
-            wfs3ServiceData.putFeatureTypes(featureTypeConfiguration.getId(), featureTypeConfiguration);
+            wfs3ServiceData.putCollections(featureTypeConfiguration.getId(), featureTypeConfiguration);
         }
     }
 

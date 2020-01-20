@@ -234,7 +234,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        FeatureTypeConfigurationOgcApi featureTypeConfiguration = requestContext.getApi().getData().getFeatureTypes().get(collectionId);
+        FeatureTypeConfigurationOgcApi featureTypeConfiguration = requestContext.getApi().getData().getCollections().get(collectionId);
         Map<String, MinMax> tileMatrixSetZoomLevels = getTileMatrixSetZoomLevels(service.getData(), collectionId);
         TileCollections tiles = ImmutableTileCollections.builder()
                 .title(featureTypeConfiguration.getLabel())
@@ -315,7 +315,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         final Map<String, String> filterableFields = service.getData()
-                                                            .getFeatureTypes()
+                                                            .getCollections()
                                                             .get(collectionId)
                                                             .getExtension(OgcApiFeaturesCoreConfiguration.class)
                                                             .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
@@ -336,7 +336,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
             parameterExtension.transformQuery(service.getData()
-                    .getFeatureTypes()
+                    .getCollections()
                     .get(collectionId), queryBuilder, OgcApiFeaturesEndpoint.toFlatMap(queryParameters), service.getData());
         }
 
@@ -448,7 +448,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         }
 
         final Map<String, String> filterableFields = service.getData()
-                                                            .getFeatureTypes()
+                                                            .getCollections()
                                                             .get(collectionId)
                                                             .getExtension(OgcApiFeaturesCoreConfiguration.class)
                                                             .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
@@ -460,7 +460,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
             parameterExtension.transformQuery(service.getData()
-                    .getFeatureTypes()
+                    .getCollections()
                     .get(collectionId), queryBuilder, OgcApiFeaturesEndpoint.toFlatMap(queryParameters), service.getData());
         }
 
@@ -562,7 +562,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
     }
 
     private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data, String collectionId) {
-        TilesConfiguration tilesConfiguration = getExtensionConfiguration(data, data.getFeatureTypes().get(collectionId), TilesConfiguration.class).get();
+        TilesConfiguration tilesConfiguration = getExtensionConfiguration(data, data.getCollections().get(collectionId), TilesConfiguration.class).get();
         return tilesConfiguration.getZoomLevels();
     }
 

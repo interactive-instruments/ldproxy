@@ -96,7 +96,7 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                               @Context OgcApiApi service, @Context OgcApiRequestContext wfs3Request,
                               @Context HttpServletRequest request, InputStream requestBody) {
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getFeatureTypes().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 
@@ -115,7 +115,7 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
                             @Context OgcApiRequestContext wfs3Request, @Context HttpServletRequest request,
                             InputStream requestBody) {
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getFeatureTypes().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 
@@ -129,7 +129,7 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
     public Response deleteItem(@Auth Optional<User> optionalUser, @Context OgcApiApi service,
                                @PathParam("id") String id, @PathParam("featureid") final String featureId) {
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getFeatureTypes().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 

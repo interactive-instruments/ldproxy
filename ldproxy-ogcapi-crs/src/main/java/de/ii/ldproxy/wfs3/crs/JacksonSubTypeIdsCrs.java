@@ -25,7 +25,7 @@ public class JacksonSubTypeIdsCrs implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(CrsConfiguration.class, ExtensionConfiguration.getExtensionType(CrsConfiguration.class))
+                .put(CrsConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(CrsConfiguration.class))
                 .build();
     }
 }

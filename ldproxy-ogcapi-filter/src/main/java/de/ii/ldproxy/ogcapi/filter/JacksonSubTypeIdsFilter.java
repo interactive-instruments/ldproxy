@@ -23,7 +23,7 @@ public class JacksonSubTypeIdsFilter implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(FilterConfiguration.class, ExtensionConfiguration.getExtensionType(FilterConfiguration.class))
+                .put(FilterConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(FilterConfiguration.class))
                 .build();
     }
 }

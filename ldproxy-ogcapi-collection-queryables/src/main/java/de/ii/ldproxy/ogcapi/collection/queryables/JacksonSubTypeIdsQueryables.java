@@ -23,7 +23,7 @@ public class JacksonSubTypeIdsQueryables implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(QueryablesConfiguration.class, ExtensionConfiguration.getExtensionType(QueryablesConfiguration.class))
+                .put(QueryablesConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(QueryablesConfiguration.class))
                 .build();
     }
 }

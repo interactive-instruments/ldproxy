@@ -156,7 +156,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
         OgcApiFeaturesCoreQueriesHandlerImpl.OgcApiQueryInputFeatures queryInput = new ImmutableOgcApiQueryInputFeatures.Builder()
                 .collectionId(collectionId)
                 .query(query)
-                .featureProvider(providers.getFeatureProvider(api.getData(), api.getData().getFeatureTypes().get(collectionId)))
+                .featureProvider(providers.getFeatureProvider(api.getData(), api.getData().getCollections().get(collectionId)))
                 .defaultPageSize(Optional.of(defaultPageSize))
                 .showsFeatureSelfLink(showsFeatureSelfLink)
                 .includeHomeLink(includeHomeLink)
@@ -189,7 +189,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                 .collectionId(collectionId)
                 .featureId(featureId)
                 .query(query)
-                .featureProvider(providers.getFeatureProvider(api.getData(), api.getData().getFeatureTypes().get(collectionId)))
+                .featureProvider(providers.getFeatureProvider(api.getData(), api.getData().getCollections().get(collectionId)))
                 .includeHomeLink(includeHomeLink)
                 .includeLinkHeader(includeLinkHeader)
                 .build();

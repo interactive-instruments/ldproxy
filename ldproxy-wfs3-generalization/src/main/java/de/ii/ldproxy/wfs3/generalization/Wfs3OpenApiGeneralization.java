@@ -55,7 +55,7 @@ public class Wfs3OpenApiGeneralization implements OpenApiExtension {
                            .example(0.05)
                    );
 
-            datasetData.getFeatureTypes()
+            datasetData.getCollections()
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))

@@ -40,7 +40,7 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
                         Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (transformationContext.isFeatureCollection()) {
             Optional<String> ldContext = transformationContext.getApiData()
-                                                              .getFeatureTypes()
+                                                              .getCollections()
                     .get(transformationContext.getCollectionId())
                                                               .getExtension(GeoJsonConfiguration.class)
                                                               .flatMap(GeoJsonConfiguration::getLdContext);

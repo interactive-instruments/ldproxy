@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_TYPE;
 
-
+@Deprecated
 public class OgcApiFeaturesGenericMapping extends AbstractOgcApiFeaturesGenericMapping<OgcApiFeaturesGenericMapping.GENERIC_TYPE> {
 
     public enum GENERIC_TYPE {

@@ -102,10 +102,10 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
                 if (tilesDatasetEnabled) {
                     for (String collectionId : collectionIdsDataset) {
-                        if (isExtensionEnabled(apiData, apiData.getFeatureTypes()
+                        if (isExtensionEnabled(apiData, apiData.getCollections()
                                                                        .get(collectionId), TilesConfiguration.class)) {
 
-                            final TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, apiData.getFeatureTypes()
+                            final TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, apiData.getCollections()
                                                                                                                             .get(collectionId), TilesConfiguration.class).get();
 
                             Map<String, MinMax> seedingCollection = tilesConfiguration.getSeeding();

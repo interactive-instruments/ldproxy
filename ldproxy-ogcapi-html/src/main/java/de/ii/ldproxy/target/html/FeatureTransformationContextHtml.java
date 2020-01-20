@@ -35,7 +35,7 @@ public abstract class FeatureTransformationContextHtml implements FeatureTransfo
 
         Optional<HtmlConfiguration> baseHtmlConfiguration = getApiData().getExtension(HtmlConfiguration.class);
 
-        Optional<HtmlConfiguration> collectionHtmlConfiguration = Optional.ofNullable(getApiData().getFeatureTypes()
+        Optional<HtmlConfiguration> collectionHtmlConfiguration = Optional.ofNullable(getApiData().getCollections()
                                                                                                   .get(getCollectionId()))
                                                                           .flatMap(featureTypeConfiguration -> featureTypeConfiguration.getExtension(HtmlConfiguration.class));
 

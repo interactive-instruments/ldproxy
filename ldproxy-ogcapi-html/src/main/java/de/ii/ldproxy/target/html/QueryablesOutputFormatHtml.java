@@ -80,9 +80,9 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
                 .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(2)
                         .toString()))
-                .add(new NavigationDTO(api.getData().getFeatureTypes().get(collectionId).getLabel(), requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(1)
-                        .toString()))
+                .add(new NavigationDTO(api.getData().getCollections().get(collectionId).getLabel(), requestContext.getUriCustomizer().copy()
+                                                                                                                  .removeLastPathSegments(1)
+                                                                                                                  .toString()))
                 .add(new NavigationDTO(queryablesTitle))
                 .build();
 

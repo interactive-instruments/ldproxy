@@ -15,6 +15,7 @@ import de.ii.xtraplatform.feature.transformer.api.SimpleFeatureGeometryFrom;
 /**
  * @author zahnen
  */
+@Deprecated
 public class MicrodataGeometryMapping extends MicrodataPropertyMapping {
 
     public enum MICRODATA_GEOMETRY_TYPE implements SimpleFeatureGeometryFrom {

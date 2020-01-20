@@ -18,9 +18,14 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -31,6 +36,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
+
 @Component
 @Provides
 @Instantiate
@@ -38,6 +45,12 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
 
     @Requires
     I18n i18n;
+
+    @Requires
+    private OgcApiFeatureCoreProviders providers;
+
+    @Requires
+    private CrsTransformation crsTransformations;
 
     private final OgcApiExtensionRegistry extensionRegistry;
 
@@ -119,9 +132,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                                                 .filter(temporal -> !temporal.isEmpty())
                                                 .isPresent();
         if (hasSpatialQueryable && hasTemporalQueryable) {
-            BoundingBox spatial = featureType
-                    .getExtent()
-                    .getSpatial();
+            BoundingBox spatial = getBoundingBox(apiData, featureType);
             FeatureTypeConfigurationOgcApi.TemporalExtent temporal = featureType
                     .getExtent()
                     .getTemporal();
@@ -133,8 +144,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     spatial.getXmax(),
                     spatial.getYmax()));
         } else if (hasSpatialQueryable) {
-            BoundingBox spatial = featureType.getExtent()
-                    .getSpatial();
+            BoundingBox spatial = getBoundingBox(apiData, featureType);
             collection.extent(new OgcApiExtent(
                     spatial.getXmin(),
                     spatial.getYmin(),
@@ -180,6 +190,34 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
             result = null;
         }
         return result;
+    }
+
+    private BoundingBox getBoundingBox(
+            OgcApiApiDataV2 apiData,
+            FeatureTypeConfigurationOgcApi featureType) {
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, featureType);
+
+        if (featureType.getExtent().getSpatialComputed() && featureProvider.supportsExtents()) {
+            BoundingBox spatialExtent = featureProvider.extents()
+                                                       .getSpatialExtent(featureType.getId());
+
+            if (DEFAULT_CRS.equals(featureProvider.getData()
+                                                  .getNativeCrs())) {
+                return spatialExtent;
+            }
+
+            Optional<CrsTransformer> transformer = crsTransformations.getTransformer(featureProvider.getData()
+                                                                                                    .getNativeCrs(), DEFAULT_CRS);
+            if (transformer.isPresent()) {
+                try {
+                    return transformer.get().transformBoundingBox(spatialExtent);
+                } catch (CrsTransformationException e) {
+
+                }
+            }
+        }
+
+        return Optional.ofNullable(featureType.getExtent().getSpatial()).orElse(new BoundingBox());
     }
 
 }

@@ -64,7 +64,7 @@ public class OpenApiFilter implements OpenApiExtension {
                         .addParametersItem(new Parameter().$ref("#/components/parameters/filter-lang"));
             }
 
-            apiData.getFeatureTypes()
+            apiData.getCollections()
                     .values()
                     .stream()
                     .sorted(Comparator.comparing(FeatureTypeConfiguration::getId))

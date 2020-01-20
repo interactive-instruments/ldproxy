@@ -93,7 +93,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
         this.htmlConfiguration = transformationContext.getHtmlConfiguration();
 
         FeatureTypeConfigurationOgcApi featureTypeConfiguration = transformationContext.getApiData()
-                                                                                       .getFeatureTypes()
+                                                                                       .getCollections()
                                                                                        .get(transformationContext.getCollectionId());
 
         Optional<FeatureTransformations> baseTransformations = featureTypeConfiguration
@@ -340,9 +340,10 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
             }
         }
 
-        if (transformations.containsKey(featureProperty.getName())) {
+        String tkey = featureProperty.getName().replaceAll("\\[.+?\\]", "[]");
+        if (transformations.containsKey(tkey)) {
 
-            Optional<FeaturePropertyDTO> transformedProperty = transformations.get(featureProperty.getName())
+            Optional<FeaturePropertyDTO> transformedProperty = transformations.get(tkey)
                                                                               .transform(property, featureProperty);
 
             if (transformedProperty.isPresent()) {

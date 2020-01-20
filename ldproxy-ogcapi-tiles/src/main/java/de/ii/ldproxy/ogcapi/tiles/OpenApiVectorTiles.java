@@ -80,7 +80,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
         boolean enableTilesInAPI = false;
 
         Optional<FeatureTypeConfigurationOgcApi> firstCollectionWithTiles = datasetData
-                .getFeatureTypes()
+                .getCollections()
                 .values()
                 .stream()
                 .filter(ft -> {
@@ -215,7 +215,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             collections.setStyle(Parameter.StyleEnum.FORM);
             collections.setExplode(false);
             List<String> collectionsEnum = new ArrayList<String>();
-            datasetData.getFeatureTypes()
+            datasetData.getCollections()
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
@@ -612,7 +612,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                 }
 
                 //do for every feature type
-                datasetData.getFeatureTypes()
+                datasetData.getCollections()
                            .values()
                            .stream()
                            .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))

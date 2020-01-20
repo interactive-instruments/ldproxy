@@ -133,7 +133,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
         String persistentUri = null;
         Optional<String> template = api.getData()
-                                       .getFeatureTypes()
+                                       .getCollections()
                                        .get(collectionId)
                                        .getPersistentUriTemplate();
         if (template.isPresent()) {

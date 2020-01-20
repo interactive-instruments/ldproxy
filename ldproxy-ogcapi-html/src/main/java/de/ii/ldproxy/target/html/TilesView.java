@@ -83,7 +83,7 @@ public class TilesView extends LdproxyView {
                 "minLat", Double.toString(spatialExtent.getYmin()),
                 "maxLng", Double.toString(spatialExtent.getXmax()),
                 "maxLat", Double.toString(spatialExtent.getYmax()));
-        Long[] interval = apiData.getFeatureTypes()
+        Long[] interval = apiData.getCollections()
                 .values()
                 .stream()
                 .filter(featureTypeConfiguration -> !collectionId.isPresent() || Objects.equals(featureTypeConfiguration.getId(),collectionId.get()))

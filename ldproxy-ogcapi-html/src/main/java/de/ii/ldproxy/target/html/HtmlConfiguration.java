@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import org.immutables.value.Value;
 
 import java.util.AbstractMap;
@@ -41,6 +42,9 @@ public abstract class HtmlConfiguration implements ExtensionConfiguration, Featu
     }
 
     public abstract Optional<String> getItemLabelFormat();
+
+    @Override
+    public abstract Map<String, FeatureTypeMapping2> getTransformations();
 
     public Map<String, HtmlPropertyTransformations> getTransformations(
             Optional<FeatureTransformations> baseTransformations,
@@ -85,4 +89,8 @@ public abstract class HtmlConfiguration implements ExtensionConfiguration, Featu
 
     }
 
+    @Override
+    public <T extends ExtensionConfiguration> T mergeDefaults(T baseConfiguration) {
+        return (T) new ImmutableHtmlConfiguration.Builder().from(baseConfiguration).from(this).build();
+    }
 }

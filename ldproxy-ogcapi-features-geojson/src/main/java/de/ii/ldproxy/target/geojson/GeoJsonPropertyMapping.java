@@ -16,6 +16,7 @@ import java.util.List;
 /**
  * @author zahnen
  */
+@Deprecated
 public class GeoJsonPropertyMapping extends AbstractOgcApiFeaturesGenericMapping<GeoJsonMapping.GEO_JSON_TYPE> implements GeoJsonMapping {
 
     private GEO_JSON_TYPE type;
