@@ -23,6 +23,7 @@ public class OgcApiLandingPageView extends LdproxyView {
     private final LandingPage apiLandingPage;
     public String dataSourceUrl;
     public String keywords;
+    public String keywordsWithQuotes;
     public Metadata metadata;
     public URICustomizer uriCustomizer;
     public boolean spatialSearch;
@@ -39,6 +40,7 @@ public class OgcApiLandingPageView extends LdproxyView {
     public String additionalLinksTitle;
     public String expertInformationTitle;
     public String none;
+    public boolean isLandingPage = true;
 
     public OgcApiLandingPageView(OgcApiDatasetData apiData, LandingPage apiLandingPage,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig,
@@ -93,6 +95,12 @@ public class OgcApiLandingPageView extends LdproxyView {
                                       .skipNulls()
                                       .join(apiData.getMetadata()
                                                        .getKeywords());
+                this.keywordsWithQuotes = String.join(",", apiData.getMetadata()
+                        .getKeywords()
+                        .stream()
+                        .filter(keyword -> Objects.nonNull(keyword) && !keyword.isEmpty())
+                        .map(keyword -> ("\"" + keyword + "\""))
+                        .collect(Collectors.toList()));
             }
         }
 
@@ -164,6 +172,13 @@ public class OgcApiLandingPageView extends LdproxyView {
                         .rel("start")
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public String getDistributionsAsString() {
+        return getDistributions()
+                .stream()
+                .map(link -> "{\"@type\":\"DataDownload\",\"name\":\""+link.getTitle()+"\",\"encodingFormat\":\""+link.getType()+"\",\"contentUrl\":\""+link.getHref()+"\"}")
+                .collect(Collectors.joining(","));
     }
 
     public String getCanonicalUrl() {

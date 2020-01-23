@@ -73,7 +73,6 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
     protected int page;
     protected int pageSize;
     protected CrsTransformer crsTransformer;
-    //protected SparqlAdapter sparqlAdapter;
     protected Map<String, Codelist> codelists;
 
     //public String title;
@@ -153,7 +152,6 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
         }*/
         this.serviceUrl = transformationContext.getServiceUrl();
 
-        //this.sparqlAdapter = null;//sparqlAdapter;
         this.codelists = transformationContext.getCodelists();
         this.mustacheRenderer = transformationContext.getMustacheRenderer();
 
@@ -274,8 +272,8 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
     @Override
     public void onFeatureStart(TargetMapping mapping) throws Exception {
         currentFeature = new FeatureDTO();
-        if (!isFeatureCollection) {
-            currentFeature.idAsUrl = true;
+        if (isFeatureCollection) {
+            currentFeature.titleAsLink = true;
         }
 
         currentFeature.name = mapping.getName();
@@ -485,23 +483,6 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                                 currentFeature.name = currentFeature.name.substring(0, pos) + prefix + value + currentFeature.name.substring(pos);
                             }
                         }
-
-                        // TODO
-                        /*if (currentProperty.name.equals("postalCode") && !isFeatureCollection) {
-                            Map<String, String> reports = sparqlAdapter.request(currentProperty.value, SparqlAdapter.QUERY.POSTAL_CODE_EXACT);
-                            if (!reports.isEmpty()) {
-                                currentFeature.links = new FeaturePropertyDTO();
-                                currentFeature.links.name = "announcements";
-                                for (Map.Entry<String, String> id : reports.entrySet()) {
-                                    FeaturePropertyDTO link = new FeaturePropertyDTO();
-                                    link.value = id.getKey();
-                                    link.name = id.getValue() + " (" + id.getKey()
-                                                                         .substring(id.getKey()
-                                                                                      .lastIndexOf('/') + 1) + ")";
-                                    currentFeature.links.addChild(link);
-                                }
-                            }
-                        }*/
                     }
 
                     if (lastProperty != null && !knownProperty) {
@@ -586,23 +567,6 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                 }
 
                 currentFeature.addChild(property);
-
-                // TODO
-                /*if (property.name.equals("postalCode") && !isFeatureCollection) {
-                    Map<String, String> reports = sparqlAdapter.request(property.value, SparqlAdapter.QUERY.POSTAL_CODE_EXACT);
-                    if (!reports.isEmpty()) {
-                        currentFeature.links = new FeaturePropertyDTO();
-                        currentFeature.links.name = "announcements";
-                        for (Map.Entry<String, String> id : reports.entrySet()) {
-                            FeaturePropertyDTO link = new FeaturePropertyDTO();
-                            link.value = id.getKey();
-                            link.name = id.getValue() + " (" + id.getKey()
-                                                                 .substring(id.getKey()
-                                                                              .lastIndexOf('/') + 1) + ")";
-                            currentFeature.links.addChild(link);
-                        }
-                    }
-                }*/
             }
         }
     }

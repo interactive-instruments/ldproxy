@@ -52,7 +52,64 @@
     }
     </style>
     {{/withOlMap}}
+    <style>
+    .object-separator {
+        font-size: 0.5em;
+    }
+    .pl-4x, .px-4x {
+        padding-left: 2rem!important;
+    }
+    .pr-4x, .px-4x {
+        padding-right: 2rem!important;
+    }
+    </style>
 
+{{#features}}{{#schemaOrgItemType}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "{{schemaOrgItemType}}",
+  {{#canonicalUrl}}"sameAs": "{{.}}",{{/canonicalUrl}}
+  {{#geoAsString}}"geo": {{{.}}},{{/geoAsString}}
+  {{#children}}{{#itemProp}}"{{.}}": "{{{value}}}", {{/itemProp}}{{/children}}
+  "name": "{{name}}",
+  "url": "{{#currentUrlWithSegmentClearParams}}{{id.value}}{{/currentUrlWithSegmentClearParams}}"
+}
+</script>
+{{/schemaOrgItemType}}{{/features}}
+{{#isApiCatalog}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "DataCatalog",
+  "name": "{{title}}",
+  "description": "{{{description}}}",
+  "url": "{{canonicalUrl}}",
+  "dataset": [{{{datasetsAsString}}}]
+}
+</script>
+{{/isApiCatalog}}
+{{#isLandingPage}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Dataset",
+  "name": "{{title}}",
+  "description": "{{{description}}}",
+  "url": "{{canonicalUrl}}",
+  {{#catalogUrl}}"includedInDataCatalog": { "@type": "DataCatalog", "url": "{{.}}"},{{/catalogUrl}}
+  {{#metadata}}
+  {{#keywordsWithQuotes}}"keywords": [ {{{.}}} ],{{/keywordsWithQuotes}}
+  "creator": { "@type": "Organization"{{#contactName}}, "name": "{{.}}"{{/contactName}}{{#contactUrl}}, "url": "{{.}}"{{/contactUrl}}, "contactPoint": { "@type": "ContactPoint", "contactType": "technical support"{{#contactEmail}}, "email": "{{.}}"{{/contactEmail}}{{#contactPhone}}, "telephone": "{{.}}"{{/contactPhone}}{{#contactUrl}}, "url": "{{.}}"{{/contactUrl}} } },
+  {{#licenseUrl}}"license":"{{.}}",{{/licenseUrl}}
+  {{/metadata}}
+  {{#dataSourceUrl}}"isBasedOn":"{{.}}",{{/dataSourceUrl}}
+  {{#temporalCoverage}}"temporalCoverage":"{{.}}",{{/temporalCoverage}}
+  {{#spatialCoverage}}"spatialCoverage":{"@type":"Place", "geo":{"@type":"GeoShape","box":"{{.}}"} },{{/spatialCoverage}}
+  "distribution":[{{{distributionsAsString}}}]
+}
+</script>
+{{/isLandingPage}}
 </head>
 <body>
 

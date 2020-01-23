@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core.api;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
@@ -18,6 +19,7 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalLong;
 
@@ -82,6 +84,11 @@ public interface FeatureTransformationContext {
     default int getPage() {
         return getLimit() > 0 ? (getLimit() + getOffset()) / getLimit() : 0;
     }
+
+    @Value.Default
+    default Optional<Locale> getLanguage() { return getOgcApiRequest().getLanguage(); }
+
+    Optional<I18n> getI18n();
 
     @Nullable
     State getState();

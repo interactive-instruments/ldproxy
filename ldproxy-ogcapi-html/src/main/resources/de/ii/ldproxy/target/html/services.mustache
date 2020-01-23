@@ -1,9 +1,8 @@
 {{> header}}
 
-<div itemscope itemtype="http://schema.org/DataCatalog">
-    <h1 itemprop="name">{{title}}</h1>
-    <p itemprop="description">{{{description}}}</p>
-    <p itemprop="url" class="d-none">{{canonicalUrl}}</p>
+<div>
+    <h1>{{title}}</h1>
+    <p>{{{description}}}</p>
     <br/>
     <br/>
     <br/>
@@ -11,14 +10,13 @@
     <ul class="list-unstyled space-after">
         {{#data}}
         {{#uri}}
-        <li itemprop="dataset" itemscope itemtype="http://schema.org/Dataset">
+        <li>
             <h2>
-                <a itemprop="url" href="{{path}}{{id}}">
-                    <span itemprop="name">{{label}}</span>
+                <a href="{{path}}{{id}}">
+                    <span>{{label}}</span>
                 </a>
             </h2>
-            <span itemprop="description">{{{description}}}</span>
-            <span itemprop="sameAs" class="d-none">{{path}}{{id}}</span>
+            <span>{{{description}}}</span>
         </li>
         {{/uri}}
         {{/data}}

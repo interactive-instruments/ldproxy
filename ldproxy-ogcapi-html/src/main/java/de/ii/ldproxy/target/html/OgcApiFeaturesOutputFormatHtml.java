@@ -100,6 +100,12 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .orElse(true);
     }
 
+    private HtmlConfiguration.LAYOUT getLayout(OgcApiDatasetData apiData) {
+        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+                .map(HtmlConfiguration::getLayout)
+                .orElse(HtmlConfiguration.LAYOUT.CLASSIC);
+    }
+
     @Override
     public Response getLandingPageResponse(LandingPage apiLandingPage,
                                            OgcApiDataset api,
@@ -229,25 +235,38 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         if (transformationContext.isFeatureCollection()) {
             featureTypeDataset = createFeatureCollectionView(serviceData.getFeatureTypes()
-                                                                        .get(collectionName), uriCustomizer.copy(), serviceData.getFilterableFieldsForFeatureType(collectionName, true), serviceData.getHtmlNamesForFeatureType(collectionName), staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData));
+                                                                        .get(collectionName), uriCustomizer.copy(), serviceData.getFilterableFieldsForFeatureType(collectionName, true), serviceData.getHtmlNamesForFeatureType(collectionName), staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getLayout(serviceData));
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getFeatureTypes()
                                                                                         .get(collectionName)
                                                                                         .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language, serviceData.getApiVersion());
         } else {
             featureTypeDataset = createFeatureDetailsView(serviceData.getFeatureTypes()
-                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getApiVersion());
+                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getApiVersion(), getLayout(serviceData));
         }
 
-        //TODO
-        featureTypeDataset.hideMap = true;
+        ImmutableFeatureTransformationContextHtml transformationContextHtml = ImmutableFeatureTransformationContextHtml.builder()
+                .from(transformationContext)
+                .featureTypeDataset(featureTypeDataset)
+                .codelists(codelistRegistry.getCodelists())
+                .mustacheRenderer(dropwizard.getMustacheRenderer())
+                .i18n(i18n)
+                .language(language)
+                .build();
 
-        return Optional.of(new FeatureTransformerHtml(ImmutableFeatureTransformationContextHtml.builder()
-                                                                                               .from(transformationContext)
-                                                                                               .featureTypeDataset(featureTypeDataset)
-                                                                                               .codelists(codelistRegistry.getCodelists())
-                                                                                               .mustacheRenderer(dropwizard.getMustacheRenderer())
-                                                                                               .build(), http.getDefaultClient()));
+        FeatureTransformer transformer;
+        switch (getLayout(serviceData)) {
+            default:
+            case CLASSIC:
+                transformer = new FeatureTransformerHtml(transformationContextHtml, http.getDefaultClient());
+                break;
+
+            case COMPLEX_OBJECTS:
+                transformer = new FeatureTransformerHtmlComplexObjects(transformationContextHtml, http.getDefaultClient());
+                break;
+        }
+
+        return Optional.of(transformer);
     }
 
     @Override
@@ -260,7 +279,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                               Map<String, String> filterableFields,
                                                               Map<String, String> htmlNames, String staticUrlPrefix,
                                                               boolean bare, Optional<Locale> language,
-                                                              boolean noIndex) {
+                                                              boolean noIndex,
+                                                              HtmlConfiguration.LAYOUT layout) {
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
@@ -274,7 +294,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         DatasetView dataset = new DatasetView("", requestUri, null, staticUrlPrefix, htmlConfig, noIndex);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH));
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH), layout);
 
         //TODO featureTypeDataset.uriBuilder = uriBuilder;
         dataset.featureTypes.add(featureTypeDataset);
@@ -284,7 +304,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         BoundingBox bbox = featureType.getExtent()
                                       .getSpatial();
-        featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax()));
+        if (Objects.nonNull(bbox))
+            featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax()));
 
         featureTypeDataset.filterFields = filterableFields.entrySet()
                                                           .stream()
@@ -310,7 +331,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                            String apiLabel, String featureId,
                                                            String staticUrlPrefix, Optional<Locale> language,
                                                            boolean noIndex,
-                                                           Optional<Integer> apiVersion) {
+                                                           Optional<Integer> apiVersion,
+                                                           HtmlConfiguration.LAYOUT layout) {
 
         String rootTitle = i18n.get("root", language);
         String collectionsTitle = i18n.get("collectionsTitle", language);
@@ -333,7 +355,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
             persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
         }
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH));
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), layout);
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());
 

@@ -1,30 +1,8 @@
 {{> header}}
 
-<div itemscope itemtype="http://schema.org/Dataset">
-    <h1 itemprop="name">{{title}}</h1>
-    <span itemprop="description">{{{description}}}</span>
-    <p itemprop="url" class="d-none">{{canonicalUrl}}</p>
-    {{#catalogUrl}}
-        <div itemprop="includedInDataCatalog" itemscope itemtype="http://schema.org/DataCatalog" class="d-none">
-            <div itemprop="url">{{.}}</div>
-        </div>
-    {{/catalogUrl}}
-    {{#metadata}}
-        <ul itemprop="keywords" class="d-none">
-            {{#keywords}}
-                <li>
-                    {{.}}
-                </li>
-            {{/keywords}}
-        </ul>
-    {{/metadata}}
-    <ul class="d-none">
-        {{#distributions}}
-            <li itemprop="distribution" itemscope itemtype="http://schema.org/DataDownload">
-                <span itemprop="name">{{title}}</span><span itemprop="encodingFormat">{{type}}</span><span itemprop="contentUrl">{{href}}</span>
-            </li>
-        {{/distributions}}
-    </ul>
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
     <br/>
     <br/>
     {{#data}}
@@ -65,23 +43,19 @@
             <div class="col-md-10">
                 <ul class="list-unstyled" itemprop="creator" itemscope itemtype="http://schema.org/Organization">
                     {{#contactName}}
-                        <li itemprop="name">{{.}}</li>
+                        <li>{{.}}</li>
                     {{/contactName}}
                     {{#contactUrl}}
-                        <li itemprop="url"><a href="{{.}}" target="_blank">{{.}}</a></li>
+                        <li><a href="{{.}}" target="_blank">{{.}}</a></li>
                     {{/contactUrl}}
-                    <li itemprop="contactPoint" itemscope itemtype="http://schema.org/ContactPoint">
-                        <span class="d-none" itemprop="contactType">technical support</span>
+                    <li>
                         <ul class="list-unstyled">
                             {{#contactEmail}}
-                                <li itemprop="email">{{.}}</li>
+                                <li>{{.}}</li>
                             {{/contactEmail}}
                             {{#contactPhone}}
-                                <li itemprop="telephone">{{.}}</li>
+                                <li>{{.}}</li>
                             {{/contactPhone}}
-                            {{#contactUrl}}
-                                <li itemprop="url" class="d-none">{{.}}</li>
-                            {{/contactUrl}}
                         </ul>
                     </li>
                 </ul>
@@ -94,7 +68,7 @@
                     <ul class="list-unstyled">
                         <li>{{{.}}}</li>
                         {{#licenseUrl}}
-                        <li itemprop="license"><a href="{{.}}">{{.}}</a></li>
+                        <li><a href="{{.}}">{{.}}</a></li>
                         {{/licenseUrl}}
                     </ul>
                 </div>
@@ -106,7 +80,7 @@
                 <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
                 <div class="col-md-10">
                     <ul class="list-unstyled">
-                        <li itemprop="license"><a href="{{.}}">{{.}}</a></li>
+                        <li><a href="{{.}}">{{.}}</a></li>
                     </ul>
                 </div>
             </div>
@@ -172,7 +146,7 @@
                 <ul class="list-unstyled">
                     {{#links}}
                         <li>
-                            <a itemprop="url" href="{{url}}" {{#target}}target="{{.}}"{{/target}}>{{title}}</a>
+                            <a href="{{url}}" {{#target}}target="{{.}}"{{/target}}>{{title}}</a>
                         </li>
                     {{/links}}
                     {{^links}}
@@ -187,17 +161,10 @@
         <div class="row my-3">
             <div class="col-md-2 font-weight-bold">{{dataSourceTitle}}</div>
             <div class="col-md-10">
-                <a itemprop="isBasedOn" href="{{.}}" target="_blank">{{.}}</a>
+                <a href="{{.}}" target="_blank">{{.}}</a>
             </div>
         </div>
     {{/dataSourceUrl}}
-
-    {{#temporalCoverage}}
-                <div itemprop="temporalCoverage" class="d-none">{{.}}</div>
-    {{/temporalCoverage}}
-    {{#spatialCoverage}}
-        <div itemprop="spatialCoverage" itemscope itemtype="http://schema.org/Place" class="d-none"><div itemprop="geo" itemscope itemtype="http://schema.org/GeoShape"><div itemprop="box">{{.}}</div></div></div>
-    {{/spatialCoverage}}
 
 </div>
 

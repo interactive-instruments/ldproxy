@@ -17,7 +17,6 @@ public interface MicrodataMapping extends TargetMapping<MicrodataMapping.MICRODA
     Boolean isShowInCollection();
     String getItemType();
     String getItemProp();
-    String getSparqlQuery();
 
     enum MICRODATA_TYPE {
 

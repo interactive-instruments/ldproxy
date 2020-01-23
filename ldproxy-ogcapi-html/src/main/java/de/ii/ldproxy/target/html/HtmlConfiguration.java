@@ -16,6 +16,8 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableHtmlConfiguration.Builder.class)
 public abstract class HtmlConfiguration implements ExtensionConfiguration {
 
+    enum LAYOUT { CLASSIC, COMPLEX_OBJECTS }
+
     @Value.Default
     @Override
     public boolean getEnabled() {
@@ -24,4 +26,7 @@ public abstract class HtmlConfiguration implements ExtensionConfiguration {
 
     @Value.Default
     public boolean getNoIndexEnabled() { return true; }
+
+    @Value.Default
+    public LAYOUT getLayout() { return LAYOUT.CLASSIC; }
 }

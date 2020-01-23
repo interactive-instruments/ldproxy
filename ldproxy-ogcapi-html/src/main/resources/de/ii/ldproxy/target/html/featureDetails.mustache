@@ -1,5 +1,6 @@
 {{> header}}
 
+{{#classic}}
 <div class="row">
     <div class="col-md-6">
         {{#features}}
@@ -12,14 +13,33 @@
     </div>
     {{/hideMap}}
 </div>
+{{/classic}}
+{{#complexObjects}}
+{{^hideMap}}
+        <div class="row my-2">
+        <div class="col-md-12">
+            <div id="map"></div>
+        </div>
+    </div>
+{{/hideMap}}
 
+<div class="row">
+    <div class="col-md-12">
+        {{#features}}
+            {{> feature}}
+        {{/features}}
+    </div>
+</div>
+{{/complexObjects}}
 
+{{#classic}}
 {{#additionalFeatures}}
     <div class="my-4">
         <h2 class="my-4">{{name}}</h2>
         {{{value}}}
     </div>
 {{/additionalFeatures}}
+{{/classic}}
 
 {{> script}}
 
