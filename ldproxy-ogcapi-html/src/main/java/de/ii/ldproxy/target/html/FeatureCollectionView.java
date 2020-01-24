@@ -33,7 +33,7 @@ public class FeatureCollectionView extends DatasetView {
     public List<NavigationDTO> indices;
     public String index;
     public String indexValue;
-    public boolean hideMap;
+    public boolean hideMap = true; // set to "hide"; change to "false" when we see a geometry
     public boolean hideMetadata;
     public boolean showFooterText = true;
     public FeaturePropertyDTO links;
@@ -47,15 +47,19 @@ public class FeatureCollectionView extends DatasetView {
     public boolean isCollection;
     public String persistentUri;
     public boolean spatialSearch;
+    public boolean classic;
+    public boolean complexObjects;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String description,
                                  String urlPrefix, HtmlConfig htmlConfig, String persistentUri, boolean noIndex,
-                                 I18n i18n, Locale language) {
+                                 I18n i18n, Locale language, HtmlConfiguration.LAYOUT layout) {
         super(template, uri, name, title, description, urlPrefix, htmlConfig, noIndex);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
         this.uri = uri; // TODO need to overload getPath() as it currently forces trailing slashes while OGC API uses no trailing slashes
         this.persistentUri = persistentUri;
+        this.classic = layout == HtmlConfiguration.LAYOUT.CLASSIC;
+        this.complexObjects = layout == HtmlConfiguration.LAYOUT.COMPLEX_OBJECTS;
     }
 
     @Override
@@ -69,7 +73,7 @@ public class FeatureCollectionView extends DatasetView {
             return Optional.of(persistentUri);
 
         URICustomizer canonicalUri = uriBuilder2.copy()
-                                        .ensureNoTrailingSlash()
+                                .ensureNoTrailingSlash()
                                         .removeParameters("f");
 
         boolean hasOtherParams = !canonicalUri.isQueryEmpty();
@@ -92,14 +96,14 @@ public class FeatureCollectionView extends DatasetView {
     }
 
     public Function<String, String> getCurrentUrlWithSegment() {
-        return segment -> uriBuilder.copy()
+        return segment -> uriBuilder2.copy()
                                     .ensureLastPathSegment(segment)
                                     .ensureNoTrailingSlash()
                                     .toString();
     }
 
     public Function<String, String> getCurrentUrlWithSegmentClearParams() {
-        return segment -> uriBuilder.copy()
+        return segment -> uriBuilder2.copy()
                                     .ensureLastPathSegment(segment)
                                     .ensureNoTrailingSlash()
                                     .clearParameters()

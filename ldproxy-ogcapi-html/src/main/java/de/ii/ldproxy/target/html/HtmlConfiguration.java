@@ -25,6 +25,8 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableHtmlConfiguration.Builder.class)
 public abstract class HtmlConfiguration implements ExtensionConfiguration, FeatureTransformations {
 
+    enum LAYOUT { CLASSIC, COMPLEX_OBJECTS }
+
     @Value.Default
     @Override
     public boolean getEnabled() {
@@ -40,6 +42,9 @@ public abstract class HtmlConfiguration implements ExtensionConfiguration, Featu
     public boolean getMicrodataEnabled() {
         return true;
     }
+
+    @Value.Default
+    public LAYOUT getLayout() { return LAYOUT.CLASSIC; }
 
     public abstract Optional<String> getItemLabelFormat();
 

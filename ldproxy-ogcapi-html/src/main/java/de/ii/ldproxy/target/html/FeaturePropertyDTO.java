@@ -9,6 +9,7 @@ package de.ii.ldproxy.target.html;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author zahnen
@@ -21,6 +22,9 @@ public class FeaturePropertyDTO {
     public boolean isUrl;
     public boolean isImg;
     public boolean isHtml;
+    public boolean isLevel2;
+    public boolean isLevel3;
+    public boolean isObjectSeparator;
     public List<FeaturePropertyDTO> childList;
     public FeaturePropertyDTO parent;
 
@@ -43,6 +47,10 @@ public class FeaturePropertyDTO {
 
     public SplitDecoratedCollection<FeaturePropertyDTO> children() {
         return childList.size() > 0 ? new SplitDecoratedCollection<FeaturePropertyDTO>(childList) : null;
+    }
+
+    public String getSchemaOrgItemType() {
+        return Objects.nonNull(itemType) && itemType.startsWith("http://schema.org/") ? itemType.substring(18) : null;
     }
 
     public void addChild(FeaturePropertyDTO child) {

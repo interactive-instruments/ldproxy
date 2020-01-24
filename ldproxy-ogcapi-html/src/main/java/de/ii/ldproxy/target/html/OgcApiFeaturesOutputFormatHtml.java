@@ -116,6 +116,12 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .orElse(true);
     }
 
+    private HtmlConfiguration.LAYOUT getLayout(OgcApiApiDataV2 apiData) {
+        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+                .map(HtmlConfiguration::getLayout)
+                .orElse(HtmlConfiguration.LAYOUT.CLASSIC);
+    }
+
     @Override
     public Response getLandingPageResponse(LandingPage apiLandingPage,
                                            OgcApiApi api,
@@ -268,25 +274,38 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
             }
 
             featureTypeDataset = createFeatureCollectionView(serviceData.getCollections()
-                                                                        .get(collectionName), uriCustomizer.copy(), filterableFields, htmlNames, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), providers.getFeatureProvider(serviceData));
+                                                                        .get(collectionName), uriCustomizer.copy(), filterableFields, htmlNames, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getLayout(serviceData), providers.getFeatureProvider(serviceData));
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getCollections()
                                                                                         .get(collectionName)
                                                                                         .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language, serviceData.getApiVersion());
         } else {
             featureTypeDataset = createFeatureDetailsView(serviceData.getCollections()
-                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getApiVersion());
+                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getApiVersion(), getLayout(serviceData));
         }
 
-        //TODO
-        featureTypeDataset.hideMap = true;
+        ImmutableFeatureTransformationContextHtml transformationContextHtml = ImmutableFeatureTransformationContextHtml.builder()
+                .from(transformationContext)
+                .featureTypeDataset(featureTypeDataset)
+                .codelists(codelistRegistry.getCodelists())
+                .mustacheRenderer(dropwizard.getMustacheRenderer())
+                .i18n(i18n)
+                .language(language)
+                .build();
 
-        return Optional.of(new FeatureTransformerHtml(ImmutableFeatureTransformationContextHtml.builder()
-                                                                                               .from(transformationContext)
-                                                                                               .featureTypeDataset(featureTypeDataset)
-                                                                                               .codelists(codelistRegistry.getCodelists())
-                                                                                               .mustacheRenderer(dropwizard.getMustacheRenderer())
-                                                                                               .build(), http.getDefaultClient()));
+        FeatureTransformer2 transformer;
+        switch (getLayout(serviceData)) {
+            default:
+            case CLASSIC:
+                transformer = new FeatureTransformerHtml(transformationContextHtml, http.getDefaultClient());
+                break;
+
+            case COMPLEX_OBJECTS:
+                transformer = new FeatureTransformerHtmlComplexObjects(transformationContextHtml, http.getDefaultClient());
+                break;
+        }
+
+        return Optional.of(transformer);
     }
 
     @Override
@@ -300,6 +319,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                               Map<String, String> htmlNames, String staticUrlPrefix,
                                                               boolean bare, Optional<Locale> language,
                                                               boolean noIndex,
+                                                              HtmlConfiguration.LAYOUT layout,
                                                               FeatureProvider2 featureProvider) {
         URI requestUri = null;
         try {
@@ -314,7 +334,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         DatasetView dataset = new DatasetView("", requestUri, null, staticUrlPrefix, htmlConfig, noIndex);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH));
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH), layout);
 
         //TODO featureTypeDataset.uriBuilder = uriBuilder;
         dataset.featureTypes.add(featureTypeDataset);
@@ -322,9 +342,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
         featureTypeDataset.temporalExtent = featureType.getExtent()
                                                        .getTemporal();
 
-        BoundingBox bbox = getBoundingBox(featureType, featureProvider);
-
-        featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax()));
+        getBoundingBox(featureType, featureProvider).ifPresent(bbox -> featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
 
         featureTypeDataset.filterFields = filterableFields.entrySet()
                                                           .stream()
@@ -352,7 +370,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                            String apiLabel, String featureId,
                                                            String staticUrlPrefix, Optional<Locale> language,
                                                            boolean noIndex,
-                                                           Optional<Integer> apiVersion) {
+                                                           Optional<Integer> apiVersion,
+                                                           HtmlConfiguration.LAYOUT layout) {
 
         String rootTitle = i18n.get("root", language);
         String collectionsTitle = i18n.get("collectionsTitle", language);
@@ -375,7 +394,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
             persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
         }
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH));
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), layout);
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());
 
@@ -442,7 +461,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                              .collect(Collectors.toList());
     }
 
-    private BoundingBox getBoundingBox(
+    private Optional<BoundingBox> getBoundingBox(
             FeatureTypeConfigurationOgcApi featureType,
             FeatureProvider2 featureProvider) {
 
@@ -452,20 +471,21 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
             if (DEFAULT_CRS.equals(featureProvider.getData()
                                                   .getNativeCrs())) {
-                return spatialExtent;
+                return Optional.ofNullable(spatialExtent);
             }
 
             Optional<CrsTransformer> transformer = crsTransformations.getTransformer(featureProvider.getData()
                                                                                                     .getNativeCrs(), DEFAULT_CRS);
             if (transformer.isPresent()) {
                 try {
-                    return transformer.get().transformBoundingBox(spatialExtent);
+                    return Optional.ofNullable(transformer.get()
+                                                          .transformBoundingBox(spatialExtent));
                 } catch (CrsTransformationException e) {
 
                 }
             }
         }
 
-        return Optional.ofNullable(featureType.getExtent().getSpatial()).orElse(new BoundingBox());
+        return Optional.ofNullable(featureType.getExtent().getSpatial());
     }
 }

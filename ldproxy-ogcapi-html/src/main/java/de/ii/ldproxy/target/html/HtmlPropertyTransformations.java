@@ -1,18 +1,60 @@
 package de.ii.ldproxy.target.html;
 
+import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.feature.transformer.api.FeaturePropertySchemaTransformer;
 import de.ii.xtraplatform.feature.transformer.api.FeaturePropertyTransformations;
+import de.ii.xtraplatform.feature.transformer.api.FeaturePropertyValueTransformer;
 import org.immutables.value.Value;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
 @Value.Immutable
 public abstract class HtmlPropertyTransformations implements FeaturePropertyTransformations<FeaturePropertyDTO> {
 
+    public abstract Optional<I18n> getI18n();
+
+    public abstract Optional<Locale> getLanguage();
+
+    //TODO: make explicit as booleanNormalize + i18n
+    @Value.Derived
+    public FeaturePropertyTransformerBooleanTranslate getBooleanTransformer() {
+        return ImmutableFeaturePropertyTransformerBooleanTranslate.builder()
+                                                           .i18n(getI18n())
+                                                           .language(getLanguage())
+                                                           .build();
+    }
+
     @Override
     public String getValue(FeaturePropertyDTO wrapper) {
         return wrapper.value;
+    }
+
+    public Optional<FeatureProperty> transform(FeatureProperty schema) {
+        FeatureProperty transformedSchema = schema;
+
+        for (FeaturePropertySchemaTransformer schemaTransformer : getSchemaTransformers()) {
+            transformedSchema = schemaTransformer.transform(transformedSchema);
+        }
+
+        return Optional.ofNullable(transformedSchema);
+    }
+
+    public String transform(FeatureProperty schema, String value) {
+        String transformedValue = value;
+
+        if (Objects.nonNull(value)) {
+            for (FeaturePropertyValueTransformer valueTransformer : getValueTransformers()) {
+                transformedValue = valueTransformer.transform(transformedValue);
+            }
+            if (schema.getType() == FeatureProperty.Type.BOOLEAN) {
+                transformedValue = getBooleanTransformer().transform(transformedValue);
+            }
+        }
+
+        return value;
     }
 
     @Override
@@ -53,6 +95,7 @@ public abstract class HtmlPropertyTransformations implements FeaturePropertyTran
         return isUrl(value) && (value.toLowerCase()
                                      .endsWith(".png") || value.toLowerCase()
                                                                .endsWith(".jpg") || value.toLowerCase()
-                                                                                         .endsWith(".gif"));
+                                                                                         .endsWith(".jpeg") || value.toLowerCase()
+                                                                                                                    .endsWith(".gif"));
     }
 }

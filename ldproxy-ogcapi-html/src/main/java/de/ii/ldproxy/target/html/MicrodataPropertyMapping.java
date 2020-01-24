@@ -21,7 +21,6 @@ public class MicrodataPropertyMapping extends AbstractOgcApiFeaturesGenericMappi
     private Boolean showInCollection;
     private String itemType;
     private String itemProp;
-    private String sparqlQuery;
 
     public MicrodataPropertyMapping() {
     }
@@ -33,7 +32,6 @@ public class MicrodataPropertyMapping extends AbstractOgcApiFeaturesGenericMappi
         this.showInCollection = mapping.showInCollection;
         this.itemType = mapping.itemType;
         this.itemProp = mapping.itemProp;
-        this.sparqlQuery = mapping.sparqlQuery;
         this.format = mapping.format;
         this.codelist = mapping.codelist;
 
@@ -73,17 +71,8 @@ public class MicrodataPropertyMapping extends AbstractOgcApiFeaturesGenericMappi
         return itemProp;
     }
 
-    @Override
-    public String getSparqlQuery() {
-        return sparqlQuery;
-    }
-
     public void setItemProp(String itemProp) {
         this.itemProp = itemProp;
-    }
-
-    public void setSparqlQuery(String sparqlQuery) {
-        this.sparqlQuery = sparqlQuery;
     }
 
     @Override

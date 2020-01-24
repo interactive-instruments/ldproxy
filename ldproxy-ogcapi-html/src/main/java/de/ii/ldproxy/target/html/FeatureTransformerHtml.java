@@ -213,8 +213,8 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
     public void onFeatureStart(FeatureType featureType) throws Exception {
         currentFeature = new FeatureDTO();
 
-        if (!isFeatureCollection) {
-            currentFeature.idAsUrl = true;
+        if (isFeatureCollection) {
+            currentFeature.titleAsLink = true;
         }
 
         Optional<String> itemLabelFormat = htmlConfiguration.getItemLabelFormat();
@@ -340,7 +340,8 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
             }
         }
 
-        String tkey = featureProperty.getName().replaceAll("\\[.+?\\]", "[]");
+        String tkey = featureProperty.getName()
+                                     .replaceAll("\\[.+?\\]", "[]");
         if (transformations.containsKey(tkey)) {
 
             Optional<FeaturePropertyDTO> transformedProperty = transformations.get(tkey)
