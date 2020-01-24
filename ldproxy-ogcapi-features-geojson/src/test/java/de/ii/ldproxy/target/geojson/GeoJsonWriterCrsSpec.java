@@ -179,7 +179,7 @@ public class GeoJsonWriterCrsSpec {
 
         return ImmutableFeatureTransformationContextGeoJson.builder()
                                                            .crsTransformer(Optional.ofNullable(crsTransformer))
-                                                           .apiData(new ImmutableOgcApiDatasetData.Builder()
+                                                           .apiData(new ImmutableOgcApiApiDataV2.Builder()
                                                                                                 .id("s")
                                                                                                 .serviceType("WFS3")
                                                                                                 /*.featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()

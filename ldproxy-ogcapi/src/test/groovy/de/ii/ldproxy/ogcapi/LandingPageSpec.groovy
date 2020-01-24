@@ -95,7 +95,7 @@ class LandingPageSpec extends Specification {
     }
 
     static def createDatasetData() {
-        new ImmutableOgcApiDatasetData.Builder()
+        new ImmutableOgcApiApiDataV2.Builder()
                 .id('test')
                 .serviceType('WFS3')
                 /*.featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
@@ -111,7 +111,7 @@ class LandingPageSpec extends Specification {
                                 .gmlVersion('3.2.1')
                                 .build())
                         .build())*/
-                .putFeatureTypes('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                .putCollections('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                         .id('featureType1')
                         .label('FeatureType 1')
                         .description('foo bar')
@@ -120,7 +120,7 @@ class LandingPageSpec extends Specification {
                                 .temporal(new ImmutableTemporalExtent.Builder().build())
                                 .build())
                         .build())
-                .addCapabilities(new ImmutableOgcApiFeaturesCoreConfiguration.Builder().build())
+                .addExtensions(new ImmutableOgcApiFeaturesCoreConfiguration.Builder().build())
                 .build()
     }
 

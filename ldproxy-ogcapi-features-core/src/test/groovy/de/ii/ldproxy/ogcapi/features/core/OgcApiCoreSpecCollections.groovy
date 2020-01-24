@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.application.OgcApiApiEntity
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCollections
 import de.ii.ldproxy.ogcapi.domain.*
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQueryables
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCollectionExtension
@@ -21,6 +22,7 @@ import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
 import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollection
 import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollections
 import de.ii.xtraplatform.crs.api.BoundingBox
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
@@ -155,7 +157,18 @@ class OgcApiCoreSpecCollections extends Specification {
                     return ImmutableList.of((T) new OgcApiFeaturesCollectionsExtension(registry))
                 }
                 if (extensionType == OgcApiCollectionExtension.class) {
-                    OgcApiFeaturesCollectionExtension collectionExtension = new OgcApiFeaturesCollectionExtension(registry)
+                    OgcApiFeatureCoreProviders providers = new OgcApiFeatureCoreProviders() {
+                        @Override
+                        FeatureProvider2 getFeatureProvider(OgcApiApiDataV2 apiData) {
+                            return null
+                        }
+
+                        @Override
+                        FeatureProvider2 getFeatureProvider(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
+                            return null
+                        }
+                    }
+                    OgcApiFeaturesCollectionExtension collectionExtension = new OgcApiFeaturesCollectionExtension(registry, providers)
                     collectionExtension.i18n = new I18nDefault()
                     return ImmutableList.of((T) collectionExtension)
                 }
@@ -202,10 +215,10 @@ class OgcApiCoreSpecCollections extends Specification {
     }
 
     static def createDatasetData() {
-        return new ImmutableOgcApiDatasetData.Builder()
+        return new ImmutableOgcApiApiDataV2.Builder()
                 .id('test')
                 .serviceType('WFS3')
-                .putFeatureTypes('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                .putCollections('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                         .id('featureType1')
                         .label('FeatureType 1')
                         .description('foo bar')
@@ -213,14 +226,14 @@ class OgcApiCoreSpecCollections extends Specification {
                                 .spatial(new BoundingBox())
                                 .temporal(new ImmutableTemporalExtent.Builder().build())
                                 .build())
-                        .addCapabilities(new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
+                        .addExtensions(new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
                                 .queryables(new ImmutableOgcApiFeaturesCollectionQueryables.Builder()
                                         .spatial(ImmutableList.of('geometry'))
                                         .temporal(ImmutableList.of('datum_open'))
                                         .build())
                                 .build())
                         .build())
-                .addCapabilities(new ImmutableOgcApiFeaturesCoreConfiguration.Builder().build())
+                .addExtensions(new ImmutableOgcApiFeaturesCoreConfiguration.Builder().build())
                 .build()
     }
 

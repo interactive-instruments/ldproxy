@@ -30,7 +30,7 @@ public class GeoJsonWriterSetupUtil {
 
     static FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, boolean isCollection) throws URISyntaxException {
         return ImmutableFeatureTransformationContextGeoJson.builder()
-                                                           .apiData(new ImmutableOgcApiDatasetData.Builder()
+                                                           .apiData(new ImmutableOgcApiApiDataV2.Builder()
                                                                                                 .id("s")
                                                                                                 .serviceType("WFS3")
                                                                                                 /*.featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()

@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- * <p>
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -262,17 +262,17 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                             URI query) throws URISyntaxException {
         return ImmutableFeatureTransformationContextGeoJson.builder()
                                                            .crsTransformer(Optional.empty())
-                                                           .apiData(new ImmutableOgcApiDatasetData.Builder()
+                                                           .apiData(new ImmutableOgcApiApiDataV2.Builder()
                                                                    .id("s")
                                                                    .serviceType("WFS3")
-                                                                   .featureTypes(ImmutableMap.of("ft", new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                                                   .collections(ImmutableMap.of("ft", new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                                                                            .id("ft")
                                                                            .label("ft")
                                                                            .extent(new ImmutableCollectionExtent.Builder()
                                                                                    .spatial(new BoundingBox())
                                                                                    .temporal(new ImmutableTemporalExtent.Builder().build())
                                                                                    .build())
-                                                                           .addCapabilities(new ImmutableAroundRelationsConfiguration.Builder()
+                                                                           .addExtensions(new ImmutableAroundRelationsConfiguration.Builder()
                                                                                    .enabled(true)
                                                                                    .addRelations(new ImmutableRelation.Builder()
                                                                                            .id("test1")
@@ -282,7 +282,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                                            .build())
                                                                                    .enabled(true)
                                                                                    .build())
-                                                                           .addCapabilities(new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
+                                                                           .addExtensions(new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
                                                                                    .queryables(new ImmutableOgcApiFeaturesCollectionQueryables.Builder()
                                                                                            .spatial(ImmutableList.of("geometry"))
                                                                                            .build())

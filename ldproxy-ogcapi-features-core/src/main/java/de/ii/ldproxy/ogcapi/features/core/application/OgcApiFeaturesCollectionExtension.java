@@ -47,15 +47,14 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
     I18n i18n;
 
     @Requires
-    private OgcApiFeatureCoreProviders providers;
-
-    @Requires
     private CrsTransformation crsTransformations;
 
     private final OgcApiExtensionRegistry extensionRegistry;
+    private final OgcApiFeatureCoreProviders providers;
 
-    public OgcApiFeaturesCollectionExtension(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public OgcApiFeaturesCollectionExtension(@Requires OgcApiExtensionRegistry extensionRegistry, @Requires OgcApiFeatureCoreProviders providers) {
         this.extensionRegistry = extensionRegistry;
+        this.providers = providers;
     }
 
     @Override
