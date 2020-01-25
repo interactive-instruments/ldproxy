@@ -25,25 +25,27 @@ import java.util.stream.Collectors;
  */
 public class FeatureCollectionView extends DatasetView {
 
+    // TODO check use of all properties
+
     private URI uri;
-    public String requestUrl;
+    // TODO public String requestUrl;
     public List<NavigationDTO> pagination;
     public List<NavigationDTO> metaPagination;
-    public List<FeatureDTO> features;
+    public List<ObjectDTO> features;
     public List<NavigationDTO> indices;
-    public String index;
-    public String indexValue;
+    // TODO public String index;
+    // TODO public String indexValue;
     public boolean hideMap = true; // set to "hide"; change to "false" when we see a geometry
-    public boolean hideMetadata;
-    public boolean showFooterText = true;
-    public FeaturePropertyDTO links;
+    // TODO public boolean hideMetadata;
+    // TODO public boolean showFooterText = true;
+    public PropertyDTO links;
     public Set<Map.Entry<String, String>> filterFields;
     public Map<String, String> bbox2;
     public FeatureTypeConfigurationOgcApi.TemporalExtent temporalExtent;
     public URICustomizer uriBuilder;
-    public URICustomizer uriBuilder2;
+    public URICustomizer uriBuilderWithFOnly;
     public boolean bare;
-    public List<FeaturePropertyDTO> additionalFeatures;
+    public List<PropertyDTO> additionalFeatures;
     public boolean isCollection;
     public String persistentUri;
     public boolean spatialSearch;
@@ -72,21 +74,21 @@ public class FeatureCollectionView extends DatasetView {
         if (!isCollection && persistentUri!=null)
             return Optional.of(persistentUri);
 
-        String noParam = uriBuilder2.copy()
+        String noParam = uriBuilder.copy()
                                 .clearParameters()
                                 .ensureNoTrailingSlash()
                                 .toString() + "?";
-        String withF = uriBuilder2.copy()
+        String noF = uriBuilder.copy()
                                  .ensureNoTrailingSlash()
                                  .removeParameters("f")
                                  .toString();
 
-        boolean hasOtherParams = !noParam.equals(withF);
+        boolean hasOtherParams = !noParam.equals(noF);
         boolean hasPrevLink = Objects.nonNull(metaPagination) && metaPagination.stream()
                                                                                .anyMatch(navigationDTO -> "prev".equals(navigationDTO.label));
 
         return !hasOtherParams && (!isCollection || !hasPrevLink)
-                ? Optional.of(uriBuilder2.copy()
+                ? Optional.of(uriBuilder.copy()
                                          .clearParameters()
                                          .toString())
                 : Optional.empty();
@@ -103,14 +105,14 @@ public class FeatureCollectionView extends DatasetView {
     }
 
     public Function<String, String> getCurrentUrlWithSegment() {
-        return segment -> uriBuilder2.copy()
+        return segment -> uriBuilderWithFOnly.copy()
                                     .ensureLastPathSegment(segment)
                                     .ensureNoTrailingSlash()
                                     .toString();
     }
 
     public Function<String, String> getCurrentUrlWithSegmentClearParams() {
-        return segment -> uriBuilder2.copy()
+        return segment -> uriBuilder.copy()
                                     .ensureLastPathSegment(segment)
                                     .ensureNoTrailingSlash()
                                     .clearParameters()

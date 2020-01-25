@@ -8,7 +8,6 @@ dependencies {
     provided project(":ldproxy-ogcapi-features-geojson")
     provided project(":ldproxy-ogcapi-html")
     provided project(":ldproxy-ogcapi-features-gml")
-    provided project(":ldproxy-wfs3-jsonld")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'

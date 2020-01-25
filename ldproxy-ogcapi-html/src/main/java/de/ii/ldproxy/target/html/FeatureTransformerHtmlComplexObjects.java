@@ -52,7 +52,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
 
     private OutputStreamWriter outputStreamWriter;
     protected XMLPathTracker currentPath;
-    protected FeatureDTO currentFeature;
+    protected ObjectDTO currentFeature;
     protected boolean isFeatureCollection;
     protected ViewRenderer mustacheRenderer;
     protected int page;
@@ -68,27 +68,30 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
     CoordinatesWriterType.Builder cwBuilder;
     private Writer coordinatesWriter;
     private Writer coordinatesOutput;
-    private FeaturePropertyDTO currentGeometryPart;
+    private PropertyDTO currentGeometryPart;
     private int currentGeometryParts;
     private boolean currentGeometryWritten;
 
     private final FeatureTransformationContextHtml transformationContext;
     private final int offset;
 
-    private PropertyContext currentPropertyContext;
-    private StringBuilder currentValue = new StringBuilder();
-    private Map<Integer,Object> properties;
-    private Map<Integer,Object> currentObject;
+    private StringBuilder currentValueBuilder = new StringBuilder();
     private Map<String,Integer> pathMap = new HashMap<>();
     private int nextSort;
+    private ValueDTO currentValue = null;
+    private MicrodataPropertyMapping currentMapping = null;
+
+    /*
+    private PropertyContext currentPropertyContext;
+    private Map<Integer,Object> properties;
 
     private class PropertyContext {
         MicrodataPropertyMapping mapping;
         List<Integer> index;
         String htmlName;
-        List<String> htmlNames;
+        List<String> htmlNameSections;
         String baseName;
-        List<String> baseNames;
+        List<String> baseNameSections;
         int sortPriority;
         Object valueContext;
         int arrays;
@@ -97,9 +100,9 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
         PropertyContext(MicrodataPropertyMapping mapping, List<Integer> index) {
             this.index = index;
             htmlName = mapping.getName();
-            htmlNames = Splitter.on('|').splitToList(htmlName);
+            htmlNameSections = Splitter.on('|').splitToList(htmlName);
             baseName = mapping.getBaseMapping().getName();
-            baseNames = Splitter.on('.').splitToList(baseName);
+            baseNameSections = Splitter.on('.').splitToList(baseName);
             sortPriority = Objects.nonNull(mapping.getSortPriority()) ?
                     mapping.getSortPriority() :
                     Objects.nonNull(mapping.getBaseMapping().getSortPriority()) ?
@@ -107,12 +110,12 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
                             nextSort++;
             this.mapping = mapping;
 
-            // determine context in properties
+            // determine context in the properties of this feature
             String curPath = null;
             arrays = 0;
             objectLevel = 0;
             valueContext = properties;
-            for (String name : baseNames) {
+            for (String name : baseNameSections) {
                 curPath = Objects.isNull(curPath) ? name : curPath.concat("."+name);
                 if (!pathMap.containsKey(curPath)) {
                     // new path or new property: register the current sort priority for it
@@ -134,7 +137,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
                                     // ... otherwise we have an object
                                     newContext = new TreeMap<Integer,Object>();
                                     PropertyValue pv = new PropertyValue();
-                                    pv.setValue(htmlNames.get(objectLevel),"", false, objectLevel+1);
+                                    pv.addValue(htmlNameSections.get(objectLevel),"", false, null, null);
                                     objectLevel++;
                                     ((Map<Integer,Object>)newContext).put(Integer.MIN_VALUE, pv);
                                 }
@@ -159,7 +162,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
                                     // ... otherwise we have an object
                                     newContext = new TreeMap<Integer,Object>();
                                     PropertyValue pv = new PropertyValue();
-                                    pv.setValue("————","", false, ++objectLevel + 1);
+                                    pv.addValue("————","", false, null, null);
                                     pv.property.isObjectSeparator = true;
                                     ((Map<Integer,Object>)newContext).put(Integer.MIN_VALUE, pv);
                                 }
@@ -183,7 +186,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
                                 // ... otherwise we have an object
                                 newContext = new TreeMap<Integer,Object>();
                                 PropertyValue pv = new PropertyValue();
-                                pv.setValue(htmlNames.get(objectLevel),"", false, objectLevel + 1);
+                                pv.addValue(htmlNameSections.get(objectLevel),"", false, null, null);
                                 objectLevel++;
                                 ((Map<Integer,Object>)newContext).put(Integer.MIN_VALUE, pv);
                             }
@@ -206,8 +209,8 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
         }
 
         String getHtmlName() {
-            int idx = this.htmlNames.size()-1;
-            return this.htmlNames.get(idx);
+            int idx = this.htmlNameSections.size()-1;
+            return this.htmlNameSections.get(idx);
         }
 
         int getLevel() {
@@ -216,46 +219,99 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
     }
 
     private class PropertyValue {
-        FeaturePropertyDTO property;
+        PropertyDTO property;
 
         PropertyValue() {
-            property = new FeaturePropertyDTO();
+            property = new PropertyDTO();
         }
 
-        void setValue(String name, String value, boolean isHtml, int level) {
+        void addValue(String name, String value, boolean isHtml, String itemType, String itemProp) {
             property.name = name;
-            property.value = value;
-            property.isHtml = isHtml;
-
-            if (level==2)
-                property.isLevel2 = true;
-            else if (level==3)
-                property.isLevel3 = true;
+            property.itemType = itemType;
+            property.itemProp = itemProp;
+            property.addValue(value, isHtml);
 
             if (currentFeature.name != null) {
                 int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
                 if (pos > -1) {
-                    currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
+                    currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
                 }
             }
+        }
+    }
+    */
 
-            // TODO property.itemType = mapping.getItemType();
-            // TODO property.itemProp = mapping.getItemProp();
+    private ValueDTO getValue(MicrodataPropertyMapping mapping, List<Integer> index) {
+        String htmlName = mapping.getName();
+        List<String> htmlNameSections = Splitter.on('|').splitToList(htmlName);
+        String baseName = mapping.getBaseMapping().getName();
+        List<String> baseNameSections = Splitter.on('.').splitToList(baseName);
+        int sortPriority = Objects.nonNull(mapping.getSortPriority()) ?
+                mapping.getSortPriority() :
+                Objects.nonNull(mapping.getBaseMapping().getSortPriority()) ?
+                        mapping.getBaseMapping().getSortPriority() :
+                        nextSort++;
 
-            if (property.value.startsWith("http://") || property.value.startsWith("https://")) {
-                if (property.value.toLowerCase()
-                        .endsWith(".png") || property.value.toLowerCase()
-                        .endsWith(".jpg") || property.value.toLowerCase()
-                        .endsWith(".jpeg") || property.value.toLowerCase()
-                        .endsWith(".gif")) {
-                    property.isImg = true;
+        // determine context in the properties of this feature
+        String curPath = null;
+        ObjectDTO valueContext = currentFeature;
+        int arrays = 0;
+        int objectLevel = 0;
+        for (String name : baseNameSections) {
+            curPath = Objects.isNull(curPath) ? name : curPath.concat("."+name);
+            boolean isArray = name.endsWith("]");
+            if (!pathMap.containsKey(curPath)) {
+                // new path or new property: register the current sort priority for it
+                pathMap.put(curPath, sortPriority);
+            }
+            int sort = pathMap.get(curPath);
+            PropertyDTO property = ((ObjectDTO) valueContext).get(sort);
+            if (Objects.isNull(property)) {
+                property = new PropertyDTO();
+                property.sortPriority = sortPriority;
+                valueContext.addChild(property);
+            }
+            if (curPath.equals(baseName)) {
+                // we are at the end of the path, add the (new) value and return it
+                int curCount = property.values.size();
+                int idx = isArray ? index.get(arrays++) : 1;
+                if (curCount==idx-1) {
+                    if (curCount == 0) {
+                        property.name = htmlNameSections.get(objectLevel);
+                        property.itemType = mapping.getItemType();
+                        property.itemProp = mapping.getItemProp();
+                    }
+                    return property.addValue(""); // empty string as placeholder
+                } else if (curCount > idx) {
+                    return property.values.get(idx-1);
                 } else {
-                    property.isUrl = true;
+                    // TODO error
+                    LOGGER.error("TODO");
+                }
+            } else {
+                // we have an object, either the latest object in the existing list or a new object
+                int curCount = property.childList.size();
+                int idx = isArray ? index.get(arrays++) : 1;
+                if (curCount==idx-1) {
+                    if (curCount == 0)
+                        property.name = htmlNameSections.get(objectLevel);
+                    valueContext = new ObjectDTO();
+                    property.addChild(valueContext);
+                    objectLevel++;
+                } else if (isArray && curCount==idx) {
+                    valueContext = (ObjectDTO) property.childList.get(idx-1);
+                    objectLevel++;
+                } else {
+                    // TODO error
+                    LOGGER.error("TODO");
                 }
             }
         }
 
+        LOGGER.error("TODO");
+        return null;
     }
+
 
     public FeatureTransformerHtmlComplexObjects(FeatureTransformationContextHtml transformationContext, HttpClient httpClient) {
         this.outputStreamWriter = new OutputStreamWriter(transformationContext.getOutputStream());
@@ -379,18 +435,15 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
 
     @Override
     public void onFeatureStart(TargetMapping mapping) throws Exception {
-        currentFeature = new FeatureDTO();
+        currentFeature = new ObjectDTO();
         if (isFeatureCollection) {
-            currentFeature.titleAsLink = true;
+            currentFeature.inCollection = true;
         }
 
         currentFeature.name = mapping.getName();
         currentFeature.itemType = ((MicrodataPropertyMapping) mapping).getItemType();
         currentFeature.itemProp = ((MicrodataPropertyMapping) mapping).getItemProp();
 
-        // new feature, reset property contexts and property output
-        currentPropertyContext = null;
-        properties = new TreeMap<>();
         nextSort = 10000;
     }
 
@@ -402,73 +455,44 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
             this.dataset.title = currentFeature.name;
             this.dataset.breadCrumbs.get(dataset.breadCrumbs.size() - 1).label = currentFeature.name;
         }
-        addChildren(properties);
         dataset.features.add(currentFeature);
         currentFeature = null;
     }
 
-    private void addChildren(Object value) {
-        if (value instanceof PropertyValue) {
-            FeaturePropertyDTO pv = ((PropertyValue) value).property;
-            currentFeature.addChild(pv);
-        } else if (value instanceof List) {
-            boolean showName = true;
-            for (Object item : (List)value) {
-                addChildren(item);
-                showName = false;
-            }
-        } else if (value instanceof Map) {
-            /* TODO special treatment for link objects
-            Map<Integer, Object> obj = (Map<Integer, Object>) value;
-            Collection<Object> values = obj.values();
-            values.stream()
-                    .filter(val -> val instanceof PropertyValue)
-                    .map(val -> ((PropertyValue) val).property.)
-            if ()
-             */
-
-            for (Object item : ((Map<Integer,Object>)value).values()) {
-                addChildren(item);
-            }
-        }
-    }
-
     @Override
     public void onPropertyStart(TargetMapping mapping, List<Integer> index) throws Exception {
+        currentValue = null;
         if (mapping instanceof MicrodataPropertyMapping) {
-            MicrodataPropertyMapping htmlMapping = (MicrodataPropertyMapping) mapping;
-            if (htmlMapping.isEnabled() && (!isFeatureCollection || htmlMapping.isShowInCollection())) {
-                currentPropertyContext = new PropertyContext(htmlMapping, index);
-            } else {
-                currentPropertyContext = null;
+            currentMapping = (MicrodataPropertyMapping) mapping;
+            if (currentMapping.isEnabled() && (!isFeatureCollection || currentMapping.isShowInCollection())) {
+                currentValue = getValue(currentMapping, index);
             }
         }
     }
 
     @Override
     public void onPropertyText(String text) throws Exception {
-        if (Objects.nonNull(currentPropertyContext))
-            currentValue.append(text);
+        if (Objects.nonNull(currentValue))
+            currentValueBuilder.append(text);
     }
 
     @Override
     public void onPropertyEnd() throws Exception {
-        if (Objects.nonNull(currentPropertyContext)) {
-            AtomicReference<Boolean> isHtml = new AtomicReference<>(false);
-            String value = processValue(currentValue.toString(), currentPropertyContext.mapping, html -> isHtml.set(html));
-            Object valueContext = currentPropertyContext.valueContext;
-            if (valueContext instanceof PropertyValue) {
-                PropertyValue pv = (PropertyValue) valueContext;
-                pv.setValue(currentPropertyContext.getHtmlName(), value, isHtml.get(), currentPropertyContext.getLevel());
-            } else {
-                // TODO
-                LOGGER.error("TODO");
+        if (Objects.nonNull(currentValue)) {
+            if (currentFeature.name != null) {
+                int pos = currentFeature.name.indexOf("{{" + currentValue.property.name + "}}");
+                if (pos > -1) {
+                    currentFeature.name = currentFeature.name.substring(0, pos) + currentValue.toString() + currentFeature.name.substring(pos);
+                }
             }
+            AtomicReference<Boolean> isHtml = new AtomicReference<>(false);
+            String value = processValue(currentValue.toString(), currentMapping, html -> isHtml.set(html));
+            currentValue.setValue(value, isHtml.get());
         }
 
         // reset
-        currentValue.setLength(0);
-        currentPropertyContext = null;
+        currentValueBuilder.setLength(0);
+        currentValue = null;
     }
 
     private String processValue(String value, MicrodataPropertyMapping mapping, Consumer<Boolean> isHtml) {
@@ -488,8 +512,8 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
         }
 
         if (mapping.getType() == MICRODATA_TYPE.ID) {
-            currentFeature.id = new FeaturePropertyDTO();
-            currentFeature.id.value = value;
+            currentFeature.id = new PropertyDTO();
+            currentFeature.id.addValue(value);
             currentFeature.id.itemProp = "url";
             if (currentFeature.name == null || currentFeature.name.isEmpty()) {
                 currentFeature.name = value;
@@ -570,13 +594,15 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
 
         currentGeometryParts++;
         if (currentGeometryParts == 1) {
-            currentFeature.geo = new FeaturePropertyDTO();
+            // this skips additional parts in multi geometries as these are not supported by schema.org
+            currentFeature.geo = new PropertyDTO();
             currentFeature.geo.itemType = "http://schema.org/GeoShape";
             currentFeature.geo.itemProp = "geo";
             currentFeature.geo.name = "geometry";
 
-            currentGeometryPart = new FeaturePropertyDTO();
+            currentGeometryPart = new PropertyDTO();
             currentFeature.geo.addChild(currentGeometryPart);
+            currentGeometryPart.sortPriority = currentGeometryParts;
 
             switch (currentGeometryType) {
                 case LINE_STRING:
@@ -595,7 +621,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
 
         switch (currentGeometryType) {
             case POINT:
-                currentFeature.geo = new FeaturePropertyDTO();
+                currentFeature.geo = new PropertyDTO();
                 currentFeature.geo.itemType = "http://schema.org/GeoCoordinates";
                 currentFeature.geo.itemProp = "geo";
                 currentFeature.geo.name = "geometry";
@@ -606,15 +632,17 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
                     point = crsTransformer.transform(point, false);
                 }
 
-                FeaturePropertyDTO longitude = new FeaturePropertyDTO();
-                longitude.name = "longitude";
-                longitude.itemProp = "longitude";
-                longitude.value = point.getXasString();
-
-                FeaturePropertyDTO latitude = new FeaturePropertyDTO();
+                PropertyDTO latitude = new PropertyDTO();
                 latitude.name = "latitude";
                 latitude.itemProp = "latitude";
-                latitude.value = point.getYasString();
+                latitude.addValue(point.getYasString());
+                latitude.sortPriority = 1;
+
+                PropertyDTO longitude = new PropertyDTO();
+                longitude.name = "longitude";
+                longitude.itemProp = "longitude";
+                longitude.addValue(point.getXasString());
+                longitude.sortPriority = 2;
 
                 currentFeature.geo.addChild(latitude);
                 currentFeature.geo.addChild(longitude);
@@ -645,7 +673,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
         if (currentGeometryType == null) return;
 
         if (currentGeometryPart != null) {
-            currentGeometryPart.value = coordinatesOutput.toString();
+            currentGeometryPart.addValue(coordinatesOutput.toString());
         }
 
         currentGeometryType = null;

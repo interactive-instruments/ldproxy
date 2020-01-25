@@ -22,9 +22,9 @@ import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
@@ -41,11 +41,8 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.OptionalLong;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -60,7 +57,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
 
     private OutputStreamWriter outputStreamWriter;
     protected XMLPathTracker currentPath;
-    protected FeatureDTO currentFeature;
+    protected ObjectDTO currentFeature;
     //protected String outputFormat; // as constant somewhere
     //protected FeatureTypeMapping featureTypeMapping; // reduceToOutputFormat
     protected boolean isFeatureCollection;
@@ -76,7 +73,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
     protected Map<String, Codelist> codelists;
 
     //public String title;
-    //public List<FeatureDTO> features;
+    //public List<ObjectDTO> features;
     //public List<NavigationDTO> breadCrumbs;
     //public List<NavigationDTO> pagination;
     //public List<NavigationDTO> formats;
@@ -92,7 +89,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
     StringBuilder currentValue = new StringBuilder();
     private Writer coordinatesWriter;
     private Writer coordinatesOutput;
-    private FeaturePropertyDTO currentGeometryPart;
+    private PropertyDTO currentGeometryPart;
     private int currentGeometryParts;
     private String currentFormatter;
     private boolean currentGeometryWritten;
@@ -271,9 +268,9 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
 
     @Override
     public void onFeatureStart(TargetMapping mapping) throws Exception {
-        currentFeature = new FeatureDTO();
+        currentFeature = new ObjectDTO();
         if (isFeatureCollection) {
-            currentFeature.titleAsLink = true;
+            currentFeature.inCollection = true;
         }
 
         currentFeature.name = mapping.getName();
@@ -325,10 +322,11 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                                 .forEach(consumerMayThrow(query -> {
 
 
-                                    FeaturePropertyDTO featurePropertyDTO = new FeaturePropertyDTO();
-                                    featurePropertyDTO.name = query.getConfiguration()
+                                    PropertyDTO propertyDTO = new PropertyDTO();
+                                    propertyDTO.name = query.getConfiguration()
                                                                    .getLabel();
-                                    dataset.additionalFeatures.add(featurePropertyDTO);
+                                    dataset.additionalFeatures.add(propertyDTO);
+                                    String value = null;
 
                                     if (aroundRelationsQuery.isResolve()) {
                                         String resolved = aroundRelationResolver.resolve(query, "&f=html&bare=true");
@@ -339,7 +337,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                                                                                     .apply("limit,offset");
 
                                             //TODO multiple relations
-                                            featurePropertyDTO.value = resolved.replaceAll("<a class=\"page-link\" href=\".*(&limit(?:=|(?:&#61;))[0-9]+)(?:.*?((?:&|&amp;)offset(?:=|(?:&#61;))[0-9]+))?.*\">", "<a class=\"page-link\" href=\"" + url.substring(0, url.length() - 1) + "$1$2\">");
+                                            value = resolved.replaceAll("<a class=\"page-link\" href=\".*(&limit(?:=|(?:&#61;))[0-9]+)(?:.*?((?:&|&amp;)offset(?:=|(?:&#61;))[0-9]+))?.*\">", "<a class=\"page-link\" href=\"" + url.substring(0, url.length() - 1) + "$1$2\">");
 
                                             if (index[0] > 0) {
                                                 String limits = IntStream.range(0, index[0])
@@ -348,17 +346,19 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                                                 String offsets = IntStream.range(0, index[0])
                                                                           .mapToObj(i -> "0")
                                                                           .collect(Collectors.joining(",", "", ","));
-                                                featurePropertyDTO.value = featurePropertyDTO.value.replaceAll("limit(?:=|(?:&#61;))([0-9]+)", "limit=" + limits + "$1");
-                                                featurePropertyDTO.value = featurePropertyDTO.value.replaceAll("offset(?:=|(?:&#61;))([0-9]+)", "offset=" + offsets + "$1");
+                                                value = value.replaceAll("limit(?:=|(?:&#61;))([0-9]+)", "limit=" + limits + "$1");
+                                                value = value.replaceAll("offset(?:=|(?:&#61;))([0-9]+)", "offset=" + offsets + "$1");
                                             }
+
                                         } else {
-                                            featurePropertyDTO.value = "Keine";
+                                            value = "Keine";
                                         }
                                     } else {
                                         String url = aroundRelationResolver.getUrl(query, "&f=html");
 
-                                        featurePropertyDTO.value = "<a href=\"" + url + "\" target=\"_blank\">Öffnen</a>";
+                                        value = "<a href=\"" + url + "\" target=\"_blank\">Öffnen</a>";
                                     }
+                                    propertyDTO.addValue(value);
 
                                     index[0]++;
                                 }));
@@ -393,8 +393,8 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
         }
 
         if (mapping.getType() == MICRODATA_TYPE.ID) {
-            currentFeature.id = new FeaturePropertyDTO();
-            currentFeature.id.value = value;
+            currentFeature.id = new PropertyDTO();
+            currentFeature.id.addValue(value);
             currentFeature.id.itemProp = "url";
             if (!isFeatureCollection) {
                 this.dataset.title = value;
@@ -404,9 +404,9 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
             }
 
             if (!isFeatureCollection || mapping.isShowInCollection()) {
-                FeaturePropertyDTO property = new FeaturePropertyDTO();
+                PropertyDTO property = new PropertyDTO();
                 property.name = mapping.getName();
-                property.value = value;
+                property.addValue(value);
 
                 currentFeature.addChild(property);
             }
@@ -418,7 +418,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                 String[] path = mapping.getItemProp()
                                        .split("::");
 
-                FeaturePropertyDTO lastProperty = null;
+                PropertyDTO lastProperty = null;
 
                 for (int i = 0; i < path.length; i++) {
                     String itemProp = path[i];
@@ -437,21 +437,21 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                         }
                     }//"itemProp": "address[itemType=http://schema.org/PostalAddress]::streetAddress"
 
-                    FeaturePropertyDTO currentProperty = null;
+                    PropertyDTO currentProperty = null;
                     boolean knownProperty = false;
 
                     if (i == 0) {
-                        for (FeaturePropertyDTO p : currentFeature.childList) {
+                        for (ObjectOrPropertyDTO p : currentFeature.childList) {
                             if (p != null && p.itemProp != null && (p.itemProp.equals(itemProp) || p.name.equals(mapping.getName()))) {
-                                currentProperty = p;
+                                currentProperty = (PropertyDTO) p;
                                 knownProperty = true;
                                 break;
                             }
                         }
                     } else if (lastProperty != null) {
-                        for (FeaturePropertyDTO p : lastProperty.childList) {
+                        for (ObjectOrPropertyDTO p : lastProperty.childList) {
                             if (p != null && (p.itemProp.equals(itemProp) || p.name.equals(mapping.getName()))) {
-                                currentProperty = p;
+                                currentProperty = (PropertyDTO) p;
                                 knownProperty = true;
                                 break;
                             }
@@ -459,7 +459,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                     }
 
                     if (currentProperty == null) {
-                        currentProperty = new FeaturePropertyDTO();
+                        currentProperty = new PropertyDTO();
                         currentProperty.itemProp = itemProp;
                         currentProperty.itemType = itemType;
 
@@ -471,10 +471,10 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
 
                     if (i == path.length - 1) {
                         currentProperty.name = mapping.getName();
-                        if (currentProperty.value != null) {
-                            currentProperty.value += prefix + value;
+                        if (!currentProperty.values.isEmpty()) {
+                            currentProperty.values.get(0).value += prefix + value;
                         } else {
-                            currentProperty.value = value;
+                            currentProperty.addValue(value);
                         }
 
                         if (currentFeature.name != null) {
@@ -492,30 +492,30 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                     lastProperty = currentProperty;
                 }
             } else {
-                FeaturePropertyDTO property = new FeaturePropertyDTO();
+                PropertyDTO property = new PropertyDTO();
                 property.name = mapping.getName();
-                property.value = value;
                 property.itemType = mapping.getItemType();
                 property.itemProp = mapping.getItemProp();
+
+                String processedValue = value;
+                AtomicReference<Boolean> isHtml = new AtomicReference<>(false);
 
                 if (currentFeature.name != null) {
                     int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
                     if (pos > -1) {
-                        currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
+                        currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
                     }
                 }
 
                 if (Objects.nonNull(mapping.getCodelist()) && codelists.containsKey(mapping.getCodelist())) {
                     Codelist cl = codelists.get(mapping.getCodelist());
-                    String resolvedValue = cl.getValue(property.value);
+                    processedValue = cl.getValue(value);
 
                     if (cl.getData()
                           .getSourceType() == CodelistData.IMPORT_TYPE.TEMPLATES) {
-                        resolvedValue = StringTemplateFilters.applyFilterMarkdown(StringTemplateFilters.applyTemplate(resolvedValue, property.value));
-                        property.isHtml = true;
+                        processedValue = StringTemplateFilters.applyFilterMarkdown(StringTemplateFilters.applyTemplate(processedValue, value));
+                        isHtml.set(true);
                     }
-
-                    property.value = resolvedValue;
                 }
 
                 if (mapping.getType() == MICRODATA_TYPE.DATE) {
@@ -523,7 +523,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                         DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd[['T'][' ']HH:mm:ss][.SSS][X]");
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(mapping.getFormat());
                         TemporalAccessor ta = parser.parseBest(value, OffsetDateTime::from, LocalDateTime::from, LocalDate::from);
-                        property.value = formatter.format(ta);
+                        processedValue = formatter.format(ta);
                     } catch (Exception e) {
                         //ignore
                     }
@@ -532,41 +532,31 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                     boolean more = false;
                     if (currentFormatter == null) {
 
-                        String formattedValue = StringTemplateFilters.applyTemplate(mapping.getFormat(), property.value, isHtml -> property.isHtml = isHtml);
+                        String formattedValue = StringTemplateFilters.applyTemplate(mapping.getFormat(), value, html -> isHtml.set(html));
 
-                        property.value = formattedValue
+                        processedValue = formattedValue
                                 .replace("{{serviceUrl}}", serviceUrl);
-                        int subst = property.value.indexOf("}}");
+                        int subst = processedValue.indexOf("}}");
                         if (subst > -1) {
-                            property.value = property.value.substring(0, property.value.indexOf("{{")) + value + property.value.substring(subst + 2);
-                            more = property.value.contains("}}");
+                            processedValue = processedValue.substring(0, processedValue.indexOf("{{")) + value + processedValue.substring(subst + 2);
+                            more = processedValue.contains("}}");
                         }
                     } else {
                         int subst = currentFormatter.indexOf("}}");
                         if (subst > -1) {
-                            property.value = currentFormatter.substring(0, currentFormatter.indexOf("{{")) + value + currentFormatter.substring(subst + 2);
-                            more = property.value.contains("}}");
+                            processedValue = currentFormatter.substring(0, currentFormatter.indexOf("{{")) + value + currentFormatter.substring(subst + 2);
+                            more = processedValue.contains("}}");
                         }
                     }
                     if (more) {
-                        this.currentFormatter = property.value;
+                        this.currentFormatter = processedValue;
                         return;
                     } else {
                         currentFormatter = null;
                     }
                 }
-                if (property.value.startsWith("http://") || property.value.startsWith("https://")) {
-                    if (property.value.toLowerCase()
-                                      .endsWith(".png") || property.value.toLowerCase()
-                                                                         .endsWith(".jpg") || property.value.toLowerCase()
-                                                                                                            .endsWith(".gif")) {
-                        property.isImg = true;
-                    } else {
-                        property.isUrl = true;
-                    }
-                }
-
                 currentFeature.addChild(property);
+                property.addValue(processedValue, isHtml.get());
             }
         }
     }
@@ -615,12 +605,12 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
 
         currentGeometryParts++;
         if (currentGeometryParts == 1) {
-            currentFeature.geo = new FeaturePropertyDTO();
+            currentFeature.geo = new PropertyDTO();
             currentFeature.geo.itemType = "http://schema.org/GeoShape";
             currentFeature.geo.itemProp = "geo";
             currentFeature.geo.name = "geometry";
 
-            currentGeometryPart = new FeaturePropertyDTO();
+            currentGeometryPart = new PropertyDTO();
             currentFeature.geo.addChild(currentGeometryPart);
 
             switch (currentGeometryType) {
@@ -640,7 +630,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
 
         switch (currentGeometryType) {
             case POINT:
-                currentFeature.geo = new FeaturePropertyDTO();
+                currentFeature.geo = new PropertyDTO();
                 currentFeature.geo.itemType = "http://schema.org/GeoCoordinates";
                 currentFeature.geo.itemProp = "geo";
                 currentFeature.geo.name = "geometry";
@@ -651,15 +641,15 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
                     point = crsTransformer.transform(point, false);
                 }
 
-                FeaturePropertyDTO longitude = new FeaturePropertyDTO();
+                PropertyDTO longitude = new PropertyDTO();
                 longitude.name = "longitude";
                 longitude.itemProp = "longitude";
-                longitude.value = point.getXasString();
+                longitude.addValue(point.getXasString());
 
-                FeaturePropertyDTO latitude = new FeaturePropertyDTO();
+                PropertyDTO latitude = new PropertyDTO();
                 latitude.name = "latitude";
                 latitude.itemProp = "latitude";
-                latitude.value = point.getYasString();
+                latitude.addValue(point.getYasString());
 
                 currentFeature.geo.addChild(latitude);
                 currentFeature.geo.addChild(longitude);
@@ -694,7 +684,7 @@ public class FeatureTransformerHtml implements FeatureTransformer, OnTheFly {
         if (currentGeometryType == null) return;
 
         if (currentGeometryPart != null) {
-            currentGeometryPart.value = coordinatesOutput.toString();
+            currentGeometryPart.addValue(coordinatesOutput.toString());
         }
 
         if (!isFeatureCollection && aroundRelationsQuery.isActive()) {
