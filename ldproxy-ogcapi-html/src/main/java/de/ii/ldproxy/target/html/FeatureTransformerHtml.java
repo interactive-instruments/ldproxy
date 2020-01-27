@@ -370,14 +370,11 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
         if (transformations.containsKey(featureProperty.getName())) {
 
-            Optional<ValueDTO> transformedProperty = transformations.get(featureProperty.getName())
-                                                                              .transform(new ValueDTO(), featureProperty);
+            boolean shouldSkipProperty = !transformations.get(featureProperty.getName()).transform(featureProperty).isPresent();
 
-            if (!transformedProperty.isPresent()) {
+            if (shouldSkipProperty) {
                 return;
             }
-
-            // TODO what happens with the transformedProperty?
         }
 
         currentGeometryType = MICRODATA_GEOMETRY_TYPE.forGmlType(type);

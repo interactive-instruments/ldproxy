@@ -31,7 +31,6 @@ public abstract class HtmlPropertyTransformations implements FeaturePropertyTran
         return ImmutableFeaturePropertyTransformerBooleanTranslate.builder()
                                                                   .i18n(getI18n())
                                                                   .language(getLanguage())
-                                                                  .parameter("true")
                                                                   .build();
     }
 
