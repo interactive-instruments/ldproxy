@@ -67,14 +67,14 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
     private final Map<String, HtmlPropertyTransformations> transformations;
     private final boolean isMicrodataEnabled;
 
-    private FeatureDTO currentFeature;
+    private ObjectDTO currentFeature;
     private MICRODATA_GEOMETRY_TYPE currentGeometryType;
     private CoordinatesWriterType.Builder cwBuilder;
     private FeatureProperty currentFeatureProperty;
     private StringBuilder currentValue = new StringBuilder();
     private Writer coordinatesWriter;
     private Writer coordinatesOutput;
-    private FeaturePropertyDTO currentGeometryPart;
+    private PropertyDTO currentGeometryPart;
     private int currentGeometryParts;
     private boolean currentGeometryWritten;
 
@@ -211,10 +211,10 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
     @Override
     public void onFeatureStart(FeatureType featureType) throws Exception {
-        currentFeature = new FeatureDTO();
+      currentFeature = new ObjectDTO();
 
         if (isFeatureCollection) {
-            currentFeature.titleAsLink = true;
+            currentFeature.inCollection = true;
         }
 
         Optional<String> itemLabelFormat = htmlConfiguration.getItemLabelFormat();
@@ -240,7 +240,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
         if (currentFeature.name != null) {
             currentFeature.name = currentFeature.name.replaceAll("\\{\\{[^}]*\\}\\}", "");
         } else {
-            currentFeature.name = currentFeature.id.value;
+            currentFeature.name = currentFeature.id.getFirstValue();
         }
 
         if (!isFeatureCollection) {
@@ -263,10 +263,11 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                 .forEach(consumerMayThrow(query -> {
 
 
-                                    FeaturePropertyDTO featurePropertyDTO = new FeaturePropertyDTO();
-                                    featurePropertyDTO.name = query.getConfiguration()
+                                    PropertyDTO propertyDTO = new PropertyDTO();
+                                    propertyDTO.name = query.getConfiguration()
                                                                    .getLabel();
-                                    dataset.additionalFeatures.add(featurePropertyDTO);
+                                    dataset.additionalFeatures.add(propertyDTO);
+                                    String value = null;
 
                                     if (aroundRelationsQuery.isResolve()) {
                                         String resolved = aroundRelationResolver.resolve(query, "&f=html&bare=true");
@@ -277,7 +278,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                                                                     .apply("limit,offset");
 
                                             //TODO multiple relations
-                                            featurePropertyDTO.value = resolved.replaceAll("<a class=\"page-link\" href=\".*(&limit(?:=|(?:&#61;))[0-9]+)(?:.*?((?:&|&amp;)offset(?:=|(?:&#61;))[0-9]+))?.*\">", "<a class=\"page-link\" href=\"" + url.substring(0, url.length() - 1) + "$1$2\">");
+                                            value = resolved.replaceAll("<a class=\"page-link\" href=\".*(&limit(?:=|(?:&#61;))[0-9]+)(?:.*?((?:&|&amp;)offset(?:=|(?:&#61;))[0-9]+))?.*\">", "<a class=\"page-link\" href=\"" + url.substring(0, url.length() - 1) + "$1$2\">");
 
                                             if (index[0] > 0) {
                                                 String limits = IntStream.range(0, index[0])
@@ -286,17 +287,19 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                                 String offsets = IntStream.range(0, index[0])
                                                                           .mapToObj(i -> "0")
                                                                           .collect(Collectors.joining(",", "", ","));
-                                                featurePropertyDTO.value = featurePropertyDTO.value.replaceAll("limit(?:=|(?:&#61;))([0-9]+)", "limit=" + limits + "$1");
-                                                featurePropertyDTO.value = featurePropertyDTO.value.replaceAll("offset(?:=|(?:&#61;))([0-9]+)", "offset=" + offsets + "$1");
+                                                value = value.replaceAll("limit(?:=|(?:&#61;))([0-9]+)", "limit=" + limits + "$1");
+                                                value = value.replaceAll("offset(?:=|(?:&#61;))([0-9]+)", "offset=" + offsets + "$1");
                                             }
+
                                         } else {
-                                            featurePropertyDTO.value = "Keine";
+                                            value = "Keine";
                                         }
                                     } else {
                                         String url = aroundRelationResolver.getUrl(query, "&f=html");
 
-                                        featurePropertyDTO.value = "<a href=\"" + url + "\" target=\"_blank\">Öffnen</a>";
+                                        value = "<a href=\"" + url + "\" target=\"_blank\">Öffnen</a>";
                                     }
+                                    propertyDTO.addValue(value);
 
                                     index[0]++;
                                 }));
@@ -324,19 +327,19 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
     protected void writeField(FeatureProperty featureProperty, String value) {
 
         if (featureProperty.isId()) {
-            currentFeature.id = new FeaturePropertyDTO();
-            currentFeature.id.value = value;
-            currentFeature.id.itemProp = "url";
+          currentFeature.id = new PropertyDTO();
+          currentFeature.id.addValue(value);
+          currentFeature.id.itemProp = "url";
         }
 
-        FeaturePropertyDTO property = new FeaturePropertyDTO();
+        PropertyDTO property = new PropertyDTO();
         property.name = featureProperty.getName();
-        property.value = value;
+        property.addValue(value);
 
         if (currentFeature.name != null) {
             int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
             if (pos > -1) {
-                currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
+                currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
             }
         }
 
@@ -344,15 +347,16 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                      .replaceAll("\\[.+?\\]", "[]");
         if (transformations.containsKey(tkey)) {
 
-            Optional<FeaturePropertyDTO> transformedProperty = transformations.get(tkey)
-                                                                              .transform(property, featureProperty);
+            Optional<ValueDTO> transformedProperty = property.values.size()>0 ?
+                    transformations.get(tkey)
+                                   .transform(property.values.get(0), featureProperty) :
+                    Optional.empty();
 
             if (transformedProperty.isPresent()) {
-                currentFeature.addChild(transformedProperty.get());
+                property.values.set(0,transformedProperty.get());
             }
-        } else {
-            currentFeature.addChild(property);
         }
+        currentFeature.addChild(property);
     }
 
     @Override
@@ -366,12 +370,14 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
         if (transformations.containsKey(featureProperty.getName())) {
 
-            Optional<FeaturePropertyDTO> transformedProperty = transformations.get(featureProperty.getName())
-                                                                              .transform(new FeaturePropertyDTO(), featureProperty);
+            Optional<ValueDTO> transformedProperty = transformations.get(featureProperty.getName())
+                                                                              .transform(new ValueDTO(), featureProperty);
 
             if (!transformedProperty.isPresent()) {
                 return;
             }
+
+            // TODO what happens with the transformedProperty?
         }
 
         currentGeometryType = MICRODATA_GEOMETRY_TYPE.forGmlType(type);
@@ -402,12 +408,12 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
         currentGeometryParts++;
         if (currentGeometryParts == 1) {
-            currentFeature.geo = new FeaturePropertyDTO();
+            currentFeature.geo = new PropertyDTO();
             currentFeature.geo.itemType = "http://schema.org/GeoShape";
             currentFeature.geo.itemProp = "geo";
             currentFeature.geo.name = "geometry";
 
-            currentGeometryPart = new FeaturePropertyDTO();
+            currentGeometryPart = new PropertyDTO();
             currentFeature.geo.addChild(currentGeometryPart);
 
             switch (currentGeometryType) {
@@ -427,7 +433,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
         switch (currentGeometryType) {
             case POINT:
-                currentFeature.geo = new FeaturePropertyDTO();
+                currentFeature.geo = new PropertyDTO();
                 currentFeature.geo.itemType = "http://schema.org/GeoCoordinates";
                 currentFeature.geo.itemProp = "geo";
                 currentFeature.geo.name = "geometry";
@@ -438,15 +444,15 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                     point = crsTransformer.transform(point, false);
                 }
 
-                FeaturePropertyDTO longitude = new FeaturePropertyDTO();
+                PropertyDTO longitude = new PropertyDTO();
                 longitude.name = "longitude";
                 longitude.itemProp = "longitude";
-                longitude.value = point.getXasString();
+                longitude.addValue(point.getXasString());
 
-                FeaturePropertyDTO latitude = new FeaturePropertyDTO();
+                PropertyDTO latitude = new PropertyDTO();
                 latitude.name = "latitude";
                 latitude.itemProp = "latitude";
-                latitude.value = point.getYasString();
+                latitude.addValue(point.getYasString());
 
                 currentFeature.geo.addChild(latitude);
                 currentFeature.geo.addChild(longitude);
@@ -481,7 +487,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
         if (currentGeometryType == null) return;
 
         if (currentGeometryPart != null) {
-            currentGeometryPart.value = coordinatesOutput.toString();
+            currentGeometryPart.addValue(coordinatesOutput.toString());
         }
 
         if (!isFeatureCollection && aroundRelationsQuery.isActive()) {

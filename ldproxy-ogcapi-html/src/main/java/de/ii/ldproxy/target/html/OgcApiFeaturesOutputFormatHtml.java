@@ -354,8 +354,11 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                               return entry;
                                                           })
                                                           .collect(ImmutableSet.toImmutableSet());
-        featureTypeDataset.uriBuilder = uriBuilder;
-        featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
+        featureTypeDataset.uriBuilder = uriCustomizer.copy()
+                                                     .ensureParameter("f", MEDIA_TYPE.parameter());
+        featureTypeDataset.uriBuilderWithFOnly = uriCustomizer.copy()
+                                                              .clearParameters()
+                                                              .ensureParameter("f", MEDIA_TYPE.parameter());
 
         //TODO: refactor all views, use extendable OgcApiCollection(s) as base, move this to OgcApiCollectionExtension
         featureTypeDataset.spatialSearch = featureType.getExtensions()
@@ -422,7 +425,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                           .map(wfs3Link -> new NavigationDTO(wfs3Link.getTypeLabel(), wfs3Link.getHref()))
                                           .collect(Collectors.toList());
 
-        featureTypeDataset.uriBuilder2 = uriCustomizer.copy();
+        featureTypeDataset.uriBuilder = uriCustomizer.copy();
 
         return featureTypeDataset;
     }

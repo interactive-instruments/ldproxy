@@ -28,6 +28,9 @@ public interface FeaturePropertyTransformerBooleanTranslate extends FeaturePrope
     }
 
     @Override
+    default String getParameter() { return null; }
+
+    @Override
     default List<FeatureProperty.Type> getSupportedPropertyTypes() {
         return ImmutableList.of(FeatureProperty.Type.BOOLEAN);
     }

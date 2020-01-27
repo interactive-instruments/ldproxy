@@ -24,7 +24,7 @@ import de.ii.ldproxy.target.html.Gml2MicrodataMappingProvider;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping;
 import de.ii.ldproxy.target.html.MicrodataMapping;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
-import de.ii.ldproxy.wfs3.jsonld.Gml2JsonLdMappingProvider;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Jackson;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
@@ -282,8 +282,6 @@ public class Wfs3ServiceMigrate {
             case Gml2GeoJsonMappingProvider.MIME_TYPE:
                 return createGeoJsonMapping(mappingType, mapping, (GeoJsonPropertyMapping) oldTargetMapping);
             case Gml2MicrodataMappingProvider.MIME_TYPE:
-                return createMicrodataMapping(mappingType, mapping, (MicrodataPropertyMapping) oldTargetMapping);
-            case Gml2JsonLdMappingProvider.MIME_TYPE:
                 return createMicrodataMapping(mappingType, mapping, (MicrodataPropertyMapping) oldTargetMapping);
         }
         return null;
