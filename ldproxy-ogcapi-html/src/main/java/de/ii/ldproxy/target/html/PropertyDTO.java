@@ -16,6 +16,7 @@ import java.util.Objects;
 public class PropertyDTO extends ObjectOrPropertyDTO {
 
     public List<ValueDTO> values = new ArrayList<>();
+    public String baseName = null;
 
     public void addValue(ValueDTO value) {
         values.add(value);

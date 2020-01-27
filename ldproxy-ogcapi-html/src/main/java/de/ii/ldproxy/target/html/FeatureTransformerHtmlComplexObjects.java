@@ -102,6 +102,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
             PropertyDTO property = valueContext.get(curPath);
             if (Objects.isNull(property)) {
                 property = new PropertyDTO();
+                property.baseName = curPath;
                 valueContext.addChild(property);
             }
             if (curPath.equals(baseName) ||

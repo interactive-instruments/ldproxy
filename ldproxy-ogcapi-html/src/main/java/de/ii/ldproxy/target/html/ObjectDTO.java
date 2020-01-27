@@ -42,7 +42,7 @@ public class ObjectDTO extends ObjectOrPropertyDTO {
 
     public PropertyDTO get(String name) {
         return (PropertyDTO) childList.stream()
-                .filter(prop -> prop instanceof PropertyDTO && prop.name.equals(name))
+                .filter(prop -> prop instanceof PropertyDTO && ((PropertyDTO)prop).baseName.equals(name))
                 .findFirst()
                 .orElse(null);
     }
