@@ -67,7 +67,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
     private final Map<String, HtmlPropertyTransformations> transformations;
     private final boolean isMicrodataEnabled;
 
-    private FeatureDTO currentFeature;
+    private ObjectDTO currentFeature;
     private MICRODATA_GEOMETRY_TYPE currentGeometryType;
     private CoordinatesWriterType.Builder cwBuilder;
     private FeatureProperty currentFeatureProperty;
@@ -240,7 +240,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
         if (currentFeature.name != null) {
             currentFeature.name = currentFeature.name.replaceAll("\\{\\{[^}]*\\}\\}", "");
         } else {
-            currentFeature.name = currentFeature.id.value;
+            currentFeature.name = currentFeature.id.getFirstValue();
         }
 
         if (!isFeatureCollection) {
@@ -339,7 +339,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
         if (currentFeature.name != null) {
             int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
             if (pos > -1) {
-                currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
+                currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
             }
         }
 
@@ -347,15 +347,16 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                      .replaceAll("\\[.+?\\]", "[]");
         if (transformations.containsKey(tkey)) {
 
-            Optional<PropertyDTO> transformedProperty = transformations.get(tkey)
-                                                                       .transform(property, featureProperty);
+            Optional<ValueDTO> transformedProperty = property.values.size()>0 ?
+                    transformations.get(tkey)
+                                   .transform(property.values.get(0), featureProperty) :
+                    Optional.empty();
 
             if (transformedProperty.isPresent()) {
-                currentFeature.addChild(transformedProperty.get());
+                property.values.set(0,transformedProperty.get());
             }
-        } else {
-            currentFeature.addChild(property);
         }
+        currentFeature.addChild(property);
     }
 
     @Override
@@ -369,12 +370,14 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
         if (transformations.containsKey(featureProperty.getName())) {
 
-            Optional<FeaturePropertyDTO> transformedProperty = transformations.get(featureProperty.getName())
-                                                                              .transform(new FeaturePropertyDTO(), featureProperty);
+            Optional<ValueDTO> transformedProperty = transformations.get(featureProperty.getName())
+                                                                              .transform(new ValueDTO(), featureProperty);
 
             if (!transformedProperty.isPresent()) {
                 return;
             }
+
+            // TODO what happens with the transformedProperty?
         }
 
         currentGeometryType = MICRODATA_GEOMETRY_TYPE.forGmlType(type);

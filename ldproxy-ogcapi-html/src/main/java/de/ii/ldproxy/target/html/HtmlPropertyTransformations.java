@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Value.Immutable
-public abstract class HtmlPropertyTransformations implements FeaturePropertyTransformations<FeaturePropertyDTO> {
+public abstract class HtmlPropertyTransformations implements FeaturePropertyTransformations<ValueDTO> {
 
     public abstract Optional<I18n> getI18n();
 
@@ -35,7 +35,7 @@ public abstract class HtmlPropertyTransformations implements FeaturePropertyTran
     }
 
     @Override
-    public String getValue(FeaturePropertyDTO wrapper) {
+    public String getValue(ValueDTO wrapper) {
         return wrapper.value;
     }
 
@@ -61,19 +61,18 @@ public abstract class HtmlPropertyTransformations implements FeaturePropertyTran
             }
         }
 
-        return value;
+        return transformedValue;
     }
 
     @Override
-    public Optional<FeaturePropertyDTO> transform(FeaturePropertyDTO wrapper, FeatureProperty transformedSchema,
+    public Optional<ValueDTO> transform(ValueDTO wrapper, FeatureProperty transformedSchema,
                                                   String transformedValue) {
         if (Objects.isNull(transformedSchema)) {
             return Optional.empty();
         }
 
-        wrapper.name = transformedSchema.getName();
+        wrapper.property.name = transformedSchema.getName();
         wrapper.value = transformedValue;
-
 
         if (Objects.isNull(wrapper.value)) {
             return Optional.of(wrapper);

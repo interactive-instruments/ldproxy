@@ -74,9 +74,9 @@ public class FeatureCollectionView extends DatasetView {
         if (!isCollection && persistentUri!=null)
             return Optional.of(persistentUri);
 
-        URICustomizer canonicalUri = uriBuilder2.copy()
-                                .ensureNoTrailingSlash()
-                                        .removeParameters("f");
+        URICustomizer canonicalUri = uriBuilder.copy()
+                                               .ensureNoTrailingSlash()
+                                               .clearParameters();
 
         boolean hasOtherParams = !canonicalUri.isQueryEmpty();
         boolean hasPrevLink = Objects.nonNull(metaPagination) && metaPagination.stream()

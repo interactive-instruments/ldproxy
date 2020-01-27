@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.target.html;
 
+import java.util.Objects;
+
 public class ValueDTO implements ObjectOrPropertyOrValueDTO {
     public String value = null;
     public boolean isUrl = false ;
@@ -35,4 +37,22 @@ public class ValueDTO implements ObjectOrPropertyOrValueDTO {
         }
     }
 
+    public boolean isLevel2() {
+        return getLevel()==2;
+    }
+
+    public boolean isLevel3() {
+        return getLevel()==3;
+    }
+
+    public int getLevel() {
+        ObjectOrPropertyDTO property = this.property;
+        int level = 0;
+        while (Objects.nonNull(property)) {
+            level++;
+            ObjectOrPropertyDTO object = property.parent;
+            property = Objects.nonNull(object) ? object.parent : null;
+        }
+        return level;
+    }
 }

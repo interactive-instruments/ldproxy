@@ -38,8 +38,14 @@ public abstract class HtmlConfiguration implements ExtensionConfiguration, Featu
         return true;
     }
 
-    @Value.Default
+    @Deprecated
+    @Value.Derived
     public boolean getMicrodataEnabled() {
+        return getSchemaOrgEnabled();
+    }
+
+    @Value.Default
+    public boolean getSchemaOrgEnabled() {
         return true;
     }
 

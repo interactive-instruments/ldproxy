@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.target.html;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.Objects;
 
 public class ObjectDTO extends ObjectOrPropertyDTO {
@@ -38,10 +40,44 @@ public class ObjectDTO extends ObjectOrPropertyDTO {
         return null;
     }
 
-    public PropertyDTO get(int sortPriority) {
+    public PropertyDTO get(String name) {
         return (PropertyDTO) childList.stream()
-                .filter(prop -> prop instanceof PropertyDTO && prop.sortPriority==sortPriority)
+                .filter(prop -> prop instanceof PropertyDTO && prop.name.equals(name))
                 .findFirst()
                 .orElse(null);
     }
+
+    public ImmutableList<PropertyDTO> properties() {
+        return childList.stream()
+                .filter(child -> child instanceof PropertyDTO)
+                .map(child -> (PropertyDTO)child)
+                .collect(ImmutableList.toImmutableList());
+    }
+
+    public boolean isLevel2() {
+        return getLevel()==2;
+    }
+
+    public boolean isLevel3() {
+        return getLevel()==3;
+    }
+
+    public int getLevel() {
+        ObjectOrPropertyDTO object = this;
+        int level = -1;
+        while (Objects.nonNull(object)) {
+            level++;
+            ObjectOrPropertyDTO property = object.parent;
+            object = Objects.nonNull(property) ? property.parent : null;
+        }
+        return level;
+    }
+
+    public String getId() {
+        if (Objects.nonNull(id))
+            return id.getFirstValue();
+
+        return null;
+    }
+
 }
