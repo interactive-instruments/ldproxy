@@ -3,9 +3,13 @@
 {{#classic}}
 <div class="row">
     <div class="col-md-6">
-        {{#features}}
-            {{> feature}}
-        {{/features}}
+        <ul class="list-unstyled">
+            {{#features}}
+                <li>
+                    {{> feature}}
+                </li>
+            {{/features}}
+        </ul>
     </div>
     {{^hideMap}}
     <div class="col-md-6">
@@ -25,9 +29,13 @@
 
 <div class="row">
     <div class="col-md-12">
-        {{#features}}
-            {{> feature}}
-        {{/features}}
+        <ul class="list-unstyled">
+            {{#features}}
+                <li>
+                    {{> feature}}
+                </li>
+            {{/features}}
+        </ul>
     </div>
 </div>
 {{/complexObjects}}
