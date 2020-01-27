@@ -24,12 +24,8 @@ public class PropertyDTO extends ObjectOrPropertyDTO {
     }
 
     public ValueDTO addValue(String value) {
-        return addValue(value, false);
-    }
-
-    public ValueDTO addValue(String value, boolean isHtml) {
         ValueDTO newValue = new ValueDTO();
-        newValue.setValue(value, isHtml);
+        newValue.setValue(value);
         this.addValue(newValue);
         return newValue;
     }

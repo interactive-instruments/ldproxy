@@ -11,30 +11,26 @@ import java.util.Objects;
 
 public class ValueDTO implements ObjectOrPropertyOrValueDTO {
     public String value = null;
-    public boolean isUrl = false ;
-    public boolean isImg = false;
-    public boolean isHtml = false;
     public PropertyDTO property = null;
 
     public void setValue(String value) {
-        setValue(value, false);
+        this.value = value;
     }
 
-    public void setValue(String value, boolean isHtml) {
-        this.value = value;
-        this.isHtml = isHtml;
+    public boolean isHtml() {
+        return value.startsWith("<") && (value.endsWith(">") || value.endsWith(">\n")) && value.contains("</");
+    }
 
-        if (value.startsWith("http://") || value.startsWith("https://")) {
-            if (value.toLowerCase()
-                    .endsWith(".png") || value.toLowerCase()
-                    .endsWith(".jpg") || value.toLowerCase()
-                    .endsWith(".jpeg") || value.toLowerCase()
-                    .endsWith(".gif")) {
-                this.isImg = true;
-            } else {
-                this.isUrl = true;
-            }
-        }
+    public boolean isUrl() {
+        return value.startsWith("http://") || value.startsWith("https://");
+    }
+
+    public boolean isImageUrl() {
+        return isUrl() && (value.toLowerCase()
+                .endsWith(".png") || value.toLowerCase()
+                .endsWith(".jpg") || value.toLowerCase()
+                .endsWith(".jpeg") || value.toLowerCase()
+                .endsWith(".gif"));
     }
 
     public boolean isLevel2() {
@@ -45,7 +41,7 @@ public class ValueDTO implements ObjectOrPropertyOrValueDTO {
         return getLevel()==3;
     }
 
-    public int getLevel() {
+    private int getLevel() {
         ObjectOrPropertyDTO property = this.property;
         int level = 0;
         while (Objects.nonNull(property)) {

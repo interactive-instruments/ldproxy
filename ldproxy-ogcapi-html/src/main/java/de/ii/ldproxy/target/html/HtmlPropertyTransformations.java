@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- * <p>
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -78,30 +78,6 @@ public abstract class HtmlPropertyTransformations implements FeaturePropertyTran
             return Optional.of(wrapper);
         }
 
-        if (isHtml(wrapper.value)) {
-            wrapper.isHtml = true;
-        } else if (isImageUrl(wrapper.value)) {
-            wrapper.isImg = true;
-        } else if (isUrl(wrapper.value)) {
-            wrapper.isUrl = true;
-        }
-
         return Optional.of(wrapper);
-    }
-
-    private boolean isHtml(String value) {
-        return value.startsWith("<") && (value.endsWith(">") || value.endsWith(">\n")) && value.contains("</");
-    }
-
-    private boolean isUrl(String value) {
-        return value.startsWith("http://") || value.startsWith("https://");
-    }
-
-    private boolean isImageUrl(String value) {
-        return isUrl(value) && (value.toLowerCase()
-                                     .endsWith(".png") || value.toLowerCase()
-                                                               .endsWith(".jpg") || value.toLowerCase()
-                                                                                         .endsWith(".jpeg") || value.toLowerCase()
-                                                                                                                    .endsWith(".gif"));
     }
 }
