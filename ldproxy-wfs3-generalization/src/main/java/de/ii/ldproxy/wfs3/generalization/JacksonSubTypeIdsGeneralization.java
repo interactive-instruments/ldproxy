@@ -27,7 +27,7 @@ public class JacksonSubTypeIdsGeneralization implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(GeneralizationConfiguration.class, ExtensionConfiguration.getExtensionType(GeneralizationConfiguration.class))
+                .put(GeneralizationConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(GeneralizationConfiguration.class))
                 .build();
     }
 }

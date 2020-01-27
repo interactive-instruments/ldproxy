@@ -40,12 +40,12 @@ public class OpenApiYaml implements ApiDefinitionFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, Oas30Configuration.class);
     }
 
     @Override
-    public Response getApiDefinitionResponse(OgcApiDatasetData apiData,
+    public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
                                              OgcApiRequestContext wfs3Request) {
         LOGGER.debug("MIME {}", "YAML");
         return openApiDefinition.getOpenApi("yaml", wfs3Request.getUriCustomizer().copy(), apiData);

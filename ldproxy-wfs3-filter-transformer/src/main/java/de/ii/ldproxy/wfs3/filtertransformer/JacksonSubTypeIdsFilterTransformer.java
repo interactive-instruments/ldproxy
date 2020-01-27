@@ -27,7 +27,7 @@ public class JacksonSubTypeIdsFilterTransformer implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(FilterTransformersConfiguration.class, ExtensionConfiguration.getExtensionType(FilterTransformersConfiguration.class))
+                .put(FilterTransformersConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(FilterTransformersConfiguration.class))
                 .put(RequestGeoJsonBboxConfiguration.class, RequestGeoJsonBboxConfiguration.TRANSFORMER_TYPE)
                 .build();
     }

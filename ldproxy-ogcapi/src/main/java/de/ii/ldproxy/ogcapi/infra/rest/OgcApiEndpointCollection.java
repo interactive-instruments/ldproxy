@@ -52,7 +52,7 @@ public class OgcApiEndpointCollection implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/[\\w\\-]+/?$"))
             return extensionRegistry.getExtensionsForType(CollectionsFormatExtension.class)
                                     .stream()
@@ -66,7 +66,7 @@ public class OgcApiEndpointCollection implements OgcApiEndpointExtension {
 
     @GET
     @Path("/{collectionId}")
-    public Response getCollection(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
+    public Response getCollection(@Auth Optional<User> optionalUser, @Context OgcApiApi api,
                                    @Context OgcApiRequestContext requestContext, @PathParam("collectionId") String collectionId) {
         checkAuthorization(api.getData(), optionalUser);
 

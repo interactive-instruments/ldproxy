@@ -8,8 +8,8 @@
 package de.ii.ldproxy.wfs3.styles.representation;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.rest.views.GenericView;
 
@@ -20,9 +20,9 @@ public class StyleView extends GenericView {
     public String apiId;
     public String styleId;
     public Map<String, String> bbox;
-    private OgcApiDatasetData apiData;
+    private OgcApiApiDataV2 apiData;
 
-    public StyleView(String styleUrl, OgcApiDataset api, String styleId) {
+    public StyleView(String styleUrl, OgcApiApi api, String styleId) {
         super("style", null);
         this.styleUrl = styleUrl;
         this.apiId = apiId;

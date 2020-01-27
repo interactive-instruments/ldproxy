@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilder;
@@ -15,6 +17,7 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -32,6 +35,11 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
     Optional<String> getPersistentUriTemplate();
 
     CollectionExtent getExtent();
+
+    @JsonProperty(value = "api")
+    @JsonAlias(value = "capabilities")
+    @Override
+    List<ExtensionConfiguration> getExtensions();
 
     @Value.Immutable
     @JsonDeserialize(builder = ImmutableCollectionExtent.Builder.class)

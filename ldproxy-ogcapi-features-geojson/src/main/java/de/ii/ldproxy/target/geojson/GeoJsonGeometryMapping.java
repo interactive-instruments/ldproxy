@@ -16,6 +16,7 @@ import de.ii.xtraplatform.feature.transformer.api.SimpleFeatureGeometryFrom;
 /**
  * @author zahnen
  */
+@Deprecated
 public class GeoJsonGeometryMapping extends GeoJsonPropertyMapping {
 
     public enum GEO_JSON_GEOMETRY_TYPE implements SimpleFeatureGeometryFrom {

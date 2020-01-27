@@ -10,17 +10,14 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,26 +38,15 @@ import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-@Component
-@Provides
-@Instantiate
-public class CollectionMultitilesGenerator implements ConformanceClass {
+public class CollectionMultitilesGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CollectionMultitilesGenerator.class);
 
-    @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/multitiles";
-    }
+    //TODO: OgcApiTilesProviders (use features core featureProvider id as fallback)
+    private final OgcApiFeatureCoreProviders providers;
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
-        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
-
-        return extension
-                .filter(TilesConfiguration::getEnabled)
-                .filter(TilesConfiguration::getMultiTilesEnabled)
-                .isPresent();
+    public CollectionMultitilesGenerator(OgcApiFeatureCoreProviders providers) {
+        this.providers = providers;
     }
 
     /**
@@ -74,7 +60,7 @@ public class CollectionMultitilesGenerator implements ConformanceClass {
      */
     Response getMultitiles(String tileMatrixSetId, String bboxParam, String scaleDenominatorParam, String multiTileType,
                            URICustomizer uriCustomizer, String tileFormatParam, String collectionId, CrsTransformation crsTransformation,
-                           UriInfo uriInfo, I18n i18n, Optional<Locale> language, OgcApiDataset service, VectorTilesCache cache,
+                           UriInfo uriInfo, I18n i18n, Optional<Locale> language, OgcApiApi service, VectorTilesCache cache,
                            OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) {
 
         String tileFormat = MultitilesUtils.parseTileFormat(tileFormatParam);
@@ -131,10 +117,10 @@ public class CollectionMultitilesGenerator implements ConformanceClass {
     }
 
     protected File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId, String collectionId,
-                               boolean isFull, CrsTransformation crsTransformation, UriInfo uriInfo, I18n i18n,
-                               Optional<Locale> language, URICustomizer uriCustomizer, OgcApiDataset service,
-                               VectorTilesCache cache, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
-                               String tileFormat) {
+                                    boolean isFull, CrsTransformation crsTransformation, UriInfo uriInfo, I18n i18n,
+                                    Optional<Locale> language, URICustomizer uriCustomizer, OgcApiApi service,
+                                    VectorTilesCache cache, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
+                                    String tileFormat) {
         File zip = null;
 
         try {
@@ -165,11 +151,14 @@ public class CollectionMultitilesGenerator implements ConformanceClass {
                 tmpFile.deleteOnExit();
 
             }
+
+            FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData());
+
             for (TileSetEntry entry : tileSetEntries) {
                 File tileFile;
                 VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, String.valueOf(entry.getTileMatrix()),
                         String.valueOf(entry.getTileRow()), String.valueOf(entry.getTileCol()), service, false, cache,
-                        service.getFeatureProvider(), wfs3OutputFormatGeoJson);
+                        featureProvider, wfs3OutputFormatGeoJson);
                 File tileFileJson = tile.getFile(cache, "json");
 
                 if (!tileFileJson.exists()) {
@@ -181,17 +170,17 @@ public class CollectionMultitilesGenerator implements ConformanceClass {
                             geoJsonMediaType, true, tile, i18n, language);
                 }
 
-                // add the generated tile to the archive
-                String path = new StringBuilder(tileMatrixSetId)
-                        .append(File.separator)
-                        .append(entry.getTileMatrix())
-                        .append(File.separator)
-                        .append(entry.getTileRow())
-                        .append(File.separator)
-                        .append(entry.getTileCol())
-                        .append(".")
-                        .append(tileFormat)
-                        .toString();
+                    // add the generated tile to the archive
+                    String path = new StringBuilder(tileMatrixSetId)
+                            .append(File.separator)
+                            .append(entry.getTileMatrix())
+                            .append(File.separator)
+                            .append(entry.getTileRow())
+                            .append(File.separator)
+                            .append(entry.getTileCol())
+                            .append(".")
+                            .append(tileFormat)
+                            .toString();
                 zout.putNextEntry(new ZipEntry(path));
 
                 tileFile = tileFileJson;

@@ -10,9 +10,10 @@ package de.ii.ldproxy.target.gml;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
@@ -46,11 +47,17 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
             .parameter("xml")
             .build();
 
-    @Requires
-    private GmlConfig gmlConfig;
+    private final GmlConfig gmlConfig;
+    private final OgcApiFeatureCoreProviders providers;
 
     @ServiceController(value = false)
     private boolean enable;
+
+    public OgcApiFeaturesOutputFormatGml(@Requires GmlConfig gmlConfig,
+                                         @Requires OgcApiFeatureCoreProviders providers) {
+        this.gmlConfig = gmlConfig;
+        this.providers = providers;
+    }
 
     @Validate
     private void onStart() {
@@ -73,7 +80,7 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, GmlConfiguration.class);
     }
 
@@ -86,8 +93,8 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
     public Optional<FeatureConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
         return Optional.of(new FeatureTransformerGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
                                                                                                     .from(transformationContext)
-                                                                                                    .namespaces(((ConnectionInfoWfsHttp) transformationContext.getApiData()
-                                                                                                                                                              .getFeatureProvider()
+                                                                                                    .namespaces(((ConnectionInfoWfsHttp) providers.getFeatureProvider(transformationContext.getApiData())
+                                                                                                                                                  .getData()
                                                                                                                                                               .getConnectionInfo())
                                                                                                             .getNamespaces())
                                                                                                     .build()));

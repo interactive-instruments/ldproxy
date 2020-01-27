@@ -7,31 +7,31 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.google.common.base.CaseFormat;
 import de.ii.xtraplatform.dropwizard.cfg.JacksonProvider;
 
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "extensionType")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "buildingBlock")
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
 public interface ExtensionConfiguration {
 
-    static String getExtensionType(Class<? extends ExtensionConfiguration> clazz) {
+    static String getBuildingBlockIdentifier(Class<? extends ExtensionConfiguration> clazz) {
         return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, clazz.getSimpleName()
                                                                            .replace("Configuration", ""));
     }
 
-    @JsonIgnore
-    default String getExtensionType() {
-        return getExtensionType((Class<? extends ExtensionConfiguration>) this.getClass()
-                                                                              .getSuperclass());
+    @JsonAlias("extensionType")
+    default String getBuildingBlock() {
+        return getBuildingBlockIdentifier((Class<? extends ExtensionConfiguration>) this.getClass()
+                                                                                         .getSuperclass());
     }
 
     boolean getEnabled();
 
     default <T extends ExtensionConfiguration> T mergeDefaults(T extensionConfigurationDefault) {
-        return (T) this;
+        return null;
     }
 }

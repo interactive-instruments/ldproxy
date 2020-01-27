@@ -32,14 +32,14 @@ public class OgcApiQueryablesJson implements OgcApiQueryablesFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, QueryablesConfiguration.class)
                 .map(QueryablesConfiguration::getEnabled)
                 .orElse(false);
     }
 
     @Override
-    public Response getResponse(Queryables queryables, String collectionId, OgcApiDataset api, OgcApiRequestContext requestContext) {
+    public Response getResponse(Queryables queryables, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
         return Response.ok()
                 .entity(queryables)
                 .build();

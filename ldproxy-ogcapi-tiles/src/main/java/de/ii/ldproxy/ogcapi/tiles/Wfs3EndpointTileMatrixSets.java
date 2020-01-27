@@ -68,7 +68,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 apiData, String subPath) {
         return ImmutableSet.of(
                 new ImmutableOgcApiMediaType.Builder()
                         .type(MediaType.APPLICATION_JSON_TYPE)
@@ -84,7 +84,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
@@ -96,7 +96,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
     @Path("/")
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
-    public Response getTileMatrixSets(@Context OgcApiDataset api, @Context OgcApiRequestContext requestContext) {
+    public Response getTileMatrixSets(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
 
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(api.getData()));
 
@@ -158,7 +158,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getTileMatrixSet(@PathParam("tileMatrixSetId") String tileMatrixSetId,
-                                     @Context OgcApiDataset api,
+                                     @Context OgcApiApi api,
                                      @Context OgcApiRequestContext requestContext) {
 
         Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(api.getData()));

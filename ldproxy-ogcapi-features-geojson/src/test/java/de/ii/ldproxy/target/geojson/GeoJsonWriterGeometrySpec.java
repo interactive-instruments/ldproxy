@@ -8,7 +8,12 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
+import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.feature.provider.api.FeatureType;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import org.junit.runner.RunWith;
 
@@ -26,25 +31,34 @@ import static org.testng.Assert.assertEquals;
 @RunWith(Spectrum.class)
 public class GeoJsonWriterGeometrySpec {
 
-    static final GeoJsonPropertyMapping featureMapping = new GeoJsonPropertyMapping();
+    static final FeatureType featureMapping = new ImmutableFeatureType.Builder().name("f1")
+                                                                                .properties(ImmutableMap.of())
+                                                                                .build();
 
-    static final GeoJsonPropertyMapping propertyMapping = new GeoJsonPropertyMapping();
+    static final FeatureProperty propertyMapping = new ImmutableFeatureProperty.Builder().name("p1")
+                                                                                         .path("")
+                                                                                         .build();
 
-    static final GeoJsonPropertyMapping propertyMapping2 = new GeoJsonPropertyMapping();
+    static final FeatureProperty propertyMapping2 = new ImmutableFeatureProperty.Builder().name("p2")
+                                                                                          .path("")
+                                                                                          .build();
 
-    static final GeoJsonGeometryMapping geometryMapping = new GeoJsonGeometryMapping();
+    static final FeatureProperty geometryMapping = new ImmutableFeatureProperty.Builder().name("geometry")
+                                                                                         .path("")
+                                                                                         .type(FeatureProperty.Type.GEOMETRY)
+                                                                                         .build();
 
     static final String value1 = "val1";
     static final String value2 = "val2";
     static final String coordinates = "10 50, 11 51";
 
 
-    static {
+    /*static {
         featureMapping.setName("f1");
         propertyMapping.setName("p1");
         propertyMapping2.setName("p2");
         geometryMapping.setGeometryType(GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.MULTI_POLYGON);
-    }
+    }*/
 
     {
 
@@ -97,7 +111,8 @@ public class GeoJsonWriterGeometrySpec {
 
     }
 
-    private void writeFeature(ByteArrayOutputStream outputStream, List<Integer> nestingPattern) throws IOException, URISyntaxException {
+    private void writeFeature(ByteArrayOutputStream outputStream,
+                              List<Integer> nestingPattern) throws IOException, URISyntaxException {
         FeatureTransformationContextGeoJson transformationContext = GeoJsonWriterSetupUtil.createTransformationContext(outputStream, false);
         FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriterGeometry()));
 

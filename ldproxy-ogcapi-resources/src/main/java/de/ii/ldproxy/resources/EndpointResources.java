@@ -72,7 +72,7 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
@@ -91,7 +91,7 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
     }
 
     @Override
-    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
@@ -105,7 +105,7 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
         if (stylesExtension.isPresent() &&
@@ -124,7 +124,7 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
     @Path("/")
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
-    public Response getResources(@Context OgcApiDataset api, @Context OgcApiRequestContext requestContext) {
+    public Response getResources(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
         final ResourcesLinkGenerator resourcesLinkGenerator = new ResourcesLinkGenerator();
 
         final String apiId = api.getId();
@@ -174,7 +174,7 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
     @Path("/{resourceId}")
     @GET
     @Produces(MediaType.WILDCARD)
-    public Response getResource(@PathParam("resourceId") String resourceId, @Context OgcApiDataset dataset,
+    public Response getResource(@PathParam("resourceId") String resourceId, @Context OgcApiApi dataset,
                              @Context OgcApiRequestContext ogcApiRequest) {
 
         final String datasetId = dataset.getId();

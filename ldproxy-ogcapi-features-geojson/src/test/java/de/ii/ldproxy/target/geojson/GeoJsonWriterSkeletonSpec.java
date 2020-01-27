@@ -9,6 +9,8 @@ package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
 import com.greghaskins.spectrum.Spectrum;
+import de.ii.xtraplatform.feature.provider.api.FeatureType;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureType;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
@@ -29,12 +31,8 @@ import static org.testng.Assert.assertEquals;
 @RunWith(Spectrum.class)
 public class GeoJsonWriterSkeletonSpec {
 
-    static final GeoJsonPropertyMapping featureMapping = new GeoJsonPropertyMapping();
-
-
-    static {
-        featureMapping.setName("f1");
-    }
+    static final FeatureType featureMapping = new ImmutableFeatureType.Builder().name("f1")
+                                                                                .build();
 
     {
 
@@ -85,7 +83,8 @@ public class GeoJsonWriterSkeletonSpec {
 
     }
 
-    private void writeFeature(ByteArrayOutputStream outputStream, boolean isCollection) throws IOException, URISyntaxException {
+    private void writeFeature(ByteArrayOutputStream outputStream,
+                              boolean isCollection) throws IOException, URISyntaxException {
         FeatureTransformationContextGeoJson transformationContext = createTransformationContext(outputStream, isCollection);
         FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriterSkeleton()));
 

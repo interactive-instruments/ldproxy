@@ -10,14 +10,16 @@ package de.ii.ldproxy.wfs3.crs;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ImmutableCollections;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionsExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 import java.util.Locale;
@@ -32,14 +34,20 @@ import java.util.stream.Stream;
 @Instantiate
 public class OgcApiCollectionsCrs implements OgcApiCollectionsExtension {
 
+    private final OgcApiFeatureCoreProviders providers;
+
+    public OgcApiCollectionsCrs(@Requires OgcApiFeatureCoreProviders providers) {
+        this.providers = providers;
+    }
+
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, CrsConfiguration.class);
     }
 
     @Override
     public ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder,
-                                                OgcApiDatasetData apiData,
+                                                OgcApiApiDataV2 apiData,
                                                 URICustomizer uriCustomizer,
                                                 OgcApiMediaType mediaType,
                                                 List<OgcApiMediaType> alternateMediaTypes,
@@ -49,8 +57,9 @@ public class OgcApiCollectionsCrs implements OgcApiCollectionsExtension {
             ImmutableList<String> crsList =
                     Stream.concat(
                             Stream.of(
-                                    OgcApiDatasetData.DEFAULT_CRS_URI,
-                                    apiData.getFeatureProvider()
+                                    OgcApiApiDataV2.DEFAULT_CRS_URI,
+                                    providers.getFeatureProvider(apiData)
+                                             .getData()
                                            .getNativeCrs()
                                            .getAsUri()
                             ),

@@ -51,7 +51,7 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/[\\w\\-]+/queryables/?$"))
             return extensionRegistry.getExtensionsForType(OgcApiQueryablesFormatExtension.class)
                                     .stream()
@@ -68,7 +68,7 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
     }
 
     @Override
-    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
@@ -92,7 +92,7 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, QueryablesConfiguration.class);
     }
 
@@ -100,7 +100,7 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
     @Path("/{collectionId}/queryables")
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getQueryables(@Auth Optional<User> optionalUser,
-                             @Context OgcApiDataset api,
+                             @Context OgcApiApi api,
                              @Context OgcApiRequestContext requestContext,
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {

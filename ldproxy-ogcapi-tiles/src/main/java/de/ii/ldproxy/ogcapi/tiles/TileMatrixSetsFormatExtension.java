@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 
 import javax.ws.rs.core.Response;
@@ -21,11 +21,11 @@ public interface TileMatrixSetsFormatExtension extends FormatExtension {
     }
 
     Response getTileMatrixSetsResponse(TileMatrixSets tileMatrixSets,
-                                       OgcApiDataset api,
+                                       OgcApiApi api,
                                        OgcApiRequestContext requestContext);
 
     Response getTileMatrixSetResponse(TileMatrixSetData tileMatrixSet,
-                                      OgcApiDataset api,
+                                      OgcApiApi api,
                                       OgcApiRequestContext requestContext);
 
 }

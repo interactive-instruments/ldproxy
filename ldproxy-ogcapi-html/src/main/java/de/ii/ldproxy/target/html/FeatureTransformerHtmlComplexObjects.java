@@ -9,20 +9,21 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.codelists.Codelist;
-import de.ii.ldproxy.codelists.CodelistData;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
-import de.ii.ldproxy.target.html.MicrodataMapping.MICRODATA_TYPE;
-import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.akka.http.HttpClient;
 import de.ii.xtraplatform.crs.api.CoordinateTuple;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
+import de.ii.xtraplatform.feature.provider.api.FeatureType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
@@ -34,19 +35,12 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 /**
  * @author zahnen
  */
-public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer, OnTheFly {
+public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2, OnTheFly {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerHtmlComplexObjects.class);
 
@@ -74,6 +68,9 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
 
     private final FeatureTransformationContextHtml transformationContext;
     private final int offset;
+    private final HtmlConfiguration htmlConfiguration;
+    private final Map<String, HtmlPropertyTransformations> transformations;
+    private final boolean isMicrodataEnabled;
 
     private StringBuilder currentValueBuilder = new StringBuilder();
     private Map<String,Integer> pathMap = new HashMap<>();
@@ -86,7 +83,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
     private Map<Integer,Object> properties;
 
     private class PropertyContext {
-        MicrodataPropertyMapping mapping;
+        FeatureProperty featureProperty;
         List<Integer> index;
         String htmlName;
         List<String> htmlNameSections;
@@ -97,8 +94,9 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
         int arrays;
         int objectLevel;
 
-        PropertyContext(MicrodataPropertyMapping mapping, List<Integer> index) {
+        PropertyContext(FeatureProperty baseProperty, FeatureProperty htmlProperty, List<Integer> index) {
             this.index = index;
+            // TODO begin
             htmlName = mapping.getName();
             htmlNameSections = Splitter.on('|').splitToList(htmlName);
             baseName = mapping.getBaseMapping().getName();
@@ -109,6 +107,13 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
                             mapping.getBaseMapping().getSortPriority() :
                             nextSort++;
             this.mapping = mapping;
+            // TODO end
+            htmlName = htmlProperty.getName();
+            htmlNames = Splitter.on('|').splitToList(htmlName);
+            baseName = baseProperty.getName();
+            baseNames = Splitter.on('.').splitToList(baseName.replaceAll("\\[.+?\\]", ""));
+            sortPriority = nextSort++;
+            this.featureProperty = baseProperty;
 
             // determine context in the properties of this feature
             String curPath = null;
@@ -137,7 +142,8 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
                                     // ... otherwise we have an object
                                     newContext = new TreeMap<Integer,Object>();
                                     PropertyValue pv = new PropertyValue();
-                                    pv.addValue(htmlNameSections.get(objectLevel),"", false, null, null);
+                                    // TODO pv.addValue(htmlNameSections.get(objectLevel),"", false, null, null);
+                                    pv.setNameAndLevel(htmlNames.get(objectLevel), objectLevel+1); // TODO
                                     objectLevel++;
                                     ((Map<Integer,Object>)newContext).put(Integer.MIN_VALUE, pv);
                                 }
@@ -162,7 +168,8 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
                                     // ... otherwise we have an object
                                     newContext = new TreeMap<Integer,Object>();
                                     PropertyValue pv = new PropertyValue();
-                                    pv.addValue("————","", false, null, null);
+                                    // TODO pv.addValue("————","", false, null, null);
+                                    pv.setNameAndLevel("————", ++objectLevel + 1); // TODO
                                     pv.property.isObjectSeparator = true;
                                     ((Map<Integer,Object>)newContext).put(Integer.MIN_VALUE, pv);
                                 }
@@ -186,7 +193,8 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
                                 // ... otherwise we have an object
                                 newContext = new TreeMap<Integer,Object>();
                                 PropertyValue pv = new PropertyValue();
-                                pv.addValue(htmlNameSections.get(objectLevel),"", false, null, null);
+                                // TODO pv.addValue(htmlNameSections.get(objectLevel),"", false, null, null);
+                                pv.setNameAndLevel(htmlNames.get(objectLevel), objectLevel + 1); // TODO
                                 objectLevel++;
                                 ((Map<Integer,Object>)newContext).put(Integer.MIN_VALUE, pv);
                             }
@@ -312,6 +320,27 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
         return null;
     }
 
+/* TODO
+        //TODO: is this.property accessed/mutated before setProperty call? if not, just set property = featurePropertyDTO
+        void setProperty(FeaturePropertyDTO featurePropertyDTO) {
+            property.name = featurePropertyDTO.name;
+            property.value = featurePropertyDTO.value;
+            property.isHtml = featurePropertyDTO.isHtml;
+            property.isImg = featurePropertyDTO.isImg;
+            property.isUrl = featurePropertyDTO.isUrl;
+            property.isLevel2 = featurePropertyDTO.isLevel2;
+            property.isLevel3 = featurePropertyDTO.isLevel3;
+        }
+
+        void setNameAndLevel(String name, int level) {
+            property.name = name;
+
+            if (level==2) {
+                property.isLevel2 = true;
+            }
+            else if (level==3) {
+                property.isLevel3 = true;
+*/
 
     public FeatureTransformerHtmlComplexObjects(FeatureTransformationContextHtml transformationContext, HttpClient httpClient) {
         this.outputStreamWriter = new OutputStreamWriter(transformationContext.getOutputStream());
@@ -330,6 +359,23 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
         this.codelists = transformationContext.getCodelists();
         this.mustacheRenderer = transformationContext.getMustacheRenderer();
         this.transformationContext = transformationContext;
+        this.htmlConfiguration = transformationContext.getHtmlConfiguration();
+
+        FeatureTypeConfigurationOgcApi featureTypeConfiguration = transformationContext.getApiData()
+                                                                                       .getCollections()
+                                                                                       .get(transformationContext.getCollectionId());
+
+        Optional<FeatureTransformations> baseTransformations = featureTypeConfiguration
+                .getExtension(OgcApiFeaturesCoreConfiguration.class)
+                .map(coreConfiguration -> coreConfiguration);
+
+        this.transformations = featureTypeConfiguration
+                .getExtension(HtmlConfiguration.class)
+                .map(htmlConfiguration -> htmlConfiguration.getTransformations(baseTransformations, transformationContext.getCodelists(), transformationContext.getServiceUrl(), isFeatureCollection))
+                .orElse(ImmutableMap.of());
+
+        this.isMicrodataEnabled = transformationContext.getHtmlConfiguration()
+                                                       .getMicrodataEnabled();
     }
 
     @Override
@@ -434,23 +480,33 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
     }
 
     @Override
-    public void onFeatureStart(TargetMapping mapping) throws Exception {
+    public void onFeatureStart(FeatureType featureType) throws Exception {
         currentFeature = new ObjectDTO();
+
         if (isFeatureCollection) {
             currentFeature.inCollection = true;
         }
 
-        currentFeature.name = mapping.getName();
-        currentFeature.itemType = ((MicrodataPropertyMapping) mapping).getItemType();
-        currentFeature.itemProp = ((MicrodataPropertyMapping) mapping).getItemProp();
+        Optional<String> itemLabelFormat = htmlConfiguration.getItemLabelFormat();
+        if (itemLabelFormat.isPresent()) {
+            currentFeature.name = itemLabelFormat.get();
+        }
+
+        if (isMicrodataEnabled) {
+            currentFeature.itemType = "http://schema.org/Place";
+        }
 
         nextSort = 10000;
     }
 
     @Override
     public void onFeatureEnd() throws Exception {
-        if (currentFeature.name != null)
+        if (currentFeature.name != null) {
             currentFeature.name = currentFeature.name.replaceAll("\\{\\{[^}]*\\}\\}", "");
+        } else {
+            currentFeature.name = currentFeature.id.value;
+        }
+
         if (!isFeatureCollection) {
             this.dataset.title = currentFeature.name;
             this.dataset.breadCrumbs.get(dataset.breadCrumbs.size() - 1).label = currentFeature.name;
@@ -460,13 +516,26 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
     }
 
     @Override
-    public void onPropertyStart(TargetMapping mapping, List<Integer> index) throws Exception {
+    public void onPropertyStart(FeatureProperty featureProperty, List<Integer> index) throws Exception {
         currentValue = null;
-        if (mapping instanceof MicrodataPropertyMapping) {
-            currentMapping = (MicrodataPropertyMapping) mapping;
-            if (currentMapping.isEnabled() && (!isFeatureCollection || currentMapping.isShowInCollection())) {
-                currentValue = getValue(currentMapping, index);
+        String key = featureProperty.getName().replaceAll("\\[.+?\\]", "[]");
+        if (transformations.containsKey(key)) {
+
+// TODO
+// if (currentMapping.isEnabled() && (!isFeatureCollection || currentMapping.isShowInCollection())) {
+//    currentValue = getValue(currentMapping, index);
+
+            Optional<FeatureProperty> htmlProperty = transformations.get(key)
+                                                                    .transform(featureProperty);
+
+            // if !isPresent, property was dropped by remove transformer
+            if (htmlProperty.isPresent()) {
+                currentPropertyContext = new PropertyContext(featureProperty, htmlProperty.get(), index);
+            } else {
+                currentPropertyContext = null;
             }
+        } else {
+            currentPropertyContext = new PropertyContext(featureProperty, featureProperty, index);
         }
     }
 
@@ -479,11 +548,15 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
     @Override
     public void onPropertyEnd() throws Exception {
         if (Objects.nonNull(currentValue)) {
-            if (currentFeature.name != null) {
-                int pos = currentFeature.name.indexOf("{{" + currentValue.property.name + "}}");
-                if (pos > -1) {
-                    currentFeature.name = currentFeature.name.substring(0, pos) + currentValue.toString() + currentFeature.name.substring(pos);
-                }
+            PropertyDTO featurePropertyDTO = processProperty(currentValue.toString(), currentPropertyContext.featureProperty, currentPropertyContext.getHtmlName(), currentPropertyContext.getLevel());
+            Object valueContext = currentPropertyContext.valueContext;
+
+            if (valueContext instanceof PropertyValue) {
+                PropertyValue pv = (PropertyValue) valueContext;
+                pv.setProperty(featurePropertyDTO);
+            } else {
+                // TODO
+                LOGGER.error("TODO");
             }
             AtomicReference<Boolean> isHtml = new AtomicReference<>(false);
             String value = processValue(currentValue.toString(), currentMapping, html -> isHtml.set(html));
@@ -495,22 +568,26 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
         currentValue = null;
     }
 
-    private String processValue(String value, MicrodataPropertyMapping mapping, Consumer<Boolean> isHtml) {
-        // format the value, if this is specified in the mapping
-        String result = value;
-
-        // code list translations and similar mappings
-        if (Objects.nonNull(mapping.getCodelist()) && codelists.containsKey(mapping.getCodelist())) {
-            Codelist cl = codelists.get(mapping.getCodelist());
-            result = cl.getValue(value);
-
-            if (cl.getData()
-                    .getSourceType() == CodelistData.IMPORT_TYPE.TEMPLATES) {
-                result = StringTemplateFilters.applyFilterMarkdown(StringTemplateFilters.applyTemplate(result, value));
-                isHtml.accept(true);
-            }
+    private PropertyDTO processProperty(String value, FeatureProperty featureProperty,
+                                               String htmlName, int level) {
+        if (featureProperty.isId()) {
+            currentFeature.id = new FeaturePropertyDTO();
+            currentFeature.id.value = currentValue.toString();
+            currentFeature.id.itemProp = "url";
         }
 
+        FeaturePropertyDTO property = new FeaturePropertyDTO();
+        property.name = htmlName;
+        property.value = value;
+
+        if (level==2) {
+            property.isLevel2 = true;
+        }
+        else if (level==3) {
+            property.isLevel3 = true;
+        }
+
+/* TODO
         if (mapping.getType() == MICRODATA_TYPE.ID) {
             currentFeature.id = new PropertyDTO();
             currentFeature.id.addValue(value);
@@ -544,28 +621,42 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
             while (subst > -1) {
                 result = result.substring(0, result.indexOf("{{")) + value + result.substring(subst + 2);
                 subst = value.indexOf("}}");
+*/
+        if (currentFeature.name != null) {
+            int pos = currentFeature.name.indexOf("{{" + featureProperty.getName() + "}}");
+            if (pos > -1) {
+                currentFeature.name = currentFeature.name.substring(0, pos) + property.value + currentFeature.name.substring(pos);
             }
         }
+        Optional<HtmlPropertyTransformations> valueTransformations = getTransformations(featureProperty);
+        if (valueTransformations.isPresent()) {
+            property.value = valueTransformations.get().transform(featureProperty, value);
+        }
 
-        return result;
+        return property;
     }
 
     @Override
-    public void onGeometryStart(TargetMapping mapping, SimpleFeatureGeometry type, Integer dimension) throws Exception {
-        if (Objects.isNull(mapping)) return;
+    public void onGeometryStart(FeatureProperty featureProperty, SimpleFeatureGeometry type, Integer dimension) throws Exception {
+        if (Objects.isNull(featureProperty)) return;
 
         dataset.hideMap = false;
 
-        final MicrodataGeometryMapping geometryMapping = (MicrodataGeometryMapping) mapping;
-        if (isFeatureCollection && !((MicrodataGeometryMapping) mapping).isShowInCollection()) return;
+        if (!isMicrodataEnabled) return;
 
-        currentGeometryType = geometryMapping.getGeometryType();
-        if (currentGeometryType == MICRODATA_GEOMETRY_TYPE.GENERIC) {
-            currentGeometryType = MICRODATA_GEOMETRY_TYPE.forGmlType(type);
+        if (transformations.containsKey(featureProperty.getName())) {
+
+            Optional<FeaturePropertyDTO> transformedProperty = transformations.get(featureProperty.getName())
+                                                                              .transform(new FeaturePropertyDTO(), featureProperty);
+
+            if (!transformedProperty.isPresent()) {
+                return;
+            }
         }
 
+        currentGeometryType = MICRODATA_GEOMETRY_TYPE.forGmlType(type);
+
         coordinatesOutput = new StringWriter();
-        //coordinatesWriter = new HtmlTransformingCoordinatesWriter(coordinatesOutput, Objects.nonNull(dimension) ? dimension : 2, crsTransformer);
 
         // for around-relations
         this.cwBuilder = CoordinatesWriterType.builder();
@@ -683,6 +774,17 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer,
     @Override
     public OnTheFlyMapping getOnTheFlyMapping() {
         return new OnTheFlyMappingHtml();
+    }
+
+    private Optional<HtmlPropertyTransformations> getTransformations(FeatureProperty featureProperty) {
+        if (featureProperty.getType() == FeatureProperty.Type.BOOLEAN) {
+            return Optional.of(ImmutableHtmlPropertyTransformations.builder()
+                                                                   .i18n(transformationContext.getI18n())
+                                                                   .language(transformationContext.getLanguage())
+                                                                   .build());
+        }
+
+        return Optional.ofNullable(transformations.get(featureProperty.getName().replaceAll("\\[.+?\\]", "[]")));
     }
 
 }

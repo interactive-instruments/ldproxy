@@ -19,7 +19,7 @@ import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +63,7 @@ public class TileGeneratorJson {
         // TODO add support for multi-collection GeoJSON output
 
         String collectionId = tile.getCollectionId();
-        OgcApiDatasetData serviceData = tile.getApiData();
+        OgcApiApiDataV2 serviceData = tile.getApiData();
         TileMatrixSet tileMatrixSet = tile.getTileMatrixSet();
         int level = tile.getLevel();
         int col = tile.getCol();
@@ -85,9 +85,7 @@ public class TileGeneratorJson {
             return false;
         }
 
-        String geometryField = serviceData
-                .getFilterableFieldsForFeatureType(collectionId)
-                .get("bbox");
+        String geometryField = filterableFields.get("bbox");
 
         String filter = null;
         try {
@@ -103,7 +101,7 @@ public class TileGeneratorJson {
         double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units
         double maxAllowableOffsetCrs84 = 0;
         try {
-            maxAllowableOffsetCrs84 = tileMatrixSet.getMaxAllowableOffset(level, row, col, OgcApiDatasetData.DEFAULT_CRS, crsTransformation);
+            maxAllowableOffsetCrs84 = tileMatrixSet.getMaxAllowableOffset(level, row, col, OgcApiApiDataV2.DEFAULT_CRS, crsTransformation);
         } catch (CrsTransformationException e) {
             LOGGER.error("CRS transformation error: " + e.getMessage());
             e.printStackTrace();
@@ -122,7 +120,7 @@ public class TileGeneratorJson {
                                                 .filter(filter)
                                                 .maxAllowableOffset(maxAllowableOffsetNative)
                                                 .fields(propertiesList)
-                                                .crs(OgcApiDatasetData.DEFAULT_CRS);
+                                                .crs(OgcApiApiDataV2.DEFAULT_CRS);
 
 
             if (filters != null && filterableFields != null) {
@@ -171,8 +169,8 @@ public class TileGeneratorJson {
                             .requestUri(uriCustomizer.build())
                             .mediaType(mediaType)
                             .build())
-                    .crsTransformer(crsTransformation.getTransformer(serviceData.getFeatureProvider()
-                                                                                .getNativeCrs(), OgcApiDatasetData.DEFAULT_CRS))
+                    .crsTransformer(crsTransformation.getTransformer(featureProvider.getData()
+                                                                                .getNativeCrs(), OgcApiApiDataV2.DEFAULT_CRS))
                     .links(ogcApiLinks)
                     .isFeatureCollection(true)
                     .limit(0) //TODO
@@ -181,7 +179,7 @@ public class TileGeneratorJson {
                     .outputStream(outputStream)
                     .build();
 
-            Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, language);
+            Optional<FeatureTransformer2> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, language);
 
             if (featureTransformer.isPresent()) {
                 featureTransformStream.runWith(featureTransformer.get())
@@ -218,10 +216,10 @@ public class TileGeneratorJson {
      * @param service                 the service
      * @return true, if the file was generated successfully, false, if an error occurred
      */
-    public static boolean generateEmptyJSON(File tileFile, TileMatrixSet tileMatrixSet, OgcApiDatasetData datasetData,
+    public static boolean generateEmptyJSON(File tileFile, TileMatrixSet tileMatrixSet, OgcApiApiDataV2 datasetData,
                                             OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, String collectionId,
                                             boolean isCollection, OgcApiRequestContext wfs3Request, int level, int row,
-                                            int col, CrsTransformation crsTransformation, OgcApiDataset service,
+                                            int col, CrsTransformation crsTransformation, OgcApiApi service,
                                             I18n i18n, Optional<Locale> language) {
 
         if (collectionId == null)
@@ -242,7 +240,7 @@ public class TileGeneratorJson {
         double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units
         double maxAllowableOffsetCrs84 = 0;
         try {
-            maxAllowableOffsetCrs84 = tileMatrixSet.getMaxAllowableOffset(level, row, col, OgcApiDatasetData.DEFAULT_CRS, crsTransformation);
+            maxAllowableOffsetCrs84 = tileMatrixSet.getMaxAllowableOffset(level, row, col, OgcApiApiDataV2.DEFAULT_CRS, crsTransformation);
         } catch (CrsTransformationException e) {
             LOGGER.error("CRS transformation error: " + e.getMessage());
             e.printStackTrace();
@@ -273,7 +271,7 @@ public class TileGeneratorJson {
                 .offset(0)
                 .build();
 
-        Optional<FeatureTransformer> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, wfs3Request.getLanguage());
+        Optional<FeatureTransformer2> featureTransformer = wfs3OutputFormatGeoJson.getFeatureTransformer(transformationContext, wfs3Request.getLanguage());
 
         if (featureTransformer.isPresent()) {
             OptionalLong numRet = OptionalLong.of(0);

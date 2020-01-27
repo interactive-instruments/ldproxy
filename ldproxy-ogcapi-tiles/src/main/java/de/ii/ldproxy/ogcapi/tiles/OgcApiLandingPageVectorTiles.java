@@ -30,7 +30,7 @@ public class OgcApiLandingPageVectorTiles implements OgcApiLandingPageExtension 
     I18n i18n;
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
 
         return extension
@@ -40,7 +40,7 @@ public class OgcApiLandingPageVectorTiles implements OgcApiLandingPageExtension 
     }
 
     @Override
-    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiDatasetData apiData,
+    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiApiDataV2 apiData,
                                                 URICustomizer uriCustomizer, OgcApiMediaType mediaType,
                                                 List<OgcApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
@@ -53,8 +53,8 @@ public class OgcApiLandingPageVectorTiles implements OgcApiLandingPageExtension 
         return landingPageBuilder;
     }
 
-    private boolean checkTilesEnabled(OgcApiDatasetData datasetData) {
-        return datasetData.getFeatureTypes()
+    private boolean checkTilesEnabled(OgcApiApiDataV2 datasetData) {
+        return datasetData.getCollections()
                           .values()
                           .stream()
                           .anyMatch(featureTypeConfigurationOgcApi -> isExtensionEnabled(datasetData, featureTypeConfigurationOgcApi, TilesConfiguration.class));

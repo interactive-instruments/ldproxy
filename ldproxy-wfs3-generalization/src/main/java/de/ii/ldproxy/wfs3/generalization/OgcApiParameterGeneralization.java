@@ -9,7 +9,7 @@ package de.ii.ldproxy.wfs3.generalization;
 
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
@@ -27,12 +27,12 @@ import java.util.Map;
 public class OgcApiParameterGeneralization implements OgcApiParameterExtension {
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, GeneralizationConfiguration.class);
     }
 
     @Override
-    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
@@ -50,7 +50,7 @@ public class OgcApiParameterGeneralization implements OgcApiParameterExtension {
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
-                                                        Map<String, String> parameters, OgcApiDatasetData datasetData) {
+                                                        Map<String, String> parameters, OgcApiApiDataV2 datasetData) {
         if (!isExtensionEnabled(datasetData, GeneralizationConfiguration.class)) {
             return queryBuilder;
         }

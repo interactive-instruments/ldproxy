@@ -109,10 +109,9 @@ public interface TileMatrixSet {
      */
     default double getMaxAllowableOffset(int level, int row, int col, EpsgCrs crs, CrsTransformation crsTransformation) throws CrsTransformationException {
         BoundingBox bbox = getTileBoundingBox(level, col, row);
-        if (crs!=null && !crs.equals(getCrs())) {
-            CrsTransformer transformer = crsTransformation.getTransformer(getCrs(), crs);
-            BoundingBox bboxCrs = transformer.transformBoundingBox(bbox);
-            bbox = bboxCrs;
+        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(getCrs(), crs);
+        if (transformer.isPresent()) {
+            bbox = transformer.get().transformBoundingBox(bbox);
         }
         return (bbox.getXmax()-bbox.getXmin())/getTileExtent();
     }

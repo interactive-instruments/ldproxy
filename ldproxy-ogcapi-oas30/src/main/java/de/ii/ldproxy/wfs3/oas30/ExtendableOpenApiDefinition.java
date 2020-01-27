@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.oas30;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.auth.api.AuthConfig;
 import io.swagger.v3.core.util.Json;
@@ -66,7 +66,7 @@ public class ExtendableOpenApiDefinition {
         return openApiExtensions;
     }
 
-    public Response getOpenApi(String type, URICustomizer requestUriCustomizer, OgcApiDatasetData apiData) {
+    public Response getOpenApi(String type, URICustomizer requestUriCustomizer, OgcApiApiDataV2 apiData) {
 
         boolean pretty = true;
 
@@ -97,10 +97,10 @@ public class ExtendableOpenApiDefinition {
                         .description(apiData.getDescription()
                                 .orElse(""));
 
-                if (Objects.nonNull(apiData.getMetadata())) {
-                    Metadata md = apiData.getMetadata();
+                if (apiData.getMetadata().isPresent()) {
+                    Metadata md = apiData.getMetadata().get();
                     openAPI.getInfo()
-                            .version(apiData.getMetadata().getVersion().orElse("1.0.0"))
+                            .version(md.getVersion().orElse("1.0.0"))
                             .contact(new Contact().name(md.getContactName()
                                     .orElse(null))
                                     .url(md.getContactUrl()

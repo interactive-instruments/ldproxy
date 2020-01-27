@@ -11,14 +11,16 @@ package de.ii.ldproxy.wfs3.crs;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 import java.util.Locale;
@@ -33,21 +35,31 @@ import java.util.stream.Stream;
 @Instantiate
 public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
 
+    private final OgcApiFeatureCoreProviders providers;
+
+    public OgcApiCollectionCrs(@Requires OgcApiFeatureCoreProviders providers) {
+        this.providers = providers;
+    }
+
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, CrsConfiguration.class);
     }
 
     @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                     OgcApiDatasetData apiData,
+                                                     OgcApiApiDataV2 apiData,
                                                      URICustomizer uriCustomizer,
                                                      boolean isNested,
                                                      OgcApiMediaType mediaType,
                                                      List<OgcApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
         if (isExtensionEnabled(apiData, featureTypeConfiguration, CrsConfiguration.class)) {
+            String nativeCrsUri = providers.getFeatureProvider(apiData, featureTypeConfiguration)
+                                           .getData()
+                                           .getNativeCrs()
+                                           .getAsUri();
             ImmutableList<String> crsList;
             if (isNested) {
                 // just reference the default list of coordinate reference systems
@@ -56,10 +68,8 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
                 // this is just the collection resource, so no default to reference; include all CRSs
                 crsList = Stream.concat(
                         Stream.of(
-                                OgcApiDatasetData.DEFAULT_CRS_URI,
-                                apiData.getFeatureProvider()
-                                       .getNativeCrs()
-                                       .getAsUri()
+                                OgcApiApiDataV2.DEFAULT_CRS_URI,
+                                nativeCrsUri
                         ),
                         apiData.getAdditionalCrs()
                                .stream()
@@ -71,10 +81,7 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
             collection.crs(crsList);
 
             // add native CRS as storageCRS
-            String storageCrs = apiData.getFeatureProvider()
-                                       .getNativeCrs()
-                                       .getAsUri();
-            collection.storageCrs(storageCrs);
+            collection.storageCrs(nativeCrsUri);
         }
 
         return collection;

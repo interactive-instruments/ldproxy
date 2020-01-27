@@ -10,9 +10,9 @@ package de.ii.ldproxy.target.geojson;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
@@ -64,14 +64,14 @@ public class JsonLdContextEndpoint implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 apiData, String subPath) {
         return MEDIA_TYPES;
     }
 
     @Path("/{collectionId}/context")
     @GET
     @Produces("application/ld+json")
-    public Response getContext(@Context OgcApiRequestContext wfs3Request, @Context OgcApiDataset service,
+    public Response getContext(@Context OgcApiRequestContext wfs3Request, @Context OgcApiApi service,
                                @PathParam("collectionId") String collectionId) throws IOException {
 
         java.nio.file.Path context = contextDirectory.resolve(collectionId);

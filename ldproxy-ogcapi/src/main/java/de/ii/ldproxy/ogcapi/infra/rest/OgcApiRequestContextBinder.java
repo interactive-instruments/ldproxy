@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -45,7 +45,7 @@ public class OgcApiRequestContextBinder extends AbstractBinder implements Binder
 
         bindFactory(OgcApiDatasetFactory.class).proxy(true)
                                                .proxyForSameScope(false)
-                                               .to(OgcApiDataset.class)
+                                               .to(OgcApiApi.class)
                                                .in(RequestScoped.class);
     }
 
@@ -58,12 +58,12 @@ public class OgcApiRequestContextBinder extends AbstractBinder implements Binder
         }
     }
 
-    public static class OgcApiDatasetFactory extends AbstractContainerRequestValueFactory<OgcApiDataset> {
+    public static class OgcApiDatasetFactory extends AbstractContainerRequestValueFactory<OgcApiApi> {
 
         @Override
         @RequestScoped
-        public OgcApiDataset provide() {
-            return (OgcApiDataset) getContainerRequest().getProperty(SERVICE_CONTEXT_KEY);
+        public OgcApiApi provide() {
+            return (OgcApiApi) getContainerRequest().getProperty(SERVICE_CONTEXT_KEY);
         }
     }
 }

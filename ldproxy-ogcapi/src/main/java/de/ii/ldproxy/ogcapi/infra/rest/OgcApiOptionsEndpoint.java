@@ -61,7 +61,7 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         return ImmutableSet.<OgcApiMediaType>builder().add(new ImmutableOgcApiMediaType.Builder()
                 .type(MediaType.TEXT_PLAIN_TYPE)
                 .build()).build();
@@ -70,7 +70,7 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
     @OPTIONS
     @Path("")
     public Response getOptions(@Auth Optional<User> optionalUser,
-                               @Context OgcApiDataset api,
+                               @Context OgcApiApi api,
                                @Context ContainerRequestContext requestContext) {
 
         String path = requestContext.getUriInfo().getPath();
@@ -83,7 +83,7 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
     @OPTIONS
     @Path("/{subPath:.*}")
     public Response getOptions(@Auth Optional<User> optionalUser,
-                               @Context OgcApiDataset api,
+                               @Context OgcApiApi api,
                                @Context ContainerRequestContext requestContext,
                                @PathParam("subPath") String subPath) {
 
@@ -95,7 +95,7 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
         return getOptions(api.getData(),entrypoint,"/"+subPath);
     }
 
-    private Response getOptions(OgcApiDatasetData apiData, String entrypoint, String subPath) {
+    private Response getOptions(OgcApiApiDataV2 apiData, String entrypoint, String subPath) {
         // special treatment for OPTIONS requests. We loop over the endpoints and determine
         // which methods are supported.
         Set<String> supportedMethods = Arrays.stream(OgcApiContext.HttpMethods.values())
@@ -125,7 +125,7 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
                 .build();
     }
 
-    private Optional<OgcApiEndpointExtension> findEndpoint(OgcApiDatasetData api,
+    private Optional<OgcApiEndpointExtension> findEndpoint(OgcApiApiDataV2 api,
                                                            String entrypoint,
                                                            String subPath, String method) {
         return getEndpoints().stream()

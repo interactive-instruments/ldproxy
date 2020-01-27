@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface OgcApiConformanceDeclarationExtension extends OgcApiContentExtension {
 
     ImmutableConformanceDeclaration.Builder process(ImmutableConformanceDeclaration.Builder conformanceDeclarationBuilder,
-                                                    OgcApiDatasetData apiData,
+                                                    OgcApiApiDataV2 apiData,
                                                     URICustomizer uriCustomizer,
                                                     OgcApiMediaType mediaType,
                                                     List<OgcApiMediaType> alternateMediaTypes,

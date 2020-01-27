@@ -18,9 +18,9 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
 
     OgcApiContext getApiContext();
 
-    ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData apiData, String subPath);
+    ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 apiData, String subPath);
 
-    default ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+    default ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
         boolean useLangParameter = getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getUseLangParameter)
                 .orElse(false);
@@ -30,14 +30,14 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
         return ImmutableSet.of("f", "lang");
     }
 
-    default void checkAuthorization(OgcApiDatasetData apiData, Optional<User> optionalUser) {
+    default void checkAuthorization(OgcApiApiDataV2 apiData, Optional<User> optionalUser) {
         if (apiData.getSecured() && !optionalUser.isPresent()) {
             throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
             //throw new ClientErrorException(Response.Status.UNAUTHORIZED);
         }
     }
 
-    default boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return true;
     }
 }

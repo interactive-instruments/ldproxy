@@ -86,7 +86,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?$|^/?\\w+/metadata$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
@@ -103,13 +103,13 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
-    private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiDatasetData apiData) {
+    private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
                 .stream()
                 .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(apiData));
     }
 
-    private List<OgcApiMediaType> getMediaTypes(OgcApiDatasetData apiData, File apiDir, String styleId) {
+    private List<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 apiData, File apiDir, String styleId) {
         return getStyleFormatStream(apiData)
                 .filter(styleFormat -> new File(apiDir + File.separator + styleId + "." + styleFormat.getFileExtension()).exists())
                 .map(StyleFormatExtension::getMediaType)
@@ -122,7 +122,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, StylesConfiguration.class);
     }
 
@@ -134,7 +134,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     @Path("/")
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
-    public Response getStyles(@Context OgcApiDataset api, @Context OgcApiRequestContext requestContext) {
+    public Response getStyles(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
         final String apiId = api.getId();
@@ -186,7 +186,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     }
 
     @Override
-    public Response getStylesResponse(Styles styles, OgcApiDataset api, OgcApiRequestContext requestContext) {
+    public Response getStylesResponse(Styles styles, OgcApiApi api, OgcApiRequestContext requestContext) {
         return Response.ok(styles)
                 .type(MediaType.APPLICATION_JSON_TYPE)
                 .build();
@@ -200,7 +200,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
      */
     @Path("/{styleId}")
     @GET
-    public Response getStyle(@PathParam("styleId") String styleId, @Context OgcApiDataset dataset,
+    public Response getStyle(@PathParam("styleId") String styleId, @Context OgcApiApi dataset,
                              @Context OgcApiRequestContext ogcApiRequest) {
 
         StyleFormatExtension styleFormat = getStyleFormatStream(dataset.getData()).filter(format -> format.getMediaType()
@@ -268,7 +268,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getStyleMetadata(@PathParam("styleId") String styleId,
-                                     @Context OgcApiDataset api,
+                                     @Context OgcApiApi api,
                                      @Context OgcApiRequestContext requestContext) {
 
         StyleMetadata metadata = getMetadata(styleId, requestContext).orElseThrow(InternalServerErrorException::new);
@@ -285,7 +285,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     }
 
     @Override
-    public Response getStyleMetadataResponse(StyleMetadata metadata, OgcApiDataset api, OgcApiRequestContext requestContext) {
+    public Response getStyleMetadataResponse(StyleMetadata metadata, OgcApiApi api, OgcApiRequestContext requestContext) {
         return Response.ok()
                 .entity(metadata)
                 .type(MediaType.APPLICATION_JSON_TYPE)

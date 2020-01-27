@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3.styles;
 
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 
 import javax.ws.rs.core.Response;
@@ -21,11 +21,11 @@ public interface StylesFormatExtension extends FormatExtension {
     }
 
     Response getStylesResponse(Styles styles,
-                               OgcApiDataset api,
+                               OgcApiApi api,
                                OgcApiRequestContext requestContext);
 
     Response getStyleMetadataResponse(StyleMetadata metadata,
-                                      OgcApiDataset api,
+                                      OgcApiApi api,
                                       OgcApiRequestContext requestContext);
 
 }

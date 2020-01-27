@@ -11,9 +11,11 @@ import com.google.common.collect.ImmutableCollection;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
+import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
+import de.ii.xtraplatform.feature.provider.api.FeatureType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import org.slf4j.Logger;
@@ -32,7 +34,7 @@ import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMay
 /**
  * @author zahnen
  */
-public class FeatureTransformerGeoJson implements FeatureTransformer, OnTheFly {
+public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerGeoJson.class);
 
@@ -95,16 +97,16 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, OnTheFly {
     }
 
     @Override
-    public void onFeatureStart(TargetMapping mapping) throws IOException {
+    public void onFeatureStart(FeatureType featureType) throws IOException {
         transformationContext.getState()
-                             .setCurrentMapping(Optional.ofNullable(mapping));
+                             .setCurrentFeatureType(Optional.ofNullable(featureType));
 
         transformationContext.getState()
                              .setEvent(FeatureTransformationContext.Event.FEATURE_START);
         executePipeline(featureWriters.iterator()).accept(transformationContext);
 
         transformationContext.getState()
-                             .setCurrentMapping(Optional.empty());
+                             .setCurrentFeatureType(Optional.empty());
     }
 
     @Override
@@ -116,8 +118,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, OnTheFly {
     }
 
     @Override
-    public void onPropertyStart(TargetMapping mapping, List<Integer> multiplicities) throws IOException {
-        if (Objects.nonNull(mapping)) {
+    public void onPropertyStart(FeatureProperty featureProperty, List<Integer> multiplicities) throws IOException {
+        if (Objects.nonNull(featureProperty)) {
 
             //TODO
             /*if (Objects.nonNull(transformationContext.getState().getCurrentMapping())
@@ -127,7 +129,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, OnTheFly {
             }*/
 
             transformationContext.getState()
-                                 .setCurrentMapping(Optional.ofNullable(mapping));
+                                 .setCurrentFeatureProperty(Optional.ofNullable(featureProperty));
             transformationContext.getState()
                                  .setCurrentMultiplicity(multiplicities);
             //this.currentMapping = (GeoJsonPropertyMapping) mapping;
@@ -139,7 +141,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, OnTheFly {
     @Override
     public void onPropertyText(String text) {
         if (transformationContext.getState()
-                                 .getCurrentMapping()
+                                 .getCurrentFeatureProperty()
                                  .isPresent()) stringBuilder.append(text);
     }
 
@@ -156,26 +158,27 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, OnTheFly {
         }
 
         transformationContext.getState()
-                             .setCurrentMapping(Optional.empty());
+                             .setCurrentFeatureProperty(Optional.empty());
         transformationContext.getState()
                              .setCurrentValue(Optional.empty());
     }
 
     @Override
-    public void onGeometryStart(TargetMapping mapping, SimpleFeatureGeometry type, Integer dimension) throws
+    public void onGeometryStart(FeatureProperty featureProperty, SimpleFeatureGeometry type, Integer dimension) throws
             IOException {
-        if (Objects.nonNull(mapping)) {
+        if (Objects.nonNull(featureProperty)) {
             //TODO see below (transformationContext.getJsonGenerator())
             //transformationContext.stopBuffering();
 
-            final GeoJsonGeometryMapping geometryMapping = (GeoJsonGeometryMapping) mapping;
+            //TODO
+            //final GeoJsonGeometryMapping geometryMapping = (GeoJsonGeometryMapping) mapping;
 
-            GEO_JSON_GEOMETRY_TYPE currentGeometryType = geometryMapping.getGeometryType();
-            if (currentGeometryType == GEO_JSON_GEOMETRY_TYPE.GENERIC) {
+            GEO_JSON_GEOMETRY_TYPE currentGeometryType;// = geometryMapping.getGeometryType();
+            //if (currentGeometryType == GEO_JSON_GEOMETRY_TYPE.GENERIC) {
                 currentGeometryType = GEO_JSON_GEOMETRY_TYPE.forGmlType(type);
-            } else if (currentGeometryType != GEO_JSON_GEOMETRY_TYPE.forGmlType(type)) {
-                return;
-            }
+            //} else if (currentGeometryType != GEO_JSON_GEOMETRY_TYPE.forGmlType(type)) {
+            //    return;
+            //}
 
             CoordinatesWriterType.Builder cwBuilder = CoordinatesWriterType.builder();
             //cwBuilder.format(new JsonCoordinateFormatter(transformationContext.getJson()));
@@ -204,12 +207,12 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, OnTheFly {
                 cwBuilder.precision(transformationContext.getGeometryPrecision());
             }
 
-            if (Objects.equals(geometryMapping.getMustReversePolygon(), true)) {
+            if (Objects.equals(featureProperty.isForceReversePolygon(), true)) {
                 cwBuilder.reversepolygon();
             }
 
             transformationContext.getState()
-                                 .setCurrentMapping(Optional.ofNullable(mapping));
+                                 .setCurrentFeatureProperty(Optional.ofNullable(featureProperty));
             transformationContext.getState()
                                  .setCurrentGeometryType(currentGeometryType);
             transformationContext.getState()
@@ -259,7 +262,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, OnTheFly {
         executePipeline(featureWriters.iterator()).accept(transformationContext);
 
         transformationContext.getState()
-                             .setCurrentMapping(Optional.empty());
+                             .setCurrentFeatureProperty(Optional.empty());
         transformationContext.getState()
                              .setCurrentValue(Optional.empty());
         transformationContext.getState()

@@ -8,8 +8,10 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -41,11 +43,11 @@ public class OpenApiVectorTiles implements OpenApiExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
-    private boolean isMultiTilesEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isMultiTilesEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
 
         return extension
@@ -55,7 +57,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
 
     }
 
-    private boolean isMultiCollectionEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isMultiCollectionEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
 
         return extension
@@ -73,12 +75,12 @@ public class OpenApiVectorTiles implements OpenApiExtension {
      * @return the extended OpenAPI definition
      */
     @Override
-    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
 
         boolean enableTilesInAPI = false;
 
         Optional<FeatureTypeConfigurationOgcApi> firstCollectionWithTiles = datasetData
-                .getFeatureTypes()
+                .getCollections()
                 .values()
                 .stream()
                 .filter(ft -> {
@@ -213,11 +215,11 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             collections.setStyle(Parameter.StyleEnum.FORM);
             collections.setExplode(false);
             List<String> collectionsEnum = new ArrayList<String>();
-            datasetData.getFeatureTypes()
+            datasetData.getCollections()
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                       .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
+                       .filter(ft -> datasetData.isCollectionEnabled(ft.getId()))
                        .forEach(ft -> collectionsEnum.add(ft.getId()));
             Schema collectionsArrayItems = new StringSchema();
             collectionsArrayItems.setEnum(collectionsEnum);
@@ -610,11 +612,11 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                 }
 
                 //do for every feature type
-                datasetData.getFeatureTypes()
+                datasetData.getCollections()
                            .values()
                            .stream()
                            .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                           .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
+                           .filter(ft -> datasetData.isCollectionEnabled(ft.getId()))
                            .forEach(ft -> {
                                boolean enableTilesCollectionInApi = isExtensionEnabled(datasetData, ft, TilesConfiguration.class);
 
@@ -682,7 +684,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                                .addApiResponse("200", success2)
                                                                .addApiResponse("default", exception2))
                                                );
-                                       Map<String, String> filterableFields = datasetData.getFilterableFieldsForFeatureType(ft.getId(), true);
+                                       Map<String, String> filterableFields = ft.getExtension(OgcApiFeaturesCoreConfiguration.class).map(OgcApiFeaturesCoreConfiguration::getOtherFilterParameters).orElse(ImmutableMap.of());
                                        PathItem finalPathItem = pathItem2;
                                        filterableFields.keySet()
                                                        .forEach(field -> {

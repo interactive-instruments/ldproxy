@@ -26,16 +26,13 @@ public class OgcApiFeaturesLandingPageExtension implements OgcApiLandingPageExte
     @Requires
     I18n i18n;
 
-    @Requires
-    private OgcApiFeaturesCore ogcApiFeaturesCore;
-
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 
     @Override
-    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiDatasetData apiData,
+    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiApiDataV2 apiData,
                                                 URICustomizer uriCustomizer,
                                                 OgcApiMediaType mediaType,
                                                 List<OgcApiMediaType> alternateMediaTypes,

@@ -66,7 +66,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
@@ -78,10 +78,10 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @return the runnable process
      */
     @Override
-    public Runnable getTask(OgcApiDataset api, FeatureProvider2 featureProvider) {
+    public Runnable getTask(OgcApiApi api, FeatureProvider2 featureProvider) {
 
         Optional<OgcApiFeatureFormatExtension> wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE);
-        OgcApiDatasetData apiData = api.getData();
+        OgcApiApiDataV2 apiData = api.getData();
 
         if (!wfs3OutputFormatGeoJson.isPresent()) {
             return () -> {
@@ -102,10 +102,10 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
                 if (tilesDatasetEnabled) {
                     for (String collectionId : collectionIdsDataset) {
-                        if (isExtensionEnabled(apiData, apiData.getFeatureTypes()
+                        if (isExtensionEnabled(apiData, apiData.getCollections()
                                                                        .get(collectionId), TilesConfiguration.class)) {
 
-                            final TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, apiData.getFeatureTypes()
+                            final TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, apiData.getCollections()
                                                                                                                             .get(collectionId), TilesConfiguration.class).get();
 
                             Map<String, MinMax> seedingCollection = tilesConfiguration.getSeeding();
@@ -165,14 +165,14 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @param coreServerConfig     the core server config with the external url
      * @throws FileNotFoundException
      */
-    private void seedingDataset(Set<String> collectionIdsDataset, OgcApiDataset service,
+    private void seedingDataset(Set<String> collectionIdsDataset, OgcApiApi service,
                                 CrsTransformation crsTransformation, VectorTilesCache cache,
                                 FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                                 OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language)
             throws FileNotFoundException {
 
         Set<String> tileMatrixSetIdsCollection = null;
-        OgcApiDatasetData datasetData = service.getData();
+        OgcApiApiDataV2 datasetData = service.getData();
         Map<String, Map<String, MinMax>> seedingMap = vectorTileMapGenerator.getMinMaxMap(datasetData, true);
 
         Map<String,Map<String,File>> fileMap = new HashMap<>();
@@ -263,7 +263,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @param coreServerConfig  the core server config with the external url
      * @return the Json File. If the mvt already exists, return null
      */
-    private File generateMVT(OgcApiDataset service, String collectionId, String tileMatrixSetId, int level, int row,
+    private File generateMVT(OgcApiApi service, String collectionId, String tileMatrixSetId, int level, int row,
                              int col, VectorTilesCache cache, CrsTransformation crsTransformation,
                              FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
@@ -302,7 +302,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @param coreServerConfig  the core server config with the external url
      * @return the json File, if it already exists return null
      */
-    private File generateJSON(OgcApiDataset service, String collectionId, String tileMatrixSetId, int level, int row,
+    private File generateJSON(OgcApiApi service, String collectionId, String tileMatrixSetId, int level, int row,
                               int col, VectorTilesCache cache, CrsTransformation crsTransformation,
                               FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                               OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {

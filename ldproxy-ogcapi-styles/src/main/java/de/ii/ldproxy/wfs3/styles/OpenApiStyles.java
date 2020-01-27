@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -42,12 +42,12 @@ public class OpenApiStyles implements OpenApiExtension {
 
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, StylesConfiguration.class);
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
 
         if (isEnabledForApi(datasetData) &&
                 getExtensionConfiguration(datasetData, StylesConfiguration.class).isPresent()) {

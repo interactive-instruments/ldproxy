@@ -8,8 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core.application;
 
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -17,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component
-@Provides(specifications = {OgcApiFeaturesCore.class, ConformanceClass.class, OgcApiExtension.class})
+@Provides
 @Instantiate
 public class OgcApiFeaturesCore implements ConformanceClass {
 
@@ -29,28 +28,8 @@ public class OgcApiFeaturesCore implements ConformanceClass {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
-
-    /* TODO cleanup
-    private final OgcApiExtensionRegistry extensionRegistry;
-
-    public OgcApiFeaturesCore(@Requires OgcApiExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
-
-    }
-
-    public static void checkCollectionId(OgcApiDatasetData datasetData, String collectionName) {
-        if (!datasetData.isFeatureTypeEnabled(collectionName)) {
-            throw new NotFoundException();
-        }
-    }
-
-    private List<OgcApiCollectionExtension> getCollectionExtenders() {
-        return extensionRegistry.getExtensionsForType(OgcApiCollectionExtension.class);
-    }
-
-     */
 
 }

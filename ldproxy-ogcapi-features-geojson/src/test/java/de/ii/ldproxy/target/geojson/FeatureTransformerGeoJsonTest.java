@@ -8,7 +8,12 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext.Event;
+import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.feature.provider.api.FeatureType;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import org.slf4j.Logger;
@@ -32,25 +37,34 @@ public class FeatureTransformerGeoJsonTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerGeoJsonTest.class);
 
-    static final GeoJsonPropertyMapping featureMapping = new GeoJsonPropertyMapping();
+    static final FeatureType featureMapping = new ImmutableFeatureType.Builder().name("f1")
+                                                                                .properties(ImmutableMap.of())
+                                                                                .build();
 
-    static final GeoJsonPropertyMapping propertyMapping = new GeoJsonPropertyMapping();
+    static final FeatureProperty propertyMapping = new ImmutableFeatureProperty.Builder().name("p1")
+                                                                                         .path("")
+                                                                                         .build();
 
-    static final GeoJsonPropertyMapping propertyMapping2 = new GeoJsonPropertyMapping();
+    static final FeatureProperty propertyMapping2 = new ImmutableFeatureProperty.Builder().name("p2")
+                                                                                          .path("")
+                                                                                          .build();
 
-    static final GeoJsonGeometryMapping geometryMapping = new GeoJsonGeometryMapping();
+    static final FeatureProperty geometryMapping = new ImmutableFeatureProperty.Builder().name("geometry")
+                                                                                         .path("")
+                                                                                         .type(FeatureProperty.Type.GEOMETRY)
+                                                                                         .build();
 
     static final String value1 = "val1";
     static final String value2 = "val2";
     static final String coordinates = "10 50, 11 51";
 
 
-    static {
+    /*static {
         featureMapping.setName("f1");
         propertyMapping.setName("p1");
         propertyMapping2.setName("p2");
         geometryMapping.setGeometryType(GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.MULTI_POLYGON);
-    }
+    }*/
 
     /**
      * Is FeatureWriter.onEvent called with the correct state?
@@ -61,9 +75,9 @@ public class FeatureTransformerGeoJsonTest {
 
         List<Event> expectedEvents = ImmutableList.of(Event.START, Event.FEATURE_START, Event.PROPERTY, Event.COORDINATES, Event.GEOMETRY_END, Event.PROPERTY, Event.FEATURE_END, Event.END);
 
-        List<TargetMapping> actualMappings = new ArrayList<>();
+        List<Object> actualMappings = new ArrayList<>();
 
-        List<TargetMapping> expectedMappings = ImmutableList.of(featureMapping, propertyMapping, geometryMapping, propertyMapping2);
+        List<Object> expectedMappings = ImmutableList.of(featureMapping, propertyMapping, geometryMapping, propertyMapping2);
 
         List<String> actualValues = new ArrayList<>();
 
@@ -83,7 +97,8 @@ public class FeatureTransformerGeoJsonTest {
             }
 
             @Override
-            public void onEvent(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+            public void onEvent(FeatureTransformationContextGeoJson transformationContext,
+                                Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
                 actualEvents.add(transformationContext.getState()
                                                       .getEvent());
 
@@ -96,7 +111,7 @@ public class FeatureTransformerGeoJsonTest {
                                              .ifPresent(actualValues::add);
                     case FEATURE_START:
                         transformationContext.getState()
-                                             .getCurrentMapping()
+                                             .getCurrentFeatureType()
                                              .ifPresent(actualMappings::add);
                 }
             }
@@ -141,7 +156,8 @@ public class FeatureTransformerGeoJsonTest {
             }
 
             @Override
-            public void onEvent(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+            public void onEvent(FeatureTransformationContextGeoJson transformationContext,
+                                Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
 
 
                 switch (transformationContext.getState()
@@ -159,7 +175,8 @@ public class FeatureTransformerGeoJsonTest {
         assertEquals(actualNestingChanges, expectedNestingChanges);
     }
 
-    private void writeFeature(FeatureTransformerGeoJson transformer, boolean startEnd, List<Integer> nestingPattern) throws IOException {
+    private void writeFeature(FeatureTransformerGeoJson transformer, boolean startEnd,
+                              List<Integer> nestingPattern) throws IOException {
         if (startEnd) {
             transformer.onStart(OptionalLong.empty(), OptionalLong.empty());
         }

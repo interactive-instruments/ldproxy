@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 
@@ -17,12 +18,13 @@ import java.util.Optional;
 public interface ExtendableConfiguration {
 
     @JsonMerge(value = OptBoolean.FALSE)
-    List<ExtensionConfiguration> getCapabilities();
+    @JsonAlias(value = "capabilities")
+    List<ExtensionConfiguration> getExtensions();
 
     default <T extends ExtensionConfiguration> Optional<T> getExtension(Class<T> clazz) {
-        return getCapabilities().stream()
-                                .filter(extensionConfiguration -> Objects.equals(extensionConfiguration.getExtensionType(), ExtensionConfiguration.getExtensionType(clazz)))
-                                .findFirst()
-                                .map(extensionConfiguration -> (T) extensionConfiguration);
+        return getExtensions().stream()
+                              .filter(extensionConfiguration -> Objects.equals(extensionConfiguration.getBuildingBlock(), ExtensionConfiguration.getBuildingBlockIdentifier(clazz)))
+                              .findFirst()
+                              .map(extensionConfiguration -> (T) extensionConfiguration);
     }
 }

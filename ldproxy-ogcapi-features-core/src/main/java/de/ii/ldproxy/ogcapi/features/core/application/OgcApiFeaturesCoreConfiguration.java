@@ -7,14 +7,30 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.application;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import org.immutables.value.Value;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static de.ii.xtraplatform.feature.provider.api.TargetMapping.BASE_TYPE;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableOgcApiFeaturesCoreConfiguration.Builder.class)
-public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfiguration {
+public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfiguration, FeatureTransformations {
 
     static final int MINIMUM_PAGE_SIZE = 1;
     static final int DEFAULT_PAGE_SIZE = 10;
@@ -24,6 +40,16 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
     @Override
     public boolean getEnabled() {
         return true;
+    }
+
+    public abstract Optional<String> getFeatureProvider();
+
+    public abstract Optional<String> getFeatureType();
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Value.Default
+    public List<String> getFeatureTypes() {
+        return getFeatureType().isPresent() ? ImmutableList.of(getFeatureType().get()) : ImmutableList.of();
     }
 
     @Value.Default
@@ -44,4 +70,46 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
     @Value.Default
     public boolean getShowsFeatureSelfLink() { return false; }
 
+    public abstract Optional<OgcApiFeaturesCollectionQueryables> getQueryables();
+
+    @Override
+    public abstract Map<String, FeatureTypeMapping2> getTransformations();
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public Map<String, String> getAllFilterParameters() {
+        if (getQueryables().isPresent()) {
+            OgcApiFeaturesCollectionQueryables queryables = getQueryables().get();
+            ImmutableMap.Builder<String,String> builder = new ImmutableMap.Builder<>();
+
+            if (!queryables.getSpatial().isEmpty()) {
+                builder.put("bbox", queryables.getSpatial().get(0));
+            }
+            if (!queryables.getTemporal().isEmpty()) {
+                builder.put("datetime", queryables.getTemporal().get(0));
+            }
+            queryables.getOther().forEach(other -> builder.put(other, other));
+
+            return builder.build();
+        }
+
+        return ImmutableMap.of("bbox", "NOT_AVAILABLE");
+    }
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public Map<String, String> getOtherFilterParameters() {
+        if (getQueryables().isPresent()) {
+            OgcApiFeaturesCollectionQueryables queryables = getQueryables().get();
+            ImmutableMap.Builder<String,String> builder = new ImmutableMap.Builder<>();
+
+            queryables.getOther().forEach(other -> builder.put(other, other));
+
+            return builder.build();
+        }
+
+        return ImmutableMap.of("bbox", "NOT_AVAILABLE");
+    }
 }

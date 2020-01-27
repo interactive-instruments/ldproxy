@@ -16,6 +16,7 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -27,6 +28,8 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
     public boolean getEnabled() {
         return false;
     }
+
+    public abstract Optional<String> getFeatureProvider();
 
     @Value.Default
     public boolean getMultiTilesEnabled() {

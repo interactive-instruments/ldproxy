@@ -67,8 +67,8 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
 
     private Response getCollectionsResponse(OgcApiQueryInputCollections queryInput, OgcApiRequestContext requestContext) {
 
-        OgcApiDataset api = requestContext.getApi();
-        OgcApiDatasetData apiData = api.getData();
+        OgcApiApi api = requestContext.getApi();
+        OgcApiApiDataV2 apiData = api.getData();
 
         List<OgcApiLink> ogcApiLinks = new CollectionsLinksGenerator()
                 .generateLinks(requestContext.getUriCustomizer()
@@ -123,16 +123,15 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
     private Response getCollectionResponse(OgcApiQueryInputFeatureCollection queryInput,
                                            OgcApiRequestContext requestContext) {
 
-        OgcApiDataset api = requestContext.getApi();
-        OgcApiDatasetData apiData = api.getData();
+        OgcApiApi api = requestContext.getApi();
+        OgcApiApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
 
-        if (!apiData.isFeatureTypeEnabled(collectionId)) {
+        if (!apiData.isCollectionEnabled(collectionId)) {
             throw new NotFoundException();
         }
 
-        Metadata metadata = apiData.getMetadata();
-        Optional<String> licenseUrl = metadata!=null ? metadata.getLicenseUrl() : Optional.empty();
+        Optional<String> licenseUrl = apiData.getMetadata().flatMap(Metadata::getLicenseUrl);
         List<OgcApiLink> ogcApiLinks = new CollectionLinksGenerator().generateLinks(
                 requestContext.getUriCustomizer()
                     .copy(),
@@ -150,7 +149,7 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                 .id(collectionId)
                 .links(ogcApiLinks);
 
-        FeatureTypeConfigurationOgcApi featureTypeConfiguration = apiData.getFeatureTypes()
+        FeatureTypeConfigurationOgcApi featureTypeConfiguration = apiData.getCollections()
                                                                          .get(collectionId);
         for (OgcApiCollectionExtension ogcApiCollectionExtension : getCollectionExtenders()) {
             ogcApiCollection = ogcApiCollectionExtension.process(ogcApiCollection,

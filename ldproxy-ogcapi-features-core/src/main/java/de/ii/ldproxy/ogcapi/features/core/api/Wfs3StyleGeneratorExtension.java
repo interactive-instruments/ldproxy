@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core.api;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 
@@ -16,7 +16,7 @@ public interface Wfs3StyleGeneratorExtension extends OgcApiExtension {
 
     // TODO this is only for GSFS and does not belong here?
 
-    String generateStyle(OgcApiDatasetData data, FeatureTypeConfigurationOgcApi featureType, int index);
+    String generateStyle(OgcApiApiDataV2 data, FeatureTypeConfigurationOgcApi featureType, int index);
 
     String generateStyle(SimpleFeatureGeometry simpleFeatureGeometry, int index);
 }

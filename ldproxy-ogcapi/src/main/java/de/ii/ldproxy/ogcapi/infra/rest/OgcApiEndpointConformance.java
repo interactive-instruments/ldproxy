@@ -57,7 +57,7 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?$"))
             return extensionRegistry.getExtensionsForType(CommonFormatExtension.class)
                                     .stream()
@@ -69,7 +69,7 @@ public class OgcApiEndpointConformance implements OgcApiEndpointExtension {
     }
 
     @GET
-    public Response getConformanceClasses(@Auth Optional<User> optionalUser, @Context OgcApiDataset api,
+    public Response getConformanceClasses(@Auth Optional<User> optionalUser, @Context OgcApiApi api,
                                           @Context OgcApiRequestContext requestContext) {
 
         boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)

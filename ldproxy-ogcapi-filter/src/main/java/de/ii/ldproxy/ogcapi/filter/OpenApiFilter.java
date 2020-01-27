@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.filter;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -34,7 +34,7 @@ public class OpenApiFilter implements OpenApiExtension {
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData apiData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 apiData) {
         if (isEnabledForApi(apiData)) {
             Parameter filter = new Parameter()
                     .name("filter")
@@ -64,11 +64,11 @@ public class OpenApiFilter implements OpenApiExtension {
                         .addParametersItem(new Parameter().$ref("#/components/parameters/filter-lang"));
             }
 
-            apiData.getFeatureTypes()
+            apiData.getCollections()
                     .values()
                     .stream()
                     .sorted(Comparator.comparing(FeatureTypeConfiguration::getId))
-                    .filter(ft -> apiData.isFeatureTypeEnabled(ft.getId()))
+                    .filter(ft -> apiData.isCollectionEnabled(ft.getId()))
                     .forEach(ft -> {
                         PathItem pathItem2 = openAPI.getPaths().get(String.format("/collections/%s/items", ft.getId()));
                         if (Objects.nonNull(pathItem2)) {
@@ -91,7 +91,7 @@ public class OpenApiFilter implements OpenApiExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, FilterConfiguration.class);
     }
 }

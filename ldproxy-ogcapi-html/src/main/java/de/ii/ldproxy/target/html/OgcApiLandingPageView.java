@@ -42,7 +42,7 @@ public class OgcApiLandingPageView extends LdproxyView {
     public String none;
     public boolean isLandingPage = true;
 
-    public OgcApiLandingPageView(OgcApiDatasetData apiData, LandingPage apiLandingPage,
+    public OgcApiLandingPageView(OgcApiApiDataV2 apiData, LandingPage apiLandingPage,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig,
                                  boolean noIndex, URICustomizer uriCustomizer, I18n i18n, Optional<Locale> language) {
         super("landingPage.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
@@ -60,7 +60,7 @@ public class OgcApiLandingPageView extends LdproxyView {
                 "minLat", Double.toString(spatialExtent.getYmin()),
                 "maxLng", Double.toString(spatialExtent.getXmax()),
                 "maxLat", Double.toString(spatialExtent.getYmax()));
-        Long[] interval = apiData.getFeatureTypes()
+        Long[] interval = apiData.getCollections()
                 .values()
                 .stream()
                 .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
@@ -86,16 +86,15 @@ public class OgcApiLandingPageView extends LdproxyView {
                 "end", interval[1]==null ? null : interval[1].toString());
         this.spatialSearch = false;
 
-        if (Objects.nonNull(apiData.getMetadata())) {
-            this.metadata = apiData.getMetadata();
+        if (apiData.getMetadata().isPresent()) {
+            this.metadata = apiData.getMetadata().get();
 
             if (!metadata.getKeywords()
                          .isEmpty()) {
                 this.keywords = Joiner.on(',')
                                       .skipNulls()
-                                      .join(apiData.getMetadata()
-                                                       .getKeywords());
-                this.keywordsWithQuotes = String.join(",", apiData.getMetadata()
+                                      .join(metadata.getKeywords());
+                this.keywordsWithQuotes = String.join(",", metadata
                         .getKeywords()
                         .stream()
                         .filter(keyword -> Objects.nonNull(keyword) && !keyword.isEmpty())
@@ -160,10 +159,10 @@ public class OgcApiLandingPageView extends LdproxyView {
     }
 
     public List<OgcApiLink> getDistributions() {
-        return apiData.getFeatureTypes()
+        return apiData.getCollections()
                 .values()
                 .stream()
-                .filter(featureType -> apiData.isFeatureTypeEnabled(featureType.getId()))
+                .filter(featureType -> apiData.isCollectionEnabled(featureType.getId()))
                 .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
                 .map(featureType -> new ImmutableOgcApiLink.Builder()
                         .title(featureType.getLabel())

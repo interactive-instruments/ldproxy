@@ -9,7 +9,7 @@ package de.ii.ldproxy.wfs3.styles;
 
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -35,7 +35,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, StylesConfiguration.class)
                 .map(StylesConfiguration::getMbStyleEnabled)
                 .orElse(false);
@@ -69,7 +69,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
      * @return true, if the conformance class is enabled and a stylesheet is available
      */
     @Override
-    public String getTitle(OgcApiDatasetData datasetData, String styleId) {
+    public String getTitle(OgcApiApiDataV2 datasetData, String styleId) {
         return "TODO";
     } // TODO
 }

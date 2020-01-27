@@ -49,11 +49,11 @@ public class TilesOutputFormatHtml implements TileCollectionsFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
-    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
@@ -62,7 +62,7 @@ public class TilesOutputFormatHtml implements TileCollectionsFormatExtension {
     @Override
     public Response getTileCollectionsResponse(TileCollections tiles,
                                                Optional<String> collectionId,
-                                               OgcApiDataset api,
+                                               OgcApiApi api,
                                                OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
@@ -79,9 +79,9 @@ public class TilesOutputFormatHtml implements TileCollectionsFormatExtension {
                         .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
                                 .removeLastPathSegments(2)
                                 .toString()))
-                        .add(new NavigationDTO(api.getData().getFeatureTypes().get(collectionId.get()).getLabel(), requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(1)
-                                .toString()))
+                        .add(new NavigationDTO(api.getData().getCollections().get(collectionId.get()).getLabel(), requestContext.getUriCustomizer().copy()
+                                                                                                                                .removeLastPathSegments(1)
+                                                                                                                                .toString()))
                         .add(new NavigationDTO(tilesTitle))
                         .build() :
                 new ImmutableList.Builder<NavigationDTO>()

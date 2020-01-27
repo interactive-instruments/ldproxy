@@ -43,7 +43,7 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, Oas30Configuration.class);
     }
 
@@ -53,13 +53,13 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
     }
 
     @Override
-    public Response getApiDefinitionResponse(OgcApiDatasetData apiData,
+    public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
                                              OgcApiRequestContext wfs3Request) {
         throw new NotAcceptableException();
     }
 
     @Override
-    public Response getApiDefinitionFile(OgcApiDatasetData apiData,
+    public Response getApiDefinitionFile(OgcApiApiDataV2 apiData,
                                          OgcApiRequestContext wfs3Request,
                                          String file) {
         LOGGER.debug("FILE {}", file);

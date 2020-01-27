@@ -9,8 +9,9 @@ package de.ii.ldproxy.wfs3.filtertransformer;
 
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.akka.http.HttpClient;
@@ -19,6 +20,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -39,12 +41,12 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 
     @Override
-    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
@@ -52,10 +54,10 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
             // Features
 
             ImmutableSet.Builder<String> parameters = new ImmutableSet.Builder<>();
-            Set<String> parametersFromConfiguration = apiData.getFeatureTypes()
+            Set<String> parametersFromConfiguration = apiData.getCollections()
                     .values()
                     .stream()
-                    .flatMap(featureTypeConfigurationOgcApi -> featureTypeConfigurationOgcApi.getCapabilities().stream())
+                    .flatMap(featureTypeConfigurationOgcApi -> featureTypeConfigurationOgcApi.getExtensions().stream())
                     .filter(extensionConfiguration -> extensionConfiguration instanceof FilterTransformersConfiguration)
                     .flatMap(extensionConfiguration -> ((FilterTransformersConfiguration) extensionConfiguration).getTransformers().stream())
                     .filter(filterTransformerConfiguration -> filterTransformerConfiguration instanceof RequestGeoJsonBboxConfiguration)
@@ -63,15 +65,17 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
                     .collect(Collectors.toSet());
             parameters.addAll(parametersFromConfiguration);
 
-            Optional<FeatureTypeConfigurationOgcApi> ft = apiData.getFeatureTypes()
+            Optional<FeatureTypeConfigurationOgcApi> ft = apiData.getCollections()
                     .values()
                     .stream()
-                    .filter(ftype -> apiData.isFeatureTypeEnabled(ftype.getId()))
+                    .filter(ftype -> apiData.isCollectionEnabled(ftype.getId()))
                     .filter(ftype -> subPath.matches("^/" + ftype.getId() + "/items/?$"))
                     .findFirst();
-            if (ft.isPresent()) {
-                Map<String, String> filterableFields = apiData.getFilterableFieldsForFeatureType(ft.get().getId(), true);
-                parameters.addAll(filterableFields.keySet());
+            Optional<List<String>> otherQueryables = ft.flatMap(featureTypeConfigurationOgcApi -> featureTypeConfigurationOgcApi.getExtension(OgcApiFeaturesCoreConfiguration.class))
+                                               .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
+                                               .map(OgcApiFeaturesCollectionQueryables::getOther);
+            if (otherQueryables.isPresent()) {
+                parameters.addAll(otherQueryables.get());
             }
 
             return parameters.build();
@@ -85,7 +89,7 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
 
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                   Map<String, String> parameters, OgcApiDatasetData apiData) {
+                                                   Map<String, String> parameters, OgcApiApiDataV2 apiData) {
         final Optional<FilterTransformersConfiguration> filterTransformersConfiguration = featureTypeConfiguration.getExtension(FilterTransformersConfiguration.class);
 
         if (filterTransformersConfiguration.isPresent()) {

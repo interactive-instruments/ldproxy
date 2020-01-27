@@ -14,6 +14,7 @@ import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 /**
  * @author zahnen
  */
+@Deprecated
 public class MicrodataPropertyMapping extends AbstractOgcApiFeaturesGenericMapping<MicrodataMapping.MICRODATA_TYPE> implements MicrodataMapping {
 
     private MICRODATA_TYPE type;

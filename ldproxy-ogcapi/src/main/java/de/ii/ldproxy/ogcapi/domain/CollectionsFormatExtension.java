@@ -17,11 +17,11 @@ public interface CollectionsFormatExtension extends FormatExtension {
     }
 
     Response getCollectionsResponse(Collections collections,
-                                    OgcApiDataset api,
+                                    OgcApiApi api,
                                     OgcApiRequestContext requestContext);
 
     Response getCollectionResponse(OgcApiCollection ogcApiCollection,
-                                   OgcApiDataset api,
+                                   OgcApiApi api,
                                    OgcApiRequestContext requestContext);
 
 }

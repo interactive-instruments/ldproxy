@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS;
-import static de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData.DEFAULT_CRS_URI;
+import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
+import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS_URI;
 
 
 @Component
@@ -42,12 +42,12 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, CrsConfiguration.class);
     }
 
     @Override
-    public ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath) {
+    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
         if (!isEnabledForApi(apiData))
             return ImmutableSet.of();
 
@@ -64,7 +64,7 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
 
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                   Map<String, String> parameters, OgcApiDatasetData datasetData) {
+                                                   Map<String, String> parameters, OgcApiApiDataV2 datasetData) {
 
         if (!isEnabledForApi(datasetData)) {
             return parameters;
@@ -82,7 +82,7 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
-                                                        Map<String, String> parameters, OgcApiDatasetData datasetData) {
+                                                        Map<String, String> parameters, OgcApiApiDataV2 datasetData) {
 
         if (!isEnabledForApi(datasetData)) {
             return queryBuilder;

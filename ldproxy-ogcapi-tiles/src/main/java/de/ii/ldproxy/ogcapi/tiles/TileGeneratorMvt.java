@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import no.ecc.vectortile.VectorTileEncoder;
@@ -52,7 +52,7 @@ public class TileGeneratorMvt {
 
         // Prepare MVT output
         TileMatrixSet tileMatrixSet = tile.getTileMatrixSet();
-        OgcApiDatasetData serviceData = tile.getApiData();
+        OgcApiApiDataV2 serviceData = tile.getApiData();
         int level = tile.getLevel();
         int row = tile.getRow();
         int col = tile.getCol();

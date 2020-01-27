@@ -8,7 +8,7 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -61,7 +61,7 @@ public class GeoJsonWriterCrs implements GeoJsonWriter {
 
     private void writeCrs(JsonGenerator json, Optional<CrsTransformer> crsTransformer) throws IOException {
         if (crsTransformer.isPresent() && !Objects.equals(crsTransformer.get()
-                                                                        .getTargetCrs(), OgcApiDatasetData.DEFAULT_CRS)) {
+                                                                        .getTargetCrs(), OgcApiApiDataV2.DEFAULT_CRS)) {
             json.writeStringField("crs", crsTransformer.get()
                                                        .getTargetCrs()
                                                        .getAsUri());

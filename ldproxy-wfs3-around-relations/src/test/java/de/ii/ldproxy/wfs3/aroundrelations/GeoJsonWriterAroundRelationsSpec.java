@@ -11,12 +11,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.*;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
@@ -41,13 +42,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(Spectrum.class)
 public class GeoJsonWriterAroundRelationsSpec {
 
-    static final GeoJsonGeometryMapping geometryMapping = new GeoJsonGeometryMapping();
+    static final FeatureProperty geometryMapping = new ImmutableFeatureProperty.Builder().name("geometry")
+                                                                                         .path("")
+                                                                                         .type(FeatureProperty.Type.GEOMETRY)
+                                                                                         .build();
 
     static final String coordinates = "10 50, 10 51, 11 51, 11 50, 10 50";
 
-    static {
+    /*static {
         geometryMapping.setGeometryType(GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.POLYGON);
-    }
+    }*/
 
     static String expectedCollection = "{" + System.lineSeparator() +
             "        \"type\" : \"FeatureCollection\"," + System.lineSeparator() +
@@ -91,7 +95,8 @@ public class GeoJsonWriterAroundRelationsSpec {
                             }
 
                             @Override
-                            public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+                            public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
+                                                     Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
                                 nextTransformationContext[0] = transformationContext;
                             }
                         }, new AroundRelationResolver() {
@@ -111,7 +116,8 @@ public class GeoJsonWriterAroundRelationsSpec {
                             }
 
                             @Override
-                            public String getUrl(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery, String additionalParameters) {
+                            public String getUrl(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery,
+                                                 String additionalParameters) {
                                 assertThat(aroundRelationQuery.name).isEqualTo("test1");
 
                                 assertThat(aroundRelationQuery.limit).isEqualTo(5);
@@ -125,7 +131,8 @@ public class GeoJsonWriterAroundRelationsSpec {
                             }
 
                             @Override
-                            public String resolve(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery, String additionalParameters) {
+                            public String resolve(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery,
+                                                  String additionalParameters) {
                                 return null;
                             }
                         });
@@ -134,11 +141,11 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                 .size() + 1;
 
                         OgcApiLink expectedLink = new ImmutableOgcApiLink.Builder()
-                                                                 .rel("test1")
-                                                                 .title("test1")
-                                                                 .type("application/geo+json")
-                                                                 .href("RELATION")
-                                                                 .build();
+                                .rel("test1")
+                                .title("test1")
+                                .type("application/geo+json")
+                                .href("RELATION")
+                                .build();
 
                         assertThat(nextTransformationContext[0].getLinks()).hasSize(expectedSize)
                                                                            .contains(expectedLink);
@@ -176,7 +183,8 @@ public class GeoJsonWriterAroundRelationsSpec {
                             }
 
                             @Override
-                            public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+                            public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
+                                                     Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
                                 nextTransformationContext[0] = transformationContext;
                             }
                         }, new AroundRelationResolver() {
@@ -186,12 +194,14 @@ public class GeoJsonWriterAroundRelationsSpec {
                             }
 
                             @Override
-                            public String getUrl(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery, String additionalParameters) {
+                            public String getUrl(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery,
+                                                 String additionalParameters) {
                                 return null;
                             }
 
                             @Override
-                            public String resolve(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery, String additionalParameters) {
+                            public String resolve(AroundRelationsQuery.AroundRelationQuery aroundRelationQuery,
+                                                  String additionalParameters) {
                                 return expectedCollection;
                             }
                         });
@@ -225,7 +235,8 @@ public class GeoJsonWriterAroundRelationsSpec {
 
     }
 
-    private void runTransformer(FeatureTransformationContextGeoJson transformationContext, GeoJsonWriter chainedWriter, AroundRelationResolver aroundRelationResolver) throws IOException, URISyntaxException {
+    private void runTransformer(FeatureTransformationContextGeoJson transformationContext, GeoJsonWriter chainedWriter,
+                                AroundRelationResolver aroundRelationResolver) throws IOException, URISyntaxException {
 
 
         FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriterAroundRelations().create(aroundRelationResolver), chainedWriter));
@@ -247,46 +258,42 @@ public class GeoJsonWriterAroundRelationsSpec {
         transformer.onEnd();
     }
 
-    private FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, URI query) throws URISyntaxException {
+    private FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream,
+                                                                            URI query) throws URISyntaxException {
         return ImmutableFeatureTransformationContextGeoJson.builder()
                                                            .crsTransformer(Optional.empty())
-                                                           .apiData(new ImmutableOgcApiDatasetData.Builder()
-                                                                                                .id("s")
-                                                                                                .serviceType("WFS3")
-                                                                                                .featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
-                                                                                                        .providerType("WFS")
-                                                                                                        .connectorType("HTTP")
-                                                                                                                                                .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
-                                                                                                                                                                                              .uri(new URI("http://localhost"))
-                                                                                                                                                                                              .method(ConnectionInfoWfsHttp.METHOD.GET)
-                                                                                                                                                                                              .version("2.0.0")
-                                                                                                                                                                                              .gmlVersion("3.2.1")
-                                                                                                                                                                                              .build())
-                                                                                                                                                .nativeCrs(new EpsgCrs())
-                                                                                                                                                .build())
-                                                                                                .featureTypes(ImmutableMap.of("ft", new ImmutableFeatureTypeConfigurationOgcApi.Builder()
-                                                                                                                                                                         .id("ft")
-                                                                                                                                                                         .label("ft")
-                                                                                                                                                                         .extent(new ImmutableCollectionExtent.Builder()
-                                                                                                                                                                                                           .temporal(new ImmutableTemporalExtent.Builder().build())
-                                                                                                                                                                                                           .build())
-                                                                                                                                                                         .addCapabilities(new ImmutableAroundRelationsConfiguration.Builder()
-                                                                                                                                                                                                                                    .enabled(true)
-                                                                                                                                                                                                                                    .addRelations(new ImmutableRelation.Builder()
-                                                                                                                                                                                                                                                                   .id("test1")
-                                                                                                                                                                                                                                                                   .label("test1")
-                                                                                                                                                                                                                                                                   .responseType("application/geo+json")
-                                                                                                                                                                                                                                                                   .urlTemplate("")
-                                                                                                                                                                                                                                                                   .build())
-                                                                                                                                                                                                                                    .enabled(true)
-                                                                                                                                                                                                                                    .build())
-                                                                                                                                                                         .build()))
-                                                                                                .build())
+                                                           .apiData(new ImmutableOgcApiApiDataV2.Builder()
+                                                                   .id("s")
+                                                                   .serviceType("WFS3")
+                                                                   .collections(ImmutableMap.of("ft", new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                                                           .id("ft")
+                                                                           .label("ft")
+                                                                           .extent(new ImmutableCollectionExtent.Builder()
+                                                                                   .spatial(new BoundingBox())
+                                                                                   .temporal(new ImmutableTemporalExtent.Builder().build())
+                                                                                   .build())
+                                                                           .addExtensions(new ImmutableAroundRelationsConfiguration.Builder()
+                                                                                   .enabled(true)
+                                                                                   .addRelations(new ImmutableRelation.Builder()
+                                                                                           .id("test1")
+                                                                                           .label("test1")
+                                                                                           .responseType("application/geo+json")
+                                                                                           .urlTemplate("")
+                                                                                           .build())
+                                                                                   .enabled(true)
+                                                                                   .build())
+                                                                           .addExtensions(new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
+                                                                                   .queryables(new ImmutableOgcApiFeaturesCollectionQueryables.Builder()
+                                                                                           .spatial(ImmutableList.of("geometry"))
+                                                                                           .build())
+                                                                                   .build())
+                                                                           .build()))
+                                                                   .build())
                                                            .collectionId("ft")
                                                            .outputStream(outputStream)
                                                            .links(ImmutableList.of(new ImmutableOgcApiLink.Builder()
-                                                                                                    .href("TEST")
-                                                                                                    .build()))
+                                                                   .href("TEST")
+                                                                   .build()))
                                                            .isFeatureCollection(false)
                                                            .ogcApiRequest(new OgcApiRequestContext() {
                                                                @Override
@@ -305,7 +312,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                }
 
                                                                @Override
-                                                               public OgcApiDataset getApi() {
+                                                               public OgcApiApi getApi() {
                                                                    return null;
                                                                }
 
@@ -329,7 +336,12 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                            .maxAllowableOffset(0)
                                                            .isHitsOnly(false)
                                                            .state(ModifiableStateGeoJson.create())
-                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder().isEnabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).useFormattedJsonOutput(true).build())
+                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder()
+                                                                                                .isEnabled(true)
+                                                                                                .nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST)
+                                                                                                .multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY)
+                                                                                                .useFormattedJsonOutput(true)
+                                                                                                .build())
                                                            .build();
 
     }

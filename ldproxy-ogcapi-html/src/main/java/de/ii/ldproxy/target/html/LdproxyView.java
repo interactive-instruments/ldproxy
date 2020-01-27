@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.target.html;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import io.dropwizard.views.View;
 
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public abstract class LdproxyView extends View {
 
-    protected final OgcApiDatasetData apiData;
+    protected final OgcApiApiDataV2 apiData;
     protected final List<NavigationDTO> breadCrumbs;
     protected final List<OgcApiLink> links;
     protected final HtmlConfig htmlConfig;
@@ -29,7 +29,7 @@ public abstract class LdproxyView extends View {
     protected final String description;
     protected final boolean noIndex;
 
-    protected LdproxyView(String templateName, @Nullable Charset charset, @Nullable OgcApiDatasetData apiData,
+    protected LdproxyView(String templateName, @Nullable Charset charset, @Nullable OgcApiApiDataV2 apiData,
                           List<NavigationDTO> breadCrumbs, HtmlConfig htmlConfig, boolean noIndex, String urlPrefix,
                           @Nullable List<OgcApiLink> links, @Nullable String title, @Nullable String description) {
         super(templateName, charset);

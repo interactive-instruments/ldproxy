@@ -11,10 +11,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonMapping;
@@ -29,13 +29,6 @@ import de.ii.xtraplatform.dropwizard.api.Jackson;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
-import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureTypeMapping;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
-import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
 import de.ii.xtraplatform.kvstore.api.KeyNotFoundException;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import org.apache.felix.ipojo.annotations.Component;
@@ -81,7 +74,7 @@ public class Wfs3ServiceMigrate {
     private void onStart() {
         KeyValueStore serviceStore = rootConfigStore.getChildStore(PATH);
 
-        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, OgcApiDataset.ENTITY_TYPE);
+        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, OgcApiApi.ENTITY_TYPE);
 
         executorService.schedule(() -> {
 
@@ -99,7 +92,7 @@ public class Wfs3ServiceMigrate {
                                                                      .readValue(serviceStore.getValueReader(id), new TypeReference<LinkedHashMap>() {
                                                                      });
 
-                                OgcApiDatasetData datasetData = createServiceData(service, null);
+                                OgcApiApiDataV2 datasetData = createServiceData(service, null);
 
 
                                 try {
@@ -147,15 +140,15 @@ public class Wfs3ServiceMigrate {
         }, 10, TimeUnit.SECONDS);
     }
 
-    private OgcApiDatasetData createServiceData(Map<String, Object> service,
-                                                OgcApiDatasetData datasetData) throws URISyntaxException {
+    private OgcApiApiDataV2 createServiceData(Map<String, Object> service,
+                                              OgcApiApiDataV2 datasetData) throws URISyntaxException {
         Map<String, Object> wfs = (Map<String, Object>) service.get("wfsAdapter");
         Map<String, Object> defaultCrs = (Map<String, Object>) wfs.get("defaultCrs");
         String url = (String) ((Map<String, Object>) ((Map<String, Object>) wfs.get("urls"))
                 .get("GetFeature")).get("GET");
         URI uri = new URI(url);
 
-        ImmutableOgcApiDatasetData.Builder builder = new ImmutableOgcApiDatasetData.Builder();
+        ImmutableOgcApiApiDataV2.Builder builder = new ImmutableOgcApiApiDataV2.Builder();
 
         if (datasetData != null) {
             builder.from(datasetData);
@@ -171,7 +164,7 @@ public class Wfs3ServiceMigrate {
                 .label((String) service.get("name"))
                 .description((String) service.get("description"))
                 .lastModified((Long) service.get("lastModified"))
-                .featureTypes(
+                .collections(
                         ((Map<String, Object>) service.get("featureTypes"))
                                 .entrySet()
                                 .stream()
@@ -183,7 +176,7 @@ public class Wfs3ServiceMigrate {
                                     ImmutableFeatureTypeConfigurationOgcApi.Builder featureTypeConfigurationWfs3 = new ImmutableFeatureTypeConfigurationOgcApi.Builder();
 
                                     if (datasetData != null) {
-                                        featureTypeConfigurationWfs3.from(datasetData.getFeatureTypes()
+                                        featureTypeConfigurationWfs3.from(datasetData.getCollections()
                                                                                      .get(fid));
                                     }
                                     featureTypeConfigurationWfs3
@@ -202,7 +195,8 @@ public class Wfs3ServiceMigrate {
                                 })
                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
                 )
-                .featureProvider(
+                //TODO: migrate services from 1.3
+                /*.featureProvider(
                         //TODO: providerType
                         new ImmutableFeatureProviderDataTransformer.Builder()
                                 .nativeCrs(new EpsgCrs((Integer) defaultCrs.get("code"), (Boolean) defaultCrs.get("longitudeFirst")))
@@ -271,7 +265,7 @@ public class Wfs3ServiceMigrate {
                                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
                                 )
                                 .build()
-                )
+                )*/
                 .build();
     }
 

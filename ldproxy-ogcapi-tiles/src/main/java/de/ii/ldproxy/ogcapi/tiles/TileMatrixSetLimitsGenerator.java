@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -36,23 +37,23 @@ public class TileMatrixSetLimitsGenerator {
      * @param crsTransformation crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public static List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiDatasetData data, String collectionId,
+    public static List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiApiDataV2 data, String collectionId,
                                                                              String tileMatrixSetId, MinMax tileMatrixRange,
                                                                              CrsTransformation crsTransformation) {
 
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
-        List<FeatureTypeConfigurationOgcApi> collectionData = data.getFeatureTypes()
+        List<FeatureTypeConfigurationOgcApi> collectionData = data.getCollections()
                 .values()
                 .stream()
                 .filter(featureType -> collectionId.equals(featureType.getId()))
                 .collect(Collectors.toList());
         BoundingBox bbox = collectionData.get(0).getExtent().getSpatial();
+        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
 
-        if (!bbox.getEpsgCrs().equals(tileMatrixSet.getCrs())) {
-            CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
+        if (transformer.isPresent()) {
             try {
-                bbox = transformer.transformBoundingBox(bbox);
+                bbox = transformer.get().transformBoundingBox(bbox);
             } catch (CrsTransformationException e) {
                 LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().getAsSimple()));
                 return ImmutableList.of();
@@ -68,16 +69,16 @@ public class TileMatrixSetLimitsGenerator {
      * @param crsTransformation crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public static List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDatasetData data, String tileMatrixSetId,
-                                                            MinMax tileMatrixRange, CrsTransformation crsTransformation) {
+    public static List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiApiDataV2 data, String tileMatrixSetId,
+                                                                   MinMax tileMatrixRange, CrsTransformation crsTransformation) {
 
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
         BoundingBox bbox = data.getSpatialExtent();
-        if (!bbox.getEpsgCrs().equals(tileMatrixSet.getCrs())) {
-            CrsTransformer transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
+        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
+        if (transformer.isPresent()) {
             try {
-                bbox = transformer.transformBoundingBox(bbox);
+                bbox = transformer.get().transformBoundingBox(bbox);
             } catch (CrsTransformationException e) {
                 LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().getAsSimple()));
                 return ImmutableList.of();

@@ -28,7 +28,7 @@ public class JacksonSubTypeIdsGeoJson implements JacksonSubTypeIds {
         return new ImmutableMap.Builder<Class<?>, String>()
                 .put(GeoJsonPropertyMapping.class, "GEO_JSON_PROPERTY")
                 .put(GeoJsonGeometryMapping.class, "GEO_JSON_GEOMETRY")
-                .put(GeoJsonConfiguration.class, ExtensionConfiguration.getExtensionType(GeoJsonConfiguration.class))
+                .put(GeoJsonConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(GeoJsonConfiguration.class))
                 .build();
     }
 }

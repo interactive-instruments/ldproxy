@@ -9,17 +9,25 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.codelists.CodelistRegistry;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.Collections;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
+import de.ii.xtraplatform.feature.provider.api.FeatureProviderDataV1;
+import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import org.apache.felix.ipojo.annotations.*;
@@ -31,6 +39,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
 
 @Component
 @Provides
@@ -69,6 +79,12 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     @Requires
     private I18n i18n;
 
+    @Requires
+    private OgcApiFeatureCoreProviders providers;
+
+    @Requires
+    private CrsTransformation crsTransformations;
+
     @Override
     public String getConformanceClass() {
         return "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html";
@@ -90,17 +106,17 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
-    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
     }
 
-    private HtmlConfiguration.LAYOUT getLayout(OgcApiDatasetData apiData) {
+    private HtmlConfiguration.LAYOUT getLayout(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, HtmlConfiguration.class)
                 .map(HtmlConfiguration::getLayout)
                 .orElse(HtmlConfiguration.LAYOUT.CLASSIC);
@@ -108,7 +124,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     @Override
     public Response getLandingPageResponse(LandingPage apiLandingPage,
-                                           OgcApiDataset api,
+                                           OgcApiApi api,
                                            OgcApiRequestContext requestContext) {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
@@ -130,7 +146,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     @Override
     public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
-                                           OgcApiDataset api, OgcApiRequestContext requestContext)  {
+                                           OgcApiApi api, OgcApiRequestContext requestContext)  {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String conformanceDeclarationTitle = i18n.get("conformanceDeclarationTitle", requestContext.getLanguage());
@@ -157,7 +173,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     }
 
     @Override
-    public Response getCollectionsResponse(Collections collections, OgcApiDataset api, OgcApiRequestContext requestContext) {
+    public Response getCollectionsResponse(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
@@ -172,7 +188,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .add(new NavigationDTO(collectionsTitle))
                 .build();
 
-        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
+        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage(), providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl());
 
         return Response.ok()
                 .type(getMediaType().type())
@@ -183,7 +199,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     @Override
     public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
-                                          OgcApiDataset api,
+                                          OgcApiApi api,
                                           OgcApiRequestContext requestContext) {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
@@ -216,8 +232,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     }
 
     @Override
-    public Optional<FeatureTransformer> getFeatureTransformer(FeatureTransformationContext transformationContext, Optional<Locale> language) {
-        OgcApiDatasetData serviceData = transformationContext.getApiData();
+    public Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContext transformationContext, Optional<Locale> language) {
+        OgcApiApiDataV2 serviceData = transformationContext.getApiData();
         String collectionName = transformationContext.getCollectionId();
         String staticUrlPrefix = transformationContext.getOgcApiRequest()
                                                       .getStaticUrlPrefix();
@@ -234,14 +250,37 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                                                                                     .equals("true"));
 
         if (transformationContext.isFeatureCollection()) {
-            featureTypeDataset = createFeatureCollectionView(serviceData.getFeatureTypes()
-                                                                        .get(collectionName), uriCustomizer.copy(), serviceData.getFilterableFieldsForFeatureType(collectionName, true), serviceData.getHtmlNamesForFeatureType(collectionName), staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getLayout(serviceData));
+            FeatureTypeConfigurationOgcApi collectionData = serviceData.getCollections()
+                                                                       .get(collectionName);
+            Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
+            Optional<HtmlConfiguration> htmlConfiguration = collectionData.getExtension(HtmlConfiguration.class);
+            FeatureProviderDataV1 providerData = providers.getFeatureProvider(serviceData, collectionData)
+                                                          .getData();
 
-            addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getFeatureTypes()
+            Map<String, String> filterableFields = featuresCoreConfiguration
+                                                                 .map(OgcApiFeaturesCoreConfiguration::getOtherFilterParameters)
+                                                                 .orElse(ImmutableMap.of());
+
+            Map<String, String> htmlNames = new LinkedHashMap<>();
+            if (featuresCoreConfiguration.isPresent()) {
+                featuresCoreConfiguration.get()
+                                         .getFeatureTypes()
+                                         .forEach(featureTypeId -> {
+                                            providerData.getTypes().get(featureTypeId).getProperties().keySet().forEach(property -> htmlNames.putIfAbsent(property, property));
+                                         });
+
+                //TODO: apply rename transformers
+                //Map<String, List<FeaturePropertyTransformation>> transformations = htmlConfiguration.getTransformations();
+            }
+
+            featureTypeDataset = createFeatureCollectionView(serviceData.getCollections()
+                                                                        .get(collectionName), uriCustomizer.copy(), filterableFields, htmlNames, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getLayout(serviceData), providers.getFeatureProvider(serviceData));
+
+            addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getCollections()
                                                                                         .get(collectionName)
                                                                                         .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language, serviceData.getApiVersion());
         } else {
-            featureTypeDataset = createFeatureDetailsView(serviceData.getFeatureTypes()
+            featureTypeDataset = createFeatureDetailsView(serviceData.getCollections()
                                                                      .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getApiVersion(), getLayout(serviceData));
         }
 
@@ -254,7 +293,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .language(language)
                 .build();
 
-        FeatureTransformer transformer;
+        FeatureTransformer2 transformer;
         switch (getLayout(serviceData)) {
             default:
             case CLASSIC:
@@ -280,7 +319,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                               Map<String, String> htmlNames, String staticUrlPrefix,
                                                               boolean bare, Optional<Locale> language,
                                                               boolean noIndex,
-                                                              HtmlConfiguration.LAYOUT layout) {
+                                                              HtmlConfiguration.LAYOUT layout,
+                                                              FeatureProvider2 featureProvider) {
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
@@ -302,19 +342,18 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
         featureTypeDataset.temporalExtent = featureType.getExtent()
                                                        .getTemporal();
 
-        BoundingBox bbox = featureType.getExtent()
-                                      .getSpatial();
-        if (Objects.nonNull(bbox))
-            featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax()));
+        getBoundingBox(featureType, featureProvider).ifPresent(bbox -> featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
 
         featureTypeDataset.filterFields = filterableFields.entrySet()
                                                           .stream()
-                                                          .peek(entry -> {
+                                                          .map(entry -> {
                                                               if (htmlNames.containsKey(entry.getValue())) {
-                                                                  entry.setValue(htmlNames.get(entry.getValue()));
+                                                                  //entry.setValue(htmlNames.get(entry.getValue()));
+                                                                  return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), htmlNames.get(entry.getValue()));
                                                               }
+                                                              return entry;
                                                           })
-                                                          .collect(Collectors.toSet());
+                                                          .collect(ImmutableSet.toImmutableSet());
         featureTypeDataset.uriBuilder = uriCustomizer.copy()
                                                      .ensureParameter("f", MEDIA_TYPE.parameter());
         featureTypeDataset.uriBuilderWithFOnly = uriCustomizer.copy()
@@ -322,9 +361,9 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                               .ensureParameter("f", MEDIA_TYPE.parameter());
 
         //TODO: refactor all views, use extendable OgcApiCollection(s) as base, move this to OgcApiCollectionExtension
-        featureTypeDataset.spatialSearch = featureType.getCapabilities()
+        featureTypeDataset.spatialSearch = featureType.getExtensions()
                                                       .stream()
-                                                      .anyMatch(extensionConfiguration -> Objects.equals(extensionConfiguration.getExtensionType(), "FILTER_TRANSFORMERS"));
+                                                      .anyMatch(extensionConfiguration -> Objects.equals(extensionConfiguration.getBuildingBlock(), "FILTER_TRANSFORMERS"));
 
         return featureTypeDataset;
     }
@@ -423,5 +462,33 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                                                       .toUpperCase()))
                                              .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
                                              .collect(Collectors.toList());
+    }
+
+    private Optional<BoundingBox> getBoundingBox(
+            FeatureTypeConfigurationOgcApi featureType,
+            FeatureProvider2 featureProvider) {
+
+        if (featureType.getExtent().getSpatialComputed() && featureProvider.supportsExtents()) {
+            BoundingBox spatialExtent = featureProvider.extents()
+                                                       .getSpatialExtent(featureType.getId());
+
+            if (DEFAULT_CRS.equals(featureProvider.getData()
+                                                  .getNativeCrs())) {
+                return Optional.ofNullable(spatialExtent);
+            }
+
+            Optional<CrsTransformer> transformer = crsTransformations.getTransformer(featureProvider.getData()
+                                                                                                    .getNativeCrs(), DEFAULT_CRS);
+            if (transformer.isPresent()) {
+                try {
+                    return Optional.ofNullable(transformer.get()
+                                                          .transformBoundingBox(spatialExtent));
+                } catch (CrsTransformationException e) {
+
+                }
+            }
+        }
+
+        return Optional.ofNullable(featureType.getExtent().getSpatial());
     }
 }

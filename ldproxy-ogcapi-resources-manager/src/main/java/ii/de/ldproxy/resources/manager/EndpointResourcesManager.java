@@ -68,7 +68,7 @@ public class EndpointResourcesManager implements OgcApiEndpointExtension, Confor
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?[^/]+$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
@@ -79,7 +79,7 @@ public class EndpointResourcesManager implements OgcApiEndpointExtension, Confor
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
         if (stylesExtension.isPresent() &&
@@ -100,7 +100,7 @@ public class EndpointResourcesManager implements OgcApiEndpointExtension, Confor
     @PUT
     @Consumes(MediaType.WILDCARD)
     public Response putStyle(@Auth Optional<User> optionalUser, @PathParam("resourceId") String resourceId,
-                             @Context OgcApiDataset dataset, @Context OgcApiRequestContext ogcApiRequest,
+                             @Context OgcApiApi dataset, @Context OgcApiRequestContext ogcApiRequest,
                              @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
@@ -132,7 +132,7 @@ public class EndpointResourcesManager implements OgcApiEndpointExtension, Confor
     @Path("/{resourceId}")
     @DELETE
     public Response deleteResource(@Auth Optional<User> optionalUser, @PathParam("resourceId") String resourceId,
-                                @Context OgcApiDataset dataset) {
+                                @Context OgcApiApi dataset) {
 
         checkAuthorization(dataset.getData(), optionalUser);
 

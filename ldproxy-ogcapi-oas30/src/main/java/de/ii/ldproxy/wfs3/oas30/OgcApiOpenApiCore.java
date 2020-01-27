@@ -7,14 +7,12 @@
  */
 package de.ii.ldproxy.wfs3.oas30;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import de.ii.ldproxy.codelists.CodelistRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -50,12 +48,12 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
         if (datasetData != null) {
 
             // TODO dynamically add feature formats, other formats, parameters, collectionId values
@@ -68,7 +66,10 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
                                               .remove("/collections/{collectionId}/items/{featureId}");
 
             // update limit parameter from configuration
-            Schema limitSchema = openAPI.getComponents().getParameters().get("limit").getSchema();
+            Schema limitSchema = openAPI.getComponents()
+                                        .getParameters()
+                                        .get("limit")
+                                        .getSchema();
 
             Optional<Integer> minimumPageSize = getExtensionConfiguration(datasetData, OgcApiFeaturesCoreConfiguration.class)
                     .map(OgcApiFeaturesCoreConfiguration::getMinimumPageSize);
@@ -86,11 +87,11 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
                 limitSchema.maximum(BigDecimal.valueOf(maxPageSize.get()));
 
             // process feature types
-            datasetData.getFeatureTypes()
+            datasetData.getCollections()
                        .values()
                        .stream()
                        .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                       .filter(ft -> datasetData.isFeatureTypeEnabled(ft.getId()))
+                       .filter(ft -> datasetData.isCollectionEnabled(ft.getId()))
                        .forEach(ft -> {
 
                            PathItem clonedPathItem1 = clonePathItem(collectionPathItem, true);
@@ -112,25 +113,21 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
                                                       .operationId("getFeatures" + ft.getId())
                                    );
 
-                           Map<String, String> filterableFields = datasetData.getFilterableFieldsForFeatureType(ft.getId(), true);
+                           Optional<OgcApiFeaturesCoreConfiguration> coreConfiguration = ft.getExtension(OgcApiFeaturesCoreConfiguration.class);
 
-                           FeatureTypeMapping featureTypeMapping = datasetData.getFeatureProvider().getMappings().get(ft.getId());
+                           Map<String, String> filterableFields = coreConfiguration.map(OgcApiFeaturesCoreConfiguration::getOtherFilterParameters)
+                                                                                   .orElse(ImmutableMap.of());
+
+                           //TODO: apply rename transformers
+                           //Map<String, Optional<CodelistTransformation>> transformations = coreConfiguration.getTransformations().filter...;
 
 
                            filterableFields.keySet()
                                            .forEach(field -> {
                                                StringSchema schema = new StringSchema();
-                                               featureTypeMapping.getMappings()
-                                                       .values()
-                                                       .stream()
-                                                       .map(value -> value.getMappingForType("general"))
-                                                       .filter(mapping -> mapping.getName()!=null && mapping.getName().equals(field))
-                                                       .filter(mapping -> mapping instanceof OgcApiFeaturesGenericMapping &&
-                                                               ((OgcApiFeaturesGenericMapping) mapping).isFilterable() &&
-                                                               ((OgcApiFeaturesGenericMapping) mapping).isValue())
-                                                       .findFirst()
-                                                       .map(mapping -> ((OgcApiFeaturesGenericMapping) mapping).getCodelist())
-                                                       .filter(codelistName -> codelistName!=null)
+                                               //TODO
+                                               /*transformations.get(field)
+                                                              .map(codelistTransformation -> codelistTransformation.getCodelist())
                                                        .map(codelistName -> codelistRegistry.getCodelist(codelistName))
                                                        .ifPresent(codelist -> {
                                                            if (codelist.isPresent()) {
@@ -138,7 +135,7 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
                                                                if (!values.isEmpty())
                                                                    schema._enum(values);
                                                            }
-                                                       });
+                                                       });*/
                                                clonedPathItem.getGet()
                                                              .addParametersItem(
                                                                      new Parameter()
@@ -219,7 +216,8 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
         if (operation.getParameters() != null)
             clonedOperation.setParameters(Lists.newArrayList(operation.getParameters()
                     .stream()
-                    .filter(param -> !withoutCollectionId || param.get$ref()==null || !param.get$ref().equalsIgnoreCase("#/components/parameters/collectionId"))
+                                                                      .filter(param -> !withoutCollectionId || param.get$ref() == null || !param.get$ref()
+                                                                                                                                                .equalsIgnoreCase("#/components/parameters/collectionId"))
                     .collect(Collectors.toList())));
         clonedOperation.setRequestBody(operation.getRequestBody());
         clonedOperation.setResponses(operation.getResponses());

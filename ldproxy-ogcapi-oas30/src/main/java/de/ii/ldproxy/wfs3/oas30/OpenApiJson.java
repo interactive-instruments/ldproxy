@@ -16,10 +16,8 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 
 @Component
 @Provides
@@ -41,12 +39,12 @@ public class OpenApiJson implements ApiDefinitionFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, Oas30Configuration.class);
     }
 
     @Override
-    public Response getApiDefinitionResponse(OgcApiDatasetData apiData,
+    public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
                                              OgcApiRequestContext wfs3Request) {
         LOGGER.debug("MIME {}", "JSON");
         return openApiDefinition.getOpenApi("json", wfs3Request.getUriCustomizer().copy(), apiData);

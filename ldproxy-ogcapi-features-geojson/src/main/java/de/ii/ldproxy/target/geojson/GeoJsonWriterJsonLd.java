@@ -14,7 +14,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -37,26 +36,19 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     }
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onStart(FeatureTransformationContextGeoJson transformationContext,
+                        Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (transformationContext.isFeatureCollection()) {
-            Optional<GeoJsonPropertyMapping> mappingWithLdContext = transformationContext
-                    .getApiData()
-                    .getFeatureProvider()
-                    .getMappings()
+            Optional<String> ldContext = transformationContext.getApiData()
+                                                              .getCollections()
                     .get(transformationContext.getCollectionId())
-                    .getMappings()
-                    .values()
-                    .stream()
-                    .map(sourcePathMapping -> sourcePathMapping.getMappingForType("application/geo+json"))
-                    .filter(targetMapping -> targetMapping instanceof GeoJsonPropertyMapping)
-                    .map(targetMapping -> (GeoJsonPropertyMapping) targetMapping)
-                    .filter(targetMapping -> Objects.nonNull(targetMapping.getLdContext()))
-                    .findFirst();
+                                                              .getExtension(GeoJsonConfiguration.class)
+                                                              .flatMap(GeoJsonConfiguration::getLdContext);
 
-            if (mappingWithLdContext.isPresent()) {
+            if (ldContext.isPresent()) {
                 writeContextAndJsonLdType(transformationContext,
                         next,
-                        mappingWithLdContext.get().getLdContext(),
+                        ldContext.get(),
                         ImmutableList.of("geojson:FeatureCollection"));
             }
         }
@@ -66,10 +58,12 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     }
 
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
+                               Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (!transformationContext.isFeatureCollection()) {
-            Optional<GeoJsonPropertyMapping> mappingWithLdContext = transformationContext.getState()
-                    .getCurrentMapping()
+            //TODO: move to collection level geojson buildingBlock
+            /*Optional<GeoJsonPropertyMapping> mappingWithLdContext = transformationContext.getState()
+                    .getCurrentFeatureType()
                     .filter(targetMapping -> targetMapping instanceof GeoJsonPropertyMapping)
                     .map(targetMapping -> (GeoJsonPropertyMapping) targetMapping)
                     .filter(targetMapping -> Objects.nonNull(targetMapping.getLdContext()));
@@ -79,7 +73,7 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
                         next,
                         mappingWithLdContext.get().getLdContext(),
                         Optional.ofNullable(mappingWithLdContext.get().getLdType()).orElse(ImmutableList.of()));
-            }
+            }*/
         }
 
         // next chain for extensions
@@ -87,7 +81,8 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     }
 
     private void writeContextAndJsonLdType(FeatureTransformationContextGeoJson transformationContext,
-                                           Consumer<FeatureTransformationContextGeoJson> next, String ldContext, List<String> types) throws IOException {
+                                           Consumer<FeatureTransformationContextGeoJson> next, String ldContext,
+                                           List<String> types) throws IOException {
 
         transformationContext.getJson()
                              .writeStringField("@context",

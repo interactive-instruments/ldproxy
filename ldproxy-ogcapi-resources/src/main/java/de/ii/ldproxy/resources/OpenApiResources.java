@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.resources;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -44,7 +44,7 @@ public class OpenApiResources implements OpenApiExtension {
 
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
         if (stylesExtension.isPresent() &&
@@ -56,7 +56,7 @@ public class OpenApiResources implements OpenApiExtension {
     }
 
     @Override
-    public OpenAPI process(OpenAPI openAPI, OgcApiDatasetData datasetData) {
+    public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
 
         if (isEnabledForApi(datasetData) &&
                 getExtensionConfiguration(datasetData, StylesConfiguration.class).isPresent()) {

@@ -10,25 +10,27 @@ package de.ii.ldproxy.wfs3.transactional;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransactions;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.NotAllowedException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -58,9 +60,11 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
             .putSubPathsAndMethods("^/(?:[\\w\\-]+)/items/?(?:[^/\\s]+)$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.DELETE}))
             .build();
 
+    private final OgcApiFeatureCoreProviders providers;
     private final CommandHandlerTransactional commandHandler;
 
-    public Wfs3EndpointTransactional() {
+    public Wfs3EndpointTransactional(@Requires OgcApiFeatureCoreProviders providers) {
+        this.providers = providers;
         this.commandHandler = new CommandHandlerTransactional();
     }
 
@@ -70,7 +74,7 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiDatasetData dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/(?:[\\w\\-]+)/items/?[^/\\s]*$"))
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
@@ -82,7 +86,7 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, TransactionalConfiguration.class);
     }
 
@@ -90,49 +94,52 @@ public class Wfs3EndpointTransactional implements OgcApiEndpointExtension {
     @POST
     @Consumes("application/geo+json")
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id,
-                              @Context OgcApiDataset service, @Context OgcApiRequestContext wfs3Request,
+                              @Context OgcApiApi service, @Context OgcApiRequestContext wfs3Request,
                               @Context HttpServletRequest request, InputStream requestBody) {
-        checkTransactional(service);
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+
+        checkTransactional(featureProvider);
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.postItemsResponse((FeatureTransactions) service.getFeatureProvider(), wfs3Request.getMediaType(), wfs3Request.getUriCustomizer()
-                                                                                                                     .copy(), id, service.getData()
-                                                                                                                                         .getFeatureProvider()
-                                                                                                                                         .getMappings()
-                                                                                                                                         .get(id), service.getCrsReverseTransformer(null), requestBody);
+
+        return commandHandler.postItemsResponse((FeatureTransactions) featureProvider, wfs3Request.getMediaType(), wfs3Request.getUriCustomizer()
+                                                                                                                     .copy(), id, /*TODO*/null, /*TODO*/null, requestBody);
     }
 
     @Path("/{id}/items/{featureid}")
     @PUT
     @Consumes("application/geo+json")
     public Response putItem(@Auth Optional<User> optionalUser, @PathParam("id") String id,
-                            @PathParam("featureid") final String featureId, @Context OgcApiDataset service,
+                            @PathParam("featureid") final String featureId, @Context OgcApiApi service,
                             @Context OgcApiRequestContext wfs3Request, @Context HttpServletRequest request,
                             InputStream requestBody) {
-        checkTransactional(service);
+
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+
+        checkTransactional(featureProvider);
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.putItemResponse((FeatureTransactions) service.getFeatureProvider(), wfs3Request.getMediaType(), id, featureId, service.getData()
-                                                                                                                              .getFeatureProvider()
-                                                                                                                              .getMappings()
-                                                                                                                              .get(id), service.getCrsReverseTransformer(null), requestBody);
+        return commandHandler.putItemResponse((FeatureTransactions) featureProvider, wfs3Request.getMediaType(), id, featureId, /*TODO*/null, /*TODO*/null, requestBody);
     }
 
     @Path("/{id}/items/{featureid}")
     @DELETE
-    public Response deleteItem(@Auth Optional<User> optionalUser, @Context OgcApiDataset service,
+    public Response deleteItem(@Auth Optional<User> optionalUser, @Context OgcApiApi service,
                                @PathParam("id") String id, @PathParam("featureid") final String featureId) {
-        checkTransactional(service);
+
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+
+        checkTransactional(featureProvider);
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.deleteItemResponse((FeatureTransactions) service.getFeatureProvider(), id, featureId);
+        return commandHandler.deleteItemResponse((FeatureTransactions) featureProvider, id, featureId);
     }
 
-    private void checkTransactional(OgcApiDataset service) {
-        if (!(service.getFeatureProvider() instanceof FeatureTransactions)) {
+    private void checkTransactional(FeatureProvider2 featureProvider) {
+        if (!(featureProvider instanceof FeatureTransactions)) {
             throw new NotAllowedException("GET");
         }
     }

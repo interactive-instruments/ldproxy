@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '2.0.3'
+    id 'de.interactive_instruments.xtraplatform-application' version '2.1.0'
     id 'com.jfrog.bintray' version '1.8.4' apply false
     id 'com.github.hierynomus.license-report' version '0.15.0' apply false
 }
@@ -12,9 +12,9 @@ version = '1.4.0'
 
 dependencies {
     // features to include in this application
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.0.4'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.0.10'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.0.8'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.0.6'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.0.14'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.0.10'
     feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.0.+'
     feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '3.0.+'
     featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '2.0.+'
@@ -26,9 +26,10 @@ dependencies {
 configurations.all {
     resolutionStrategy.cacheDynamicVersionsFor 10, 'minutes'
 
-    resolutionStrategy.force 'de.interactive_instruments:xtraplatform-base:2.0.4', 'de.interactive_instruments:xtraplatform-web:2.0.8', 'de.interactive_instruments:xtraplatform-store:2.0.10'
+    resolutionStrategy.force 'de.interactive_instruments:xtraplatform-base:2.0.6', 'de.interactive_instruments:xtraplatform-web:2.0.10', 'de.interactive_instruments:xtraplatform-store:2.0.14'
 }
 
+allprojects {
 repositories {
     maven {
         url "https://repo.boundlessgeo.com/main/"
@@ -36,6 +37,7 @@ repositories {
     maven {
         url "http://maven.geomajas.org"
     }
+}
 }
 
 
@@ -93,6 +95,7 @@ task allDependencies {
     dependsOn allprojects.collect { "$it.path:dependencies" }
 }
 tasks.run {
-//    debug = true
+    debug = true
 }
 
+tasks.check { dependsOn subprojects*.tasks*.findByPath('test') }

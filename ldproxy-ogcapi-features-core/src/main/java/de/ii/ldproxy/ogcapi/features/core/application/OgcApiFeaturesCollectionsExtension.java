@@ -31,12 +31,12 @@ public class OgcApiFeaturesCollectionsExtension implements OgcApiCollectionsExte
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 
     @Override
-    public ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder, OgcApiDatasetData apiData,
+    public ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder, OgcApiApiDataV2 apiData,
                                                 URICustomizer uriCustomizer,
                                                 OgcApiMediaType mediaType,
                                                 List<OgcApiMediaType> alternateMediaTypes,
@@ -48,10 +48,10 @@ public class OgcApiFeaturesCollectionsExtension implements OgcApiCollectionsExte
 
         List<OgcApiCollectionExtension> collectionExtenders = extensionRegistry.getExtensionsForType(OgcApiCollectionExtension.class);
 
-        List<OgcApiCollection> collections = apiData.getFeatureTypes()
+        List<OgcApiCollection> collections = apiData.getCollections()
                                                       .values()
                                                       .stream()
-                                                      .filter(featureType -> apiData.isFeatureTypeEnabled(featureType.getId()))
+                                                      .filter(featureType -> apiData.isCollectionEnabled(featureType.getId()))
                                                       .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
                                                       .map(featureType -> OgcApiFeaturesCollectionExtension.createNestedCollection(featureType, apiData, mediaType, alternateMediaTypes, language, uriCustomizer, collectionExtenders))
                                                       .collect(Collectors.toList());

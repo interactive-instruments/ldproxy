@@ -27,7 +27,7 @@ public class JacksonSubTypeIdsSitemaps implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(SitemapsConfiguration.class, ExtensionConfiguration.getExtensionType(SitemapsConfiguration.class))
+                .put(SitemapsConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(SitemapsConfiguration.class))
                 .build();
     }
 }

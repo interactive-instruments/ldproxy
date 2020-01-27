@@ -11,8 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -20,7 +19,6 @@ import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.event.store.EntityHydrator;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
-import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -41,54 +39,56 @@ import java.util.concurrent.CompletionException;
         @StaticServiceProperty(name = "entityType", type = "java.lang.String", value = "services")
 })
 @Instantiate
-public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> {
+public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiApiDataV2> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiDatasetHydrator.class);
 
-    @Requires
-    private FeatureProviderRegistry featureProviderFactory;
+    //@Requires
+    //private FeatureProviderRegistry featureProviderFactory;
 
     @Requires
     private CrsTransformation crsTransformerFactory;
 
     @Override
-    public Map<String, Object> getInstanceConfiguration(OgcApiDatasetData data) {
+    public Map<String, Object> getInstanceConfiguration(OgcApiApiDataV2 data) {
         try {
-            FeatureProvider2 featureProvider = featureProviderFactory.createFeatureProvider(data.getFeatureProvider());
+            //FeatureProvider2 featureProvider = featureProviderFactory.createFeatureProvider(data.getFeatureProvider());
 
             try {
-                EpsgCrs sourceCrs = data.getFeatureProvider()
-                                        .getNativeCrs();
-                CrsTransformer defaultTransformer = crsTransformerFactory.getTransformer(sourceCrs, OgcApiDatasetData.DEFAULT_CRS);
-                CrsTransformer defaultReverseTransformer = crsTransformerFactory.getTransformer(OgcApiDatasetData.DEFAULT_CRS, sourceCrs);
+                //TODO: move to provider
+                EpsgCrs sourceCrs = null;//data.getFeatureProvider()
+                                        //.getNativeCrs();
+                CrsTransformer defaultTransformer = null;//crsTransformerFactory.getTransformer(sourceCrs, OgcApiDatasetData.DEFAULT_CRS);
+                CrsTransformer defaultReverseTransformer = null;//crsTransformerFactory.getTransformer(OgcApiDatasetData.DEFAULT_CRS, sourceCrs);
                 Map<String, CrsTransformer> additionalTransformers = new HashMap<>();
                 Map<String, CrsTransformer> additionalReverseTransformers = new HashMap<>();
 
-                data.getAdditionalCrs()
+                /*data.getAdditionalCrs()
                     .forEach(crs -> {
                         additionalTransformers.put(crs.getAsUri(), crsTransformerFactory.getTransformer(sourceCrs, crs));
                         additionalReverseTransformers.put(crs.getAsUri(), crsTransformerFactory.getTransformer(crs, sourceCrs));
-                    });
+                    });*/
 
-                OgcApiDatasetData newData = data;
-                if (hasMissingBboxes(data.getFeatureTypes())) {
+                OgcApiApiDataV2 newData = data;
+                //TODO: move to startup task in features_core as well as tiles
+                /*if (hasMissingBboxes(data.getFeatureTypes())) {
                     ImmutableMap<String, FeatureTypeConfigurationOgcApi> featureTypesWithComputedBboxes = computeMissingBboxes(data.getFeatureTypes(), featureProvider, defaultTransformer);
 
                     newData = new ImmutableOgcApiDatasetData.Builder()
                             .from(data)
                             .featureTypes(featureTypesWithComputedBboxes)
                             .build();
-                }
+                }*/
 
-                LOGGER.debug("TRANSFORMER {} {} -> {} {}", sourceCrs.getCode(), sourceCrs.isForceLongitudeFirst() ? "lonlat" : "latlon", OgcApiDatasetData.DEFAULT_CRS.getCode(), OgcApiDatasetData.DEFAULT_CRS.isForceLongitudeFirst() ? "lonlat" : "latlon");
+                //LOGGER.debug("TRANSFORMER {} {} -> {} {}", sourceCrs.getCode(), sourceCrs.isForceLongitudeFirst() ? "lonlat" : "latlon", OgcApiDatasetData.DEFAULT_CRS.getCode(), OgcApiDatasetData.DEFAULT_CRS.isForceLongitudeFirst() ? "lonlat" : "latlon");
 
                 return ImmutableMap.<String, Object>builder()
                         .put("data", newData)
-                        .put("featureProvider", featureProvider)
-                        .put("defaultTransformer", defaultTransformer)
-                        .put("defaultReverseTransformer", defaultReverseTransformer)
-                        .put("additionalTransformers", additionalTransformers)
-                        .put("additionalReverseTransformers", additionalReverseTransformers)
+                        //.put("featureProvider", featureProvider)
+                        //.put("defaultTransformer", defaultTransformer)
+                        //.put("defaultReverseTransformer", defaultReverseTransformer)
+                        //.put("additionalTransformers", additionalTransformers)
+                        //.put("additionalReverseTransformers", additionalReverseTransformers)
                         .build();
 
             } catch (Throwable e) {

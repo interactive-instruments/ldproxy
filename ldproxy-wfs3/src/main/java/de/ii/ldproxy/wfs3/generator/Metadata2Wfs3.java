@@ -11,7 +11,7 @@ import com.google.common.base.Strings;
 import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
@@ -26,11 +26,11 @@ public class Metadata2Wfs3 extends AbstractFeatureProviderMetadataConsumer {
 
     // TODO review
 
-    private final ImmutableOgcApiDatasetData.Builder wfs3ServiceData;
+    private final ImmutableOgcApiApiDataV2.Builder wfs3ServiceData;
     private final ImmutableMetadata.Builder serviceMetadata;
     private ImmutableFeatureTypeConfigurationOgcApi.Builder currentFeatureType;
 
-    public Metadata2Wfs3(ImmutableOgcApiDatasetData.Builder wfs3ServiceData) {
+    public Metadata2Wfs3(ImmutableOgcApiApiDataV2.Builder wfs3ServiceData) {
         this.wfs3ServiceData = wfs3ServiceData;
         this.serviceMetadata = wfs3ServiceData.metadataBuilder();
     }
@@ -122,7 +122,7 @@ public class Metadata2Wfs3 extends AbstractFeatureProviderMetadataConsumer {
     private void finishLastFeatureType() {
         if (Objects.nonNull(currentFeatureType)) {
             ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration = currentFeatureType.build();
-            wfs3ServiceData.putFeatureTypes(featureTypeConfiguration.getId(), featureTypeConfiguration);
+            wfs3ServiceData.putCollections(featureTypeConfiguration.getId(), featureTypeConfiguration);
         }
     }
 

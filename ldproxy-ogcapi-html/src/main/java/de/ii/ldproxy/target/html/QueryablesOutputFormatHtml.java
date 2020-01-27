@@ -48,11 +48,11 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
-    private boolean isNoIndexEnabledForApi(OgcApiDatasetData apiData) {
+    private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
@@ -61,7 +61,7 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
     @Override
     public Response getResponse(Queryables queryables,
                                 String collectionId,
-                                OgcApiDataset api,
+                                OgcApiApi api,
                                 OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
@@ -80,9 +80,9 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
                 .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(2)
                         .toString()))
-                .add(new NavigationDTO(api.getData().getFeatureTypes().get(collectionId).getLabel(), requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(1)
-                        .toString()))
+                .add(new NavigationDTO(api.getData().getCollections().get(collectionId).getLabel(), requestContext.getUriCustomizer().copy()
+                                                                                                                  .removeLastPathSegments(1)
+                                                                                                                  .toString()))
                 .add(new NavigationDTO(queryablesTitle))
                 .build();
 

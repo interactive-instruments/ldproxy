@@ -28,7 +28,7 @@ public class JacksonSubTypeIdsHtml implements JacksonSubTypeIds {
         return new ImmutableMap.Builder<Class<?>, String>()
                 .put(MicrodataPropertyMapping.class, "MICRODATA_PROPERTY")
                 .put(MicrodataGeometryMapping.class, "MICRODATA_GEOMETRY")
-                .put(HtmlConfiguration.class, ExtensionConfiguration.getExtensionType(HtmlConfiguration.class))
+                .put(HtmlConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(HtmlConfiguration.class))
                 .build();
     }
 }

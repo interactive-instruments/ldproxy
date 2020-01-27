@@ -44,13 +44,13 @@ public class StylesOnLandingPage implements OgcApiLandingPageExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDatasetData apiData) {
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, StylesConfiguration.class);
     }
 
     @Override
     public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
-                                                OgcApiDatasetData apiData,
+                                                OgcApiApiDataV2 apiData,
                                                 URICustomizer uriCustomizer,
                                                 OgcApiMediaType mediaType,
                                                 List<OgcApiMediaType> alternateMediaTypes,

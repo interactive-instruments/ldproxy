@@ -16,10 +16,10 @@ public interface ApiDefinitionFormatExtension extends FormatExtension {
         return "^/api/?$";
     }
 
-    Response getApiDefinitionResponse(OgcApiDatasetData apiData,
+    Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
                                       OgcApiRequestContext wfs3Request);
 
-    default Response getApiDefinitionFile(OgcApiDatasetData apiData,
+    default Response getApiDefinitionFile(OgcApiApiDataV2 apiData,
                                           OgcApiRequestContext wfs3Request,
                                           String file) {
         throw new NotFoundException();

@@ -23,7 +23,7 @@ public class JacksonSubTypeIdsStyles implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(StylesConfiguration.class, ExtensionConfiguration.getExtensionType(StylesConfiguration.class))
+                .put(StylesConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(StylesConfiguration.class))
                 .build();
     }
 }

@@ -9,14 +9,10 @@ package de.ii.ldproxy.wfs3.sitemaps;
 
 import com.google.common.collect.Range;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
-import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureSourceStream;
-import de.ii.xtraplatform.feature.provider.api.FeatureStream;
-import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.slf4j.Logger;
@@ -176,12 +172,12 @@ class SitemapComputation {
     }
 
     //TODO move to Wfs3ServiceData
-    static Stream<String> getCollectionIdStream(OgcApiDatasetData datasetData) {
-        return datasetData.getFeatureTypes()
+    static Stream<String> getCollectionIdStream(OgcApiApiDataV2 datasetData) {
+        return datasetData.getCollections()
                           .values()
                           .stream()
                           //TODO
-                          .filter(featureType -> datasetData.isFeatureTypeEnabled(featureType.getId()))
+                          .filter(featureType -> datasetData.isCollectionEnabled(featureType.getId()))
                           .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
                           .map(FeatureTypeConfiguration::getId);
     }

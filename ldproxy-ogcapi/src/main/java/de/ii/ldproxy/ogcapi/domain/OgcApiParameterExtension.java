@@ -15,21 +15,21 @@ import java.util.Set;
 
 public interface OgcApiParameterExtension extends OgcApiExtension {
 
-    ImmutableSet<String> getParameters(OgcApiDatasetData apiData, String subPath);
+    ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath);
 
-    default Set<String> getFilterParameters(Set<String> filterParameters, OgcApiDatasetData serviceData) {
+    default Set<String> getFilterParameters(Set<String> filterParameters, OgcApiApiDataV2 serviceData) {
         return filterParameters;
     }
 
     default Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfigurationWfs3,
-                                                    Map<String, String> parameters, OgcApiDatasetData serviceData) {
+                                                    Map<String, String> parameters, OgcApiApiDataV2 serviceData) {
         return parameters;
     }
 
     default ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfigurationWfs3,
                                                          ImmutableFeatureQuery.Builder queryBuilder,
                                                          Map<String, String> parameters,
-                                                         OgcApiDatasetData serviceData) {
+                                                         OgcApiApiDataV2 serviceData) {
         return queryBuilder;
     }
 }

@@ -15,10 +15,6 @@ import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCor
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesLandingPageExtension
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
 import de.ii.xtraplatform.crs.api.BoundingBox
-import de.ii.xtraplatform.crs.api.EpsgCrs
-import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp
-import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeatureProviderDataTransformer
 import spock.lang.PendingFeature
 import spock.lang.Specification
 
@@ -27,14 +23,14 @@ import javax.ws.rs.core.Response
 
 class LandingPageSpec extends Specification {
 
-    static final OgcApiDatasetData datasetData = createDatasetData()
+    static final OgcApiApiDataV2 datasetData = createDatasetData()
     static OgcApiApiEntity ogcApiApiEntity = createDatasetEntity()
     static final OgcApiRequestContext requestContext = createRequestContext()
     static OgcApiQueriesHandlerCommon queryHandler = new OgcApiQueriesHandlerCommon(createExtensionRegistry())
 
 
     def setupSpec() {
-        queryHandler.i18n = new I18n()
+        queryHandler.i18n = new I18nDefault()
     }
 
     def 'Requirement 2 B: landing page response'() {
@@ -99,20 +95,23 @@ class LandingPageSpec extends Specification {
     }
 
     static def createDatasetData() {
-        new ImmutableOgcApiDatasetData.Builder()
+        new ImmutableOgcApiApiDataV2.Builder()
                 .id('test')
                 .serviceType('WFS3')
-                .featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
-                        .providerType('WFS')
+                /*.featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
+                        .id("test")
+                        .providerType("FEATURE")
+                        .featureProviderType('WFS')
                         .nativeCrs(new EpsgCrs())
                         .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
+                                .connectorType("HTTP")
                                 .uri(new URI('http://example.com'))
                                 .method(ConnectionInfoWfsHttp.METHOD.GET)
                                 .version('2.0.0')
                                 .gmlVersion('3.2.1')
                                 .build())
-                        .build())
-                .putFeatureTypes('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                        .build())*/
+                .putCollections('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                         .id('featureType1')
                         .label('FeatureType 1')
                         .description('foo bar')
@@ -121,12 +120,12 @@ class LandingPageSpec extends Specification {
                                 .temporal(new ImmutableTemporalExtent.Builder().build())
                                 .build())
                         .build())
-                .addCapabilities(new ImmutableOgcApiFeaturesCoreConfiguration.Builder().build())
+                .addExtensions(new ImmutableOgcApiFeaturesCoreConfiguration.Builder().build())
                 .build()
     }
 
     static def createDatasetEntity() {
-        def entity = new OgcApiApiEntity(createExtensionRegistry(), null, null, null, null, null)
+        def entity = new OgcApiApiEntity(createExtensionRegistry())
         entity.setData(datasetData)
         return entity
     }
@@ -154,19 +153,19 @@ class LandingPageSpec extends Specification {
             <T extends OgcApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
                 if (extensionType == OgcApiLandingPageExtension.class) {
                     OgcApiFeaturesLandingPageExtension landingPage = new OgcApiFeaturesLandingPageExtension()
-                    landingPage.i18n = new I18n()
+                    landingPage.i18n = new I18nDefault()
                     return ImmutableList.of((T) landingPage)
                 }
                 if (extensionType == CommonFormatExtension.class) {
                     return ImmutableList.of((T) new CommonFormatExtension() {
 
                         @Override
-                        Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                        Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
                             return Response.ok(apiLandingPage).build()
                         }
 
                         @Override
-                        Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration, OgcApiDataset api, OgcApiRequestContext requestContext) {
+                        Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration, OgcApiApi api, OgcApiRequestContext requestContext) {
                             return Response.ok(conformanceDeclaration).build()
                         }
 
@@ -178,7 +177,7 @@ class LandingPageSpec extends Specification {
                         }
 
                         @Override
-                        boolean isEnabledForApi(OgcApiDatasetData apiData) {
+                        boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
                             return true
                         }
                     })
@@ -192,7 +191,7 @@ class LandingPageSpec extends Specification {
                         }
 
                         @Override
-                        boolean isEnabledForApi(OgcApiDatasetData datasetData) {
+                        boolean isEnabledForApi(OgcApiApiDataV2 datasetData) {
                             return true
                         }
                     })
