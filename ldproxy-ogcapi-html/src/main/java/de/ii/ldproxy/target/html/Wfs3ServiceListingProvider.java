@@ -84,8 +84,8 @@ public class Wfs3ServiceListingProvider implements ServiceListingProvider {
                                 .cutPathAfterSegments("rest", "services")
                                 .replaceInPath("/rest/services", externalUri.get()
                                                                             .getPath())
-                                .ensureTrailingSlash()
                                 .ensureLastPathSegment("___static___")
+                                .ensureTrailingSlash()
                                 .getPath();
         }
 
