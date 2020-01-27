@@ -105,6 +105,8 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
         Map<String, FeatureTypeConfigurationOgcApi> collections = entityData.getFeatureTypes()
                                                                             .entrySet()
                                                                             .stream()
+                                                                            .filter(entry -> entityData.getFeatureProvider()
+                                                                                                       .getMappings().containsKey(entry.getValue().getId()))
                                                                             .map(entry -> {
 
                                                                                 FeatureTypeConfigurationOgcApi collection = entry.getValue();
@@ -451,7 +453,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                               }
 
                               if (general.getType() != OgcApiFeaturesGenericMapping.GENERIC_TYPE.SPATIAL) {
-                                  if (!Objects.equals(general.getName(), html.getName())) {
+                                  if (Objects.nonNull(html.getName()) && !Objects.equals(general.getName(), html.getName())) {
                                       builder.rename(html.getName());
                                       hasTransformations = true;
                                   }
