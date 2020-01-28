@@ -15,28 +15,58 @@ Filter
 </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-
-        {{> pagination}}
-
-        <ul class="list-unstyled">
-            {{#features}}
-                <li>
-                    {{> feature}}
-                </li>
-            {{/features}}
-        </ul>
-
-        {{> pagination}}
-
-    </div>
-    {{^hideMap}}
+{{#classic}}
+    <div class="row">
         <div class="col-md-6">
-            <div id="map"></div>  
+
+            {{> pagination}}
+
+            <ul class="list-unstyled">
+                {{#features}}
+                    <li>
+                        {{> feature}}
+                    </li>
+                {{/features}}
+            </ul>
+
+            {{> pagination}}
+
+        </div>
+        {{^hideMap}}
+            <div class="col-md-6">
+                <div id="map"></div>
+            </div>
+        {{/hideMap}}
+    </div>
+{{/classic}}
+
+{{#complexObjects}}
+    {{^hideMap}}
+        <div class="row my-2">
+            <div class="col-md-12">
+                <div id="map"></div>
+            </div>
         </div>
     {{/hideMap}}
-</div>
+
+    <div class="row">
+        <div class="col-md-12">
+
+            {{> pagination}}
+
+            <ul class="list-unstyled">
+                {{#features}}
+                    <li>
+                        {{> feature}}
+                    </li>
+                {{/features}}
+            </ul>
+
+            {{> pagination}}
+
+        </div>
+    </div>
+{{/complexObjects}}
 
 {{> script}}
 

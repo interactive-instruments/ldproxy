@@ -354,7 +354,10 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                                                                     .transform(featureProperty);
 
             // if !isPresent, property was dropped by remove transformer
-            currentValue = getValue(featureProperty, htmlProperty.isPresent() ? htmlProperty.get() : featureProperty, index);
+            if (htmlProperty.isPresent())
+                currentValue = getValue(featureProperty, htmlProperty.get(), index);
+            else
+                currentValue = null; // skip
         } else {
             currentValue = getValue(featureProperty, featureProperty, index);
         }
@@ -382,26 +385,26 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                 value = valueTransformations.get().transform(currentProperty, value);
             }
 
+            if (currentFeature.name != null) {
+                int pos = currentFeature.name.indexOf("{{" + currentProperty.getName() + "}}");
+                if (pos > -1) {
+                    currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
+                }
+            }
+
             // special treatment for links - TODO generalize, use transformations?
             if (currentProperty.getType() == FeatureProperty.Type.STRING &&
                 currentProperty.getAdditionalInfo().containsKey("role")) {
                 if (currentProperty.getAdditionalInfo().get("role").equalsIgnoreCase("LINKHREF")) {
                     String updatedValue = currentValue.value.replaceAll("\\{\\{href\\}\\}", value);
-                    currentValue.setValue(updatedValue, true);
+                    currentValue.setValue(updatedValue);
                 } else if (currentProperty.getAdditionalInfo().get("role").equalsIgnoreCase("LINKTITLE")) {
                     String updatedValue = currentValue.value.replaceAll("\\{\\{title\\}\\}", value);
-                    currentValue.setValue(updatedValue, true);
+                    currentValue.setValue(updatedValue);
                 }
             } else {
                 // the default
                 currentValue.setValue(value);
-            }
-
-            if (currentFeature.name != null) {
-                int pos = currentFeature.name.indexOf("{{" + currentProperty.getName() + "}}");
-                if (pos > -1) {
-                    currentFeature.name = currentFeature.name.substring(0, pos) + currentValue.value + currentFeature.name.substring(pos);
-                }
             }
 
         }
