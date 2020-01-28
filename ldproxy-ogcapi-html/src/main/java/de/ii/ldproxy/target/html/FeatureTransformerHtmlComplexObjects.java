@@ -112,7 +112,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                 // we are at the end of the path, add the (new) value and return it;
                 // this includes the special case of a link object that is mapped to a single value in the HTML
                 int curCount = property.values.size();
-                int idx = isArray ? index.get(arrays++) : 1;
+                int idx = isArray && index.size()>=arrays+1 ? index.get(arrays++) : 1;
                 if (curCount==idx-1) {
                     if (curCount == 0) {
                         property.name = htmlNameSections.get(Math.min(objectLevel,htmlNameSections.size()-1));
@@ -127,7 +127,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
             } else {
                 // we have an object, either the latest object in the existing list or a new object
                 int curCount = property.childList.size();
-                int idx = isArray ? index.get(arrays++) : 1;
+                int idx = isArray && index.size()>=arrays+1 ? index.get(arrays++) : 1;
                 if (curCount==idx-1) {
                     valueContext = new ObjectDTO();
                     valueContext.sortPriority = curCount+1;
@@ -355,7 +355,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
         currentValue = null;
         currentProperty = featureProperty;
         int sortPriority = currentFeatureProperties.indexOf(featureProperty);
-        String key = featureProperty.getName().replaceAll("\\[.+?\\]", "[]");
+        String key = featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]");
         if (transformations.containsKey(key)) {
 
             Optional<FeatureProperty> htmlProperty = transformations.get(key)
@@ -582,7 +582,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                                                                    .build());
         }
 
-        return Optional.ofNullable(transformations.get(featureProperty.getName().replaceAll("\\[.+?\\]", "[]")));
+        return Optional.ofNullable(transformations.get(featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]")));
     }
 
 }

@@ -71,7 +71,8 @@ public abstract class HtmlPropertyTransformations implements FeaturePropertyTran
             return Optional.empty();
         }
 
-        wrapper.property.name = transformedSchema.getName();
+        if (Objects.nonNull(wrapper.property))
+           wrapper.property.name = transformedSchema.getName();
         wrapper.value = transformedValue;
 
         if (Objects.isNull(wrapper.value)) {
