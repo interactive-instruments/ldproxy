@@ -15,9 +15,9 @@ public abstract class ObjectOrPropertyDTO implements Comparable<ObjectOrProperty
     public String itemType = null;
     public String itemProp = null;
     public String name = null;
-    public boolean isObjectSeparator; // TODO
     public List<ObjectOrPropertyDTO> childList = new ArrayList<>();
     public ObjectOrPropertyDTO parent = null;
+    public int sortPriority = Integer.MAX_VALUE;
 
     public SplitDecoratedCollection<ObjectOrPropertyDTO> children() {
         return childList.size() > 0 ? new SplitDecoratedCollection<ObjectOrPropertyDTO>(childList) : null;
@@ -36,9 +36,6 @@ public abstract class ObjectOrPropertyDTO implements Comparable<ObjectOrProperty
     public int compareTo(ObjectOrPropertyDTO other) {
         if (this.parent!=other.parent || this==other)
             return 0;
-        return this.parent.childList.stream()
-                .map(item -> { return item==this ? -1 : item==other ? 1 : 0; })
-                .findFirst()
-                .orElse(0);
+        return this.sortPriority - other.sortPriority;
     }
 }

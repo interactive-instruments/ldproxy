@@ -1,23 +1,7 @@
-{{#classic}}
-    {{#values}}
-        <div class="row my-1">
-            <div class="col-md-6 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isObjectSeparator}}object-separator{{/isObjectSeparator}}{{^isObjectSeparator}}font-weight-bold{{/isObjectSeparator}} text-truncate" title="{{name}}">{{name}}</div>
-            <div class="col-md-6">{{#isUrl}}<a target="_blank" href="{{value}}">{{value}}</a>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src="{{value}}" class="img-fluid"/>{{/isImg}}{{^isImg}}{{#isHtml}}{{{value}}}{{/isHtml}}{{^isHtml}}{{value}}{{/isHtml}}{{/isImg}}{{/isUrl}}</div>
-        </div>
-    {{/values}}
-    {{#objectValues}}
-        <div class="row my-1">
-            <div class="col-md-12 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isObjectSeparator}}object-separator{{/isObjectSeparator}}{{^isObjectSeparator}}font-weight-bold{{/isObjectSeparator}} text-truncate" title="{{name}}">{{name}}</div>
-        </div>
-        {{#properties}}
-            {{> property}}
-        {{/properties}}
-    {{/objectValues}}
-{{/classic}}
-{{#complexObjects}}
+{{#hasValues}}
 <div class="row my-1">
-<div class="col-md-4 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isObjectSeparator}}object-separator{{/isObjectSeparator}}{{^isObjectSeparator}}font-weight-bold{{/isObjectSeparator}} text-truncate" title="{{name}}">{{name}}</div>
-<div class="col-md-8">
+<div class="col-md-{{#complexObjects}}4{{/complexObjects}}{{#classic}}6{{/classic}} {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}font-weight-bold text-truncate">{{name}}</div>
+<div class="col-md-{{#complexObjects}}8{{/complexObjects}}{{#classic}}6{{/classic}}">
 <ul class="list-unstyled">
 {{#values}}
 <li>{{#isUrl}}<a target="_blank" href="{{value}}">{{value}}</a>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src="{{value}}" class="img-fluid"/>{{/isImg}}{{^isImg}}{{#isHtml}}{{{value}}}{{/isHtml}}{{^isHtml}}{{value}}{{/isHtml}}{{/isImg}}{{/isUrl}}</li>
@@ -25,14 +9,19 @@
 </ul>
 </div>
 </div>
-    {{#objectValues}}
-        <div class="row my-1">
-            <div class="col-md-12 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isObjectSeparator}}object-separator{{/isObjectSeparator}}{{^isObjectSeparator}}font-weight-bold{{/isObjectSeparator}} text-truncate" title="{{name}}">{{name}}</div>
-        </div>
-        {{#properties}}
-            {{> property}}
-        {{/properties}}
-    {{/objectValues}}
-{{/complexObjects}}
+{{/hasValues}}
+{{#objectValues}}
+<div class="row my-1">
+{{#isFirstObject}}
+<div class="col-md-12 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}font-weight-bold text-truncate">{{name}}</div>
+{{/isFirstObject}}
+{{^isFirstObject}}
+<div class="col-md-12 {{#isLevel1}}pl-4x {{/isLevel1}}{{#isLevel2}}pl-5 {{/isLevel2}}object-separator text-truncate">{{name}}</div>
+{{/isFirstObject}}
+</div>
+{{#properties}}
+{{> property}}
+{{/properties}}
+{{/objectValues}}
 
 

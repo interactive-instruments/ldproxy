@@ -75,6 +75,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
     private Map<String,Integer> pathMap = new HashMap<>();
     private ValueDTO currentValue = null;
     private FeatureProperty currentProperty = null;
+    private ArrayList<FeatureProperty> currentFeatureProperties = null;
 
     private ValueDTO getValue(FeatureProperty baseProperty, FeatureProperty htmlProperty, List<Integer> index) {
         String htmlName = htmlProperty.getName();
@@ -129,10 +130,14 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                 int idx = isArray ? index.get(arrays++) : 1;
                 if (curCount==idx-1) {
                     valueContext = new ObjectDTO();
+                    valueContext.sortPriority = curCount+1;
                     property.addChild(valueContext);
                     if (curCount == 0) {
                         property.name = htmlNameSections.get(Math.min(objectLevel, htmlNameSections.size() - 1));
                         valueContext.name = property.name;
+                    } else {
+                        valueContext.name = "———";
+                        valueContext.isFirstObject = false;
                     }
                     objectLevel++;
                 } else if (curCount>=idx) {
@@ -290,6 +295,8 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
     public void onFeatureStart(FeatureType featureType) throws Exception {
         currentFeature = new ObjectDTO();
 
+        this.currentFeatureProperties = new ArrayList<>(featureType.getProperties().values());
+
         if (isFeatureCollection) {
             currentFeature.inCollection = true;
         }
@@ -347,6 +354,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
     public void onPropertyStart(FeatureProperty featureProperty, List<Integer> index) throws Exception {
         currentValue = null;
         currentProperty = featureProperty;
+        int sortPriority = currentFeatureProperties.indexOf(featureProperty);
         String key = featureProperty.getName().replaceAll("\\[.+?\\]", "[]");
         if (transformations.containsKey(key)) {
 
@@ -354,12 +362,24 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                                                                     .transform(featureProperty);
 
             // if !isPresent, property was dropped by remove transformer
-            if (htmlProperty.isPresent())
+            if (htmlProperty.isPresent()) {
                 currentValue = getValue(featureProperty, htmlProperty.get(), index);
-            else
+                updatePropertySortPriorities(currentValue.property, sortPriority);
+            } else {
                 currentValue = null; // skip
+            }
         } else {
             currentValue = getValue(featureProperty, featureProperty, index);
+            updatePropertySortPriorities(currentValue.property, sortPriority);
+        }
+    }
+
+    private void updatePropertySortPriorities(PropertyDTO property, int sortPriority) {
+        property.sortPriority = Math.min(property.sortPriority, sortPriority);
+        if (Objects.nonNull(property.parent) &&
+                Objects.nonNull(property.parent.parent) &&
+                property.parent.parent instanceof PropertyDTO) {
+            updatePropertySortPriorities((PropertyDTO)property.parent.parent, sortPriority);
         }
     }
 

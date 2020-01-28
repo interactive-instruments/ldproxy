@@ -30,6 +30,10 @@ public class PropertyDTO extends ObjectOrPropertyDTO {
         return newValue;
     }
 
+    public boolean hasValues() {
+        return !values.isEmpty();
+    }
+
     public String getFirstValue() {
         return values.size()>0 ? values.get(0).value : null;
     }
@@ -39,6 +43,10 @@ public class PropertyDTO extends ObjectOrPropertyDTO {
                 .filter(child -> child instanceof ObjectDTO)
                 .map(child -> (ObjectDTO)child)
                 .collect(ImmutableList.toImmutableList());
+    }
+
+    public boolean isLevel1() {
+        return getLevel()==1;
     }
 
     public boolean isLevel2() {

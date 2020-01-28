@@ -15,6 +15,7 @@ public class ObjectDTO extends ObjectOrPropertyDTO {
     public PropertyDTO id = null;
     public PropertyDTO geo = null;
     public boolean inCollection = false;
+    public boolean isFirstObject = true;
 
     // relevant for related objects only ("around relations")
     public PropertyDTO links = null;
@@ -51,7 +52,12 @@ public class ObjectDTO extends ObjectOrPropertyDTO {
         return childList.stream()
                 .filter(child -> child instanceof PropertyDTO)
                 .map(child -> (PropertyDTO)child)
+                .sorted()
                 .collect(ImmutableList.toImmutableList());
+    }
+
+    public boolean isLevel1() {
+        return getLevel()==1;
     }
 
     public boolean isLevel2() {
