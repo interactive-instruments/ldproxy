@@ -16,16 +16,11 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static de.ii.xtraplatform.feature.provider.api.TargetMapping.BASE_TYPE;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -87,6 +82,7 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
                 builder.put("bbox", queryables.getSpatial().get(0));
             }
             if (!queryables.getTemporal().isEmpty()) {
+                // TODO support more than a single queryable, e.g. for interval start/end DateTime values
                 builder.put("datetime", queryables.getTemporal().get(0));
             }
             queryables.getOther().forEach(other -> builder.put(other, other));
