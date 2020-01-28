@@ -47,8 +47,8 @@ public class JsonNestingTracker {
         boolean inArray = false;
         if (multiplicityDiffersAt > -1) {
             String element = path.get(multiplicityDiffersAt);
-            String fieldName = element.contains("[") ? element.substring(element.indexOf("[") + 1, element.indexOf("]")) : element;
-            inArray = differsAt() == multiplicityDiffersAt && nextMultiplicityLevels.getOrDefault(fieldName, 1) > 1;
+            String multiplicityKey = hasMultiplicity(element) ? getMultiplicityKey(element) : element;
+            inArray = differsAt() == multiplicityDiffersAt && nextMultiplicityLevels.getOrDefault(multiplicityKey, 1) > 1;
         }
 
         this.currentCloseActions = getCloseActions(lastPath, differsAt(), inArray, json, doNotCloseValueArray);
@@ -89,7 +89,7 @@ public class JsonNestingTracker {
             boolean inValueArray = inArray && previousPath.size() -1 == nextPathDiffersAt;
             //omit when already inside of object array
             boolean inObjectArray = closeObject && inArray && i == nextPathDiffersAt;
-            boolean closeArray = element.contains("[") && !inValueArray && !inObjectArray && !(doNotCloseValueArray && i == previousPath.size()-1);//(closeObject && i == nextPathDiffersAt && i > 0);
+            boolean closeArray = hasMultiplicity(element) && !inValueArray && !inObjectArray && !(doNotCloseValueArray && i == previousPath.size()-1);//(closeObject && i == nextPathDiffersAt && i > 0);
 
             if (closeObject) {
                 nestingStrategy.closeObject(json);
@@ -113,15 +113,15 @@ public class JsonNestingTracker {
             boolean openObject = i < nextPath.size() - 1;
             //omit when already inside of object array
             boolean inObjectArray = openObject && inArray && i == nextPathDiffersAt;
-            boolean openArray = element.contains("[") && !inArray && !inObjectArray;
+            boolean openArray = hasMultiplicity(element) && !inArray && !inObjectArray;
             boolean openField = !openObject &&!openArray && (!inArray || i > nextPathDiffersAt);
 
             List<String> a = new ArrayList<>();
 
             if (openArray) {
-                if (element.contains("[")) {
+                if (hasMultiplicity(element)) {
                     // array field
-                    nestingStrategy.openArray(json, element.substring(0, element.indexOf("[")));
+                    nestingStrategy.openArray(json, getFieldName(element));
                 } else {
                     //TODO ever used?
                     nestingStrategy.openArray(json);
@@ -129,9 +129,9 @@ public class JsonNestingTracker {
                 a.add("ARRAY");
             }
             if (openObject) {
-                if (element.contains("[")) {
+                if (hasMultiplicity(element)) {
                     // in object array
-                    nestingStrategy.openObjectInArray(json, element.substring(0, element.indexOf("[")));
+                    nestingStrategy.openObjectInArray(json, getFieldName(element));
                 } else {
                     // object field
                     nestingStrategy.openObject(json, element);
@@ -165,9 +165,8 @@ public class JsonNestingTracker {
         final Map<String, Integer> nextMultiplicityLevels = new HashMap<>(previousMultiplicityLevels);
 
         path.stream()
-            .filter(element -> element.contains("[") /*&& !(path.indexOf(element) == path.size() - 1)*/)
-            .map(element -> element.substring(element.indexOf("[") + 1, element.indexOf("]")))
-
+            .filter(this::hasMultiplicity)
+            .map(this::getMultiplicityKey)
             .forEach(multiplicityKey -> {
 
                 int currentMultiplicityLevel = multiplicities.size() > current[0] ? multiplicities.get(current[0]) : 1;
@@ -193,8 +192,8 @@ public class JsonNestingTracker {
         int currentIndex = 0;
 
         for (String element : path) {
-            if (element.contains("[")) {
-                String multiplicityKey = element.substring(element.indexOf("[") + 1, element.indexOf("]"));
+            if (hasMultiplicity(element)) {
+                String multiplicityKey = getMultiplicityKey(element);
                 if (!Objects.equals(nextMultiplicityLevels.get(multiplicityKey), previousMultiplicityLevels.get(multiplicityKey))) {
                     return currentIndex;
                 }
@@ -204,5 +203,19 @@ public class JsonNestingTracker {
         }
 
         return -1;
+    }
+
+    private boolean hasMultiplicity(String pathElement) {
+        return pathElement.contains("[");
+    }
+
+    private String getMultiplicityKey(String pathElement) {
+        String multiplicityKey = pathElement.substring(pathElement.indexOf("[") + 1, pathElement.indexOf("]"));
+
+        return multiplicityKey.isEmpty() ? pathElement.substring(0, pathElement.indexOf("[")) : multiplicityKey;
+    }
+
+    private String getFieldName(String pathElement) {
+        return pathElement.substring(0, pathElement.indexOf("["));
     }
 }
