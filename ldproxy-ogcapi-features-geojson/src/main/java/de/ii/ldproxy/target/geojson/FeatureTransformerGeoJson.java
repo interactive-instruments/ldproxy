@@ -8,25 +8,26 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableCollection;
-import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
+import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.codelists.Codelist;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
 import de.ii.xtraplatform.feature.provider.api.FeatureType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.provider.api.TargetMapping;
+import de.ii.xtraplatform.feature.transformer.api.FeaturePropertyValueTransformer;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMayThrow;
@@ -41,6 +42,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
     private final ImmutableCollection<GeoJsonWriter> featureWriters;
     private final FeatureTransformationContextGeoJson transformationContext;
     private final StringBuilder stringBuilder;
+    private final Optional<FeatureTransformations> transformations;
+    private FeatureProperty currentProperty;
 
     @Override
     public OnTheFlyMapping getOnTheFlyMapping() {
@@ -57,6 +60,15 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
         this.transformationContext = transformationContext;
         this.featureWriters = featureWriters;
         this.stringBuilder = new StringBuilder();
+
+        FeatureTypeConfigurationOgcApi featureType = transformationContext.getApiData()
+                .getCollections()
+                .get(transformationContext.getCollectionId());
+        transformations = Objects.isNull(featureType) ?
+                Optional.empty() :
+                featureType
+                .getExtension(OgcApiFeaturesCoreConfiguration.class)
+                .map(coreConfiguration -> coreConfiguration);
     }
 
     @Override
@@ -133,9 +145,9 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
             transformationContext.getState()
                                  .setCurrentMultiplicity(multiplicities);
             //this.currentMapping = (GeoJsonPropertyMapping) mapping;
-
-
         }
+
+        currentProperty = featureProperty;
     }
 
     @Override
@@ -148,9 +160,15 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
     @Override
     public void onPropertyEnd() throws IOException {
         if (stringBuilder.length() > 0) {
+            String value = stringBuilder.toString();
+            List<FeaturePropertyValueTransformer> valueTransformations = getTransformations(currentProperty);
+            for (FeaturePropertyValueTransformer valueTransformer : valueTransformations) {
+                value = valueTransformer.transform(value);
+            }
             transformationContext.getState()
-                                 .setCurrentValue(stringBuilder.toString());
+                    .setCurrentValue(value);
             stringBuilder.setLength(0);
+
 
             transformationContext.getState()
                                  .setEvent(FeatureTransformationContext.Event.PROPERTY);
@@ -161,6 +179,17 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
                              .setCurrentFeatureProperty(Optional.empty());
         transformationContext.getState()
                              .setCurrentValue(Optional.empty());
+    }
+
+    private List<FeaturePropertyValueTransformer> getTransformations(FeatureProperty featureProperty) {
+        List<FeaturePropertyValueTransformer> valueTransformations = null;
+        if (transformations.isPresent()) {
+            valueTransformations = transformations.get()
+                    .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
+                    .get(featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]"));
+        }
+
+        return Objects.nonNull(valueTransformations) ? valueTransformations : ImmutableList.of();
     }
 
     @Override
