@@ -69,11 +69,11 @@
 {
   "@context": "https://schema.org/",
   "@type": "{{schemaOrgItemType}}",
-  {{#canonicalUrl}}"sameAs": "{{.}}",{{/canonicalUrl}}
+  {{#persistentUri}}"sameAs": "{{.}}",{{/persistentUri}}
+  "url": "{{#currentUrlWithSegmentClearParams}}{{id}}{{/currentUrlWithSegmentClearParams}}",
   {{#geoAsString}}"geo": {{{.}}},{{/geoAsString}}
-  {{#children}}{{#itemProp}}"{{.}}": "{{{value}}}", {{/itemProp}}{{/children}}
-  "name": "{{name}}",
-  "url": "{{#currentUrlWithSegmentClearParams}}{{id.value}}{{/currentUrlWithSegmentClearParams}}"
+  {{#properties}}{{#itemProp}}"{{.}}": "{{{getFirstValue}}}", {{/itemProp}}{{/properties}}
+  "name": "{{name}}"
 }
 </script>
 {{/schemaOrgItemType}}{{/features}}

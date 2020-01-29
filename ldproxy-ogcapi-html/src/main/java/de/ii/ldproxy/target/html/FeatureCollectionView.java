@@ -87,6 +87,13 @@ public class FeatureCollectionView extends DatasetView {
                 : Optional.empty();
     }
 
+    public Optional<String> getPersistentUri() throws URISyntaxException {
+        if (!isCollection && persistentUri!=null)
+            return Optional.of(persistentUri);
+
+        return Optional.empty();
+    }
+
     public String getQueryWithoutPage() {
         List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Charset.forName("utf-8"))
                                                    .stream()
