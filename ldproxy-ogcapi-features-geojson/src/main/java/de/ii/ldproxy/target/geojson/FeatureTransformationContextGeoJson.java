@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
-import de.ii.xtraplatform.crs.api.CoordinatesWriterType;
+import de.ii.xtraplatform.geometries.domain.CoordinatesWriterType;
 import org.immutables.value.Value;
 
 import java.io.IOException;

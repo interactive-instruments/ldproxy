@@ -14,7 +14,7 @@ import de.ii.ldproxy.ogcapi.domain.*
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesLandingPageExtension
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
-import de.ii.xtraplatform.crs.api.BoundingBox
+import de.ii.xtraplatform.geometries.domain.BoundingBox
 import spock.lang.PendingFeature
 import spock.lang.Specification
 

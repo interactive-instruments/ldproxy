@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.aroundrelations;
 
-import de.ii.xtraplatform.crs.api.CoordinateFormatter;
+import de.ii.xtraplatform.geometries.domain.CoordinateFormatter;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.IOException;

@@ -8,11 +8,11 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.geometries.domain.BoundingBox;
+import de.ii.xtraplatform.geometries.domain.CrsTransformationException;
+import de.ii.xtraplatform.geometries.domain.CrsTransformer;
+import de.ii.xtraplatform.geometries.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.geometries.domain.EpsgCrs;
 
 import java.net.URI;
 import java.util.List;

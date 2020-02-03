@@ -12,7 +12,7 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.geometries.domain.CrsTransformer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.FeatureType;
 import org.immutables.value.Value;

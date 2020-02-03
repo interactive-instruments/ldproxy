@@ -13,7 +13,7 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.TileCollections;
-import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.geometries.domain.BoundingBox;
 
 import java.util.*;
 import java.util.stream.Collectors;

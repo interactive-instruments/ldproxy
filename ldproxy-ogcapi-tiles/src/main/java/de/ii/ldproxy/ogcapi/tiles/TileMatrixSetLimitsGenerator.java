@@ -10,10 +10,10 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformationException;
-import de.ii.xtraplatform.crs.api.CrsTransformer;
-import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
+import de.ii.xtraplatform.geometries.domain.BoundingBox;
+import de.ii.xtraplatform.geometries.domain.CrsTransformationException;
+import de.ii.xtraplatform.geometries.domain.CrsTransformer;
+import de.ii.xtraplatform.geometries.domain.CrsTransformerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

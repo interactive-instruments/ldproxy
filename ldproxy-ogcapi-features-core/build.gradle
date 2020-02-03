@@ -6,7 +6,8 @@ dependencies {
     api group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
     api group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
     api group: 'de.interactive_instruments', name: 'xtraplatform-service-api'
-    api group: 'de.interactive_instruments', name: 'xtraplatform-crs-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-geometries'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-crs'
     api group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
     api group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
 

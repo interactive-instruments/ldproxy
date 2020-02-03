@@ -10,7 +10,7 @@ package de.ii.ldproxy.wfs3.styles.representation;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.geometries.domain.BoundingBox;
 import de.ii.xtraplatform.rest.views.GenericView;
 
 import java.util.Map;

@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.geometries.domain.BoundingBox;
 
 import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;

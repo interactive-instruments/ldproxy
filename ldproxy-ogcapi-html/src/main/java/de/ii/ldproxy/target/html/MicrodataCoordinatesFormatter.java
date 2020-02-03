@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.target.html;
 
-import de.ii.xtraplatform.crs.api.CoordinateFormatter;
+import de.ii.xtraplatform.geometries.domain.CoordinateFormatter;
 
 import java.io.IOException;
 import java.io.Writer;

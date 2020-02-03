@@ -8,7 +8,7 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import de.ii.xtraplatform.crs.api.CoordinateFormatter;
+import de.ii.xtraplatform.geometries.domain.CoordinateFormatter;
 
 import java.io.IOException;
 
