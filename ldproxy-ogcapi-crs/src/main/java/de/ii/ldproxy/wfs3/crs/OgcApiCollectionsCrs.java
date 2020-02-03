@@ -61,11 +61,11 @@ public class OgcApiCollectionsCrs implements OgcApiCollectionsExtension {
                                     providers.getFeatureProvider(apiData)
                                              .getData()
                                            .getNativeCrs()
-                                           .getAsUri()
+                                           .toUriString()
                             ),
                             apiData.getAdditionalCrs()
                                    .stream()
-                                   .map(EpsgCrs::getAsUri)
+                                   .map(EpsgCrs::toUriString)
                     )
                           .distinct()
                           .collect(ImmutableList.toImmutableList());

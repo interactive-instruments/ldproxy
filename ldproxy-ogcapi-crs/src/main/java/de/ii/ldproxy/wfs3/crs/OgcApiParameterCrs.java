@@ -89,7 +89,7 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
         }
 
         if (parameters.containsKey(CRS) && !isDefaultCrs(parameters.get(CRS))) {
-            EpsgCrs targetCrs = new EpsgCrs(parameters.get(CRS));
+            EpsgCrs targetCrs = EpsgCrs.fromString(parameters.get(CRS));
             queryBuilder.crs(targetCrs);
         } else {
             queryBuilder.crs(DEFAULT_CRS);

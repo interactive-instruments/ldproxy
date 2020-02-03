@@ -110,7 +110,7 @@ public class Metadata2Wfs3 extends AbstractFeatureProviderMetadataConsumer {
                 .temporal(new ImmutableTemporalExtent.Builder().start(null)
                                                                .end(null)
                                                                .build())
-                .spatial(new BoundingBox(Double.valueOf(xmin), Double.valueOf(ymin), Double.valueOf(xmax), Double.valueOf(ymax), new EpsgCrs(4326)))
+                .spatial(new BoundingBox(Double.valueOf(xmin), Double.valueOf(ymin), Double.valueOf(xmax), Double.valueOf(ymax), EpsgCrs.of(4326)))
                 .build());
     }
 

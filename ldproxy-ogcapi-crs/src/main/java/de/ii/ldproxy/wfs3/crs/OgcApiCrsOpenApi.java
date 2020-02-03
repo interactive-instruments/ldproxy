@@ -60,11 +60,11 @@ public class OgcApiCrsOpenApi implements OpenApiExtension {
                     .add(providers.getFeatureProvider(datasetData)
                                   .getData()
                                     .getNativeCrs()
-                                    .getAsUri())
+                                    .toUriString())
                     .add(DEFAULT_CRS_URI)
                     .addAll(datasetData.getAdditionalCrs()
                                        .stream()
-                                       .map(EpsgCrs::getAsUri)
+                                       .map(EpsgCrs::toUriString)
                                        .collect(Collectors.toList()))
                     .build();
 

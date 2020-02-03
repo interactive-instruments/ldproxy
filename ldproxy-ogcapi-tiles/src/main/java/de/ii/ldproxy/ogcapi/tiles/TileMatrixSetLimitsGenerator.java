@@ -11,9 +11,9 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,7 @@ public class TileMatrixSetLimitsGenerator {
      */
     public static List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiApiDataV2 data, String collectionId,
                                                                              String tileMatrixSetId, MinMax tileMatrixRange,
-                                                                             CrsTransformation crsTransformation) {
+                                                                             CrsTransformerFactory crsTransformation) {
 
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
@@ -55,7 +55,7 @@ public class TileMatrixSetLimitsGenerator {
             try {
                 bbox = transformer.get().transformBoundingBox(bbox);
             } catch (CrsTransformationException e) {
-                LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().getAsSimple()));
+                LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().toSimpleString()));
                 return ImmutableList.of();
             }
         }
@@ -66,21 +66,21 @@ public class TileMatrixSetLimitsGenerator {
      * Return a list of tileMatrixSetLimits for all collections in the dataset.
      * @param data service dataset
      * @param tileMatrixSetId identifier of a specific tile matrix set
-     * @param crsTransformation crs transfromation
+     * @param crsTransformerFactory crs transfromation
      * @return list of TileMatrixSetLimits
      */
     public static List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiApiDataV2 data, String tileMatrixSetId,
-                                                                   MinMax tileMatrixRange, CrsTransformation crsTransformation) {
+                                                                   MinMax tileMatrixRange, CrsTransformerFactory crsTransformerFactory) {
 
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
         BoundingBox bbox = data.getSpatialExtent();
-        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
+        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
         if (transformer.isPresent()) {
             try {
                 bbox = transformer.get().transformBoundingBox(bbox);
             } catch (CrsTransformationException e) {
-                LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().getAsSimple()));
+                LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().toSimpleString()));
                 return ImmutableList.of();
             }
         }

@@ -14,9 +14,9 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.locationtech.jts.geom.util.AffineTransformation;
@@ -266,31 +266,31 @@ class VectorTile {
      * generate the spatial filter for a tile in the native coordinate reference system of the dataset in CQL
      *
      * @param geometryField     the name of the geometry field to use for the filter
-     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
      * @return the spatial filter in CQL
      * @throws CrsTransformationException if the bounding box could not be converted
      */
     public String getSpatialFilter(String geometryField,
-                                   CrsTransformation crsTransformation) throws CrsTransformationException {
+                                   CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
 
         // calculate bbox in the native CRS of the dataset
-        BoundingBox bboxNativeCrs = getBoundingBoxNativeCrs(crsTransformation);
+        BoundingBox bboxNativeCrs = getBoundingBoxNativeCrs(crsTransformerFactory);
 
         return String.format(Locale.US, "BBOX(%s, %f, %f, %f, %f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs()
-                                                                                                                                                                                                          .getAsSimple());
+                                                                                                                                                                                                          .toSimpleString());
     }
 
     /**
      * Creates an affine transformation for converting geometries in lon/lat to tile coordinates.
      *
-     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
      * @return the transform
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
     public AffineTransformation createTransformLonLatToTile(
-            CrsTransformation crsTransformation) throws CrsTransformationException {
+            CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
 
-        BoundingBox bbox = getBoundingBox(OgcApiApiDataV2.DEFAULT_CRS, crsTransformation);
+        BoundingBox bbox = getBoundingBox(OgcApiApiDataV2.DEFAULT_CRS, crsTransformerFactory);
 
         double lonMin = bbox.getXmin();
         double lonMax = bbox.getXmax();
@@ -316,15 +316,15 @@ class VectorTile {
     }
 
     /**
-     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
      * @return the bounding box of the tile matrix set in the form of the native crs
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
-    private BoundingBox getBoundingBoxNativeCrs(CrsTransformation crsTransformation) throws CrsTransformationException {
+    private BoundingBox getBoundingBoxNativeCrs(CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
         EpsgCrs crs = featureProvider.getData()
                                      .getNativeCrs();
         BoundingBox bboxTileMatrixSetCrs = getBoundingBox();
-        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(tileMatrixSet.getCrs(), crs);
+        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(tileMatrixSet.getCrs(), crs);
 
         if (!transformer.isPresent()) {
             return bboxTileMatrixSetCrs;
@@ -335,14 +335,14 @@ class VectorTile {
 
     /**
      * @param crs               the target coordinate references system
-     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
      * @return the bounding box of the tile matrix set in the form of the target crs
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
     private BoundingBox getBoundingBox(EpsgCrs crs,
-                                       CrsTransformation crsTransformation) throws CrsTransformationException {
+                                       CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
         BoundingBox bboxTileMatrixSetCrs = getBoundingBox();
-        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(tileMatrixSet.getCrs(), crs);
+        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(tileMatrixSet.getCrs(), crs);
 
         if (!transformer.isPresent()) {
             return bboxTileMatrixSetCrs;
@@ -459,7 +459,7 @@ class VectorTile {
      * @param cache                   the tile cache
      * @param isCollection            boolean collection or dataset Tile
      * @param wfs3Request             the request
-     * @param crsTransformation       the coordinate reference system transformation object to transform coordinates
+     * @param crsTransformerFactory       the coordinate reference system transformation object to transform coordinates
      * @throws FileNotFoundException
      */
     public static MinMax checkZoomLevel(int zoomLevel,
@@ -469,7 +469,7 @@ class VectorTile {
                                         String collectionId, String tileMatrixSetId, String mediaType,
                                         String row, String col, boolean doNotCache, VectorTilesCache cache,
                                         boolean isCollection, OgcApiRequestContext wfs3Request,
-                                        CrsTransformation crsTransformation, I18n i18n) throws FileNotFoundException {
+                                        CrsTransformerFactory crsTransformerFactory, I18n i18n) throws FileNotFoundException {
         // first check, if the zoom level is valid for the tile matrix set
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
         if (zoomLevel > tileMatrixSet.getMaxLevel() || zoomLevel < tileMatrixSet.getMinLevel()) {
@@ -526,7 +526,7 @@ class VectorTile {
      * @param cache                   the tile cache
      * @param isCollection            boolean collection or dataset Tile
      * @param wfs3Request             the request
-     * @param crsTransformation       the coordinate reference system transformation object to transform coordinates
+     * @param crsTransformerFactory       the coordinate reference system transformation object to transform coordinates
      * @throws FileNotFoundException
      */
     public static void generateEmptyTile(String collectionId, String tileMatrixSetId, int zoomLevel,
@@ -534,14 +534,14 @@ class VectorTile {
                                          OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                                          String mediaType, String row, String col, boolean doNotCache,
                                          VectorTilesCache cache, boolean isCollection, OgcApiRequestContext wfs3Request,
-                                         CrsTransformation crsTransformation, I18n i18n) throws FileNotFoundException {
+                                         CrsTransformerFactory crsTransformerFactory, I18n i18n) throws FileNotFoundException {
         TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
         try {
             if (mediaType.equals("application/json")) {
                 VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, featureProvider, wfs3OutputFormatGeoJson);
                 File tileFileJSON = tile.getFile(cache, "json");
                 if (!tileFileJSON.exists()) {
-                    TileGeneratorJson.generateEmptyJSON(tileFileJSON, tileMatrixSet, wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService, i18n, wfs3Request.getLanguage());
+                    TileGeneratorJson.generateEmptyJSON(tileFileJSON, tileMatrixSet, wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformerFactory, wfsService, i18n, wfs3Request.getLanguage());
                 }
             }
             //generate empty MVT
@@ -553,7 +553,7 @@ class VectorTile {
                     VectorTile jsonTile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(zoomLevel), row, col, wfsService, doNotCache, cache, featureProvider, wfs3OutputFormatGeoJson);
                     File tileFileJSON = jsonTile.getFile(cache, "json");
                     if (!tileFileJSON.exists()) {
-                        TileGeneratorJson.generateEmptyJSON(tileFileJSON, tileMatrixSet, wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformation, wfsService, i18n, wfs3Request.getLanguage());
+                        TileGeneratorJson.generateEmptyJSON(tileFileJSON, tileMatrixSet, wfsService.getData(), wfs3OutputFormatGeoJson, collectionId, isCollection, wfs3Request, zoomLevel, Integer.parseInt(row), Integer.parseInt(col), crsTransformerFactory, wfsService, i18n, wfs3Request.getLanguage());
                     }
                     TileGeneratorMvt.generateEmptyMVT(tileFileMvt, tileMatrixSet);
                 }

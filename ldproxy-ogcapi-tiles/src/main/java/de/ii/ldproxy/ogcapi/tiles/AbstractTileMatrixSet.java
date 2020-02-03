@@ -26,7 +26,7 @@ public abstract class AbstractTileMatrixSet implements TileMatrixSet {
         data = ImmutableTileMatrixSetData.builder()
                 .identifier(getId())
                 .title(getTitle())
-                .supportedCRS(getCrs().getAsUri())
+                .supportedCRS(getCrs().toUriString())
                 .wellKnownScaleSet(getWellKnownScaleSet())
                 .boundingBox(ImmutableTileMatrixSetBoundingBox.builder()
                         .lowerCorner(bbox.getXmin(), bbox.getYmin())

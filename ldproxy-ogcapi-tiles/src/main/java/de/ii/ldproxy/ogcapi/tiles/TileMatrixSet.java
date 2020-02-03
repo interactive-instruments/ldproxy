@@ -8,7 +8,11 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.xtraplatform.crs.api.*;
+import de.ii.xtraplatform.crs.api.BoundingBox;
+import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.api.EpsgCrs;
 
 import java.net.URI;
 import java.util.List;
@@ -103,13 +107,13 @@ public interface TileMatrixSet {
      * @param row the row
      * @param col the column
      * @param crs the target coordinate references system
-     * @param crsTransformation a coordinate references system transformation object
+     * @param crsTransformerFactory a coordinate references system transformation object
      * @return the distance in the units of measure of the target coordinate references system
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
-    default double getMaxAllowableOffset(int level, int row, int col, EpsgCrs crs, CrsTransformation crsTransformation) throws CrsTransformationException {
+    default double getMaxAllowableOffset(int level, int row, int col, EpsgCrs crs, CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
         BoundingBox bbox = getTileBoundingBox(level, col, row);
-        Optional<CrsTransformer> transformer = crsTransformation.getTransformer(getCrs(), crs);
+        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(getCrs(), crs);
         if (transformer.isPresent()) {
             bbox = transformer.get().transformBoundingBox(bbox);
         }

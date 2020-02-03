@@ -64,7 +64,7 @@ public class GeoJsonWriterCrs implements GeoJsonWriter {
                                                                         .getTargetCrs(), OgcApiApiDataV2.DEFAULT_CRS)) {
             json.writeStringField("crs", crsTransformer.get()
                                                        .getTargetCrs()
-                                                       .getAsUri());
+                                                       .toUriString());
         }
     }
 }

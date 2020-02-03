@@ -13,10 +13,11 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.crs.api.EpsgCrs.Force;
 import de.ii.xtraplatform.event.store.EntityHydrator;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
@@ -47,7 +48,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiApiDataV2> {
     //private FeatureProviderRegistry featureProviderFactory;
 
     @Requires
-    private CrsTransformation crsTransformerFactory;
+    private CrsTransformerFactory crsTransformerFactory;
 
     @Override
     public Map<String, Object> getInstanceConfiguration(OgcApiApiDataV2 data) {
@@ -145,7 +146,7 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiApiDataV2> {
                         }
 
                         if (Objects.isNull(bbox)) {
-                            bbox = new BoundingBox(-180.0, -90.0, 180.0, 90.0, new EpsgCrs(4326, true));
+                            bbox = new BoundingBox(-180.0, -90.0, 180.0, 90.0, EpsgCrs.of(4326, Force.LON_LAT));
                         }
 
                         ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder()

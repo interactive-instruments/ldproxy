@@ -22,9 +22,9 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -47,7 +47,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
     I18n i18n;
 
     @Requires
-    private CrsTransformation crsTransformations;
+    private CrsTransformerFactory crsTransformerFactory;
 
     private final OgcApiExtensionRegistry extensionRegistry;
     private final OgcApiFeatureCoreProviders providers;
@@ -205,8 +205,8 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                 return spatialExtent;
             }
 
-            Optional<CrsTransformer> transformer = crsTransformations.getTransformer(featureProvider.getData()
-                                                                                                    .getNativeCrs(), DEFAULT_CRS);
+            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(featureProvider.getData()
+                                                                                                       .getNativeCrs(), DEFAULT_CRS);
             if (transformer.isPresent()) {
                 try {
                     return transformer.get().transformBoundingBox(spatialExtent);

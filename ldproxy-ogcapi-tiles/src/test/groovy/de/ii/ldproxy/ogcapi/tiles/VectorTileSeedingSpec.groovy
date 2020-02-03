@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.tiles
 
-
 import de.ii.xtraplatform.crs.api.BoundingBox
 import de.ii.xtraplatform.crs.api.EpsgCrs
 import spock.lang.Specification
@@ -30,7 +29,7 @@ class VectorTileSeedingSpec extends Specification{
         def xMax = 4070118.8821290657
         def yMax = 3913575.8482010253
 
-        def targetCrs = new EpsgCrs(3857)
+        def targetCrs = EpsgCrs.of(3857)
         def bbox = new BoundingBox(xMin, yMin, xMax, yMax, targetCrs)
 
 
@@ -61,7 +60,7 @@ class VectorTileSeedingSpec extends Specification{
         def xMax = 20037508.342789244
         def yMax = 20037508.342789244
 
-        def targetCrs = new EpsgCrs(3857)
+        def targetCrs = EpsgCrs.of(3857)
         def bbox = new BoundingBox(xMin, yMin, xMax, yMax, targetCrs)
 
         when: "getLimits is called"
@@ -93,7 +92,7 @@ class VectorTileSeedingSpec extends Specification{
         def xMax = 4070118.8821290657
         def yMax = 3913575.8482010253
 
-        def targetCrs = new EpsgCrs(3857)
+        def targetCrs = EpsgCrs.of(3857)
         def bbox = new BoundingBox(xMin, yMin, xMax, yMax, targetCrs)
 
         when: "getLimits is called"

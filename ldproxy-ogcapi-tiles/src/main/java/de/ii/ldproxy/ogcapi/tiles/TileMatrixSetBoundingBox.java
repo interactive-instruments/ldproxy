@@ -26,14 +26,12 @@ public abstract class TileMatrixSetBoundingBox {
 
     /**
      * the coordinate reference system that is the basis of this tiling scheme
+     * @return
      */
     public abstract Optional<EpsgCrs> getCrsEpsg();
 
     @Value.Derived
     public Optional<String> getCrs() {
-        if (getCrsEpsg().isPresent())
-            return Optional.of(getCrsEpsg().get().getAsUri());
-
-        return Optional.empty();
+        return getCrsEpsg().map(EpsgCrs::toUriString);
     }
 }

@@ -12,8 +12,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import no.ecc.vectortile.VectorTileEncoder;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.util.AffineTransformation;
@@ -26,7 +26,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -42,13 +46,13 @@ public class TileGeneratorMvt {
      * @param tileFileMvt       the file object of the tile in the cache
      * @param layers            map of the layers names and the file objects of the existing GeoJSON tiles in the cache; these files must exist
      * @param propertyNames     a list of all property Names
-     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
      * @param tile              the tile which should be generated
      * @param seeding           flag to indicate that the tile creation is part of a seeding process
      * @return true, if the file was generated successfully, false, if an error occurred
      */
     static boolean generateTileMvt(File tileFileMvt, Map<String, File> layers, Set<String> propertyNames,
-                                   CrsTransformation crsTransformation, VectorTile tile, boolean seeding) {
+                                   CrsTransformerFactory crsTransformerFactory, VectorTile tile, boolean seeding) {
 
         // Prepare MVT output
         TileMatrixSet tileMatrixSet = tile.getTileMatrixSet();
@@ -61,7 +65,7 @@ public class TileGeneratorMvt {
         VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         AffineTransformation transform;
         try {
-            transform = tile.createTransformLonLatToTile(crsTransformation);
+            transform = tile.createTransformLonLatToTile(crsTransformerFactory);
         } catch (CrsTransformationException e) {
             String msg = "Internal server error: error converting coordinates.";
             LOGGER.error(msg);

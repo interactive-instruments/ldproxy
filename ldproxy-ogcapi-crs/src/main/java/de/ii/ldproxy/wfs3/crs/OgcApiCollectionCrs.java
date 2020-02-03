@@ -59,7 +59,7 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
             String nativeCrsUri = providers.getFeatureProvider(apiData, featureTypeConfiguration)
                                            .getData()
                                            .getNativeCrs()
-                                           .getAsUri();
+                                           .toUriString();
             ImmutableList<String> crsList;
             if (isNested) {
                 // just reference the default list of coordinate reference systems
@@ -73,7 +73,7 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
                         ),
                         apiData.getAdditionalCrs()
                                .stream()
-                               .map(EpsgCrs::getAsUri)
+                               .map(EpsgCrs::toUriString)
                 )
                                 .distinct()
                                 .collect(ImmutableList.toImmutableList());

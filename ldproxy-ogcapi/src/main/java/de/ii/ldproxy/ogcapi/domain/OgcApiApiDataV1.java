@@ -15,8 +15,6 @@ import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerServiceData;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -26,11 +24,11 @@ import java.util.Objects;
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiApiDataV1.Builder.class)
 public abstract class OgcApiApiDataV1 extends FeatureTransformerServiceData<FeatureTypeConfigurationOgcApi> implements ExtendableConfiguration, ServiceData {
-
+/*
     public static final String DEFAULT_CRS_URI = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
     public static final EpsgCrs DEFAULT_CRS = new EpsgCrs(4326, true);
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiDataV1.class);
-
+*/
     static abstract class Builder implements EntityDataBuilder<OgcApiApiDataV1> {
     }
 

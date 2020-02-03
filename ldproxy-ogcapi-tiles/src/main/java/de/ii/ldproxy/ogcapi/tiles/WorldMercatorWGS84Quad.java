@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public class WorldMercatorWGS84Quad extends AbstractTileMatrixSet implements TileMatrixSet {
 
-    private static final EpsgCrs CRS = new EpsgCrs(3395);
+    private static final EpsgCrs CRS = EpsgCrs.of(3395);
 
     /**
      * The bounding box of the tiling scheme

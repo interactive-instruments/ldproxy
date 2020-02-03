@@ -16,7 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,10 +56,11 @@ public class CollectionMultitilesGenerator {
      * @param scaleDenominatorParam value of the scaleDenominator request parameter
      * @param multiTileType value of the multiTileType request parameter
      * @param uriCustomizer uri customizer
+     * @param crsTransformerFactory
      * @return multiple tiles
      */
     Response getMultitiles(String tileMatrixSetId, String bboxParam, String scaleDenominatorParam, String multiTileType,
-                           URICustomizer uriCustomizer, String tileFormatParam, String collectionId, CrsTransformation crsTransformation,
+                           URICustomizer uriCustomizer, String tileFormatParam, String collectionId, CrsTransformerFactory crsTransformerFactory,
                            UriInfo uriInfo, I18n i18n, Optional<Locale> language, OgcApiApi service, VectorTilesCache cache,
                            OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) {
 
@@ -75,7 +76,7 @@ public class CollectionMultitilesGenerator {
                     .type("application/geo+json")
                     .build();
         } else if (multiTileType == null || "tiles".equals(multiTileType) || "full".equals(multiTileType)) {
-            File zip = generateZip(tileSetEntries, tileMatrixSetId, collectionId, "full".equals(multiTileType), crsTransformation,
+            File zip = generateZip(tileSetEntries, tileMatrixSetId, collectionId, "full".equals(multiTileType), crsTransformerFactory,
                     uriInfo, i18n, language, uriCustomizer, service, cache, wfs3OutputFormatGeoJson, tileFormat);
             return Response.ok(zip)
                     .type("application/zip")
@@ -117,10 +118,10 @@ public class CollectionMultitilesGenerator {
     }
 
     protected File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId, String collectionId,
-                                    boolean isFull, CrsTransformation crsTransformation, UriInfo uriInfo, I18n i18n,
-                                    Optional<Locale> language, URICustomizer uriCustomizer, OgcApiApi service,
-                                    VectorTilesCache cache, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
-                                    String tileFormat) {
+                               boolean isFull, CrsTransformerFactory crsTransformation, UriInfo uriInfo, I18n i18n,
+                               Optional<Locale> language, URICustomizer uriCustomizer, OgcApiApi service,
+                               VectorTilesCache cache, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
+                               String tileFormat) {
         File zip = null;
 
         try {

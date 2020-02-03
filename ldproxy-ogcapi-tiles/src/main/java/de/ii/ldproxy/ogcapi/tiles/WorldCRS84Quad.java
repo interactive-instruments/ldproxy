@@ -9,13 +9,14 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.crs.api.EpsgCrs.Force;
 
 import java.net.URI;
 import java.util.Optional;
 
 public class WorldCRS84Quad extends AbstractTileMatrixSet implements TileMatrixSet {
 
-    private static final EpsgCrs CRS = new EpsgCrs(4326, true);
+    private static final EpsgCrs CRS = EpsgCrs.of(4326, Force.LON_LAT);
 
     /**
      * The bounding box of the tiling scheme

@@ -24,7 +24,7 @@ public class WebMercatorQuad extends AbstractTileMatrixSet implements TileMatrix
     /**
      * Web Mercator is the coordinate reference system of the tile matrix set, EPSG code is 3857
      */
-    private static final EpsgCrs CRS = new EpsgCrs(3857);
+    private static final EpsgCrs CRS = EpsgCrs.of(3857);
 
     /**
      * The bounding box of the tile matrix set

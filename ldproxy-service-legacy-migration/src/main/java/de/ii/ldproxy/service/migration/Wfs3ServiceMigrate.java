@@ -24,7 +24,6 @@ import de.ii.ldproxy.target.html.Gml2MicrodataMappingProvider;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping;
 import de.ii.ldproxy.target.html.MicrodataMapping;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
-import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Jackson;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.entity.api.EntityRepositoryForType;

@@ -7,17 +7,16 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.crs.api.EpsgCrs.Force;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
-import de.ii.xtraplatform.entity.api.maptobuilder.encoding.ValueBuilderMapEncodingEnabled;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
@@ -35,7 +34,7 @@ import java.util.Optional;
 public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfiguration {
 
     public static final String DEFAULT_CRS_URI = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
-    public static final EpsgCrs DEFAULT_CRS = new EpsgCrs(4326, true);
+    public static final EpsgCrs DEFAULT_CRS = EpsgCrs.of(4326, Force.LON_LAT);
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiDataV2.class);
 
     static abstract class Builder implements EntityDataBuilder<OgcApiApiDataV2> {
@@ -118,14 +117,14 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
 
     /**
      * Determine spatial extent of all collections in the dataset in another CRS.
-     * @param crsTransformation the factory for CRS transformers
+     * @param crsTransformerFactory the factory for CRS transformers
      * @param targetCrs the target CRS
      * @return the bounding box
      */
-    public BoundingBox getSpatialExtent(CrsTransformation crsTransformation, EpsgCrs targetCrs) throws CrsTransformationException {
+    public BoundingBox getSpatialExtent(CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         BoundingBox spatialExtent = getSpatialExtent();
 
-        return transformSpatialExtent(spatialExtent, crsTransformation, targetCrs);
+        return transformSpatialExtent(spatialExtent, crsTransformerFactory, targetCrs);
     }
 
     /**
@@ -146,18 +145,18 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     /**
      * Determine spatial extent of a collection in the dataset in another CRS.
      * @param collectionId the name of the feature type
-     * @param crsTransformation the factory for CRS transformers
+     * @param crsTransformerFactory the factory for CRS transformers
      * @param targetCrs the target CRS
      * @return the bounding box in the target CRS
      */
-    public BoundingBox getSpatialExtent(String collectionId, CrsTransformation crsTransformation, EpsgCrs targetCrs) throws CrsTransformationException {
+    public BoundingBox getSpatialExtent(String collectionId, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         BoundingBox spatialExtent = getSpatialExtent(collectionId);
 
-        return transformSpatialExtent(spatialExtent, crsTransformation, targetCrs);
+        return transformSpatialExtent(spatialExtent, crsTransformerFactory, targetCrs);
     }
 
-    private BoundingBox transformSpatialExtent(BoundingBox spatialExtent, CrsTransformation crsTransformation, EpsgCrs targetCrs) throws CrsTransformationException {
-        Optional<CrsTransformer> crsTransformer = crsTransformation.getTransformer(DEFAULT_CRS, targetCrs);
+    private BoundingBox transformSpatialExtent(BoundingBox spatialExtent, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
+        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(DEFAULT_CRS, targetCrs);
 
         if (Objects.nonNull(spatialExtent) && crsTransformer.isPresent()) {
             return crsTransformer.get().transformBoundingBox(spatialExtent);

@@ -24,8 +24,8 @@ import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationCont
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreQueriesHandler;
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
@@ -61,12 +61,12 @@ import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
 public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQueriesHandler {
 
     private final I18n i18n;
-    private final CrsTransformation crsTransformerFactory;
+    private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
 
     public OgcApiFeaturesCoreQueriesHandlerImpl(@Requires I18n i18n,
-                                                @Requires CrsTransformation crsTransformerFactory,
+                                                @Requires CrsTransformerFactory crsTransformerFactory,
                                                 @Requires Dropwizard dropwizard) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
@@ -163,7 +163,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
         boolean swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get()
-                                                                             .needsCoordinateSwap() : featureProvider.shouldSwapCoordinates(query.getCrs());
+                                                                             .needsCoordinateSwap() : featureProvider.crs().shouldSwapCoordinates(query.getCrs());
 
         List<OgcApiLink> links =
                 isCollection ?

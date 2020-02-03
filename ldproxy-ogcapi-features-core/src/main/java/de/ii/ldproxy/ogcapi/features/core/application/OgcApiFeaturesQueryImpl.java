@@ -9,11 +9,15 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
 import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
@@ -29,7 +33,12 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -44,12 +53,12 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFeaturesQueryImpl.class);
 
     private final OgcApiExtensionRegistry wfs3ExtensionRegistry;
-    private final CrsTransformation crsTransformation;
+    private final CrsTransformerFactory crsTransformerFactory;
 
     public OgcApiFeaturesQueryImpl(@Requires OgcApiExtensionRegistry wfs3ExtensionRegistry,
-                                   @Requires CrsTransformation crsTransformation) {
+                                   @Requires CrsTransformerFactory crsTransformerFactory) {
         this.wfs3ExtensionRegistry = wfs3ExtensionRegistry;
-        this.crsTransformation = crsTransformation;
+        this.crsTransformerFactory = crsTransformerFactory;
     }
 
     @Override
@@ -208,7 +217,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         try {
             String bboxCrs = bboxArray.length > 4 ? bboxArray[4] : null;
             crs = Optional.ofNullable(bboxCrs)
-                          .map(EpsgCrs::new)
+                          .map(EpsgCrs::fromString)
                           .orElse(OgcApiApiDataV2.DEFAULT_CRS);
         } catch (NullPointerException e) {
             throw new BadRequestException("Error processing CRS of bounding box: '" + getBboxCrs(bboxArray) + "'");
@@ -227,11 +236,11 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                 }
             }
             BoundingBox bbox = new BoundingBox(val1, val2, val3, val4, crs);
-            Optional<CrsTransformer> transformer = crsTransformation.getTransformer(bbox.getEpsgCrs(), OgcApiApiDataV2.DEFAULT_CRS);
+            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.getEpsgCrs(), OgcApiApiDataV2.DEFAULT_CRS);
             BoundingBox transformedBbox = transformer.isPresent() ? transformer.get().transformBoundingBox(bbox) : bbox;
             return String
                     .format(Locale.US, "BBOX(%s, %f, %f, %f, %f, '%s')", geometryField, transformedBbox.getXmin(), transformedBbox.getYmin(), transformedBbox.getXmax(), transformedBbox.getYmax(), transformedBbox.getEpsgCrs()
-                                                                                                                                                                                                                   .getAsSimple());
+                                                                                                                                                                                                                   .toSimpleString());
         } catch (NumberFormatException e) {
             throw new BadRequestException("Error processing the coordinates of the bounding box '" + getBbox(bboxArray) + "'");
         } catch (CrsTransformationException e) {
@@ -246,7 +255,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     }
 
     private String getBboxCrs(String[] bboxArray) {
-        return (bboxArray.length == 5 ? bboxArray[4] : OgcApiApiDataV2.DEFAULT_CRS.getAsUri());
+        return (bboxArray.length == 5 ? bboxArray[4] : OgcApiApiDataV2.DEFAULT_CRS.toUriString());
     }
 
     private String timeToCql(String timeField, String timeValue) {

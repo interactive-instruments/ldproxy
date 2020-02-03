@@ -13,7 +13,20 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.codelists.CodelistRegistry;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.Collections;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.CollectionsFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.CommonFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.ConformanceDeclaration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.LandingPage;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
@@ -21,23 +34,34 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfigur
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderDataV1;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Context;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
@@ -83,7 +107,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     private OgcApiFeatureCoreProviders providers;
 
     @Requires
-    private CrsTransformation crsTransformations;
+    private CrsTransformerFactory crsTransformerFactory;
 
     @Override
     public String getConformanceClass() {
@@ -477,8 +501,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 return Optional.ofNullable(spatialExtent);
             }
 
-            Optional<CrsTransformer> transformer = crsTransformations.getTransformer(featureProvider.getData()
-                                                                                                    .getNativeCrs(), DEFAULT_CRS);
+            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(featureProvider.getData()
+                                                                                                       .getNativeCrs(), DEFAULT_CRS);
             if (transformer.isPresent()) {
                 try {
                     return Optional.ofNullable(transformer.get()

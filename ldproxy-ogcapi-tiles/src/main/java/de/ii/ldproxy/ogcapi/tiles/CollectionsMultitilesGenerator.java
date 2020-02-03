@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,11 +63,12 @@ public class CollectionsMultitilesGenerator {
      * @param multiTileType         value of the multiTileType request parameter
      * @param uriCustomizer         uri customizer
      * @param collections           requested collections
+     * @param crsTransformerFactory
      * @return nultiple tiles from multiple collections
      */
     Response getCollectionsMultitiles(String tileMatrixSetId, String bboxParam, String scaleDenominatorParam,
                                       String multiTileType, URICustomizer uriCustomizer, Set<String> collections,
-                                      CrsTransformation crsTransformation, UriInfo uriInfo, OgcApiApi service,
+                                      CrsTransformerFactory crsTransformerFactory, UriInfo uriInfo, OgcApiApi service,
                                       OgcApiRequestContext wfs3Request, VectorTilesCache cache,
                                       OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) throws UnsupportedEncodingException {
 
@@ -84,7 +85,7 @@ public class CollectionsMultitilesGenerator {
                            .build();
         } else if (multiTileType == null || "tiles".equals(multiTileType) || "full".equals(multiTileType)) {
             File zip = generateZip(tileSetEntries, tileMatrixSetId, collections, "full".equals(multiTileType),
-                    crsTransformation, uriInfo, service, cache, wfs3OutputFormatGeoJson, wfs3Request);
+                    crsTransformerFactory, uriInfo, service, cache, wfs3OutputFormatGeoJson, wfs3Request);
             return Response.ok(zip)
                            .type("application/zip")
                            .build();
@@ -128,7 +129,7 @@ public class CollectionsMultitilesGenerator {
 
     private File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId,
                              Set<String> requestedCollections,
-                             boolean isFull, CrsTransformation crsTransformation, UriInfo uriInfo,
+                             boolean isFull, CrsTransformerFactory crsTransformation, UriInfo uriInfo,
                              OgcApiApi service,
                              VectorTilesCache cache, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
                              OgcApiRequestContext wfs3Request) {

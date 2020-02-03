@@ -193,7 +193,7 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
         }
         if (inCurrentPropertyStart && localName.equals("srsName")) {
             if (Objects.nonNull(crsTransformer)) {
-                newValue = crsTransformer.getTargetCrs().getAsUri();
+                newValue = crsTransformer.getTargetCrs().toUriString();
             }
         }
         if (inCurrentPropertyStart && localName.equals("srsDimension")) {

@@ -8,12 +8,18 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiStartupTask;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.xtraplatform.crs.api.BoundingBox;
-import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
+import de.ii.xtraplatform.crs.api.CrsTransformerFactory;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.server.CoreServerConfig;
 import org.apache.felix.ipojo.annotations.Component;
@@ -28,7 +34,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -50,7 +61,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     I18n i18n;
 
     @Requires
-    private CrsTransformation crsTransformation;
+    private CrsTransformerFactory crsTransformerFactory;
 
     @Requires
     private CoreServerConfig coreServerConfig;
@@ -120,7 +131,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                 }
 
                 if (tilesDatasetEnabled && seedingDatasetEnabled) {
-                    seedingDataset(collectionIdsDataset, api, crsTransformation, cache, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson.get(), Optional.of(Locale.ENGLISH));
+                    seedingDataset(collectionIdsDataset, api, crsTransformerFactory, cache, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson.get(), Optional.of(Locale.ENGLISH));
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -159,14 +170,14 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      *
      * @param collectionIdsDataset all ids of feature Types which have the tiles support and seeding enabled
      * @param service              the Wfs3 service
-     * @param crsTransformation    the coordinate reference system transformation object to transform coordinates
+     * @param crsTransformerFactory    the coordinate reference system transformation object to transform coordinates
      * @param cache                the vector tile cache
      * @param featureProvider      the feature Provider
      * @param coreServerConfig     the core server config with the external url
      * @throws FileNotFoundException
      */
     private void seedingDataset(Set<String> collectionIdsDataset, OgcApiApi service,
-                                CrsTransformation crsTransformation, VectorTilesCache cache,
+                                CrsTransformerFactory crsTransformerFactory, VectorTilesCache cache,
                                 FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                                 OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language)
             throws FileNotFoundException {
@@ -191,7 +202,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                         for (int level = minZoom; level <= maxZoom; level++) {
                             BoundingBox bbox = null;
                             try {
-                                bbox = datasetData.getSpatialExtent(collectionId, crsTransformation, tileMatrixSet.getCrs());
+                                bbox = datasetData.getSpatialExtent(collectionId, crsTransformerFactory, tileMatrixSet.getCrs());
                                 TileMatrixSetLimits limits = tileMatrixSet.getLimits(level, bbox);
                                 int rowMin = limits.getMinTileRow();
                                 int rowMax = limits.getMaxTileRow();
@@ -207,7 +218,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                         }
 
                                         // generates both GeoJSON and MVT files
-                                        generateMVT(service, collectionId, tileMatrixSetId, level, row, col, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
+                                        generateMVT(service, collectionId, tileMatrixSetId, level, row, col, cache, crsTransformerFactory, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
 
                                         VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
                                         File tileFileJson = tile.getFile(cache, "json");
@@ -239,7 +250,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
             Map<String, File> layers = entry.getValue();
             VectorTile tile = new VectorTile(null, tileMatrixSetId, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
             File tileFileMvt = tile.getFile(cache, "pbf");
-            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile, true);
+            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformerFactory, tile, true);
             if (!success) {
                 // skip tiles and report them in the log
                 String msg = "Internal server error: could not generate protocol buffer for a tile.";
@@ -258,13 +269,13 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @param row               the row of the tile
      * @param col               the col of the tile
      * @param cache             the vector tile cache
-     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
      * @param featureProvider   the feature Provider
      * @param coreServerConfig  the core server config with the external url
      * @return the Json File. If the mvt already exists, return null
      */
     private File generateMVT(OgcApiApi service, String collectionId, String tileMatrixSetId, int level, int row,
-                             int col, VectorTilesCache cache, CrsTransformation crsTransformation,
+                             int col, VectorTilesCache cache, CrsTransformerFactory crsTransformerFactory,
                              FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
 
@@ -272,10 +283,10 @@ public class VectorTileSeeding implements OgcApiStartupTask {
         File tileFileMvt = tile.getFile(cache, "pbf");
         if (!tileFileMvt.exists()) {
             LOGGER.debug("seeding - " + collectionId + " | " + tileMatrixSetId + " | level: " + level + " | row: " + row + " | col: " + col + " | format: MVT");
-            File tileFileJson = generateJSON(service, collectionId, tileMatrixSetId, level, row, col, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
+            File tileFileJson = generateJSON(service, collectionId, tileMatrixSetId, level, row, col, cache, crsTransformerFactory, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
             Map<String, File> layers = new HashMap<>();
             layers.put(collectionId, tileFileJson);
-            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile, true);
+            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformerFactory, tile, true);
             if (!success) {
                 // skip the tile and report error in the log
                 String msg = "Internal server error: could not generate protocol buffers for a tile.";
@@ -297,13 +308,13 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @param row               the row of the tile
      * @param col               the col of the tile
      * @param cache             the vector tile cache
-     * @param crsTransformation the coordinate reference system transformation object to transform coordinates
+     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
      * @param featureProvider   the feature Provider
      * @param coreServerConfig  the core server config with the external url
      * @return the json File, if it already exists return null
      */
     private File generateJSON(OgcApiApi service, String collectionId, String tileMatrixSetId, int level, int row,
-                              int col, VectorTilesCache cache, CrsTransformation crsTransformation,
+                              int col, VectorTilesCache cache, CrsTransformerFactory crsTransformerFactory,
                               FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                               OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
 
@@ -329,7 +340,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                     .type(new MediaType("application", "json"))
                     .label("JSON")
                     .build();
-            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, null, null, null, uriCustomizer, mediaType, true, tile, i18n, language);
+            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, null, null, null, uriCustomizer, mediaType, true, tile, i18n, language);
         }
         return tileFileJson;
     }

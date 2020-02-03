@@ -9,7 +9,11 @@ package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
 import com.greghaskins.spectrum.Spectrum;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
@@ -21,11 +25,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.greghaskins.spectrum.dsl.specification.Specification.*;
+import static com.greghaskins.spectrum.dsl.specification.Specification.beforeEach;
+import static com.greghaskins.spectrum.dsl.specification.Specification.context;
+import static com.greghaskins.spectrum.dsl.specification.Specification.describe;
+import static com.greghaskins.spectrum.dsl.specification.Specification.it;
+import static com.greghaskins.spectrum.dsl.specification.Specification.xit;
 import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertEquals;
 
