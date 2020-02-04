@@ -11,8 +11,8 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
-import de.ii.xtraplatform.geometries.domain.CoordinatesWriterType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import org.apache.http.NameValuePair;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -120,16 +120,14 @@ public class AroundRelationsQuery {
         return Objects.nonNull(aroundRelationConfiguration) ? aroundRelationConfiguration.getRelations() : ImmutableList.of();
     }
 
-    public void addCoordinates(String coordinates, CoordinatesWriterType.Builder builder) throws IOException {
-        JtsCoordinatesWriter jtsCoordinatesWriter = new JtsCoordinatesWriter();
+    public void addCoordinates(String coordinates, ImmutableCoordinatesTransformer.Builder builder) throws IOException {
+        List<Coordinate> coordinateList = new ArrayList<>();
         Writer writer = builder
-                .format(jtsCoordinatesWriter)
+                .coordinatesWriter(ImmutableCoordinatesWriterJts.of(coordinateList, 2))
                 .build();
 
         writer.write(coordinates);
         writer.close();
-
-        List<Coordinate> coordinateList = jtsCoordinatesWriter.getCoordinates();
 
         coordinateSequences.add(coordinateList);
     }

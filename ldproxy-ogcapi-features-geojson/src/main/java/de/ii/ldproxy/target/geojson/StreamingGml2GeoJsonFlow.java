@@ -16,13 +16,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.target.geojson.GeoJsonMapping.GEO_JSON_TYPE;
-import de.ii.xtraplatform.geometries.domain.CoordinatesWriterType;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.GmlStreamParserFlow;
+import de.ii.xtraplatform.geometries.domain.CrsTransformer;
+import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
+import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesWriterJson;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
@@ -74,7 +76,7 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
 
     GEO_JSON_GEOMETRY_TYPE currentGeometryType;
     boolean currentGeometryNested;
-    CoordinatesWriterType.Builder cwBuilder;
+    ImmutableCoordinatesTransformer.Builder coordinatesTransformerBuilder;
     StringBuilder stringBuilder;
     OutputStream outputStream;
     Consumer<Throwable> failStage;
@@ -219,15 +221,16 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
                 currentGeometryType = GEO_JSON_GEOMETRY_TYPE.forGmlType(type);
             }
 
-            cwBuilder = CoordinatesWriterType.builder();
-            cwBuilder.format(new JsonCoordinateFormatter(json));
+            coordinatesTransformerBuilder = ImmutableCoordinatesTransformer.builder();
+            coordinatesTransformerBuilder.coordinatesWriter(ImmutableCoordinatesWriterJson.of(json, Optional.ofNullable(dimension).orElse(2)));
 
             if (crsTransformer != null) {
-                cwBuilder.transformer(crsTransformer);
+                coordinatesTransformerBuilder.crsTransformer(crsTransformer);
             }
 
             if (dimension != null) {
-                cwBuilder.dimension(dimension);
+                coordinatesTransformerBuilder.sourceDimension(dimension);
+                coordinatesTransformerBuilder.targetDimension(dimension);
             }
 
             json.writeObjectFieldStart("geometry");
@@ -259,7 +262,7 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
     public void onGeometryCoordinates(String text) throws IOException {
         if (currentGeometryType == null) return;
 
-        Writer coordinatesWriter = cwBuilder.build();
+        Writer coordinatesWriter = coordinatesTransformerBuilder.build();
         // TODO: coalesce
         coordinatesWriter.write(text);
         coordinatesWriter.close();
@@ -292,7 +295,7 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
 
         currentGeometryType = null;
         currentGeometryNested = false;
-        cwBuilder = null;
+        coordinatesTransformerBuilder = null;
     }
 
     private void writeValue(TargetMapping mapping, String value) throws IOException {

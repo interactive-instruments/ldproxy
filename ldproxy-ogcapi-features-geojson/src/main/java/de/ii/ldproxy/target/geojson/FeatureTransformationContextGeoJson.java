@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.util.TokenBuffer;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.xtraplatform.geometries.domain.CoordinatesWriterType;
+import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import org.immutables.value.Value;
 
 import java.io.IOException;
@@ -114,7 +115,7 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
 
         public abstract Optional<GEO_JSON_GEOMETRY_TYPE> getCurrentGeometryType();
 
-        public abstract Optional<CoordinatesWriterType.Builder> getCoordinatesWriterBuilder();
+        public abstract Optional<ImmutableCoordinatesTransformer.Builder> getCoordinatesWriterBuilder();
 
         @Value.Default
         public int getCurrentGeometryNestingChange() {

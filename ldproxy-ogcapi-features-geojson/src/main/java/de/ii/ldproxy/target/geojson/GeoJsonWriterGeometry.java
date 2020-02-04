@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.target.geojson;
 
+import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesWriterJson;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -130,7 +131,8 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
             Writer coordinatesWriter = transformationContext.getState()
                                                             .getCoordinatesWriterBuilder()
                                                             .get()
-                                                            .format(new JsonCoordinateFormatter(transformationContext.getJson()))
+                                                            //TODO
+                                                            .coordinatesWriter(ImmutableCoordinatesWriterJson.of(transformationContext.getJson(), 2))
                                                             .build();
             coordinatesWriter.write(transformationContext.getState()
                                                          .getCurrentValue()

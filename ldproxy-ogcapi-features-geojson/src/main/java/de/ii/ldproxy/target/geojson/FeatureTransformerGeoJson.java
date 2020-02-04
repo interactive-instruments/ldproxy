@@ -15,7 +15,6 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
-import de.ii.xtraplatform.geometries.domain.CoordinatesWriterType;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
 import de.ii.xtraplatform.feature.provider.api.FeatureType;
@@ -23,11 +22,17 @@ import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.transformer.api.FeaturePropertyValueTransformer;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
+import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.function.Consumer;
 
 import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMayThrow;
@@ -209,35 +214,38 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
             //    return;
             //}
 
-            CoordinatesWriterType.Builder cwBuilder = CoordinatesWriterType.builder();
+            ImmutableCoordinatesTransformer.Builder coordinatesTransformerBuilder = ImmutableCoordinatesTransformer.builder();
             //cwBuilder.format(new JsonCoordinateFormatter(transformationContext.getJson()));
 
             if (transformationContext.getCrsTransformer()
                                      .isPresent()) {
-                cwBuilder.transformer(transformationContext.getCrsTransformer()
+                coordinatesTransformerBuilder.crsTransformer(transformationContext.getCrsTransformer()
                                                            .get());
             }
 
+            //TODO: might set dimension in FromSql2?
             if (dimension != null) {
-                cwBuilder.dimension(dimension);
+                coordinatesTransformerBuilder.sourceDimension(transformationContext.getCrsTransformer().map(crsTransformer -> crsTransformer.getSourceDimension()).orElse(dimension));
+                coordinatesTransformerBuilder.targetDimension(dimension);
             }
 
             //TODO ext
             if (transformationContext.getMaxAllowableOffset() > 0) {
                 int minPoints = currentGeometryType == GEO_JSON_GEOMETRY_TYPE.MULTI_POLYGON || currentGeometryType == GEO_JSON_GEOMETRY_TYPE.POLYGON ? 4 : 2;
-                cwBuilder.simplifier(transformationContext.getMaxAllowableOffset(), minPoints);
+                coordinatesTransformerBuilder.maxAllowableOffset(transformationContext.getMaxAllowableOffset());
+                coordinatesTransformerBuilder.minNumberOfCoordinates(minPoints);
             }
 
             if (transformationContext.shouldSwapCoordinates()) {
-                cwBuilder.swap();
+                coordinatesTransformerBuilder.isSwapXY(true);
             }
 
             if (transformationContext.getGeometryPrecision() > 0) {
-                cwBuilder.precision(transformationContext.getGeometryPrecision());
+                coordinatesTransformerBuilder.precision(transformationContext.getGeometryPrecision());
             }
 
             if (Objects.equals(featureProperty.isForceReversePolygon(), true)) {
-                cwBuilder.reversepolygon();
+                coordinatesTransformerBuilder.isReverseOrder(true);
             }
 
             transformationContext.getState()
@@ -245,7 +253,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
             transformationContext.getState()
                                  .setCurrentGeometryType(currentGeometryType);
             transformationContext.getState()
-                                 .setCoordinatesWriterBuilder(cwBuilder);
+                                 .setCoordinatesWriterBuilder(coordinatesTransformerBuilder);
         }
     }
 

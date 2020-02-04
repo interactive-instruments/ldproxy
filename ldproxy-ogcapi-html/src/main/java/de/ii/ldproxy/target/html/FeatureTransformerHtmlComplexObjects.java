@@ -16,9 +16,6 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.xtraplatform.akka.http.HttpClient;
-import de.ii.xtraplatform.geometries.domain.CoordinateTuple;
-import de.ii.xtraplatform.geometries.domain.CoordinatesWriterType;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
@@ -26,15 +23,27 @@ import de.ii.xtraplatform.feature.provider.api.FeatureType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
+import de.ii.xtraplatform.geometries.domain.CoordinateTuple;
+import de.ii.xtraplatform.geometries.domain.CrsTransformer;
+import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import de.ii.xtraplatform.util.xml.XMLPathTracker;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalLong;
 
 /**
  * @author zahnen
@@ -58,7 +67,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
     private String serviceUrl;
 
     MICRODATA_GEOMETRY_TYPE currentGeometryType;
-    CoordinatesWriterType.Builder cwBuilder;
+    ImmutableCoordinatesTransformer.Builder coordinatesTransformerBuilder;
     private Writer coordinatesWriter;
     private Writer coordinatesOutput;
     private PropertyDTO currentGeometryPart;
@@ -460,21 +469,22 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
         coordinatesOutput = new StringWriter();
 
         // for around-relations
-        this.cwBuilder = CoordinatesWriterType.builder();
+        this.coordinatesTransformerBuilder = ImmutableCoordinatesTransformer.builder();
 
-        cwBuilder.format(new MicrodataCoordinatesFormatter(coordinatesOutput));
+        coordinatesTransformerBuilder.coordinatesWriter(ImmutableCoordinatesWriterMicrodata.of(coordinatesOutput, Optional.ofNullable(dimension).orElse(2)));
 
         if (transformationContext.getCrsTransformer()
                                  .isPresent()) {
-            cwBuilder.transformer(transformationContext.getCrsTransformer()
-                                                       .get());
+            coordinatesTransformerBuilder.crsTransformer(transformationContext.getCrsTransformer()
+                                                                           .get());
         }
 
         if (dimension != null) {
-            cwBuilder.dimension(dimension);
+            coordinatesTransformerBuilder.sourceDimension(dimension);
+            coordinatesTransformerBuilder.targetDimension(dimension);
         }
 
-        coordinatesWriter = cwBuilder.build();
+        coordinatesWriter = coordinatesTransformerBuilder.build();
 
 
         currentGeometryParts = 0;

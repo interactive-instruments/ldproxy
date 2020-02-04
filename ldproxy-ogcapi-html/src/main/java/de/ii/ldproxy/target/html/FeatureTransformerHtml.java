@@ -18,9 +18,6 @@ import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsConfiguration;
 import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsQuery;
 import de.ii.ldproxy.wfs3.aroundrelations.SimpleAroundRelationResolver;
 import de.ii.xtraplatform.akka.http.HttpClient;
-import de.ii.xtraplatform.geometries.domain.CoordinateTuple;
-import de.ii.xtraplatform.geometries.domain.CoordinatesWriterType;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
@@ -28,6 +25,9 @@ import de.ii.xtraplatform.feature.provider.api.FeatureType;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
+import de.ii.xtraplatform.geometries.domain.CoordinateTuple;
+import de.ii.xtraplatform.geometries.domain.CrsTransformer;
+import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +69,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
     private ObjectDTO currentFeature;
     private MICRODATA_GEOMETRY_TYPE currentGeometryType;
-    private CoordinatesWriterType.Builder cwBuilder;
+    private ImmutableCoordinatesTransformer.Builder coordinatesTransformerBuilder;
     private FeatureProperty currentFeatureProperty;
     private StringBuilder currentValue = new StringBuilder();
     private Writer coordinatesWriter;
@@ -381,19 +381,20 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
         coordinatesOutput = new StringWriter();
 
-        this.cwBuilder = CoordinatesWriterType.builder();
+        this.coordinatesTransformerBuilder = ImmutableCoordinatesTransformer.builder();
 
-        cwBuilder.format(new MicrodataCoordinatesFormatter(coordinatesOutput));
+        coordinatesTransformerBuilder.coordinatesWriter(ImmutableCoordinatesWriterMicrodata.of(coordinatesOutput, Optional.ofNullable(dimension).orElse(2)));
 
         if (Objects.nonNull(crsTransformer)) {
-            cwBuilder.transformer(crsTransformer);
+            coordinatesTransformerBuilder.crsTransformer(crsTransformer);
         }
 
         if (dimension != null) {
-            cwBuilder.dimension(dimension);
+            coordinatesTransformerBuilder.sourceDimension(dimension);
+            coordinatesTransformerBuilder.targetDimension(dimension);
         }
 
-        coordinatesWriter = cwBuilder.build();
+        coordinatesWriter = coordinatesTransformerBuilder.build();
 
 
         currentGeometryParts = 0;
@@ -470,7 +471,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
         }
 
         if (!isFeatureCollection && aroundRelationsQuery.isActive()) {
-            aroundRelationsQuery.addCoordinates(text, cwBuilder);
+            aroundRelationsQuery.addCoordinates(text, coordinatesTransformerBuilder);
         }
     }
 

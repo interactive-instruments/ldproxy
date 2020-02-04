@@ -13,9 +13,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.escape.Escaper;
 import com.google.common.xml.XmlEscapers;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.xtraplatform.geometries.domain.CoordinatesWriterType;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
 import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
+import de.ii.xtraplatform.geometries.domain.CrsTransformer;
+import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import de.ii.xtraplatform.util.xml.XMLNamespaceNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,7 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
     private boolean inCurrentPropertyStart;
     private boolean inCurrentPropertyText;
     private boolean inCoordinates;
-    private CoordinatesWriterType.Builder cwBuilder;
+    private ImmutableCoordinatesTransformer.Builder coordinatesTransformerBuilder;
     private Integer currentDimension = null;
     private boolean isLastPage;
     private String locations;
@@ -251,22 +252,23 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
         }
 
         if (inCoordinates) {
-            cwBuilder = CoordinatesWriterType.builder();
-            cwBuilder.format(new CoordinatesFormatterGml(writer));
+            coordinatesTransformerBuilder = ImmutableCoordinatesTransformer.builder();
+            coordinatesTransformerBuilder.coordinatesWriter(ImmutableCoordinatesWriterGml.of(writer, Optional.ofNullable(currentDimension).orElse(2)));
 
             if (crsTransformer != null) {
-                cwBuilder.transformer(crsTransformer);
+                coordinatesTransformerBuilder.crsTransformer(crsTransformer);
             }
 
             if (currentDimension != null) {
-                cwBuilder.dimension(currentDimension);
+                coordinatesTransformerBuilder.sourceDimension(currentDimension);
+                coordinatesTransformerBuilder.targetDimension(currentDimension);
             }
 
             if (maxAllowableOffset > 0) {
-                cwBuilder.simplifier(maxAllowableOffset, 2);
+                coordinatesTransformerBuilder.maxAllowableOffset(maxAllowableOffset);
             }
 
-            Writer coordinatesWriter = cwBuilder.build();
+            Writer coordinatesWriter = coordinatesTransformerBuilder.build();
             // TODO: coalesce
             coordinatesWriter.write(text);
             coordinatesWriter.close();
