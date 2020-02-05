@@ -9,31 +9,17 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureLinksGenerator;
-import de.ii.ldproxy.ogcapi.features.core.api.FeaturesLinksGenerator;
-import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationContextGeneric;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreQueriesHandler;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.*;
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
-import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
-import de.ii.xtraplatform.feature.provider.api.FeatureSourceStream;
-import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
+import de.ii.xtraplatform.feature.provider.api.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -213,11 +199,15 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
         // TODO add Content-Crs header
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
+        // TODO For now remove the "next" links from the headers since at this point we don't know, whether there will be a next page
 
         return response(streamingOutput,
                 requestContext.getMediaType(),
                 requestContext.getLanguage(),
-                includeLinkHeader ? links : null);
+                includeLinkHeader ? links.stream()
+                                         .filter(link -> !link.getRel().equalsIgnoreCase("next"))
+                                         .collect(ImmutableList.toImmutableList()) :
+                        null);
     }
 
     private Response response(Object entity, OgcApiMediaType mediaType, Optional<Locale> language,
