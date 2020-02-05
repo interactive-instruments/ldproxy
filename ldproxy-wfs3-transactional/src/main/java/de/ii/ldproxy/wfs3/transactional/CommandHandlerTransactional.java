@@ -16,7 +16,7 @@ import akka.stream.javadsl.StreamConverters;
 import akka.util.ByteString;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransactions;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;

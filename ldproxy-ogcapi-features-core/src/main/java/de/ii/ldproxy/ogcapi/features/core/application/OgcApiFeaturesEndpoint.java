@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
@@ -35,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.ServerErrorException;
@@ -132,18 +134,16 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                              @PathParam("collectionId") String collectionId) {
         checkAuthorization(api.getData(), optionalUser);
 
-        int minimumPageSize = getExtensionConfiguration(api.getData(), OgcApiFeaturesCoreConfiguration.class)
-                .map(OgcApiFeaturesCoreConfiguration::getMinimumPageSize)
-                .orElse(OgcApiFeaturesCoreConfiguration.MINIMUM_PAGE_SIZE);
-        int defaultPageSize = getExtensionConfiguration(api.getData(), OgcApiFeaturesCoreConfiguration.class)
-                .map(OgcApiFeaturesCoreConfiguration::getDefaultPageSize)
-                .orElse(OgcApiFeaturesCoreConfiguration.DEFAULT_PAGE_SIZE);
-        int maxPageSize = getExtensionConfiguration(api.getData(), OgcApiFeaturesCoreConfiguration.class)
-                .map(OgcApiFeaturesCoreConfiguration::getMaxPageSize)
-                .orElse(OgcApiFeaturesCoreConfiguration.MAX_PAGE_SIZE);
-        boolean showsFeatureSelfLink = getExtensionConfiguration(api.getData(), OgcApiFeaturesCoreConfiguration.class)
-                .map(OgcApiFeaturesCoreConfiguration::getShowsFeatureSelfLink)
-                .orElse(false);
+        FeatureTypeConfigurationOgcApi collectionData = api.getData()
+                                                       .getCollections()
+                                                       .get(collectionId);
+
+        OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(api.getData(), collectionData, OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
+
+        int minimumPageSize = coreConfiguration.getMinimumPageSize();
+        int defaultPageSize = coreConfiguration.getDefaultPageSize();
+        int maxPageSize = coreConfiguration.getMaxPageSize();
+        boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
         boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
@@ -151,12 +151,13 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
-        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api, collectionId, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()));
+        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()));
 
         OgcApiFeaturesCoreQueriesHandlerImpl.OgcApiQueryInputFeatures queryInput = new ImmutableOgcApiQueryInputFeatures.Builder()
                 .collectionId(collectionId)
                 .query(query)
-                .featureProvider(providers.getFeatureProvider(api.getData(), api.getData().getCollections().get(collectionId)))
+                .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
+                .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                 .defaultPageSize(Optional.of(defaultPageSize))
                 .showsFeatureSelfLink(showsFeatureSelfLink)
                 .includeHomeLink(includeHomeLink)
@@ -176,6 +177,12 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                             @PathParam("featureId") String featureId) {
         checkAuthorization(api.getData(), optionalUser);
 
+        FeatureTypeConfigurationOgcApi collectionData = api.getData()
+                                                           .getCollections()
+                                                           .get(collectionId);
+
+        OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(api.getData(), collectionData, OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
+
         boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
@@ -183,13 +190,14 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
-        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api, collectionId, toFlatMap(uriInfo.getQueryParameters()), featureId);
+        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, toFlatMap(uriInfo.getQueryParameters()), featureId);
 
         OgcApiFeaturesCoreQueriesHandlerImpl.OgcApiQueryInputFeature queryInput = new ImmutableOgcApiQueryInputFeature.Builder()
                 .collectionId(collectionId)
                 .featureId(featureId)
                 .query(query)
-                .featureProvider(providers.getFeatureProvider(api.getData(), api.getData().getCollections().get(collectionId)))
+                .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
+                .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                 .includeHomeLink(includeHomeLink)
                 .includeLinkHeader(includeLinkHeader)
                 .build();

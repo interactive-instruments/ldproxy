@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import de.ii.xtraplatform.geometries.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.util.Objects;
 

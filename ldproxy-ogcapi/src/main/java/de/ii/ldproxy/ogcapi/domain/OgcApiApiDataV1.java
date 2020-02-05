@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerServiceData;
@@ -24,11 +24,7 @@ import java.util.Objects;
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiApiDataV1.Builder.class)
 public abstract class OgcApiApiDataV1 extends FeatureTransformerServiceData<FeatureTypeConfigurationOgcApi> implements ExtendableConfiguration, ServiceData {
-/*
-    public static final String DEFAULT_CRS_URI = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
-    public static final EpsgCrs DEFAULT_CRS = new EpsgCrs(4326, true);
-    private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiDataV1.class);
-*/
+
     static abstract class Builder implements EntityDataBuilder<OgcApiApiDataV1> {
     }
 

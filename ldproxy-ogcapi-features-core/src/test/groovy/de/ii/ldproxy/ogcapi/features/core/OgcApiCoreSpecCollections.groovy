@@ -21,7 +21,7 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCollectionsE
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
 import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollection
 import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollections
-import de.ii.xtraplatform.geometries.domain.BoundingBox
+import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2
 import spock.lang.Specification
 

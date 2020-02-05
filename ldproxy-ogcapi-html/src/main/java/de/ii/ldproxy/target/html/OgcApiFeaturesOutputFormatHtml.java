@@ -33,10 +33,11 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.geometries.domain.BoundingBox;
-import de.ii.xtraplatform.geometries.domain.CrsTransformationException;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
-import de.ii.xtraplatform.geometries.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderDataV1;
@@ -63,8 +64,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
 
 @Component
 @Provides
@@ -496,13 +495,13 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
             BoundingBox spatialExtent = featureProvider.extents()
                                                        .getSpatialExtent(featureType.getId());
 
-            if (DEFAULT_CRS.equals(featureProvider.getData()
-                                                  .getNativeCrs())) {
+            if (OgcCrs.CRS84.equals(featureProvider.getData()
+                                             .getNativeCrs())) {
                 return Optional.ofNullable(spatialExtent);
             }
 
             Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(featureProvider.getData()
-                                                                                                       .getNativeCrs(), DEFAULT_CRS);
+                                                                                                       .getNativeCrs(), OgcCrs.CRS84);
             if (transformer.isPresent()) {
                 try {
                     return Optional.ofNullable(transformer.get()

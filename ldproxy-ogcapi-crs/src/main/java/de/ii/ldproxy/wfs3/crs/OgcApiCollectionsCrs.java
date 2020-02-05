@@ -15,7 +15,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionsExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -53,17 +54,21 @@ public class OgcApiCollectionsCrs implements OgcApiCollectionsExtension {
                                                 List<OgcApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
         if (isExtensionEnabled(apiData, CrsConfiguration.class)) {
+            String nativeCrsUri = providers.getFeatureProvider(apiData)
+                                           .getData()
+                                           .getNativeCrs()
+                                           .toUriString();
+            String defaultCrsUri = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class).get().getDefaultEpsgCrs().toUriString();
+            CrsConfiguration crsConfiguration = getExtensionConfiguration(apiData, CrsConfiguration.class).get();
+
             // list all CRSs as the list of default CRSs
             ImmutableList<String> crsList =
                     Stream.concat(
                             Stream.of(
-                                    OgcApiApiDataV2.DEFAULT_CRS_URI,
-                                    providers.getFeatureProvider(apiData)
-                                             .getData()
-                                           .getNativeCrs()
-                                           .toUriString()
+                                    defaultCrsUri,
+                                    nativeCrsUri
                             ),
-                            apiData.getAdditionalCrs()
+                            crsConfiguration.getAdditionalCrs()
                                    .stream()
                                    .map(EpsgCrs::toUriString)
                     )

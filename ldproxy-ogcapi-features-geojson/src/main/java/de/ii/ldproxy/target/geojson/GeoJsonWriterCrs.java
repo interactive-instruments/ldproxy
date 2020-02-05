@@ -8,8 +8,8 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -41,7 +41,7 @@ public class GeoJsonWriterCrs implements GeoJsonWriter {
     public void onStart(FeatureTransformationContextGeoJson transformationContext,
                         Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (transformationContext.isFeatureCollection()) {
-            writeCrs(transformationContext.getJson(), transformationContext.getCrsTransformer());
+            writeCrs(transformationContext.getJson(), transformationContext.getCrsTransformer(), transformationContext.getDefaultCrs());
         }
 
         // next chain for extensions
@@ -52,16 +52,17 @@ public class GeoJsonWriterCrs implements GeoJsonWriter {
     public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
                                Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (!transformationContext.isFeatureCollection()) {
-            writeCrs(transformationContext.getJson(), transformationContext.getCrsTransformer());
+            writeCrs(transformationContext.getJson(), transformationContext.getCrsTransformer(), transformationContext.getDefaultCrs());
         }
 
         // next chain for extensions
         next.accept(transformationContext);
     }
 
-    private void writeCrs(JsonGenerator json, Optional<CrsTransformer> crsTransformer) throws IOException {
+    private void writeCrs(JsonGenerator json, Optional<CrsTransformer> crsTransformer,
+                          EpsgCrs defaultCrs) throws IOException {
         if (crsTransformer.isPresent() && !Objects.equals(crsTransformer.get()
-                                                                        .getTargetCrs(), OgcApiApiDataV2.DEFAULT_CRS)) {
+                                                                        .getTargetCrs(), defaultCrs)) {
             json.writeStringField("crs", crsTransformer.get()
                                                        .getTargetCrs()
                                                        .toUriString());

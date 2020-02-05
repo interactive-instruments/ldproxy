@@ -21,8 +21,9 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
-import de.ii.xtraplatform.geometries.domain.CrsTransformationException;
-import de.ii.xtraplatform.geometries.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream2;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
@@ -119,7 +120,7 @@ public class TileGeneratorJson {
         double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units
         double maxAllowableOffsetCrs84 = 0;
         try {
-            maxAllowableOffsetCrs84 = tileMatrixSet.getMaxAllowableOffset(level, row, col, OgcApiApiDataV2.DEFAULT_CRS, crsTransformerFactory);
+            maxAllowableOffsetCrs84 = tileMatrixSet.getMaxAllowableOffset(level, row, col, OgcCrs.CRS84, crsTransformerFactory);
         } catch (CrsTransformationException e) {
             LOGGER.error("CRS transformation error: " + e.getMessage());
             e.printStackTrace();
@@ -133,12 +134,13 @@ public class TileGeneratorJson {
 
             List<String> propertiesList = VectorTile.getPropertiesList(queryParameters);
 
+            //TODO: support 3d?
             queryBuilder = ImmutableFeatureQuery.builder()
                                                 .type(collectionId)
                                                 .filter(filter)
                                                 .maxAllowableOffset(maxAllowableOffsetNative)
                                                 .fields(propertiesList)
-                                                .crs(OgcApiApiDataV2.DEFAULT_CRS);
+                                                .crs(OgcCrs.CRS84);
 
 
             if (filters != null && filterableFields != null) {
@@ -187,8 +189,9 @@ public class TileGeneratorJson {
                             .requestUri(uriCustomizer.build())
                             .mediaType(mediaType)
                             .build())
+                    //TODO: support 3d?
                     .crsTransformer(crsTransformerFactory.getTransformer(featureProvider.getData()
-                                                                                        .getNativeCrs(), OgcApiApiDataV2.DEFAULT_CRS))
+                                                                                        .getNativeCrs(), OgcCrs.CRS84))
                     .links(ogcApiLinks)
                     .isFeatureCollection(true)
                     .limit(0) //TODO
@@ -258,7 +261,7 @@ public class TileGeneratorJson {
         double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units
         double maxAllowableOffsetCrs84 = 0;
         try {
-            maxAllowableOffsetCrs84 = tileMatrixSet.getMaxAllowableOffset(level, row, col, OgcApiApiDataV2.DEFAULT_CRS, crsTransformerFactory);
+            maxAllowableOffsetCrs84 = tileMatrixSet.getMaxAllowableOffset(level, row, col, OgcCrs.CRS84, crsTransformerFactory);
         } catch (CrsTransformationException e) {
             LOGGER.error("CRS transformation error: " + e.getMessage());
             e.printStackTrace();

@@ -12,7 +12,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.xtraplatform.geometries.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -10,14 +10,15 @@ package de.ii.ldproxy.ogcapi.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.geometries.domain.BoundingBox;
-import de.ii.xtraplatform.geometries.domain.CrsTransformationException;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
-import de.ii.xtraplatform.geometries.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs.Force;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.EpsgCrs.Force;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -33,8 +34,6 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableOgcApiApiDataV2.Builder.class)
 public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfiguration {
 
-    public static final String DEFAULT_CRS_URI = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
-    public static final EpsgCrs DEFAULT_CRS = EpsgCrs.of(4326, Force.LON_LAT);
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiDataV2.class);
 
     static abstract class Builder implements EntityDataBuilder<OgcApiApiDataV2> {
@@ -62,8 +61,6 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     //(immutables attributeBuilder does not work with maps yet)
     //@JsonMerge
     public abstract ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getCollections();
-
-    public abstract List<EpsgCrs> getAdditionalCrs();
 
     @Override
     @Value.Derived
@@ -112,7 +109,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
                                                 Math.max(doubles[3], doubles2[3])})
                                        .orElse(null);
 
-        return Objects.nonNull(val) ? new BoundingBox(val[0], val[1], val[2], val[3], DEFAULT_CRS) : null;
+        return Objects.nonNull(val) ? new BoundingBox(val[0], val[1], val[2], val[3], OgcCrs.CRS84) : null;
     }
 
     /**
@@ -156,7 +153,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     }
 
     private BoundingBox transformSpatialExtent(BoundingBox spatialExtent, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
-        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(DEFAULT_CRS, targetCrs);
+        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
 
         if (Objects.nonNull(spatialExtent) && crsTransformer.isPresent()) {
             return crsTransformer.get().transformBoundingBox(spatialExtent);

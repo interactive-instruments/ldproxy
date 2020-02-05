@@ -14,8 +14,9 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
@@ -35,7 +36,6 @@ import static com.greghaskins.spectrum.dsl.specification.Specification.beforeEac
 import static com.greghaskins.spectrum.dsl.specification.Specification.context;
 import static com.greghaskins.spectrum.dsl.specification.Specification.describe;
 import static com.greghaskins.spectrum.dsl.specification.Specification.it;
-import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
 import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertEquals;
 
@@ -45,6 +45,7 @@ import static org.testng.Assert.assertEquals;
 @RunWith(Spectrum.class)
 public class GeoJsonWriterCrsSpec {
 
+    private final static EpsgCrs DEFAULT_CRS = OgcCrs.CRS84;
     private final static EpsgCrs OTHER_CRS = EpsgCrs.of(4258);
 
     interface AssertTransform {

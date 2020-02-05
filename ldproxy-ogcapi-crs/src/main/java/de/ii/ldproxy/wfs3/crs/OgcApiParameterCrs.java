@@ -13,7 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -21,10 +21,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-
-import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
-import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS_URI;
 
 
 @Component
@@ -70,7 +66,7 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
             return parameters;
         }
 
-        if (parameters.containsKey(BBOX) && parameters.containsKey(BBOX_CRS) && !isDefaultCrs(parameters.get(BBOX_CRS))) {
+        if (parameters.containsKey(BBOX) && parameters.containsKey(BBOX_CRS)) {
             Map<String, String> newParameters = new HashMap<>(parameters);
             newParameters.put(BBOX, parameters.get(BBOX) + "," + parameters.get(BBOX_CRS));
             return ImmutableMap.copyOf(newParameters);
@@ -84,21 +80,11 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiApiDataV2 datasetData) {
 
-        if (!isEnabledForApi(datasetData)) {
-            return queryBuilder;
-        }
-
-        if (parameters.containsKey(CRS) && !isDefaultCrs(parameters.get(CRS))) {
+        if (isEnabledForApi(datasetData) && parameters.containsKey(CRS)) {
             EpsgCrs targetCrs = EpsgCrs.fromString(parameters.get(CRS));
             queryBuilder.crs(targetCrs);
-        } else {
-            queryBuilder.crs(DEFAULT_CRS);
         }
 
         return queryBuilder;
-    }
-
-    private boolean isDefaultCrs(String crs) {
-        return Objects.equals(crs, DEFAULT_CRS_URI);
     }
 }

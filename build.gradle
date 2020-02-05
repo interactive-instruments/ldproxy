@@ -8,7 +8,7 @@ allprojects {
     group = 'de.interactive_instruments'
 }
 
-version = '2.0.0'
+version = '2.0.0-beta'
 
 dependencies {
     // features to include in this application

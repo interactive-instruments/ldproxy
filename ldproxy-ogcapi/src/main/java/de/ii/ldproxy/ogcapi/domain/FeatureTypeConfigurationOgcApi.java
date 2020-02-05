@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.domain;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.geometries.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilder;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueInstance;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;

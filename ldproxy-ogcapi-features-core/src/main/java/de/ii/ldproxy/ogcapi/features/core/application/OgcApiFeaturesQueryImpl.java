@@ -10,15 +10,15 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
-import de.ii.xtraplatform.geometries.domain.BoundingBox;
-import de.ii.xtraplatform.geometries.domain.CrsTransformationException;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
-import de.ii.xtraplatform.geometries.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
@@ -62,56 +62,41 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     }
 
     @Override
-    public FeatureQuery requestToFeatureQuery(OgcApiApi api, String collectionId, Map<String, String> parameters,
+    public FeatureQuery requestToFeatureQuery(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData, OgcApiFeaturesCoreConfiguration coreConfiguration, Map<String, String> parameters,
                                               String featureId) {
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            FeatureTypeConfigurationOgcApi featureTypeConfiguration = api.getData()
-                                                                         .getCollections()
-                                                                         .get(collectionId);
-            // check, if the requested collection exists
-            if (Objects.isNull(featureTypeConfiguration))
-                throw new NotFoundException();
-
-            parameters = parameterExtension.transformParameters(featureTypeConfiguration, parameters, api.getData());
+            parameters = parameterExtension.transformParameters(collectionData, parameters, apiData);
         }
 
         final String filter = String.format("IN ('%s')", featureId);
 
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
-                                                                                .type(collectionId)
-                                                                                .filter(filter);
+                                                                                .type(collectionData.getId())
+                                                                                .filter(filter)
+                                                                                .crs(coreConfiguration.getDefaultEpsgCrs());
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            parameterExtension.transformQuery(api.getData()
-                                                 .getCollections()
-                                                 .get(collectionId), queryBuilder, parameters, api.getData());
+            parameterExtension.transformQuery(collectionData, queryBuilder, parameters, apiData);
         }
 
         return queryBuilder.build();
     }
 
     @Override
-    public FeatureQuery requestToFeatureQuery(OgcApiApi api, String collectionId, int minimumPageSize,
+    public FeatureQuery requestToFeatureQuery(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
+                                              OgcApiFeaturesCoreConfiguration coreConfiguration,
+                                              int minimumPageSize,
                                               int defaultPageSize, int maxPageSize, Map<String, String> parameters) {
-
-        FeatureTypeConfigurationOgcApi featureTypeConfiguration = api.getData()
-                                                                     .getCollections()
-                                                                     .get(collectionId);
-        // check, if the requested collection exists
-        if (Objects.isNull(featureTypeConfiguration)) {
-            throw new NotFoundException();
-        }
-
-        final Map<String, String> filterableFields = featureTypeConfiguration.getExtension(OgcApiFeaturesCoreConfiguration.class)
+        final Map<String, String> filterableFields = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
                                                                              .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
                                                                              .orElse(ImmutableMap.of());
 
         Set<String> filterParameters = ImmutableSet.of();
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            filterParameters = parameterExtension.getFilterParameters(filterParameters, api.getData());
+            filterParameters = parameterExtension.getFilterParameters(filterParameters, apiData);
 
-            parameters = parameterExtension.transformParameters(featureTypeConfiguration, parameters, api.getData());
+            parameters = parameterExtension.transformParameters(collectionData, parameters, apiData);
         }
 
         final Map<String, String> filters = getFiltersFromQuery(parameters, filterableFields, filterParameters);
@@ -136,20 +121,19 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         final int offset = parseOffset(parameters.get("offset"));
 
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
-                                                                                .type(collectionId)
+                                                                                .type(collectionData.getId())
+                                                                                .crs(coreConfiguration.getDefaultEpsgCrs())
                                                                                 .limit(limit)
                                                                                 .offset(offset)
                                                                                 .hitsOnly(hitsOnly);
 
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            parameterExtension.transformQuery(api.getData()
-                                                 .getCollections()
-                                                 .get(collectionId), queryBuilder, parameters, api.getData());
+            parameterExtension.transformQuery(collectionData, queryBuilder, parameters, apiData);
         }
 
 
         if (!filters.isEmpty()) {
-            String cql = getCQLFromFilters(api, filters, filterableFields, filterParameters);
+            String cql = getCQLFromFilters(filters, filterableFields, filterParameters);
             LOGGER.debug("CQL {}", cql);
             queryBuilder.filter(cql);
         }
@@ -176,14 +160,14 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         return filters;
     }
 
-    private String getCQLFromFilters(OgcApiApi service, Map<String, String> filters,
+    private String getCQLFromFilters(Map<String, String> filters,
                                      Map<String, String> filterableFields, Set<String> filterParameters) {
         return filters.entrySet()
                       .stream()
                       .map(f -> {
                           if (f.getKey()
                                .equals("bbox")) {
-                              return bboxToCql(service, filterableFields.get(f.getKey()), f.getValue());
+                              return bboxToCql(filterableFields.get(f.getKey()), f.getValue());
                           }
                           if (f.getKey()
                                .equals("datetime")) {
@@ -203,7 +187,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                       .collect(Collectors.joining(" AND "));
     }
 
-    private String bboxToCql(OgcApiApi service, String geometryField, String bboxValue) {
+    private String bboxToCql(String geometryField, String bboxValue) {
         String[] bboxArray = bboxValue.split(",");
 
         if (bboxArray.length < 4)
@@ -218,7 +202,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             String bboxCrs = bboxArray.length > 4 ? bboxArray[4] : null;
             crs = Optional.ofNullable(bboxCrs)
                           .map(EpsgCrs::fromString)
-                          .orElse(OgcApiApiDataV2.DEFAULT_CRS);
+                          .orElse(OgcCrs.CRS84);
         } catch (NullPointerException e) {
             throw new BadRequestException("Error processing CRS of bounding box: '" + getBboxCrs(bboxArray) + "'");
         }
@@ -236,7 +220,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                 }
             }
             BoundingBox bbox = new BoundingBox(val1, val2, val3, val4, crs);
-            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.getEpsgCrs(), OgcApiApiDataV2.DEFAULT_CRS);
+            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.getEpsgCrs(), OgcCrs.CRS84);
             BoundingBox transformedBbox = transformer.isPresent() ? transformer.get().transformBoundingBox(bbox) : bbox;
             return String
                     .format(Locale.US, "BBOX(%s, %f, %f, %f, %f, '%s')", geometryField, transformedBbox.getXmin(), transformedBbox.getYmin(), transformedBbox.getXmax(), transformedBbox.getYmax(), transformedBbox.getEpsgCrs()
@@ -255,7 +239,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     }
 
     private String getBboxCrs(String[] bboxArray) {
-        return (bboxArray.length == 5 ? bboxArray[4] : OgcApiApiDataV2.DEFAULT_CRS.toUriString());
+        return (bboxArray.length == 5 ? bboxArray[4] : OgcCrs.CRS84_URI);
     }
 
     private String timeToCql(String timeField, String timeValue) {

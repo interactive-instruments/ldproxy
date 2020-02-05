@@ -15,6 +15,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
 import de.ii.xtraplatform.feature.provider.api.FeatureType;
@@ -225,8 +226,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
 
             //TODO: might set dimension in FromSql2?
             if (dimension != null) {
-                coordinatesTransformerBuilder.sourceDimension(transformationContext.getCrsTransformer().map(crsTransformer -> crsTransformer.getSourceDimension()).orElse(dimension));
-                coordinatesTransformerBuilder.targetDimension(dimension);
+                coordinatesTransformerBuilder.sourceDimension(transformationContext.getCrsTransformer().map(CrsTransformer::getSourceDimension).orElse(dimension));
+                coordinatesTransformerBuilder.targetDimension(transformationContext.getCrsTransformer().map(CrsTransformer::getTargetDimension).orElse(dimension));
             }
 
             //TODO ext

@@ -11,8 +11,9 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -26,9 +27,9 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS_URI;
 import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.BBOX_CRS;
 import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.CRS;
+import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84_URI;
 
 
 @Component
@@ -56,13 +57,16 @@ public class OgcApiCrsOpenApi implements OpenApiExtension {
     public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
         if (isEnabledForApi(datasetData)) {
 
+            String defaultCrsUri = getExtensionConfiguration(datasetData, OgcApiFeaturesCoreConfiguration.class).get().getDefaultEpsgCrs().toUriString();
+            CrsConfiguration crsConfiguration = getExtensionConfiguration(datasetData, CrsConfiguration.class).get();
+
             ImmutableSet<String> crsSet = ImmutableSet.<String>builder()
                     .add(providers.getFeatureProvider(datasetData)
                                   .getData()
                                     .getNativeCrs()
                                     .toUriString())
-                    .add(DEFAULT_CRS_URI)
-                    .addAll(datasetData.getAdditionalCrs()
+                    .add(defaultCrsUri)
+                    .addAll(crsConfiguration.getAdditionalCrs()
                                        .stream()
                                        .map(EpsgCrs::toUriString)
                                        .collect(Collectors.toList()))
@@ -77,7 +81,7 @@ public class OgcApiCrsOpenApi implements OpenApiExtension {
                            .style(Parameter.StyleEnum.FORM)
                            .schema(new StringSchema()
                                    ._enum(crsSet.asList())
-                                   ._default(DEFAULT_CRS_URI))
+                                   ._default(defaultCrsUri))
                            .explode(false));
 
             openAPI.getComponents()
@@ -88,7 +92,7 @@ public class OgcApiCrsOpenApi implements OpenApiExtension {
                            .required(false)
                            .schema(new StringSchema()
                                    ._enum(crsSet.asList())
-                                   ._default(DEFAULT_CRS_URI))
+                                   ._default(CRS84_URI))
                            .style(Parameter.StyleEnum.FORM)
                            .explode(false)
                    );

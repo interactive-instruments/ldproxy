@@ -13,11 +13,12 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
-import de.ii.xtraplatform.geometries.domain.BoundingBox;
-import de.ii.xtraplatform.geometries.domain.CrsTransformationException;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
-import de.ii.xtraplatform.geometries.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.slf4j.LoggerFactory;
@@ -290,7 +291,7 @@ class VectorTile {
     public AffineTransformation createTransformLonLatToTile(
             CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
 
-        BoundingBox bbox = getBoundingBox(OgcApiApiDataV2.DEFAULT_CRS, crsTransformerFactory);
+        BoundingBox bbox = getBoundingBox(OgcCrs.CRS84, crsTransformerFactory);
 
         double lonMin = bbox.getXmin();
         double lonMax = bbox.getXmax();

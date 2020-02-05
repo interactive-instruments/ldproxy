@@ -16,7 +16,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -60,6 +61,9 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
                                            .getData()
                                            .getNativeCrs()
                                            .toUriString();
+            String defaultCrsUri = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class).get().getDefaultEpsgCrs().toUriString();
+            CrsConfiguration crsConfiguration = getExtensionConfiguration(apiData, CrsConfiguration.class).get();
+
             ImmutableList<String> crsList;
             if (isNested) {
                 // just reference the default list of coordinate reference systems
@@ -68,10 +72,10 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
                 // this is just the collection resource, so no default to reference; include all CRSs
                 crsList = Stream.concat(
                         Stream.of(
-                                OgcApiApiDataV2.DEFAULT_CRS_URI,
+                                defaultCrsUri,
                                 nativeCrsUri
                         ),
-                        apiData.getAdditionalCrs()
+                        crsConfiguration.getAdditionalCrs()
                                .stream()
                                .map(EpsgCrs::toUriString)
                 )

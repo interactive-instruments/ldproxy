@@ -9,7 +9,10 @@ package de.ii.ldproxy.wfs3.crs;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
+
+import java.util.List;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -21,4 +24,7 @@ public abstract class CrsConfiguration implements ExtensionConfiguration {
     public boolean getEnabled() {
         return true;
     }
+
+    //TODO: migrate
+    public abstract List<EpsgCrs> getAdditionalCrs();
 }

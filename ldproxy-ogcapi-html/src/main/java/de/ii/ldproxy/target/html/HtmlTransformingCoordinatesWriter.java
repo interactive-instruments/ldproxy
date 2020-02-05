@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.target.html;
 
-import de.ii.xtraplatform.geometries.domain.CoordinateTuple;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CoordinateTuple;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.geometries.domain.LazyStringCoordinateTuple;
 
 import java.io.IOException;

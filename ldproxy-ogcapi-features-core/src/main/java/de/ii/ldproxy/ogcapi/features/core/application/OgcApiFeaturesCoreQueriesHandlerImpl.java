@@ -24,9 +24,9 @@ import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationCont
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreQueriesHandler;
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
-import de.ii.xtraplatform.geometries.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
@@ -53,7 +53,6 @@ import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
 
 @Component
 @Instantiate
@@ -113,7 +112,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                                                        .orElseThrow(NotAcceptableException::new);
 
         return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
-                queryInput.getIncludeHomeLink(), queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader());
+                queryInput.getIncludeHomeLink(), queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
     }
 
     private Response getItemResponse(OgcApiQueryInputFeature queryInput,
@@ -141,7 +140,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         }
 
         return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), false, persistentUri, outputFormat, false, Optional.empty(),
-                queryInput.getIncludeHomeLink(), false, queryInput.getIncludeLinkHeader());
+                queryInput.getIncludeHomeLink(), false, queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
     }
 
     private Response getItemsResponse(OgcApiApi api, OgcApiRequestContext requestContext, String collectionId,
@@ -150,13 +149,14 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                                       OgcApiFeatureFormatExtension outputFormat,
                                       boolean onlyHitsIfMore, Optional<Integer> defaultPageSize,
                                       boolean includeHomeLink,
-                                      boolean showsFeatureSelfLink, boolean includeLinkHeader) {
+                                      boolean showsFeatureSelfLink, boolean includeLinkHeader,
+                                      EpsgCrs defaultCrs) {
 
         ensureCollectionIdExists(api.getData(), collectionId);
         ensureFeatureProviderSupportsQueries(featureProvider);
 
         EpsgCrs sourceCrs = featureProvider.getData().getNativeCrs();
-        EpsgCrs targetCrs = Optional.ofNullable(query.getCrs()).orElse(DEFAULT_CRS);
+        EpsgCrs targetCrs = Optional.ofNullable(query.getCrs()).orElse(defaultCrs);
         //TODO: warmup on service start
         Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
 
@@ -175,6 +175,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
+                .defaultCrs(defaultCrs)
                 .links(links)
                 .isFeatureCollection(isCollection)
                 .isHitsOnly(query.hitsOnly())

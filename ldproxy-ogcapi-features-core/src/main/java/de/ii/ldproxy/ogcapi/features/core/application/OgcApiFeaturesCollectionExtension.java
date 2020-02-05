@@ -21,10 +21,11 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
-import de.ii.xtraplatform.geometries.domain.BoundingBox;
-import de.ii.xtraplatform.geometries.domain.CrsTransformationException;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
-import de.ii.xtraplatform.geometries.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -35,8 +36,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2.DEFAULT_CRS;
 
 @Component
 @Provides
@@ -200,13 +199,13 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
             BoundingBox spatialExtent = featureProvider.extents()
                                                        .getSpatialExtent(featureType.getId());
 
-            if (DEFAULT_CRS.equals(featureProvider.getData()
-                                                  .getNativeCrs())) {
+            if (OgcCrs.CRS84.equals(featureProvider.getData()
+                                             .getNativeCrs())) {
                 return spatialExtent;
             }
 
             Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(featureProvider.getData()
-                                                                                                       .getNativeCrs(), DEFAULT_CRS);
+                                                                                                       .getNativeCrs(), OgcCrs.CRS84);
             if (transformer.isPresent()) {
                 try {
                     return transformer.get().transformBoundingBox(spatialExtent);

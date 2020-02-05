@@ -14,7 +14,7 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.*;
-import de.ii.xtraplatform.geometries.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
