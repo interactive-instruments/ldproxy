@@ -1,6 +1,4 @@
 
-version = '1.4.1'
-
 dependencies {
     provided project(':ldproxy-codelists')
     provided project(":ldproxy-ogcapi")

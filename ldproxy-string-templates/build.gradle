@@ -1,6 +1,4 @@
 
-version = '1.4.0'
-
 dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'

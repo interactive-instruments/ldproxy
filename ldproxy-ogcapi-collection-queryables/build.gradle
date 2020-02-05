@@ -1,6 +1,4 @@
 
-version = '2.0.0-SNAPSHOT'
-
 dependencies {
     provided project(":ldproxy-ogcapi")
     provided project(":ldproxy-ogcapi-features-core")

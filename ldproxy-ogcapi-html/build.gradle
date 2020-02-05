@@ -1,6 +1,4 @@
 
-version = '1.4.1'
-
 repositories {
     maven {
         url "https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases"
