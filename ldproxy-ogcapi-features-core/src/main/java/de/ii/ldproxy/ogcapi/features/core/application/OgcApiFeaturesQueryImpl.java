@@ -13,12 +13,14 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
@@ -30,13 +32,11 @@ import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,11 +54,14 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
     private final OgcApiExtensionRegistry wfs3ExtensionRegistry;
     private final CrsTransformerFactory crsTransformerFactory;
+    private final OgcApiFeatureCoreProviders providers;
 
     public OgcApiFeaturesQueryImpl(@Requires OgcApiExtensionRegistry wfs3ExtensionRegistry,
-                                   @Requires CrsTransformerFactory crsTransformerFactory) {
+                                   @Requires CrsTransformerFactory crsTransformerFactory,
+                                   @Requires OgcApiFeatureCoreProviders providers) {
         this.wfs3ExtensionRegistry = wfs3ExtensionRegistry;
         this.crsTransformerFactory = crsTransformerFactory;
+        this.providers = providers;
     }
 
     @Override
@@ -133,7 +136,9 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
 
         if (!filters.isEmpty()) {
-            String cql = getCQLFromFilters(filters, filterableFields, filterParameters);
+            EpsgCrs providerCrs = providers.getFeatureProvider(apiData, collectionData).getData().getNativeCrs();
+
+            String cql = getCQLFromFilters(filters, filterableFields, filterParameters, providerCrs);
             LOGGER.debug("CQL {}", cql);
             queryBuilder.filter(cql);
         }
@@ -161,13 +166,13 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     }
 
     private String getCQLFromFilters(Map<String, String> filters,
-                                     Map<String, String> filterableFields, Set<String> filterParameters) {
+                                     Map<String, String> filterableFields, Set<String> filterParameters, EpsgCrs providerCrs) {
         return filters.entrySet()
                       .stream()
                       .map(f -> {
                           if (f.getKey()
                                .equals("bbox")) {
-                              return bboxToCql(filterableFields.get(f.getKey()), f.getValue());
+                              return bboxToCql(filterableFields.get(f.getKey()), f.getValue(), providerCrs);
                           }
                           if (f.getKey()
                                .equals("datetime")) {
@@ -187,7 +192,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                       .collect(Collectors.joining(" AND "));
     }
 
-    private String bboxToCql(String geometryField, String bboxValue) {
+    private String bboxToCql(String geometryField, String bboxValue, EpsgCrs providerCrs) {
         String[] bboxArray = bboxValue.split(",");
 
         if (bboxArray.length < 4)
@@ -197,10 +202,10 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             throw new BadRequestException("The parameter 'bbox' has more than four values.");
 
         //TODO: check if crs is supported by this api
-        EpsgCrs crs;
+        EpsgCrs sourceCrs;
         try {
             String bboxCrs = bboxArray.length > 4 ? bboxArray[4] : null;
-            crs = Optional.ofNullable(bboxCrs)
+            sourceCrs = Optional.ofNullable(bboxCrs)
                           .map(EpsgCrs::fromString)
                           .orElse(OgcCrs.CRS84);
         } catch (NullPointerException e) {
@@ -219,9 +224,11 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                     throw new BadRequestException("The coordinates of the bounding box '" + getBbox(bboxArray) + "' do not form a valid WGS 84 bounding box");
                 }
             }
-            BoundingBox bbox = new BoundingBox(val1, val2, val3, val4, crs);
-            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.getEpsgCrs(), OgcCrs.CRS84);
+            BoundingBox bbox = new BoundingBox(val1, val2, val3, val4, sourceCrs);
+
+            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(sourceCrs, providerCrs);
             BoundingBox transformedBbox = transformer.isPresent() ? transformer.get().transformBoundingBox(bbox) : bbox;
+
             return String
                     .format(Locale.US, "BBOX(%s, %f, %f, %f, %f, '%s')", geometryField, transformedBbox.getXmin(), transformedBbox.getYmin(), transformedBbox.getXmax(), transformedBbox.getYmax(), transformedBbox.getEpsgCrs()
                                                                                                                                                                                                                    .toSimpleString());
