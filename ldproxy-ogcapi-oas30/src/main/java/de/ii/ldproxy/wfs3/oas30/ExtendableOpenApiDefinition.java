@@ -87,6 +87,7 @@ public class ExtendableOpenApiDefinition {
 
             openAPI.servers(ImmutableList.of(new Server().url(requestUriCustomizer.copy()
                     .clearParameters()
+                    .ensureNoTrailingSlash()
                     .removeLastPathSegment("api")
                     .toString())));
 
