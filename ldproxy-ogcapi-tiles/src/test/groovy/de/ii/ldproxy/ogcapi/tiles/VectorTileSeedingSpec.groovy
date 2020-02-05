@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles
 
 import de.ii.xtraplatform.crs.domain.BoundingBox
-import de.ii.xtraplatform.geometries.domain.EpsgCrs
+import de.ii.xtraplatform.crs.domain.EpsgCrs
 import spock.lang.Specification
 
 class VectorTileSeedingSpec extends Specification{

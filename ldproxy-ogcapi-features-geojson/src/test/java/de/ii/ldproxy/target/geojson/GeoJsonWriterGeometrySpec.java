@@ -123,7 +123,7 @@ public class GeoJsonWriterGeometrySpec {
         transformer.onPropertyStart(propertyMapping, ImmutableList.of());
         transformer.onPropertyText(value1);
         transformer.onPropertyEnd();
-        transformer.onGeometryStart(geometryMapping, SimpleFeatureGeometry.MULTI_POLYGON, null);
+        transformer.onGeometryStart(geometryMapping, SimpleFeatureGeometry.MULTI_POLYGON, 2);
 
         for (Integer depth : nestingPattern) {
             for (int i = 0; i < depth; i++) {

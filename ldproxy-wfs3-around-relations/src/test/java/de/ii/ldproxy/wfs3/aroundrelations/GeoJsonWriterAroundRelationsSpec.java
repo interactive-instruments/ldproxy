@@ -15,6 +15,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQ
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.*;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
@@ -246,7 +247,7 @@ public class GeoJsonWriterAroundRelationsSpec {
 
         transformer.onStart(OptionalLong.empty(), OptionalLong.empty());
         transformer.onFeatureStart(null);
-        transformer.onGeometryStart(geometryMapping, SimpleFeatureGeometry.POLYGON, null);
+        transformer.onGeometryStart(geometryMapping, SimpleFeatureGeometry.POLYGON, 2);
         transformer.onGeometryNestedStart();
         transformer.onGeometryCoordinates(coordinates);
         transformer.onGeometryNestedEnd();
@@ -262,6 +263,7 @@ public class GeoJsonWriterAroundRelationsSpec {
                                                                             URI query) throws URISyntaxException {
         return ImmutableFeatureTransformationContextGeoJson.builder()
                                                            .crsTransformer(Optional.empty())
+                                                           .defaultCrs(OgcCrs.CRS84)
                                                            .apiData(new ImmutableOgcApiApiDataV2.Builder()
                                                                    .id("s")
                                                                    .serviceType("WFS3")

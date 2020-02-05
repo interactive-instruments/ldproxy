@@ -121,7 +121,7 @@ public class AroundRelationsQuery {
     }
 
     public void addCoordinates(String coordinates, ImmutableCoordinatesTransformer.Builder builder) throws IOException {
-        List<Coordinate> coordinateList = new ArrayList<>();
+        ArrayList<Coordinate> coordinateList = new ArrayList<>();
         Writer writer = builder
                 .coordinatesWriter(ImmutableCoordinatesWriterJts.of(coordinateList, 2))
                 .build();

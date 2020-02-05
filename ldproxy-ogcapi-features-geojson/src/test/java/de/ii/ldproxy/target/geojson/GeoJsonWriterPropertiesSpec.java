@@ -14,8 +14,9 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.geometries.domain.CrsTransformer;
-import de.ii.xtraplatform.geometries.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
 import org.junit.runner.RunWith;
@@ -314,6 +315,7 @@ public class GeoJsonWriterPropertiesSpec {
 
         return ImmutableFeatureTransformationContextGeoJson.builder()
                                                            .crsTransformer(Optional.ofNullable(crsTransformer))
+                                                           .defaultCrs(OgcCrs.CRS84)
                                                            .apiData(new ImmutableOgcApiApiDataV2.Builder()
                                                                    .id("s")
                                                                    .serviceType("WFS3")

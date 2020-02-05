@@ -9,6 +9,7 @@ package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -30,6 +31,7 @@ public class GeoJsonWriterSetupUtil {
 
     static FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, boolean isCollection) throws URISyntaxException {
         return ImmutableFeatureTransformationContextGeoJson.builder()
+                                                           .defaultCrs(OgcCrs.CRS84)
                                                            .apiData(new ImmutableOgcApiApiDataV2.Builder()
                                                                                                 .id("s")
                                                                                                 .serviceType("WFS3")
