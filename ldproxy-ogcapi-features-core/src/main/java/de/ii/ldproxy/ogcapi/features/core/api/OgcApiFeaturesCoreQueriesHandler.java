@@ -12,8 +12,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
-import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
 import org.immutables.value.Value;
 
 import java.util.Map;

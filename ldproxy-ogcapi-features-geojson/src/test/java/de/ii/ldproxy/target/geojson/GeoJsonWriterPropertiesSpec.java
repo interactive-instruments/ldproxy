@@ -17,7 +17,7 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;

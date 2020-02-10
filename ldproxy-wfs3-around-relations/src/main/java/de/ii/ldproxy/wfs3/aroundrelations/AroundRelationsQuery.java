@@ -11,7 +11,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
-import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import org.apache.http.NameValuePair;
 import org.locationtech.jts.geom.Coordinate;

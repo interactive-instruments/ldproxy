@@ -9,7 +9,7 @@ package de.ii.ldproxy.target.geojson;
 
 import de.ii.ldproxy.ogcapi.domain.AbstractOgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
-import de.ii.xtraplatform.feature.provider.api.TargetMapping;
+import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 
 import java.util.List;
 

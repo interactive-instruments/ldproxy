@@ -23,6 +23,12 @@ import java.util.List;
 //TODO: also allow on global level (could we just use the same configuration there?)
 public abstract class FilterTransformersConfiguration implements ExtensionConfiguration {
 
+    @Value.Default
+    @Override
+    public boolean getEnabled() {
+        return true;
+    }
+
     public abstract List<FilterTransformerConfiguration> getTransformers();
 
     @Override

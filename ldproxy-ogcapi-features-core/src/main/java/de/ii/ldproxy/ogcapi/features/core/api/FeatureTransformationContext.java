@@ -14,8 +14,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
-import de.ii.xtraplatform.feature.provider.api.FeatureType;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureType;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

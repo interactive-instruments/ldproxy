@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 
 import java.util.Map;
 import java.util.Set;

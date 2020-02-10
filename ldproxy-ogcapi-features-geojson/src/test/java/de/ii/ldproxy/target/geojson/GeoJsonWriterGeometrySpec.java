@@ -10,11 +10,11 @@ package de.ii.ldproxy.target.geojson;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
-import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
-import de.ii.xtraplatform.feature.provider.api.FeatureType;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureType;
-import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;

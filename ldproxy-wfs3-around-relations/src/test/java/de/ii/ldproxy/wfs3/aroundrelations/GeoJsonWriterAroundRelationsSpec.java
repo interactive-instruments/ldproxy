@@ -16,9 +16,9 @@ import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCor
 import de.ii.ldproxy.target.geojson.*;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
-import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;

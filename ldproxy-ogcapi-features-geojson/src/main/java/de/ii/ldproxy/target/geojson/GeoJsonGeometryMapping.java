@@ -9,8 +9,8 @@ package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
-import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.provider.api.TargetMapping;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.SimpleFeatureGeometryFrom;
 
 /**

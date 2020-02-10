@@ -11,11 +11,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.codelists.ImmutableFeaturePropertyTransformerCodelist;
 import de.ii.ldproxy.wfs3.templates.ImmutableFeaturePropertyTransformerStringFormat;
-import de.ii.xtraplatform.feature.transformer.api.FeaturePropertySchemaTransformer;
-import de.ii.xtraplatform.feature.transformer.api.FeaturePropertyValueTransformer;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeaturePropertyTransformerDateFormat;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeaturePropertyTransformerRemove;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableFeaturePropertyTransformerRename;
+import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
+import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
+import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerDateFormat;
+import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerRemove;
+import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerRename;
 import org.immutables.value.Value;
 
 import java.util.ArrayList;

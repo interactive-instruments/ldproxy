@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.target.geojson;
 
-import de.ii.xtraplatform.feature.provider.api.TargetMapping;
+import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 
 import javax.annotation.Nullable;
 

@@ -17,7 +17,7 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

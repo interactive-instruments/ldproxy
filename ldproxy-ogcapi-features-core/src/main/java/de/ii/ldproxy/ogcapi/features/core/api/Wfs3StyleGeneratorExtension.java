@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.features.core.api;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
-import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 
 public interface Wfs3StyleGeneratorExtension extends OgcApiExtension {
 

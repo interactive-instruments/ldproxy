@@ -22,7 +22,7 @@ import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
 import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollection
 import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollections
 import de.ii.xtraplatform.crs.domain.BoundingBox
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider2
+import de.ii.xtraplatform.features.domain.FeatureProvider2
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType

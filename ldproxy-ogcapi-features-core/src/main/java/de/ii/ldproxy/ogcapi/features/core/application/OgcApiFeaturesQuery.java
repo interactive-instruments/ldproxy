@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
 
 import java.util.Map;
 

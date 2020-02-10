@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.ii.xtraplatform.feature.provider.api.TargetMapping;
+import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 
 
 public abstract class AbstractOgcApiFeaturesGenericMapping<T extends Enum<T>> implements TargetMapping<T> {

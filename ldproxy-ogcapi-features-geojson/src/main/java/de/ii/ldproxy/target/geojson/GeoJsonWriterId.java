@@ -7,9 +7,7 @@
  */
 package de.ii.ldproxy.target.geojson;
 
-import de.ii.ldproxy.target.geojson.GeoJsonMapping.GEO_JSON_TYPE;
-import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
-import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

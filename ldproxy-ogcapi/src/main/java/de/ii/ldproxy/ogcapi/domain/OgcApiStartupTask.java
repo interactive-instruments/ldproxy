@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 
 import java.util.Map;
 

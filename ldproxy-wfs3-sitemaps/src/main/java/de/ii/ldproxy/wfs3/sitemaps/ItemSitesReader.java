@@ -8,10 +8,10 @@
 package de.ii.ldproxy.wfs3.sitemaps;
 
 import de.ii.ldproxy.ogcapi.domain.AbstractOgcApiFeaturesGenericMapping;
-import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
-import de.ii.xtraplatform.feature.provider.api.FeatureType;
-import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.FeatureType;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 
 import java.util.ArrayList;
 import java.util.List;

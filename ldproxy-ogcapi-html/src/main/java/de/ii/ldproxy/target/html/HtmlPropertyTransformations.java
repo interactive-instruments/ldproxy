@@ -8,10 +8,10 @@
 package de.ii.ldproxy.target.html;
 
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
-import de.ii.xtraplatform.feature.transformer.api.FeaturePropertySchemaTransformer;
-import de.ii.xtraplatform.feature.transformer.api.FeaturePropertyTransformations;
-import de.ii.xtraplatform.feature.transformer.api.FeaturePropertyValueTransformer;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
+import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformations;
+import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
 import org.immutables.value.Value;
 
 import java.util.Locale;

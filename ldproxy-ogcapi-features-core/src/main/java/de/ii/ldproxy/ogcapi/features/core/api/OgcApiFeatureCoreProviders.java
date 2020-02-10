@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.features.core.api;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.xtraplatform.feature.provider.api.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 
 public interface OgcApiFeatureCoreProviders {
 

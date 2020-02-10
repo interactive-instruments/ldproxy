@@ -8,7 +8,7 @@
 package de.ii.ldproxy.codelists;
 
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
-import de.ii.xtraplatform.feature.transformer.api.FeaturePropertyValueTransformer;
+import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

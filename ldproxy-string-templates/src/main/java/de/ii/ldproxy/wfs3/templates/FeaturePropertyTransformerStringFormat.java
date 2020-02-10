@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.templates;
 
-import de.ii.xtraplatform.feature.transformer.api.FeaturePropertyValueTransformer;
+import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
 import org.immutables.value.Value;
 
 @Value.Immutable

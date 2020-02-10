@@ -9,8 +9,8 @@ package de.ii.ldproxy.ogcapi.features.core.api;
 
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.xtraplatform.feature.provider.api.FeatureConsumer;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.FeatureConsumer;
+import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 
 import java.util.Locale;

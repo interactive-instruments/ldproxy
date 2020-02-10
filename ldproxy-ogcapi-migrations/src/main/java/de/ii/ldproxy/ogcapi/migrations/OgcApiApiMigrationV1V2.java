@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -33,17 +33,19 @@ import de.ii.xtraplatform.entity.api.EntityData;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.event.store.EntityMigration;
 import de.ii.xtraplatform.event.store.Identifier;
-import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
-import de.ii.xtraplatform.feature.provider.api.FeatureProviderDataV1;
-import de.ii.xtraplatform.feature.provider.api.FeatureType;
-import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
-import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProviderDataV1;
-import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureType;
 import de.ii.xtraplatform.feature.provider.sql.domain.ConnectionInfoSql;
 import de.ii.xtraplatform.feature.provider.sql.domain.ImmutableConnectionInfoSql;
+import de.ii.xtraplatform.feature.provider.wfs.domain.ConnectionInfoWfsHttp;
+import de.ii.xtraplatform.feature.provider.wfs.domain.ImmutableConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.transformer.api.FeatureProviderDataTransformer;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
+import de.ii.xtraplatform.features.domain.ConnectionInfo;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureType;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureProperty;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureProviderDataV1;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureType;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -106,7 +108,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                             .entrySet()
                                                                             .stream()
                                                                             .filter(entry -> entityData.getFeatureProvider()
-                                                                                                       .getMappings().containsKey(entry.getValue().getId()))
+                                                                                                       .getMappings()
+                                                                                                       .containsKey(entry.getValue()
+                                                                                                                         .getId()))
                                                                             .map(entry -> {
 
                                                                                 FeatureTypeConfigurationOgcApi collection = entry.getValue();
@@ -132,8 +136,6 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                                 newCoreConfiguration.transformations(coreTransformations);
 
 
-
-
                                                                                 Optional<HtmlConfiguration> htmlConfiguration = collection.getExtension(HtmlConfiguration.class);
 
                                                                                 ImmutableHtmlConfiguration.Builder newHtmlConfiguration = new ImmutableHtmlConfiguration.Builder();
@@ -142,8 +144,8 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
 
 
                                                                                 Map<String, FeatureTypeMapping2> htmlTransformations = getHtmlTransformations(entityData.getFeatureProvider()
-                                                                                                                                                                    .getMappings()
-                                                                                                                                                                    .get(collection.getId()));
+                                                                                                                                                                        .getMappings()
+                                                                                                                                                                        .get(collection.getId()));
 
                                                                                 newHtmlConfiguration.transformations(htmlTransformations);
 
@@ -221,7 +223,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
         FeatureProviderDataTransformer featureProvider = entityData.getFeatureProvider();
         String providerType = featureProvider.getProviderType();
 
-        if (Objects.equals(providerType, "PGIS")) {
+        if (Objects.equals(providerType, "PGIS") || Objects.equals(providerType, "WFS")) {
 
             Map<String, FeatureType> featureTypes = featureProvider.getMappings()
                                                                    .entrySet()
@@ -230,6 +232,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
 
                                                                        ImmutableFeatureType.Builder featureType = new ImmutableFeatureType.Builder()
                                                                                .name(entry.getKey());
+                                                                       String[] featureTypeName = new String[1];
 
                                                                        entry.getValue()
                                                                             .getMappings()
@@ -239,8 +242,10 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                             .forEach(entry2 -> {
                                                                                 String path = entry2.getKey();
                                                                                 SourcePathMapping mappings = entry2.getValue();
-
-                                                                                boolean isFeatureTypeMapping = path.indexOf("/") == path.lastIndexOf("/");
+                                                                                boolean isFeatureTypeMapping = isFeatureTypeMapping(providerType, path);
+                                                                                if (isFeatureTypeMapping) {
+                                                                                    featureTypeName[0] = path;
+                                                                                }
 
                                                                                 Optional<OgcApiFeaturesGenericMapping> general;
                                                                                 try {
@@ -253,7 +258,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                                 Optional<GeoJsonPropertyMapping> json;
                                                                                 try {
                                                                                     json = Optional.ofNullable((GeoJsonPropertyMapping) mappings.getMappings()
-                                                                                                                                                .get("general"));
+                                                                                                                                                .get("application/geo+json"));
                                                                                 } catch (Throwable e) {
                                                                                     json = Optional.empty();
                                                                                 }
@@ -262,7 +267,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                                 Optional<MicrodataPropertyMapping> html;
                                                                                 try {
                                                                                     html = Optional.ofNullable((MicrodataPropertyMapping) mappings.getMappings()
-                                                                                                                                                  .get("general"));
+                                                                                                                                                  .get("text/html"));
                                                                                 } catch (Throwable e) {
                                                                                     html = Optional.empty();
                                                                                 }
@@ -318,7 +323,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
 
                                                                                     FeatureProperty featureProperty = new ImmutableFeatureProperty.Builder()
                                                                                             .name(name)
-                                                                                            .path(path)
+                                                                                            .path(adjustPath(path, featureTypeName[0], providerType, featureProvider.getConnectionInfo()))
                                                                                             .type(type)
                                                                                             .role(role)
                                                                                             .build();
@@ -333,19 +338,26 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                    })
                                                                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            FeatureProviderDataV1 featureProviderData = new ImmutableFeatureProviderDataV1.Builder()
+            ImmutableFeatureProviderDataV1.Builder featureProviderData = new ImmutableFeatureProviderDataV1.Builder()
                     .id(entityData.getId())
-                    .providerType("FEATURE")//TODO
-                    .featureProviderType("SQL")
-                    //.sqlDialect("POSTGIS")//TODO
-                    .connectionInfo(new ImmutableConnectionInfoSql.Builder()
-                            .from(featureProvider.getConnectionInfo())
-                            .connectorType("SLICK")
-                            .dialect(ConnectionInfoSql.Dialect.PGIS)
-                            .build())
+                    .providerType("FEATURE")
                     .nativeCrs(featureProvider.getNativeCrs())
-                    .types(featureTypes)
-                    .build();
+                    .types(featureTypes);
+
+            if (Objects.equals(providerType, "PGIS")) {
+                featureProviderData.featureProviderType("SQL")
+                                   .connectionInfo(new ImmutableConnectionInfoSql.Builder()
+                                           .from(featureProvider.getConnectionInfo())
+                                           .connectorType("SLICK")
+                                           .dialect(ConnectionInfoSql.Dialect.PGIS)
+                                           .build());
+            } else if (Objects.equals(providerType, "WFS")) {
+                featureProviderData.featureProviderType("WFS")
+                                   .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
+                                           .from(featureProvider.getConnectionInfo())
+                                           .connectorType("HTTP")
+                                           .build());
+            }
 
             List<String> path = ImmutableList.<String>builder()
                     .add("providers")
@@ -355,13 +367,32 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                     .build();
             Identifier newIdentifier = Identifier.from(identifier.id(), path.toArray(new String[]{}));
 
-            return ImmutableMap.of(newIdentifier, featureProviderData);
+            return ImmutableMap.of(newIdentifier, featureProviderData.build());
         }
 
         LOGGER.warn("Could not migrate feature provider for service '{}', providerType '{}' is not supported yet.", entityData.getId(), providerType);
 
         return ImmutableMap.of();
 
+    }
+
+    private String adjustPath(String path, String featureTypeName, String providerType, ConnectionInfo connectionInfo) {
+
+        if (Objects.equals(providerType, "WFS") && connectionInfo instanceof ConnectionInfoWfsHttp) {
+            Map<String, String> namespaces = ((ConnectionInfoWfsHttp) connectionInfo).getNamespaces();
+
+            String resolvedPath = String.format("/%s/%s", featureTypeName, path);
+
+            for (Map.Entry<String, String> entry : namespaces.entrySet()) {
+                String prefix = entry.getKey();
+                String uri = entry.getValue();
+                resolvedPath = resolvedPath.replaceAll(uri, prefix);
+            }
+
+            return resolvedPath;
+        }
+
+        return path;
     }
 
     private OgcApiFeaturesCollectionQueryables getQueryables(
@@ -432,7 +463,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                               OgcApiFeaturesGenericMapping general = (OgcApiFeaturesGenericMapping) sourcePathMapping.getMappingForType("general");
                               MicrodataPropertyMapping html = (MicrodataPropertyMapping) sourcePathMapping.getMappingForType("text/html");
 
-                              if (Objects.isNull(general.getName()) && Objects.nonNull(html.getName())) {
+                              if (Objects.isNull(general.getName()) /*&& Objects.nonNull(html.getName())*/) {
                                   return;
                               }
 
@@ -472,7 +503,8 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                               }
 
                               if (hasTransformations) {
-                                  transformations.put(general.getName().replaceAll("\\[.+?\\]", "[]"), builder.build());
+                                  transformations.put(general.getName()
+                                                             .replaceAll("\\[.+?\\]", "[]"), builder.build());
                               }
                           });
 
@@ -510,7 +542,8 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                               }
 
                               if (hasTransformations) {
-                                  transformations.put(general.getName().replaceAll("\\[.+?\\]", "[]"), builder.build());
+                                  transformations.put(general.getName()
+                                                             .replaceAll("\\[.+?\\]", "[]"), builder.build());
                               }
                           });
 
@@ -534,6 +567,17 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
         }
 
         return general.getSortPriority() - general2.getSortPriority();
+    }
+
+    private boolean isFeatureTypeMapping(String providerType, String path) {
+
+        if (Objects.equals(providerType, "PGIS")) {
+            return path.indexOf("/") == path.lastIndexOf("/");
+        } else if (Objects.equals(providerType, "WFS")) {
+            return Character.isUpperCase(path.charAt(path.lastIndexOf(":") + 1));
+        }
+
+        return false;
     }
 
 
