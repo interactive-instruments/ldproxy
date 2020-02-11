@@ -7,14 +7,19 @@
  */
 package de.ii.ldproxy.target.html;
 
+import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.function.Function;
@@ -26,6 +31,8 @@ import java.util.stream.Collectors;
 public class FeatureCollectionView extends DatasetView {
 
     // TODO check use of all properties
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCollectionView.class);
 
     private URI uri;
     // TODO public String requestUrl;
@@ -104,16 +111,25 @@ public class FeatureCollectionView extends DatasetView {
         return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';
     }
 
+    private String urlencode(String segment) {
+        try {
+            return URLEncoder.encode(segment, Charsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error(String.format("Exception while encoding feature id '%s' for use in a URI.",segment));
+            return segment;
+        }
+    }
+
     public Function<String, String> getCurrentUrlWithSegment() {
         return segment -> uriBuilderWithFOnly.copy()
-                                    .ensureLastPathSegment(segment)
+                                    .ensureLastPathSegment(urlencode(segment))
                                     .ensureNoTrailingSlash()
                                     .toString();
     }
 
     public Function<String, String> getCurrentUrlWithSegmentClearParams() {
         return segment -> uriBuilder.copy()
-                                    .ensureLastPathSegment(segment)
+                                    .ensureLastPathSegment(urlencode(segment))
                                     .ensureNoTrailingSlash()
                                     .clearParameters()
                                     .toString();
