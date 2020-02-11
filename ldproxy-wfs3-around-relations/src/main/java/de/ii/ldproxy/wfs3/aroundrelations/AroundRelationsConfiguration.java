@@ -21,9 +21,8 @@ import java.util.OptionalDouble;
  * @author zahnen
  */
 @Value.Immutable
-@Value.Modifiable
 @Value.Style(builder = "new")
-@JsonDeserialize(as = ImmutableAroundRelationsConfiguration.class)
+@JsonDeserialize(builder = ImmutableAroundRelationsConfiguration.Builder.class)
 public abstract class AroundRelationsConfiguration implements ExtensionConfiguration {
 
     @Value.Default

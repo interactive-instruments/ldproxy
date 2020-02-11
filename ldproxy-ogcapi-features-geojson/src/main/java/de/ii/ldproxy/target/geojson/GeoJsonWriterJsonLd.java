@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,6 +8,7 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.target.geojson.GeoJsonConfiguration.JsonLdOptions;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -39,17 +40,15 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     public void onStart(FeatureTransformationContextGeoJson transformationContext,
                         Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (transformationContext.isFeatureCollection()) {
-            Optional<String> ldContext = transformationContext.getApiData()
-                                                              .getCollections()
-                    .get(transformationContext.getCollectionId())
-                                                              .getExtension(GeoJsonConfiguration.class)
-                                                              .flatMap(GeoJsonConfiguration::getLdContext);
+            Optional<JsonLdOptions> jsonLdOptions = transformationContext.getApiData()
+                                                                         .getCollections()
+                                                                         .get(transformationContext.getCollectionId())
+                                                                         .getExtension(GeoJsonConfiguration.class)
+                                                                         .flatMap(GeoJsonConfiguration::getJsonLd);
 
-            if (ldContext.isPresent()) {
-                writeContextAndJsonLdType(transformationContext,
-                        next,
-                        ldContext.get(),
-                        ImmutableList.of("geojson:FeatureCollection"));
+            if (jsonLdOptions.isPresent()) {
+                writeContextAndJsonLdType(transformationContext, jsonLdOptions.get()
+                                                                              .getContext(), ImmutableList.of("geojson:FeatureCollection"));
             }
         }
 
@@ -61,19 +60,19 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
                                Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (!transformationContext.isFeatureCollection()) {
-            //TODO: move to collection level geojson buildingBlock
-            /*Optional<GeoJsonPropertyMapping> mappingWithLdContext = transformationContext.getState()
-                    .getCurrentFeatureType()
-                    .filter(targetMapping -> targetMapping instanceof GeoJsonPropertyMapping)
-                    .map(targetMapping -> (GeoJsonPropertyMapping) targetMapping)
-                    .filter(targetMapping -> Objects.nonNull(targetMapping.getLdContext()));
+            Optional<JsonLdOptions> jsonLdOptions = transformationContext.getApiData()
+                                                                         .getCollections()
+                                                                         .get(transformationContext.getCollectionId())
+                                                                         .getExtension(GeoJsonConfiguration.class)
+                                                                         .flatMap(GeoJsonConfiguration::getJsonLd);
 
-            if (mappingWithLdContext.isPresent()) {
-                writeContextAndJsonLdType(transformationContext,
-                        next,
-                        mappingWithLdContext.get().getLdContext(),
-                        Optional.ofNullable(mappingWithLdContext.get().getLdType()).orElse(ImmutableList.of()));
-            }*/
+            if (jsonLdOptions.isPresent()) {
+                List<String> types = jsonLdOptions.map(JsonLdOptions::getTypes)
+                                                  .orElse(ImmutableList.of("geojson:Feature"));
+
+                writeContextAndJsonLdType(transformationContext, jsonLdOptions.get()
+                                                                              .getContext(), types);
+            }
         }
 
         // next chain for extensions
@@ -81,31 +80,30 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     }
 
     private void writeContextAndJsonLdType(FeatureTransformationContextGeoJson transformationContext,
-                                           Consumer<FeatureTransformationContextGeoJson> next, String ldContext,
+                                           String ldContext,
                                            List<String> types) throws IOException {
 
         transformationContext.getJson()
                              .writeStringField("@context",
                                      ldContext.replace("{{serviceUrl}}", transformationContext.getServiceUrl())
-                                             .replace("{{collectionId}}", transformationContext.getCollectionId()));
+                                              .replace("{{collectionId}}", transformationContext.getCollectionId()));
 
-        if (types.isEmpty()) {
-            // do not write @type
-        } else if (types.size()==1) {
+        if (types.size() == 1) {
+            // write @type
             transformationContext.getJson()
-                    .writeStringField("@type", types.get(0));
-        } else {
+                                 .writeStringField("@type", types.get(0));
+        } else if (types.size() > 1) {
             // write @type as array
             transformationContext.getJson()
-                    .writeArrayFieldStart("@type");
+                                 .writeArrayFieldStart("@type");
 
             for (String type : types) {
                 transformationContext.getJson()
-                        .writeString(type);
+                                     .writeString(type);
             }
 
             transformationContext.getJson()
-                    .writeEndArray();
+                                 .writeEndArray();
         }
     }
 }

@@ -32,6 +32,11 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
         return new ImmutableFeatureTypeConfigurationOgcApi.Builder().from(this);
     }
 
+    @Value.Default
+    default boolean getEnabled() {
+        return true;
+    }
+
     Optional<String> getPersistentUriTemplate();
 
     CollectionExtent getExtent();

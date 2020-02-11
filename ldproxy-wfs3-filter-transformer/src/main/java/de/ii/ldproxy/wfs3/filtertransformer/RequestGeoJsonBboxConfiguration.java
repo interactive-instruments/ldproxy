@@ -16,8 +16,8 @@ import java.util.List;
  * @author zahnen
  */
 @Value.Immutable
-@Value.Modifiable
-@JsonDeserialize(as = ModifiableRequestGeoJsonBboxConfiguration.class)
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableRequestGeoJsonBboxConfiguration.Builder.class)
 public abstract class RequestGeoJsonBboxConfiguration implements FilterTransformerConfiguration {
 
     public static final String TRANSFORMER_TYPE = "REQUEST_GEOJSON_BBOX";

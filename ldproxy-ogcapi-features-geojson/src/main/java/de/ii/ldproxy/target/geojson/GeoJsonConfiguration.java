@@ -11,10 +11,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
+import java.util.List;
 import java.util.Optional;
 
 @Value.Immutable
-@Value.Style(builder = "new")
+@Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
 public abstract class GeoJsonConfiguration implements ExtensionConfiguration {
 
@@ -24,6 +25,17 @@ public abstract class GeoJsonConfiguration implements ExtensionConfiguration {
         return false;
     }
 
-    public abstract Optional<String> getLdContext();
+    public abstract Optional<JsonLdOptions> getJsonLd();
+
+    @Value.Immutable
+    @JsonDeserialize(builder = ImmutableJsonLdOptions.Builder.class)
+    public interface JsonLdOptions {
+
+        String getContext();
+
+        List<String> getTypes();
+
+        Optional<String> getIdTemplate();
+    }
 
 }

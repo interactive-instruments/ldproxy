@@ -17,8 +17,8 @@ import java.util.List;
  * @author zahnen
  */
 @Value.Immutable
-@Value.Modifiable
-@JsonDeserialize(as = ModifiableFilterTransformersConfiguration.class)
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableFilterTransformersConfiguration.Builder.class)
 
 //TODO: also allow on global level (could we just use the same configuration there?)
 public abstract class FilterTransformersConfiguration implements ExtensionConfiguration {
@@ -33,7 +33,7 @@ public abstract class FilterTransformersConfiguration implements ExtensionConfig
 
     @Override
     public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return ImmutableFilterTransformersConfiguration.builder()
+        return new ImmutableFilterTransformersConfiguration.Builder()
                                                        .from(extensionConfigurationDefault)
                                                        .from(this)
                                                        .build(); //TODO

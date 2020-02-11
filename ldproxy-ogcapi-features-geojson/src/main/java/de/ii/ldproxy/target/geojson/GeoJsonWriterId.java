@@ -1,12 +1,13 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.target.geojson;
 
+import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -14,6 +15,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -82,31 +84,37 @@ public class GeoJsonWriterId implements GeoJsonWriter {
                                         .isPresent()) {
 
             final FeatureProperty currentFeatureProperty = transformationContext.getState()
-                                                                        .getCurrentFeatureProperty()
-                                                                        .get();
+                                                                                .getCurrentFeatureProperty()
+                                                                                .get();
             String currentValue = transformationContext.getState()
                                                        .getCurrentValue()
                                                        .get();
 
             if (currentFeatureProperty.isId()) {
-                //TODO: new transformations handling
-                //String idTemplate = currentFeatureProperty.getIdTemplate();
-                String currentUri = null;
-                /*if (Objects.nonNull(idTemplate)) {
-                    currentUri = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {}, "featureId");
-                    currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getServiceUrl(), isHtml -> {}, "serviceUrl");
-                    currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getCollectionId(), isHtml -> {}, "collectionId");
-                }*/
+
+                Optional<String> jsonLdId = transformationContext.getApiData()
+                                                                         .getCollections()
+                                                                         .get(transformationContext.getCollectionId())
+                                                                         .getExtension(GeoJsonConfiguration.class)
+                                                                         .flatMap(GeoJsonConfiguration::getJsonLd)
+                                                                         .flatMap(GeoJsonConfiguration.JsonLdOptions::getIdTemplate)
+                                                                         .map(idTemplate -> {
+                                                                             String currentUri = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {}, "featureId");
+                                                                             currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getServiceUrl(), isHtml -> {}, "serviceUrl");
+                                                                             currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getCollectionId(), isHtml -> {}, "collectionId");
+                                                                             return currentUri;
+                                                                         });
 
                 if (writeAtFeatureEnd) {
                     currentId = currentValue;
-                    currentUriId = currentUri;
+                    currentUriId = jsonLdId.orElse(null);
                 } else {
                     transformationContext.getJson()
                                          .writeStringField("id", currentValue);
-                    if (currentUri!=null)
+                    if (jsonLdId.isPresent()) {
                         transformationContext.getJson()
-                                .writeStringField("@id", currentUri);
+                                             .writeStringField("@id", jsonLdId.get());
+                    }
 
                     writeLink(transformationContext, currentValue);
                 }

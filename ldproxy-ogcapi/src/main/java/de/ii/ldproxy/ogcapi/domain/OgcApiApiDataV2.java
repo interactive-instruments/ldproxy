@@ -83,8 +83,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     }
 
     public boolean isCollectionEnabled(final String collectionId) {
-        return getCollections().containsKey(collectionId); //TODO && getFeatureTypes().get(featureType).isEnabled();
-        //return getFeatureProvider().isFeatureTypeEnabled(featureType);
+        return getCollections().containsKey(collectionId) && getCollections().get(collectionId).getEnabled();
     }
 
     /**
