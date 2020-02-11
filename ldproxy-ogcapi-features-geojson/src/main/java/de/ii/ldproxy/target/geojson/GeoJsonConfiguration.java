@@ -9,6 +9,7 @@ package de.ii.ldproxy.target.geojson;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -16,7 +17,7 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
-public abstract class GeoJsonConfiguration implements ExtensionConfiguration {
+public abstract class GeoJsonConfiguration implements ExtensionConfiguration, FeatureTransformations {
 
     @Value.Default
     @Override
