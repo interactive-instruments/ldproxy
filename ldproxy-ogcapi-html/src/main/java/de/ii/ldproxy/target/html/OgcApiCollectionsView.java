@@ -64,7 +64,13 @@ public class OgcApiCollectionsView extends LdproxyView {
     }
 
     public List<Map<String, String>> getCollections() {
+
+        Comparator<OgcApiCollection> byTitle = Comparator.comparing(
+                collection -> collection.getTitle().orElse(collection.getId())
+        );
+
         return collections.stream()
+                .sorted(byTitle)
                 .map(collection -> ImmutableMap.of("title", collection.getTitle().orElse(collection.getId()),
                         "id", collection.getId(),
                         "hrefcollection", collection.getLinks()
