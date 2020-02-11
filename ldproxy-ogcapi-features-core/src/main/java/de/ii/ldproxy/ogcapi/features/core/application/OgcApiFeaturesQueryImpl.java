@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.application;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
 import javax.ws.rs.BadRequestException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
@@ -63,6 +66,15 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         this.providers = providers;
     }
 
+    private String urldecode(String segment) {
+        try {
+            return URLDecoder.decode(segment, Charsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error(String.format("Exception while decoding feature id '%s' for querying.",segment));
+            return segment;
+        }
+    }
+
     @Override
     public FeatureQuery requestToFeatureQuery(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData, OgcApiFeaturesCoreConfiguration coreConfiguration, Map<String, String> parameters,
                                               String featureId) {
@@ -71,7 +83,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             parameters = parameterExtension.transformParameters(collectionData, parameters, apiData);
         }
 
-        final String filter = String.format("IN ('%s')", featureId);
+        final String filter = String.format("IN ('%s')", urldecode(featureId));
 
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                                 .type(collectionData.getId())
