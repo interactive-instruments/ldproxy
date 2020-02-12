@@ -44,7 +44,9 @@
 {{#additionalFeatures}}
     <div class="my-4">
         <h2 class="my-4">{{name}}</h2>
-        {{{value}}}
+        {{#values}}
+            {{{value}}}
+        {{/values}}
     </div>
 {{/additionalFeatures}}
 {{/classic}}

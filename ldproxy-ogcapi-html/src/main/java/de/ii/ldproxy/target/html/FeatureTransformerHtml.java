@@ -354,9 +354,11 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
             if (transformedProperty.isPresent()) {
                 property.values.set(0,transformedProperty.get());
+                currentFeature.addChild(property);
             }
+        } else {
+            currentFeature.addChild(property);
         }
-        currentFeature.addChild(property);
     }
 
     @Override

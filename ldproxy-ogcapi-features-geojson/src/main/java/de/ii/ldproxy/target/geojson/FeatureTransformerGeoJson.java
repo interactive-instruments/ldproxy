@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -16,19 +16,20 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
-import de.ii.xtraplatform.feature.provider.api.FeatureProperty;
-import de.ii.xtraplatform.feature.provider.api.FeatureTransformer2;
-import de.ii.xtraplatform.feature.provider.api.FeatureType;
-import de.ii.xtraplatform.feature.provider.api.SimpleFeatureGeometry;
-import de.ii.xtraplatform.feature.transformer.api.FeaturePropertySchemaTransformer;
-import de.ii.xtraplatform.feature.transformer.api.FeaturePropertyValueTransformer;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.FeatureType;
+import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
+import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -71,8 +72,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
         this.stringBuilder = new StringBuilder();
 
         FeatureTypeConfigurationOgcApi featureType = transformationContext.getApiData()
-                .getCollections()
-                .get(transformationContext.getCollectionId());
+                                                                          .getCollections()
+                                                                          .get(transformationContext.getCollectionId());
         baseTransformations = Objects.isNull(featureType) ? Optional.empty() : featureType
                 .getExtension(OgcApiFeaturesCoreConfiguration.class)
                 .map(coreConfiguration -> coreConfiguration);
@@ -157,10 +158,10 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
             }
 
             if (Objects.nonNull(processedFeatureProperty)) {
-            transformationContext.getState()
-                        .setCurrentFeatureProperty(Optional.ofNullable(processedFeatureProperty));
-            transformationContext.getState()
-                                 .setCurrentMultiplicity(multiplicities);
+                transformationContext.getState()
+                                     .setCurrentFeatureProperty(Optional.ofNullable(processedFeatureProperty));
+                transformationContext.getState()
+                                     .setCurrentMultiplicity(multiplicities);
             }
         }
 
@@ -183,7 +184,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
                 value = valueTransformer.transform(value);
             }
             transformationContext.getState()
-                    .setCurrentValue(value);
+                                 .setCurrentValue(value);
             stringBuilder.setLength(0);
 
 
@@ -202,14 +203,16 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
         List<FeaturePropertyValueTransformer> valueTransformations = null;
         if (baseTransformations.isPresent()) {
             valueTransformations = baseTransformations.get()
-                    .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
-                    .get(featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]"));
+                                                      .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
+                                                      .get(featureProperty.getName()
+                                                                          .replaceAll("\\[^\\]+?\\]", "[]"));
         }
         if (geojsonTransformations.isPresent()) {
             if (Objects.nonNull(valueTransformations)) {
                 List<FeaturePropertyValueTransformer> moreTransformations = geojsonTransformations.get()
-                        .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
-                        .get(featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]"));
+                                                                                                  .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
+                                                                                                  .get(featureProperty.getName()
+                                                                                                                      .replaceAll("\\[^\\]+?\\]", "[]"));
                 if (Objects.nonNull(moreTransformations)) {
                     valueTransformations = Stream
                             .of(valueTransformations, moreTransformations)
@@ -218,8 +221,9 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
                 }
             } else {
                 valueTransformations = geojsonTransformations.get()
-                        .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
-                        .get(featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]"));
+                                                             .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
+                                                             .get(featureProperty.getName()
+                                                                                 .replaceAll("\\[^\\]+?\\]", "[]"));
             }
         }
 
@@ -230,14 +234,16 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
         List<FeaturePropertySchemaTransformer> schemaTransformations = null;
         if (baseTransformations.isPresent()) {
             schemaTransformations = baseTransformations.get()
-                    .getSchemaTransformations(false)
-                    .get(featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]"));
+                                                       .getSchemaTransformations(false)
+                                                       .get(featureProperty.getName()
+                                                                           .replaceAll("\\[^\\]+?\\]", "[]"));
         }
         if (geojsonTransformations.isPresent()) {
             if (Objects.nonNull(schemaTransformations)) {
                 List<FeaturePropertySchemaTransformer> moreTransformations = geojsonTransformations.get()
-                        .getSchemaTransformations(false)
-                        .get(featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]"));
+                                                                                                   .getSchemaTransformations(false)
+                                                                                                   .get(featureProperty.getName()
+                                                                                                                       .replaceAll("\\[^\\]+?\\]", "[]"));
                 if (Objects.nonNull(moreTransformations)) {
                     schemaTransformations = Stream
                             .of(schemaTransformations, moreTransformations)
@@ -246,8 +252,9 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
                 }
             } else {
                 schemaTransformations = geojsonTransformations.get()
-                        .getSchemaTransformations(false)
-                        .get(featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]"));
+                                                              .getSchemaTransformations(false)
+                                                              .get(featureProperty.getName()
+                                                                                  .replaceAll("\\[^\\]+?\\]", "[]"));
             }
         }
 
@@ -266,7 +273,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
 
             GEO_JSON_GEOMETRY_TYPE currentGeometryType;// = geometryMapping.getGeometryType();
             //if (currentGeometryType == GEO_JSON_GEOMETRY_TYPE.GENERIC) {
-                currentGeometryType = GEO_JSON_GEOMETRY_TYPE.forGmlType(type);
+            currentGeometryType = GEO_JSON_GEOMETRY_TYPE.forGmlType(type);
             //} else if (currentGeometryType != GEO_JSON_GEOMETRY_TYPE.forGmlType(type)) {
             //    return;
             //}
@@ -277,14 +284,17 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
             if (transformationContext.getCrsTransformer()
                                      .isPresent()) {
                 coordinatesTransformerBuilder.crsTransformer(transformationContext.getCrsTransformer()
-                                                           .get());
+                                                                                  .get());
             }
 
             //TODO: might set dimension in FromSql2?
-            if (dimension != null) {
-                coordinatesTransformerBuilder.sourceDimension(transformationContext.getCrsTransformer().map(CrsTransformer::getSourceDimension).orElse(dimension));
-                coordinatesTransformerBuilder.targetDimension(transformationContext.getCrsTransformer().map(CrsTransformer::getTargetDimension).orElse(dimension));
-            }
+            int fallbackDimension = Objects.nonNull(dimension) ? dimension : 2;
+            coordinatesTransformerBuilder.sourceDimension(transformationContext.getCrsTransformer()
+                                                                               .map(CrsTransformer::getSourceDimension)
+                                                                               .orElse(fallbackDimension));
+            coordinatesTransformerBuilder.targetDimension(transformationContext.getCrsTransformer()
+                                                                                   .map(CrsTransformer::getTargetDimension)
+                                                                                   .orElse(fallbackDimension));
 
             //TODO ext
             if (transformationContext.getMaxAllowableOffset() > 0) {

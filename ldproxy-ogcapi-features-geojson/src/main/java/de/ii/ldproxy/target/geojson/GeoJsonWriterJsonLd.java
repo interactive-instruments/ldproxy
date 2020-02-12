@@ -9,6 +9,8 @@ package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.target.geojson.GeoJsonConfiguration.JsonLdOptions;
+import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -33,7 +35,7 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
 
     @Override
     public int getSortPriority() {
-        return 25;
+        return 5;
     }
 
     @Override
@@ -76,6 +78,52 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
         }
 
         // next chain for extensions
+        next.accept(transformationContext);
+    }
+
+    @Override
+    public void onProperty(FeatureTransformationContextGeoJson transformationContext,
+                           Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+        if (transformationContext.getState()
+                                 .getCurrentFeatureProperty()
+                                 .isPresent()
+                || transformationContext.getState()
+                                        .getCurrentValue()
+                                        .isPresent()) {
+
+            final FeatureProperty currentFeatureProperty = transformationContext.getState()
+                                                                                .getCurrentFeatureProperty()
+                                                                                .get();
+            String currentValue = transformationContext.getState()
+                                                       .getCurrentValue()
+                                                       .get();
+
+            if (currentFeatureProperty.isId()) {
+
+                Optional<String> jsonLdId = transformationContext.getApiData()
+                                                                 .getCollections()
+                                                                 .get(transformationContext.getCollectionId())
+                                                                 .getExtension(GeoJsonConfiguration.class)
+                                                                 .flatMap(GeoJsonConfiguration::getJsonLd)
+                                                                 .flatMap(GeoJsonConfiguration.JsonLdOptions::getIdTemplate)
+                                                                 .map(idTemplate -> {
+                                                                     String currentUri = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {
+                                                                     }, "featureId");
+                                                                     currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getServiceUrl(), isHtml -> {
+                                                                     }, "serviceUrl");
+                                                                     currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getCollectionId(), isHtml -> {
+                                                                     }, "collectionId");
+                                                                     return currentUri;
+                                                                 });
+
+
+                if (jsonLdId.isPresent()) {
+                    transformationContext.getJson()
+                                         .writeStringField("@id", jsonLdId.get());
+                }
+            }
+        }
+
         next.accept(transformationContext);
     }
 

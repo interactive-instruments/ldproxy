@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.target.geojson;
 
-import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -15,7 +14,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -32,7 +30,6 @@ public class GeoJsonWriterId implements GeoJsonWriter {
     }
 
     private String currentId;
-    private String currentUriId;
     private boolean writeAtFeatureEnd = false;
 
     @Override
@@ -91,40 +88,17 @@ public class GeoJsonWriterId implements GeoJsonWriter {
                                                        .get();
 
             if (currentFeatureProperty.isId()) {
-
-                Optional<String> jsonLdId = transformationContext.getApiData()
-                                                                         .getCollections()
-                                                                         .get(transformationContext.getCollectionId())
-                                                                         .getExtension(GeoJsonConfiguration.class)
-                                                                         .flatMap(GeoJsonConfiguration::getJsonLd)
-                                                                         .flatMap(GeoJsonConfiguration.JsonLdOptions::getIdTemplate)
-                                                                         .map(idTemplate -> {
-                                                                             String currentUri = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {}, "featureId");
-                                                                             currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getServiceUrl(), isHtml -> {}, "serviceUrl");
-                                                                             currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getCollectionId(), isHtml -> {}, "collectionId");
-                                                                             return currentUri;
-                                                                         });
-
                 if (writeAtFeatureEnd) {
                     currentId = currentValue;
-                    currentUriId = jsonLdId.orElse(null);
                 } else {
                     transformationContext.getJson()
                                          .writeStringField("id", currentValue);
-                    if (jsonLdId.isPresent()) {
-                        transformationContext.getJson()
-                                             .writeStringField("@id", jsonLdId.get());
-                    }
 
                     writeLink(transformationContext, currentValue);
                 }
-                // don't pass through
-                //return;
 
             } else {
-
                 this.writeAtFeatureEnd = true;
-
             }
         }
 
