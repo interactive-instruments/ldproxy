@@ -10,14 +10,28 @@ package de.ii.ldproxy.wfs3.aroundrelations;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
+import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.target.geojson.*;
+import de.ii.ldproxy.target.geojson.FeatureTransformationContextGeoJson;
+import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
+import de.ii.ldproxy.target.geojson.GeoJsonWriter;
+import de.ii.ldproxy.target.geojson.ImmutableFeatureTransformationContextGeoJson;
+import de.ii.ldproxy.target.geojson.ImmutableGeoJsonConfig;
+import de.ii.ldproxy.target.geojson.ModifiableStateGeoJson;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
-import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureProperty;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import org.junit.runner.RunWith;
 
@@ -34,7 +48,10 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.Consumer;
 
-import static com.greghaskins.spectrum.dsl.specification.Specification.*;
+import static com.greghaskins.spectrum.dsl.specification.Specification.beforeEach;
+import static com.greghaskins.spectrum.dsl.specification.Specification.context;
+import static com.greghaskins.spectrum.dsl.specification.Specification.describe;
+import static com.greghaskins.spectrum.dsl.specification.Specification.it;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureType;
-import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureProperty;
-import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureType;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureProperty;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureType;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import org.junit.runner.RunWith;
 
@@ -22,7 +22,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import static com.greghaskins.spectrum.dsl.specification.Specification.*;
+import static com.greghaskins.spectrum.dsl.specification.Specification.beforeEach;
+import static com.greghaskins.spectrum.dsl.specification.Specification.context;
+import static com.greghaskins.spectrum.dsl.specification.Specification.describe;
+import static com.greghaskins.spectrum.dsl.specification.Specification.it;
 import static org.testng.Assert.assertEquals;
 
 /**
