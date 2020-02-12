@@ -27,6 +27,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesEndpoint;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -98,6 +99,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
     private final OgcApiFeatureCoreProviders providers;
     private final CrsTransformerFactory crsTransformerFactory;
     private final OgcApiExtensionRegistry wfs3ExtensionRegistry;
+    private final OgcApiFeaturesQuery queryParser;
     private final VectorTileMapGenerator vectorTileMapGenerator;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final VectorTilesCache cache;
@@ -107,16 +109,18 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                       @Requires I18n i18n,
                                       @Requires OgcApiFeatureCoreProviders providers,
                                       @Requires CrsTransformerFactory crsTransformerFactory,
-                                      @Requires OgcApiExtensionRegistry wfs3ExtensionRegistry) {
+                                      @Requires OgcApiExtensionRegistry wfs3ExtensionRegistry,
+                                      @Requires OgcApiFeaturesQuery queryParser) {
         this.i18n = i18n;
         this.providers = providers;
         this.crsTransformerFactory = crsTransformerFactory;
         this.wfs3ExtensionRegistry = wfs3ExtensionRegistry;
+        this.queryParser = queryParser;
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
         this.cache = new VectorTilesCache(dataDirectory);
         this.vectorTileMapGenerator = new VectorTileMapGenerator();
         this.limitsGenerator = new TileMatrixSetLimitsGenerator();
-        this.multiTilesGenerator = new CollectionMultitilesGenerator(providers);
+        this.multiTilesGenerator = new CollectionMultitilesGenerator(providers, this.queryParser);
     }
 
     @Override
@@ -404,7 +408,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                         .type(new MediaType("application", "geo+json"))
                         .label("GeoJSON")
                         .build();
-                boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), geojsonMediaType, true, jsonTile, i18n, wfs3Request.getLanguage());
+                boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), geojsonMediaType, true, jsonTile, i18n, wfs3Request.getLanguage(), queryParser);
                 if (!success) {
                     String msg = "Internal server error: could not generate GeoJSON for a tile.";
                     LOGGER.error(msg);
@@ -413,7 +417,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             } else {
                 if (TileGeneratorJson.deleteJSON(tileFileJson)) {
                    TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields,
-                           wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage());
+                           wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
                 }
             }
 
@@ -423,7 +427,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             File tileFileJson = jsonTile.getFile(cache, "json");
 
             if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage());
+                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
                 tileFileMvt.delete();
                 generateTileCollection(collectionId, tileFileJson, tileFileMvt, tile, requestedProperties, crsTransformerFactory);
             }
@@ -514,10 +518,10 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         //TODO parse file (check if valid) if not valid delete it and generate new one
 
         if (!tileFileJson.exists()) {
-            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage());
+            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
         } else {
             if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage());
+                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
             }
 
         }

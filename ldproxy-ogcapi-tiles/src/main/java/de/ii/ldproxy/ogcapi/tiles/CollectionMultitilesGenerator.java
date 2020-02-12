@@ -16,6 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.slf4j.Logger;
@@ -44,9 +45,12 @@ public class CollectionMultitilesGenerator {
 
     //TODO: OgcApiTilesProviders (use features core featureProvider id as fallback)
     private final OgcApiFeatureCoreProviders providers;
+    private final OgcApiFeaturesQuery queryParser;
 
-    public CollectionMultitilesGenerator(OgcApiFeatureCoreProviders providers) {
+    public CollectionMultitilesGenerator(OgcApiFeatureCoreProviders providers,
+                                         OgcApiFeaturesQuery queryParser) {
         this.providers = providers;
+        this.queryParser = queryParser;
     }
 
     /**
@@ -168,7 +172,7 @@ public class CollectionMultitilesGenerator {
                             .label("GeoJSON")
                             .build();
                     TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, uriCustomizer,
-                            geoJsonMediaType, true, tile, i18n, language);
+                            geoJsonMediaType, true, tile, i18n, language, queryParser);
                 }
 
                     // add the generated tile to the archive

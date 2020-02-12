@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,7 +18,9 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.ws.rs.BadRequestException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +33,12 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
     public static final String BBOX_CRS = "bbox-crs";
     public static final String BBOX = "bbox";
     public static final String CRS = "crs";
+
+    private final CrsSupport crsSupport;
+
+    public OgcApiParameterCrs(@Requires CrsSupport crsSupport) {
+        this.crsSupport = crsSupport;
+    }
 
     @Override
     public String getConformanceClass() {
@@ -49,10 +57,10 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
 
         if (subPath.matches("^/[\\w\\-]+/items/?$")) {
             // Features
-            return ImmutableSet.of("crs", "bbox-crs");
+            return ImmutableSet.of(CRS, BBOX_CRS);
         } else if (subPath.matches("^/[\\w\\-]+/items/[^/\\s]+/?$")) {
             // Feature
-            return ImmutableSet.of("crs");
+            return ImmutableSet.of(CRS);
         }
 
         return ImmutableSet.of();
@@ -67,8 +75,18 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
         }
 
         if (parameters.containsKey(BBOX) && parameters.containsKey(BBOX_CRS)) {
+            EpsgCrs bboxCrs;
+            try {
+                bboxCrs = EpsgCrs.fromString(parameters.get(BBOX_CRS));
+            } catch (Throwable e) {
+                throw new BadRequestException(String.format("The parameter '%s' is invalid: %s", BBOX_CRS, e.getMessage()));
+            }
+            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, bboxCrs)) {
+                throw new BadRequestException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", BBOX_CRS, bboxCrs.toUriString()));
+            }
+
             Map<String, String> newParameters = new HashMap<>(parameters);
-            newParameters.put(BBOX, parameters.get(BBOX) + "," + parameters.get(BBOX_CRS));
+            newParameters.put(BBOX, String.format("%s,%s", parameters.get(BBOX), bboxCrs.toUriString()));
             return ImmutableMap.copyOf(newParameters);
         }
 
@@ -81,7 +99,16 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
                                                         Map<String, String> parameters, OgcApiApiDataV2 datasetData) {
 
         if (isEnabledForApi(datasetData) && parameters.containsKey(CRS)) {
-            EpsgCrs targetCrs = EpsgCrs.fromString(parameters.get(CRS));
+            EpsgCrs targetCrs;
+            try {
+                targetCrs = EpsgCrs.fromString(parameters.get(CRS));
+            } catch (Throwable e) {
+                throw new BadRequestException(String.format("The parameter '%s' is invalid: %s", CRS, e.getMessage()));
+            }
+            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, targetCrs)) {
+                throw new BadRequestException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", CRS, targetCrs.toUriString()));
+            }
+
             queryBuilder.crs(targetCrs);
         }
 

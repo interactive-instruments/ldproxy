@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
@@ -20,7 +21,10 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
+import de.ii.xtraplatform.cql.domain.And;
+import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -78,7 +82,7 @@ public class TileGeneratorJson {
     static boolean generateTileJson(File tileFile, CrsTransformerFactory crsTransformerFactory, @Context UriInfo uriInfo,
                                     Map<String, String> filters, Map<String, String> filterableFields,
                                     URICustomizer uriCustomizer, OgcApiMediaType mediaType, boolean isCollection,
-                                    VectorTile tile, I18n i18n, Optional<Locale> language) {
+                                    VectorTile tile, I18n i18n, Optional<Locale> language, OgcApiFeaturesQuery queryParser) {
         // TODO add support for multi-collection GeoJSON output
 
         String collectionId = tile.getCollectionId();
@@ -95,25 +99,17 @@ public class TileGeneratorJson {
         }
 
 
-        OutputStream outputStream = null;
+        OutputStream outputStream;
         try {
             outputStream = new FileOutputStream(tileFile);
         } catch (FileNotFoundException e) {
             LOGGER.error("File not found: " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
 
         String geometryField = filterableFields.get("bbox");
 
-        String filter = null;
-        try {
-            filter = tile.getSpatialFilter(geometryField, crsTransformerFactory);
-        } catch (CrsTransformationException e) {
-            LOGGER.error("CRS transformation error: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
+        CqlPredicate spatialFilter = queryParser.getBboxFilter(geometryField, tile.getBoundingBox(), featureProvider.getData().getNativeCrs());
 
         // calculate maxAllowableOffset
         double maxAllowableOffsetTileMatrixSet = tileMatrixSet.getMaxAllowableOffset(level, row, col);
@@ -137,7 +133,7 @@ public class TileGeneratorJson {
             //TODO: support 3d?
             queryBuilder = ImmutableFeatureQuery.builder()
                                                 .type(collectionId)
-                                                .filter(filter)
+                                                .filter(spatialFilter)
                                                 .maxAllowableOffset(maxAllowableOffsetNative)
                                                 .fields(propertiesList)
                                                 .crs(OgcCrs.CRS84);
@@ -145,9 +141,13 @@ public class TileGeneratorJson {
 
             if (filters != null && filterableFields != null) {
                 if (!filters.isEmpty()) {
-                    String cql = tile.getCQLFromFilters(filters, filterableFields);
-                    String combinedFilter = cql + " AND " + filter;
-                    LOGGER.debug("CQL {}", combinedFilter);
+                    Optional<CqlPredicate> otherFilters = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), Optional.empty());
+                    CqlPredicate combinedFilter = otherFilters.isPresent() ? CqlPredicate.of(And.of(otherFilters.get(), spatialFilter)) : spatialFilter;
+
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Filter: {}", combinedFilter);
+                    }
+
                     queryBuilder
                             .filter(combinedFilter)
                             .type(collectionId)
@@ -158,7 +158,7 @@ public class TileGeneratorJson {
         } else {
             queryBuilder = ImmutableFeatureQuery.builder()
                                                 .type(collectionId)
-                                                .filter(filter)
+                                                .filter(spatialFilter)
                                                 .maxAllowableOffset(maxAllowableOffsetNative);
         }
         queryBuilder.build();

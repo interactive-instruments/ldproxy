@@ -9,9 +9,14 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.xtraplatform.cql.domain.CqlPredicate;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public interface OgcApiFeaturesQuery {
     FeatureQuery requestToFeatureQuery(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
@@ -23,4 +28,9 @@ public interface OgcApiFeaturesQuery {
                                        OgcApiFeaturesCoreConfiguration coreConfiguration,
                                        int minimumPageSize,
                                        int defaultPageSize, int maxPageSize, Map<String, String> parameters);
+
+    Optional<CqlPredicate> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
+                                              Set<String> filterParameters, Optional<EpsgCrs> providerCrs);
+
+    CqlPredicate getBboxFilter(String geometryField, BoundingBox boundingBox, EpsgCrs providerCrs);
 }

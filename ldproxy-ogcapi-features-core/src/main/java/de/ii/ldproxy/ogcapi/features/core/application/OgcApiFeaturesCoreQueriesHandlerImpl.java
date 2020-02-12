@@ -157,14 +157,14 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         ensureFeatureProviderSupportsQueries(featureProvider);
 
         EpsgCrs sourceCrs = featureProvider.getData().getNativeCrs();
-        EpsgCrs targetCrs = Optional.ofNullable(query.getCrs()).orElse(defaultCrs);
+        EpsgCrs targetCrs = query.getCrs().orElse(defaultCrs);
         //TODO: warmup on service start
         Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
 
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
         boolean swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get()
-                                                                             .needsCoordinateSwap() : featureProvider.crs().shouldSwapCoordinates(query.getCrs());
+                                                                             .needsCoordinateSwap() : query.getCrs().isPresent() && featureProvider.crs().shouldSwapCoordinates(query.getCrs().get());
 
         List<OgcApiLink> links =
                 isCollection ?

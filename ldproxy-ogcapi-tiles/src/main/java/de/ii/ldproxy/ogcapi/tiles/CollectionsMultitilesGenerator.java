@@ -47,11 +47,14 @@ public class CollectionsMultitilesGenerator {
     private final I18n i18n;
     //TODO: OgcApiTilesProviders (use features core featureProvider id as fallback)
     private final OgcApiFeatureCoreProviders providers;
+    private final Wfs3EndpointTiles wfs3EndpointTiles;
 
     CollectionsMultitilesGenerator(I18n i18n,
-                                   OgcApiFeatureCoreProviders providers) {
+                                   OgcApiFeatureCoreProviders providers,
+                                   Wfs3EndpointTiles wfs3EndpointTiles) {
         this.i18n = i18n;
         this.providers = providers;
+        this.wfs3EndpointTiles = wfs3EndpointTiles;
     }
 
     /**
@@ -177,7 +180,7 @@ public class CollectionsMultitilesGenerator {
                         vectorTileMapGenerator.getFormatsMap(service.getData()), vectorTileMapGenerator.getMinMaxMap(service.getData(), true), false, false, false);
 
                 if (!tileFileMvt.exists()) {
-                    Wfs3EndpointTiles.generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections,
+                    wfs3EndpointTiles.generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections,
                             null, service, featureProvider, String.valueOf(entry.getTileMatrix()), String.valueOf(entry.getTileRow()),
                             String.valueOf(entry.getTileCol()), tileMatrixSetId, false, cache, wfs3Request, crsTransformation,
                             uriInfo, false, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, null);
@@ -202,7 +205,7 @@ public class CollectionsMultitilesGenerator {
                     }
 
                     if (invalid) {
-                        Wfs3EndpointTiles.generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections,
+                        wfs3EndpointTiles.generateTileDataset(tile, tileFileMvt, layers, collectionIds, requestedCollections,
                                 null, service, featureProvider, String.valueOf(entry.getTileMatrix()), String.valueOf(entry.getTileRow()),
                                 String.valueOf(entry.getTileCol()), tileMatrixSetId, false, cache, wfs3Request, crsTransformation,
                                 uriInfo, true, wfs3OutputFormatGeoJson, i18n, vectorTileMapGenerator, null);

@@ -22,34 +22,25 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.slf4j.LoggerFactory;
-import org.threeten.extra.Interval;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 
 /**
  * This class represents a vector tile
  */
 class VectorTile {
-
-    private static final String TIMESTAMP_REGEX = "([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))";
-    private static final String OPEN_REGEX = "(\\.\\.)?";
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
 
@@ -262,25 +253,6 @@ class VectorTile {
         return subDir;
     }
 
-
-    /**
-     * generate the spatial filter for a tile in the native coordinate reference system of the dataset in CQL
-     *
-     * @param geometryField     the name of the geometry field to use for the filter
-     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
-     * @return the spatial filter in CQL
-     * @throws CrsTransformationException if the bounding box could not be converted
-     */
-    public String getSpatialFilter(String geometryField,
-                                   CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
-
-        // calculate bbox in the native CRS of the dataset
-        BoundingBox bboxNativeCrs = getBoundingBoxNativeCrs(crsTransformerFactory);
-
-        return String.format(Locale.US, "BBOX(%s, %f, %f, %f, %f, '%s')", geometryField, bboxNativeCrs.getXmin(), bboxNativeCrs.getYmin(), bboxNativeCrs.getXmax(), bboxNativeCrs.getYmax(), bboxNativeCrs.getEpsgCrs()
-                                                                                                                                                                                                          .toSimpleString());
-    }
-
     /**
      * Creates an affine transformation for converting geometries in lon/lat to tile coordinates.
      *
@@ -312,26 +284,8 @@ class VectorTile {
     /**
      * @return the bounding box of the tile in the native CRS of the tile
      */
-    private BoundingBox getBoundingBox() {
+    BoundingBox getBoundingBox() {
         return tileMatrixSet.getTileBoundingBox(level, col, row);
-    }
-
-    /**
-     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
-     * @return the bounding box of the tile matrix set in the form of the native crs
-     * @throws CrsTransformationException an error occurred when transforming the coordinates
-     */
-    private BoundingBox getBoundingBoxNativeCrs(CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
-        EpsgCrs crs = featureProvider.getData()
-                                     .getNativeCrs();
-        BoundingBox bboxTileMatrixSetCrs = getBoundingBox();
-        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(tileMatrixSet.getCrs(), crs);
-
-        if (!transformer.isPresent()) {
-            return bboxTileMatrixSetCrs;
-        }
-
-        return transformer.get().transformBoundingBox(bboxTileMatrixSetCrs);
     }
 
     /**
@@ -351,68 +305,6 @@ class VectorTile {
 
         return transformer.get().transformBoundingBox(bboxTileMatrixSetCrs);
     }
-
-    /**
-     * @param filters          filters specified in the query
-     * @param filterableFields all possible fields you can use as a filter
-     * @return the CQL from the delivered filters
-     */
-    public String getCQLFromFilters(Map<String, String> filters, Map<String, String> filterableFields) {
-        return filters.entrySet()
-                      .stream()
-                      .map(f -> {
-                          if (f.getKey()
-                               .equals("filter")) {
-                              return f.getValue();
-                          }
-                          if (f.getKey()
-                               .equals("datetime")) {
-                              // TODO: define constants and filtering rules only once
-                              // valid values: timestamp or time interval;
-                              // this includes open intervals indicated by ".." (see ISO 8601-2);
-                              // accept also unknown ("") with the same interpretation
-                              String timeField = filterableFields.get(f.getKey());
-                              String timeValue = f.getValue();
-                              try {
-                                  if (timeValue.matches("^" + TIMESTAMP_REGEX + "\\/" + TIMESTAMP_REGEX + "$")) {
-                                      // the following parse accepts fully specified time intervals
-                                      Interval fromIso8601Period = Interval.parse(timeValue);
-                                      return String.format("%s DURING %s", timeField, fromIso8601Period);
-                                  } else if (timeValue.matches("^" + TIMESTAMP_REGEX + "$")) {
-                                      // a time instant
-                                      Instant fromIso8601 = Instant.parse(timeValue);
-                                      return String.format("%s TEQUALS %s", timeField, fromIso8601);
-                                  } else if (timeValue.matches("^" + OPEN_REGEX + "\\/" + OPEN_REGEX + "$")) {
-                                      // open start and end, nothing to do, all values match
-                                      return null;
-                                  } else if (timeValue.matches("^" + TIMESTAMP_REGEX + "\\/" + OPEN_REGEX + "$")) {
-                                      // open end
-                                      Instant fromIso8601 = Instant.parse(timeValue.substring(0, timeValue.indexOf("/")));
-                                      return String.format("%s AFTER %s", timeField, fromIso8601.minusSeconds(1));
-                                  } else if (timeValue.matches("^" + OPEN_REGEX + "\\/" + TIMESTAMP_REGEX + "$")) {
-                                      // open start
-                                      Instant fromIso8601 = Instant.parse(timeValue.substring(timeValue.indexOf("/") + 1));
-                                      return String.format("%s BEFORE %s", timeField, fromIso8601.plusSeconds(1));
-                                  } else {
-                                      LOGGER.error("TIME PARSER ERROR " + timeValue);
-                                      throw new BadRequestException("Invalid value for query parameter '" + timeField + "'. Found: " + timeValue);
-                                  }
-                              } catch (DateTimeParseException e) {
-                                  LOGGER.error("TIME PARSER ERROR", e);
-                                  throw new BadRequestException("Invalid value for query parameter '" + timeField + "'. Found: " + timeValue);
-                              }
-                          }
-                          if (f.getValue()
-                               .contains("*")) {
-                              return String.format("%s LIKE '%s'", filterableFields.get(f.getKey()), f.getValue());
-                          }
-
-                          return String.format("%s = '%s'", filterableFields.get(f.getKey()), f.getValue());
-                      })
-                      .filter(pred -> pred != null)
-                      .collect(Collectors.joining(" AND "));
-    }
-
 
     /**
      * checks if the requested format for the tile is specified in the Config and therefore valid. If it is not valid then throw a NotAcceptableException.

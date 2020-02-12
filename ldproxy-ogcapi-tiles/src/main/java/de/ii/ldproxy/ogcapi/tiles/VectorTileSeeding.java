@@ -16,6 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiStartupTask;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -68,6 +69,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
     @Requires
     private OgcApiExtensionRegistry extensionRegistry;
+
+    @Requires
+    private OgcApiFeaturesQuery queryParser;
 
     private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
 
@@ -340,7 +344,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                     .type(new MediaType("application", "json"))
                     .label("JSON")
                     .build();
-            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, null, null, null, uriCustomizer, mediaType, true, tile, i18n, language);
+            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, null, null, null, uriCustomizer, mediaType, true, tile, i18n, language, queryParser);
         }
         return tileFileJson;
     }

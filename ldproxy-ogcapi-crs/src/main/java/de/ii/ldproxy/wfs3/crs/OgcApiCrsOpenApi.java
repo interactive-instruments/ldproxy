@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -10,7 +10,6 @@ package de.ii.ldproxy.wfs3.crs;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -25,7 +24,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.BBOX_CRS;
 import static de.ii.ldproxy.wfs3.crs.OgcApiParameterCrs.CRS;
@@ -37,10 +35,10 @@ import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84_URI;
 @Instantiate
 public class OgcApiCrsOpenApi implements OpenApiExtension {
 
-    private final OgcApiFeatureCoreProviders providers;
+    private final CrsSupport crsSupport;
 
-    public OgcApiCrsOpenApi(@Requires OgcApiFeatureCoreProviders providers) {
-        this.providers = providers;
+    public OgcApiCrsOpenApi(@Requires CrsSupport crsSupport) {
+        this.crsSupport = crsSupport;
     }
 
     @Override
@@ -57,20 +55,14 @@ public class OgcApiCrsOpenApi implements OpenApiExtension {
     public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
         if (isEnabledForApi(datasetData)) {
 
-            String defaultCrsUri = getExtensionConfiguration(datasetData, OgcApiFeaturesCoreConfiguration.class).get().getDefaultEpsgCrs().toUriString();
-            CrsConfiguration crsConfiguration = getExtensionConfiguration(datasetData, CrsConfiguration.class).get();
+            String defaultCrsUri = getExtensionConfiguration(datasetData, OgcApiFeaturesCoreConfiguration.class).get()
+                                                                                                                .getDefaultEpsgCrs()
+                                                                                                                .toUriString();
 
-            ImmutableSet<String> crsSet = ImmutableSet.<String>builder()
-                    .add(providers.getFeatureProvider(datasetData)
-                                  .getData()
-                                    .getNativeCrs()
-                                    .toUriString())
-                    .add(defaultCrsUri)
-                    .addAll(crsConfiguration.getAdditionalCrs()
-                                       .stream()
-                                       .map(EpsgCrs::toUriString)
-                                       .collect(Collectors.toList()))
-                    .build();
+            ImmutableSet<String> crsSet = crsSupport.getSupportedCrsList(datasetData)
+                                                    .stream()
+                                                    .map(EpsgCrs::toUriString)
+                                                    .collect(ImmutableSet.toImmutableSet());
 
             openAPI.getComponents()
                    .addParameters(CRS, new Parameter()
