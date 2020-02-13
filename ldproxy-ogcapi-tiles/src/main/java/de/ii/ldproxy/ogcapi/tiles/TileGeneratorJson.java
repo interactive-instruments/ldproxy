@@ -192,6 +192,7 @@ public class TileGeneratorJson {
                     //TODO: support 3d?
                     .crsTransformer(crsTransformerFactory.getTransformer(featureProvider.getData()
                                                                                         .getNativeCrs(), OgcCrs.CRS84))
+                    .defaultCrs(OgcCrs.CRS84)
                     .links(ogcApiLinks)
                     .isFeatureCollection(true)
                     .limit(0) //TODO
@@ -284,6 +285,7 @@ public class TileGeneratorJson {
                 .apiData(datasetData)
                 .collectionId(collectionId)
                 .ogcApiRequest(wfs3Request)
+                .defaultCrs(OgcCrs.CRS84)
                 .links(ogcApiLinks)
                 .isFeatureCollection(true)
                 .maxAllowableOffset(maxAllowableOffsetCrs84)

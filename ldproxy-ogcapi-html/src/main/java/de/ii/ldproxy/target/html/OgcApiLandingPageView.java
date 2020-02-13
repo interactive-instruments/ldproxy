@@ -11,10 +11,21 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.LandingPage;
+import de.ii.ldproxy.ogcapi.domain.Metadata;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.api.functional.LambdaWithException.mayThrow;
@@ -65,6 +76,8 @@ public class OgcApiLandingPageView extends LdproxyView {
                 .stream()
                 .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
                         .getTemporal())
+                 .filter(Optional::isPresent)
+                 .map(Optional::get)
                 .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})
                 .reduce((longs, longs2) -> new Long[]{
                         longs[0]==null || longs2[0]==null ? null : Math.min(longs[0], longs2[0]),

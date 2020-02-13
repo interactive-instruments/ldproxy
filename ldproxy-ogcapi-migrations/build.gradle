@@ -4,6 +4,7 @@ dependencies {
     provided project(":ldproxy-ogcapi-features-core")
     provided project(":ldproxy-ogcapi-features-geojson")
     provided project(":ldproxy-ogcapi-html")
+    provided project(":ldproxy-ogcapi-crs")
     provided project(":ldproxy-wfs3")
     provided project(":ldproxy-ogcapi-oas30")
 

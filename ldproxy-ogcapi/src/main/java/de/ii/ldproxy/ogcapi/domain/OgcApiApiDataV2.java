@@ -11,14 +11,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.crs.domain.EpsgCrs.Force;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -96,8 +95,8 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     public BoundingBox getSpatialExtent() {
         double[] val = getCollections().values()
                                        .stream()
-                                       .map(featureTypeConfigurationWfs3 -> Optional.ofNullable(featureTypeConfigurationWfs3.getExtent()
-                                                                                                         .getSpatial())
+                                       .map(featureTypeConfigurationWfs3 -> featureTypeConfigurationWfs3.getExtent()
+                                                                                                         .getSpatial()
                                                                                                          .map(BoundingBox::getCoords))
                                        .filter(Optional::isPresent)
                                        .map(Optional::get)
@@ -134,6 +133,8 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
                                .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
                                .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
                                                                                                               .getSpatial())
+                               .filter(Optional::isPresent)
+                               .map(Optional::get)
                                .findFirst()
                                .orElse(null);
     }

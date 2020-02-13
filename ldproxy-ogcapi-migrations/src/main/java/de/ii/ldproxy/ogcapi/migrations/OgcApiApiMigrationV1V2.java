@@ -33,6 +33,8 @@ import de.ii.ldproxy.target.html.HtmlConfiguration;
 import de.ii.ldproxy.target.html.ImmutableHtmlConfiguration;
 import de.ii.ldproxy.target.html.MicrodataMapping;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
+import de.ii.ldproxy.wfs3.crs.CrsConfiguration;
+import de.ii.ldproxy.wfs3.crs.ImmutableCrsConfiguration;
 import de.ii.xtraplatform.entity.api.EntityData;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.event.store.EntityMigration;
@@ -103,6 +105,12 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                     return new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
                                                                             .from(extensionConfiguration)
                                                                             .featureProvider(entityData.getId())
+                                                                            .build();
+                                                                }
+                                                                if (extensionConfiguration instanceof CrsConfiguration) {
+                                                                    return new ImmutableCrsConfiguration.Builder()
+                                                                            .from(extensionConfiguration)
+                                                                            .additionalCrs(entityData.getAdditionalCrs())
                                                                             .build();
                                                                 }
 
@@ -504,7 +512,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                               }
 
                               //TODO: transactions? not yet in geoval
-                              //TODO: mainWritePathPattern in FileSystemEvents
+                              //TODO: mainWritePathPattern in FileSystemEvents -> DONE???
 
                               //TODO: connectorType + mappingStatus @ featureProvider
                               //TODO: api buildingBlocks as Object? i think does not work with deser

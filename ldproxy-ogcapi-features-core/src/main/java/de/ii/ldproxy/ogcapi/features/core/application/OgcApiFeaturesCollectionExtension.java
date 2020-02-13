@@ -22,11 +22,6 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
-import de.ii.xtraplatform.crs.domain.CrsTransformer;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -45,15 +40,11 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
     @Requires
     I18n i18n;
 
-    @Requires
-    private CrsTransformerFactory crsTransformerFactory;
-
     private final OgcApiExtensionRegistry extensionRegistry;
-    private final OgcApiFeatureCoreProviders providers;
 
-    public OgcApiFeaturesCollectionExtension(@Requires OgcApiExtensionRegistry extensionRegistry, @Requires OgcApiFeatureCoreProviders providers) {
+    public OgcApiFeaturesCollectionExtension(@Requires OgcApiExtensionRegistry extensionRegistry,
+                                             @Requires OgcApiFeatureCoreProviders providers) {
         this.extensionRegistry = extensionRegistry;
-        this.providers = providers;
     }
 
     @Override
@@ -70,7 +61,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                                                      Optional<Locale> language) {
 
         collection.title(featureType.getLabel())
-                .description(featureType.getDescription());
+                  .description(featureType.getDescription());
 
         URICustomizer uriBuilder = uriCustomizer
                 .copy()
@@ -92,17 +83,17 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
         }
 
         List<OgcApiMediaType> featureMediaTypes = extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
-                .stream()
-                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-                .map(outputFormatExtension -> outputFormatExtension.getMediaType())
-                .collect(Collectors.toList());
+                                                                   .stream()
+                                                                   .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                                                                   .map(outputFormatExtension -> outputFormatExtension.getMediaType())
+                                                                   .collect(Collectors.toList());
 
         featureMediaTypes
                 .stream()
                 .forEach(mtype -> collection.addLinks(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.ensureLastPathSegments("collections", featureType.getId(), "items")
-                                .setParameter("f", mtype.parameter())
-                                .toString())
+                                        .setParameter("f", mtype.parameter())
+                                        .toString())
                         .rel("items")
                         .type(mtype.type()
                                    .toString())
@@ -117,7 +108,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     .href(describeFeatureTypeUrl.get())
                     .rel("describedBy")
                     .type("application/xml")
-                    .title(i18n.get("describedByXsdLink",language))
+                    .title(i18n.get("describedByXsdLink", language))
                     .build());
         }
 
@@ -127,33 +118,42 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                                                 .filter(spatial -> !spatial.isEmpty())
                                                 .isPresent();
         boolean hasTemporalQueryable = queryables.map(OgcApiFeaturesCollectionQueryables::getTemporal)
-                                                .filter(temporal -> !temporal.isEmpty())
-                                                .isPresent();
-        if (hasSpatialQueryable && hasTemporalQueryable) {
-            BoundingBox spatial = getBoundingBox(apiData, featureType);
-            FeatureTypeConfigurationOgcApi.TemporalExtent temporal = featureType
-                    .getExtent()
-                    .getTemporal();
+                                                 .filter(temporal -> !temporal.isEmpty())
+                                                 .isPresent();
+        Optional<BoundingBox> spatial = featureType.getExtent()
+                                                   .getSpatial();
+        Optional<FeatureTypeConfigurationOgcApi.TemporalExtent> temporal = featureType.getExtent()
+                                                                                      .getTemporal();
+        if (hasSpatialQueryable && hasTemporalQueryable && spatial.isPresent() && temporal.isPresent()) {
             collection.extent(new OgcApiExtent(
-                    temporal.getStart(),
-                    temporal.getEnd(),
-                    spatial.getXmin(),
-                    spatial.getYmin(),
-                    spatial.getXmax(),
-                    spatial.getYmax()));
-        } else if (hasSpatialQueryable) {
-            BoundingBox spatial = getBoundingBox(apiData, featureType);
+                    temporal.get()
+                            .getStart(),
+                    temporal.get()
+                            .getEnd(),
+                    spatial.get()
+                           .getXmin(),
+                    spatial.get()
+                           .getYmin(),
+                    spatial.get()
+                           .getXmax(),
+                    spatial.get()
+                           .getYmax()));
+        } else if (hasSpatialQueryable && spatial.isPresent()) {
             collection.extent(new OgcApiExtent(
-                    spatial.getXmin(),
-                    spatial.getYmin(),
-                    spatial.getXmax(),
-                    spatial.getYmax()));
-        } else if (hasTemporalQueryable) {
-            FeatureTypeConfigurationOgcApi.TemporalExtent temporal = featureType.getExtent()
-                    .getTemporal();
+                    spatial.get()
+                           .getXmin(),
+                    spatial.get()
+                           .getYmin(),
+                    spatial.get()
+                           .getXmax(),
+                    spatial.get()
+                           .getYmax()));
+        } else if (hasTemporalQueryable && temporal.isPresent()) {
             collection.extent(new OgcApiExtent(
-                    temporal.getStart(),
-                    temporal.getEnd()));
+                    temporal.get()
+                            .getStart(),
+                    temporal.get()
+                            .getEnd()));
         }
 
         return collection;
@@ -163,11 +163,11 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                                                           OgcApiApiDataV2 apiData,
                                                           OgcApiMediaType mediaType,
                                                           List<OgcApiMediaType> alternateMediaTypes,
-                                                   Optional<Locale> language,
+                                                          Optional<Locale> language,
                                                           URICustomizer uriCustomizer,
                                                           List<OgcApiCollectionExtension> collectionExtenders) {
         ImmutableOgcApiCollection.Builder ogcApiCollection = ImmutableOgcApiCollection.builder()
-                .id(featureType.getId());
+                                                                                      .id(featureType.getId());
 
         for (OgcApiCollectionExtension ogcApiCollectionExtension : collectionExtenders) {
             ogcApiCollection = ogcApiCollectionExtension.process(
@@ -188,34 +188,6 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
             result = null;
         }
         return result;
-    }
-
-    private BoundingBox getBoundingBox(
-            OgcApiApiDataV2 apiData,
-            FeatureTypeConfigurationOgcApi featureType) {
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, featureType);
-
-        if (featureType.getExtent().getSpatialComputed() && featureProvider.supportsExtents()) {
-            BoundingBox spatialExtent = featureProvider.extents()
-                                                       .getSpatialExtent(featureType.getId());
-
-            if (OgcCrs.CRS84.equals(featureProvider.getData()
-                                             .getNativeCrs())) {
-                return spatialExtent;
-            }
-
-            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(featureProvider.getData()
-                                                                                                       .getNativeCrs(), OgcCrs.CRS84);
-            if (transformer.isPresent()) {
-                try {
-                    return transformer.get().transformBoundingBox(spatialExtent);
-                } catch (CrsTransformationException e) {
-
-                }
-            }
-        }
-
-        return Optional.ofNullable(featureType.getExtent().getSpatial()).orElse(new BoundingBox());
     }
 
 }

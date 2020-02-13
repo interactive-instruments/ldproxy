@@ -50,11 +50,9 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
     @JsonDeserialize(builder = ImmutableCollectionExtent.Builder.class)
     interface CollectionExtent {
 
-        @Nullable
-        TemporalExtent getTemporal();
+        Optional<TemporalExtent> getTemporal();
 
-        @Nullable
-        BoundingBox getSpatial();
+        Optional<BoundingBox> getSpatial();
 
         @Value.Default
         default boolean getSpatialComputed(){return false;}

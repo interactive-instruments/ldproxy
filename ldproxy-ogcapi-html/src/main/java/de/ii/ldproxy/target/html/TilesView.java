@@ -15,7 +15,12 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.TileCollections;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TilesView extends LdproxyView {
@@ -89,6 +94,8 @@ public class TilesView extends LdproxyView {
                 .filter(featureTypeConfiguration -> !collectionId.isPresent() || Objects.equals(featureTypeConfiguration.getId(),collectionId.get()))
                 .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
                         .getTemporal())
+                 .filter(Optional::isPresent)
+                 .map(Optional::get)
                 .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})
                 .reduce((longs, longs2) -> new Long[]{
                         longs[0]==null || longs2[0]==null ? null : Math.min(longs[0], longs2[0]),

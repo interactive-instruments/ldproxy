@@ -33,16 +33,11 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
-import de.ii.xtraplatform.crs.domain.CrsTransformer;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
+import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV1;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
-import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
@@ -104,9 +99,6 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     @Requires
     private OgcApiFeatureCoreProviders providers;
-
-    @Requires
-    private CrsTransformerFactory crsTransformerFactory;
 
     @Override
     public String getConformanceClass() {
@@ -363,9 +355,9 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
         dataset.featureTypes.add(featureTypeDataset);
 
         featureTypeDataset.temporalExtent = featureType.getExtent()
-                                                       .getTemporal();
+                                                       .getTemporal().orElse(null);
 
-        getBoundingBox(featureType, featureProvider).ifPresent(bbox -> featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
+        featureType.getExtent().getSpatial().ifPresent(bbox -> featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
 
         featureTypeDataset.filterFields = filterableFields.entrySet()
                                                           .stream()
@@ -485,33 +477,5 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                                                       .toUpperCase()))
                                              .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
                                              .collect(Collectors.toList());
-    }
-
-    private Optional<BoundingBox> getBoundingBox(
-            FeatureTypeConfigurationOgcApi featureType,
-            FeatureProvider2 featureProvider) {
-
-        if (featureType.getExtent().getSpatialComputed() && featureProvider.supportsExtents()) {
-            BoundingBox spatialExtent = featureProvider.extents()
-                                                       .getSpatialExtent(featureType.getId());
-
-            if (OgcCrs.CRS84.equals(featureProvider.getData()
-                                             .getNativeCrs())) {
-                return Optional.ofNullable(spatialExtent);
-            }
-
-            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(featureProvider.getData()
-                                                                                                       .getNativeCrs(), OgcCrs.CRS84);
-            if (transformer.isPresent()) {
-                try {
-                    return Optional.ofNullable(transformer.get()
-                                                          .transformBoundingBox(spatialExtent));
-                } catch (CrsTransformationException e) {
-
-                }
-            }
-        }
-
-        return Optional.ofNullable(featureType.getExtent().getSpatial());
     }
 }
