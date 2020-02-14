@@ -11,16 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueriesHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryIdentifier;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
@@ -35,12 +26,7 @@ import org.immutables.value.Value;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @Instantiate
@@ -125,6 +111,11 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                 .map(OgcApiFeaturesCollectionQueryables::getTemporal)
                 .orElse(ImmutableList.of());
 
+        List<String> spatialQueryables = featuresCoreConfiguration
+                .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
+                .map(OgcApiFeaturesCollectionQueryables::getSpatial)
+                .orElse(ImmutableList.of());
+
         List<String> visitedProperties = new ArrayList<>();
 
         featureTypeIds.forEach(featureTypeId -> {
@@ -138,6 +129,9 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                                if (visitedProperties.contains(name)) {
                                    return;
                                }
+
+                               // no "[...]" in filters, just dots to separate the segments
+                               String nameInFilters = name.replaceAll("\\[[^\\]]*\\]", "");
 
                                if (otherQueryables.contains(name)) {
                                    String type;
@@ -156,20 +150,28 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                                     break;
                                        default:
                                            return;
-                            }
+                                   }
 
-                        queryables.addQueryables(ImmutableQueryable.builder()
-                                                                              .id(name)
+                                   // TODO: add more information to the configuration and include it in the Queryable values
+
+                                   queryables.addQueryables(ImmutableQueryable.builder()
+                                                                              .id(nameInFilters)
                                                                               .type(type)
                                                                               .build());
                                    visitedProperties.add(name);
                                } else if (temporalQueryables.contains(name)) {
                                    queryables.addQueryables(ImmutableQueryable.builder()
-                                                                              .id(name)
-                                .type("dateTime")
-                                .build());
+                                                                              .id(nameInFilters)
+                                                                              .type("dateTime")
+                                                                              .build());
                                    visitedProperties.add(name);
-                    }
+                               } else if (spatialQueryables.contains(name)) {
+                                   queryables.addQueryables(ImmutableQueryable.builder()
+                                                                              .id(nameInFilters)
+                                                                              .type("geometry")
+                                                                              .build());
+                                   visitedProperties.add(name);
+                               }
                            });
             }
         });
