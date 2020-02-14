@@ -548,7 +548,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
 
                               if (hasTransformations) {
                                   transformations.put(general.getName()
-                                                             .replaceAll("\\[.+?\\]", "[]"), builder.build());
+                                                             .replaceAll("\\[[^\\]]+?\\]", "[]"), builder.build());
                               }
                           });
 
@@ -620,7 +620,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
 
                               if (hasTransformations) {
                                   transformations.put(general.getName()
-                                                             .replaceAll("\\[.+?\\]", "[]"), builder.build());
+                                                             .replaceAll("\\[[^\\]]+?\\]", "[]"), builder.build());
                               }
                           });
 
