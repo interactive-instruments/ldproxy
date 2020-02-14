@@ -16,12 +16,16 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 public class QueryablesView extends LdproxyView {
     public List<Queryable> queryables;
     public String typeTitle;
     public String none;
+    // sum must be 12 for bootstrap
+    public Integer idCols = 3;
+    public Integer descCols = 9;
 
     public QueryablesView(OgcApiApiDataV2 apiData,
                           Queryables queryables,
@@ -38,6 +42,15 @@ public class QueryablesView extends LdproxyView {
                 i18n.get("queryablesDescription", language));
 
         this.queryables = queryables.getQueryables();
+        Integer maxIdLength = this.queryables
+                .stream()
+                .map(queryable -> queryable.getId())
+                .filter(id -> Objects.nonNull(id))
+                .mapToInt(id -> id.length())
+                .max()
+                .orElse(0);
+        idCols = Math.min(Math.max(2, 1 + maxIdLength/10),6);
+        descCols = 12 - idCols;
         this.typeTitle = i18n.get("typeTitle", language);
         this.none = i18n.get ("none", language);
     }
