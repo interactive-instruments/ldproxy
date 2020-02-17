@@ -8,20 +8,16 @@
 package de.ii.ldproxy.ogcapi.features.core.api;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.*;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.ws.rs.ServerErrorException;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Optional;
@@ -32,9 +28,11 @@ import java.util.Optional;
 public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtension {
 
     private final OgcApiFeatureCoreProviders providers;
+    private final CrsTransformerFactory crsTransformerFactory;
 
-    public OgcApiFeatureCoreDataHydrator(@Requires OgcApiFeatureCoreProviders providers) {
+    public OgcApiFeatureCoreDataHydrator(@Requires OgcApiFeatureCoreProviders providers, @Requires CrsTransformerFactory crsTransformerFactory) {
         this.providers = providers;
+        this.crsTransformerFactory = crsTransformerFactory;
     }
 
     @Override
@@ -91,15 +89,26 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
 
                               if (spatialExtent.isPresent()) {
 
+                                  BoundingBox boundingBox = spatialExtent.get();
+                                  if (!boundingBox.getEpsgCrs().equals(OgcCrs.CRS84)){
+                                      try {
+                                          Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
+                                          if (transformer.isPresent()) {
+                                              boundingBox = transformer.get().transformBoundingBox(boundingBox);
+                                          }
+                                      } catch (CrsTransformationException e) {
+                                          throw new ServerErrorException(String.format("Error transforming the bounding box with CRS '%s'", boundingBox.getEpsgCrs().toUriString()), 500);
+                                      }
+                                  }
+
                                   ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                                           .from(entry.getValue())
                                           .extent(new ImmutableCollectionExtent.Builder()
                                                   .from(entry.getValue()
                                                              .getExtent())
-                                                  .spatial(spatialExtent.get())
+                                                  .spatial(boundingBox)
                                                   .build())
                                           .build();
-
 
                                   return new AbstractMap.SimpleEntry<>(entry.getKey(), featureTypeConfiguration);
                               }
