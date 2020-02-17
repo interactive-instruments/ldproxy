@@ -85,6 +85,7 @@
 
     <h2>{{expertInformationTitle}}</h2>
 
+    {{#hasGeometry}}
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">{{supportedCrsTitle}}</div>
         <div class="col-md-10">
@@ -115,6 +116,7 @@
             </div>
         </div>
     {{/storageCrs}}
+    {{/hasGeometry}}
 
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>

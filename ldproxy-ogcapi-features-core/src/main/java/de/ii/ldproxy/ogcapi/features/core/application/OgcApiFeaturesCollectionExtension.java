@@ -154,6 +154,8 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                             .getStart(),
                     temporal.get()
                             .getEnd()));
+        } else {
+            collection.extent(new OgcApiExtent());
         }
 
         return collection;
