@@ -7,14 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-
 import java.util.Map;
 
 
 // TODO: support for a ServiceBackgroundTask
 public interface OgcApiStartupTask extends OgcApiExtension {
-    Runnable getTask(OgcApiApi api, FeatureProvider2 featureProvider);
+    Runnable getTask(OgcApiApi api);
     Map<Thread,String> getThreadMap();
     void removeThreadMapEntry(Thread t);
 }

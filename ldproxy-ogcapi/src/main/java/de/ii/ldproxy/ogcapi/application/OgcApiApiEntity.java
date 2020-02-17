@@ -68,7 +68,7 @@ public class OgcApiApiEntity extends AbstractService<OgcApiApiDataV2> implements
             }
         }
 
-        //ogcApiStartupTasks.forEach(ogcApiStartupTask -> startupTaskExecutor.submit(ogcApiStartupTask.getTask(this, featureProvider)));
+        ogcApiStartupTasks.forEach(ogcApiStartupTask -> startupTaskExecutor.submit(ogcApiStartupTask.getTask(this)));
 
     }
 

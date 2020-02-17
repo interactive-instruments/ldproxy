@@ -40,6 +40,7 @@ import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.event.store.EntityMigration;
 import de.ii.xtraplatform.event.store.Identifier;
 import de.ii.xtraplatform.feature.provider.sql.domain.ConnectionInfoSql;
+import de.ii.xtraplatform.feature.provider.sql.domain.FeatureActionTrigger;
 import de.ii.xtraplatform.feature.provider.sql.domain.ImmutableConnectionInfoSql;
 import de.ii.xtraplatform.feature.provider.wfs.domain.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.provider.wfs.domain.ImmutableConnectionInfoWfsHttp;
@@ -52,7 +53,6 @@ import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureProperty;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureProviderDataV1;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureType;
-import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformerRemove;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformerRemove.Condition;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.apache.felix.ipojo.annotations.Component;
@@ -394,6 +394,8 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                            .from(featureProvider.getConnectionInfo())
                                            .connectorType("SLICK")
                                            .dialect(ConnectionInfoSql.Dialect.PGIS)
+                                           .computeNumberMatched(featureProvider.computeNumberMatched())
+                                           .triggers(Optional.ofNullable(featureProvider.getTrigger()).map(o -> (FeatureActionTrigger)o))
                                            .build());
             } else if (Objects.equals(providerType, "WFS")) {
                 featureProviderData.featureProviderType("WFS")
