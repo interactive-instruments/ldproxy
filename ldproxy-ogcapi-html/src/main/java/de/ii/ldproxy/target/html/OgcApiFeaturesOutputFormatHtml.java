@@ -354,10 +354,15 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
         //TODO featureTypeDataset.uriBuilder = uriBuilder;
         dataset.featureTypes.add(featureTypeDataset);
 
-        featureTypeDataset.temporalExtent = featureType.getExtent()
-                                                       .getTemporal().orElse(null);
+        boolean hasExtent = featureType.getExtent().isPresent();
+        if (hasExtent) {
+            featureTypeDataset.temporalExtent = featureType.getExtent().get()
+                    .getTemporal().orElse(null);
 
-        featureType.getExtent().getSpatial().ifPresent(bbox -> featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
+            featureType.getExtent().get().getSpatial().ifPresent(bbox -> featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
+        } else {
+            featureTypeDataset.temporalExtent = null;
+        }
 
         featureTypeDataset.filterFields = filterableFields.entrySet()
                                                           .stream()

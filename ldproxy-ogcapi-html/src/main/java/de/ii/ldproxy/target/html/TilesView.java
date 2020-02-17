@@ -10,6 +10,7 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.TileCollections;
@@ -92,10 +93,12 @@ public class TilesView extends LdproxyView {
                 .values()
                 .stream()
                 .filter(featureTypeConfiguration -> !collectionId.isPresent() || Objects.equals(featureTypeConfiguration.getId(),collectionId.get()))
-                .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
-                        .getTemporal())
-                 .filter(Optional::isPresent)
-                 .map(Optional::get)
+                .map(FeatureTypeConfigurationOgcApi::getExtent)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(FeatureTypeConfigurationOgcApi.CollectionExtent::getTemporal)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})
                 .reduce((longs, longs2) -> new Long[]{
                         longs[0]==null || longs2[0]==null ? null : Math.min(longs[0], longs2[0]),

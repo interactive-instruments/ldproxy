@@ -65,6 +65,10 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
                 .stream()
                 .anyMatch(entry -> entry.getValue()
                                         .getExtent()
+                                        .isPresent() &&
+                                   entry.getValue()
+                                        .getExtent()
+                                        .get()
                                         .getSpatialComputed());
     }
 
@@ -81,8 +85,13 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
                           FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, entry.getValue());
 
                           if (entry.getValue()
-                                   .getExtent()
-                                   .getSpatialComputed() && featureProvider.supportsExtents()) {
+                                  .getExtent()
+                                  .isPresent() &&
+                              entry.getValue()
+                                  .getExtent()
+                                  .get()
+                                  .getSpatialComputed() &&
+                              featureProvider.supportsExtents()) {
                               Optional<BoundingBox> spatialExtent = featureProvider.extents()
                                                                                    .getSpatialExtent(entry.getValue()
                                                                                                           .getId());
@@ -101,14 +110,28 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
                                       }
                                   }
 
-                                  ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
-                                          .from(entry.getValue())
-                                          .extent(new ImmutableCollectionExtent.Builder()
-                                                  .from(entry.getValue()
-                                                             .getExtent())
-                                                  .spatial(boundingBox)
-                                                  .build())
-                                          .build();
+                                  ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration;
+                                  if (entry.getValue()
+                                          .getExtent()
+                                          .isPresent()) {
+                                      featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                              .from(entry.getValue())
+                                              .extent(new ImmutableCollectionExtent.Builder()
+                                                      .from(entry.getValue()
+                                                                 .getExtent()
+                                                                 .get())
+                                                      .spatial(boundingBox)
+                                                      .build())
+                                              .build();
+                                  } else {
+                                      featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                              .from(entry.getValue())
+                                              .extent(new ImmutableCollectionExtent.Builder()
+                                                      .spatial(boundingBox)
+                                                      .build())
+                                              .build();
+
+                                  }
 
                                   return new AbstractMap.SimpleEntry<>(entry.getKey(), featureTypeConfiguration);
                               }
