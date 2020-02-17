@@ -8,8 +8,8 @@
 
     {{#queryables}}
     <div class="row my-3">
-        <div class="col-md-2 font-weight-bold">{{id}}</div>
-        <div class="col-md-10">
+        <div class="col-md-{{#idCols}}{{.}}{{/idCols}}{{^idCols}}3{{/idCols}} font-weight-bold">{{id}}</div>
+        <div class="col-md-{{#descCols}}{{.}}{{/descCols}}{{^descCols}}9{{/descCols}}">
             <ul class="list-unstyled">
                 {{#title}}<li>{{.}}{{#description}}: {{{.}}}{{/description}}</li>{{/title}}</li>
                 <li>{{typeTitle}}: {{type}}</li>

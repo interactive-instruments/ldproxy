@@ -364,7 +364,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
         currentValue = null;
         currentProperty = featureProperty;
         int sortPriority = currentFeatureProperties.indexOf(featureProperty);
-        String key = featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]");
+        String key = featureProperty.getName().replaceAll("\\[[^\\]]*\\]", "[]");
         if (transformations.containsKey(key)) {
 
             Optional<FeatureProperty> htmlProperty = transformations.get(key)
@@ -592,7 +592,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                                                                    .build());
         }
 
-        return Optional.ofNullable(transformations.get(featureProperty.getName().replaceAll("\\[^\\]+?\\]", "[]")));
+        return Optional.ofNullable(transformations.get(featureProperty.getName().replaceAll("\\[[^\\]]*\\]", "[]")));
     }
 
 }

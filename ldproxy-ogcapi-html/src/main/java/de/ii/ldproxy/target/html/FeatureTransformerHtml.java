@@ -344,7 +344,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
         }
 
         String tkey = featureProperty.getName()
-                                     .replaceAll("\\[.+?\\]", "[]");
+                                     .replaceAll("\\[[^\\]]+?\\]", "[]");
         if (transformations.containsKey(tkey)) {
 
             Optional<ValueDTO> transformedProperty = property.values.size()>0 ?

@@ -205,14 +205,14 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
             valueTransformations = baseTransformations.get()
                                                       .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
                                                       .get(featureProperty.getName()
-                                                                          .replaceAll("\\[^\\]+?\\]", "[]"));
+                                                                          .replaceAll("\\[[^\\]]+?\\]", "[]"));
         }
         if (geojsonTransformations.isPresent()) {
             if (Objects.nonNull(valueTransformations)) {
                 List<FeaturePropertyValueTransformer> moreTransformations = geojsonTransformations.get()
                                                                                                   .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
                                                                                                   .get(featureProperty.getName()
-                                                                                                                      .replaceAll("\\[^\\]+?\\]", "[]"));
+                                                                                                                      .replaceAll("\\[[^\\]]+?\\]", "[]"));
                 if (Objects.nonNull(moreTransformations)) {
                     valueTransformations = Stream
                             .of(valueTransformations, moreTransformations)
@@ -223,7 +223,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
                 valueTransformations = geojsonTransformations.get()
                                                              .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
                                                              .get(featureProperty.getName()
-                                                                                 .replaceAll("\\[^\\]+?\\]", "[]"));
+                                                                                 .replaceAll("\\[[^\\]]+?\\]", "[]"));
             }
         }
 
@@ -236,14 +236,14 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
             schemaTransformations = baseTransformations.get()
                                                        .getSchemaTransformations(false)
                                                        .get(featureProperty.getName()
-                                                                           .replaceAll("\\[^\\]+?\\]", "[]"));
+                                                                           .replaceAll("\\[[^\\]]+?\\]", "[]"));
         }
         if (geojsonTransformations.isPresent()) {
             if (Objects.nonNull(schemaTransformations)) {
                 List<FeaturePropertySchemaTransformer> moreTransformations = geojsonTransformations.get()
                                                                                                    .getSchemaTransformations(false)
                                                                                                    .get(featureProperty.getName()
-                                                                                                                       .replaceAll("\\[^\\]+?\\]", "[]"));
+                                                                                                                       .replaceAll("\\[[^\\]]+?\\]", "[]"));
                 if (Objects.nonNull(moreTransformations)) {
                     schemaTransformations = Stream
                             .of(schemaTransformations, moreTransformations)
@@ -254,7 +254,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
                 schemaTransformations = geojsonTransformations.get()
                                                               .getSchemaTransformations(false)
                                                               .get(featureProperty.getName()
-                                                                                  .replaceAll("\\[^\\]+?\\]", "[]"));
+                                                                                  .replaceAll("\\[[^\\]]+?\\]", "[]"));
             }
         }
 
