@@ -15,7 +15,9 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiStartupTask;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -73,6 +75,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     @Requires
     private OgcApiFeaturesQuery queryParser;
 
+    @Requires
+    private OgcApiFeatureCoreProviders providers;
+
     private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
 
     public VectorTileSeeding(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
@@ -89,14 +94,16 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * The runnable Task which starts the seeding.
      *
      * @param api               the API
-     * @param featureProvider   the featureProvider
      * @return the runnable process
      */
     @Override
-    public Runnable getTask(OgcApiApi api, FeatureProvider2 featureProvider) {
+    public Runnable getTask(OgcApiApi api) {
 
         Optional<OgcApiFeatureFormatExtension> wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE);
         OgcApiApiDataV2 apiData = api.getData();
+
+        //TODO: might be different per collection
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
 
         if (!wfs3OutputFormatGeoJson.isPresent()) {
             return () -> {
@@ -322,6 +329,13 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                               FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                               OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
 
+        Map<String, String> filterableFields = service.getData()
+                                                         .getCollections()
+                                                         .get(collectionId)
+                                                         .getExtension(OgcApiFeaturesCoreConfiguration.class)
+                                                         .get()
+                                                         .getAllFilterParameters();
+
         VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
         File tileFileJson = tile.getFile(cache, "json");
 
@@ -344,7 +358,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                     .type(new MediaType("application", "json"))
                     .label("JSON")
                     .build();
-            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, null, null, null, uriCustomizer, mediaType, true, tile, i18n, language, queryParser);
+            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, null, null, filterableFields, uriCustomizer, mediaType, true, tile, i18n, language, queryParser);
         }
         return tileFileJson;
     }
