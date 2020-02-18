@@ -39,7 +39,7 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
 
     Optional<String> getPersistentUriTemplate();
 
-    CollectionExtent getExtent();
+    Optional<CollectionExtent> getExtent();
 
     @JsonProperty(value = "api")
     @JsonAlias(value = "capabilities")

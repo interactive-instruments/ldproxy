@@ -16,6 +16,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -57,7 +59,12 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
                                                      OgcApiMediaType mediaType,
                                                      List<OgcApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
-        if (isExtensionEnabled(apiData, featureTypeConfiguration, CrsConfiguration.class)) {
+        boolean hasGeometry = featureTypeConfiguration.getExtension(OgcApiFeaturesCoreConfiguration.class)
+                .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
+                .map(OgcApiFeaturesCollectionQueryables::getSpatial)
+                .filter(spatial -> !spatial.isEmpty())
+                .isPresent();
+        if (isExtensionEnabled(apiData, featureTypeConfiguration, CrsConfiguration.class) && hasGeometry) {
             List<String> crsList;
             if (isNested) {
                 // just reference the default list of coordinate reference systems

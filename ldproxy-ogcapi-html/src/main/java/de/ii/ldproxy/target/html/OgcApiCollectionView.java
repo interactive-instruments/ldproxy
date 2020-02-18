@@ -11,6 +11,8 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.*;
@@ -27,6 +29,7 @@ public class OgcApiCollectionView extends LdproxyView {
     public Map<String, String> bbox2;
     public Map<String, String> temporalExtent;
     public List<String> crs;
+    public boolean hasGeometry;
     public String storageCrs;
     public Metadata metadata;
     public OgcApiLink items;
@@ -72,6 +75,11 @@ public class OgcApiCollectionView extends LdproxyView {
         this.storageCrs = collection
                 .getStorageCrs()
                 .orElse("");
+        this.hasGeometry = apiData.getCollections().get(collection.getId()).getExtension(OgcApiFeaturesCoreConfiguration.class)
+                .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
+                .map(OgcApiFeaturesCollectionQueryables::getSpatial)
+                .filter(spatial -> !spatial.isEmpty())
+                .isPresent();
         this.defaultStyle = collection
                 .getDefaultStyle()
                 .orElse(null);
@@ -115,9 +123,7 @@ public class OgcApiCollectionView extends LdproxyView {
             this.temporalExtent = null;
         }
         this.spatialSearch = false;
-        this.itemType = collection.getItemType()
-                .orElse("feature");
-
+        this.itemType = i18n.get(collection.getItemType().orElse("feature"), language);
         this.itemTypeTitle = i18n.get("itemTypeTitle", language);
         this.dataTitle = i18n.get("dataTitle", language);
         this.licenseTitle = i18n.get("licenseTitle", language);

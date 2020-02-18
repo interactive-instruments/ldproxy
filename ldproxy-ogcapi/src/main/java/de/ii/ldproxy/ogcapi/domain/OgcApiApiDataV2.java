@@ -95,11 +95,13 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     public BoundingBox getSpatialExtent() {
         double[] val = getCollections().values()
                                        .stream()
-                                       .map(featureTypeConfigurationWfs3 -> featureTypeConfigurationWfs3.getExtent()
-                                                                                                         .getSpatial()
-                                                                                                         .map(BoundingBox::getCoords))
+                                       .map(FeatureTypeConfigurationOgcApi::getExtent)
                                        .filter(Optional::isPresent)
                                        .map(Optional::get)
+                                       .map(FeatureTypeConfigurationOgcApi.CollectionExtent::getSpatial)
+                                       .filter(Optional::isPresent)
+                                       .map(Optional::get)
+                                       .map(BoundingBox::getCoords)
                                        .reduce((doubles, doubles2) -> new double[]{
                                                 Math.min(doubles[0], doubles2[0]),
                                                 Math.min(doubles[1], doubles2[1]),
@@ -131,8 +133,10 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
         return getCollections().values()
                                .stream()
                                .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
-                               .map(featureTypeConfiguration -> featureTypeConfiguration.getExtent()
-                                                                                                              .getSpatial())
+                               .map(FeatureTypeConfigurationOgcApi::getExtent)
+                               .filter(Optional::isPresent)
+                               .map(Optional::get)
+                               .map(FeatureTypeConfigurationOgcApi.CollectionExtent::getSpatial)
                                .filter(Optional::isPresent)
                                .map(Optional::get)
                                .findFirst()
