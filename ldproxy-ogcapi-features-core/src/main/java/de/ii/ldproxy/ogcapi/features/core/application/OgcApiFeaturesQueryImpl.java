@@ -30,7 +30,7 @@ import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.TEquals;
-import de.ii.xtraplatform.cql.infra.PropertyCheckVisitor;
+import de.ii.xtraplatform.cql.app.CqlPropertyChecker;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -251,12 +251,14 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                     } catch (CqlParseException e) {
                                                         throw new BadRequestException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
                                                     }
-                                                    PropertyCheckVisitor visitor = new PropertyCheckVisitor(ImmutableList.copyOf(filterableFields.keySet()));
-                                                    cqlPredicate.acceptTopLevel(visitor);
-                                                    if (visitor.getNotAllowedProperties().isEmpty()) {
+
+                                                    CqlPropertyChecker visitor = new CqlPropertyChecker(ImmutableList.copyOf(filterableFields.keySet()));
+                                                    List<String> invalidProperties = cqlPredicate.accept(visitor);
+
+                                                    if (invalidProperties.isEmpty()) {
                                                         return cqlPredicate;
                                                     } else {
-                                                        throw new BadRequestException(String.format("The property '%s' is not allowed.", visitor.getNotAllowedProperties()));
+                                                        throw new BadRequestException(String.format("The parameter '%s' is invalid. Unknown or forbidden properties used: %s.", filter.getKey(), String.join(", ", invalidProperties)));
                                                     }
                                                 }
                                                 if (filter.getValue()
