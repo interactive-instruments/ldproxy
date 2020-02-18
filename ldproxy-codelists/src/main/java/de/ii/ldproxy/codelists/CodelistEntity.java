@@ -31,7 +31,7 @@ public class CodelistEntity extends AbstractPersistentEntity<CodelistData> imple
 
     @Override
     protected void onStart() {
-        LOGGER.debug("Codelist loaded {} {}", getId(), shouldRegister());
+        LOGGER.info("Codelist with id '{}' loaded successfully.", getId());
     }
 
     @Override

@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -45,31 +45,35 @@ public class OgcApiApiEntity extends AbstractService<OgcApiApiDataV2> implements
         this.extensionRegistry = extensionRegistry;
     }
 
-    //TODO: merge with service background tasks
     @Override
     protected void onStart() {
-        List<OgcApiStartupTask> ogcApiStartupTasks = getStartupTasks();
-        Map<Thread, String> threadMap = null;
-        for (OgcApiStartupTask startupTask : ogcApiStartupTasks) {
-            threadMap = startupTask.getThreadMap();
-        }
+        if (shouldRegister()) {
+            //TODO: check all extensions if startup was successful
+            LOGGER.info("Service with id '{}' started successfully.", getId());
 
-        if (threadMap != null) {
-            for (Map.Entry<Thread, String> entry : threadMap.entrySet()) {
-                if (entry.getValue()
-                         .equals(getData().getId())) {
-                    if (entry.getKey()
-                             .getState() != Thread.State.TERMINATED) {
-                        entry.getKey()
-                             .interrupt();
-                        ogcApiStartupTasks.forEach(ogcApiStartupTask -> ogcApiStartupTask.removeThreadMapEntry(entry.getKey()));
+            //TODO: merge with service background tasks
+            List<OgcApiStartupTask> ogcApiStartupTasks = getStartupTasks();
+            Map<Thread, String> threadMap = null;
+            for (OgcApiStartupTask startupTask : ogcApiStartupTasks) {
+                threadMap = startupTask.getThreadMap();
+            }
+
+            if (threadMap != null) {
+                for (Map.Entry<Thread, String> entry : threadMap.entrySet()) {
+                    if (entry.getValue()
+                             .equals(getData().getId())) {
+                        if (entry.getKey()
+                                 .getState() != Thread.State.TERMINATED) {
+                            entry.getKey()
+                                 .interrupt();
+                            ogcApiStartupTasks.forEach(ogcApiStartupTask -> ogcApiStartupTask.removeThreadMapEntry(entry.getKey()));
+                        }
                     }
                 }
             }
+
+            ogcApiStartupTasks.forEach(ogcApiStartupTask -> startupTaskExecutor.submit(ogcApiStartupTask.getTask(this)));
         }
-
-        ogcApiStartupTasks.forEach(ogcApiStartupTask -> startupTaskExecutor.submit(ogcApiStartupTask.getTask(this)));
-
     }
 
     @Override
@@ -82,24 +86,30 @@ public class OgcApiApiEntity extends AbstractService<OgcApiApiDataV2> implements
     }
 
     @Override
-    public <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType, String path) {
+    public <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType,
+                                                                   String path) {
         return extensionRegistry.getExtensionsForType(extensionType)
-                .stream()
-                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
-                .filter(outputFormatExtension -> mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))
-                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(getData()))
-                .findFirst();
+                                .stream()
+                                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
+                                .filter(outputFormatExtension -> mediaType.type()
+                                                                          .isCompatible(outputFormatExtension.getMediaType()
+                                                                                                             .type()))
+                                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(getData()))
+                                .findFirst();
     }
 
     @Override
-    public <T extends FormatExtension> List<T> getAllOutputFormats(Class<T> extensionType, OgcApiMediaType mediaType, String path, Optional<T> excludeFormat) {
+    public <T extends FormatExtension> List<T> getAllOutputFormats(Class<T> extensionType, OgcApiMediaType mediaType,
+                                                                   String path, Optional<T> excludeFormat) {
         return extensionRegistry.getExtensionsForType(extensionType)
-                .stream()
-                .filter(outputFormatExtension -> !Objects.equals(outputFormatExtension, excludeFormat.orElse(null)))
-                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
-                .filter(outputFormatExtension -> mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))
-                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(getData()))
-                .collect(Collectors.toList());
+                                .stream()
+                                .filter(outputFormatExtension -> !Objects.equals(outputFormatExtension, excludeFormat.orElse(null)))
+                                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
+                                .filter(outputFormatExtension -> mediaType.type()
+                                                                          .isCompatible(outputFormatExtension.getMediaType()
+                                                                                                             .type()))
+                                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(getData()))
+                                .collect(Collectors.toList());
     }
 
 }
