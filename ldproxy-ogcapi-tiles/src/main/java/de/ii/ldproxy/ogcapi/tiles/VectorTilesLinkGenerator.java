@@ -153,6 +153,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                                boolean isCollectionTile,
                                                boolean mvt,
                                                boolean json,
+                                               boolean multitilesEnabled,
                                                I18n i18n,
                                                Optional<Locale> language) {
 
@@ -195,14 +196,16 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                     .templated("true")
                     .build());
         }
-        builder.add(new ImmutableOgcApiLink.Builder()
-                .href(uriBuilder.copy()
-                        .clearParameters()
-                        .ensureNoTrailingSlash()
-                        .toString() + "/{tileMatrixSetId}")
-                .rel("items")
-                .templated("true")
-                .build());
+        if (multitilesEnabled) {
+            builder.add(new ImmutableOgcApiLink.Builder()
+                    .href(uriBuilder.copy()
+                            .clearParameters()
+                            .ensureNoTrailingSlash()
+                            .toString() + "/{tileMatrixSetId}")
+                    .rel("items")
+                    .templated("true")
+                    .build());
+        }
 
         return builder.build();
     }
