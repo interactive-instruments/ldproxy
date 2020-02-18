@@ -11,6 +11,7 @@ import groovyx.net.http.ContentType
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
 import groovyx.net.http.URIBuilder
+import groovyx.net.http.HttpResponseException
 import org.apache.http.ProtocolVersion
 import spock.lang.Requires
 import spock.lang.Specification
@@ -25,6 +26,7 @@ class OgcApiCoreRestApiSpec extends Specification {
     static final String SUT_URL = System.getenv('SUT_URL')
     static final String SUT_PATH = "/rest/services/daraa"
     static final String SUT_COLLECTION = "agriculturesrf"
+    static final String SUT_COLLECTION2 = "culturesrf"
     static final String SUT_ID = "1"
 
     RESTClient restClient = new RESTClient(SUT_URL)
@@ -319,6 +321,47 @@ class OgcApiCoreRestApiSpec extends Specification {
         and: "Requirement 34B: all links shall include the 'rel' and 'type' link parameters"
         response.responseData.links.every{ it.rel?.trim() }
         response.responseData.links.every{ it.type?.trim() }
+    }
+
+    def 'Filter parameter with a valid property'() {
+
+        given:
+        String filter = "f_code='AL012'"
+
+        when:
+        def fullUri = new URIBuilder(
+                new URI(SUT_URL + SUT_PATH + '/collections/' + SUT_COLLECTION2 + '/items?filter=' + filter)
+        )
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri = fullUri
+            headers.Accept = 'application/geo+json'
+        })
+
+        then: ""
+        response.status == 200
+
+        and:
+        response.responseData.numberMatched == 2
+        response.responseData.numberReturned == 2
+    }
+
+    def 'Filter parameter with an invalid property'() {
+
+        given:
+        String filter = "fcsubtype='100065'"
+
+        when:
+        def fullUri = new URIBuilder(
+                new URI(SUT_URL + SUT_PATH + '/collections/' + SUT_COLLECTION2 + '/items?filter=' + filter)
+        )
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri = fullUri
+            headers.Accept = 'application/geo+json'
+        })
+
+        then:
+        def e = thrown(HttpResponseException)
+        e.statusCode == 400
     }
 
 

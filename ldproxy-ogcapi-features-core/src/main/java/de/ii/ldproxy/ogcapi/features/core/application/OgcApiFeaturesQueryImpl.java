@@ -25,12 +25,12 @@ import de.ii.xtraplatform.cql.domain.CqlParseException;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.During;
 import de.ii.xtraplatform.cql.domain.Eq;
-import de.ii.xtraplatform.cql.domain.ImmutableAnd;
 import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.TEquals;
+import de.ii.xtraplatform.cql.infra.PropertyCheckVisitor;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -245,10 +245,18 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                     return timeToCql(filterableFields.get(filter.getKey()), filter.getValue()).orElse(null);
                                                 }
                                                 if (filterParameters.contains(filter.getKey())) {
+                                                    CqlPredicate cqlPredicate;
                                                     try {
-                                                        return cql.read(filter.getValue(), Cql.Format.TEXT);
+                                                        cqlPredicate = cql.read(filter.getValue(), Cql.Format.TEXT);
                                                     } catch (CqlParseException e) {
                                                         throw new BadRequestException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
+                                                    }
+                                                    PropertyCheckVisitor visitor = new PropertyCheckVisitor(ImmutableList.copyOf(filterableFields.keySet()));
+                                                    cqlPredicate.acceptTopLevel(visitor);
+                                                    if (visitor.getNotAllowedProperties().isEmpty()) {
+                                                        return cqlPredicate;
+                                                    } else {
+                                                        throw new BadRequestException(String.format("The property '%s' is not allowed.", visitor.getNotAllowedProperties()));
                                                     }
                                                 }
                                                 if (filter.getValue()
