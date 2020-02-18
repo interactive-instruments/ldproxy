@@ -269,6 +269,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                         false,
                         true,
                         false,
+                        isMultiTilesEnabledForApi(service.getData()),
                         i18n,
                         requestContext.getLanguage()))
                 .build();
