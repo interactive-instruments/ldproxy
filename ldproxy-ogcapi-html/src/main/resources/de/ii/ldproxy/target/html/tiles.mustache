@@ -6,19 +6,18 @@
     <br/>
     <br/>
 
-    {{#tileCollections}}
-        <div class="row my-3">
-            <div class="col-md-3 font-weight-bold">{{#tileMatrixSetURI}}<a href="{{.}}" target="_blank">{{tileMatrixSet}}</a>{{/tileMatrixSetURI}}{{^tileMatrixSetURI}}{{tileMatrixSet}}{{/tileMatrixSetURI}}</div>
-            <div class="col-md-10">
-                <div id="map-container-{{tileMatrixSet}}" class="map">
-                    <small><span id="info-{{tileMatrixSet}}" class="info"></small>
-                </div>
+    <div class="row my-3">
+        <div class="col-md-3">
+            <select id="tilingScheme" onchange="setTilingScheme()">
+                {{#tileCollections}}<option value="{{tileMatrixSet}}">{{tileMatrixSet}}</option>{{/tileCollections}}
+            </select>
+        </div>
+        <div class="col-md-9">
+            <div id="map-container" class="map">
+                <small><span id="info" class="info"></small>
             </div>
         </div>
-    {{/tileCollections}}
-    {{^tileCollections}}
-        <span>{{none}}</span>
-    {{/tileCollections}}
+    </div>
     <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.1.1/build/ol.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/openlayers/ol-mapbox-style@v4.3.1/dist/olms.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.6.0/proj4.js"></script>
