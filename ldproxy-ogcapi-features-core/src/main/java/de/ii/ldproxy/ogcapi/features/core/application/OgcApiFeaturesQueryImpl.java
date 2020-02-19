@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -17,6 +17,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
+import de.ii.xtraplatform.cql.app.CqlPropertyChecker;
 import de.ii.xtraplatform.cql.domain.After;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Before;
@@ -30,7 +31,7 @@ import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.TEquals;
-import de.ii.xtraplatform.cql.app.CqlPropertyChecker;
+import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -71,12 +72,18 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
     private static final String TIMESTAMP_REGEX = "([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))";
     private static final String OPEN_REGEX = "(\\.\\.)?";
-    private static final Predicate<String> INTERVAL_PATTERN = Pattern.compile(String.format("^%s/%s$", TIMESTAMP_REGEX, TIMESTAMP_REGEX)).asPredicate();
-    private static final Predicate<String> INTERVAL_OPEN_PATTERN = Pattern.compile(String.format("^%s/%s$", OPEN_REGEX, OPEN_REGEX)).asPredicate();
-    private static final Predicate<String> INTERVAL_OPEN_START_PATTERN = Pattern.compile(String.format("^%s/%s$", OPEN_REGEX, TIMESTAMP_REGEX)).asPredicate();
-    private static final Predicate<String> INTERVAL_OPEN_END_PATTERN = Pattern.compile(String.format("^%s/%s$", TIMESTAMP_REGEX, OPEN_REGEX)).asPredicate();
-    private static final Predicate<String> INSTANT_PATTERN = Pattern.compile(String.format("^%s$", TIMESTAMP_REGEX)).asPredicate();
-    private static final Splitter ARRAY_SPLITTER = Splitter.on(',').trimResults();
+    private static final Predicate<String> INTERVAL_PATTERN = Pattern.compile(String.format("^%s/%s$", TIMESTAMP_REGEX, TIMESTAMP_REGEX))
+                                                                     .asPredicate();
+    private static final Predicate<String> INTERVAL_OPEN_PATTERN = Pattern.compile(String.format("^%s/%s$", OPEN_REGEX, OPEN_REGEX))
+                                                                          .asPredicate();
+    private static final Predicate<String> INTERVAL_OPEN_START_PATTERN = Pattern.compile(String.format("^%s/%s$", OPEN_REGEX, TIMESTAMP_REGEX))
+                                                                                .asPredicate();
+    private static final Predicate<String> INTERVAL_OPEN_END_PATTERN = Pattern.compile(String.format("^%s/%s$", TIMESTAMP_REGEX, OPEN_REGEX))
+                                                                              .asPredicate();
+    private static final Predicate<String> INSTANT_PATTERN = Pattern.compile(String.format("^%s$", TIMESTAMP_REGEX))
+                                                                    .asPredicate();
+    private static final Splitter ARRAY_SPLITTER = Splitter.on(',')
+                                                           .trimResults();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFeaturesQueryImpl.class);
 
@@ -227,49 +234,50 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     }
 
     private Optional<CqlPredicate> getCQLFromFilters(Map<String, String> filters,
-                                     Map<String, String> filterableFields, Set<String> filterParameters,
-                                     Optional<EpsgCrs> providerCrs) {
+                                                     Map<String, String> filterableFields, Set<String> filterParameters,
+                                                     Optional<EpsgCrs> providerCrs) {
 
         List<CqlPredicate> predicates = filters.entrySet()
-                                            .stream()
-                                            .map(filter -> {
-                                                if (filter.getKey()
-                                                          .equals("bbox")) {
-                                                    if (!providerCrs.isPresent()) {
-                                                        return null;
-                                                    }
-                                                    return bboxToCql(filterableFields.get(filter.getKey()), filter.getValue(), providerCrs.get());
-                                                }
-                                                if (filter.getKey()
-                                                          .equals("datetime")) {
-                                                    return timeToCql(filterableFields.get(filter.getKey()), filter.getValue()).orElse(null);
-                                                }
-                                                if (filterParameters.contains(filter.getKey())) {
-                                                    CqlPredicate cqlPredicate;
-                                                    try {
-                                                        cqlPredicate = cql.read(filter.getValue(), Cql.Format.TEXT);
-                                                    } catch (CqlParseException e) {
-                                                        throw new BadRequestException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
-                                                    }
+                                               .stream()
+                                               .map(filter -> {
+                                                   if (filter.getKey()
+                                                             .equals("bbox")) {
+                                                       if (!providerCrs.isPresent()) {
+                                                           return null;
+                                                       }
+                                                       return bboxToCql(filterableFields.get(filter.getKey()), filter.getValue(), providerCrs.get());
+                                                   }
+                                                   if (filter.getKey()
+                                                             .equals("datetime")) {
+                                                       return timeToCql(filterableFields.get(filter.getKey()), filter.getValue()).orElse(null);
+                                                   }
+                                                   if (filterParameters.contains(filter.getKey())) {
+                                                       CqlPredicate cqlPredicate;
+                                                       try {
+                                                           cqlPredicate = cql.read(filter.getValue(), Cql.Format.TEXT);
+                                                       } catch (CqlParseException e) {
+                                                           throw new BadRequestException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
+                                                       }
 
-                                                    CqlPropertyChecker visitor = new CqlPropertyChecker(ImmutableList.copyOf(filterableFields.keySet()));
-                                                    List<String> invalidProperties = cqlPredicate.accept(visitor);
+                                                       //TODO: filterableFields keys do not contain real names of geometry or date, added values as well for now
+                                                       CqlPropertyChecker visitor = new CqlPropertyChecker(new ImmutableList.Builder<String>().addAll(filterableFields.keySet()).addAll(filterableFields.values()).build());
+                                                       List<String> invalidProperties = cqlPredicate.accept(visitor);
 
-                                                    if (invalidProperties.isEmpty()) {
-                                                        return cqlPredicate;
-                                                    } else {
-                                                        throw new BadRequestException(String.format("The parameter '%s' is invalid. Unknown or forbidden properties used: %s.", filter.getKey(), String.join(", ", invalidProperties)));
-                                                    }
-                                                }
-                                                if (filter.getValue()
-                                                          .contains("*")) {
-                                                    return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), filter.getValue(), "*"));
-                                                }
+                                                       if (invalidProperties.isEmpty()) {
+                                                           return cqlPredicate;
+                                                       } else {
+                                                           throw new BadRequestException(String.format("The parameter '%s' is invalid. Unknown or forbidden properties used: %s.", filter.getKey(), String.join(", ", invalidProperties)));
+                                                       }
+                                                   }
+                                                   if (filter.getValue()
+                                                             .contains("*")) {
+                                                       return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue()), "*"));
+                                                   }
 
-                                                return CqlPredicate.of(Eq.of(filterableFields.get(filter.getKey()), filter.getValue()));
-                                            })
-                                            .filter(Objects::nonNull)
-                                            .collect(Collectors.toList());
+                                                   return CqlPredicate.of(Eq.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue())));
+                                               })
+                                               .filter(Objects::nonNull)
+                                               .collect(Collectors.toList());
 
         return predicates.isEmpty() ? Optional.empty() : Optional.of(predicates.size() == 1 ? predicates.get(0) : CqlPredicate.of(And.of(predicates)));
     }
@@ -281,7 +289,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         if (values.size() == 5) {
             try {
                 sourceCrs = EpsgCrs.fromString(values.get(4));
-                values = values.subList(0,4);
+                values = values.subList(0, 4);
             } catch (Throwable e) {
                 //continue, fifth value is not from bbox-crs, as that is already validated in OgcApiParameterCrs
             }
@@ -293,7 +301,9 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
         List<Double> coordinates;
         try {
-            coordinates = values.stream().map(Double::valueOf).collect(Collectors.toList());
+            coordinates = values.stream()
+                                .map(Double::valueOf)
+                                .collect(Collectors.toList());
         } catch (NumberFormatException e) {
             throw new BadRequestException(String.format("The parameter 'bbox' is invalid: the coordinates are not valid numbers '%s'", getBboxAsString(values)));
         }
@@ -309,11 +319,12 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             //TODO: move transformation to provider
             Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), providerCrs);
             BoundingBox transformedBoundingBox = transformer.isPresent() ? transformer.get()
-                                                                               .transformBoundingBox(boundingBox) : boundingBox;
+                                                                                      .transformBoundingBox(boundingBox) : boundingBox;
 
             return CqlPredicate.of(Intersects.of(geometryField, transformedBoundingBox));
         } catch (CrsTransformationException e) {
-            throw new BadRequestException(String.format("Error transforming the bounding box '%s' with CRS '%s'", getBboxAsString(boundingBox), boundingBox.getEpsgCrs().toUriString()));
+            throw new BadRequestException(String.format("Error transforming the bounding box '%s' with CRS '%s'", getBboxAsString(boundingBox), boundingBox.getEpsgCrs()
+                                                                                                                                                           .toUriString()));
         }
     }
 
@@ -351,22 +362,22 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             if (INTERVAL_PATTERN.test(timeValue)) {
                 // the following parse accepts fully specified time intervals
                 Interval fromIso8601Period = Interval.parse(timeValue);
-                return Optional.of(CqlPredicate.of(During.of(timeField, fromIso8601Period)));
+                return Optional.of(CqlPredicate.of(During.of(timeField, TemporalLiteral.of(fromIso8601Period))));
             } else if (INSTANT_PATTERN.test(timeValue)) {
                 // a time instant
                 Instant fromIso8601 = Instant.parse(timeValue);
-                return Optional.of(CqlPredicate.of(TEquals.of(timeField, fromIso8601)));
+                return Optional.of(CqlPredicate.of(TEquals.of(timeField, TemporalLiteral.of(fromIso8601))));
             } else if (INTERVAL_OPEN_PATTERN.test(timeValue)) {
                 // open start and end, nothing to do, all values match
                 return Optional.empty();
             } else if (INTERVAL_OPEN_END_PATTERN.test(timeValue)) {
                 // open end
                 Instant fromIso8601 = Instant.parse(timeValue.substring(0, timeValue.indexOf("/")));
-                return Optional.of(CqlPredicate.of(After.of(timeField, fromIso8601.minusSeconds(1))));
+                return Optional.of(CqlPredicate.of(After.of(timeField, TemporalLiteral.of(fromIso8601.minusSeconds(1)))));
             } else if (INTERVAL_OPEN_START_PATTERN.test(timeValue)) {
                 // open start
                 Instant fromIso8601 = Instant.parse(timeValue.substring(timeValue.indexOf("/") + 1));
-                return Optional.of(CqlPredicate.of(Before.of(timeField, fromIso8601.plusSeconds(1))));
+                return Optional.of(CqlPredicate.of(Before.of(timeField, TemporalLiteral.of(fromIso8601.plusSeconds(1)))));
             }
         } catch (DateTimeParseException e) {
             if (LOGGER.isDebugEnabled()) {
