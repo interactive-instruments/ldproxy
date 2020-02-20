@@ -257,6 +257,12 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                 .stream()
                                 .map(tileMatrixSetId -> ImmutableTileCollection.builder()
                                     .tileMatrixSet(tileMatrixSetId)
+                                    .tileMatrixSetURI(requestContext.getUriCustomizer()
+                                            .copy()
+                                            .removeLastPathSegments(1)
+                                            .clearParameters()
+                                            .ensureLastPathSegments("tileMatrixSets", tileMatrixSetId)
+                                            .toString())
                                     .addAllTileMatrixSetLimits(limitsGenerator.getTileMatrixSetLimits(service.getData(),
                                             tileMatrixSetId, tileMatrixSetZoomLevels.get(tileMatrixSetId), crsTransformerFactory))
                                     .build())
