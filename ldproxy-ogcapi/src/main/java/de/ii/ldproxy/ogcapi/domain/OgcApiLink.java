@@ -50,7 +50,7 @@ public abstract class OgcApiLink {
 
     @Nullable
     @XmlAttribute
-    public abstract String getTemplated();
+    public abstract Boolean getTemplated();
 
     @JsonIgnore
     @XmlTransient

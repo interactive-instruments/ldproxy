@@ -181,7 +181,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                     .rel("item")
                     .type("application/geo+json")
                     .title(i18n.get("tilesLinkTemplateGeoJSON", language))
-                    .templated("true")
+                    .templated(true)
                     .build());
         }
         if (mvt) {
@@ -193,7 +193,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                     .rel("item")
                     .type("application/vnd.mapbox-vector-tile")
                     .title(i18n.get("tilesLinkTemplateMVT", language))
-                    .templated("true")
+                    .templated(true)
                     .build());
         }
         if (multitilesEnabled) {
@@ -203,7 +203,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                             .ensureNoTrailingSlash()
                             .toString() + "/{tileMatrixSetId}")
                     .rel("items")
-                    .templated("true")
+                    .templated(true)
                     .build());
         }
 
