@@ -26,6 +26,7 @@ import java.util.Set;
 public class OgcApiParameterFilter implements OgcApiParameterExtension {
 
     private static final String FILTER_LANG_CQL = "cql-text";
+    private static final String FILTER_LANG_JSON = "cql-json";
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
@@ -68,10 +69,11 @@ public class OgcApiParameterFilter implements OgcApiParameterExtension {
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiApiDataV2 datasetData) {
 
-        if (parameters.containsKey("filter-lang") && !FILTER_LANG_CQL.equals(parameters.get("filter-lang"))) {
+        if (parameters.containsKey("filter-lang") && !(FILTER_LANG_CQL.equals(parameters.get("filter-lang"))
+                || FILTER_LANG_JSON.equals(parameters.get("filter-lang")))) {
             throw new BadRequestException(
-                    String.format("The following value for query parameter filter-lang is rejected: %s. Valid parameter value is: %s",
-                            parameters.get("filter-lang"), FILTER_LANG_CQL));
+                    String.format("The following value for query parameter filter-lang is rejected: %s. Valid parameter values are: %s",
+                            parameters.get("filter-lang"), String.join(",", FILTER_LANG_CQL, FILTER_LANG_JSON)));
         }
 
         return queryBuilder;

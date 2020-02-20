@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
 import de.ii.xtraplatform.cql.domain.And;
+import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -32,6 +33,7 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureStream2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import org.apache.http.NameValuePair;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.WebApplicationException;
@@ -141,7 +143,15 @@ public class TileGeneratorJson {
 
             if (filters != null && filterableFields != null) {
                 if (!filters.isEmpty()) {
-                    Optional<CqlPredicate> otherFilters = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), Optional.empty());
+                    Optional<String> filterLang = uriCustomizer.getQueryParams().stream()
+                            .filter(param -> "filter-lang".equals(param.getName()))
+                            .map(NameValuePair::getValue)
+                            .findFirst();
+                    Cql.Format cqlFormat = Cql.Format.TEXT;
+                    if (filterLang.isPresent() && "cql-json".equals(filterLang.get())) {
+                        cqlFormat = Cql.Format.JSON;
+                    }
+                    Optional<CqlPredicate> otherFilters = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), Optional.empty(), cqlFormat);
                     CqlPredicate combinedFilter = otherFilters.isPresent() ? CqlPredicate.of(And.of(otherFilters.get(), spatialFilter)) : spatialFilter;
 
                     if (LOGGER.isDebugEnabled()) {

@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -30,7 +31,8 @@ public interface OgcApiFeaturesQuery {
                                        int defaultPageSize, int maxPageSize, Map<String, String> parameters);
 
     Optional<CqlPredicate> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                              Set<String> filterParameters, Optional<EpsgCrs> providerCrs);
+                                              Set<String> filterParameters, Optional<EpsgCrs> providerCrs,
+                                              Cql.Format cqlFormat);
 
     CqlPredicate getBboxFilter(String geometryField, BoundingBox boundingBox, EpsgCrs providerCrs);
 }

@@ -337,7 +337,7 @@ class OgcApiCoreRestApiSpec extends Specification {
             headers.Accept = 'application/geo+json'
         })
 
-        then: ""
+        then:
         response.status == 200
 
         and:
@@ -362,6 +362,25 @@ class OgcApiCoreRestApiSpec extends Specification {
         then:
         def e = thrown(HttpResponseException)
         e.statusCode == 400
+    }
+
+    def 'Filter parameter with filter-lang=json'() {
+        given:
+        String filter = '{"eq":{"property":"f_code","value":"AL012"}}'
+
+        when:
+        def response = restClient.request(SUT_URL, Method.GET, ContentType.JSON, { req ->
+            uri.path = SUT_PATH + '/collections/' + SUT_COLLECTION2 + "/items"
+            uri.query = ["filter-lang":"cql-json", filter:filter]
+            headers.Accept = 'application/geo+json'
+        })
+
+        then:
+        response.status == 200
+
+        and:
+        response.responseData.numberMatched == 2
+        response.responseData.numberReturned == 2
     }
 
 

@@ -189,7 +189,12 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                            .getData()
                                            .getNativeCrs();
 
-            Optional<CqlPredicate> cql = getCQLFromFilters(filters, filterableFields, filterParameters, Optional.ofNullable(providerCrs));
+            Cql.Format cqlFormat = Cql.Format.TEXT;
+            if (parameters.containsKey("filter-lang") && "cql-json".equals(parameters.get("filter-lang"))) {
+                cqlFormat = Cql.Format.JSON;
+            }
+            Optional<CqlPredicate> cql = getCQLFromFilters(filters, filterableFields, filterParameters,
+                    Optional.ofNullable(providerCrs), cqlFormat);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Filter: {}", cql);
@@ -204,12 +209,14 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
     @Override
     public Optional<CqlPredicate> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                                     Set<String> filterParameters, Optional<EpsgCrs> providerCrs) {
+                                                     Set<String> filterParameters, Optional<EpsgCrs> providerCrs,
+                                                     Cql.Format cqlFormat) {
 
         Map<String, String> filtersFromQuery = getFiltersFromQuery(query, filterableFields, filterParameters);
 
         if (!filtersFromQuery.isEmpty()) {
-            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, providerCrs);
+
+            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, providerCrs, cqlFormat);
         }
 
         return Optional.empty();
@@ -235,7 +242,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
     private Optional<CqlPredicate> getCQLFromFilters(Map<String, String> filters,
                                                      Map<String, String> filterableFields, Set<String> filterParameters,
-                                                     Optional<EpsgCrs> providerCrs) {
+                                                     Optional<EpsgCrs> providerCrs, Cql.Format cqlFormat) {
 
         List<CqlPredicate> predicates = filters.entrySet()
                                                .stream()
@@ -254,7 +261,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                    if (filterParameters.contains(filter.getKey())) {
                                                        CqlPredicate cqlPredicate;
                                                        try {
-                                                           cqlPredicate = cql.read(filter.getValue(), Cql.Format.TEXT);
+                                                           cqlPredicate = cql.read(filter.getValue(), cqlFormat);
                                                        } catch (CqlParseException e) {
                                                            throw new BadRequestException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
                                                        }
