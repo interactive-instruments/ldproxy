@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,11 +18,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.cql.app.CqlPropertyChecker;
-import de.ii.xtraplatform.cql.domain.After;
 import de.ii.xtraplatform.cql.domain.And;
-import de.ii.xtraplatform.cql.domain.Before;
 import de.ii.xtraplatform.cql.domain.Cql;
-import de.ii.xtraplatform.cql.domain.CqlParseException;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.During;
 import de.ii.xtraplatform.cql.domain.Eq;
@@ -51,8 +48,6 @@ import org.threeten.extra.Interval;
 import javax.ws.rs.BadRequestException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -60,8 +55,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -70,18 +63,6 @@ import java.util.stream.Collectors;
 @Instantiate
 public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
-    private static final String TIMESTAMP_REGEX = "([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))";
-    private static final String OPEN_REGEX = "(\\.\\.)?";
-    private static final Predicate<String> INTERVAL_PATTERN = Pattern.compile(String.format("^%s/%s$", TIMESTAMP_REGEX, TIMESTAMP_REGEX))
-                                                                     .asPredicate();
-    private static final Predicate<String> INTERVAL_OPEN_PATTERN = Pattern.compile(String.format("^%s/%s$", OPEN_REGEX, OPEN_REGEX))
-                                                                          .asPredicate();
-    private static final Predicate<String> INTERVAL_OPEN_START_PATTERN = Pattern.compile(String.format("^%s/%s$", OPEN_REGEX, TIMESTAMP_REGEX))
-                                                                                .asPredicate();
-    private static final Predicate<String> INTERVAL_OPEN_END_PATTERN = Pattern.compile(String.format("^%s/%s$", TIMESTAMP_REGEX, OPEN_REGEX))
-                                                                              .asPredicate();
-    private static final Predicate<String> INSTANT_PATTERN = Pattern.compile(String.format("^%s$", TIMESTAMP_REGEX))
-                                                                    .asPredicate();
     private static final Splitter ARRAY_SPLITTER = Splitter.on(',')
                                                            .trimResults();
 
@@ -262,12 +243,15 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                        CqlPredicate cqlPredicate;
                                                        try {
                                                            cqlPredicate = cql.read(filter.getValue(), cqlFormat);
-                                                       } catch (CqlParseException e) {
+                                                       } catch (Throwable e) {
                                                            throw new BadRequestException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
                                                        }
 
-                                                       //TODO: filterableFields keys do not contain real names of geometry or date, added values as well for now
-                                                       CqlPropertyChecker visitor = new CqlPropertyChecker(new ImmutableList.Builder<String>().addAll(filterableFields.keySet()).addAll(filterableFields.values()).build());
+                                                       //TODO: filterableFields.keys do not contain real names of geometry or date, added filterableFields.values as well for now
+                                                       CqlPropertyChecker visitor = new CqlPropertyChecker(new ImmutableList.Builder<String>().addAll(filterableFields.keySet())
+                                                                                                                                              .addAll(filterableFields.values())
+                                                                                                                                              .add("_ID_")
+                                                                                                                                              .build());
                                                        List<String> invalidProperties = cqlPredicate.accept(visitor);
 
                                                        if (invalidProperties.isEmpty()) {
@@ -366,33 +350,15 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         // this includes open intervals indicated by ".." (see ISO 8601-2);
         // accept also unknown ("") with the same interpretation
         try {
-            if (INTERVAL_PATTERN.test(timeValue)) {
-                // the following parse accepts fully specified time intervals
-                Interval fromIso8601Period = Interval.parse(timeValue);
-                return Optional.of(CqlPredicate.of(During.of(timeField, TemporalLiteral.of(fromIso8601Period))));
-            } else if (INSTANT_PATTERN.test(timeValue)) {
-                // a time instant
-                Instant fromIso8601 = Instant.parse(timeValue);
-                return Optional.of(CqlPredicate.of(TEquals.of(timeField, TemporalLiteral.of(fromIso8601))));
-            } else if (INTERVAL_OPEN_PATTERN.test(timeValue)) {
-                // open start and end, nothing to do, all values match
-                return Optional.empty();
-            } else if (INTERVAL_OPEN_END_PATTERN.test(timeValue)) {
-                // open end
-                Instant fromIso8601 = Instant.parse(timeValue.substring(0, timeValue.indexOf("/")));
-                return Optional.of(CqlPredicate.of(After.of(timeField, TemporalLiteral.of(fromIso8601.minusSeconds(1)))));
-            } else if (INTERVAL_OPEN_START_PATTERN.test(timeValue)) {
-                // open start
-                Instant fromIso8601 = Instant.parse(timeValue.substring(timeValue.indexOf("/") + 1));
-                return Optional.of(CqlPredicate.of(Before.of(timeField, TemporalLiteral.of(fromIso8601.plusSeconds(1)))));
+            TemporalLiteral temporalLiteral = TemporalLiteral.of(timeValue);
+            if (temporalLiteral.getType() == Interval.class) {
+                return Optional.of(CqlPredicate.of(During.of(timeField, temporalLiteral)));
+            } else {
+                return Optional.of(CqlPredicate.of(TEquals.of(timeField, temporalLiteral)));
             }
-        } catch (DateTimeParseException e) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Time parser exception", e);
-            }
+        } catch (Throwable e) {
+            throw new BadRequestException("Invalid value for query parameter '" + timeField + "'.", e);
         }
-
-        throw new BadRequestException("Invalid value for query parameter '" + timeField + "'. Found: " + timeValue);
     }
 
     private int parseLimit(int minimumPageSize, int defaultPageSize, int maxPageSize, String paramLimit) {
