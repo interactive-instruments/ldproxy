@@ -47,6 +47,7 @@ public class OpenApiFilter implements OpenApiExtension {
             openAPI.getComponents().addParameters("filter", filter);
             List<String> fEnum = new ArrayList<>();
             fEnum.add("cql-text");
+            fEnum.add("cql-json");
             Parameter filterLang = new Parameter()
                     .name("filter-lang")
                     .in("query")
