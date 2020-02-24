@@ -131,6 +131,12 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .orElse(true);
     }
 
+    private boolean showCollectionDescriptionsInOverview(OgcApiApiDataV2 apiData) {
+        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+                .map(HtmlConfiguration::getCollectionDescriptionsInOverview)
+                .orElse(false);
+    }
+
     private HtmlConfiguration.LAYOUT getLayout(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, HtmlConfiguration.class)
                 .map(HtmlConfiguration::getLayout)
@@ -203,7 +209,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .add(new NavigationDTO(collectionsTitle))
                 .build();
 
-        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage(), providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl());
+        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), showCollectionDescriptionsInOverview(api.getData()), i18n, requestContext.getLanguage(), providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl());
 
         return Response.ok()
                 .type(getMediaType().type())

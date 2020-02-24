@@ -50,6 +50,11 @@ public abstract class HtmlConfiguration implements ExtensionConfiguration, Featu
     }
 
     @Value.Default
+    public boolean getCollectionDescriptionsInOverview() {
+        return false;
+    }
+
+    @Value.Default
     public LAYOUT getLayout() { return LAYOUT.CLASSIC; }
 
     public abstract Optional<String> getItemLabelFormat();

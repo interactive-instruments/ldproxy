@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 public class OgcApiCollectionsView extends LdproxyView {
     private final List<OgcApiCollection> collections;
+    private boolean showCollectionDescriptions;
     public String dataSourceUrl;
     public String keywords;
     public List<String> crs;
@@ -31,7 +32,7 @@ public class OgcApiCollectionsView extends LdproxyView {
 
     public OgcApiCollectionsView(OgcApiApiDataV2 apiData, Collections collections,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix,
-                                 HtmlConfig htmlConfig, boolean noIndex, I18n i18n, Optional<Locale> language, Optional<String> dataSourceUrl) {
+                                 HtmlConfig htmlConfig, boolean noIndex, boolean showCollectionDescriptions, I18n i18n, Optional<Locale> language, Optional<String> dataSourceUrl) {
         super("collections.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
                 collections.getLinks(),
                 collections
@@ -41,6 +42,7 @@ public class OgcApiCollectionsView extends LdproxyView {
                         .getDescription()
                         .orElse("") );
         this.collections = collections.getCollections();
+        this.showCollectionDescriptions = showCollectionDescriptions;
         this.crs = collections
                 .getCrs();
 
@@ -72,6 +74,7 @@ public class OgcApiCollectionsView extends LdproxyView {
         return collections.stream()
                 .sorted(byTitle)
                 .map(collection -> ImmutableMap.of("title", collection.getTitle().orElse(collection.getId()),
+                        "description", showCollectionDescriptions ? collection.getDescription().orElse("") : "",
                         "id", collection.getId(),
                         "hrefcollection", collection.getLinks()
                                 .stream()
