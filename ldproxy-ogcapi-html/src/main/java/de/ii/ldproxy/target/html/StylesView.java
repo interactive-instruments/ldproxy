@@ -36,8 +36,6 @@ public class StylesView extends LdproxyView {
                 i18n.get("stylesTitle", language),
                 i18n.get("stylesDescription", language));
 
-        // TODO this is quick and dirty - the view needs to be improved
-
         this.styleEntries = styles.getStyles();
         this.none = i18n.get ("none", language);
     }

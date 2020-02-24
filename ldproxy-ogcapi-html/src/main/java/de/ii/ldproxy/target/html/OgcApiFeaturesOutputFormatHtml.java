@@ -351,7 +351,6 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH), layout);
 
-        //TODO featureTypeDataset.uriBuilder = uriBuilder;
         dataset.featureTypes.add(featureTypeDataset);
 
         boolean hasExtent = featureType.getExtent().isPresent();

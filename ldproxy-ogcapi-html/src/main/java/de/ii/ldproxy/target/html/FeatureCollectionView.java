@@ -30,21 +30,13 @@ import java.util.stream.Collectors;
  */
 public class FeatureCollectionView extends DatasetView {
 
-    // TODO check use of all properties
-
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCollectionView.class);
 
     private URI uri;
-    // TODO public String requestUrl;
     public List<NavigationDTO> pagination;
     public List<NavigationDTO> metaPagination;
     public List<ObjectDTO> features;
-    public List<NavigationDTO> indices;
-    // TODO public String index;
-    // TODO public String indexValue;
     public boolean hideMap = true; // set to "hide"; change to "false" when we see a geometry
-    // TODO public boolean hideMetadata;
-    // TODO public boolean showFooterText = true;
     public PropertyDTO links;
     public Set<Map.Entry<String, String>> filterFields;
     public Map<String, String> bbox2;

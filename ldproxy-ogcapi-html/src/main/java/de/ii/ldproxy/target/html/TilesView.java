@@ -51,8 +51,6 @@ public class TilesView extends LdproxyView {
                 tiles.getDescription()
                      .orElse(""));
 
-        // TODO this is quick and dirty - the view needs to be improved
-
         this.tileCollections = tiles.getTileMatrixSetLinks()
                 .stream()
                 .filter(tms -> tms.getTileMatrixSet().isPresent())

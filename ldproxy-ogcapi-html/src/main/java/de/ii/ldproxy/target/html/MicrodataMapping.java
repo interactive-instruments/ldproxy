@@ -10,9 +10,12 @@ package de.ii.ldproxy.target.html;
 import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml.GML_TYPE;
 
+// TODO: cleanup use of deprecated code
+
 /**
  * @author zahnen
  */
+@Deprecated
 public interface MicrodataMapping extends TargetMapping<MicrodataMapping.MICRODATA_TYPE> {
     Boolean isShowInCollection();
     String getItemType();
