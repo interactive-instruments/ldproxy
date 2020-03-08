@@ -7,9 +7,9 @@
  */
 package de.ii.ldproxy.admin.rest;
 
-import de.ii.ldproxy.codelists.CodelistData;
-import de.ii.ldproxy.codelists.CodelistImporter;
 import de.ii.xtraplatform.api.exceptions.BadRequest;
+import de.ii.xtraplatform.codelists.CodelistData;
+import de.ii.xtraplatform.codelists.CodelistImporter;
 import de.ii.xtraplatform.entity.api.EntityData;
 import de.ii.xtraplatform.event.store.EntityDataStore;
 import de.ii.xtraplatform.web.api.Endpoint;

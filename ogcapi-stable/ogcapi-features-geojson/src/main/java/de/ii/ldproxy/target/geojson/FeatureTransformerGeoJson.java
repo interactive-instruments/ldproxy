@@ -9,12 +9,12 @@ package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
+import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;

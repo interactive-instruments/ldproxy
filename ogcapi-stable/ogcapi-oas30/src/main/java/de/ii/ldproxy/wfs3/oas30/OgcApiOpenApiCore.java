@@ -9,10 +9,10 @@ package de.ii.ldproxy.wfs3.oas30;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import de.ii.ldproxy.codelists.CodelistRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.xtraplatform.codelists.CodelistRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;

@@ -2,8 +2,8 @@
 dependencies {
     provided project(":ogcapi-common")
     provided project(":ogcapi-features-core")
-    provided project(":ogcapi-string-templates")
 
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-string-templates'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'

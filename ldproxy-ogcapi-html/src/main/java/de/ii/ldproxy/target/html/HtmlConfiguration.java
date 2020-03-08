@@ -9,10 +9,10 @@ package de.ii.ldproxy.target.html;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.codelists.Codelist;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
+import de.ii.xtraplatform.codelists.Codelist;
 import org.immutables.value.Value;
 
 import java.util.AbstractMap;

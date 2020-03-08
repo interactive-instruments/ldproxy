@@ -9,8 +9,8 @@ package de.ii.ldproxy.target.geojson;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.target.geojson.GeoJsonConfiguration.JsonLdOptions;
-import de.ii.ldproxy.wfs3.templates.StringTemplateFilters;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.stringtemplates.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
