@@ -18,6 +18,7 @@ dependencies {
     featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '2.2.+'
 
     feature group: 'de.interactive_instruments', name: 'ogcapi-stable'
+    feature group: 'de.interactive_instruments', name: 'ogcapi-experimental'
 
     // bundles to include in this application
     bundle subprojects//.find {it.name.startsWith('ldproxy-')}

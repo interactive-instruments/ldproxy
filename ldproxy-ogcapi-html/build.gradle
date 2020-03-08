@@ -6,7 +6,6 @@ repositories {
 }
 
 dependencies {
-    provided project(":ldproxy-wfs3-around-relations")
     provided project(":ldproxy-ogcapi-styles")
     provided project(":ldproxy-ogcapi-resources")
     provided project(":ldproxy-ogcapi-collection-queryables")
@@ -15,6 +14,7 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
     provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-around-relations'
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-string-templates'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-codelists'
