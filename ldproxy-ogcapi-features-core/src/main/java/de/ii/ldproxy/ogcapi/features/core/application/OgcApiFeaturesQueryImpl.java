@@ -20,6 +20,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.cql.app.CqlPropertyChecker;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.During;
 import de.ii.xtraplatform.cql.domain.Eq;
@@ -102,7 +103,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             parameters = parameterExtension.transformParameters(collectionData, parameters, apiData);
         }
 
-        final CqlPredicate filter = CqlPredicate.of(In.of(ScalarLiteral.of(urldecode(featureId))));
+        final CqlFilter filter = CqlFilter.of(In.of(ScalarLiteral.of(urldecode(featureId))));
 
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                                 .type(collectionData.getId())
@@ -174,7 +175,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             if (parameters.containsKey("filter-lang") && "cql-json".equals(parameters.get("filter-lang"))) {
                 cqlFormat = Cql.Format.JSON;
             }
-            Optional<CqlPredicate> cql = getCQLFromFilters(filters, filterableFields, filterParameters,
+            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters,
                     Optional.ofNullable(providerCrs), cqlFormat);
 
             if (LOGGER.isDebugEnabled()) {
@@ -189,9 +190,9 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     }
 
     @Override
-    public Optional<CqlPredicate> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                                     Set<String> filterParameters, Optional<EpsgCrs> providerCrs,
-                                                     Cql.Format cqlFormat) {
+    public Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
+                                                  Set<String> filterParameters, Optional<EpsgCrs> providerCrs,
+                                                  Cql.Format cqlFormat) {
 
         Map<String, String> filtersFromQuery = getFiltersFromQuery(query, filterableFields, filterParameters);
 
@@ -221,7 +222,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         return filters;
     }
 
-    private Optional<CqlPredicate> getCQLFromFilters(Map<String, String> filters,
+    private Optional<CqlFilter> getCQLFromFilters(Map<String, String> filters,
                                                      Map<String, String> filterableFields, Set<String> filterParameters,
                                                      Optional<EpsgCrs> providerCrs, Cql.Format cqlFormat) {
 
@@ -270,7 +271,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                .filter(Objects::nonNull)
                                                .collect(Collectors.toList());
 
-        return predicates.isEmpty() ? Optional.empty() : Optional.of(predicates.size() == 1 ? predicates.get(0) : CqlPredicate.of(And.of(predicates)));
+        return predicates.isEmpty() ? Optional.empty() : Optional.of(predicates.size() == 1 ? CqlFilter.of(predicates.get(0)) : CqlFilter.of(And.of(predicates)));
     }
 
     private CqlPredicate bboxToCql(String geometryField, String bboxValue, EpsgCrs providerCrs) {
