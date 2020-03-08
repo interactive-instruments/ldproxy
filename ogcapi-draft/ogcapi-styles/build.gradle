@@ -1,7 +1,6 @@
 
 dependencies {
-    //provided project(":ldproxy-wfs3")
-    provided project(":ldproxy-ogcapi-collection-queryables")
+    provided project(":ogcapi-collection-queryables")
 
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'

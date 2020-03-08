@@ -1,7 +1,8 @@
 
 dependencies {
     provided project(":ldproxy-wfs3")
-    provided project(":ldproxy-ogcapi-html")
+
+    provided group: 'de.interactive_instruments', name: 'ogcapi-html'
 
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'

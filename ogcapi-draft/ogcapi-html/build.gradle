@@ -6,10 +6,10 @@ repositories {
 }
 
 dependencies {
-    provided project(":ldproxy-ogcapi-styles")
-    provided project(":ldproxy-ogcapi-resources")
-    provided project(":ldproxy-ogcapi-collection-queryables")
-    provided project(":ldproxy-ogcapi-tiles")
+    provided project(":ogcapi-styles")
+    provided project(":ogcapi-resources")
+    provided project(":ogcapi-collection-queryables")
+    provided project(":ogcapi-tiles")
 
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
