@@ -1,7 +1,8 @@
 
 dependencies {
-    provided project(":ldproxy-ogcapi")
-    provided project(":ldproxy-ogcapi-features-core")
+
+    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'

@@ -7,13 +7,9 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'ldproxy'
-
-//include bundles
 rootDir.listFiles().each { file ->
-    if (file.isDirectory() && (file.name.startsWith('ldproxy-'))) {
+    if (file.isDirectory() && (file.name.startsWith('ogcapi'))) {
     	include file.name
     }    
 }
 
-includeBuild 'ogcapi-stable'

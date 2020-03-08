@@ -1,6 +1,6 @@
 
 dependencies {
-    provided project(":ldproxy-ogcapi")
+    api project(":ogcapi-common")
 
     api group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
     api group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
@@ -12,8 +12,8 @@ dependencies {
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
-    provided project(":ldproxy-string-templates")
-    provided project(":ldproxy-codelists")
+    provided project(":ogcapi-string-templates")
+    provided project(":ogcapi-codelists")
 
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
     testImplementation  group: 'de.interactive_instruments', name: 'xtraplatform-event-store'

@@ -17,4 +17,5 @@ if (xtraplatformSdiTools) {
     includeBuild "../../${xtraplatformSdiTools.name}"
 }
 
+includeBuild '../ogcapi-stable'
 includeBuild '../'

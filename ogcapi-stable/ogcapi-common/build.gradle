@@ -1,7 +1,5 @@
 
 dependencies {
-    //provided project(":ldproxy-wfs3-api")
-
     provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
@@ -18,5 +16,5 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-crs'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
 
-    testImplementation project(':ldproxy-ogcapi-features-core')
+    testImplementation project(':ogcapi-features-core')
 }

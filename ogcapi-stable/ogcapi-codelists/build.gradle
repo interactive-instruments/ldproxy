@@ -1,0 +1,12 @@
+
+dependencies {
+    provided project(":ogcapi-string-templates")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
+}
