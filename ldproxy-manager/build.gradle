@@ -1,14 +1,12 @@
 plugins {
-    id "com.moowork.node" version "1.1.1"
+    id "com.moowork.node" version "1.3.1"
 }
 
 node {
-    version = '6.14.1'
-    download = project.findProperty('downloadNode') ?: false
+    version = '10.16.0'
+    yarnVersion = '1.17.3'
+    download = project.findProperty('downloadNode') != 'false' ?: false
 }
-
-version='1.3.1'
-//version += '-SNAPSHOT'
 
 sourceSets {
   main {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,8 +8,8 @@
 package de.ii.ldproxy.wfs3;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
-import de.ii.xsf.dropwizard.api.JacksonSubTypeIds;
+import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
+import de.ii.xtraplatform.dropwizard.api.JacksonSubTypeIds;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -26,7 +26,7 @@ public class Wfs3GenericMappingSubTypeIds implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(Wfs3GenericMapping.class, "GENERIC_PROPERTY")
+                .put(OgcApiFeaturesGenericMapping.class, "GENERIC_PROPERTY")
                 //.put(GenericMapping.class, "META_PROPERTY")
                 .build();
     }

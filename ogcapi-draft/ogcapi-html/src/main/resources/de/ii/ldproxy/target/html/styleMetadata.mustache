@@ -1,0 +1,175 @@
+{{> header}}
+
+<div>
+    {{#metadata}}
+        <h1>{{title}}</h1>
+        <span>{{{description}}}</span>
+        <br/>
+        <br/>
+
+        {{#version}}
+            <div class="row my-3">
+                <div class="col-md-2 font-weight-bold">{{versionTitle}}</div>
+                <div class="col-md-10">
+                    <ul class="list-unstyled">
+                        <li>{{.}}</li>
+                    </ul>
+                </div>
+            </div>
+        {{/version}}
+
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{idTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    <li>{{id}}</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{keywordsTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    {{#keywords}}
+                        <li>{{.}}</li>
+                    {{/keywords}}
+                    {{^keywords}}
+                        <li>{{none}}</li>
+                    {{/keywords}}
+                </ul>
+            </div>
+        </div>
+
+        {{#pointOfContact}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{pointOfContactTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    <li>{{.}}</li>
+                </ul>
+            </div>
+        </div>
+        {{/pointOfContact}}
+
+        {{#thumbnail}}
+            <div class="row my-3">
+                <div class="col-md-2 font-weight-bold">{{thumbnailTitle}}</div>
+                <div class="col-md-10">
+                    <img src="{{href}}" alt="{{title}}"/>
+                </div>
+            </div>
+        {{/thumbnail}}
+
+        {{#dates}}
+            <div class="row my-3">
+                <div class="col-md-2 font-weight-bold">{{datesTitle}}</div>
+                <div class="col-md-10">
+                    <ul class="list-unstyled">
+                        {{#creation}}<li>{{.}} ({{creationTitle}})</li>{{/creation}}
+                        {{#publication}}<li>{{.}} ({{publicationTitle}})</li>{{/publication}}
+                        {{#revision}}<li>{{.}} ({{revisionTitle}})</li>{{/revision}}
+                        {{#validTill}}<li>{{.}} ({{validTillTitle}})</li>{{/validTill}}
+                        {{#receivedOn}}<li>{{.}} ({{receivedOnTitle}})</li>{{/receivedOn}}
+                    </ul>
+                </div>
+            </div>
+        {{/dates}}
+
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    {{#additionalLinks}}
+                        <li>
+                            <a itemprop="url" href="{{href}}">{{title}}</a>
+                        </li>
+                    {{/additionalLinks}}
+                    {{^additionalLinks}}
+                        <li>{{none}}</li>
+                    {{/additionalLinks}}
+                </ul>
+            </div>
+        </div>
+
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{stylesheetsTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    {{#stylesheets}}
+                        <li>
+                            {{#title}}{{.}}{{/title}}{{^title}}?{{/title}}
+                            <ul>
+                                {{#specification}}<li>{{specificationTitle}}: {{.}}</li>{{/specification}}
+                                {{#version}}<li>{{versionTitle}}: {{.}}</li>{{/version}}
+                                <li>{{nativeTitle}}: {{#native}}{{trueTitle}}{{/native}}{{^native}}{{falseTitle}}{{/native}}</li>
+                            </ul>
+                            <br/>
+                        </li>
+                    {{/stylesheets}}
+                    {{^stylesheets}}
+                        <li>{{none}}</li>
+                    {{/stylesheets}}
+                </ul>
+            </div>
+        </div>
+
+        <h2>{{layersTitle}}</h2>
+        {{#layers}}
+            <h3>{{id}}</h3>
+            {{#description}}<span>{{{.}}}</span>{{/description}}
+
+            {{#type}}
+                <div class="row my-3">
+                    <div class="col-md-2 font-weight-bold">{{layerTypeTitle}}</div>
+                    <div class="col-md-10">
+                        <ul class="list-unstyled">
+                            <li>{{.}}</li>
+                        </ul>
+                    </div>
+                </div>
+            {{/type}}
+
+            <div class="row my-3">
+                <div class="col-md-2 font-weight-bold">{{sampleDataTitle}}</div>
+                <div class="col-md-10">
+                    <ul class="list-unstyled">
+                        {{#sampleData}}
+                            <li>
+                                <a itemprop="url" href="{{href}}">{{#title}}{{.}}{{/title}}{{^title}}{{#type}}{{.}}{{/type}}{{^type}}Link{{/type}}{{/title}}</a>
+                            </li>
+                        {{/sampleData}}
+                        {{^sampleData}}
+                            <li>{{none}}</li>
+                        {{/sampleData}}
+                    </ul>
+                </div>
+            </div>
+
+            {{#attributes}}
+                <div class="row my-3">
+                    <div class="col-md-2 font-weight-bold">{{attributesTitle}}</div>
+                    <div class="col-md-10">
+                        <ul class="list-unstyled">
+                            <li>
+                                {{#title}}{{.}} ({{id}}){{/title}}{{^title}}{{id}}{{/title}}
+                                {{#description}}<br/>{{{.}}}{{/description}}
+                                <ul>
+                                    {{#type}}<li>{{dataTypeTitle}}: {{.}}</li>{{/type}}
+                                    <li>{{requiredTitle}}: {{#required}}{{trueTitle}}{{/required}}{{^required}}{{falseTitle}}{{/required}}</li>
+                                </ul>
+                                <br/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            {{/attributes}}
+        {{/layers}}
+        {{^layers}}
+            <span>{{none}}</span>
+        {{/layers}}
+
+    {{/metadata}}
+</div>
+
+{{> footer}}

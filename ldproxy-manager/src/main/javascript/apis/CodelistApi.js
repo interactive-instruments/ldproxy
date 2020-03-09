@@ -7,6 +7,8 @@
  */
 //import { normalizeServices, normalizeServiceConfigs } from './ServiceNormalizer'
 import { normalize, schema } from 'normalizr';
+import { secureQuery } from 'xtraplatform-manager/src/apis/AuthApi'
+import { DEFAULT_OPTIONS } from 'xtraplatform-manager/src/apis/ServiceApi'
 
 const clSchema = new schema.Entity('codelists', {}, {
     idAttribute: 'id'
@@ -14,8 +16,8 @@ const clSchema = new schema.Entity('codelists', {}, {
 
 export default {
 
-    getCodelistsQuery: function() {
-        return {
+    getCodelistsQuery: function (options = DEFAULT_OPTIONS) {
+        const query = {
             url: `/rest/admin/codelists/`,
             transform: (codelistIds) => ({
                 codelistIds: codelistIds
@@ -23,12 +25,14 @@ export default {
             update: {
                 codelistIds: (prev, next) => next
             },
-            force: true
+            force: options.forceReload
         }
+
+        return options.secured ? secureQuery(query) : query
     },
 
-    getCodelistQuery: function(id) {
-        return {
+    getCodelistQuery: function (id, options = DEFAULT_OPTIONS) {
+        const query = {
             url: `/rest/admin/codelists/${encodeURIComponent(id)}/`,
             transform: (codelist) => normalize(codelist, clSchema).entities,
             update: {
@@ -39,12 +43,14 @@ export default {
                     }
                 }
             },
-        //force: true
+            //force: true
         }
+
+        return options.secured ? secureQuery(query) : query
     },
 
-    addCodelistQuery: function(codelist) {
-        return {
+    addCodelistQuery: function (codelist, options = DEFAULT_OPTIONS) {
+        const query = {
             url: `/rest/admin/codelists/`,
             body: JSON.stringify(codelist),
             options: {
@@ -63,10 +69,12 @@ export default {
                 }
             },
         }
+
+        return options.secured ? secureQuery(query) : query
     },
 
-    deleteCodelistQuery: function(id) {
-        return {
+    deleteCodelistQuery: function (id, options = DEFAULT_OPTIONS) {
+        const query = {
             url: `/rest/admin/codelists/${encodeURIComponent(id)}/`,
             options: {
                 method: 'DELETE'
@@ -76,11 +84,13 @@ export default {
                     return prev.filter(el => el !== id)
                 },
                 codelists: (prev, next) => {
-                    const {[id]: deletedItem, ...rest} = prev;
+                    const { [id]: deletedItem, ...rest } = prev;
                     console.log('DEL', rest)
                     return rest
                 }
             }
         }
+
+        return options.secured ? secureQuery(query) : query
     }
 }

@@ -1,0 +1,10 @@
+task run {
+    dependsOn gradle.includedBuild('ldproxy').task(':run')
+}
+task check {
+    dependsOn gradle.includedBuild('ldproxy').task(':check')
+}
+task manager {
+    dependsOn gradle.includedBuild('ldproxy').task(':ldproxy-manager:assemble')
+}
+

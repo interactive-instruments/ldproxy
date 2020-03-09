@@ -1,0 +1,11 @@
+
+dependencies {
+    provided project(":ogcapi-common")
+    provided project(":ogcapi-features-core")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-codelists'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-service-api'
+}

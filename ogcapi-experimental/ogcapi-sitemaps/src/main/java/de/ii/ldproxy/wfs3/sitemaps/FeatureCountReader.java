@@ -1,0 +1,62 @@
+/**
+ * Copyright 2020 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+package de.ii.ldproxy.wfs3.sitemaps;
+
+import de.ii.xtraplatform.features.domain.FeatureConsumer;
+
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalLong;
+
+/**
+ * @author zahnen
+ */
+public class FeatureCountReader implements FeatureConsumer {
+    private OptionalLong featureCount = OptionalLong.empty();
+
+    public OptionalLong getFeatureCount() {
+        return featureCount;
+    }
+
+    @Override
+    public void onStart(OptionalLong numberReturned, OptionalLong numberMatched,
+                        Map<String, String> additionalInfos) throws Exception {
+        this.featureCount = numberMatched;
+    }
+
+    @Override
+    public void onEnd() throws Exception {
+
+    }
+
+    @Override
+    public void onFeatureStart(List<String> list, Map<String, String> additionalInfos) throws Exception {
+
+    }
+
+    @Override
+    public void onFeatureEnd(List<String> list) throws Exception {
+
+    }
+
+    @Override
+    public void onPropertyStart(List<String> list, List<Integer> list1,
+                                Map<String, String> additionalInfos) throws Exception {
+
+    }
+
+    @Override
+    public void onPropertyText(String s) throws Exception {
+
+    }
+
+    @Override
+    public void onPropertyEnd(List<String> list) throws Exception {
+
+    }
+}

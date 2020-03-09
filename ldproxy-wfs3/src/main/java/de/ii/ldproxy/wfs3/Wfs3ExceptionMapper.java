@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,7 @@
 package de.ii.ldproxy.wfs3;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.ii.xsf.dropwizard.api.Jackson;
+import de.ii.xtraplatform.dropwizard.api.Jackson;
 import io.dropwizard.jersey.errors.ErrorMessage;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import org.apache.felix.ipojo.annotations.Component;
@@ -95,11 +95,11 @@ public class Wfs3ExceptionMapper extends LoggingExceptionMapper<Throwable> imple
     public void writeTo(WfsErrorMessage e, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
         //TODO: f=html not working, receives json
         switch (mediaType.toString()) {
-            case Wfs3MediaTypes.HTML:
+            case "text/html":
                 //TODO: Wfs3ExceptionView, might delegate to WfsOutputFormatHtml
                 //return e.getResponse();
-            case Wfs3MediaTypes.JSON:
-            case Wfs3MediaTypes.GEO_JSON:
+            case "application/json":
+            case "application/geo+json":
                 jackson.getDefaultObjectMapper()
                        .writeValue(entityStream, e);
                 break;

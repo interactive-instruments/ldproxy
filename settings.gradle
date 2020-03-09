@@ -1,8 +1,21 @@
+pluginManagement {
+    repositories {
+        maven {
+            url 'https://dl.bintray.com/iide/maven'
+        }
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = 'ldproxy'
 
+//include bundles
 rootDir.listFiles().each { file ->
     if (file.isDirectory() && (file.name.startsWith('ldproxy-'))) {
     	include file.name
-    }
-    
+    }    
 }
+
+includeBuild 'ogcapi-stable'
+includeBuild 'ogcapi-draft'
+includeBuild 'ogcapi-experimental'

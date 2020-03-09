@@ -1,0 +1,10 @@
+
+dependencies {
+    //provided project(":ldproxy-wfs3")
+
+    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+}

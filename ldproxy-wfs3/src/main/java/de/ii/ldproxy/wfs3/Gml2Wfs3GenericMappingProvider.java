@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,9 +7,9 @@
  */
 package de.ii.ldproxy.wfs3;
 
-import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping;
-import de.ii.ldproxy.wfs3.api.Wfs3GenericMapping.GENERIC_TYPE;
-import de.ii.xtraplatform.feature.query.api.TargetMapping;
+import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping.GENERIC_TYPE;
+import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
 
     @Override
     public TargetMapping getTargetMappingForFeatureType(String nsUri, String localName) {
-        Wfs3GenericMapping targetMapping = new Wfs3GenericMapping();
+        OgcApiFeaturesGenericMapping targetMapping = new OgcApiFeaturesGenericMapping();
         targetMapping.setEnabled(true);
 
         this.hasSpatialField = false;
@@ -53,7 +53,7 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
             GENERIC_TYPE dataType = GENERIC_TYPE.forGmlType(type);
 
             if (dataType.isValid()) {
-                Wfs3GenericMapping targetMapping = new Wfs3GenericMapping();
+                OgcApiFeaturesGenericMapping targetMapping = new OgcApiFeaturesGenericMapping();
                 targetMapping.setEnabled(true);
                 targetMapping.setName("id");
                 targetMapping.setType(dataType);
@@ -66,14 +66,15 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
     }
 
     @Override
-    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, GML_TYPE type) {
+    public TargetMapping getTargetMappingForProperty(String path, String nsUri, String localName, GML_TYPE type,
+                                                     boolean isMultiple) {
 
         GENERIC_TYPE dataType = GENERIC_TYPE.forGmlType(type);
 
         if (dataType.isValid()) {
             LOGGER.debug("PROPERTY {} {}", path, dataType);
 
-            Wfs3GenericMapping targetMapping = new Wfs3GenericMapping();
+            OgcApiFeaturesGenericMapping targetMapping = new OgcApiFeaturesGenericMapping();
             targetMapping.setEnabled(true);
             targetMapping.setName(path);
             targetMapping.setType(dataType);
@@ -95,7 +96,7 @@ public class Gml2Wfs3GenericMappingProvider implements TargetMappingProviderFrom
         if (type.isValid()) {
             LOGGER.debug("GEOMETRY {} {}", path, type);
 
-            Wfs3GenericMapping targetMapping = new Wfs3GenericMapping();
+            OgcApiFeaturesGenericMapping targetMapping = new OgcApiFeaturesGenericMapping();
             targetMapping.setEnabled(true);
             targetMapping.setType(GENERIC_TYPE.SPATIAL);
             //TODO needed for reverse filter lookup

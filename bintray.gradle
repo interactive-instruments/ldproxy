@@ -1,0 +1,30 @@
+
+allprojects { p ->
+  if (project.hasProperty('bintrayUser')) {
+    apply plugin: 'com.jfrog.bintray'
+
+    p.afterEvaluate {
+        p.bintray.with {
+            user = project.bintrayUser
+            key = project.bintrayApiKey
+            publications = p.extensions.publishing.publications.collect { it.name }
+            publish = true
+            dryRun = true
+            pkg {
+                repo = 'maven'
+                name = p.name
+                userOrg = 'iide'
+                licenses = ['MPL-2.0']
+                websiteUrl = 'https://github.com/interactive-instruments/ldproxy'
+                issueTrackerUrl = 'https://github.com/interactive-instruments/ldproxy/issues'
+                vcsUrl = 'https://github.com/interactive-instruments/ldproxy.git'
+                githubRepo = 'interactive-instruments/ldproxy'
+                githubReleaseNotesFile = 'README.md'
+                version {
+                    name = p.version
+                }
+            }
+        }
+    }
+  }
+}

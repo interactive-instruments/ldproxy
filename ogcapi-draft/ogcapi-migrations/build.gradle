@@ -1,0 +1,18 @@
+
+dependencies {
+    provided project(":ogcapi-html")
+    provided project(":ogcapi-crs")
+
+    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-geojson'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-pgis'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-sql'
+}

@@ -1,0 +1,58 @@
+{{> header}}
+
+{{#classic}}
+<div class="row">
+    <div class="col-md-6">
+        <ul class="list-unstyled">
+            {{#features}}
+                <li>
+                    {{> feature}}
+                </li>
+            {{/features}}
+        </ul>
+    </div>
+    {{^hideMap}}
+    <div class="col-md-6">
+        <div id="map"></div>
+    </div>
+    {{/hideMap}}
+</div>
+{{/classic}}
+{{#complexObjects}}
+{{^hideMap}}
+    <div class="row my-2">
+        <div class="col-md-12">
+            <div id="map"></div>
+        </div>
+    </div>
+{{/hideMap}}
+
+<div class="row">
+    <div class="col-md-12">
+        <ul class="list-unstyled">
+            {{#features}}
+                <li>
+                    {{> feature}}
+                </li>
+            {{/features}}
+        </ul>
+    </div>
+</div>
+{{/complexObjects}}
+
+{{#classic}}
+{{#additionalFeatures}}
+    <div class="my-4">
+        <h2 class="my-4">{{name}}</h2>
+        {{#values}}
+            {{{value}}}
+        {{/values}}
+    </div>
+{{/additionalFeatures}}
+{{/classic}}
+
+{{> script}}
+
+<script src="{{urlPrefix}}/app/js/featureDetails.js" defer></script>
+
+{{> footer}}

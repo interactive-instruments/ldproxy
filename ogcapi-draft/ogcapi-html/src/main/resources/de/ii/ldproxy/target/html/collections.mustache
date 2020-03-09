@@ -1,0 +1,67 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+    <br/>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{collectionsTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#collections}}
+                    <li>
+                        <a href="{{hrefitems}}">{{title}}</a> <small>— <a href="{{hrefcollection}}">{{moreInformation}}</a></small>
+                        {{#description}}<ul class="list-unstyled">
+                            <li class="list-group-item pt-0 pb-2 small text-secondary" style="border: none">{{{.}}}</li>
+                        </ul>{{/description}}
+                    </li>
+                {{/collections}}
+                {{^collections}}
+                    <li>{{none}}</li>
+                {{/collections}}
+            </ul>
+        </div>
+    </div>
+
+    <h2>{{expertInformationTitle}}</h2>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{supportedCrsTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#crs}}
+                    <li>
+                        <a href="{{.}}">{{.}}</a>
+                    </li>
+                {{/crs}}
+                {{^crs}}
+                    <li>
+                        <a href="http://www.opengis.net/def/crs/OGC/1.3/CRS84">http://www.opengis.net/def/crs/OGC/1.3/CRS84</a>
+                    </li>
+                {{/crs}}
+            </ul>
+        </div>
+    </div>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#links}}
+                    <li>
+                        <a itemprop="url" href="{{href}}">{{title}}</a>
+                    </li>
+                {{/links}}
+                {{^links}}
+                    <li>{{none}}</li>
+                {{/links}}
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+{{> footer}}
+

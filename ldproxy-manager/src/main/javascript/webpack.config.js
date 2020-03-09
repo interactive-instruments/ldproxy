@@ -8,6 +8,7 @@
 const resolve = require('path').resolve;
 const webpackMerge = require('webpack-merge');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = function(env) {
 //console.log(env)
@@ -28,9 +29,10 @@ let newConfig = webpackMerge(config(env), {
 if (env === 'production') {
     newConfig = webpackMerge(newConfig, {
         plugins: [
-            new CleanWebpackPlugin(['resources/manager'], {
-                root: resolve('../')
-            })
+            new CleanWebpackPlugin({cleanOnceBeforeBuildPatterns: [resolve('../resources/manager')], dangerouslyAllowCleanPatternsOutsideProject: true, dry: false}),
+            new CopyPlugin([
+                { from: 'assets', to: './' },
+            ]),
         ]
     })
 }

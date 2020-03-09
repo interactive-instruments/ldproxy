@@ -1,0 +1,163 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+    <br/>
+    {{#items}}
+        <span><big><a href="{{href}}">{{title}}</a></big></span>
+        <br/>
+    {{/items}}
+    {{#tiles}}
+        <span><big><a href="{{href}}">{{title}}</a></big></span>
+        <br/>
+    {{/tiles}}
+    <br/>
+
+    {{#bbox2}}
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{spatialExtentTitle}}</div>
+        {{^hideMap}}
+            <div class="col-md-10">
+                <div id="map"></div>
+            </div>
+        {{/hideMap}}
+        {{#hideMap}}
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    <li>
+                        [ [ {{minLon}}, {{minLat}} ], [ {{maxLon}}, {{maxLat}} ] ]
+                    </li>
+                </ul>
+            </div>
+        {{/hideMap}}
+    </div>
+    {{/bbox2}}
+
+    {{#temporalExtent}}
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{temporalExtentTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                <li>
+                    <span id="timeInterval"></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {{/temporalExtent}}
+
+    {{#withStyleInfos}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{styleInfosTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    {{#styles}}
+                        <li>
+                            {{#title}}{{.}} ({{id}}){{/title}}{{^title}}{{id}}{{/title}}
+                            <ul>
+                                {{#links}}
+                                    <li class="list-unstyled"><a href="{{href}}">{{title}}</a></li>
+                                {{/links}}
+                            </ul>
+                            <br/>
+                        </li>
+                    {{/styles}}
+                    {{^styles}}
+                        <li>{{none}}</li>
+                    {{/styles}}
+                </ul>
+            </div>
+        </div>
+
+    {{#defaultStyle}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{defaultStyleTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    <li>{{.}}</li>
+                </ul>
+            </div>
+        </div>
+    {{/defaultStyle}}
+    {{/withStyleInfos}}
+
+    <h2>{{expertInformationTitle}}</h2>
+
+    {{#hasGeometry}}
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{supportedCrsTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#crs}}
+                <li>
+                    <a href="{{.}}">{{.}}</a>
+                </li>
+                {{/crs}}
+                {{^crs}}
+                <li>
+                    <a href="http://www.opengis.net/def/crs/OGC/1.3/CRS84">http://www.opengis.net/def/crs/OGC/1.3/CRS84</a>
+                </li>
+                {{/crs}}
+            </ul>
+        </div>
+    </div>
+
+    {{#storageCrs}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{storageCrsTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    <li>
+                        <a href="{{.}}">{{.}}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    {{/storageCrs}}
+    {{/hasGeometry}}
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#links}}
+                    <li>
+                        <a itemprop="url" href="{{href}}">{{title}}</a>
+                    </li>
+                {{/links}}
+                {{^links}}
+                    <li>{{none}}</li>
+                {{/links}}
+            </ul>
+        </div>
+    </div>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{itemTypeTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#itemType}}
+                    <li>
+                        {{.}}
+                    </li>
+                {{/itemType}}
+                {{^itemType}}
+                    <li>
+                        feature
+                    </li>
+                {{/itemType}}
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+{{> script}}
+
+<script src="{{urlPrefix}}/app/js/bbox.js" defer></script>
+<script src="{{urlPrefix}}/app/js/date.js" defer></script>
+
+{{> footer}}
+

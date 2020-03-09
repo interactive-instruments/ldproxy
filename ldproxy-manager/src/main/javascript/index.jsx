@@ -4,7 +4,7 @@ import { app, render } from 'xtraplatform-manager/src/module'
 import wfsProxyMdl from 'xtraplatform-manager-wfs-proxy/src/module'
 import mdl from './module'
 
-import 'xtraplatform-manager/src/scss/default'
+//import 'xtraplatform-manager/src/scss/default'
 //import './scss/ldproxy'
 
 //TODO: merge by path
@@ -14,7 +14,7 @@ const clone = (value, options) => merge(emptyTarget(value), value, options)
 function combineMerge(target, source, options) {
     const destination = target.slice()
 
-    source.forEach(function(e, i) {
+    source.forEach(function (e, i) {
         if (typeof destination[i] === 'undefined') {
             const cloneRequested = options.clone !== false
             const shouldClone = cloneRequested && options.isMergeableObject(e)

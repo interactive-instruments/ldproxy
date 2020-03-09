@@ -6,6 +6,9 @@ import { connectRequest, mutateAsync } from 'redux-query';
 import { push } from 'redux-little-router'
 
 import CodelistApi from '../../apis/CodelistApi'
+import { withAppConfig } from 'xtraplatform-manager/src/app-context';
+
+@withAppConfig()
 
 @connect(
     (state, props) => {
@@ -15,13 +18,13 @@ import CodelistApi from '../../apis/CodelistApi'
             codelist: state.entities.codelists && props.urlParams ? state.entities.codelists[props.urlParams._] : null
         }
     },
-    (dispatch) => {
+    (dispatch, props) => {
         return {
             showCodelist: (id) => {
                 dispatch(push(`/codelists/${id}`))
             },
             deleteCodelist: (id) => {
-                dispatch(mutateAsync(CodelistApi.deleteCodelistQuery(id)));
+                dispatch(mutateAsync(CodelistApi.deleteCodelistQuery(id, { secured: props.appConfig.secured })));
             }
         }
     }
@@ -30,15 +33,15 @@ import CodelistApi from '../../apis/CodelistApi'
 @connectRequest(
     (props) => {
         if (!props.codelistIds) {
-            return CodelistApi.getCodelistsQuery()
+            return CodelistApi.getCodelistsQuery({ forceReload: true, secured: props.appConfig.secured })
         }
-        return props.codelistIds.map(id => CodelistApi.getCodelistQuery(id))
+        return props.codelistIds.map(id => CodelistApi.getCodelistQuery(id, { secured: props.appConfig.secured }))
     })
 
 export default class Codelists extends Component {
 
     render() {
-        const {codelists, codelistIds, codelist, showCodelist, deleteCodelist, children, ...rest} = this.props;
+        const { codelists, codelistIds, codelist, showCodelist, deleteCodelist, children, ...rest } = this.props;
 
         const componentProps = {
             codelists,
@@ -52,9 +55,9 @@ export default class Codelists extends Component {
             (child) => React.cloneElement(child, {}, React.cloneElement(React.Children.only(child.props.children), componentProps))
         );
 
-        return <div>
-                   { childrenWithProps }
-               </div>
+        return <>
+            {childrenWithProps}
+        </>
     }
 }
 

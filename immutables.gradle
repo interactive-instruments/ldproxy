@@ -1,0 +1,24 @@
+
+subprojects {
+
+    dependencies {
+        compileOnly         "org.immutables:value:2.8.3:annotations"
+        compileOnly         "org.immutables:encode:2.8.3"
+        annotationProcessor "org.immutables:value:2.8.3"
+    }
+
+    compileJava {
+        File generatedSourceDir = new File(project.buildDir, 'generated/src/main/java/')
+        //project.mkdir(generatedSourceDir)
+        project.sourceSets.main.java { srcDir generatedSourceDir }
+        options.annotationProcessorGeneratedSourcesDirectory = generatedSourceDir
+        outputs.dir(generatedSourceDir)
+    }
+
+    jar {
+        manifest {
+            instructionFirst 'Import-Package', "!org.immutables.value"
+        }
+    }
+    
+}

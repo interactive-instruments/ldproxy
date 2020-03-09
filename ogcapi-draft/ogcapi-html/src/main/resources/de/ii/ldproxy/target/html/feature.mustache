@@ -1,0 +1,26 @@
+<div>
+    {{#inCollection}}
+        <h4 class="mt-3 mb-1"><a href="{{#currentUrlWithSegment}}{{id}}{{/currentUrlWithSegment}}{{additionalParams}}"><span>{{name}}</span></a></h4>
+        <span class="d-none">{{#currentUrlWithSegmentClearParams}}{{id}}{{/currentUrlWithSegmentClearParams}}</span>
+    {{/inCollection}}
+    {{^inCollection}}
+        <h1>{{name}}</h1>
+    {{/inCollection}}
+    {{#properties}}
+        {{> property}}
+    {{/properties}}
+    {{#links}}
+        <dl class="dl-horizontal dl-horizontal-no-space">
+            <dt>{{name}}</dt>
+        <dd>
+            <ul class="list-unstyled">
+            {{#children}}
+                <li>
+                    <a href="{{value.value}}" target="_blank">{{value.name}}</a>
+                </li>
+            {{/children}}
+                </ul>
+        </dd>
+        </dl>
+    {{/links}}
+</div>
