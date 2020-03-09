@@ -10,7 +10,6 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-geojson'
     provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-filter-transformer'
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
