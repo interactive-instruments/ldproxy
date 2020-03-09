@@ -25,9 +25,9 @@ after_success:
 - docker login -u $DOCKER_USER -p $DOCKER_PASS
 - docker push $REPO
 - cd ../../ogc-stable
-- if [[ -n "$TRAVIS_TAG" ]]; then ./gradlew bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS; fi
+- if [[ -n "$TRAVIS_TAG" ]]; then ../gradlew bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS; fi
 - cd ../ogc-draft
-- if [[ -n "$TRAVIS_TAG" ]]; then ./gradlew bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS; fi
+- if [[ -n "$TRAVIS_TAG" ]]; then ../gradlew bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS; fi
 env:
   global:
   - REPO=iide/ldproxy
