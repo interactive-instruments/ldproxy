@@ -14,8 +14,8 @@ apply from: 'xtraplatform.gradle'
 
 dependencies {
     // features to include in this application
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.2.+'
-    featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '2.2.+'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.2.1'
+    featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '2.2.1'
 
     feature group: 'de.interactive_instruments', name: 'ogcapi-stable'
     feature group: 'de.interactive_instruments', name: 'ogcapi-draft'
@@ -27,8 +27,6 @@ dependencies {
 
 
 apply from: 'immutables.gradle'
-
-apply from: 'bintray.gradle'
 
 apply from: 'unit-tests.gradle'
 
