@@ -36,7 +36,7 @@
         "reactstrap": "^5.0.0-alpha.3",
         "style-loader": "^0.18.2",
         "webpack": "^2.2.1",
-        "webpack-dev-server": "^2.5.0",
+        "webpack-dev-server": "^3.1.11",
         "webpack-merge": "^3.0.0"
     }
 }
