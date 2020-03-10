@@ -42,6 +42,15 @@ public class QueryablesLinkGenerator {
                         .rel("queryables")
                         .title(i18n.get("queryablesLink", language))
                         .build())
+                .add(new ImmutableOgcApiLink.Builder()
+                        .href(uriBuilder.copy()
+                                .ensureLastPathSegment("schema")
+                                .removeParameters("f")
+                                .toString()
+                        )
+                        .rel("describedby")
+                        .title(i18n.get("schemaLink", language))
+                        .build())
                 .build();
     }
 }
