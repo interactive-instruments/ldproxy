@@ -48,7 +48,6 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         boolean getIncludeLinkHeader();
     }
 
-
     private final I18n i18n;
     private final OgcApiFeatureCoreProviders providers;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
@@ -74,6 +73,8 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
             throw new NotFoundException();
         }
     }
+
+    // TODO consolidate code
 
     private Response getQueryablesResponse(OgcApiQueryInputQueryables queryInput, OgcApiRequestContext requestContext) {
 
@@ -213,8 +214,6 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
     }
 
     private Response getSchemaResponse(OgcApiQueryInputQueryables queryInput, OgcApiRequestContext requestContext) {
-
-        // TODO
 
         OgcApiApi api = requestContext.getApi();
         OgcApiApiDataV2 apiData = api.getData();
@@ -381,7 +380,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         return result;
     }
 
-    // TODO nullable vs null
+    // TODO support also nullable (as in OpenAPI 3.0), not only null (as in JSON Schema)
     private Map<String, Object> getJsonSchema(SchemaObject schemaObject, List<OgcApiLink> links) {
 
         Context featureContext = processProperties(schemaObject, true);
@@ -534,7 +533,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                                     valueContext = property.objectType.get();
                                 } else {
                                     valueContext = new SchemaObject();
-                                    valueContext.id = "type_" + (typeIdx.getAndIncrement()); // TODO
+                                    valueContext.id = "type_" + (typeIdx.getAndIncrement()); // TODO how can we get proper type names?
                                     property.objectType = Optional.of(valueContext);
                                     if (!htmlNameSections.isEmpty())
                                         property.title = Optional.ofNullable(htmlNameSections.get(Math.min(objectLevel, htmlNameSections.size() - 1)));

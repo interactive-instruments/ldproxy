@@ -123,39 +123,4 @@ public class OgcApiSchemaEndpoint implements OgcApiEndpointExtension, Conformanc
 
         return queryHandler.handle(OgcApiQueryablesQueriesHandler.Query.SCHEMA, queryInput, requestContext);
     }
-
-    /* TODO
-    public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
-        return toFlatMap(queryParameters, false);
-    }
-
-    public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters,
-                                                boolean keysToLowerCase) {
-        return queryParameters.entrySet()
-                .stream()
-                .map(entry -> {
-                    String key = keysToLowerCase ? entry.getKey()
-                            .toLowerCase() : entry.getKey();
-                    return new AbstractMap.SimpleImmutableEntry<>(key, entry.getValue()
-                            .isEmpty() ? "" : entry.getValue()
-                            .get(0));
-                })
-                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    public static Map<String, String> getFiltersFromQuery(Map<String, String> query,
-                                                          Map<String, String> filterableFields) {
-
-        Map<String, String> filters = new LinkedHashMap<>();
-
-        for (String filterKey : query.keySet()) {
-            if (filterableFields.containsKey(filterKey)) {
-                String filterValue = query.get(filterKey);
-                filters.put(filterKey, filterValue);
-            }
-        }
-
-        return filters;
-    }
-    */
 }
