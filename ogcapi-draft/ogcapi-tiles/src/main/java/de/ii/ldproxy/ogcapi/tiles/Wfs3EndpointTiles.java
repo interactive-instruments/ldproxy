@@ -333,7 +333,11 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                 .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
                 .findFirst()
                 .map(link -> link.getHref())
-                .orElseThrow(() -> new ServerErrorException(500));
+                .orElseThrow(() -> new ServerErrorException(500))
+                .replace("{tileMatrixSetId}", tileMatrixSetId)
+                .replace("{tileMatrix}", "{z}")
+                .replace("{tileRow}", "{y}")
+                .replace("{tileCol}", "{x}");
 
         ImmutableMap.Builder<String,Object> tilejson = ImmutableMap.<String,Object>builder()
                 .put("tilejson", "3.0.0")
