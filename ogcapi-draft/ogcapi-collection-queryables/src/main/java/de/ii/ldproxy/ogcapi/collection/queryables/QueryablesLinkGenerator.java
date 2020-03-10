@@ -49,6 +49,7 @@ public class QueryablesLinkGenerator {
                                 .toString()
                         )
                         .rel("describedby")
+                        .type("application/schema+json")
                         .title(i18n.get("schemaLink", language))
                         .build())
                 .build();
