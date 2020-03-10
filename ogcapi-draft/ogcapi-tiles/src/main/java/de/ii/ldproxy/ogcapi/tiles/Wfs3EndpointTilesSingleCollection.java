@@ -7,22 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
@@ -33,7 +23,9 @@ import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -62,14 +54,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
@@ -87,10 +72,11 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtension, ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTilesSingleCollection.class);
+    private static final String TMS_REGEX = "(?:WebMercatorQuad|WorldCRS84Quad|WorldMercatorWGS84Quad)";
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
-            .subPathPattern("^/?[[\\w\\-]\\-]+/tiles(?:/\\w+(?:/\\w+/\\w+/\\w+)?)?/?$")
+            .subPathPattern("^/?[[\\w\\-]\\-]+/tiles(?:/"+TMS_REGEX+"(?:/(?:metadata|(?:\\w+/\\w+/\\w+)?))?)?$")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .build();
 
@@ -138,7 +124,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.TEXT_HTML_TYPE)
                             .build());
-        else if (subPath.matches("^/?[\\w\\-]+/tiles/\\w+/?$")) {
+        else if (subPath.matches("^/?[\\w\\-]+/tiles/"+TMS_REGEX+"/?$")) {
             if (!isMultiTilesEnabledForApi(dataset))
                 return ImmutableSet.of();
 
@@ -158,7 +144,12 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                             .parameter("zipjson")
                             .build()
             );
-        } else if (subPath.matches("^/?(?:[\\w\\-]+)/tiles/(?:\\w+/\\w+/\\w+/\\w+)$"))
+        } else if (subPath.matches("^/?(?:[\\w\\-]+)/tiles/"+TMS_REGEX+"/metadata/?$")) {
+            return ImmutableSet.of(
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(MediaType.APPLICATION_JSON_TYPE)
+                            .build());
+        } else if (subPath.matches("^/?(?:[\\w\\-]+)/tiles/"+TMS_REGEX+"/\\w+/\\w+/\\w+/?$")) {
             // TODO: from tile format configuration
             return ImmutableSet.of(
                     new ImmutableOgcApiMediaType.Builder()
@@ -170,6 +161,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                             .parameter("mvt")
                             .build()
             );
+        }
 
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
@@ -180,7 +172,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
                     .build();
-        } else if (subPath.matches("^/?[\\w\\-]+/tiles/\\w+/?$")) {
+        } else if (subPath.matches("^/?[\\w\\-]+/tiles/"+TMS_REGEX+"/?$")) {
             if (!isMultiTilesEnabledForApi(apiData))
                 return ImmutableSet.of();
 
@@ -188,7 +180,11 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
                     .add("bbox", "scaleDenominator", "multiTileType", "f-tile")
                     .build();
-        } else if (subPath.matches("^/?(?:[\\w\\-]+)/tiles/\\w+/\\w+/\\w+/\\w+$")) {
+        } else if (subPath.matches("^/?(?:[\\w\\-]+)/tiles/"+TMS_REGEX+"/metadata/?$")) {
+            return new ImmutableSet.Builder<String>()
+                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
+                    .build();
+        } else if (subPath.matches("^/?(?:[\\w\\-]+)/tiles/"+TMS_REGEX+"/\\w+/\\w+/\\w+/?$")) {
             ImmutableSet<String> parametersFromExtensions = new ImmutableSet.Builder<String>()
                     .addAll(wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)
                             .stream()
@@ -318,6 +314,108 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
     }
 
+    /**
+     * retrieve tilejson for the MVT tile sets
+     *
+     * @return a tilejson file
+     */
+    @Path("/{collectionId}/tiles/{tileMatrixSetId : "+TMS_REGEX+"}/metadata")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTileSetMetadata(@Context OgcApiApi service,
+                                       @Context OgcApiRequestContext requestContext,
+                                       @PathParam("collectionId") String collectionId,
+                                       @PathParam("tileMatrixSetId") String tileMatrixSetId) {
+
+        checkTilesParameterCollection(vectorTileMapGenerator.getEnabledMap(service.getData()), collectionId);
+
+        final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
+        List<OgcApiLink> links = vectorTilesLinkGenerator.generateTilesLinks(
+                requestContext.getUriCustomizer(),
+                requestContext.getMediaType(),
+                requestContext.getAlternateMediaTypes(),
+                false, // TODO
+                true,
+                true,
+                VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", true),
+                VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/geo+json", true),
+                false,
+                i18n,
+                requestContext.getLanguage());
+        String tilesUriTemplate = links.stream()
+                .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
+                .findFirst()
+                .map(link -> link.getHref())
+                .orElseThrow(() -> new ServerErrorException(500))
+                .replace("{tileMatrixSetId}", tileMatrixSetId)
+                .replace("{tileMatrix}", "{z}")
+                .replace("{tileRow}", "{y}")
+                .replace("{tileCol}", "{x}");
+
+        FeatureTypeConfigurationOgcApi featureTypeApi = service.getData().getCollections().get(collectionId);
+
+        ImmutableMap.Builder<String,Object> tilejson = ImmutableMap.<String,Object>builder()
+                .put("tilejson", "3.0.0")
+                .put("name", service.getData().getLabel())
+                .put("description", service.getData().getDescription().orElse(""))
+                .put("tiles", ImmutableList.of(tilesUriTemplate));
+
+        // TODO: add support for attribution and version (manage revisions to the data)
+
+        BoundingBox bbox = service.getData().getSpatialExtent(collectionId);
+        if (Objects.nonNull(bbox)) {
+            tilejson.put("bounds", ImmutableList.of(bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax()) );
+        }
+
+        Map<String, MinMax> tileMatrixSetZoomLevels = getTileMatrixSetZoomLevels(service.getData(), collectionId);
+
+        MinMax minmax = tileMatrixSetZoomLevels.get(tileMatrixSetId);
+        if (Objects.nonNull(minmax))
+            tilejson.put("minzoom", minmax.getMin() )
+                    .put("maxzoom", minmax.getMax() );
+
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), featureTypeApi);
+        FeatureType featureType = featureProvider.getData()
+                .getTypes()
+                .get(featureTypeApi.getId());
+
+        SchemaObject schema = service.getData().getSchema(featureType);
+        ImmutableMap.Builder<String, Object> fieldsBuilder = ImmutableMap.<String, Object>builder();
+        schema.properties.stream()
+                .forEach(prop -> {
+                    boolean isArray = prop.maxItems > 1;
+                    if (prop.literalType.isPresent()) {
+                        fieldsBuilder.put(prop.id, prop.literalType.get().concat(isArray ? " (0..*)" : " (0..1)"));
+                    } else if (prop.wellknownType.isPresent()) {
+                        switch (prop.wellknownType.get()) {
+                            case "Link":
+                                fieldsBuilder.put(prop.id, "Link".concat(isArray ? " (0..*)" : " (0..1)"));
+                                break;
+                            case "Point":
+                            case "MultiPoint":
+                            case "LineString":
+                            case "MultiLineString":
+                            case "Polygon":
+                            case "MultiPolygon":
+                            case "Geometry":
+                            default:
+                                break;
+                        }
+                    } else if (prop.objectType.isPresent()) {
+                        fieldsBuilder.put(prop.id, "Object".concat(isArray ? " (0..*)" : " (0..1)"));
+                    }
+                });
+
+        ImmutableMap<String, Object> layer = ImmutableMap.<String, Object>builder()
+                    .put("id", featureTypeApi.getId())
+                    .put("description", featureTypeApi.getDescription().orElse(""))
+                    .put("fields", fieldsBuilder.build())
+                    .build();
+        tilejson.put("vector_layers", ImmutableList.of(layer));
+
+        return Response.ok(tilejson.build())
+                .build();
+    }
 
     /**
      * Retrieve a tile of the collection. The tile in the requested tiling scheme,
