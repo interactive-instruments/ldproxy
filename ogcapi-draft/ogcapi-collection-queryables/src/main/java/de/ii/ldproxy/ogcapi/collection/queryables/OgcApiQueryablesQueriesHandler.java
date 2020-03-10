@@ -238,16 +238,11 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
         Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
 
-        List<String> visitedProperties = new ArrayList<>();
-
         FeatureType featureTypeProvider = featureProvider.getData()
                 .getTypes()
                 .get(collectionId);
 
-        FeatureTypeConfigurationOgcApi featureTypeApi = apiData.getCollections()
-                .get(collectionId);
-
-        SchemaObject schemaObject = getSchema(featureTypeProvider, featureTypeApi);
+        SchemaObject schemaObject = apiData.getSchema(featureTypeProvider);
 
         Map<String,Object> jsonSchema = getJsonSchema(schemaObject, links);
 
@@ -441,7 +436,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                 .build();
     }
 
-    private SchemaObject getSchema(FeatureType featureType, FeatureTypeConfigurationOgcApi featureTypeApi) {
+    private SchemaObject xxxgetSchema(FeatureType featureType, FeatureTypeConfigurationOgcApi featureTypeApi) {
         SchemaObject featureTypeObject = new SchemaObject();
 
         if (Objects.nonNull(featureType) && Objects.nonNull(featureTypeApi)) {

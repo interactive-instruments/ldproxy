@@ -297,6 +297,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                         requestContext.getAlternateMediaTypes(),
                         false, // TODO
                         true,
+                        false,
                         VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/vnd.mapbox-vector-tile", true),
                         VectorTile.checkFormat(vectorTileMapGenerator.getFormatsMap(service.getData()), collectionId, "application/geo+json", true),
                         isMultiTilesEnabledForApi(service.getData()),

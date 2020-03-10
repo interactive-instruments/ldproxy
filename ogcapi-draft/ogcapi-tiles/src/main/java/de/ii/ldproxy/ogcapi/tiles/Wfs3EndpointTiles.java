@@ -7,21 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
+import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
@@ -32,13 +24,17 @@ import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureType;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.hsqldb.Server;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,11 +83,12 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTiles.class);
+    private static final String TMS_REGEX = "(?:WebMercatorQuad|WorldCRS84Quad|WorldMercatorWGS84Quad)";
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("tiles")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/?(?:\\w+(?:/(?:\\w+/\\w+/\\w+)?)?)?$")
+            .subPathPattern("^/?(?:"+TMS_REGEX+"(?:/(?:metadata|(?:\\w+/\\w+/\\w+)?))?)?$")
             .build();
 
     private final I18n i18n;
@@ -138,7 +135,12 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                     new ImmutableOgcApiMediaType.Builder()
                             .type(MediaType.TEXT_HTML_TYPE)
                             .build());
-        else if (subPath.matches("^/?\\w+/?$")) {
+        else if (subPath.matches("^/?"+TMS_REGEX+"/metadata/?$")) {
+            return ImmutableSet.of(
+                    new ImmutableOgcApiMediaType.Builder()
+                            .type(MediaType.APPLICATION_JSON_TYPE)
+                            .build());
+        } else if (subPath.matches("^/?"+TMS_REGEX+"/?$")) {
             if (!isMultiTilesEnabledForApi(dataset))
                 return ImmutableSet.of();
 
@@ -180,7 +182,11 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
                     .build();
-        } else if (subPath.matches("^/?\\w+/?$")) {
+        } else if (subPath.matches("^/?"+TMS_REGEX+"/metadata/?$")) {
+            return new ImmutableSet.Builder<String>()
+                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
+                    .build();
+        } else if (subPath.matches("^/?"+TMS_REGEX+"/?$")) {
             if (!isMultiTilesEnabledForApi(apiData))
                 return ImmutableSet.of();
 
@@ -273,6 +279,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                         requestContext.getAlternateMediaTypes(),
                         false, // TODO
                         false,
+                        false,
                         true,
                         false,
                         isMultiTilesEnabledForApi(service.getData()),
@@ -296,6 +303,108 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     }
 
     /**
+     * retrieve tilejson for the MVT tile sets
+     *
+     * @return a tilejson file
+     */
+    @Path("/{tileMatrixSetId : "+TMS_REGEX+"}/metadata")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTileSetMetadata(@Context OgcApiApi service,
+                                       @Context OgcApiRequestContext requestContext,
+                                       @PathParam("tileMatrixSetId") String tileMatrixSetId) {
+
+        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
+
+        final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
+        List<OgcApiLink> links = vectorTilesLinkGenerator.generateTilesLinks(
+                requestContext.getUriCustomizer(),
+                requestContext.getMediaType(),
+                requestContext.getAlternateMediaTypes(),
+                false, // TODO
+                false,
+                true,
+                true,
+                false,
+                false,
+                i18n,
+                requestContext.getLanguage());
+        String tilesUriTemplate = links.stream()
+                .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
+                .findFirst()
+                .map(link -> link.getHref())
+                .orElseThrow(() -> new ServerErrorException(500));
+
+        ImmutableMap.Builder<String,Object> tilejson = ImmutableMap.<String,Object>builder()
+                .put("tilejson", "3.0.0")
+                .put("name", service.getData().getLabel())
+                .put("description", service.getData().getDescription().orElse(""))
+                .put("tiles", ImmutableList.of(tilesUriTemplate));
+
+        // TODO: add support for attribution and version (manage revisions to the data)
+
+        BoundingBox bbox = service.getData().getSpatialExtent();
+        if (Objects.nonNull(bbox))
+            tilejson.put("bounds", ImmutableList.of(bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax()) );
+
+        Map<String, MinMax> tileMatrixSetZoomLevels = getTileMatrixSetZoomLevels(service.getData());
+
+        MinMax minmax = tileMatrixSetZoomLevels.get(tileMatrixSetId);
+        if (Objects.nonNull(minmax))
+            tilejson.put("minzoom", minmax.getMin() )
+                    .put("maxzoom", minmax.getMax() );
+
+        ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> featureTypesApi = service.getData().getCollections();
+
+        List<ImmutableMap<String, Object>> layers = featureTypesApi.values().stream()
+                .map(featureTypeApi -> {
+                    FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), featureTypeApi);
+                    FeatureType featureType = featureProvider.getData()
+                            .getTypes()
+                            .get(featureTypeApi.getId());
+                    Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = featureTypeApi.getExtension(OgcApiFeaturesCoreConfiguration.class);
+
+                    SchemaObject schema = service.getData().getSchema(featureType);
+                    ImmutableMap.Builder<String, Object> fieldsBuilder = ImmutableMap.<String, Object>builder();
+                    schema.properties.stream()
+                            .forEach(prop -> {
+                                boolean isArray = prop.maxItems > 1;
+                                if (prop.literalType.isPresent()) {
+                                    fieldsBuilder.put(prop.id, prop.literalType.get().concat(isArray ? " (0..*)" : " (0..1)"));
+                                } else if (prop.wellknownType.isPresent()) {
+                                    switch (prop.wellknownType.get()) {
+                                        case "Link":
+                                            fieldsBuilder.put(prop.id, "Link".concat(isArray ? " (0..*)" : " (0..1)"));
+                                            break;
+                                        case "Point":
+                                        case "MultiPoint":
+                                        case "LineString":
+                                        case "MultiLineString":
+                                        case "Polygon":
+                                        case "MultiPolygon":
+                                        case "Geometry":
+                                        default:
+                                            break;
+                                    }
+                                } else if (prop.objectType.isPresent()) {
+                                    fieldsBuilder.put(prop.id, "Object".concat(isArray ? " (0..*)" : " (0..1)"));
+                                }
+                            });
+
+                    return ImmutableMap.<String, Object>builder()
+                            .put("id", featureTypeApi.getId())
+                            .put("description", featureTypeApi.getDescription().orElse(""))
+                            .put("fields", fieldsBuilder.build())
+                            .build();
+                })
+                .collect(Collectors.toList());
+        tilejson.put("vector_layers", layers);
+
+        return Response.ok(tilejson.build())
+                .build();
+    }
+
+    /**
      * Retrieve multiple tiles from multiple collections
      * @param optionalUser          the user
      * @param wfs3Request           the request
@@ -307,7 +416,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
      * @param collectionsParam      value of the collections request parameter
      * @return multiple tiles from multiple collections
      */
-    @Path("/{tileMatrixSetId}")
+    @Path("/{tileMatrixSetId : "+TMS_REGEX+"}")
     @GET
     public Response getCollectionsMultitiles(@Auth Optional<User> optionalUser,
                                              @Context OgcApiRequestContext wfs3Request,
