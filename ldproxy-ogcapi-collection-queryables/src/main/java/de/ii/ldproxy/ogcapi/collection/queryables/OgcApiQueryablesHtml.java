@@ -21,9 +21,9 @@ import javax.ws.rs.core.Response;
 public class OgcApiQueryablesHtml implements OgcApiQueryablesFormatExtension {
 
     public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
-            .type(new MediaType("application", "json"))
-            .label("JSON")
-            .parameter("json")
+            .type(new MediaType("text", "html"))
+            .label("HTML")
+            .parameter("html")
             .build();
 
     @Override
