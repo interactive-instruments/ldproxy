@@ -1,0 +1,22 @@
+
+dependencies {
+    provided project(":ogcapi-common")
+    provided project(":ogcapi-features-core")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-string-templates'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
+
+    testImplementation group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
+    testImplementation group: 'com.typesafe.akka', name: 'akka-testkit_2.12', version: '2.5.18'
+    testImplementation (group: 'com.lightbend.akka', name: 'akka-stream-alpakka-xml_2.12', version: '0.17') {
+        exclude  group: 'com.typesafe.akka', module: 'akka-stream_2.12'
+        exclude  group: 'org.scala-lang', module: 'scala-library'
+        exclude  group: 'com.typesafe', module: 'config'
+        exclude  group: 'org.reactivestreams', module: 'reactive-streams'
+        exclude  group: 'org.slf4j', module: 'slf4j-api'
+    }
+}

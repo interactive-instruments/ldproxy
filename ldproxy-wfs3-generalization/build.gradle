@@ -1,9 +1,0 @@
-
-dependencies {
-    provided project(":ldproxy-wfs3")
-    provided project(":ldproxy-ogcapi")
-    provided project(":ldproxy-ogcapi-features-core")
-    provided project(":ldproxy-ogcapi-oas30")
-
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
-}

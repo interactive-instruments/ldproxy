@@ -1,0 +1,27 @@
+
+repositories {
+    maven {
+        url "https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases"
+    }
+}
+
+dependencies {
+    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-geojson'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
+
+    embedded (group: 'no.ecc.vectortile', name: 'java-vector-tile', version: '1.3.3') {
+        exclude module: 'jts-core'
+    }
+    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.15.1')
+    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.15.1')
+    //embedded group: 'xml-apis', name: 'xml-apis', version: '1.4.01'
+
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+}

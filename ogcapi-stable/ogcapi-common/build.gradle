@@ -1,0 +1,20 @@
+
+dependencies {
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-geojson'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-rest'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-scheduler-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-service-api'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-geometries'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-crs'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
+
+    testImplementation project(':ogcapi-features-core')
+}
