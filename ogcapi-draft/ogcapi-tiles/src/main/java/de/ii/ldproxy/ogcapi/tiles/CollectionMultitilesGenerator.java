@@ -171,7 +171,7 @@ public class CollectionMultitilesGenerator {
                             .type(new MediaType("application", "geo+json"))
                             .label("GeoJSON")
                             .build();
-                    TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, uriCustomizer,
+                    TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, null, uriCustomizer,
                             geoJsonMediaType, true, tile, i18n, language, queryParser);
                 }
 

@@ -16,6 +16,7 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Value.Immutable
@@ -51,16 +52,27 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
     @Nullable
     public abstract Map<String, MinMax> getZoomLevels();
 
+    @Nullable
+    public abstract Map<String, List<PredefinedFilter>> getFilters();
+
     @Override
-    public TilesConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+    public <T extends ExtensionConfiguration> T mergeDefaults(T baseConfiguration) {
+        boolean enabled = this.getEnabled();
+        Map<String, MinMax> seeding = this.getSeeding();
+        Map<String, MinMax> zoomLevels = this.getZoomLevels();
+        Map<String, List<PredefinedFilter>> predefFilters = this.getFilters();
+        ImmutableTilesConfiguration.Builder configBuilder = new ImmutableTilesConfiguration.Builder().from(baseConfiguration);
 
-        //TODO
-        /*return ImmutableTilesConfiguration.builder()
-                .from(extensionConfigurationDefault)
-                .from(this)
-                .build();*/
+        if (Objects.nonNull(enabled))
+            configBuilder.enabled(enabled);
+        if (Objects.nonNull(seeding))
+            configBuilder.seeding(seeding);
+        if (Objects.nonNull(zoomLevels))
+            configBuilder.zoomLevels(zoomLevels);
+        if (Objects.nonNull(predefFilters))
+            configBuilder.filters(predefFilters);
 
-        return this;
+        return (T) configBuilder.build();
     }
 
 }

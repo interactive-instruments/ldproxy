@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
@@ -83,6 +84,7 @@ public class TileGeneratorJson {
      * @return true, if the file was generated successfully, false, if an error occurred
      */
     static boolean generateTileJson(File tileFile, CrsTransformerFactory crsTransformerFactory, @Context UriInfo uriInfo,
+                                    Map<String, List<PredefinedFilter>> predefFilters,
                                     Map<String, String> filters, Map<String, String> filterableFields,
                                     URICustomizer uriCustomizer, OgcApiMediaType mediaType, boolean isCollection,
                                     VectorTile tile, I18n i18n, Optional<Locale> language, OgcApiFeaturesQuery queryParser) {
@@ -100,7 +102,6 @@ public class TileGeneratorJson {
         if (collectionId == null || !featureProvider.supportsQueries()) {
             return false;
         }
-
 
         OutputStream outputStream;
         try {
@@ -126,24 +127,41 @@ public class TileGeneratorJson {
             return false;
         }
 
+        String predefFilter = null;
+        if (predefFilters.containsKey(tileMatrixSet.getId())) {
+            predefFilter = predefFilters.get(tileMatrixSet.getId()).stream()
+                    .filter(filter -> filter.getMax()>=level && filter.getMin()<=level)
+                    .map(filter -> filter.getFilter())
+                    .findAny()
+                    .orElse(null);
+        }
 
         ImmutableFeatureQuery.Builder queryBuilder;
-        if (uriInfo != null) {
-            MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+        if (uriInfo != null || predefFilter != null) {
+            if(uriInfo != null) {
+                MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 
-            List<String> propertiesList = VectorTile.getPropertiesList(queryParameters);
+                List<String> propertiesList = VectorTile.getPropertiesList(queryParameters);
 
-            //TODO: support 3d?
-            queryBuilder = ImmutableFeatureQuery.builder()
-                                                .type(collectionId)
-                                                .filter(CqlFilter.of(spatialFilter))
-                                                .maxAllowableOffset(maxAllowableOffsetNative)
-                                                .fields(propertiesList)
-                                                .crs(OgcCrs.CRS84);
+                //TODO: support 3d?
+                queryBuilder = ImmutableFeatureQuery.builder()
+                        .type(collectionId)
+                        .filter(CqlFilter.of(spatialFilter))
+                        .maxAllowableOffset(maxAllowableOffsetNative)
+                        .fields(propertiesList)
+                        .crs(OgcCrs.CRS84);
+            } else {
+                //TODO: support 3d?
+                queryBuilder = ImmutableFeatureQuery.builder()
+                        .type(collectionId)
+                        .maxAllowableOffset(maxAllowableOffsetNative)
+                        .crs(OgcCrs.CRS84);
+            }
 
-
-            if (filters != null && filterableFields != null) {
-                if (!filters.isEmpty()) {
+            if ((predefFilter!=null || filters != null) && filterableFields != null) {
+                Optional<CqlFilter> otherFilters = Optional.empty();
+                Optional<CqlFilter> configFilter = Optional.empty();
+                if (filters != null && !filters.isEmpty()) {
                     Optional<String> filterLang = uriCustomizer.getQueryParams().stream()
                             .filter(param -> "filter-lang".equals(param.getName()))
                             .map(NameValuePair::getValue)
@@ -152,19 +170,29 @@ public class TileGeneratorJson {
                     if (filterLang.isPresent() && "cql-json".equals(filterLang.get())) {
                         cqlFormat = Cql.Format.JSON;
                     }
-                    Optional<CqlFilter> otherFilters = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), Optional.empty(), cqlFormat);
-                    CqlFilter combinedFilter = otherFilters.isPresent() ? CqlFilter.of(And.of(otherFilters.get(), spatialFilter)) : CqlFilter.of(spatialFilter);
-
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Filter: {}", combinedFilter);
-                    }
-
-                    queryBuilder
-                            .filter(combinedFilter)
-                            .type(collectionId)
-                            .maxAllowableOffset(maxAllowableOffsetNative)
-                            .fields(propertiesList);
+                    otherFilters = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), Optional.empty(), cqlFormat);
                 }
+                if (predefFilter != null) {
+                    configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), Optional.empty(), Cql.Format.TEXT);
+                }
+
+                CqlFilter combinedFilter;
+                if (otherFilters.isPresent() && configFilter.isPresent()) {
+                    combinedFilter = CqlFilter.of(And.of(otherFilters.get(), configFilter.get(), spatialFilter));
+                } else if (otherFilters.isPresent()) {
+                    combinedFilter = CqlFilter.of(And.of(otherFilters.get(), spatialFilter));
+                } else if (configFilter.isPresent()) {
+                    combinedFilter = CqlFilter.of(And.of(configFilter.get(), spatialFilter));
+                } else {
+                    combinedFilter = CqlFilter.of(spatialFilter);
+                }
+
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Filter: {}", combinedFilter);
+                }
+
+                queryBuilder
+                        .filter(combinedFilter);
             }
         } else {
             queryBuilder = ImmutableFeatureQuery.builder()

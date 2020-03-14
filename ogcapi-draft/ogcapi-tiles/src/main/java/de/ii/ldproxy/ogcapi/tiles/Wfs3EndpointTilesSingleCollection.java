@@ -462,6 +462,13 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                                             .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
                                                             .orElse(ImmutableMap.of());
 
+        Map<String, List<PredefinedFilter>> predefFilters = service.getData()
+                .getCollections()
+                .get(collectionId)
+                .getExtension(TilesConfiguration.class)
+                .orElse(null)
+                .getFilters();
+
         Set<String> filterParameters = ImmutableSet.of();
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
             filterParameters = parameterExtension.getFilterParameters(filterParameters, service.getData());
@@ -514,7 +521,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                         .type(new MediaType("application", "geo+json"))
                         .label("GeoJSON")
                         .build();
-                boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), geojsonMediaType, true, jsonTile, i18n, wfs3Request.getLanguage(), queryParser);
+                boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), geojsonMediaType, true, jsonTile, i18n, wfs3Request.getLanguage(), queryParser);
                 if (!success) {
                     String msg = "Internal server error: could not generate GeoJSON for a tile.";
                     LOGGER.error(msg);
@@ -522,7 +529,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                 }
             } else {
                 if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                   TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields,
+                   TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields,
                            wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
                 }
             }
@@ -533,7 +540,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             File tileFileJson = jsonTile.getFile(cache, "json");
 
             if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
+                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
                 tileFileMvt.delete();
                 generateTileCollection(collectionId, tileFileJson, tileFileMvt, tile, requestedProperties, crsTransformerFactory);
             }
@@ -596,6 +603,13 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                                             .orElse(ImmutableMap.of());
         final Map<String, String> filters = getFiltersFromQuery(OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields, filterParameters);
 
+        Map<String, List<PredefinedFilter>> predefFilters = service.getData()
+                .getCollections()
+                .get(collectionId)
+                .getExtension(TilesConfiguration.class)
+                .orElse(null)
+                .getFilters();
+
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                 .type(collectionId);
 
@@ -624,12 +638,11 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         //TODO parse file (check if valid) if not valid delete it and generate new one
 
         if (!tileFileJson.exists()) {
-            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
+            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
         } else {
             if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
+                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
             }
-
         }
 
         File finalTileFileJson = tileFileJson;

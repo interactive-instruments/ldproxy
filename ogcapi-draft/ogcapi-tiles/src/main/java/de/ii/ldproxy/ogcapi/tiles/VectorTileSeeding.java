@@ -37,12 +37,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -336,6 +331,13 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                                          .get()
                                                          .getAllFilterParameters();
 
+        Map<String, List<PredefinedFilter>> predefFilters = service.getData()
+                .getCollections()
+                .get(collectionId)
+                .getExtension(TilesConfiguration.class)
+                .orElse(null)
+                .getFilters();
+
         VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
         File tileFileJson = tile.getFile(cache, "json");
 
@@ -358,7 +360,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                     .type(new MediaType("application", "json"))
                     .label("JSON")
                     .build();
-            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, null, null, filterableFields, uriCustomizer, mediaType, true, tile, i18n, language, queryParser);
+            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, null, predefFilters, null, filterableFields, uriCustomizer, mediaType, true, tile, i18n, language, queryParser);
         }
         return tileFileJson;
     }
