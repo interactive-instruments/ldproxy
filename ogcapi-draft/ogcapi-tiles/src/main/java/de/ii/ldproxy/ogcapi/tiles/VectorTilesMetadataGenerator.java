@@ -61,7 +61,7 @@ public class VectorTilesMetadataGenerator {
         tilejson.put("minzoom", minMaxZoom.get(0))
                 .put("maxzoom", minMaxZoom.get(1));
 
-        int defaultZoomLevel = zoomLevels.getDefault().orElse(10);
+        int defaultZoomLevel = zoomLevels.getDefault().orElse(minMaxZoom.get(0) + (minMaxZoom.get(1)-minMaxZoom.get(0))/2);
         tilejson.put("center", ImmutableList.of(bbox.getXmin()+(bbox.getXmax()-bbox.getXmin())*0.5, bbox.getYmin()+(bbox.getYmax()-bbox.getYmin())*0.5, defaultZoomLevel));
 
         ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> featureTypesApi = serviceData.getCollections();
