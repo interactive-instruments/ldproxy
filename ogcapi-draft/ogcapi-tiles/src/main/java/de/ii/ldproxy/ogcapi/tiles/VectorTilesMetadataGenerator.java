@@ -105,12 +105,19 @@ public class VectorTilesMetadataGenerator {
                                 }
                             });
 
+                    // TODO temporary hack for VTP2 pilot, find general solution
+                    boolean point = featureTypeApi.getId().endsWith("Pnt") || featureTypeApi.getId().endsWith("_p");
+                    boolean line = featureTypeApi.getId().endsWith("Crv") || featureTypeApi.getId().endsWith("_l");
+                    boolean polygon = featureTypeApi.getId().endsWith("Srf") || featureTypeApi.getId().endsWith("_a");
+                    String geometryType = point ? "point" : line ? "line" : polygon ? "polygon" : "unknown";
+
                     // TODO support layer-specific min/max zoom levels
                     return ImmutableMap.<String, Object>builder()
                             .put("id", featureTypeApi.getId())
                             .put("description", featureTypeApi.getDescription().orElse(""))
                             .put("minzoom", minMaxZoom.get(0))
                             .put("maxzoom", minMaxZoom.get(1))
+                            .put("geometry_type", geometryType)
                             .put("fields", fieldsBuilder.build())
                             .build();
                 })
