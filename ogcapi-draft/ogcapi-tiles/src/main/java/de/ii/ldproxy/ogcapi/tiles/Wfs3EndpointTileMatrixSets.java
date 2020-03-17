@@ -22,9 +22,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
@@ -88,6 +86,18 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
         return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
+    private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data) {
+        TilesConfiguration tilesConfiguration = getExtensionConfiguration(data, TilesConfiguration.class).get();
+        return tilesConfiguration.getZoomLevels();
+    }
+
+    private void checkTileMatrixSet(OgcApiApiDataV2 data, String tileMatrixSetId) {
+        Set<String> tileMatrixSets = getTileMatrixSetZoomLevels(data).keySet();
+        if (!tileMatrixSets.contains(tileMatrixSetId)) {
+            throw new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId);
+        }
+    }
+
     /**
      * retrieve all available tile matrix sets
      *
@@ -98,7 +108,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getTileMatrixSets(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
 
-        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(api.getData()));
+        checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(api.getData()));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
@@ -111,7 +121,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
                 i18n,
                 requestContext.getLanguage());
 
-        Map<String, MinMax> tileMatrixSetZoomLevels = Wfs3EndpointTiles.getTileMatrixSetZoomLevels(api.getData());
+        Map<String, MinMax> tileMatrixSetZoomLevels = getTileMatrixSetZoomLevels(api.getData());
 
         TileMatrixSets tileMatrixSets = ImmutableTileMatrixSets.builder()
                 .tileMatrixSets(
@@ -161,8 +171,8 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
                                      @Context OgcApiApi api,
                                      @Context OgcApiRequestContext requestContext) {
 
-        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(api.getData()));
-        Wfs3EndpointTiles.checkTileMatrixSet(api.getData(), tileMatrixSetId);
+        checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(api.getData()));
+        checkTileMatrixSet(api.getData(), tileMatrixSetId);
 
         TileMatrixSetData jsonTileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId).getTileMatrixSetData();
 
@@ -191,6 +201,22 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
 
         return Response.ok(tileMatrixSet)
                        .build();
+    }
+
+    /**
+     * checks if the tiles parameter is enabled in the dataset. If the tiles parameter is disabled in all collections, it throws a 404.
+     *
+     * @param enabledMap    a map with all collections and the boolean if the tiles support is enabled or not
+     */
+    private void checkTilesParameterDataset(Map<String, Boolean> enabledMap) {
+
+        if (!Objects.isNull(enabledMap)) {
+            for (String collectionId : enabledMap.keySet()) {
+                if (enabledMap.get(collectionId))
+                    return;
+            }
+        }
+        throw new NotFoundException();
     }
 
 }

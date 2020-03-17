@@ -244,7 +244,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getTileMatrixSets(@Context OgcApiApi service, @Context OgcApiRequestContext requestContext) {
 
-        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
+        checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
         Map<String, MinMax> tileMatrixSetZoomLevels = getTileMatrixSetZoomLevels(service.getData());
@@ -314,7 +314,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                        @Context OgcApiRequestContext requestContext,
                                        @PathParam("tileMatrixSetId") String tileMatrixSetId) {
 
-        Wfs3EndpointTiles.checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
+        checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(service.getData()));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
         List<OgcApiLink> links = vectorTilesLinkGenerator.generateTilesLinks(
@@ -329,82 +329,12 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                 false,
                 i18n,
                 requestContext.getLanguage());
-        String tilesUriTemplate = links.stream()
-                .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
-                .findFirst()
-                .map(link -> link.getHref())
-                .orElseThrow(() -> new ServerErrorException(500))
-                .replace("{tileMatrixSetId}", tileMatrixSetId)
-                .replace("{tileMatrix}", "{z}")
-                .replace("{tileRow}", "{y}")
-                .replace("{tileCol}", "{x}");
 
-        ImmutableMap.Builder<String,Object> tilejson = ImmutableMap.<String,Object>builder()
-                .put("tilejson", "3.0.0")
-                .put("name", service.getData().getLabel())
-                .put("description", service.getData().getDescription().orElse(""))
-                .put("tiles", ImmutableList.of(tilesUriTemplate));
+        MinMax zoomLevels = getTileMatrixSetZoomLevels(service.getData()).get(tileMatrixSetId);
 
-        // TODO: add support for attribution and version (manage revisions to the data)
+        Map<String, Object> tilejson = new VectorTilesMetadataGenerator().generateTilejson(providers, service.getData(), Optional.empty(), tileMatrixSetId, zoomLevels, links, i18n, requestContext.getLanguage());
 
-        BoundingBox bbox = service.getData().getSpatialExtent();
-        if (Objects.nonNull(bbox))
-            tilejson.put("bounds", ImmutableList.of(bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax()) );
-
-        Map<String, MinMax> tileMatrixSetZoomLevels = getTileMatrixSetZoomLevels(service.getData());
-
-        MinMax minmax = tileMatrixSetZoomLevels.get(tileMatrixSetId);
-        if (Objects.nonNull(minmax))
-            tilejson.put("minzoom", minmax.getMin() )
-                    .put("maxzoom", minmax.getMax() );
-
-        ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> featureTypesApi = service.getData().getCollections();
-
-        List<ImmutableMap<String, Object>> layers = featureTypesApi.values().stream()
-                .map(featureTypeApi -> {
-                    FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), featureTypeApi);
-                    FeatureType featureType = featureProvider.getData()
-                            .getTypes()
-                            .get(featureTypeApi.getId());
-                    Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = featureTypeApi.getExtension(OgcApiFeaturesCoreConfiguration.class);
-
-                    SchemaObject schema = service.getData().getSchema(featureType);
-                    ImmutableMap.Builder<String, Object> fieldsBuilder = ImmutableMap.<String, Object>builder();
-                    schema.properties.stream()
-                            .forEach(prop -> {
-                                boolean isArray = prop.maxItems > 1;
-                                if (prop.literalType.isPresent()) {
-                                    fieldsBuilder.put(prop.id, prop.literalType.get().concat(isArray ? " (0..*)" : " (0..1)"));
-                                } else if (prop.wellknownType.isPresent()) {
-                                    switch (prop.wellknownType.get()) {
-                                        case "Link":
-                                            fieldsBuilder.put(prop.id, "Link".concat(isArray ? " (0..*)" : " (0..1)"));
-                                            break;
-                                        case "Point":
-                                        case "MultiPoint":
-                                        case "LineString":
-                                        case "MultiLineString":
-                                        case "Polygon":
-                                        case "MultiPolygon":
-                                        case "Geometry":
-                                        default:
-                                            break;
-                                    }
-                                } else if (prop.objectType.isPresent()) {
-                                    fieldsBuilder.put(prop.id, "Object".concat(isArray ? " (0..*)" : " (0..1)"));
-                                }
-                            });
-
-                    return ImmutableMap.<String, Object>builder()
-                            .put("id", featureTypeApi.getId())
-                            .put("description", featureTypeApi.getDescription().orElse(""))
-                            .put("fields", fieldsBuilder.build())
-                            .build();
-                })
-                .collect(Collectors.toList());
-        tilejson.put("vector_layers", layers);
-
-        return Response.ok(tilejson.build())
+        return Response.ok(tilejson)
                 .build();
     }
 
@@ -665,12 +595,12 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
      *
      * @param enabledMap    a map with all collections and the boolean if the tiles support is enabled or not
      */
-    static boolean checkTilesParameterDataset(Map<String, Boolean> enabledMap) {
+    private void checkTilesParameterDataset(Map<String, Boolean> enabledMap) {
 
         if (!Objects.isNull(enabledMap)) {
             for (String collectionId : enabledMap.keySet()) {
                 if (enabledMap.get(collectionId))
-                    return true;
+                    return;
             }
         }
         throw new NotFoundException();
@@ -841,16 +771,17 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
         return collections;
     }
 
-    public static Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data) {
-        return data.getExtensions()
-                .stream()
-                .filter(extensionConfiguration -> extensionConfiguration instanceof TilesConfiguration)
-                .map(tilesConfiguration -> ((TilesConfiguration) tilesConfiguration).getZoomLevels())
-                .findAny()
-                .orElse(null);
+    private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data, String collectionId) {
+        TilesConfiguration tilesConfiguration = getExtensionConfiguration(data, data.getCollections().get(collectionId), TilesConfiguration.class).get();
+        return tilesConfiguration.getZoomLevels();
     }
 
-    public static void checkTileMatrixSet(OgcApiApiDataV2 data, String tileMatrixSetId) {
+    private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data) {
+        TilesConfiguration tilesConfiguration = getExtensionConfiguration(data, TilesConfiguration.class).get();
+        return tilesConfiguration.getZoomLevels();
+    }
+
+    private void checkTileMatrixSet(OgcApiApiDataV2 data, String tileMatrixSetId) {
         Set<String> tileMatrixSets = getTileMatrixSetZoomLevels(data).keySet();
         if (!tileMatrixSets.contains(tileMatrixSetId)) {
             throw new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId);

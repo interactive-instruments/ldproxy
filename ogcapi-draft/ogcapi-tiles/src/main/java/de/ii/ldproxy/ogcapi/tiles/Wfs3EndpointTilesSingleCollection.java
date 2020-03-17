@@ -342,78 +342,12 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                 false,
                 i18n,
                 requestContext.getLanguage());
-        String tilesUriTemplate = links.stream()
-                .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
-                .findFirst()
-                .map(link -> link.getHref())
-                .orElseThrow(() -> new ServerErrorException(500))
-                .replace("{tileMatrixSetId}", tileMatrixSetId)
-                .replace("{tileMatrix}", "{z}")
-                .replace("{tileRow}", "{y}")
-                .replace("{tileCol}", "{x}");
 
-        FeatureTypeConfigurationOgcApi featureTypeApi = service.getData().getCollections().get(collectionId);
+        MinMax zoomLevels = getTileMatrixSetZoomLevels(service.getData(),collectionId).get(tileMatrixSetId);
 
-        ImmutableMap.Builder<String,Object> tilejson = ImmutableMap.<String,Object>builder()
-                .put("tilejson", "3.0.0")
-                .put("name", service.getData().getLabel())
-                .put("description", service.getData().getDescription().orElse(""))
-                .put("tiles", ImmutableList.of(tilesUriTemplate));
+        Map<String, Object> tilejson = new VectorTilesMetadataGenerator().generateTilejson(providers, service.getData(), Optional.of(collectionId), tileMatrixSetId, zoomLevels, links, i18n, requestContext.getLanguage());
 
-        // TODO: add support for attribution and version (manage revisions to the data)
-
-        BoundingBox bbox = service.getData().getSpatialExtent(collectionId);
-        if (Objects.nonNull(bbox)) {
-            tilejson.put("bounds", ImmutableList.of(bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax()) );
-        }
-
-        Map<String, MinMax> tileMatrixSetZoomLevels = getTileMatrixSetZoomLevels(service.getData(), collectionId);
-
-        MinMax minmax = tileMatrixSetZoomLevels.get(tileMatrixSetId);
-        if (Objects.nonNull(minmax))
-            tilejson.put("minzoom", minmax.getMin() )
-                    .put("maxzoom", minmax.getMax() );
-
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), featureTypeApi);
-        FeatureType featureType = featureProvider.getData()
-                .getTypes()
-                .get(featureTypeApi.getId());
-
-        SchemaObject schema = service.getData().getSchema(featureType);
-        ImmutableMap.Builder<String, Object> fieldsBuilder = ImmutableMap.<String, Object>builder();
-        schema.properties.stream()
-                .forEach(prop -> {
-                    boolean isArray = prop.maxItems > 1;
-                    if (prop.literalType.isPresent()) {
-                        fieldsBuilder.put(prop.id, prop.literalType.get().concat(isArray ? " (0..*)" : " (0..1)"));
-                    } else if (prop.wellknownType.isPresent()) {
-                        switch (prop.wellknownType.get()) {
-                            case "Link":
-                                fieldsBuilder.put(prop.id, "Link".concat(isArray ? " (0..*)" : " (0..1)"));
-                                break;
-                            case "Point":
-                            case "MultiPoint":
-                            case "LineString":
-                            case "MultiLineString":
-                            case "Polygon":
-                            case "MultiPolygon":
-                            case "Geometry":
-                            default:
-                                break;
-                        }
-                    } else if (prop.objectType.isPresent()) {
-                        fieldsBuilder.put(prop.id, "Object".concat(isArray ? " (0..*)" : " (0..1)"));
-                    }
-                });
-
-        ImmutableMap<String, Object> layer = ImmutableMap.<String, Object>builder()
-                    .put("id", featureTypeApi.getId())
-                    .put("description", featureTypeApi.getDescription().orElse(""))
-                    .put("fields", fieldsBuilder.build())
-                    .build();
-        tilejson.put("vector_layers", ImmutableList.of(layer));
-
-        return Response.ok(tilejson.build())
+        return Response.ok(tilejson)
                 .build();
     }
 
