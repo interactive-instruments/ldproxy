@@ -69,7 +69,7 @@ public class VectorTilesMetadataGenerator {
         List<ImmutableMap<String, Object>> layers = featureTypesApi.values().stream()
                 .map(featureTypeApi -> {
                     if (collectionId.isPresent()) {
-                        if (featureTypeApi.getId().equals(collectionId.get()))
+                        if (!featureTypeApi.getId().equals(collectionId.get()))
                             return ImmutableMap.<String,Object>of();
                     }
                     FeatureProvider2 featureProvider = providers.getFeatureProvider(serviceData, featureTypeApi);
@@ -121,6 +121,7 @@ public class VectorTilesMetadataGenerator {
                             .put("fields", fieldsBuilder.build())
                             .build();
                 })
+                .filter(map -> !map.isEmpty())
                 .collect(Collectors.toList());
         tilejson.put("vector_layers", layers);
 
