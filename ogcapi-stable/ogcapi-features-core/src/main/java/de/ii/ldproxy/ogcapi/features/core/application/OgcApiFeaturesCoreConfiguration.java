@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -34,6 +35,9 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
     static final int MINIMUM_PAGE_SIZE = 1;
     static final int DEFAULT_PAGE_SIZE = 10;
     static final int MAX_PAGE_SIZE = 10000;
+    static final String PARAMETER_BBOX = "bbox";
+    static final String PARAMETER_DATETIME = "datetime";
+    static final String DATETIME_INTERVAL_SEPARATOR = "/";
 
     @Value.Default
     @Override
@@ -98,22 +102,37 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
 
             if (!queryables.getSpatial()
                            .isEmpty()) {
-                builder.put("bbox", queryables.getSpatial()
-                                              .get(0));
+                builder.put(PARAMETER_BBOX, queryables.getSpatial()
+                                                      .get(0));
+            } else {
+                builder.put(PARAMETER_BBOX, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
             }
-            if (!queryables.getTemporal()
-                           .isEmpty()) {
-                // TODO support more than a single queryable, e.g. for interval start/end DateTime values
-                builder.put("datetime", queryables.getTemporal()
+
+            if (queryables.getTemporal()
+                           .size() > 1) {
+                builder.put(PARAMETER_DATETIME, String.format("%s%s%s", queryables.getTemporal().get(0), DATETIME_INTERVAL_SEPARATOR, queryables.getTemporal().get(1)));
+            } else if (!queryables.getTemporal()
+                                  .isEmpty()) {
+                builder.put(PARAMETER_DATETIME, queryables.getTemporal()
                                                   .get(0));
+            } else {
+                builder.put(PARAMETER_DATETIME, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
             }
+
+            queryables.getSpatial()
+                      .forEach(spatial -> builder.put(spatial, spatial));
+            queryables.getTemporal()
+                      .forEach(temporal -> builder.put(temporal, temporal));
             queryables.getOther()
                       .forEach(other -> builder.put(other, other));
 
             return builder.build();
         }
 
-        return ImmutableMap.of("bbox", "NOT_AVAILABLE");
+        return ImmutableMap.of(
+                PARAMETER_BBOX, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE,
+                PARAMETER_DATETIME, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE
+        );
     }
 
     @JsonIgnore
@@ -130,7 +149,7 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
             return builder.build();
         }
 
-        return ImmutableMap.of("bbox", "NOT_AVAILABLE");
+        return ImmutableMap.of();
     }
 
     @Override

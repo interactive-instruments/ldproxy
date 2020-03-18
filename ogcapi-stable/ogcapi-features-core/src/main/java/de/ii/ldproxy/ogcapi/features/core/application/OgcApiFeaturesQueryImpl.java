@@ -22,13 +22,15 @@ import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
-import de.ii.xtraplatform.cql.domain.During;
 import de.ii.xtraplatform.cql.domain.Eq;
+import de.ii.xtraplatform.cql.domain.Function;
 import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
+import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.TEquals;
+import de.ii.xtraplatform.cql.domain.TOverlaps;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -57,6 +59,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
+import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.PARAMETER_BBOX;
+import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.PARAMETER_DATETIME;
 
 
 @Component
@@ -223,21 +229,21 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     }
 
     private Optional<CqlFilter> getCQLFromFilters(Map<String, String> filters,
-                                                     Map<String, String> filterableFields, Set<String> filterParameters,
-                                                     Optional<EpsgCrs> providerCrs, Cql.Format cqlFormat) {
+                                                  Map<String, String> filterableFields, Set<String> filterParameters,
+                                                  Optional<EpsgCrs> providerCrs, Cql.Format cqlFormat) {
 
         List<CqlPredicate> predicates = filters.entrySet()
                                                .stream()
                                                .map(filter -> {
                                                    if (filter.getKey()
-                                                             .equals("bbox")) {
+                                                             .equals(PARAMETER_BBOX)) {
                                                        if (!providerCrs.isPresent()) {
                                                            return null;
                                                        }
                                                        return bboxToCql(filterableFields.get(filter.getKey()), filter.getValue(), providerCrs.get());
                                                    }
                                                    if (filter.getKey()
-                                                             .equals("datetime")) {
+                                                             .equals(PARAMETER_DATETIME)) {
                                                        return timeToCql(filterableFields.get(filter.getKey()), filter.getValue()).orElse(null);
                                                    }
                                                    if (filterParameters.contains(filter.getKey())) {
@@ -248,11 +254,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                            throw new BadRequestException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
                                                        }
 
-                                                       //TODO: filterableFields.keys do not contain real names of geometry or date, added filterableFields.values as well for now
-                                                       CqlPropertyChecker visitor = new CqlPropertyChecker(new ImmutableList.Builder<String>().addAll(filterableFields.keySet())
-                                                                                                                                              .addAll(filterableFields.values())
-                                                                                                                                              .add("_ID_")
-                                                                                                                                              .build());
+                                                       CqlPropertyChecker visitor = new CqlPropertyChecker(ImmutableList.copyOf(filterableFields.keySet()));
                                                        List<String> invalidProperties = cqlPredicate.accept(visitor);
 
                                                        if (invalidProperties.isEmpty()) {
@@ -350,16 +352,29 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         // valid values: timestamp or time interval;
         // this includes open intervals indicated by ".." (see ISO 8601-2);
         // accept also unknown ("") with the same interpretation
+
+        TemporalLiteral temporalLiteral;
         try {
-            TemporalLiteral temporalLiteral = TemporalLiteral.of(timeValue);
-            if (temporalLiteral.getType() == Interval.class) {
-                return Optional.of(CqlPredicate.of(During.of(timeField, temporalLiteral)));
-            } else {
-                return Optional.of(CqlPredicate.of(TEquals.of(timeField, temporalLiteral)));
-            }
+            temporalLiteral = TemporalLiteral.of(timeValue);
         } catch (Throwable e) {
-            throw new BadRequestException("Invalid value for query parameter '" + timeField + "'.", e);
+            throw new BadRequestException("Invalid value for query parameter '" + PARAMETER_DATETIME + "'.", e);
         }
+
+        boolean atLeastOneInterval = timeField.contains(DATETIME_INTERVAL_SEPARATOR) || temporalLiteral.getType() == Interval.class;
+
+        if (atLeastOneInterval) {
+            Function intervalFunction = timeField.contains(DATETIME_INTERVAL_SEPARATOR)
+                    ? Function.of("interval", Splitter.on(DATETIME_INTERVAL_SEPARATOR)
+                                                      .splitToList(timeField)
+                                                      .stream()
+                                                      .map(Property::of)
+                                                      .collect(Collectors.toList()))
+                    : Function.of("interval", ImmutableList.of(Property.of(timeField), Property.of(timeField)));
+
+            return Optional.of(CqlPredicate.of(TOverlaps.of(intervalFunction, temporalLiteral)));
+        }
+
+        return Optional.of(CqlPredicate.of(TEquals.of(timeField, temporalLiteral)));
     }
 
     private int parseLimit(int minimumPageSize, int defaultPageSize, int maxPageSize, String paramLimit) {
