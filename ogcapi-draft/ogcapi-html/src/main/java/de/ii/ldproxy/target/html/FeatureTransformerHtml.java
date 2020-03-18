@@ -77,6 +77,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
     private PropertyDTO currentGeometryPart;
     private int currentGeometryParts;
     private boolean currentGeometryWritten;
+    private boolean combineCurrentPropertyValues;
 
     public FeatureTransformerHtml(FeatureTransformationContextHtml transformationContext, HttpClient httpClient) {
         this.outputStreamWriter = new OutputStreamWriter(transformationContext.getOutputStream());
@@ -309,6 +310,15 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
     @Override
     public void onPropertyStart(FeatureProperty featureProperty, List<Integer> multiplicities) throws Exception {
         currentFeatureProperty = featureProperty;
+
+        if (featureProperty.getPath().indexOf(":", featureProperty.getPath().lastIndexOf("/")) > 0) {
+            if (combineCurrentPropertyValues) {
+                this.combineCurrentPropertyValues = false;
+                currentValue.append("|||");
+            } else {
+                this.combineCurrentPropertyValues = true;
+            }
+        }
     }
 
     @Override
@@ -318,6 +328,10 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
     @Override
     public void onPropertyEnd() throws Exception {
+        if (combineCurrentPropertyValues) {
+            return;
+        }
+
         if (currentValue.length() > 0) {
             writeField(currentFeatureProperty, currentValue.toString());
             currentValue.setLength(0);
