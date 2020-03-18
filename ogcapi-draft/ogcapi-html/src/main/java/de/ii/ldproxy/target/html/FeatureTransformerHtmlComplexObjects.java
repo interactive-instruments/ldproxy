@@ -85,6 +85,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
     private ValueDTO currentValue = null;
     private FeatureProperty currentProperty = null;
     private ArrayList<FeatureProperty> currentFeatureProperties = null;
+    private boolean combineCurrentPropertyValues;
 
     private ValueDTO getValue(FeatureProperty baseProperty, FeatureProperty htmlProperty, List<Integer> index) {
         String htmlName = htmlProperty.getName();
@@ -381,6 +382,15 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
             currentValue = getValue(featureProperty, featureProperty, index);
             updatePropertySortPriorities(currentValue.property, sortPriority);
         }
+
+        if (featureProperty.getPath().indexOf(":", featureProperty.getPath().lastIndexOf("/")) > 0) {
+            if (combineCurrentPropertyValues) {
+                this.combineCurrentPropertyValues = false;
+                currentValueBuilder.append("|||");
+            } else {
+                this.combineCurrentPropertyValues = true;
+            }
+        }
     }
 
     private void updatePropertySortPriorities(PropertyDTO property, int sortPriority) {
@@ -400,6 +410,10 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
 
     @Override
     public void onPropertyEnd() throws Exception {
+        if (combineCurrentPropertyValues) {
+            return;
+        }
+
         if (Objects.nonNull(currentValue)) {
             String value = currentValueBuilder.toString();
 

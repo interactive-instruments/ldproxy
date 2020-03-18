@@ -54,6 +54,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
     private final Optional<FeatureTransformations> baseTransformations;
     private final Optional<FeatureTransformations> geojsonTransformations;
     private FeatureProperty currentProperty;
+    private boolean combineCurrentPropertyValues;
 
     @Override
     public OnTheFlyMapping getOnTheFlyMapping() {
@@ -162,10 +163,19 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
                                      .setCurrentFeatureProperty(Optional.ofNullable(processedFeatureProperty));
                 transformationContext.getState()
                                      .setCurrentMultiplicity(multiplicities);
+
+                if (processedFeatureProperty.getPath().indexOf(":", processedFeatureProperty.getPath().lastIndexOf("/")) > 0) {
+                    if (combineCurrentPropertyValues) {
+                        this.combineCurrentPropertyValues = false;
+                        stringBuilder.append("|||");
+                    } else {
+                        this.combineCurrentPropertyValues = true;
+                    }
+                }
             }
         }
 
-        currentProperty = processedFeatureProperty;
+        this.currentProperty = processedFeatureProperty;
     }
 
     @Override
@@ -177,6 +187,10 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
 
     @Override
     public void onPropertyEnd() throws IOException {
+        if (combineCurrentPropertyValues) {
+            return;
+        }
+
         if (stringBuilder.length() > 0) {
             String value = stringBuilder.toString();
             List<FeaturePropertyValueTransformer> valueTransformations = getValueTransformations(currentProperty);
@@ -197,6 +211,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
                              .setCurrentFeatureProperty(Optional.empty());
         transformationContext.getState()
                              .setCurrentValue(Optional.empty());
+        this.currentProperty = null;
+        this.combineCurrentPropertyValues = false;
     }
 
     private List<FeaturePropertyValueTransformer> getValueTransformations(FeatureProperty featureProperty) {
