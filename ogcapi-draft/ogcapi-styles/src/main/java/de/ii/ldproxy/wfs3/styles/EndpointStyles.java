@@ -10,6 +10,7 @@ package de.ii.ldproxy.wfs3.styles;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -187,8 +189,13 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
 
     @Override
     public Response getStylesResponse(Styles styles, OgcApiApi api, OgcApiRequestContext requestContext) {
+        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+                .orElse(false);
+
         return Response.ok(styles)
                 .type(MediaType.APPLICATION_JSON_TYPE)
+                .links(includeLinkHeader ? styles.getLinks().stream().map(link -> link.getLink()).toArray(Link[]::new) : null)
                 .build();
     }
 
@@ -222,6 +229,27 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
             }
         }
 
+        // collect self/alternate links, but only, if we need to return them in the headers
+        List<OgcApiLink> links = null;
+        boolean includeLinkHeader = getExtensionConfiguration(dataset.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+                .orElse(false);
+        if (includeLinkHeader) {
+            final DefaultLinksGenerator defaultLinkGenerator = new DefaultLinksGenerator();
+
+            final String apiId = dataset.getId();
+            File apiDir = new File(stylesStore + File.separator + apiId);
+            if (!apiDir.exists()) {
+                apiDir.mkdirs();
+            }
+
+            List<OgcApiMediaType> alternateMediaTypes = getMediaTypes(dataset.getData(), apiDir, Files.getNameWithoutExtension(styleId)).stream()
+                    .filter(availableMediaType -> !availableMediaType.matches(styleFormat.getMediaType().type()))
+                    .collect(Collectors.toList());
+            links = defaultLinkGenerator.generateLinks(ogcApiRequest.getUriCustomizer(), styleFormat.getMediaType(), alternateMediaTypes, i18n, ogcApiRequest.getLanguage());
+        }
+
+
         try {
             final byte[] content = java.nio.file.Files.readAllBytes(stylesheet.toPath());
 
@@ -239,6 +267,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
                     return Response.ok()
                             .entity(parsedContent)
                             .type(mediaType)
+                            .links(includeLinkHeader ? links.stream().map(link -> link.getLink()).toArray(Link[]::new) : null)
                             .build();
                 } catch (IOException e) {
                     LOGGER.error("Stylesheet in the styles store is invalid: " + stylesheet.getAbsolutePath());
@@ -248,6 +277,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
 
                 return Response.ok()
                         .entity(content)
+                        .links(includeLinkHeader ? links.stream().map(link -> link.getLink()).toArray(Link[]::new) : null)
                         .type(mediaType)
                         .build();
             }
@@ -286,8 +316,13 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
 
     @Override
     public Response getStyleMetadataResponse(StyleMetadata metadata, OgcApiApi api, OgcApiRequestContext requestContext) {
+        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+                .orElse(false);
+
         return Response.ok()
                 .entity(metadata)
+                .links(includeLinkHeader ? metadata.getLinks().stream().map(link -> link.getLink()).toArray(Link[]::new) : null)
                 .type(MediaType.APPLICATION_JSON_TYPE)
                 .build();
     }
