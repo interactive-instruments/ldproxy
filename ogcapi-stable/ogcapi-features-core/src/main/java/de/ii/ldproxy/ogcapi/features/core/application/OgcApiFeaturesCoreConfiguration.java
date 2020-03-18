@@ -37,7 +37,7 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
     static final int MAX_PAGE_SIZE = 10000;
     static final String PARAMETER_BBOX = "bbox";
     static final String PARAMETER_DATETIME = "datetime";
-    static final String DATETIME_INTERVAL_SEPARATOR = "...";
+    static final String DATETIME_INTERVAL_SEPARATOR = "/";
 
     @Value.Default
     @Override

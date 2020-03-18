@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- * <p>
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -31,7 +31,6 @@ import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.TEquals;
 import de.ii.xtraplatform.cql.domain.TOverlaps;
-import de.ii.xtraplatform.cql.domain.Temporal;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -62,6 +61,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
+import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.PARAMETER_BBOX;
 import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.PARAMETER_DATETIME;
 
 
@@ -236,14 +236,14 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                .stream()
                                                .map(filter -> {
                                                    if (filter.getKey()
-                                                             .equals(OgcApiFeaturesCoreConfiguration.PARAMETER_BBOX)) {
+                                                             .equals(PARAMETER_BBOX)) {
                                                        if (!providerCrs.isPresent()) {
                                                            return null;
                                                        }
                                                        return bboxToCql(filterableFields.get(filter.getKey()), filter.getValue(), providerCrs.get());
                                                    }
                                                    if (filter.getKey()
-                                                             .equals(OgcApiFeaturesCoreConfiguration.PARAMETER_DATETIME)) {
+                                                             .equals(PARAMETER_DATETIME)) {
                                                        return timeToCql(filterableFields.get(filter.getKey()), filter.getValue()).orElse(null);
                                                    }
                                                    if (filterParameters.contains(filter.getKey())) {
