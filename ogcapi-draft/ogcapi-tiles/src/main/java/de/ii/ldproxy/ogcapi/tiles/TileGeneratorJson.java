@@ -27,6 +27,8 @@ import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
+import de.ii.xtraplatform.cql.domain.Intersects;
+import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -112,7 +114,7 @@ public class TileGeneratorJson {
 
         String geometryField = filterableFields.get("bbox");
 
-        CqlPredicate spatialFilter = queryParser.getBboxFilter(geometryField, tile.getBoundingBox(), featureProvider.getData().getNativeCrs());
+        CqlPredicate spatialPredicate = CqlPredicate.of(Intersects.of(geometryField, tile.getBoundingBox()));
 
         // calculate maxAllowableOffset
         double maxAllowableOffsetTileMatrixSet = tileMatrixSet.getMaxAllowableOffset(level, row, col);
@@ -136,7 +138,7 @@ public class TileGeneratorJson {
             //TODO: support 3d?
             queryBuilder = ImmutableFeatureQuery.builder()
                                                 .type(collectionId)
-                                                .filter(CqlFilter.of(spatialFilter))
+                                                .filter(CqlFilter.of(spatialPredicate))
                                                 .maxAllowableOffset(maxAllowableOffsetNative)
                                                 .fields(propertiesList)
                                                 .crs(OgcCrs.CRS84);
@@ -153,7 +155,7 @@ public class TileGeneratorJson {
                         cqlFormat = Cql.Format.JSON;
                     }
                     Optional<CqlFilter> otherFilters = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), Optional.empty(), cqlFormat);
-                    CqlFilter combinedFilter = otherFilters.isPresent() ? CqlFilter.of(And.of(otherFilters.get(), spatialFilter)) : CqlFilter.of(spatialFilter);
+                    CqlFilter combinedFilter = otherFilters.isPresent() ? CqlFilter.of(And.of(otherFilters.get(), spatialPredicate)) : CqlFilter.of(spatialPredicate);
 
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Filter: {}", combinedFilter);
@@ -169,7 +171,7 @@ public class TileGeneratorJson {
         } else {
             queryBuilder = ImmutableFeatureQuery.builder()
                                                 .type(collectionId)
-                                                .filter(CqlFilter.of(spatialFilter))
+                                                .filter(CqlFilter.of(spatialPredicate))
                                                 .maxAllowableOffset(maxAllowableOffsetNative);
         }
         queryBuilder.build();
