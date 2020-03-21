@@ -24,17 +24,16 @@ import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Eq;
 import de.ii.xtraplatform.cql.domain.Function;
+import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
 import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
+import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.cql.domain.TEquals;
 import de.ii.xtraplatform.cql.domain.TOverlaps;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
-import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -304,22 +303,9 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
         checkCoordinateRange(coordinates, sourceCrs);
 
-        return getBboxFilter(geometryField, new BoundingBox(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), sourceCrs), providerCrs);
-    }
+        Envelope envelope = Envelope.of(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), sourceCrs);
 
-    @Override
-    public CqlPredicate getBboxFilter(String geometryField, BoundingBox boundingBox, EpsgCrs providerCrs) {
-        try {
-            //TODO: move transformation to provider
-            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), providerCrs);
-            BoundingBox transformedBoundingBox = transformer.isPresent() ? transformer.get()
-                                                                                      .transformBoundingBox(boundingBox) : boundingBox;
-
-            return CqlPredicate.of(Intersects.of(geometryField, transformedBoundingBox));
-        } catch (CrsTransformationException e) {
-            throw new BadRequestException(String.format("Error transforming the bounding box '%s' with CRS '%s'", getBboxAsString(boundingBox), boundingBox.getEpsgCrs()
-                                                                                                                                                           .toUriString()));
-        }
+        return CqlPredicate.of(Intersects.of(geometryField, SpatialLiteral.of(envelope)));
     }
 
     private void checkCoordinateRange(List<Double> coordinates, EpsgCrs crs) {
@@ -338,10 +324,6 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
     private String getBboxAsString(List<String> bboxArray) {
         return String.format("%s,%s,%s,%s", bboxArray.get(0), bboxArray.get(1), bboxArray.get(2), bboxArray.get(3));
-    }
-
-    private String getBboxAsString(BoundingBox boundingBox) {
-        return getCoordinatesAsString(ImmutableList.of(boundingBox.getXmin(), boundingBox.getYmin(), boundingBox.getXmax(), boundingBox.getYmax()));
     }
 
     private String getCoordinatesAsString(List<Double> bboxArray) {
