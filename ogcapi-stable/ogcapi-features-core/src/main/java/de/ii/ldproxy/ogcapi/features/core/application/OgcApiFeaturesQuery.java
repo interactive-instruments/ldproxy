@@ -35,5 +35,4 @@ public interface OgcApiFeaturesQuery {
                                            Set<String> filterParameters, Optional<EpsgCrs> providerCrs,
                                            Cql.Format cqlFormat);
 
-    CqlPredicate getBboxFilter(String geometryField, BoundingBox boundingBox, EpsgCrs providerCrs);
 }

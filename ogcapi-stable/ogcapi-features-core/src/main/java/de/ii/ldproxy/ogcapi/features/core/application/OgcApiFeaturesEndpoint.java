@@ -133,6 +133,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
         checkAuthorization(api.getData(), optionalUser);
+        checkCollectionExists(api.getData(), collectionId);
 
         FeatureTypeConfigurationOgcApi collectionData = api.getData()
                                                        .getCollections()
@@ -176,6 +177,7 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                             @PathParam("collectionId") String collectionId,
                             @PathParam("featureId") String featureId) {
         checkAuthorization(api.getData(), optionalUser);
+        checkCollectionExists(api.getData(), collectionId);
 
         FeatureTypeConfigurationOgcApi collectionData = api.getData()
                                                            .getCollections()
@@ -203,6 +205,13 @@ public class OgcApiFeaturesEndpoint implements OgcApiEndpointExtension {
                 .build();
 
         return queryHandler.handle(OgcApiFeaturesCoreQueriesHandlerImpl.Query.FEATURE, queryInput, requestContext);
+    }
+
+    private void checkCollectionExists(@Context OgcApiApiDataV2 apiData,
+                                       @PathParam("collectionId") String collectionId) {
+        if (!apiData.isCollectionEnabled(collectionId)) {
+            throw new NotFoundException();
+        }
     }
 
     public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {

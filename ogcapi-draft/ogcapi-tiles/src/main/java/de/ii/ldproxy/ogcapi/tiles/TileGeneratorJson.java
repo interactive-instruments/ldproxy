@@ -28,6 +28,8 @@ import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
+import de.ii.xtraplatform.cql.domain.Intersects;
+import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -113,7 +115,7 @@ public class TileGeneratorJson {
 
         String geometryField = filterableFields.get("bbox");
 
-        CqlPredicate spatialFilter = queryParser.getBboxFilter(geometryField, tile.getBoundingBox(), featureProvider.getData().getNativeCrs());
+        CqlPredicate spatialPredicate = CqlPredicate.of(Intersects.of(geometryField, tile.getBoundingBox()));
 
         // calculate maxAllowableOffset
         double maxAllowableOffsetTileMatrixSet = tileMatrixSet.getMaxAllowableOffset(level, row, col);
@@ -146,7 +148,7 @@ public class TileGeneratorJson {
                 //TODO: support 3d?
                 queryBuilder = ImmutableFeatureQuery.builder()
                         .type(collectionId)
-                        .filter(CqlFilter.of(spatialFilter))
+                        .filter(CqlFilter.of(spatialPredicate))
                         .maxAllowableOffset(maxAllowableOffsetNative)
                         .fields(propertiesList)
                         .crs(OgcCrs.CRS84);
@@ -178,13 +180,13 @@ public class TileGeneratorJson {
 
                 CqlFilter combinedFilter;
                 if (otherFilters.isPresent() && configFilter.isPresent()) {
-                    combinedFilter = CqlFilter.of(And.of(otherFilters.get(), configFilter.get(), spatialFilter));
+                    combinedFilter = CqlFilter.of(And.of(otherFilters.get(), configFilter.get(), spatialPredicate));
                 } else if (otherFilters.isPresent()) {
-                    combinedFilter = CqlFilter.of(And.of(otherFilters.get(), spatialFilter));
+                    combinedFilter = CqlFilter.of(And.of(otherFilters.get(), spatialPredicate));
                 } else if (configFilter.isPresent()) {
-                    combinedFilter = CqlFilter.of(And.of(configFilter.get(), spatialFilter));
+                    combinedFilter = CqlFilter.of(And.of(configFilter.get(), spatialPredicate));
                 } else {
-                    combinedFilter = CqlFilter.of(spatialFilter);
+                    combinedFilter = CqlFilter.of(spatialPredicate);
                 }
 
                 if (LOGGER.isDebugEnabled()) {
@@ -197,14 +199,12 @@ public class TileGeneratorJson {
         } else {
             queryBuilder = ImmutableFeatureQuery.builder()
                                                 .type(collectionId)
-                                                .filter(CqlFilter.of(spatialFilter))
+                                                .filter(CqlFilter.of(spatialPredicate))
                                                 .maxAllowableOffset(maxAllowableOffsetNative);
         }
         queryBuilder.build();
 
-
         List<OgcApiLink> ogcApiLinks = new ArrayList<>();
-
 
         if (isCollection) {
             OgcApiMediaType alternateMediaType;
