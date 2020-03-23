@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
@@ -331,13 +332,14 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                                          .get()
                                                          .getAllFilterParameters();
 
-        Map<String, List<PredefinedFilter>> predefFilters = service.getData()
+        TilesConfiguration tilesConfiguration = service.getData()
                 .getCollections()
                 .get(collectionId)
                 .getExtension(TilesConfiguration.class)
-                .orElse(null)
-                .getFilters();
+                .orElse(null);
 
+        Map<String, List<PredefinedFilter>> predefFilters = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getFilters() : ImmutableMap.of();
+        
         VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
         File tileFileJson = tile.getFile(cache, "json");
 

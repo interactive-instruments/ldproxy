@@ -538,12 +538,13 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                                             .orElse(ImmutableMap.of());
         final Map<String, String> filters = getFiltersFromQuery(OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields, filterParameters);
 
-        Map<String, List<PredefinedFilter>> predefFilters = service.getData()
+        TilesConfiguration tilesConfiguration = service.getData()
                 .getCollections()
                 .get(collectionId)
                 .getExtension(TilesConfiguration.class)
-                .orElse(null)
-                .getFilters();
+                .orElse(null);
+
+        Map<String, List<PredefinedFilter>> predefFilters = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getFilters() : ImmutableMap.of();
 
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                 .type(collectionId);
