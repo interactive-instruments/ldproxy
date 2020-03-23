@@ -44,6 +44,7 @@ public class OgcApiFeaturesLandingPageExtension implements OgcApiLandingPageExte
 
         landingPageBuilder.addLinks(new ImmutableOgcApiLink.Builder()
                         .href(uriCustomizer.copy()
+                                .ensureNoTrailingSlash()
                                 .ensureLastPathSegment("collections")
                                 .removeParameters("f")
                                 .toString())

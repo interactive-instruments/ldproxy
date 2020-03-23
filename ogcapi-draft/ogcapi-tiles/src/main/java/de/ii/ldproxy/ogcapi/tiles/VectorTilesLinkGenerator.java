@@ -38,6 +38,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                         .removeLastPathSegment("collections")
+                                        .ensureNoTrailingSlash()
                                         .ensureLastPathSegment("tileMatrixSets")
                                         .removeParameters("f")
                                         .toString())
@@ -47,6 +48,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                 .removeLastPathSegment("collections")
+                                .ensureNoTrailingSlash()
                                 .ensureLastPathSegment("tiles")
                                 .removeParameters("f")
                                 .toString())
@@ -104,6 +106,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
 
         uriBuilder.removeLastPathSegments(3);
         uriBuilder
+                .ensureNoTrailingSlash()
                 .ensureParameter("f", mediaType.parameter())
                 .ensureLastPathSegments("tiles", "WebMercatorQuad", zoomLevel, row, col);
 
@@ -112,6 +115,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
         if (json) {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder
+                            .ensureNoTrailingSlash()
                             .ensureLastPathSegments("tiles", tileMatrixSetId, zoomLevel, row, col)
                             .toString())
                     .rel("self")
@@ -123,6 +127,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
         if (mvt) {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
+                                    .ensureNoTrailingSlash()
                                     .ensureLastPathSegments("tiles", tileMatrixSetId, zoomLevel, row, col)
                                     .removeLastPathSegment("")
                                     .setParameter("f", "mvt")
@@ -239,6 +244,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
         return ImmutableList.<OgcApiLink>builder()
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
+                                .ensureNoTrailingSlash()
                                 .ensureLastPathSegment("tiles")
                                 .removeParameters("f")
                                 .toString()

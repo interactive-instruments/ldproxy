@@ -37,6 +37,7 @@ public class StylesLinkGenerator {
         return ImmutableList.<OgcApiLink>builder()
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
+                                        .ensureNoTrailingSlash()
                                         .ensureLastPathSegment("styles")
                                         .removeParameters("f")
                                         .toString())
@@ -65,6 +66,7 @@ public class StylesLinkGenerator {
         for (OgcApiMediaType mediaType: mediaTypes) {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
+                            .ensureNoTrailingSlash()
                             .ensureLastPathSegment(styleId)
                             .setParameter("f", mediaType.parameter())
                             .toString()
@@ -77,11 +79,12 @@ public class StylesLinkGenerator {
 
         builder.add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
+                                .ensureNoTrailingSlash()
                                 .ensureLastPathSegments("styles", styleId, "metadata")
                                 .removeParameters("f")
                                 .toString()
                         )
-                        .rel("describedBy")
+                        .rel("describedby")
                         .title(i18n.get("styleMetadataLink",language))
                         .build());
 
@@ -90,6 +93,7 @@ public class StylesLinkGenerator {
                               .count() > 0) {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(uriBuilder.copy()
+                            .ensureNoTrailingSlash()
                             .ensureLastPathSegments("styles", styleId, "map")
                             .removeParameters("f")
                             .toString()
@@ -110,6 +114,7 @@ public class StylesLinkGenerator {
 
         final ImmutableOgcApiLink.Builder builder = new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
+                                .ensureNoTrailingSlash()
                                 .ensureLastPathSegment(styleId)
                                 .setParameter("f", mediaType.parameter())
                                 .toString()
