@@ -693,12 +693,13 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                                                      .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
                                                                      .orElse(ImmutableMap.of());
 
-                    Map<String, List<PredefinedFilter>> predefFilters = wfsService.getData()
+                    TilesConfiguration tilesConfiguration = wfsService.getData()
                             .getCollections()
                             .get(collectionId)
                             .getExtension(TilesConfiguration.class)
-                            .orElse(null)
-                            .getFilters();
+                            .orElse(null);
+
+                    Map<String, List<PredefinedFilter>> predefFilters = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getFilters() : ImmutableMap.of();
 
                     if (!tileFileJson.exists()) {
                         OgcApiMediaType geojsonMediaType;

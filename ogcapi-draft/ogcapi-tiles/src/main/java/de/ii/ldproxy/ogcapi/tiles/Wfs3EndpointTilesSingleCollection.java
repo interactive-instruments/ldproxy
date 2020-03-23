@@ -396,12 +396,13 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                                             .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
                                                             .orElse(ImmutableMap.of());
 
-        Map<String, List<PredefinedFilter>> predefFilters = service.getData()
+        TilesConfiguration tilesConfiguration = service.getData()
                 .getCollections()
                 .get(collectionId)
                 .getExtension(TilesConfiguration.class)
-                .orElse(null)
-                .getFilters();
+                .orElse(null);
+
+        Map<String, List<PredefinedFilter>> predefFilters = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getFilters() : ImmutableMap.of();
 
         Set<String> filterParameters = ImmutableSet.of();
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
