@@ -221,7 +221,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
             throw new NotAcceptableException();
         }
 
-        return Response.ok(tileMatrixSet)
+        return Response.ok(tileMatrixSetData)
                        .build();
     }
 
