@@ -154,8 +154,19 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
     }
 
     private Optional<String> deriveTitle(String tileMatrixSetId) {
-        TileMatrixSetData tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId).getTileMatrixSetData();
-        return tileMatrixSet.getTitle();
+        TileMatrixSet tileMatrixSet = null;
+        for (OgcApiContentExtension contentExtension : extensionRegistry.getExtensionsForType(OgcApiContentExtension.class)) {
+            if (contentExtension instanceof TileMatrixSet && ((TileMatrixSet) contentExtension).getId().equals(tileMatrixSetId)) {
+                tileMatrixSet = (TileMatrixSet) contentExtension;
+                break;
+            }
+        }
+        if (Objects.isNull(tileMatrixSet)) {
+            throw new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId);
+        }
+
+        TileMatrixSetData tileMatrixSetData = tileMatrixSet.getTileMatrixSetData();
+        return tileMatrixSetData.getTitle();
     }
 
     /**
@@ -174,7 +185,18 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
         checkTilesParameterDataset(vectorTileMapGenerator.getEnabledMap(api.getData()));
         checkTileMatrixSet(api.getData(), tileMatrixSetId);
 
-        TileMatrixSetData jsonTileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId).getTileMatrixSetData();
+        TileMatrixSet tileMatrixSet = null;
+        for (OgcApiContentExtension contentExtension : extensionRegistry.getExtensionsForType(OgcApiContentExtension.class)) {
+            if (contentExtension instanceof TileMatrixSet && ((TileMatrixSet) contentExtension).getId().equals(tileMatrixSetId)) {
+                tileMatrixSet = (TileMatrixSet) contentExtension;
+                break;
+            }
+        }
+        if (Objects.isNull(tileMatrixSet)) {
+            throw new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId);
+        }
+
+        TileMatrixSetData jsonTileMatrixSet = tileMatrixSet.getTileMatrixSetData();
 
         List<OgcApiLink> links = new TileMatrixSetsLinksGenerator().generateLinks(
                 requestContext.getUriCustomizer(),
@@ -185,7 +207,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
                 i18n,
                 requestContext.getLanguage());
 
-        TileMatrixSetData tileMatrixSet = ImmutableTileMatrixSetData.builder()
+        TileMatrixSetData tileMatrixSetData = ImmutableTileMatrixSetData.builder()
                 .from(jsonTileMatrixSet)
                 .links(links)
                 .build();
@@ -193,7 +215,7 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
         if (requestContext.getMediaType().matches(MediaType.TEXT_HTML_TYPE)) {
             Optional<TileMatrixSetsFormatExtension> outputFormatHtml = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), "/tileMatrixSets/"+tileMatrixSetId);
             if (outputFormatHtml.isPresent()) {
-                return outputFormatHtml.get().getTileMatrixSetResponse(tileMatrixSet, api, requestContext);
+                return outputFormatHtml.get().getTileMatrixSetResponse(tileMatrixSetData, api, requestContext);
             }
 
             throw new NotAcceptableException();

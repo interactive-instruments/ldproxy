@@ -30,15 +30,13 @@ public class TileMatrixSetLimitsGenerator {
      * Return a list of tileMatrixSetLimits for a single collection.
      * @param data service dataset
      * @param collectionId name of the collection
-     * @param tileMatrixSetId identifier of a specific tile matrix set
+     * @param tileMatrixSet the tile matrix set
      * @param crsTransformation crs transfromation
      * @return list of TileMatrixSetLimits
      */
     public static List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiApiDataV2 data, String collectionId,
-                                                                             String tileMatrixSetId, MinMax tileMatrixRange,
+                                                                             TileMatrixSet tileMatrixSet, MinMax tileMatrixRange,
                                                                              CrsTransformerFactory crsTransformation) {
-
-        TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
         List<FeatureTypeConfigurationOgcApi> collectionData = data.getCollections()
                 .values()
@@ -74,14 +72,12 @@ public class TileMatrixSetLimitsGenerator {
     /**
      * Return a list of tileMatrixSetLimits for all collections in the dataset.
      * @param data service dataset
-     * @param tileMatrixSetId identifier of a specific tile matrix set
+     * @param tileMatrixSet the tile matrix set
      * @param crsTransformerFactory crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public static List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiApiDataV2 data, String tileMatrixSetId,
+    public static List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiApiDataV2 data, TileMatrixSet tileMatrixSet,
                                                                    MinMax tileMatrixRange, CrsTransformerFactory crsTransformerFactory) {
-
-        TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
 
         BoundingBox bbox = data.getSpatialExtent();
         Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());

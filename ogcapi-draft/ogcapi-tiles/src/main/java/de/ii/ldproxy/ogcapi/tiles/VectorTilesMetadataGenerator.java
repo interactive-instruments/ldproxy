@@ -33,16 +33,16 @@ public class VectorTilesMetadataGenerator {
      * @param providers
      * @param serviceData
      * @param collectionId empty for multi-collection tiles
-     * @param tileMatrixSetId
+     * @param tileMatrixSet
      * @param zoomLevels
      * @param links
      * @param i18n module to get linguistic text
      * @param language the requested language (optional)
      * @return a List with links
      */
-    public Map<String,Object> generateTilejson(OgcApiFeatureCoreProviders providers, OgcApiApiDataV2 serviceData, Optional<String> collectionId, String tileMatrixSetId, MinMax zoomLevels, List<OgcApiLink> links, I18n i18n, Optional<Locale> language) {
+    public Map<String,Object> generateTilejson(OgcApiFeatureCoreProviders providers, OgcApiApiDataV2 serviceData, Optional<String> collectionId, TileMatrixSet tileMatrixSet, MinMax zoomLevels, List<OgcApiLink> links, I18n i18n, Optional<Locale> language) {
 
-        String tilesUriTemplate = getTilesUriTemplate(links, tileMatrixSetId);
+        String tilesUriTemplate = getTilesUriTemplate(links, tileMatrixSet);
 
         // TODO support i18n
         ImmutableMap.Builder<String,Object> tilejson = ImmutableMap.<String,Object>builder()
@@ -57,7 +57,7 @@ public class VectorTilesMetadataGenerator {
         if (Objects.nonNull(bbox))
             tilejson.put("bounds", ImmutableList.of(bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax()) );
 
-        List<Integer> minMaxZoom = getMinMaxZoom(zoomLevels, tileMatrixSetId);
+        List<Integer> minMaxZoom = getMinMaxZoom(zoomLevels, tileMatrixSet);
         tilejson.put("minzoom", minMaxZoom.get(0))
                 .put("maxzoom", minMaxZoom.get(1));
 
@@ -128,23 +128,22 @@ public class VectorTilesMetadataGenerator {
         return tilejson.build();
     }
 
-    private String getTilesUriTemplate(List<OgcApiLink> links, String tileMatrixSetId) {
+    private String getTilesUriTemplate(List<OgcApiLink> links, TileMatrixSet tileMatrixSet) {
         return links.stream()
                 .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
                 .findFirst()
                 .map(link -> link.getHref())
                 .orElseThrow(() -> new ServerErrorException(500))
-                .replace("{tileMatrixSetId}", tileMatrixSetId)
+                .replace("{tileMatrixSetId}", tileMatrixSet.getId())
                 .replace("{tileMatrix}", "{z}")
                 .replace("{tileRow}", "{y}")
                 .replace("{tileCol}", "{x}");
     }
 
-    private List<Integer> getMinMaxZoom(MinMax zoomLevels, String tileMatrixSetId) {
+    private List<Integer> getMinMaxZoom(MinMax zoomLevels, TileMatrixSet tileMatrixSet) {
         if (Objects.nonNull(zoomLevels)) {
             return ImmutableList.<Integer>of(zoomLevels.getMin(), zoomLevels.getMax());
         } else {
-            TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
             if (Objects.nonNull(tileMatrixSet)) {
                 return ImmutableList.<Integer>of(tileMatrixSet.getMinLevel(), tileMatrixSet.getMaxLevel());
             } else {

@@ -8,8 +8,12 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
 
 import java.net.URI;
 import java.util.Optional;
@@ -19,6 +23,9 @@ import java.util.Optional;
  * In WMTS it is called "Google Maps Compatible", in the Tile Matrix Set standard "WebMercatorQuad".
  *
  */
+@Component
+@Provides
+@Instantiate
 public class WebMercatorQuad extends AbstractTileMatrixSet implements TileMatrixSet {
 
     /**
@@ -36,6 +43,11 @@ public class WebMercatorQuad extends AbstractTileMatrixSet implements TileMatrix
     private static final BoundingBox BBOX = new BoundingBox(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
 
     private TileMatrixSetData data;
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+        return isExtensionEnabled(apiData, TilesConfiguration.class);
+    }
 
     @Override
     public String getId() {

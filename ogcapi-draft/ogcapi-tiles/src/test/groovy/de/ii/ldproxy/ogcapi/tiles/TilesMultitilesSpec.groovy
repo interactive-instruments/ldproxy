@@ -15,7 +15,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Test bbox parameter parsing"() {
         when:
-        TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet("WebMercatorQuad")
+        TileMatrixSet tileMatrixSet = new WebMercatorQuad()
         def bbox = MultitilesUtils.parseBbox(bboxString, tileMatrixSet)
 
         then:
@@ -30,7 +30,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Incorrect values of bbox parameter"() {
         when:
-        def bbox = MultitilesUtils.parseBbox(bboxString, TileMatrixSetCache.getTileMatrixSet("WebMercatorQuad"))
+        def bbox = MultitilesUtils.parseBbox(bboxString, new WebMercatorQuad())
 
         then:
         thrown(NotFoundException)
@@ -44,7 +44,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Test scaleDenominator parameter parsing"() {
         when:
-        def tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominator, TileMatrixSetCache.getTileMatrixSet("WebMercatorQuad"))
+        def tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominator, new WebMercatorQuad())
 
         then:
         tileMatrices == expectedResult
@@ -60,7 +60,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Incorrect of out-of-range values of scaleDenominator parameter"() {
         when:
-        def tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominator, TileMatrixSetCache.getTileMatrixSet("WebMercatorQuad"))
+        def tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominator, new WebMercatorQuad())
 
         then:
         thrown(NotFoundException)
@@ -76,7 +76,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Conversion of longitude/latitude coordinates to tile coordinates for different tile matrix(level) values"() {
         when:
-        def tile = MultitilesUtils.pointToTile(lon, lat, tileMatrix, TileMatrixSetCache.getTileMatrixSet("WebMercatorQuad"))
+        def tile = MultitilesUtils.pointToTile(lon, lat, tileMatrix, new WebMercatorQuad())
 
         then:
         tile == expectedResult
