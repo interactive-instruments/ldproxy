@@ -8,7 +8,7 @@ node {
     download = project.findProperty('downloadNode') ?: false
 }
 
-version='1.4.1'
+version='1.4.4'
 //version += '-SNAPSHOT'
 
 sourceSets {

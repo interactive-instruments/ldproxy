@@ -1,5 +1,5 @@
 
-version = '1.4.0'
+version = '1.4.4'
 
 dependencies {
     embedded group: 'com.atlassian.commonmark', name: 'commonmark', version: '0.11.0'
