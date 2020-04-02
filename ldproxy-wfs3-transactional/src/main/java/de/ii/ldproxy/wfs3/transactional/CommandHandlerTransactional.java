@@ -83,7 +83,7 @@ public class CommandHandlerTransactional {
             OgcApiMediaType mediaType, FeatureTypeMapping featureTypeMapping, InputStream requestBody) {
         return featureTransformer -> {
             MappingSwapper mappingSwapper = new MappingSwapper();
-            Sink<ByteString, CompletionStage<Done>> transformer = GeoJsonStreamParser.transform(mappingSwapper.swapMapping(featureTypeMapping, "SQL"), featureTransformer);
+            Sink<ByteString, CompletionStage<Done>> transformer = null;//TODO GeoJsonStreamParser.transform(mappingSwapper.swapMapping(featureTypeMapping, "SQL"), featureTransformer);
             return StreamConverters.fromInputStream((Creator<InputStream>) () -> requestBody)
                                    .toMat(transformer, Keep.right());
 

@@ -34,7 +34,12 @@ public class StylesStoreImpl extends AbstractKeyValueStore<byte[]> implements St
     }
 
     @Override
-    protected byte[] deserialize(Identifier identifier, byte[] payload) {
+    protected byte[] deserialize(Identifier identifier, byte[] payload, String format) {
         return payload;
+    }
+
+    @Override
+    protected String getDefaultFormat() {
+        return null;
     }
 }
