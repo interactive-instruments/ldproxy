@@ -40,7 +40,7 @@ public class VectorTilesMetadataGenerator {
      * @param language the requested language (optional)
      * @return a List with links
      */
-    public Map<String,Object> generateTilejson(OgcApiFeatureCoreProviders providers, OgcApiApiDataV2 serviceData, Optional<String> collectionId, TileMatrixSet tileMatrixSet, MinMax zoomLevels, List<OgcApiLink> links, I18n i18n, Optional<Locale> language) {
+    public Map<String,Object> generateTilejson(OgcApiFeatureCoreProviders providers, OgcApiApiDataV2 serviceData, Optional<String> collectionId, TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center, List<OgcApiLink> links, I18n i18n, Optional<Locale> language) {
 
         String tilesUriTemplate = getTilesUriTemplate(links, tileMatrixSet);
 
@@ -61,8 +61,10 @@ public class VectorTilesMetadataGenerator {
         tilejson.put("minzoom", minMaxZoom.get(0))
                 .put("maxzoom", minMaxZoom.get(1));
 
+        double centerLon = (Objects.nonNull(center) && center.length>=1) ? center[0] : bbox.getXmin()+(bbox.getXmax()-bbox.getXmin())*0.5;
+        double centerLat = (Objects.nonNull(center) && center.length>=2) ? center[1] : bbox.getYmin()+(bbox.getYmax()-bbox.getYmin())*0.5;
         int defaultZoomLevel = zoomLevels.getDefault().orElse(minMaxZoom.get(0) + (minMaxZoom.get(1)-minMaxZoom.get(0))/2);
-        tilejson.put("center", ImmutableList.of(bbox.getXmin()+(bbox.getXmax()-bbox.getXmin())*0.5, bbox.getYmin()+(bbox.getYmax()-bbox.getYmin())*0.5, defaultZoomLevel));
+        tilejson.put("center", ImmutableList.of(centerLon, centerLat, defaultZoomLevel));
 
         ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> featureTypesApi = serviceData.getCollections();
 

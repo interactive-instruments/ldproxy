@@ -55,12 +55,16 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
     @Nullable
     public abstract Map<String, List<PredefinedFilter>> getFilters();
 
+    @Nullable
+    public abstract double[] getCenter();
+
     @Override
     public <T extends ExtensionConfiguration> T mergeDefaults(T baseConfiguration) {
         boolean enabled = this.getEnabled();
         Map<String, MinMax> seeding = this.getSeeding();
         Map<String, MinMax> zoomLevels = this.getZoomLevels();
         Map<String, List<PredefinedFilter>> predefFilters = this.getFilters();
+        double[] center = this.getCenter();
         ImmutableTilesConfiguration.Builder configBuilder = new ImmutableTilesConfiguration.Builder().from(baseConfiguration);
 
         if (Objects.nonNull(enabled))
@@ -71,6 +75,8 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
             configBuilder.zoomLevels(zoomLevels);
         if (Objects.nonNull(predefFilters))
             configBuilder.filters(predefFilters);
+        if (Objects.nonNull(center))
+            configBuilder.center(center);
 
         return (T) configBuilder.build();
     }

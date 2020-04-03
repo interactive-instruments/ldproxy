@@ -248,6 +248,7 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
         Map<String, MinMax> tileMatrixSetZoomLevels = getTileMatrixSetZoomLevels(service.getData());
+        Optional<double[]> center = Optional.ofNullable(getCenter(service.getData()));
 
         TileCollections tiles = ImmutableTileCollections.builder()
                                                         .title(requestContext.getApi()
@@ -271,9 +272,11 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
                                             .toString())
                                     .addAllTileMatrixSetLimits(limitsGenerator.getTileMatrixSetLimits(service.getData(),
                                             getTileMatrixSetById(tileMatrixSetId), tileMatrixSetZoomLevels.get(tileMatrixSetId), crsTransformerFactory))
+                                    .defaultZoomLevel(Objects.nonNull(tileMatrixSetZoomLevels.get(tileMatrixSetId)) ? tileMatrixSetZoomLevels.get(tileMatrixSetId).getDefault() : Optional.empty())
                                     .build())
                                 .filter(value -> Objects.nonNull(value))
                                 .collect(Collectors.toList()))
+                .defaultCenter(center)
                 .links(vectorTilesLinkGenerator.generateTilesLinks(
                         requestContext.getUriCustomizer(),
                         requestContext.getMediaType(),
@@ -333,7 +336,9 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
         MinMax zoomLevels = getTileMatrixSetZoomLevels(service.getData()).get(tileMatrixSetId);
 
-        Map<String, Object> tilejson = new VectorTilesMetadataGenerator().generateTilejson(providers, service.getData(), Optional.empty(), getTileMatrixSetById(tileMatrixSetId), zoomLevels, links, i18n, requestContext.getLanguage());
+        double[] center = getCenter(service.getData());
+
+        Map<String, Object> tilejson = new VectorTilesMetadataGenerator().generateTilejson(providers, service.getData(), Optional.empty(), getTileMatrixSetById(tileMatrixSetId), zoomLevels, center, links, i18n, requestContext.getLanguage());
 
         return Response.ok(tilejson)
                 .build();
@@ -426,8 +431,8 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
 
         OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE).orElseThrow(NotAcceptableException::new);
 
-        // TODO support datetime
-        // TODO support other filter parameters
+        // TODO support datetime?
+        // TODO support other filter parameters?
         Map<String, Boolean> enabledMap = vectorTileMapGenerator.getEnabledMap(service.getData());
         checkTilesParameterDataset(enabledMap);
         checkTileMatrixSet(service.getData(), tileMatrixSetId);
@@ -777,6 +782,11 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data, String collectionId) {
         TilesConfiguration tilesConfiguration = getExtensionConfiguration(data, data.getCollections().get(collectionId), TilesConfiguration.class).get();
         return tilesConfiguration.getZoomLevels();
+    }
+
+    private double[] getCenter(OgcApiApiDataV2 data) {
+        TilesConfiguration tilesConfiguration = getExtensionConfiguration(data, TilesConfiguration.class).get();
+        return tilesConfiguration.getCenter();
     }
 
     private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data) {
