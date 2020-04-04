@@ -200,12 +200,6 @@ public class TileGeneratorMvt {
                         // remove null values
                         jsonProperties.entrySet()
                                       .removeIf(property -> property.getValue() == null);
-                        // TODO: these are temporary fixes for TDS data
-                        jsonProperties.entrySet()
-                                      .removeIf(property -> property.getValue() instanceof String && ((String) property.getValue()).toLowerCase()
-                                                                                                                                   .matches("^(no[ ]?information|\\-999999)$"));
-                        jsonProperties.entrySet()
-                                      .removeIf(property -> property.getValue() instanceof Number && ((Number) property.getValue()).intValue() == -999999);
                     }
 
                     // If we have an id that happens to be a long value, use it

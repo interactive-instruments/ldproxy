@@ -26,4 +26,6 @@ public interface FeatureTypeMapping2 {
     Optional<String> getDateFormat();
 
     Optional<String> getCodelist();
+
+    Optional<String> getNull();
 }

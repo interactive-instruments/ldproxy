@@ -197,14 +197,16 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
             for (FeaturePropertyValueTransformer valueTransformer : valueTransformations) {
                 value = valueTransformer.transform(value);
             }
-            transformationContext.getState()
-                                 .setCurrentValue(value);
+            // skip, if the value has been transformed to null
+            if (Objects.nonNull(value)) {
+                transformationContext.getState()
+                        .setCurrentValue(value);
+
+                transformationContext.getState()
+                        .setEvent(FeatureTransformationContext.Event.PROPERTY);
+                executePipeline(featureWriters.iterator()).accept(transformationContext);
+            }
             stringBuilder.setLength(0);
-
-
-            transformationContext.getState()
-                                 .setEvent(FeatureTransformationContext.Event.PROPERTY);
-            executePipeline(featureWriters.iterator()).accept(transformationContext);
         }
 
         transformationContext.getState()

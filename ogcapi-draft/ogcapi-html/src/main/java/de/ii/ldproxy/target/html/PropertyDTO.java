@@ -31,7 +31,7 @@ public class PropertyDTO extends ObjectOrPropertyDTO {
     }
 
     public boolean hasValues() {
-        return !values.isEmpty();
+        return !values.isEmpty() && values.stream().anyMatch(value -> !value.isNull());
     }
 
     public String getFirstValue() {
