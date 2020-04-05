@@ -70,12 +70,16 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
         OgcApiApi api = requestContext.getApi();
         OgcApiApiDataV2 apiData = api.getData();
 
+        Optional<String> licenseUrl = apiData.getMetadata().flatMap(Metadata::getLicenseUrl);
+        Optional<String> licenseName = apiData.getMetadata().flatMap(Metadata::getLicenseName);
         List<OgcApiLink> ogcApiLinks = new CollectionsLinksGenerator()
                 .generateLinks(requestContext.getUriCustomizer()
                                              .copy(),
-                    Optional.empty(),
-                    requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes(),
+                        Optional.empty(),
+                        requestContext.getMediaType(),
+                        requestContext.getAlternateMediaTypes(),
+                        licenseUrl,
+                        licenseName,
                         queryInput.getIncludeHomeLink(),
                         i18n,
                         requestContext.getLanguage());
@@ -132,12 +136,14 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
         }
 
         Optional<String> licenseUrl = apiData.getMetadata().flatMap(Metadata::getLicenseUrl);
+        Optional<String> licenseName = apiData.getMetadata().flatMap(Metadata::getLicenseName);
         List<OgcApiLink> ogcApiLinks = new CollectionLinksGenerator().generateLinks(
                 requestContext.getUriCustomizer()
                     .copy(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
                 licenseUrl,
+                licenseName,
                 queryInput.getIncludeHomeLink(),
                 i18n,
                 requestContext.getLanguage());

@@ -23,6 +23,7 @@ public class CollectionLinksGenerator extends DefaultLinksGenerator {
                                           OgcApiMediaType mediaType,
                                           List<OgcApiMediaType> alternateMediaTypes,
                                           Optional<String> licenseUrl,
+                                          Optional<String> licenseName,
                                           boolean homeLink,
                                           I18n i18n,
                                           Optional<Locale> language)
@@ -34,7 +35,7 @@ public class CollectionLinksGenerator extends DefaultLinksGenerator {
             builder.add(new ImmutableOgcApiLink.Builder()
                     .href(licenseUrl.get())
                     .rel("license")
-                    .title(i18n.get("licenseLink",language))
+                    .title(licenseName.isPresent() ? licenseName.get() : i18n.get("licenseLink",language))
                     .build());
         }
 

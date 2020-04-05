@@ -34,6 +34,7 @@ public class ResourcesLinkGenerator {
         final ImmutableOgcApiLink.Builder builder = new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                 .removeParameters("f")
+                                .ensureNoTrailingSlash()
                                 .ensureLastPathSegment(resourceId)
                                 .toString()
                         )

@@ -8,16 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core.application;
 
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
@@ -101,15 +92,20 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                                    .replace("{{collection}}", featureType.getLabel()))
                         .build()));
 
-        // TODO add support for schemas
         Optional<String> describeFeatureTypeUrl = Optional.empty();
         if (describeFeatureTypeUrl.isPresent()) {
             collection.addLinks(new ImmutableOgcApiLink.Builder()
                     .href(describeFeatureTypeUrl.get())
-                    .rel("describedBy")
+                    .rel("describedby")
                     .type("application/xml")
                     .title(i18n.get("describedByXsdLink", language))
                     .build());
+        }
+
+        Optional<OgcApiFeaturesCoreConfiguration> config = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class);
+        if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/collections/"+featureType.getId())) {
+            List<OgcApiLink> additionalLinks = config.get().getAdditionalLinks().get("/collections/"+featureType.getId());
+            additionalLinks.stream().forEach(link -> collection.addLinks(link));
         }
 
         // only add extents for cases where we can filter using spatial / temporal predicates

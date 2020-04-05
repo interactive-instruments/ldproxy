@@ -35,12 +35,12 @@ public class PropertyDTO extends ObjectOrPropertyDTO {
     }
 
     public String getFirstValue() {
-        return values.size()>0 ? values.get(0).value : null;
+        return hasValues() ? values.get(0).value : null;
     }
 
     public ImmutableList<ObjectDTO> objectValues() {
         return childList.stream()
-                .filter(child -> child instanceof ObjectDTO)
+                .filter(child -> child instanceof ObjectDTO && ((ObjectDTO)child).hasNonNullProperty())
                 .map(child -> (ObjectDTO)child)
                 .collect(ImmutableList.toImmutableList());
     }

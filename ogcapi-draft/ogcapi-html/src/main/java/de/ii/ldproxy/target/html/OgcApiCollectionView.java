@@ -38,7 +38,9 @@ public class OgcApiCollectionView extends LdproxyView {
     public boolean withStyleInfos;
     public String itemTypeTitle;
     public String dataTitle;
+    public String metadataTitle;
     public String licenseTitle;
+    public String downloadTitle;
     public String spatialExtentTitle;
     public String temporalExtentTitle;
     public String supportedCrsTitle;
@@ -127,6 +129,8 @@ public class OgcApiCollectionView extends LdproxyView {
         this.itemTypeTitle = i18n.get("itemTypeTitle", language);
         this.dataTitle = i18n.get("dataTitle", language);
         this.licenseTitle = i18n.get("licenseTitle", language);
+        this.metadataTitle = i18n.get("metadataTitle", language);
+        this.downloadTitle = i18n.get("downloadTitle", language);
         this.spatialExtentTitle = i18n.get("spatialExtentTitle", language);
         this.temporalExtentTitle = i18n.get("temporalExtentTitle", language);
         this.supportedCrsTitle = i18n.get("supportedCrsTitle", language);
@@ -142,7 +146,40 @@ public class OgcApiCollectionView extends LdproxyView {
     public List<OgcApiLink> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|home)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|home|describedby|license|enclosure)$"))
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasMetadata() {
+        return !getMetadataLinks().isEmpty();
+    }
+
+    public List<OgcApiLink> getMetadataLinks() {
+        return links
+                .stream()
+                .filter(link -> link.getRel().matches("^(?:describedby)$"))
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasLicense() {
+        return !getLicenseLinks().isEmpty();
+    }
+
+    public List<OgcApiLink> getLicenseLinks() {
+        return links
+                .stream()
+                .filter(link -> link.getRel().matches("^(?:license)$"))
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasDownload() {
+        return !getDownloadLinks().isEmpty();
+    }
+
+    public List<OgcApiLink> getDownloadLinks() {
+        return links
+                .stream()
+                .filter(link -> link.getRel().matches("^(?:enclosure)$"))
                 .collect(Collectors.toList());
     }
 

@@ -48,6 +48,60 @@
     </div>
     {{/temporalExtent}}
 
+    {{#hasLicense}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    {{#licenseLinks}}
+                        <li>
+                            <a href="{{href}}">{{title}}</a>
+                        </li>
+                    {{/licenseLinks}}
+                    {{^licenseLinks}}
+                        <li>{{none}}</li>
+                    {{/licenseLinks}}
+                </ul>
+            </div>
+        </div>
+    {{/hasLicense}}
+
+    {{#hasDownload}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{downloadTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    {{#downloadLinks}}
+                        <li>
+                            <a href="{{href}}">{{title}}</a>
+                        </li>
+                    {{/downloadLinks}}
+                    {{^downloadLinks}}
+                        <li>{{none}}</li>
+                    {{/downloadLinks}}
+                </ul>
+            </div>
+        </div>
+    {{/hasDownload}}
+
+    {{#hasMetadata}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{metadataTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    {{#metadataLinks}}
+                        <li>
+                            <a href="{{href}}">{{title}}</a>
+                        </li>
+                    {{/metadataLinks}}
+                    {{^metadataLinks}}
+                        <li>{{none}}</li>
+                    {{/metadataLinks}}
+                </ul>
+            </div>
+        </div>
+    {{/hasMetadata}}
+
     {{#withStyleInfos}}
         <div class="row my-3">
             <div class="col-md-2 font-weight-bold">{{styleInfosTitle}}</div>
