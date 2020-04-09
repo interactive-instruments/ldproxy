@@ -383,7 +383,8 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
             updatePropertySortPriorities(currentValue.property, sortPriority);
         }
 
-        if (featureProperty.getPath().indexOf(":", featureProperty.getPath().lastIndexOf("/")) > 0) {
+        //TODO: implement double col support as provider transformer and remove this
+        if (featureProperty.hasDoubleColumn()) {
             if (combineCurrentPropertyValues) {
                 this.combineCurrentPropertyValues = false;
                 currentValueBuilder.append("|||");
