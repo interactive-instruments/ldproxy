@@ -156,15 +156,21 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         ensureCollectionIdExists(api.getData(), collectionId);
         ensureFeatureProviderSupportsQueries(featureProvider);
 
-        EpsgCrs sourceCrs = featureProvider.getData().getNativeCrs();
-        EpsgCrs targetCrs = query.getCrs().orElse(defaultCrs);
-        //TODO: warmup on service start
-        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
+        Optional<CrsTransformer> crsTransformer = Optional.empty();
+        boolean swapCoordinates = false;
+
+        if (featureProvider.supportsCrs()) {
+            EpsgCrs sourceCrs = featureProvider.crs().getNativeCrs();
+            EpsgCrs targetCrs = query.getCrs().orElse(defaultCrs);
+            //TODO: warmup on service start
+            crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
+            swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get()
+                                                                                 .needsCoordinateSwap() : query.getCrs().isPresent() && featureProvider.crs().shouldSwapCoordinates(query.getCrs().get());
+        }
+
+
 
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
-
-        boolean swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get()
-                                                                             .needsCoordinateSwap() : query.getCrs().isPresent() && featureProvider.crs().shouldSwapCoordinates(query.getCrs().get());
 
         List<OgcApiLink> links =
                 isCollection ?

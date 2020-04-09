@@ -43,7 +43,7 @@ public class CrsSupportImpl implements CrsSupport {
     @Override
     public List<EpsgCrs> getSupportedCrsList(OgcApiApiDataV2 apiData,
                                              @Nullable FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
-        EpsgCrs nativeCrs = getNativeCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
+        EpsgCrs nativeCrs = getStorageCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
         EpsgCrs defaultCrs = getDefaultCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
         List<EpsgCrs> additionalCrs = getAdditionalCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
 
@@ -70,12 +70,16 @@ public class CrsSupportImpl implements CrsSupport {
         return getSupportedCrsList(apiData, featureTypeConfiguration).contains(crs);
     }
 
-    private EpsgCrs getNativeCrs(OgcApiApiDataV2 apiData,
+    @Override
+    public EpsgCrs getStorageCrs(OgcApiApiDataV2 apiData,
                                  Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
         FeatureProvider2 provider = featureTypeConfiguration.isPresent() ? providers.getFeatureProvider(apiData, featureTypeConfiguration.get()) : providers.getFeatureProvider(apiData);
 
-        return provider.getData()
-                       .getNativeCrs();
+        if (!provider.supportsCrs()) {
+            throw new IllegalStateException("Provider has no CRS support.");
+        }
+
+        return provider.crs().getNativeCrs();
     }
 
     private EpsgCrs getDefaultCrs(OgcApiApiDataV2 apiData,
