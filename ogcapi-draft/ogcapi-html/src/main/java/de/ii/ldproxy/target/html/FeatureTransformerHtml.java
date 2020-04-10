@@ -311,7 +311,8 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
     public void onPropertyStart(FeatureProperty featureProperty, List<Integer> multiplicities) throws Exception {
         currentFeatureProperty = featureProperty;
 
-        if (featureProperty.getPath().indexOf(":", featureProperty.getPath().lastIndexOf("/")) > 0) {
+        //TODO: implement double col support as provider transformer and remove this
+        if (featureProperty.hasDoubleColumn()) {
             if (combineCurrentPropertyValues) {
                 this.combineCurrentPropertyValues = false;
                 currentValue.append("|||");

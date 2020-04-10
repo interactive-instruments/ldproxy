@@ -73,7 +73,7 @@ public class Wfs3ServiceMigrate {
     private void onStart() {
         KeyValueStore serviceStore = rootConfigStore.getChildStore(PATH);
 
-        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, OgcApiApi.ENTITY_TYPE);
+        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, OgcApiApi.TYPE);
 
         executorService.schedule(() -> {
 

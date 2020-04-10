@@ -146,13 +146,6 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
         FeatureProperty processedFeatureProperty = featureProperty;
         if (Objects.nonNull(processedFeatureProperty)) {
 
-            //TODO
-            /*if (Objects.nonNull(transformationContext.getState().getCurrentMapping())
-                    && Objects.nonNull(transformationContext.getState().getCurrentMapping().getFormat())
-                    && Objects.equals(transformationContext.getState().getCurrentMapping().getFormat(), mapping.getFormat())) {
-                return;
-            }*/
-
             List<FeaturePropertySchemaTransformer> schemaTransformations = getSchemaTransformations(processedFeatureProperty);
             for (FeaturePropertySchemaTransformer schemaTransformer : schemaTransformations) {
                 processedFeatureProperty = schemaTransformer.transform(processedFeatureProperty);
@@ -164,7 +157,8 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
                 transformationContext.getState()
                                      .setCurrentMultiplicity(multiplicities);
 
-                if (processedFeatureProperty.getPath().indexOf(":", processedFeatureProperty.getPath().lastIndexOf("/")) > 0) {
+                //TODO: implement double col support as provider transformer and remove this
+                if (processedFeatureProperty.hasDoubleColumn()) {
                     if (combineCurrentPropertyValues) {
                         this.combineCurrentPropertyValues = false;
                         stringBuilder.append("|||");

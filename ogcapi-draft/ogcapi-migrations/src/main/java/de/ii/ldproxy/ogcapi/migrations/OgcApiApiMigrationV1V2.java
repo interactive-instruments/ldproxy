@@ -36,6 +36,7 @@ import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
 import de.ii.ldproxy.wfs3.crs.CrsConfiguration;
 import de.ii.ldproxy.wfs3.crs.ImmutableCrsConfiguration;
 import de.ii.xtraplatform.entity.api.EntityData;
+import de.ii.xtraplatform.entity.api.handler.Entity;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.event.store.EntityMigration;
 import de.ii.xtraplatform.event.store.Identifier;
@@ -54,6 +55,7 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureProperty;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureProviderDataV1;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureType;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformerRemove.Condition;
+import de.ii.xtraplatform.service.api.Service;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -72,8 +74,8 @@ import java.util.stream.Collectors;
 
 @Component
 @Provides(properties = {
-        //TODO: how to connect to entity
-        @StaticServiceProperty(name = "entityType", type = "java.lang.String", value = "services")
+        @StaticServiceProperty(name = Entity.TYPE_KEY, type = "java.lang.String", value = Service.TYPE),
+        @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiApiDataV2.SERVICE_TYPE)
 })
 @Instantiate
 public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, OgcApiApiDataV2> {

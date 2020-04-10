@@ -29,7 +29,6 @@ import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Intersects;
-import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -172,10 +171,10 @@ public class TileGeneratorJson {
                     if (filterLang.isPresent() && "cql-json".equals(filterLang.get())) {
                         cqlFormat = Cql.Format.JSON;
                     }
-                    otherFilters = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), Optional.empty(), cqlFormat);
+                    otherFilters = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), cqlFormat);
                 }
                 if (predefFilter != null) {
-                    configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), Optional.empty(), Cql.Format.TEXT);
+                    configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
                 }
 
                 CqlFilter combinedFilter;
@@ -229,8 +228,7 @@ public class TileGeneratorJson {
                             .mediaType(mediaType)
                             .build())
                     //TODO: support 3d?
-                    .crsTransformer(crsTransformerFactory.getTransformer(featureProvider.getData()
-                                                                                        .getNativeCrs(), OgcCrs.CRS84))
+                    .crsTransformer(crsTransformerFactory.getTransformer(featureProvider.crs().getNativeCrs(), OgcCrs.CRS84))
                     .defaultCrs(OgcCrs.CRS84)
                     .links(ogcApiLinks)
                     .isFeatureCollection(true)

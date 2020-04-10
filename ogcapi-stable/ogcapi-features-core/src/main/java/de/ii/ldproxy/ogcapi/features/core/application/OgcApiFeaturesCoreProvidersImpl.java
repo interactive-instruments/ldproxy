@@ -33,7 +33,12 @@ public class OgcApiFeaturesCoreProvidersImpl implements OgcApiFeatureCoreProvide
 
     @Override
     public FeatureProvider2 getFeatureProvider(OgcApiApiDataV2 apiData) {
-        return getOptionalFeatureProvider(apiData)
+        Optional<FeatureProvider2> optionalFeatureProvider = getOptionalFeatureProvider(apiData);
+
+        if (!optionalFeatureProvider.isPresent()) {
+            optionalFeatureProvider = entityRegistry.getEntity(FeatureProvider2.class, apiData.getId());
+        }
+        return optionalFeatureProvider
                 .orElseThrow(() -> new IllegalStateException("no FeatureProvider found"));
     }
 

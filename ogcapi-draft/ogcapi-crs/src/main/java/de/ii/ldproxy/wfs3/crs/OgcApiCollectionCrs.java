@@ -78,13 +78,11 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
             }
             collection.crs(crsList);
 
-            String nativeCrsUri = providers.getFeatureProvider(apiData, featureTypeConfiguration)
-                                           .getData()
-                                           .getNativeCrs()
-                                           .toUriString();
+            String storageCrsUri = crsSupport.getStorageCrs(apiData, Optional.of(featureTypeConfiguration))
+                                             .toUriString();
 
             // add native CRS as storageCRS
-            collection.storageCrs(nativeCrsUri);
+            collection.storageCrs(storageCrsUri);
         }
 
         return collection;

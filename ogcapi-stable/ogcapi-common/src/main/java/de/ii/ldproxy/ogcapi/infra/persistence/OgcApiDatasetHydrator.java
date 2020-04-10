@@ -8,10 +8,16 @@
 package de.ii.ldproxy.ogcapi.infra.persistence;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCapabilityExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.xtraplatform.entity.api.handler.Entity;
 import de.ii.xtraplatform.event.store.EntityHydrator;
+import de.ii.xtraplatform.service.api.Service;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -20,12 +26,16 @@ import org.apache.felix.ipojo.annotations.StaticServiceProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @Provides(properties = {
-        //TODO: how to connect to entity
-        @StaticServiceProperty(name = "entityType", type = "java.lang.String", value = "services")
+        @StaticServiceProperty(name = Entity.TYPE_KEY, type = "java.lang.String", value = Service.TYPE),
+        @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiApiDataV2.SERVICE_TYPE)
 })
 @Instantiate
 public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiApiDataV2> {
@@ -41,20 +51,39 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiApiDataV2> {
     @Override
     public Map<String, Object> getInstanceConfiguration(OgcApiApiDataV2 apiData) {
 
-        OgcApiApiDataV2 newData = apiData;
+        OgcApiApiDataV2 hydrated = apiData;
+
+        if (hydrated.getAuto()) {
+            LOGGER.info("Service with id '{}' is in auto mode, generating configuration ...", hydrated.getId());
+        }
+
+        hydrated = generateBuildingBlocksIfNecessary(hydrated);
 
         for (OgcApiDataHydratorExtension hydrator : extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class)) {
-            if (hydrator.isEnabledForApi(apiData)) {
-                newData = hydrator.getHydratedData(newData);
+            if (hydrator.isEnabledForApi(hydrated)) {
+                hydrated = hydrator.getHydratedData(hydrated);
             }
         }
-        return ImmutableMap.<String, Object>builder()
-                .put("data", newData)
-                //.put("featureProvider", featureProvider)
-                //.put("defaultTransformer", defaultTransformer)
-                //.put("defaultReverseTransformer", defaultReverseTransformer)
-                //.put("additionalTransformers", additionalTransformers)
-                //.put("additionalReverseTransformers", additionalReverseTransformers)
-                .build();
+
+        return ImmutableMap.of("data", hydrated);
+    }
+
+    private OgcApiApiDataV2 generateBuildingBlocksIfNecessary(OgcApiApiDataV2 data) {
+
+        if (data.getAuto() && data.getExtensions()
+                                  .isEmpty()) {
+
+            List<ExtensionConfiguration> buildingBlocks = extensionRegistry.getExtensionsForType(OgcApiCapabilityExtension.class)
+                    .stream()
+                    .sorted(Comparator.comparing(buildingBlock -> buildingBlock.getClass().getSimpleName()))
+                    .map(buildingBlock -> buildingBlock.getDefaultConfiguration(OgcApiConfigPreset.OGCAPI))
+                    .collect(Collectors.toList());
+
+            return new ImmutableOgcApiApiDataV2.Builder().from(data)
+                                                         .extensions(buildingBlocks)
+                                                         .build();
+        }
+
+        return data;
     }
 }

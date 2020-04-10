@@ -172,16 +172,11 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
 
         if (!filters.isEmpty()) {
-            EpsgCrs providerCrs = providers.getFeatureProvider(apiData, collectionData)
-                                           .getData()
-                                           .getNativeCrs();
-
             Cql.Format cqlFormat = Cql.Format.TEXT;
             if (parameters.containsKey("filter-lang") && "cql-json".equals(parameters.get("filter-lang"))) {
                 cqlFormat = Cql.Format.JSON;
             }
-            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters,
-                    Optional.ofNullable(providerCrs), cqlFormat);
+            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, cqlFormat);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Filter: {}", cql);
@@ -196,14 +191,13 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
     @Override
     public Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                                  Set<String> filterParameters, Optional<EpsgCrs> providerCrs,
-                                                  Cql.Format cqlFormat) {
+                                                  Set<String> filterParameters, Cql.Format cqlFormat) {
 
         Map<String, String> filtersFromQuery = getFiltersFromQuery(query, filterableFields, filterParameters);
 
         if (!filtersFromQuery.isEmpty()) {
 
-            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, providerCrs, cqlFormat);
+            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, cqlFormat);
         }
 
         return Optional.empty();
@@ -229,17 +223,14 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
     private Optional<CqlFilter> getCQLFromFilters(Map<String, String> filters,
                                                   Map<String, String> filterableFields, Set<String> filterParameters,
-                                                  Optional<EpsgCrs> providerCrs, Cql.Format cqlFormat) {
+                                                  Cql.Format cqlFormat) {
 
         List<CqlPredicate> predicates = filters.entrySet()
                                                .stream()
                                                .map(filter -> {
                                                    if (filter.getKey()
                                                              .equals(PARAMETER_BBOX)) {
-                                                       if (!providerCrs.isPresent()) {
-                                                           return null;
-                                                       }
-                                                       return bboxToCql(filterableFields.get(filter.getKey()), filter.getValue(), providerCrs.get());
+                                                       return bboxToCql(filterableFields.get(filter.getKey()), filter.getValue());
                                                    }
                                                    if (filter.getKey()
                                                              .equals(PARAMETER_DATETIME)) {
@@ -275,7 +266,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         return predicates.isEmpty() ? Optional.empty() : Optional.of(predicates.size() == 1 ? CqlFilter.of(predicates.get(0)) : CqlFilter.of(And.of(predicates)));
     }
 
-    private CqlPredicate bboxToCql(String geometryField, String bboxValue, EpsgCrs providerCrs) {
+    private CqlPredicate bboxToCql(String geometryField, String bboxValue) {
         List<String> values = ARRAY_SPLITTER.splitToList(bboxValue);
         EpsgCrs sourceCrs = OgcCrs.CRS84;
 
