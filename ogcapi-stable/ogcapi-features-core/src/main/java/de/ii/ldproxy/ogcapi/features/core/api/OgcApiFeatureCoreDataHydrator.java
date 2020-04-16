@@ -190,7 +190,9 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
 
                                   BoundingBox boundingBox = spatialExtent.get();
                                   if (!boundingBox.getEpsgCrs()
-                                                  .equals(OgcCrs.CRS84)) {
+                                                  .equals(OgcCrs.CRS84) &&
+                                      !boundingBox.getEpsgCrs()
+                                                  .equals(OgcCrs.CRS84h)) {
                                       try {
                                           Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
                                           if (transformer.isPresent()) {
