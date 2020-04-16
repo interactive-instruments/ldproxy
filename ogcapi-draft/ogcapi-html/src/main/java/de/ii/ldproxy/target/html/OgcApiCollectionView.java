@@ -15,6 +15,8 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -111,14 +113,14 @@ public class OgcApiCollectionView extends LdproxyView {
                     this.temporalExtent = ImmutableMap.of();
                 else if (interval[0]==null)
                     this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                            "end", interval[1]==null ? null : interval[1].toString());
+                            "end", interval[1]==null ? null : String.valueOf(Instant.parse(interval[1]).toEpochMilli()));
                 else if (interval[1]==null)
                     this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                            "start", interval[0]==null ? null : interval[0].toString());
+                            "start", interval[0]==null ? null : String.valueOf(Instant.parse(interval[0]).toEpochMilli()));
                 else
                     this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                            "start", interval[0]==null ? null : interval[0].toString(),
-                            "end", interval[1]==null ? null : interval[1].toString());
+                            "start", interval[0]==null ? null : String.valueOf(Instant.parse(interval[0]).toEpochMilli()),
+                            "end", interval[1]==null ? null : String.valueOf(Instant.parse(interval[1]).toEpochMilli()));
             }
         } else {
             this.bbox2 = null;
