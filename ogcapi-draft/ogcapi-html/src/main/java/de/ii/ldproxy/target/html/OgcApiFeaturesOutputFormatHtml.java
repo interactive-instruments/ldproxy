@@ -101,8 +101,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     private OgcApiFeatureCoreProviders providers;
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html");
     }
 
     @Override

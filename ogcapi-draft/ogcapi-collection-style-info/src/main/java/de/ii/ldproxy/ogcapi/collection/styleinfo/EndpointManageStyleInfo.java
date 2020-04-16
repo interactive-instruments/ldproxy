@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -33,6 +34,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Optional;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
@@ -67,8 +69,8 @@ public class EndpointManageStyleInfo implements OgcApiEndpointExtension, Conform
     }
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/t15/opf-styles-1/1.0/conf/style-info";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/style-info");
     }
 
     @Override

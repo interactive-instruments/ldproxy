@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collection.queryables;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
@@ -23,6 +24,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -65,8 +67,8 @@ public class OgcApiSchemaEndpoint implements OgcApiEndpointExtension, Conformanc
     }
 
     @Override
-    public String getConformanceClass() {
-        return "http://ldproxy.net/tbd/1.0/conf/schema";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://ldproxy.net/tbd/1.0/conf/schema");
     }
 
     @Override

@@ -78,8 +78,8 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
     }
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/t15/opf-styles-1/1.0/conf/core";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/core");
     }
 
     @Override

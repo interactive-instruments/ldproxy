@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collection.queryables;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -63,8 +64,8 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
     }
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/t15/opf-styles-1/1.0/conf/queryables";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/queryables");
     }
 
     @Override

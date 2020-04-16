@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.crs;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
@@ -22,6 +23,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.BadRequestException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -41,8 +43,8 @@ public class OgcApiParameterCrs implements OgcApiParameterExtension, Conformance
     }
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs");
     }
 
     @Override

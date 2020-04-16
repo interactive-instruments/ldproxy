@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
@@ -17,6 +18,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Component
 @Provides
@@ -31,8 +33,8 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension 
             .build();
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/t15/opf-styles-1/1.0/conf/sld-10";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/sld-10");
     }
 
     @Override

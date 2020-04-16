@@ -143,7 +143,8 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         ImmutableConformanceDeclaration.Builder conformanceDeclaration = new ImmutableConformanceDeclaration.Builder()
                 .links(ogcApiLinks)
                 .conformsTo(conformanceClasses.stream()
-                                              .map(ConformanceClass::getConformanceClass)
+                                              .map(ConformanceClass::getConformanceClassUris)
+                                              .flatMap(List::stream)
                                               .collect(Collectors.toList()));
 
         for (OgcApiConformanceDeclarationExtension ogcApiConformanceDeclarationExtension : getConformanceExtenders()) {

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -77,8 +78,8 @@ public class Wfs3EndpointTileMatrixSets implements OgcApiEndpointExtension, Conf
     }
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tmxs";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tmxs");
     }
 
     @Override

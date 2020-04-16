@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
@@ -16,6 +17,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Component
 @Provides
@@ -30,8 +32,8 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             .build();
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/t15/opf-styles-1/1.0/conf/mapbox-styles";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/mapbox-styles");
     }
 
     @Override

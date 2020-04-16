@@ -209,8 +209,8 @@ public class Wfs3EndpointTiles implements OgcApiEndpointExtension, ConformanceCl
     }
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/collections";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/collections");
     }
 
     @Override

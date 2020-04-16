@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.resources;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteSource;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -62,8 +64,8 @@ public class EndpointResources implements OgcApiEndpointExtension, ConformanceCl
     }
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/t15/opf-styles-1/1.0/conf/resources";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/resources");
     }
 
     @Override

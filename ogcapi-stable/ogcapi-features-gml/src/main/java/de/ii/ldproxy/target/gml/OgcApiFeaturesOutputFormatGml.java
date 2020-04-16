@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.target.gml;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
@@ -26,6 +27,7 @@ import org.apache.felix.ipojo.annotations.ServiceController;
 import org.apache.felix.ipojo.annotations.Validate;
 
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -65,8 +67,8 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
     }
 
     @Override
-    public String getConformanceClass() {
-        return "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2";
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2");
     }
 
     @Override
