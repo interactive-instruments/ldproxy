@@ -159,16 +159,14 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         Optional<CrsTransformer> crsTransformer = Optional.empty();
         boolean swapCoordinates = false;
 
+        EpsgCrs targetCrs = query.getCrs().orElse(defaultCrs);
         if (featureProvider.supportsCrs()) {
             EpsgCrs sourceCrs = featureProvider.crs().getNativeCrs();
-            EpsgCrs targetCrs = query.getCrs().orElse(defaultCrs);
             //TODO: warmup on service start
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
             swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get()
                                                                                  .needsCoordinateSwap() : query.getCrs().isPresent() && featureProvider.crs().shouldSwapCoordinates(query.getCrs().get());
         }
-
-
 
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
@@ -218,7 +216,6 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
             throw new NotAcceptableException();
         }
 
-        // TODO add Content-Crs header
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
         // TODO For now remove the "next" links from the headers since at this point we don't know, whether there will be a next page
 
@@ -228,11 +225,12 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 includeLinkHeader ? links.stream()
                                          .filter(link -> !link.getRel().equalsIgnoreCase("next"))
                                          .collect(ImmutableList.toImmutableList()) :
-                        null);
+                        null,
+                targetCrs);
     }
 
     private Response response(Object entity, OgcApiMediaType mediaType, Optional<Locale> language,
-                              List<OgcApiLink> links) {
+                              List<OgcApiLink> links, EpsgCrs crs) {
         Response.ResponseBuilder response = Response.ok()
                                                     .entity(entity);
 
@@ -246,6 +244,9 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         if (links != null)
             links.stream()
                  .forEach(link -> response.links(link.getLink()));
+
+        if (crs != null)
+            response.header("Content-Crs", crs.toUriString());
 
         return response.build();
     }
