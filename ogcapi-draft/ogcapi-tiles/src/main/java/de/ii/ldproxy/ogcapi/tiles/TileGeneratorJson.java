@@ -52,13 +52,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
 import java.util.concurrent.CompletionException;
 
 /**
@@ -129,7 +123,7 @@ public class TileGeneratorJson {
         }
 
         String predefFilter = null;
-        if (predefFilters.containsKey(tileMatrixSet.getId())) {
+        if (Objects.nonNull(predefFilters) && predefFilters.containsKey(tileMatrixSet.getId())) {
             predefFilter = predefFilters.get(tileMatrixSet.getId()).stream()
                     .filter(filter -> filter.getMax()>=level && filter.getMin()<=level)
                     .map(filter -> filter.getFilter())
