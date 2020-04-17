@@ -245,10 +245,8 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
         OgcApiApiDataV2 migrated = new ImmutableOgcApiApiDataV2.Builder().from((ServiceData) entityData)
-                                                                         .entityStorageVersion(getTargetVersion())
                                                                          .serviceType("OGC_API")
                                                                          .metadata(Optional.ofNullable(entityData.getMetadata()))
-                                                                         //TODO
                                                                          .collections(collections)
                                                                          .extensions(extensions)
                                                                          .build();

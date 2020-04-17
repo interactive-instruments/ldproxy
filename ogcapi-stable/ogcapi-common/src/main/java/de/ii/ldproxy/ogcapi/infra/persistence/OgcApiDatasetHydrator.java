@@ -1,13 +1,12 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.ogcapi.infra.persistence;
 
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
@@ -26,10 +25,8 @@ import org.apache.felix.ipojo.annotations.StaticServiceProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -49,11 +46,11 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiApiDataV2> {
     }
 
     @Override
-    public Map<String, Object> getInstanceConfiguration(OgcApiApiDataV2 apiData) {
+    public OgcApiApiDataV2 hydrateData(OgcApiApiDataV2 apiData) {
 
         OgcApiApiDataV2 hydrated = apiData;
 
-        if (hydrated.getAuto()) {
+        if (hydrated.isAuto()) {
             LOGGER.info("Service with id '{}' is in auto mode, generating configuration ...", hydrated.getId());
         }
 
@@ -65,19 +62,20 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiApiDataV2> {
             }
         }
 
-        return ImmutableMap.of("data", hydrated);
+        return hydrated;
     }
 
     private OgcApiApiDataV2 generateBuildingBlocksIfNecessary(OgcApiApiDataV2 data) {
 
-        if (data.getAuto() && data.getExtensions()
+        if (data.isAuto() && data.getExtensions()
                                   .isEmpty()) {
 
             List<ExtensionConfiguration> buildingBlocks = extensionRegistry.getExtensionsForType(OgcApiCapabilityExtension.class)
-                    .stream()
-                    .sorted(Comparator.comparing(buildingBlock -> buildingBlock.getClass().getSimpleName()))
-                    .map(buildingBlock -> buildingBlock.getDefaultConfiguration(OgcApiConfigPreset.OGCAPI))
-                    .collect(Collectors.toList());
+                                                                           .stream()
+                                                                           .sorted(Comparator.comparing(buildingBlock -> buildingBlock.getClass()
+                                                                                                                                      .getSimpleName()))
+                                                                           .map(buildingBlock -> buildingBlock.getDefaultConfiguration(OgcApiConfigPreset.OGCAPI))
+                                                                           .collect(Collectors.toList());
 
             return new ImmutableOgcApiApiDataV2.Builder().from(data)
                                                          .extensions(buildingBlocks)

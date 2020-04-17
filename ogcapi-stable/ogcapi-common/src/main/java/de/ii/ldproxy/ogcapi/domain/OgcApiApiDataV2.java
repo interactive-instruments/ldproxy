@@ -44,7 +44,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     static abstract class Builder implements EntityDataBuilder<OgcApiApiDataV2> {
     }
 
-    @Value.Default
+    @Value.Derived
     @Override
     public long getEntitySchemaVersion() {
         return 2;
@@ -53,11 +53,6 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     @Override
     public Optional<String> getEntitySubType() {
         return Optional.of(SERVICE_TYPE);
-    }
-
-    @Value.Default
-    public boolean getAuto() {
-        return false;
     }
 
     @Value.Default
