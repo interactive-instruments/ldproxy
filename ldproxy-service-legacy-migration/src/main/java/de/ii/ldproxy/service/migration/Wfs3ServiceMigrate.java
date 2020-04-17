@@ -26,7 +26,7 @@ import de.ii.ldproxy.target.html.MicrodataMapping;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
 import de.ii.xtraplatform.dropwizard.api.Jackson;
 import de.ii.xtraplatform.entity.api.EntityRepository;
-import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
+import de.ii.xtraplatform.entities.domain.legacy.EntityRepositoryForType;
 import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 import de.ii.xtraplatform.kvstore.api.KeyNotFoundException;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;

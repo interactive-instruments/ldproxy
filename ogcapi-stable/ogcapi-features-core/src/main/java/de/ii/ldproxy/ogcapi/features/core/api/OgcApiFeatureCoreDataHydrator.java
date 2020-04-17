@@ -63,7 +63,7 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
         OgcApiApiDataV2 data = apiData;
         FeatureProvider2 featureProvider = providers.getFeatureProvider(data);
 
-        if (data.getAuto() && data.getCollections()
+        if (data.isAuto() && data.getCollections()
                                   .isEmpty()) {
 
             data = new ImmutableOgcApiApiDataV2.Builder()
