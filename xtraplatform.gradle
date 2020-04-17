@@ -1,9 +1,9 @@
 
 dependencies {
     feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.2.3'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.2.7'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.2.8'
     feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.2.3'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '3.2.21'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '3.3.0'
 }
 
 allprojects {
