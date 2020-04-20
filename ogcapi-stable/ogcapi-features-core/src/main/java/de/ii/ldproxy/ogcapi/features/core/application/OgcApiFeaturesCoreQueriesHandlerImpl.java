@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeaturesLinksGenerator;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreQueriesHandler;
+import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -64,12 +65,15 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
+    private CodelistRegistry codelistRegistry;
 
     public OgcApiFeaturesCoreQueriesHandlerImpl(@Requires I18n i18n,
                                                 @Requires CrsTransformerFactory crsTransformerFactory,
-                                                @Requires Dropwizard dropwizard) {
+                                                @Requires Dropwizard dropwizard,
+                                                @Requires CodelistRegistry codelistRegistry) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
+        this.codelistRegistry = codelistRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
@@ -180,6 +184,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
+                .codelists(codelistRegistry.getCodelists())
                 .defaultCrs(defaultCrs)
                 .links(links)
                 .isFeatureCollection(isCollection)
