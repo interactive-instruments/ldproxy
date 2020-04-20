@@ -26,7 +26,7 @@ import de.ii.ldproxy.target.html.MicrodataMapping;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
 import de.ii.xtraplatform.dropwizard.api.Jackson;
 import de.ii.xtraplatform.entity.api.EntityRepository;
-import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
+import de.ii.xtraplatform.entities.domain.legacy.EntityRepositoryForType;
 import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 import de.ii.xtraplatform.kvstore.api.KeyNotFoundException;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
@@ -73,7 +73,7 @@ public class Wfs3ServiceMigrate {
     private void onStart() {
         KeyValueStore serviceStore = rootConfigStore.getChildStore(PATH);
 
-        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, OgcApiApi.ENTITY_TYPE);
+        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, OgcApiApi.TYPE);
 
         executorService.schedule(() -> {
 

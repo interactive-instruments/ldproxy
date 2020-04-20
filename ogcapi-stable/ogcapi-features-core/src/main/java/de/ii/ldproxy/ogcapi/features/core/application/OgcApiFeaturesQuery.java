@@ -11,9 +11,6 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
-import de.ii.xtraplatform.cql.domain.CqlPredicate;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 
 import java.util.Map;
@@ -32,7 +29,7 @@ public interface OgcApiFeaturesQuery {
                                        int defaultPageSize, int maxPageSize, Map<String, String> parameters);
 
     Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                           Set<String> filterParameters, Optional<EpsgCrs> providerCrs,
+                                           Set<String> filterParameters,
                                            Cql.Format cqlFormat);
 
 }

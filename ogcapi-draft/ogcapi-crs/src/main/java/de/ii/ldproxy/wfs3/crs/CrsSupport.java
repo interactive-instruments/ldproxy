@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CrsSupport {
 
@@ -22,4 +23,7 @@ public interface CrsSupport {
     boolean isSupported(OgcApiApiDataV2 apiData, EpsgCrs crs);
 
     boolean isSupported(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureTypeConfiguration, EpsgCrs crs);
+
+    EpsgCrs getStorageCrs(OgcApiApiDataV2 apiData,
+                          Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration);
 }

@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 
 @EntityComponent
-@Entity(entityType = Service.class, dataType = OgcApiApiDataV2.class)
+@Entity(type = Service.TYPE,subType = OgcApiApiDataV2.SERVICE_TYPE, dataClass = OgcApiApiDataV2.class)
 public class OgcApiApiEntity extends AbstractService<OgcApiApiDataV2> implements OgcApiApi {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiEntity.class);

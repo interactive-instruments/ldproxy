@@ -28,7 +28,6 @@ import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Intersects;
-import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -154,7 +153,7 @@ public class TileGeneratorJson {
                     if (filterLang.isPresent() && "cql-json".equals(filterLang.get())) {
                         cqlFormat = Cql.Format.JSON;
                     }
-                    Optional<CqlFilter> otherFilters = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), Optional.empty(), cqlFormat);
+                    Optional<CqlFilter> otherFilters = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), cqlFormat);
                     CqlFilter combinedFilter = otherFilters.isPresent() ? CqlFilter.of(And.of(otherFilters.get(), spatialPredicate)) : CqlFilter.of(spatialPredicate);
 
                     if (LOGGER.isDebugEnabled()) {
@@ -203,8 +202,7 @@ public class TileGeneratorJson {
                             .mediaType(mediaType)
                             .build())
                     //TODO: support 3d?
-                    .crsTransformer(crsTransformerFactory.getTransformer(featureProvider.getData()
-                                                                                        .getNativeCrs(), OgcCrs.CRS84))
+                    .crsTransformer(crsTransformerFactory.getTransformer(featureProvider.crs().getNativeCrs(), OgcCrs.CRS84))
                     .defaultCrs(OgcCrs.CRS84)
                     .links(ogcApiLinks)
                     .isFeatureCollection(true)

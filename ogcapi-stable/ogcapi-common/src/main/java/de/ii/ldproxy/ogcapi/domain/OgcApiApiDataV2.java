@@ -35,19 +35,26 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiDataV2.class);
 
+    public static final String SERVICE_TYPE = "OGC_API";
+
     static abstract class Builder implements EntityDataBuilder<OgcApiApiDataV2> {
     }
 
-    @Value.Default
+    @Value.Derived
     @Override
     public long getEntitySchemaVersion() {
         return 2;
     }
 
+    @Override
+    public Optional<String> getEntitySubType() {
+        return Optional.of(SERVICE_TYPE);
+    }
+
     @Value.Default
     @Override
     public String getServiceType() {
-        return "OGC_API";
+        return SERVICE_TYPE;
     }
 
     public abstract Optional<Metadata> getMetadata();
