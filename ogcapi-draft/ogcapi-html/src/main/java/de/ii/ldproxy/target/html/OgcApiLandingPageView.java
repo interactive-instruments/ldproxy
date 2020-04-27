@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.api.functional.LambdaWithException.mayThrow;
 
-public class OgcApiLandingPageView extends LdproxyView {
+public class OgcApiLandingPageView extends OgcApiView {
     private final LandingPage apiLandingPage;
     public String dataSourceUrl;
     public String keywords;

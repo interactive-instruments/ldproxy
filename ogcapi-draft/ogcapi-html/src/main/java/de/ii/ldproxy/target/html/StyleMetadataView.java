@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class StyleMetadataView extends LdproxyView {
+public class StyleMetadataView extends OgcApiView {
     public StyleMetadata metadata;
     public String none;
     public String metadataTitle;
