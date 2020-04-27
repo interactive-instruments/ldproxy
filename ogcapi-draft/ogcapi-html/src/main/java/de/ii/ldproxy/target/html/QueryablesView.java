@@ -19,7 +19,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-public class QueryablesView extends LdproxyView {
+public class QueryablesView extends OgcApiView {
     public List<Queryable> queryables;
     public String typeTitle;
     public String none;

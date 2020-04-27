@@ -16,7 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class OgcApiCollectionsView extends LdproxyView {
+public class OgcApiCollectionsView extends OgcApiView {
     private final List<OgcApiCollection> collections;
     private boolean showCollectionDescriptions;
     public String dataSourceUrl;
