@@ -16,6 +16,8 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
+import de.ii.ldproxy.target.geojson.GeoJsonConfig;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureType;
@@ -50,12 +52,15 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
     private final I18n i18n;
     private final OgcApiFeatureCoreProviders providers;
+    private final GeoJsonConfig geoJsonConfig;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
 
     public OgcApiQueryablesQueriesHandler(@Requires I18n i18n,
-                                          @Requires OgcApiFeatureCoreProviders providers) {
+                                          @Requires OgcApiFeatureCoreProviders providers,
+                                          @Requires GeoJsonConfig geoJsonConfig) {
         this.i18n = i18n;
         this.providers = providers;
+        this.geoJsonConfig = geoJsonConfig;
 
         this.queryHandlers = ImmutableMap.of(
                 Query.QUERYABLES, OgcApiQueryHandler.with(OgcApiQueryInputQueryables.class, this::getQueryablesResponse),
@@ -232,7 +237,12 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                 .getTypes()
                 .get(collectionId);
 
-        SchemaObject schemaObject = apiData.getSchema(featureTypeProvider);
+        FeatureTransformerGeoJson.NESTED_OBJECTS nestingStrategy = geoJsonConfig.getNestedObjectStrategy();
+        FeatureTransformerGeoJson.MULTIPLICITY multiplicityStrategy = geoJsonConfig.getMultiplicityStrategy();
+
+        SchemaObject schemaObject = apiData.getSchema(featureTypeProvider,
+                nestingStrategy == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
+                multiplicityStrategy == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX);
 
         Map<String,Object> jsonSchema = getJsonSchema(schemaObject, links);
 

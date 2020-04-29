@@ -12,9 +12,17 @@ import java.util.List;
 
 public class SchemaObject extends SchemaBase {
     public List<SchemaProperty> properties = new ArrayList<>();
+    public List<SchemaProperty> patternProperties = new ArrayList<>();
 
     public SchemaProperty get(String name) {
-        return (SchemaProperty) properties.stream()
+        return properties.stream()
+                .filter(prop -> prop.path.equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public SchemaProperty getPattern(String name) {
+        return patternProperties.stream()
                 .filter(prop -> prop.path.equals(name))
                 .findFirst()
                 .orElse(null);

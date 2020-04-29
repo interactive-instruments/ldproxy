@@ -13,6 +13,8 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
+import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -40,7 +42,12 @@ public class VectorTilesMetadataGenerator {
      * @param language the requested language (optional)
      * @return a List with links
      */
-    public Map<String,Object> generateTilejson(OgcApiFeatureCoreProviders providers, OgcApiApiDataV2 serviceData, Optional<String> collectionId, TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center, List<OgcApiLink> links, I18n i18n, Optional<Locale> language) {
+    public Map<String,Object> generateTilejson(OgcApiFeatureCoreProviders providers, OgcApiApiDataV2 serviceData,
+                                               Optional<String> collectionId,
+                                               FeatureTransformerGeoJson.NESTED_OBJECTS nestingStrategy,
+                                               FeatureTransformerGeoJson.MULTIPLICITY multiplicityStrategy,
+                                               TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center,
+                                               List<OgcApiLink> links, I18n i18n, Optional<Locale> language) {
 
         String tilesUriTemplate = getTilesUriTemplate(links, tileMatrixSet);
 
@@ -67,7 +74,6 @@ public class VectorTilesMetadataGenerator {
         tilejson.put("center", ImmutableList.of(centerLon, centerLat, defaultZoomLevel));
 
         ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> featureTypesApi = serviceData.getCollections();
-
         List<ImmutableMap<String, Object>> layers = featureTypesApi.values().stream()
                 .map(featureTypeApi -> {
                     if (collectionId.isPresent()) {
@@ -80,7 +86,9 @@ public class VectorTilesMetadataGenerator {
                             .get(featureTypeApi.getId());
                     Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = featureTypeApi.getExtension(OgcApiFeaturesCoreConfiguration.class);
 
-                    SchemaObject schema = serviceData.getSchema(featureType);
+                    SchemaObject schema = serviceData.getSchema(featureType,
+                            nestingStrategy == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
+                            multiplicityStrategy == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX);
                     ImmutableMap.Builder<String, Object> fieldsBuilder = ImmutableMap.<String, Object>builder();
                     schema.properties.stream()
                             .forEach(prop -> {

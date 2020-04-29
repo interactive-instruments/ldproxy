@@ -18,6 +18,8 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesEndpoint;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
+import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
+import de.ii.ldproxy.target.geojson.GeoJsonConfig;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -84,6 +86,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
     private final CrsTransformerFactory crsTransformerFactory;
     private final OgcApiExtensionRegistry extensionRegistry;
     private final OgcApiFeaturesQuery queryParser;
+    private final GeoJsonConfig geoJsonConfig;
     private final VectorTileMapGenerator vectorTileMapGenerator;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final VectorTilesCache cache;
@@ -94,12 +97,14 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                       @Requires OgcApiFeatureCoreProviders providers,
                                       @Requires CrsTransformerFactory crsTransformerFactory,
                                       @Requires OgcApiExtensionRegistry wfs3ExtensionRegistry,
-                                      @Requires OgcApiFeaturesQuery queryParser) {
+                                      @Requires OgcApiFeaturesQuery queryParser,
+                                      @Requires GeoJsonConfig geoJsonConfig) {
         this.i18n = i18n;
         this.providers = providers;
         this.crsTransformerFactory = crsTransformerFactory;
         this.extensionRegistry = wfs3ExtensionRegistry;
         this.queryParser = queryParser;
+        this.geoJsonConfig = geoJsonConfig;
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
         this.cache = new VectorTilesCache(dataDirectory);
         this.vectorTileMapGenerator = new VectorTileMapGenerator();
@@ -349,7 +354,10 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
 
         double[] center = getCenter(service.getData());
 
-        Map<String, Object> tilejson = new VectorTilesMetadataGenerator().generateTilejson(providers, service.getData(), Optional.of(collectionId), getTileMatrixSetById(tileMatrixSetId), zoomLevels, center, links, i18n, requestContext.getLanguage());
+        FeatureTransformerGeoJson.NESTED_OBJECTS nestingStrategy = geoJsonConfig.getNestedObjectStrategy();
+        FeatureTransformerGeoJson.MULTIPLICITY multiplicityStrategy = geoJsonConfig.getMultiplicityStrategy();
+
+        Map<String, Object> tilejson = new VectorTilesMetadataGenerator().generateTilejson(providers, service.getData(), Optional.of(collectionId), nestingStrategy, multiplicityStrategy, getTileMatrixSetById(tileMatrixSetId), zoomLevels, center, links, i18n, requestContext.getLanguage());
 
         return Response.ok(tilejson)
                 .build();

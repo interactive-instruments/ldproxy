@@ -177,8 +177,9 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
         return spatialExtent;
     }
 
+
     // TODO: Or should this be moved elsewhere?
-    public SchemaObject getSchema(FeatureType featureType) {
+    public SchemaObject getSchema(FeatureType featureType, boolean flattenInsteadOfNestingAndSuffixInsteadOfArray) {
         SchemaObject featureTypeObject = new SchemaObject();
 
         String collectionId = featureType.getName();
@@ -192,10 +193,49 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
 
             featureType.getProperties()
                     .forEach((name, featureProperty) -> {
-                        // remove content in square brackets, just in case
-                        String nameNormalized = name.replaceAll("\\[[^\\]]+\\]", "[]");
 
-                        String baseName = featureProperty.getName();
+                        // remove content in square brackets, just in case
+                        String baseName = featureProperty.getName().replaceAll("\\[[^\\]]+\\]", "[]");
+
+                        if (flattenInsteadOfNestingAndSuffixInsteadOfArray) {
+                            // every property is an entry in the schema
+                            SchemaProperty flatProperty = new SchemaProperty();
+                            boolean isPattern = baseName.contains("[]");
+                            if (isPattern)
+                                baseName = baseName.replace("[]", ".\\d+");
+
+                            flatProperty.id = baseName;
+                            switch (featureProperty.getType()) {
+                                case GEOMETRY:
+                                    flatProperty.wellknownType = Optional.of("Geometry");
+                                    break;
+                                case INTEGER:
+                                    flatProperty.literalType = Optional.of("integer");
+                                    break;
+                                case FLOAT:
+                                    flatProperty.literalType = Optional.of("number");
+                                    break;
+                                case STRING:
+                                    flatProperty.literalType = Optional.of("string");
+                                    break;
+                                case BOOLEAN:
+                                    flatProperty.literalType = Optional.of("boolean");
+                                    break;
+                                case DATETIME:
+                                    flatProperty.literalType = Optional.of("dateTime");
+                                    break;
+                                default:
+                                    return;
+                            }
+
+                            if (isPattern)
+                                featureTypeObject.patternProperties.add(flatProperty);
+                            else
+                                featureTypeObject.properties.add(flatProperty);
+
+                            return;
+                        }
+
                         List<String> baseNameSections = Splitter.on('.').splitToList(baseName);
                         Map<String, String> addInfo = featureProperty.getAdditionalInfo();
                         boolean link = false;
