@@ -73,6 +73,14 @@ public class ObjectDTO extends ObjectOrPropertyDTO {
         return getLevel()==3;
     }
 
+    public boolean isLevel4() {
+        return getLevel()==4;
+    }
+
+    public boolean isLevel5() {
+        return getLevel()==5;
+    }
+
     public int getLevel() {
         ObjectOrPropertyDTO object = this;
         int level = -1;

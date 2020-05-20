@@ -61,7 +61,7 @@ public interface JsonNestingStrategy {
 
     void openField(JsonGenerator json, String key) throws IOException;
 
-    void openObjectInArray(JsonGenerator json, String key) throws IOException;
+    void openObjectInArray(JsonGenerator json, String key, boolean firstObject) throws IOException;
 
     void openArray(JsonGenerator json) throws IOException;
 
@@ -73,7 +73,7 @@ public interface JsonNestingStrategy {
 
     void closeArray(JsonGenerator json) throws IOException;
 
-    default void open(JsonGenerator json, int nextPathDiffersAt) throws IOException {
+    default void open(JsonGenerator json, int nextPathDiffersAt, int nextMultiplicityDiffersAt) throws IOException {
 
     }
 }

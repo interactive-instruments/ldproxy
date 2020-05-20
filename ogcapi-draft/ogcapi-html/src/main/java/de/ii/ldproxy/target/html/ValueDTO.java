@@ -45,6 +45,14 @@ public class ValueDTO implements ObjectOrPropertyOrValueDTO {
         return getLevel()==3;
     }
 
+    public boolean isLevel4() {
+        return getLevel()==4;
+    }
+
+    public boolean isLevel5() {
+        return getLevel()==5;
+    }
+
     private int getLevel() {
         ObjectOrPropertyDTO property = this.property;
         int level = 0;
