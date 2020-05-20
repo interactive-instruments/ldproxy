@@ -48,8 +48,9 @@ public class JsonNestingStrategyFlattenSuffix implements JsonNestingStrategy {
     }
 
     @Override
-    public void openObjectInArray(JsonGenerator json, String key) throws IOException {
-
+    public void openObjectInArray(JsonGenerator json, String key, boolean firstObject) throws IOException {
+        if (!firstObject)
+            currentMultiplicities.compute(key, (k, v) -> (v == null) ? 1 : v + 1);
     }
 
     @Override
@@ -79,9 +80,9 @@ public class JsonNestingStrategyFlattenSuffix implements JsonNestingStrategy {
     }
 
     @Override
-    public void open(JsonGenerator json, int nextPathDiffersAt) throws IOException {
+    public void open(JsonGenerator json, int nextPathDiffersAt, int nextMultiplicityDiffersAt) throws IOException {
 
-        if (currentFieldName.isEmpty() && lastFieldName.size() - 1 == nextPathDiffersAt) {
+        if (currentFieldName.isEmpty() && lastFieldName.size() - 1 == nextMultiplicityDiffersAt) {
             //value multiplicity change
             currentMultiplicities.compute(lastFieldName.get(lastFieldName.size() - 1), (k, v) -> (v == null) ? 1 : v + 1);
         } else {
@@ -91,7 +92,7 @@ public class JsonNestingStrategyFlattenSuffix implements JsonNestingStrategy {
             }
         }
 
-        writeFieldName(json, nextPathDiffersAt);
+        writeFieldName(json, nextPathDiffersAt, nextMultiplicityDiffersAt);
 
         lastFieldName.clear();
         lastFieldName.addAll(currentFieldName);
@@ -104,15 +105,14 @@ public class JsonNestingStrategyFlattenSuffix implements JsonNestingStrategy {
         }
     }
 
-    private void writeFieldName(JsonGenerator json, int nextPathDiffersAt) throws IOException {
-        if (currentFieldName.isEmpty() && lastFieldName.size() - 1 == nextPathDiffersAt) {
+    private void writeFieldName(JsonGenerator json, int nextPathDiffersAt, int nextMultiplicityDiffersAt) throws IOException {
+        if (currentFieldName.isEmpty() && lastFieldName.size() - 1 == nextMultiplicityDiffersAt) {
             //value multiplicity change
             currentFieldName.addAll(lastFieldName);
         } else if (!lastFieldName.isEmpty() && lastFieldName.size() > nextPathDiffersAt) {
             // prepend with unchanged elements
             currentFieldName.addAll(0, lastFieldName.subList(0, nextPathDiffersAt));
         }
-
 
         json.writeFieldName(joiner.join(currentFieldName.stream()
                                                         .flatMap(element -> {

@@ -51,8 +51,8 @@ public class JsonNestingTracker {
             inArray = differsAt() == multiplicityDiffersAt && nextMultiplicityLevels.getOrDefault(multiplicityKey, 1) > 1;
         }
 
-        this.currentCloseActions = getCloseActions(lastPath, differsAt(), inArray, json, doNotCloseValueArray);
-        this.currentOpenActions = getOpenActions(path, differsAt(), inArray, json);
+        this.currentCloseActions = getCloseActions(lastPath, pathDiffersAt, multiplicityDiffersAt, inArray, json, doNotCloseValueArray);
+        this.currentOpenActions = getOpenActions(path, pathDiffersAt, multiplicityDiffersAt, inArray, json);
 
         this.lastMultiplicityLevels = nextMultiplicityLevels;
         this.lastPath = path;
@@ -78,17 +78,22 @@ public class JsonNestingTracker {
         return lastMultiplicityLevels.getOrDefault(multiplicityKey, 1);
     }
 
-    private List<String> getCloseActions(List<String> previousPath, int nextPathDiffersAt, boolean inArray, JsonGenerator json, boolean doNotCloseValueArray) throws IOException {
+    private int differsAt(int nextPathDiffersAt, int nextMultiplicityDiffersAt) {
+        return nextMultiplicityDiffersAt == -1 ? nextPathDiffersAt : Math.min(nextPathDiffersAt, nextMultiplicityDiffersAt);
+    }
+
+    private List<String> getCloseActions(List<String> previousPath, int nextPathDiffersAt, int nextMultiplicityDiffersAt, boolean inArray, JsonGenerator json, boolean doNotCloseValueArray) throws IOException {
         List<String> actions = new ArrayList<>();
 
-        for (int i = previousPath.size()-1; i >= nextPathDiffersAt; i--) {
+        int differsAt = differsAt(nextPathDiffersAt,nextMultiplicityDiffersAt);
+        for (int i = previousPath.size()-1; i >= differsAt; i--) {
             String element = previousPath.get(i);
 
             boolean closeObject = i < previousPath.size() - 1;
             // omit when value array (end of path array)
-            boolean inValueArray = inArray && previousPath.size() -1 == nextPathDiffersAt;
+            boolean inValueArray = inArray && previousPath.size() -1 == differsAt;
             //omit when already inside of object array
-            boolean inObjectArray = closeObject && inArray && i == nextPathDiffersAt;
+            boolean inObjectArray = closeObject && inArray && i == differsAt;
             boolean closeArray = hasMultiplicity(element) && !inValueArray && !inObjectArray && !(doNotCloseValueArray && i == previousPath.size()-1);//(closeObject && i == nextPathDiffersAt && i > 0);
 
             if (closeObject) {
@@ -104,17 +109,18 @@ public class JsonNestingTracker {
         return actions;
     }
 
-    private List<List<String>> getOpenActions(List<String> nextPath, int nextPathDiffersAt, boolean inArray, JsonGenerator json) throws IOException {
+    private List<List<String>> getOpenActions(List<String> nextPath, int nextPathDiffersAt, int nextMultiplicityDiffersAt, boolean inArray, JsonGenerator json) throws IOException {
         List<List<String>> actions = new ArrayList<>();
 
-        for (int i = nextPathDiffersAt; i < nextPath.size(); i++) {
+        int differsAt = differsAt(nextPathDiffersAt,nextMultiplicityDiffersAt);
+        for (int i = differsAt; i < nextPath.size(); i++) {
             String element = nextPath.get(i);
 
             boolean openObject = i < nextPath.size() - 1;
             //omit when already inside of object array
-            boolean inObjectArray = openObject && inArray && i == nextPathDiffersAt;
+            boolean inObjectArray = openObject && inArray && i == differsAt;
             boolean openArray = hasMultiplicity(element) && !inArray && !inObjectArray;
-            boolean openField = !openObject &&!openArray && (!inArray || i > nextPathDiffersAt);
+            boolean openField = !openObject &&!openArray && (!inArray || i > differsAt);
 
             List<String> a = new ArrayList<>();
 
@@ -131,7 +137,7 @@ public class JsonNestingTracker {
             if (openObject) {
                 if (hasMultiplicity(element)) {
                     // in object array
-                    nestingStrategy.openObjectInArray(json, getFieldName(element));
+                    nestingStrategy.openObjectInArray(json, getFieldName(element), openArray);
                 } else {
                     // object field
                     nestingStrategy.openObject(json, element);
@@ -146,7 +152,7 @@ public class JsonNestingTracker {
             actions.add(a);
         }
 
-        nestingStrategy.open(json, nextPathDiffersAt);
+        nestingStrategy.open(json, nextPathDiffersAt, nextMultiplicityDiffersAt);
 
         return actions;
     }
