@@ -10,18 +10,25 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.SchemaObject;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
-import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureType;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 
 import javax.ws.rs.ServerErrorException;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -81,9 +88,9 @@ public class VectorTilesMetadataGenerator {
                             return ImmutableMap.<String,Object>of();
                     }
                     FeatureProvider2 featureProvider = providers.getFeatureProvider(serviceData, featureTypeApi);
-                    FeatureType featureType = featureProvider.getData()
-                            .getTypes()
-                            .get(featureTypeApi.getId());
+                    FeatureSchema featureType = featureProvider.getData()
+                                                               .getTypes()
+                                                               .get(featureTypeApi.getId());
                     Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = featureTypeApi.getExtension(OgcApiFeaturesCoreConfiguration.class);
 
                     SchemaObject schema = serviceData.getSchema(featureType,

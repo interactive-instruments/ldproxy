@@ -22,6 +22,7 @@ import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
@@ -179,13 +180,13 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
 
 
     // TODO: Or should this be moved elsewhere?
-    public SchemaObject getSchema(FeatureType featureType, boolean flattenInsteadOfNestingAndSuffixInsteadOfArray) {
+    public SchemaObject getSchema(FeatureSchema featureType, boolean flattenInsteadOfNestingAndSuffixInsteadOfArray) {
         SchemaObject featureTypeObject = new SchemaObject();
 
         String collectionId = featureType.getName();
         FeatureTypeConfigurationOgcApi featureTypeApi = getCollections().get(collectionId);
         if (Objects.nonNull(featureType) && Objects.nonNull(featureTypeApi)) {
-            ArrayList<FeatureProperty> featureProperties = new ArrayList<>(featureType.getProperties().values());
+            /*TODO ArrayList<FeatureProperty> featureProperties = new ArrayList<>(featureType.getProperties().values());
             featureTypeObject.id = collectionId;
             featureTypeObject.title = Optional.of(featureTypeApi.getLabel());
             featureTypeObject.description = featureTypeApi.getDescription();
@@ -319,7 +320,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
                                 objectLevel++;
                             }
                         }
-                    });
+                    });*/
         }
         return featureTypeObject;
     }
