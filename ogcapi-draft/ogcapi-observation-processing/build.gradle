@@ -1,0 +1,20 @@
+dependencies {
+    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-geojson'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
+
+    embedded (group: 'edu.mines.jtk', name: 'edu-mines-jtk', version: '1.1.0')
+}
+
+jar {
+    manifest {
+        instruction 'Embed-Import', 'false'
+        instruction 'Embed-Export', 'false'
+        instruction 'Import-Package', 'javax.swing.event'
+    }
+}

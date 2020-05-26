@@ -28,6 +28,6 @@ public abstract class OgcApiCommonConfiguration implements ExtensionConfiguratio
     public boolean getUseLangParameter() { return false; }
 
     @Value.Default
-    public boolean getIncludeLinkHeader() { return false; }
+    public boolean getIncludeLinkHeader() { return true; }
 
 }

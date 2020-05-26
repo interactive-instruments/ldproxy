@@ -16,12 +16,12 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesEndpoint;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
 import de.ii.ldproxy.target.geojson.GeoJsonConfig;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
 import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -91,6 +91,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final VectorTilesCache cache;
     private final CollectionMultitilesGenerator multiTilesGenerator;
+    private final CodelistRegistry codelistRegistry;
 
     Wfs3EndpointTilesSingleCollection(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
                                       @Requires I18n i18n,
@@ -98,13 +99,15 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                       @Requires CrsTransformerFactory crsTransformerFactory,
                                       @Requires OgcApiExtensionRegistry wfs3ExtensionRegistry,
                                       @Requires OgcApiFeaturesQuery queryParser,
-                                      @Requires GeoJsonConfig geoJsonConfig) {
+                                      @Requires GeoJsonConfig geoJsonConfig,
+                                      @Requires CodelistRegistry codelistRegistry) {
         this.i18n = i18n;
         this.providers = providers;
         this.crsTransformerFactory = crsTransformerFactory;
         this.extensionRegistry = wfs3ExtensionRegistry;
         this.queryParser = queryParser;
         this.geoJsonConfig = geoJsonConfig;
+        this.codelistRegistry = codelistRegistry;
         String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
         this.cache = new VectorTilesCache(dataDirectory);
         this.vectorTileMapGenerator = new VectorTileMapGenerator();
@@ -421,7 +424,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             filterParameters = parameterExtension.getFilterParameters(filterParameters, service.getData());
         }
 
-        final Map<String, String> filters = getFiltersFromQuery(OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields, filterParameters);
+        final Map<String, String> filters = getFiltersFromQuery(toFlatMap(queryParameters), filterableFields, filterParameters);
         if (!filters.isEmpty() || queryParameters.containsKey("properties")) {
             doNotCache = true;
         }
@@ -432,7 +435,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         for (OgcApiParameterExtension parameterExtension : extensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
             parameterExtension.transformQuery(service.getData()
                     .getCollections()
-                    .get(collectionId), queryBuilder, OgcApiFeaturesEndpoint.toFlatMap(queryParameters), service.getData());
+                    .get(collectionId), queryBuilder, toFlatMap(queryParameters), service.getData());
         }
 
         FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData());
@@ -469,7 +472,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                         .type(new MediaType("application", "geo+json"))
                         .label("GeoJSON")
                         .build();
-                boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), geojsonMediaType, true, jsonTile, i18n, wfs3Request.getLanguage(), queryParser);
+                boolean success = TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), geojsonMediaType, true, jsonTile, i18n, wfs3Request.getLanguage(), queryParser, codelistRegistry.getCodelists());
                 if (!success) {
                     String msg = "Internal server error: could not generate GeoJSON for a tile.";
                     LOGGER.error(msg);
@@ -478,7 +481,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             } else {
                 if (TileGeneratorJson.deleteJSON(tileFileJson)) {
                    TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields,
-                           wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
+                           wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser, codelistRegistry.getCodelists());
                 }
             }
 
@@ -488,7 +491,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             File tileFileJson = jsonTile.getFile(cache, "json");
 
             if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
+                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser, codelistRegistry.getCodelists());
                 tileFileMvt.delete();
                 generateTileCollection(collectionId, tileFileJson, tileFileMvt, tile, requestedProperties, crsTransformerFactory);
             }
@@ -549,7 +552,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
                                                             .getExtension(OgcApiFeaturesCoreConfiguration.class)
                                                             .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
                                                             .orElse(ImmutableMap.of());
-        final Map<String, String> filters = getFiltersFromQuery(OgcApiFeaturesEndpoint.toFlatMap(queryParameters), filterableFields, filterParameters);
+        final Map<String, String> filters = getFiltersFromQuery(toFlatMap(queryParameters), filterableFields, filterParameters);
 
         TilesConfiguration tilesConfiguration = service.getData()
                 .getCollections()
@@ -565,7 +568,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         for (OgcApiParameterExtension parameterExtension : extensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
             parameterExtension.transformQuery(service.getData()
                     .getCollections()
-                    .get(collectionId), queryBuilder, OgcApiFeaturesEndpoint.toFlatMap(queryParameters), service.getData());
+                    .get(collectionId), queryBuilder, toFlatMap(queryParameters), service.getData());
         }
 
         boolean doNotCache = false;
@@ -587,10 +590,10 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         //TODO parse file (check if valid) if not valid delete it and generate new one
 
         if (!tileFileJson.exists()) {
-            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
+            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser, codelistRegistry.getCodelists());
         } else {
             if (TileGeneratorJson.deleteJSON(tileFileJson)) {
-                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser);
+                TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, uriInfo, predefFilters, filters, filterableFields, wfs3Request.getUriCustomizer(), wfs3Request.getMediaType(), true, tile, i18n, wfs3Request.getLanguage(), queryParser, codelistRegistry.getCodelists());
             }
         }
 
@@ -716,5 +719,23 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         }
 
         return tileMatrixSet;
+    }
+
+    protected Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
+        return toFlatMap(queryParameters, false);
+    }
+
+    protected Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters,
+                                            boolean keysToLowerCase) {
+        return queryParameters.entrySet()
+                .stream()
+                .map(entry -> {
+                    String key = keysToLowerCase ? entry.getKey()
+                            .toLowerCase() : entry.getKey();
+                    return new AbstractMap.SimpleImmutableEntry<>(key, entry.getValue()
+                            .isEmpty() ? "" : entry.getValue()
+                            .get(0));
+                })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

@@ -21,5 +21,4 @@ public abstract class FilterConfiguration implements ExtensionConfiguration {
     public boolean getEnabled() {
         return false;
     }
-
 }

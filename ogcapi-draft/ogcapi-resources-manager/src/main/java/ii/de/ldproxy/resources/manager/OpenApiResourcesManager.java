@@ -85,7 +85,7 @@ public class OpenApiResourcesManager implements OpenApiExtension {
         PathItem pathItemResource = openAPI.getPaths()
                                         .get("/resources/{resourceId}");
 
-        Content contentException = new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")));
+        Content contentException = new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")));
         if (stylesExtension.getHtmlEnabled()) {
             contentException.addMediaType("text/html", new MediaType().schema(new StringSchema()));
         }

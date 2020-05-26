@@ -13,10 +13,9 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
-import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationResolver;
-import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsConfiguration;
-import de.ii.ldproxy.wfs3.aroundrelations.AroundRelationsQuery;
-import de.ii.ldproxy.wfs3.aroundrelations.SimpleAroundRelationResolver;
+import de.ii.ldproxy.wfs3.nearby.*;
+import de.ii.ldproxy.wfs3.nearby.NearbyResolver;
+import de.ii.ldproxy.wfs3.nearby.SimpleNearbyResolver;
 import de.ii.xtraplatform.akka.http.HttpClient;
 import de.ii.xtraplatform.crs.domain.CoordinateTuple;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -61,11 +60,11 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
     private final int offset;
     private final CrsTransformer crsTransformer;
     private final FeatureCollectionView dataset;
-    private AroundRelationsQuery aroundRelationsQuery;
-    private final AroundRelationResolver aroundRelationResolver; //TODO inject, multiple implementations
+    private NearbyQuery nearbyQuery;
+    private final NearbyResolver nearbyResolver; //TODO inject, multiple implementations
     private final HtmlConfiguration htmlConfiguration;
     private final Map<String, HtmlPropertyTransformations> transformations;
-    private final boolean isMicrodataEnabled;
+    private final boolean isSchemaOrgEnabled;
 
     private ObjectDTO currentFeature;
     private MICRODATA_GEOMETRY_TYPE currentGeometryType;
@@ -89,8 +88,8 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                                    .orElse(null);
         this.dataset = transformationContext.getFeatureTypeDataset();
         this.mustacheRenderer = (FallbackMustacheViewRenderer) transformationContext.getMustacheRenderer();
-        this.aroundRelationsQuery = new AroundRelationsQuery(transformationContext);
-        this.aroundRelationResolver = new SimpleAroundRelationResolver(httpClient);
+        this.nearbyQuery = new NearbyQuery(transformationContext);
+        this.nearbyResolver = new SimpleNearbyResolver(httpClient);
         this.htmlConfiguration = transformationContext.getHtmlConfiguration();
 
         FeatureTypeConfigurationOgcApi featureTypeConfiguration = transformationContext.getApiData()
@@ -106,8 +105,8 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                 .map(htmlConfiguration -> htmlConfiguration.getTransformations(baseTransformations, transformationContext.getCodelists(), transformationContext.getServiceUrl(), isFeatureCollection))
                 .orElse(ImmutableMap.of());
 
-        this.isMicrodataEnabled = transformationContext.getHtmlConfiguration()
-                                                       .getMicrodataEnabled();
+        this.isSchemaOrgEnabled = transformationContext.getHtmlConfiguration()
+                                                       .getSchemaOrgEnabled();
     }
 
     @Override
@@ -223,15 +222,15 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
             currentFeature.name = itemLabelFormat.get();
         }
 
-        if (isMicrodataEnabled) {
+        if (isSchemaOrgEnabled) {
             currentFeature.itemType = "http://schema.org/Place";
         }
 
-        if (isFeatureCollection && !aroundRelationsQuery.getRelations()
+        if (isFeatureCollection && !nearbyQuery.getRelations()
                                                         .isEmpty()) {
-            currentFeature.additionalParams = "&relations=" + aroundRelationsQuery.getRelations()
+            currentFeature.additionalParams = "&relations=" + nearbyQuery.getRelations()
                                                                                   .stream()
-                                                                                  .map(AroundRelationsConfiguration.Relation::getId)
+                                                                                  .map(NearbyConfiguration.Relation::getId)
                                                                                   .collect(Collectors.joining(",")) + "&resolve=true";
         }
     }
@@ -252,15 +251,15 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
         dataset.features.add(currentFeature);
         currentFeature = null;
 
-        //TODO: move to ldproxy-wfs3-around-relations
+        //TODO: move to ogcapi-nearby
         dataset.additionalFeatures = new ArrayList<>();
 
-        if (!isFeatureCollection && aroundRelationsQuery.isReady()) {
+        if (!isFeatureCollection && nearbyQuery.isReady()) {
 
             boolean[] started = {false};
             int[] index = {0};
 
-            aroundRelationsQuery.getQueries()
+            nearbyQuery.getQueries()
                                 .forEach(consumerMayThrow(query -> {
 
 
@@ -270,8 +269,8 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                     dataset.additionalFeatures.add(propertyDTO);
                                     String value = null;
 
-                                    if (aroundRelationsQuery.isResolve()) {
-                                        String resolved = aroundRelationResolver.resolve(query, "&f=html&bare=true");
+                                    if (nearbyQuery.isResolve()) {
+                                        String resolved = nearbyResolver.resolve(query, "&f=html&bare=true");
 
                                         if (Objects.nonNull(resolved) && resolved.contains("<h4")) {
 
@@ -296,7 +295,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                             value = "Keine";
                                         }
                                     } else {
-                                        String url = aroundRelationResolver.getUrl(query, "&f=html");
+                                        String url = nearbyResolver.getUrl(query, "&f=html");
 
                                         value = "<a href=\"" + url + "\" target=\"_blank\">Öffnen</a>";
                                     }
@@ -383,7 +382,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
         dataset.hideMap = false;
 
-        if (!isMicrodataEnabled && !aroundRelationsQuery.isActive()) return;
+        if (!isSchemaOrgEnabled && !nearbyQuery.isActive()) return;
 
         if (transformations.containsKey(featureProperty.getName())) {
 
@@ -487,8 +486,8 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                 break;
         }
 
-        if (!isFeatureCollection && aroundRelationsQuery.isActive()) {
-            aroundRelationsQuery.addCoordinates(text, coordinatesTransformerBuilder);
+        if (!isFeatureCollection && nearbyQuery.isActive()) {
+            nearbyQuery.addCoordinates(text, coordinatesTransformerBuilder);
         }
     }
 
@@ -505,8 +504,8 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
             currentGeometryPart.addValue(coordinatesOutput.toString());
         }
 
-        if (!isFeatureCollection && aroundRelationsQuery.isActive()) {
-            aroundRelationsQuery.computeBbox(currentGeometryType.toSimpleFeatureGeometry());
+        if (!isFeatureCollection && nearbyQuery.isActive()) {
+            nearbyQuery.computeBbox(currentGeometryType.toSimpleFeatureGeometry());
         }
 
         currentGeometryType = null;

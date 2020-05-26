@@ -334,7 +334,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                                        .example("WebMercatorQuad"));
             tileMatrixSetsArray.addProperties("title", new StringSchema()
                     .example("Google Maps Compatible for the World"));
-            tileMatrixSetsArray.addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
+            tileMatrixSetsArray.addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")));
 
             Schema tileMatrixSets = new Schema();
             tileMatrixSets.type("object");
@@ -356,7 +356,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             tileMatrixSetLink.addProperties("tileMatrixSet", new StringSchema());
             tileMatrixSetLink.addProperties("tileMatrixSetURI", new StringSchema());
             tileMatrixSetLink.addProperties("tileMatrixSetLimits", new ArraySchema().items(new Schema().$ref("#/components/schemas/tileMatrixSetLimits")));
-            tileMatrixSetLink.addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link")));
+            tileMatrixSetLink.addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")));
 
             Schema tileMatrixSetLinks = new Schema();
             tileMatrixSetLinks.type("object");
@@ -471,7 +471,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                        );
                 ApiResponse exception = new ApiResponse().description("An error occurred.")
                                                          .content(new Content()
-                                                                 .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                                                                 .addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")))
                                                          );
                 if (Objects.nonNull(pathItem)) {
                     pathItem
@@ -499,7 +499,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                         );
                 exception = new ApiResponse().description("An error occurred.")
                         .content(new Content()
-                                .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                                .addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")))
                         );
                 if (Objects.nonNull(pathItem)) {
                     pathItem
@@ -529,7 +529,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                             );
                     exception = new ApiResponse().description("An error occurred.")
                             .content(new Content()
-                                    .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                                    .addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")))
                             );
                     if (Objects.nonNull(pathItem)) {
                         pathItem
@@ -559,7 +559,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                 );
                         exception = new ApiResponse().description("An error occurred.")
                                 .content(new Content()
-                                        .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                                        .addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")))
                                 );
                         if (Objects.nonNull(pathItem)) {
                             pathItem
@@ -593,7 +593,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                             );
                     exception = new ApiResponse().description("An error occurred.")
                             .content(new Content()
-                                    .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                                    .addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")))
                             );
                     if (Objects.nonNull(pathItem)) {
                         pathItem
@@ -642,7 +642,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                                            );
                                    ApiResponse exception2 = new ApiResponse().description("An error occurred.")
                                                                              .content(new Content()
-                                                                                     .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                                                                                     .addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")))
                                                                              );
                                    if (Objects.nonNull(pathItem2)) {
                                        pathItem2
@@ -667,12 +667,12 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                       .get("/collections/" + ft.getId() + "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
                                    success2 = new ApiResponse().description("A tile of the collection " + ft.getLabel() + ".")
                                                                .content(new Content()
-                                                                       .addMediaType("application/geo+json", new MediaType().schema(new Schema().$ref("#/components/schemas/featureCollectionGeoJSON")))
+                                                                       .addMediaType("application/geo+json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/featureCollectionGeoJSON")))
                                                                        .addMediaType("application/vnd.mapbox-vector-tile", new MediaType().schema(new Schema().$ref("#/components/schemas/mvt")))
                                                                );
                                    exception2 = new ApiResponse().description("An error occurred.")
                                                                  .content(new Content()
-                                                                         .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                                                                         .addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")))
                                                                  );
                                    if (Objects.nonNull(pathItem2)) {
                                        pathItem2
@@ -726,7 +726,7 @@ public class OpenApiVectorTiles implements OpenApiExtension {
                                                );
                                        exception2 = new ApiResponse().description("An error occured.")
                                                .content(new Content()
-                                                       .addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")))
+                                                       .addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")))
                                                );
                                        if (Objects.nonNull(pathItem2)) {
                                            pathItem2

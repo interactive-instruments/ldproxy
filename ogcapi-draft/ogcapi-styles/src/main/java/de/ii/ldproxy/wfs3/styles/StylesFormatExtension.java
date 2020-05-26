@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.styles;
 
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 
 import javax.ws.rs.core.Response;
@@ -17,7 +18,12 @@ public interface StylesFormatExtension extends FormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^/styles(?:/\\w+)?/?$";
+        return "^/?styles(?:/[^\\/]+/metadata)?/?$";
+    }
+
+    @Override
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+        return isExtensionEnabled(apiData, StylesConfiguration.class);
     }
 
     Response getStylesResponse(Styles styles,

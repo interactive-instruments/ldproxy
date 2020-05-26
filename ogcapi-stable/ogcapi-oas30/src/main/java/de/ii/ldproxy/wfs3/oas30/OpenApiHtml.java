@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.oas30;
 
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.openapi.OpenApiViewerResource;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -47,6 +48,18 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, Oas30Configuration.class);
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        if (path.startsWith("/api/"))
+            return null;
+
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new StringSchema().example("<html>...</html>"))
+                .schemaRef("#/components/schemas/htmlSchema")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
     }
 
     @Override

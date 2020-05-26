@@ -78,7 +78,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
     private final int offset;
     private final HtmlConfiguration htmlConfiguration;
     private final Map<String, HtmlPropertyTransformations> transformations;
-    private final boolean isMicrodataEnabled;
+    private final boolean isSchemaOrgEnabled;
 
     private StringBuilder currentValueBuilder = new StringBuilder();
     private Map<String,Integer> pathMap = new HashMap<>();
@@ -196,8 +196,8 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                 .map(htmlConfiguration -> htmlConfiguration.getTransformations(baseTransformations, transformationContext.getCodelists(), transformationContext.getServiceUrl(), isFeatureCollection))
                 .orElse(ImmutableMap.of());
 
-        this.isMicrodataEnabled = transformationContext.getHtmlConfiguration()
-                                                       .getMicrodataEnabled();
+        this.isSchemaOrgEnabled = transformationContext.getHtmlConfiguration()
+                                                       .getSchemaOrgEnabled();
     }
 
     @Override
@@ -316,7 +316,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
             currentFeature.name = itemLabelFormat.get();
         }
 
-        if (isMicrodataEnabled) {
+        if (isSchemaOrgEnabled) {
             currentFeature.itemType = "http://schema.org/Place";
         }
     }
@@ -469,7 +469,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
 
         dataset.hideMap = false;
 
-        if (!isMicrodataEnabled) return;
+        if (!isSchemaOrgEnabled) return;
 
         if (transformations.containsKey(featureProperty.getName())) {
 

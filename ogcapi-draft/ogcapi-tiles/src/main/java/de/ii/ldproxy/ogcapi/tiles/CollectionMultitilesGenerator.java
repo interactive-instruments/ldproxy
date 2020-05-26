@@ -171,7 +171,7 @@ public class CollectionMultitilesGenerator {
                             .label("GeoJSON")
                             .build();
                     TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, null, uriCustomizer,
-                            geoJsonMediaType, true, tile, i18n, language, queryParser);
+                            geoJsonMediaType, true, tile, i18n, language, queryParser, ImmutableMap.of()); // TODO codelists
                 }
 
                     // add the generated tile to the archive

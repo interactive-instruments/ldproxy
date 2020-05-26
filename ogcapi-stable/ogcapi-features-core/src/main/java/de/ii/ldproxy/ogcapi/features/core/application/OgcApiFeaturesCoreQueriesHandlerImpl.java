@@ -65,7 +65,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
-    private CodelistRegistry codelistRegistry;
+    private final CodelistRegistry codelistRegistry;
 
     public OgcApiFeaturesCoreQueriesHandlerImpl(@Requires I18n i18n,
                                                 @Requires CrsTransformerFactory crsTransformerFactory,
@@ -251,7 +251,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                  .forEach(link -> response.links(link.getLink()));
 
         if (crs != null)
-            response.header("Content-Crs", crs.toUriString());
+            response.header("Content-Crs", "<"+crs.toUriString()+">");
 
         return response.build();
     }

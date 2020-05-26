@@ -20,17 +20,16 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableOgcApiCollection.Builder.class)
 public abstract class OgcApiCollection extends PageRepresentationWithId {
 
+    // restrict to information in ogcapi-stable, everything else goes into the extensions map
+
     // Core, part 1
     public abstract Optional<OgcApiExtent> getExtent();
     public abstract Optional<String> getItemType();
+    public abstract List<String> getCrs();
 
     // CRS, part 2
-    public abstract List<String> getCrs();
     public abstract Optional<String> getStorageCrs();
-
-    // Styles API
-    public abstract Optional<List<StyleEntry>> getStyles();
-    public abstract Optional<String> getDefaultStyle();
+    public abstract Optional<Float> getStorageCrsCoordinateEpoch();
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();

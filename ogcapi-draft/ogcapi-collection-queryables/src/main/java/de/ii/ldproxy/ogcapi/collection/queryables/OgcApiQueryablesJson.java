@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.collection.queryables;
 
 import de.ii.ldproxy.ogcapi.domain.*;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -36,6 +37,15 @@ public class OgcApiQueryablesJson implements OgcApiQueryablesFormatExtension {
         return getExtensionConfiguration(apiData, QueryablesConfiguration.class)
                 .map(QueryablesConfiguration::getEnabled)
                 .orElse(false);
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new ObjectSchema())
+                .schemaRef("#/components/schemas/anyObject")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
     }
 
     @Override

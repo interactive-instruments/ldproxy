@@ -110,7 +110,7 @@ public class OpenApiResources implements OpenApiExtension {
             PathItem pathItemResource = openAPI.getPaths()
                                             .get("/resources/{resourceId}");
 
-            Content contentException = new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")));
+            Content contentException = new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")));
             if (stylesExtension.getHtmlEnabled()) {
                 contentException.addMediaType("text/html", new MediaType().schema(new StringSchema()));
             }
@@ -193,7 +193,7 @@ public class OpenApiResources implements OpenApiExtension {
         resourceEntry.setRequired(required);
 
         resourceEntry.addProperties("id", new StringSchema());
-        resourceEntry.addProperties("link", new Schema().$ref("#/components/schemas/link"));
+        resourceEntry.addProperties("link", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link"));
 
         openAPI.getComponents()
                .addSchemas("resourceEntry", resourceEntry);

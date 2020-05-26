@@ -244,7 +244,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                 nestingStrategy == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
                 multiplicityStrategy == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX);
 
-        Map<String,Object> jsonSchema = getJsonSchema(schemaObject, links);
+        Map<String,Object> jsonSchema = new HashMap<>(); // TODO getJsonSchema(schemaObject, links);
 
         Optional<OgcApiSchemaFormatExtension> outputFormatExtension = api.getOutputFormat(
                 OgcApiSchemaFormatExtension.class,
@@ -275,168 +275,9 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         throw new NotAcceptableException();
     }
 
-    private class Context {
-        Set<SchemaObject> definitions = new HashSet<>();
-        ImmutableMap<String, Object> properties;
-        ImmutableMap<String, Object> geometry;
-    }
 
-    private Context processProperties(SchemaObject schemaObject, boolean isFeature) {
-
-        Context result = new Context();
-        ImmutableMap.Builder<String, Object> propertiesMapBuilder = ImmutableMap.<String, Object>builder();
-        ImmutableMap.Builder<String, Object> geometryMapBuilder = ImmutableMap.<String, Object>builder();
-        AtomicBoolean hasGeometry = new AtomicBoolean(false);
-
-        schemaObject.properties.stream()
-                .forEachOrdered(prop -> {
-                    ImmutableMap.Builder<String, Object> typeOrRefBuilder = ImmutableMap.<String,Object>builder();
-                    boolean geometry = false;
-                    if (prop.literalType.isPresent()) {
-                        String type = prop.literalType.get();
-                        if (type.equalsIgnoreCase("datetime")) {
-                            typeOrRefBuilder.put("type", "string")
-                                    .put("format","date-time");
-                        } else {
-                            typeOrRefBuilder.put("type", type);
-                        }
-
-                    } else if (prop.wellknownType.isPresent()) {
-                        switch (prop.wellknownType.get()) {
-                            case "Link":
-                                typeOrRefBuilder.put("$ref", "https://api.swaggerhub.com/domains/cportele/ogcapi-features-1/1.0.0#/components/schemas/link");
-                                break;
-                            case "Point":
-                                typeOrRefBuilder.put("$ref", "https://geojson.org/schema/Point.json");
-                                geometry = true;
-                                break;
-                            case "MultiPoint":
-                                typeOrRefBuilder.put("$ref", "https://geojson.org/schema/MultiPoint.json");
-                                geometry = true;
-                                break;
-                            case "LineString":
-                                typeOrRefBuilder.put("$ref", "https://geojson.org/schema/LineString.json");
-                                geometry = true;
-                                break;
-                            case "MultiLineString":
-                                typeOrRefBuilder.put("$ref", "https://geojson.org/schema/MultiLineString.json");
-                                geometry = true;
-                                break;
-                            case "Polygon":
-                                typeOrRefBuilder.put("$ref", "https://geojson.org/schema/Polygon.json");
-                                geometry = true;
-                                break;
-                            case "MultiPolygon":
-                                typeOrRefBuilder.put("$ref", "https://geojson.org/schema/MultiPolygon.json");
-                                geometry = true;
-                                break;
-                            case "Geometry":
-                                typeOrRefBuilder.put("$ref", "https://geojson.org/schema/Geometry.json");
-                                geometry = true;
-                                break;
-                            default:
-                                typeOrRefBuilder.put("type", "object");
-                                break;
-                        }
-                    } else if (prop.objectType.isPresent()) {
-                        typeOrRefBuilder.put("$ref", "#/definitions/"+prop.objectType.get().id);
-                        result.definitions.add(prop.objectType.get());
-
-                    }
-                    if (!isFeature || !geometry) {
-                        if (prop.maxItems == 1) {
-                            propertiesMapBuilder.put(prop.id, typeOrRefBuilder.build());
-                        } else {
-                            propertiesMapBuilder.put(prop.id, ImmutableMap.<String, Object>builder()
-                                    .put("type", "array")
-                                    .put("items", typeOrRefBuilder.build())
-                                    .build());
-                        }
-                    } else {
-                        // only one geometry per feature
-                        if (!hasGeometry.get()) {
-                            geometryMapBuilder.put("oneOf", ImmutableList.builder()
-                                    .add(typeOrRefBuilder.build(), ImmutableMap.builder().put("type", "null").build())
-                                    .build());
-                            hasGeometry.set(true);
-                        }
-                    }
-                });
-
-        if (!hasGeometry.get()) {
-            geometryMapBuilder.put("type", "null");
-        }
-
-        result.properties =  ImmutableMap.<String, Object>builder()
-                .put( "type", "object" )
-                .put( "properties", propertiesMapBuilder.build() )
-                .build();
-        result.geometry = geometryMapBuilder.build();
-        return result;
-    }
-
-    // TODO support also nullable (as in OpenAPI 3.0), not only null (as in JSON Schema)
-    private Map<String, Object> getJsonSchema(SchemaObject schemaObject, List<OgcApiLink> links) {
-
-        Context featureContext = processProperties(schemaObject, true);
-
-        ImmutableMap.Builder<String, Object> definitionsMapBuilder = ImmutableMap.<String, Object>builder();
-        Set<SchemaObject> processed = new HashSet<>();
-        Set<SchemaObject> current = featureContext.definitions;
-
-        while (!current.isEmpty()) {
-            Set<SchemaObject> next = new HashSet<>();
-            current.stream()
-                    .filter(defObject -> !processed.contains(defObject))
-                    .forEach(defObject -> {
-                        Context definitionContext = processProperties(defObject, false);
-                        definitionsMapBuilder.put(defObject.id, definitionContext.properties);
-                        next.addAll(definitionContext.definitions);
-                        processed.add(defObject);
-                    });
-            current = next;
-        }
-
-        return ImmutableMap.<String,Object>builder()
-                .put( "$schema", "http://json-schema.org/draft-07/schema#" )
-                .put( "$id", links.stream()
-                        .filter(link -> link.getRel().equalsIgnoreCase("self"))
-                        .findFirst()
-                        .map(link -> link.getHref()))
-                .put( "type", "object" )
-                .put( "title", schemaObject.title.orElse("") )
-                .put( "description", schemaObject.description.orElse("") )
-                .put( "required", ImmutableList.builder()
-                        .add( "type", "geometry", "properties" )
-                        .build() )
-                .put( "properties", ImmutableMap.builder()
-                        .put( "type", ImmutableMap.builder()
-                                .put( "type", "string" )
-                                .put( "enum", ImmutableList.builder()
-                                        .add( "Feature" )
-                                        .build())
-                                .build())
-                        .put( "id", ImmutableMap.builder()
-                                .put( "oneOf", ImmutableList.builder()
-                                        .add( ImmutableMap.builder().put( "type", "string" ).build(), ImmutableMap.builder().put( "type", "integer" ).build())
-                                        .build())
-                                .build())
-                        .put( "links", ImmutableMap.builder()
-                                .put( "type", "array" )
-                                .put( "items", ImmutableMap.builder().put( "$ref", "https://api.swaggerhub.com/domains/cportele/ogcapi-features-1/1.0.0#/components/schemas/link" ).build())
-                                .build())
-                        .put( "geometry", featureContext.geometry )
-                        .put( "properties", ImmutableMap.builder()
-                                .put( "oneOf", ImmutableList.builder()
-                                        .add( featureContext.properties, ImmutableMap.builder().put( "type", "null" ).build())
-                                        .build())
-                                .build())
-                        .build())
-                .put( "definitions", definitionsMapBuilder.build() )
-                .build();
-    }
-
-    private SchemaObject xxxgetSchema(FeatureType featureType, FeatureTypeConfigurationOgcApi featureTypeApi) {
+    /* TODO delete
+    private SchemaObject getSchema(FeatureType featureType, FeatureTypeConfigurationOgcApi featureTypeApi) {
         SchemaObject featureTypeObject = new SchemaObject();
 
         if (Objects.nonNull(featureType) && Objects.nonNull(featureTypeApi)) {
@@ -540,4 +381,5 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         }
         return featureTypeObject;
     }
+     */
 }

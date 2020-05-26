@@ -37,29 +37,4 @@ class StylesRESTApiSpec extends Specification{
         response.responseData.get("styles").get(0).get("links")
     }
 
-    def 'GET Request for the styles Page of a Collection'(){
-
-        when:
-        def response = restClient.get( path: SUT_PATH + '/collections/' + SUT_COLLECTION + '/styles')
-
-        then:
-        response.status == 200
-
-        and:
-        response.responseData.containsKey("styles")
-        response.responseData.get("styles").get(0).get("identifier")
-        response.responseData.get("styles").get(0).get("links")
-    }
-
-    def 'GET Request for a style Page'(){
-
-        when:
-        def response = restClient.get( path: SUT_PATH + '/collections/' + SUT_COLLECTION + '/styles/' + SUT_STYLE)
-
-        then:
-        response.status == 200
-
-        and:
-        response.responseData.containsKey("id")
-    }
 }

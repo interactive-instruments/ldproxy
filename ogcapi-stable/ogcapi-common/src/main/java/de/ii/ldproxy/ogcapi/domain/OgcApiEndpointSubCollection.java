@@ -1,0 +1,124 @@
+package de.ii.ldproxy.ogcapi.domain;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import io.swagger.v3.oas.models.headers.Header;
+import io.swagger.v3.oas.models.media.StringSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEndpointSubCollection.class);
+
+    /**
+     *
+     * @param extensionRegistry
+     */
+    public OgcApiEndpointSubCollection(OgcApiExtensionRegistry extensionRegistry) {
+        super(extensionRegistry);
+    }
+
+    protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
+                                                    Set<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
+                                                    String operationSummary, Optional<String> operationDescription, List<String> tags) {
+        final String path = "/collections/"+collectionId+subSubPath;
+        OgcApiRequestBody body = null;
+        if (method==OgcApiContext.HttpMethods.POST || method==OgcApiContext.HttpMethods.PUT || method==OgcApiContext.HttpMethods.PATCH) {
+            Map<MediaType, OgcApiMediaTypeContent> requestContent = collectionId.startsWith("{") ?
+                    getRequestContent(apiData, Optional.empty(), subSubPath, method) :
+                    getRequestContent(apiData, Optional.of(collectionId), subSubPath, method);
+            if (requestContent.isEmpty()) {
+                LOGGER.error("No media type supported for the resource at path '" + path + "'. The " + method.toString() + " method will not be available.");
+                return null;
+            }
+            body = new ImmutableOgcApiRequestBody.Builder()
+                    .description(method==OgcApiContext.HttpMethods.POST ? "The new resource to be added." : "The new resource to be added or updated.")
+                    .content(requestContent)
+                    .build();
+        }
+        Map<MediaType, OgcApiMediaTypeContent> responseContent = collectionId.startsWith("{") ?
+                getContent(apiData, Optional.empty(), subSubPath, method) :
+                getContent(apiData, Optional.of(collectionId), subSubPath, method);
+        if (method==OgcApiContext.HttpMethods.GET && responseContent.isEmpty()) {
+            LOGGER.error("No media type supported for the resource at path '" + path + "'. The GET method will not be available.");
+            return null;
+        }
+        ImmutableOgcApiResponse.Builder responseBuilder = new ImmutableOgcApiResponse.Builder()
+                .statusCode(SUCCESS_STATUS.get(method))
+                .description("The operation was executed successfully.");
+        if (!responseContent.isEmpty())
+            responseBuilder.content(responseContent);
+        if (method==OgcApiContext.HttpMethods.POST)
+            responseBuilder.putHeaders("Location",new Header().schema(new StringSchema()).description("The URI of the new resource."));
+        ImmutableOgcApiOperation.Builder operationBuilder = new ImmutableOgcApiOperation.Builder()
+                .summary(operationSummary)
+                .description(operationDescription)
+                .tags(tags)
+                .queryParameters(queryParameters)
+                .success(responseBuilder.build());
+        if (body!=null)
+            operationBuilder.requestBody(body);
+        return operationBuilder.build();
+    }
+
+    /**
+     *
+     * @param apiData
+     * @param collectionId
+     * @param subSubPath
+     * @return
+     */
+    protected Map<MediaType, OgcApiMediaTypeContent> getContent(OgcApiApiDataV2 apiData, Optional<String> collectionId, String subSubPath, OgcApiContext.HttpMethods method) {
+        return getFormats().stream()
+                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                .map(f -> f.getContent(apiData, "/collections/"+collectionId.orElse("{collectionId}")+subSubPath, method))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(),c -> c));
+    }
+
+    /**
+     *
+     * @param apiData
+     * @param collectionId
+     * @param subSubPath
+     * @return
+     */
+    protected Map<MediaType, OgcApiMediaTypeContent> getRequestContent(OgcApiApiDataV2 apiData, Optional<String> collectionId, String subSubPath, OgcApiContext.HttpMethods method) {
+        return getFormats().stream()
+                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                .map(f -> f.getRequestContent(apiData, "/collections/"+collectionId.orElse("{collectionId}")+subSubPath, method))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(),c -> c));
+    }
+
+    /**
+     *
+     * @param apiData
+     * @param collectionId
+     */
+    protected void checkCollectionExists(@Context OgcApiApiDataV2 apiData,
+                               @PathParam("collectionId") String collectionId) {
+        if (!apiData.isCollectionEnabled(collectionId)) {
+            throw new NotFoundException();
+        }
+    }
+
+    public ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String collectionId, String definitionPath) {
+        // just return the standard list
+        return super.getQueryParameters(extensionRegistry, apiData, definitionPath, OgcApiContext.HttpMethods.GET);
+    }
+
+    public ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String collectionId, String definitionPath, OgcApiContext.HttpMethods method) {
+        // just return the standard list
+        return super.getQueryParameters(extensionRegistry, apiData, definitionPath, method);
+    }
+
+}

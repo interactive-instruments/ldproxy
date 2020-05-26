@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputLandingPage;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon;
@@ -22,16 +23,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 @Component
 @Provides
 @Instantiate
-public class OgcApiEndpointLandingPage implements OgcApiEndpointExtension {
+public class OgcApiEndpointLandingPage extends OgcApiEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEndpointLandingPage.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
@@ -39,14 +41,18 @@ public class OgcApiEndpointLandingPage implements OgcApiEndpointExtension {
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?$")
             .build();
-
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
     @Requires
     private OgcApiQueriesHandlerCommon queryHandler;
 
     public OgcApiEndpointLandingPage(@Requires OgcApiExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+        super(extensionRegistry);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+        return isExtensionEnabled(apiData, OgcApiCommonConfiguration.class);
     }
 
     @Override
@@ -54,6 +60,14 @@ public class OgcApiEndpointLandingPage implements OgcApiEndpointExtension {
         return API_CONTEXT;
     }
 
+    @Override
+    public List<? extends FormatExtension> getFormats() {
+        if (formats==null)
+            formats = extensionRegistry.getExtensionsForType(CommonFormatExtension.class);
+        return formats;
+    }
+
+    /*
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?$"))
@@ -64,6 +78,32 @@ public class OgcApiEndpointLandingPage implements OgcApiEndpointExtension {
                                     .collect(ImmutableSet.toImmutableSet());
 
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
+    }
+     */
+
+    @Override
+    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+        String apiId = apiData.getId();
+        if (!apiDefinitions.containsKey(apiId)) {
+            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+                    .apiEntrypoint("")
+                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_LANDING_PAGE);
+            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/");
+            String operationSummary = "landing page";
+            Optional<String> operationDescription = Optional.of("The landing page provides links to the API definition " +
+                    "(link relations `service-desc` and `service-doc`), the Conformance declaration (path `/conformance`, " +
+                    "link relation `conformance`), and other resources in the API.");
+            String path = "/";
+            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                    .path(path);
+            OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+            if (operation!=null)
+                resourceBuilder.putOperations("GET", operation);
+            definitionBuilder.putResources(path, resourceBuilder.build());
+            apiDefinitions.put(apiId, definitionBuilder.build());
+        }
+
+        return apiDefinitions.get(apiId);
     }
 
     @GET

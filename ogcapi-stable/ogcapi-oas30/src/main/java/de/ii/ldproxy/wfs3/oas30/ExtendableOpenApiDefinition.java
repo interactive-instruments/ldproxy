@@ -55,7 +55,6 @@ public class ExtendableOpenApiDefinition {
     private Set<OpenApiExtension> openApiExtensions;
 
     public ExtendableOpenApiDefinition(@Requires AuthConfig authConfig) {
-        super();
         this.authConfig = authConfig;
     }
 

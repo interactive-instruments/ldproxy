@@ -12,7 +12,9 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.styles.StyleMetadata;
 import de.ii.ldproxy.wfs3.styles.Styles;
+import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.ldproxy.wfs3.styles.StylesFormatExtension;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -29,6 +31,7 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
 
     static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
+            .label("HTML")
             .parameter("html")
             .build();
 
@@ -39,18 +42,23 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
     private I18n i18n;
 
     @Override
-    public String getPathPattern() {
-        return "^/styles(?:/\\w+)?/?$";
-    }
-
-    @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, HtmlConfiguration.class);
+        return isExtensionEnabled(apiData, StylesConfiguration.class) &&
+               isExtensionEnabled(apiData, HtmlConfiguration.class);
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new StringSchema().example("<html>...</html>"))
+                .schemaRef("#/components/schemas/htmlSchema")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
     }
 
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {

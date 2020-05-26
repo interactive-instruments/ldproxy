@@ -48,7 +48,7 @@ public class OpenApiStyles implements OpenApiExtension {
 
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
-
+/*
         if (isEnabledForApi(datasetData) &&
                 getExtensionConfiguration(datasetData, StylesConfiguration.class).isPresent()) {
 
@@ -142,7 +142,7 @@ public class OpenApiStyles implements OpenApiExtension {
             PathItem pathItemMetadata = openAPI.getPaths()
                                                .get("/styles/{styleId}/metadata");
 
-            Content contentException = new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception")));
+            Content contentException = new Content().addMediaType("application/json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception")));
             if (stylesExtension.getHtmlEnabled()) {
                 contentException.addMediaType("text/html", new MediaType().schema(new StringSchema()));
             }
@@ -235,6 +235,8 @@ public class OpenApiStyles implements OpenApiExtension {
                 defineStyleMetadataSchema(openAPI);
             }
         }
+
+ */
         return openAPI;
     }
 
@@ -264,7 +266,7 @@ public class OpenApiStyles implements OpenApiExtension {
 
         styleEntry.addProperties("id", new StringSchema().nullable(true));
         styleEntry.addProperties("title", new StringSchema().nullable(true));
-        styleEntry.addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link"))
+        styleEntry.addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link"))
                                                            .minItems(1)
                                                            .nullable(true));
 
@@ -312,7 +314,7 @@ public class OpenApiStyles implements OpenApiExtension {
                 .nullable(true));
         styleMetadata.addProperties("layers", new ArraySchema().items(new Schema().$ref("#/components/schemas/styleLayer"))
                 .nullable(true));
-        styleMetadata.addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/link"))
+        styleMetadata.addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link"))
                 .nullable(true));
 
         openAPI.getComponents()
@@ -352,7 +354,7 @@ public class OpenApiStyles implements OpenApiExtension {
         stylesheet.addProperties("specification", new StringSchema().nullable(true).format("url"));
         stylesheet.addProperties("native", new BooleanSchema().nullable(true));
         stylesheet.addProperties("tilingScheme", new StringSchema().nullable(true));
-        stylesheet.addProperties("link", new Schema().$ref("#/components/schemas/link"));
+        stylesheet.addProperties("link", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link"));
 
         openAPI.getComponents()
                 .addSchemas("stylesheet", stylesheet);
@@ -379,7 +381,7 @@ public class OpenApiStyles implements OpenApiExtension {
         type.setEnum(enumType);
         styleLayer.addProperties("type", type);
         styleLayer.addProperties("attributes", new Schema().$ref("#/components/schemas/queryables"));
-        styleLayer.addProperties("sampleData", new Schema().$ref("#/components/schemas/link"));
+        styleLayer.addProperties("sampleData", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link"));
 
         openAPI.getComponents()
                 .addSchemas("styleLayer", styleLayer);

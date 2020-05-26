@@ -21,15 +21,24 @@ public interface OgcApiParameterExtension extends OgcApiExtension {
         return filterParameters;
     }
 
-    default Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfigurationWfs3,
-                                                    Map<String, String> parameters, OgcApiApiDataV2 serviceData) {
+    default Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
+                                                    Map<String, String> parameters,
+                                                    OgcApiApiDataV2 serviceData) {
         return parameters;
     }
 
-    default ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfigurationWfs3,
+    default ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureType,
                                                          ImmutableFeatureQuery.Builder queryBuilder,
                                                          Map<String, String> parameters,
                                                          OgcApiApiDataV2 serviceData) {
         return queryBuilder;
     }
+
+    default Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType,
+                                                 Map<String, Object> context,
+                                                 Map<String, String> parameters,
+                                                 OgcApiApiDataV2 serviceData) {
+        return context;
+    }
+
 }

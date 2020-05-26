@@ -8,6 +8,7 @@
 package de.ii.ldproxy.target.gml;
 
 import de.ii.ldproxy.ogcapi.domain.*;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.*;
 
 import javax.ws.rs.core.MediaType;
@@ -54,6 +55,15 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, GmlConfiguration.class);
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new ObjectSchema())
+                .schemaRef("#/components/schemas/anyObject")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
     }
 
     @Override

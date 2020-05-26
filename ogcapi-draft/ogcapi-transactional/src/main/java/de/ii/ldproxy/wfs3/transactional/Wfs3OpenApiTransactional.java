@@ -57,6 +57,7 @@ public class Wfs3OpenApiTransactional implements OpenApiExtension {
 
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
+        /*
         if (providers.getFeatureProvider(datasetData).supportsTransactions() && isEnabledForApi(datasetData)) {
 
             datasetData.getCollections()
@@ -72,7 +73,7 @@ public class Wfs3OpenApiTransactional implements OpenApiExtension {
                            RequestBody requestBody = new RequestBody().description("A single feature.")
                                                                       .content(new Content().addMediaType("application/geo+json", new MediaType().schema(new Schema().$ref("#/components/schemas/featureGeoJSON"))));
                            ApiResponse exception = new ApiResponse().description("An error occured.")
-                                                                    .content(new Content().addMediaType("application/geo+json", new MediaType().schema(new Schema().$ref("#/components/schemas/exception"))));
+                                                                    .content(new Content().addMediaType("application/geo+json", new MediaType().schema(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/exception"))));
 
                            if (Objects.nonNull(pathItem)) {
                                pathItem
@@ -121,6 +122,7 @@ public class Wfs3OpenApiTransactional implements OpenApiExtension {
                        });
         }
 
+         */
         return openAPI;
     }
 }

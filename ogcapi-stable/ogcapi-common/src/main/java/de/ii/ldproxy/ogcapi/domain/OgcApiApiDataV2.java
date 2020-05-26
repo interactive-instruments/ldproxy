@@ -92,6 +92,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
                 && Objects.nonNull(getFeatureProvider().getMappingStatus().getErrorMessage());*/
     }
 
+    @Value.Derived
     public boolean isCollectionEnabled(final String collectionId) {
         return getCollections().containsKey(collectionId) && getCollections().get(collectionId).getEnabled();
     }
@@ -129,6 +130,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
      * @param targetCrs the target CRS
      * @return the bounding box
      */
+    @Value.Derived
     public BoundingBox getSpatialExtent(CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         BoundingBox spatialExtent = getSpatialExtent();
 
@@ -140,6 +142,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
      * @param collectionId the name of the feature type
      * @return the bounding box in the default CRS
      */
+    @Value.Derived
     public BoundingBox getSpatialExtent(String collectionId) {
         return getCollections().values()
                                .stream()
@@ -161,12 +164,14 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
      * @param targetCrs the target CRS
      * @return the bounding box in the target CRS
      */
+    @Value.Derived
     public BoundingBox getSpatialExtent(String collectionId, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         BoundingBox spatialExtent = getSpatialExtent(collectionId);
 
         return transformSpatialExtent(spatialExtent, crsTransformerFactory, targetCrs);
     }
 
+    @Value.Derived
     private BoundingBox transformSpatialExtent(BoundingBox spatialExtent, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
 
@@ -179,6 +184,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
 
 
     // TODO: Or should this be moved elsewhere?
+    @Value.Derived
     public SchemaObject getSchema(FeatureType featureType, boolean flattenInsteadOfNestingAndSuffixInsteadOfArray) {
         SchemaObject featureTypeObject = new SchemaObject();
 

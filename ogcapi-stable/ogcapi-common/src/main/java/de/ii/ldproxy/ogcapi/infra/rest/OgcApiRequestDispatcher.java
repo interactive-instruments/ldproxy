@@ -20,10 +20,13 @@ import javax.annotation.security.PermitAll;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static de.ii.ldproxy.ogcapi.domain.OgcApiEndpointDefinition.SORT_PRIORITY_DUMMY;
 
 
 @Component
@@ -36,6 +39,13 @@ import java.util.stream.Collectors;
 public class OgcApiRequestDispatcher implements ServiceResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiRequestDispatcher.class);
+
+    private static final Set<String> NOCONTENT_METHODS = ImmutableSet.of("POST", "PUT", "DELETE");
+    private static final OgcApiMediaType DEFAULT_MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+            .type(new MediaType("application", "json"))
+            .label("JSON")
+            .parameter("json")
+            .build();
 
     private final OgcApiExtensionRegistry extensionRegistry;
     private final OgcApiRequestInjectableContext ogcApiInjectableContext;
@@ -68,14 +78,14 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         OgcApiEndpointExtension ogcApiEndpoint = findEndpoint(service.getData(), entrypoint, subPath, method).orElse(null);
 
         if (ogcApiEndpoint==null) {
-            if (findEndpoint(service.getData(), entrypoint, subPath, null).isPresent())
-                throw new NotAllowedException("Method "+method+" is not supported for this resource.");
-            // TODO does this belong here or should this be done by the resources?
+            throwNotAllowedOrNotFound(getMethods(service.getData(), entrypoint, subPath));
+            /* TODO should this belong here or should this be done by the resources?
             // check, if this may be an issue of special characters in the path, replace all non-Word characters with an underscore and test the sub path again
             String subPathReduced = subPath.replaceAll("\\W","_");
             if (findEndpoint(service.getData(), entrypoint, subPathReduced, null).isPresent())
                 throw new BadRequestException("The sub path '"+subPath+"' includes characters that are not supported for a resource. Resource ids typically only support word characters (ASCII letters, digits, underscore) for the resource names.");
             throw new NotFoundException();
+             */
         }
 
         Set<String> parameters = requestContext.getUriInfo().getQueryParameters().keySet();
@@ -90,15 +100,25 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                     String.join(", ", knownParameters));
         }
 
-        ImmutableSet<OgcApiMediaType> supportedMediaTypes = ogcApiEndpoint.getMediaTypes(service.getData(), subPath);
+        ImmutableSet<OgcApiMediaType> supportedMediaTypes = method.equals("GET") ?
+                ogcApiEndpoint.getMediaTypes(service.getData(), subPath):
+                ogcApiEndpoint.getMediaTypes(service.getData(), subPath, method);
 
-        OgcApiMediaType selectedMediaType = ogcApiContentNegotiation.negotiate(requestContext, supportedMediaTypes)
-                                                                    .orElseThrow(NotAcceptableException::new);
+        OgcApiMediaType selectedMediaType;
+        Set<OgcApiMediaType> alternateMediaTypes;
+        if (supportedMediaTypes.isEmpty() && NOCONTENT_METHODS.contains(method)) {
+            selectedMediaType = DEFAULT_MEDIA_TYPE;
+            alternateMediaTypes = ImmutableSet.of();
+
+        } else {
+            selectedMediaType = ogcApiContentNegotiation.negotiate(requestContext, supportedMediaTypes)
+                    .orElseThrow(NotAcceptableException::new);
+            alternateMediaTypes = getAlternateMediaTypes(selectedMediaType, supportedMediaTypes);
+
+        }
 
         Locale selectedLanguage = ogcApiContentNegotiation.negotiate(requestContext)
                                                           .orElse(Locale.ENGLISH);
-
-        Set<OgcApiMediaType> alternateMediaTypes = getAlternateMediaTypes(selectedMediaType, supportedMediaTypes);
 
         OgcApiRequestContext ogcApiRequestContext = new ImmutableOgcApiRequestContext.Builder()
                 .requestUri(requestContext.getUriInfo()
@@ -110,6 +130,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                 .api(service)
                 .build();
 
+        /* TODO delete
         // validate generic parameters
         String f = requestContext.getUriInfo().getQueryParameters().getFirst("f");
         if (f!=null) {
@@ -124,12 +145,60 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                 throw new BadRequestException("Invalid value for parameter 'f': " + f + ". Valid values: " + String.join(", ",validValues)+".");
             }
         }
+         */
+
+        // validate request
+        OgcApiEndpointDefinition apiDef = ogcApiEndpoint.getDefinition(service.getData());
+        if (!apiDef.getResources().isEmpty()) {
+            // check that the subPath is valid
+            OgcApiResource resource = apiDef.getResource("/" + entrypoint + subPath).orElse(null);
+            if (resource==null)
+                throw new NotFoundException();
+
+            // no need to check the path parameters here, only the parent path parameters (service, endpoint) are available;
+            // path parameters in the sub-path have to be checked later
+            OgcApiOperation operation = apiDef.getOperation(resource, method).orElse(null);
+            if (operation==null) {
+                throwNotAllowedOrNotFound(getMethods(service.getData(),entrypoint,subPath));
+            }
+
+            Optional<String> collectionId = resource.getCollectionId();
+
+            // validate query parameters
+            requestContext.getUriInfo()
+                    .getQueryParameters()
+                    .entrySet()
+                    .stream()
+                    .forEach(p -> {
+                        String name = p.getKey();
+                        List<String> values = p.getValue();
+                        operation.getQueryParameters()
+                                .stream()
+                                .filter(param -> param.getName().equalsIgnoreCase(name))
+                                .forEach(param -> {
+                                    Optional<String> result = param.validate(service.getData(), collectionId, values);
+                                    if (result.isPresent())
+                                        throw new BadRequestException(result.get());
+                                });
+                    });
+        }
 
         // TODO check lang, too
 
         ogcApiInjectableContext.inject(requestContext, ogcApiRequestContext);
 
         return ogcApiEndpoint;
+    }
+
+    private void throwNotAllowedOrNotFound(Set<String> methods) {
+        if (!methods.isEmpty()) {
+            String first = methods.stream().findFirst().get();
+            String[] more = methods.stream()
+                    .filter(method -> !method.equals(first))
+                    .toArray(String[]::new);
+            throw new NotAllowedException(first,more);
+        } else
+            throw new NotFoundException();
     }
 
     private Set<OgcApiMediaType> getAlternateMediaTypes(OgcApiMediaType selectedMediaType,
@@ -143,10 +212,35 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                                                            @PathParam("entrypoint") String entrypoint,
                                                            String subPath, String method) {
         return getEndpoints().stream()
-                             .filter(wfs3Endpoint -> wfs3Endpoint.getApiContext()
-                                                                 .matches(entrypoint, subPath, method))
-                             .filter(wfs3Endpoint -> wfs3Endpoint.isEnabledForApi(dataset))
+                             .filter(endpoint -> {
+                                 OgcApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
+                                 if (apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY) {
+                                     return apiDef.matches("/"+entrypoint+subPath, method);
+                                 } else
+                                     return endpoint.getApiContext()
+                                             .matches(entrypoint, subPath, method);
+                             })
+                             .filter(endpoint -> endpoint.isEnabledForApi(dataset))
                              .findFirst();
+    }
+
+    private Set<String> getMethods(OgcApiApiDataV2 dataset,
+                                     @PathParam("entrypoint") String entrypoint,
+                                     String subPath) {
+        return getEndpoints().stream()
+                .map(endpoint -> {
+                    OgcApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
+                    if (!apiDef.getResources().isEmpty()) {
+                        Optional<OgcApiResource> resource = apiDef.getResource("/" + entrypoint + subPath);
+                        if (resource.isPresent())
+                            return resource.get().getOperations().keySet();
+                        return null;
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet());
     }
 
     private List<OgcApiEndpointExtension> getEndpoints() {

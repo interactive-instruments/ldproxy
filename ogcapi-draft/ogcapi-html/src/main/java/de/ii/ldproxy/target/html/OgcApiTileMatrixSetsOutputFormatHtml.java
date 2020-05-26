@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.tiles.TileMatrixSetData;
 import de.ii.ldproxy.ogcapi.tiles.TileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.TileMatrixSetsFormatExtension;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -51,6 +52,15 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new StringSchema().example("<html>...</html>"))
+                .schemaRef("#/components/schemas/htmlSchema")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
     }
 
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {

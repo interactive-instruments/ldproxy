@@ -32,11 +32,6 @@ public interface OgcApiContext {
         return ImmutableList.of();
     }
 
-    @Value.Default
-    default List<HttpMethods> getMethods(Optional<String> subPathPattern) {
-        return ImmutableList.of();
-    }
-
     @Value.Derived
     @Value.Auxiliary
     default Optional<Pattern> getSubPathPatternCompiled() {
