@@ -17,7 +17,7 @@ buildscript {
 
 apply plugin: 'application'
 
-version = '1.3.8'
+version = '1.3.9'
 //version += '-SNAPSHOT'
 group = 'de.interactive_instruments'
 
@@ -46,7 +46,7 @@ dependencies {
         exclude module: 'xtraplatform-kvstore-inmemory'
     }
 
-    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.32'
+    bundles group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.0.33'
 
     // activate for access to the Apache Felix console at /system/console
     // bundles group: 'de.interactive_instruments', name: 'xtraplatform-bundles-devel', version: '1.1.1'
