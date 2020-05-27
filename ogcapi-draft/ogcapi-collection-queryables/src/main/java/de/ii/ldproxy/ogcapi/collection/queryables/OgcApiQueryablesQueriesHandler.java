@@ -111,7 +111,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
         List<String> featureTypeIds = featuresCoreConfiguration
                 .map(OgcApiFeaturesCoreConfiguration::getFeatureTypes)
-                .orElse(ImmutableList.of());
+                .orElse(ImmutableList.of(collectionId));
 
         List<String> otherQueryables = featuresCoreConfiguration
                 .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)

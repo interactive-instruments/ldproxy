@@ -286,8 +286,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
             Map<String, String> htmlNames = new LinkedHashMap<>();
             if (featuresCoreConfiguration.isPresent()) {
-                featuresCoreConfiguration.get()
-                                         .getFeatureTypes()
+                featuresCoreConfiguration.map(OgcApiFeaturesCoreConfiguration::getFeatureTypes)
+                                         .orElse(ImmutableList.of(collectionName))
                                          .forEach(featureTypeId -> {
                                              //TODO: add function to FeatureSchema instead of using Visitor
                                             providerData.getTypes().get(featureTypeId).accept(new FeatureSchemaToTypeVisitor(featureTypeId)).getProperties().keySet().forEach(property -> htmlNames.putIfAbsent(property, property));
