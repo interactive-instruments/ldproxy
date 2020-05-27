@@ -6,6 +6,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureType;
 
 import java.util.Collection;
@@ -32,12 +33,12 @@ public abstract class QueryParameterGeometryHelper {
     static final Pattern ringPattern = Pattern.compile(RING_REGEX);
     static final Pattern polygonPattern = Pattern.compile(POLYGON_REGEX);
 
-    Collection<FeatureProperty> getProperties(OgcApiApiDataV2 apiData, String collectionId, OgcApiFeatureCoreProviders providers) {
+    Collection<FeatureSchema> getProperties(OgcApiApiDataV2 apiData, String collectionId, OgcApiFeatureCoreProviders providers) {
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, apiData.getCollections().get(collectionId));
-        FeatureType featureType = featureProvider.getData()
+        FeatureSchema featureType = featureProvider.getData()
                 .getTypes()
                 .get(collectionId);
-        return featureType.getProperties().values();
+        return featureType.getProperties();
     }
 
     List<Float> extractPosition(String text) {

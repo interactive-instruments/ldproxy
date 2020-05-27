@@ -20,6 +20,7 @@ import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutp
 import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV1;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.akka.http.Http;
 import org.apache.felix.ipojo.annotations.*;
@@ -84,7 +85,7 @@ public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
                                                                        .get(collectionName);
             Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
             Optional<ObservationProcessingConfiguration> obsProcConfiguration = collectionData.getExtension(ObservationProcessingConfiguration.class);
-            FeatureProviderDataV1 providerData = providers.getFeatureProvider(serviceData, collectionData)
+            FeatureProviderDataV2 providerData = providers.getFeatureProvider(serviceData, collectionData)
                                                           .getData();
 
             Map<String, String> filterableFields = featuresCoreConfiguration

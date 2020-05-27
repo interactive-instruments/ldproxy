@@ -9,11 +9,9 @@ import de.ii.ldproxy.ogcapi.domain.SchemaObject;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
-import de.ii.xtraplatform.features.domain.FeatureProperty;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureType;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureProperty;
+import de.ii.xtraplatform.features.domain.*;
 import io.swagger.v3.oas.models.media.*;
+import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -56,9 +54,9 @@ public class SchemaGeneratorFeature {
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
                                                                .get(collectionId);
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
-        FeatureType featureTypeProvider = featureProvider.getData()
-                                                         .getTypes()
-                                                         .get(collectionId);
+        FeatureSchema featureTypeProvider = featureProvider.getData()
+                                                           .getTypes()
+                                                           .get(collectionId);
         SchemaObject schemaObject = apiData.getSchema(featureTypeProvider,
                 geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
                         geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX);
@@ -81,7 +79,6 @@ public class SchemaGeneratorFeature {
                 .getTypes()
                 .get(collectionId)
                 .getProperties()
-                .values()
                 .stream()
                 .filter(featureProperty -> !featureProperty.isSpatial())
                 .map(featureProperty -> featureProperty.getName().replaceAll("\\[[^\\]]+\\]", "[]"))

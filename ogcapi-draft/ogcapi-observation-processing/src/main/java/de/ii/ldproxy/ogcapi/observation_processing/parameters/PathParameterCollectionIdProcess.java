@@ -12,10 +12,7 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfigur
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
-import de.ii.xtraplatform.features.domain.FeatureProperty;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureType;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureProperty;
+import de.ii.xtraplatform.features.domain.*;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -111,14 +108,14 @@ public class PathParameterCollectionIdProcess implements OgcApiPathParameter {
                     }
 
                     FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, apiData.getCollections().get(collectionId));
-                    FeatureType featureType = featureProvider.getData()
+                    FeatureSchema featureType = featureProvider.getData()
                             .getTypes()
                             .get(collectionId);
-                    ValueBuilderMap<FeatureProperty, ImmutableFeatureProperty.Builder> featureProperties = featureType.getProperties();
+                    List<FeatureSchema> featureProperties = featureType.getProperties();
 
                     for (String requiredProperty: new String[]{"observedProperty", "result", "phenomenonTime"}) {
                         // note: this also checks implicitly that these have literal values (no object, no array)
-                        if (!featureProperties.containsKey(requiredProperty)) {
+                        if (!featureProperties.stream().anyMatch(property -> property.getName().equals(requiredProperty))) {
                             LOGGER.info("Building block OBSERVATION_PROCESSING deactivated for collection '{}'. Features with a with a property '{}' are required.", collectionId, requiredProperty);
                             return;
                         }
@@ -146,8 +143,7 @@ public class PathParameterCollectionIdProcess implements OgcApiPathParameter {
                         }
                     }
 
-                    if (!featureProperties.values()
-                            .stream()
+                    if (!featureProperties.stream()
                             .filter(property -> property.isSpatial())
                             // TODO check that geometry type is point
                             .findAny()
