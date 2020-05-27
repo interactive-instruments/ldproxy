@@ -188,7 +188,7 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
 
 
         return commandHandler.postItemsResponse((FeatureTransactions) featureProvider, wfs3Request.getMediaType(), wfs3Request.getUriCustomizer()
-                                                                                                                     .copy(), id, /*TODO*/null, /*TODO*/null, requestBody);
+                                                                                                                     .copy(), id, requestBody);
     }
 
     @Path("/{id}/items/{featureid}")
@@ -205,7 +205,7 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.putItemResponse((FeatureTransactions) featureProvider, wfs3Request.getMediaType(), id, featureId, /*TODO*/null, /*TODO*/null, requestBody);
+        return commandHandler.putItemResponse((FeatureTransactions) featureProvider, wfs3Request.getMediaType(), id, featureId, requestBody);
     }
 
     @Path("/{id}/items/{featureid}")

@@ -20,6 +20,7 @@ import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
 import de.ii.ldproxy.target.geojson.GeoJsonConfig;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -130,13 +131,15 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         List<String> visitedProperties = new ArrayList<>();
 
         featureTypeIds.forEach(featureTypeId -> {
-            FeatureType featureType = featureProvider.getData()
-                                                     .getTypes()
-                                                     .get(featureTypeId);
+            FeatureSchema featureType = featureProvider.getData()
+                                                       .getTypes()
+                                                       .get(featureTypeId);
 
             if (Objects.nonNull(featureType)) {
                 featureType.getProperties()
-                           .forEach((name, featureProperty) -> {
+                           .forEach(featureProperty -> {
+                               String name = featureProperty.getName();
+
                                if (visitedProperties.contains(name)) {
                                    return;
                                }
@@ -233,9 +236,9 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
         Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
 
-        FeatureType featureTypeProvider = featureProvider.getData()
-                .getTypes()
-                .get(collectionId);
+        FeatureSchema featureTypeProvider = featureProvider.getData()
+                                                           .getTypes()
+                                                           .get(collectionId);
 
         FeatureTransformerGeoJson.NESTED_OBJECTS nestingStrategy = geoJsonConfig.getNestedObjectStrategy();
         FeatureTransformerGeoJson.MULTIPLICITY multiplicityStrategy = geoJsonConfig.getMultiplicityStrategy();

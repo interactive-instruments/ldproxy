@@ -20,8 +20,10 @@ import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
+import de.ii.xtraplatform.features.app.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV1;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.stringtemplates.StringTemplateFilters;
@@ -274,7 +276,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                                                                        .get(collectionName);
             Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
             Optional<HtmlConfiguration> htmlConfiguration = collectionData.getExtension(HtmlConfiguration.class);
-            FeatureProviderDataV1 providerData = providers.getFeatureProvider(serviceData, collectionData)
+            FeatureProviderDataV2 providerData = providers.getFeatureProvider(serviceData, collectionData)
                                                           .getData();
 
             Map<String, String> filterableFields = featuresCoreConfiguration
@@ -286,7 +288,8 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 featuresCoreConfiguration.get()
                                          .getFeatureTypes()
                                          .forEach(featureTypeId -> {
-                                            providerData.getTypes().get(featureTypeId).getProperties().keySet().forEach(property -> htmlNames.putIfAbsent(property, property));
+                                             //TODO: add function to FeatureSchema instead of using Visitor
+                                            providerData.getTypes().get(featureTypeId).accept(new FeatureSchemaToTypeVisitor(featureTypeId)).getProperties().keySet().forEach(property -> htmlNames.putIfAbsent(property, property));
                                          });
 
                 //TODO: apply rename transformers

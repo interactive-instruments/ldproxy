@@ -23,8 +23,8 @@ import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.Metadata;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -122,11 +122,10 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
                               .map(type -> {
 
                                   ImmutableList<String> spatialProperty = type.getProperties()
-                                                                              .values()
                                                                               .stream()
-                                                                              .filter(FeatureProperty::isSpatial)
+                                                                              .filter(FeatureSchema::isSpatial)
                                                                               .findFirst()
-                                                                              .map(FeatureProperty::getName)
+                                                                              .map(FeatureSchema::getName)
                                                                               .map(ImmutableList::of)
                                                                               .orElse(ImmutableList.of());
 
