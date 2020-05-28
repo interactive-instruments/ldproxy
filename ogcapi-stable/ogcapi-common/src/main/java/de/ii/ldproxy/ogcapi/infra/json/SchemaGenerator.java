@@ -103,9 +103,9 @@ public class SchemaGenerator {
                 try {
                     // special treatment for some classes
                     if (type.getTypeName().equals("java.util.OptionalDouble"))
-                        type = this.getClass().getDeclaredMethod("getOptionalDouble", null).getGenericReturnType();
+                        type = this.getClass().getDeclaredMethod("getOptionalDouble", new Class[]{}).getGenericReturnType();
                     else if (type.getTypeName().equals("java.util.OptionalInt"))
-                        type = this.getClass().getDeclaredMethod("getOptionalInteger", null).getGenericReturnType();
+                        type = this.getClass().getDeclaredMethod("getOptionalInteger", new Class[]{}).getGenericReturnType();
                 } catch (NoSuchMethodException e) {
                     // skip property
                     continue;
