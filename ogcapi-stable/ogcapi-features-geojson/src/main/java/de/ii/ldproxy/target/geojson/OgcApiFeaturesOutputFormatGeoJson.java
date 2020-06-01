@@ -84,11 +84,11 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
         Schema schema = new ObjectSchema();
         String collectionId = path.split("/", 4)[2];
         if (path.matches("/collections/[^//]+/items/?")) {
-            schemaRef = SchemaGeneratorFeatureCollection.referenceForCollection(collectionId);
-            schema = schemaGeneratorFeatureCollection.generateForCollection(apiData, collectionId);
+            schemaRef = schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi(collectionId);
+            schema = schemaGeneratorFeatureCollection.getSchemaOpenApi(apiData, collectionId);
         } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
-            schemaRef = SchemaGeneratorFeature.referenceForCollection(collectionId);
-            schema = schemaGeneratorFeature.generateForCollection(apiData, collectionId);
+            schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId);
+            schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId);
         }
         // TODO example
         return new ImmutableOgcApiMediaTypeContent.Builder()
@@ -104,8 +104,8 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
         if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method== OgcApiContext.HttpMethods.PUT) ||
             (path.matches("/collections/[^//]+/items/?") && method== OgcApiContext.HttpMethods.POST)) {
             return new ImmutableOgcApiMediaTypeContent.Builder()
-                    .schema(schemaGeneratorFeature.generateForCollection(apiData, collectionId))
-                    .schemaRef(SchemaGeneratorFeature.referenceForCollection(collectionId))
+                    .schema(schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId))
+                    .schemaRef(schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId))
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
         }

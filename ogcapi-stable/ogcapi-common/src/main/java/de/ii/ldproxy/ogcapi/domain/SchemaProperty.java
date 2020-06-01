@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.Optional;
 
+@Deprecated
 public class SchemaProperty extends SchemaBase {
     public String path = null;
     public Optional<String> literalType = Optional.empty();

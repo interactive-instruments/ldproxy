@@ -9,6 +9,7 @@ package de.ii.ldproxy.target.geojson;
 
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.infra.json.SchemaGeneratorImpl;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

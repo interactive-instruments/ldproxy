@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.nearby;
 
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.infra.json.SchemaGeneratorImpl;
 import de.ii.ldproxy.target.geojson.OgcApiOutputFormatJson;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;

@@ -6,12 +6,9 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
 import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -19,11 +16,8 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component

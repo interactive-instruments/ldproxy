@@ -7,10 +7,6 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
@@ -24,7 +20,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

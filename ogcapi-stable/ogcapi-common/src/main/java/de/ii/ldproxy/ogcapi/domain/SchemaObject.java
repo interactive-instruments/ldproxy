@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class SchemaObject extends SchemaBase {
     public List<SchemaProperty> properties = new ArrayList<>();
     public List<SchemaProperty> patternProperties = new ArrayList<>();

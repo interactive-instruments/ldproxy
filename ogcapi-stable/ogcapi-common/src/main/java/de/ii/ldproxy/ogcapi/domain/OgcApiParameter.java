@@ -2,11 +2,11 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import com.google.common.base.Splitter;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaValidator;
+import de.ii.ldproxy.ogcapi.infra.json.SchemaValidatorImpl;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,7 +42,7 @@ public interface OgcApiParameter extends OgcApiExtension {
 
     default Optional<String> validateSchema(OgcApiApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
         try {
-            SchemaValidator validator = new SchemaValidator();
+            SchemaValidator validator = new SchemaValidatorImpl();
             String schemaContent = Json.mapper().writeValueAsString(getSchema(apiData, collectionId));
             if (values.size()==1 && !getExplode() && values.get(0).contains(",")) {
                 values = Splitter.on(",")

@@ -6,49 +6,53 @@ import io.swagger.v3.oas.models.media.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
 @Instantiate
 public class SchemaGeneratorFeatureCollection {
 
+    @Requires
+    SchemaGeneratorFeature schemaGeneratorFeature;
+
     final static Schema GENERIC = new ObjectSchema()
             .required(ImmutableList.of("type","features"))
             .addProperties("type", new StringSchema()._enum(ImmutableList.of("FeatureCollection")))
             .addProperties("features", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/featureGeoJSON")))
             .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")))
-            .addProperties("timestamp", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/timestamp"))
+            .addProperties("timeStamp", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/timeStamp"))
             .addProperties("numberMatched", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberMatched"))
             .addProperties("numberReturned", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberReturned"));
 
-    public static String referenceGeneric() { return "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/featureCollectionGeoJSON"; }
+    public String getSchemaReferenceOpenApi() { return "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/featureCollectionGeoJSON"; }
 
-    public static Schema getGeneric() {
+    public Schema getSchemaOpenApi() {
         return GENERIC;
     }
 
-    public static String referenceForCollection(String collectionId) { return "#/components/schemas/featureCollectionGeoJson_"+collectionId; }
+    public String getSchemaReferenceOpenApi(String collectionId) { return "#/components/schemas/featureCollectionGeoJson_"+collectionId; }
 
-    public Schema generateForCollection(OgcApiApiDataV2 apiData, String collectionId) {
+    public Schema getSchemaOpenApi(OgcApiApiDataV2 apiData, String collectionId) {
         return new ObjectSchema()
                 .required(ImmutableList.of("type","features"))
                 .addProperties("type", new StringSchema()._enum(ImmutableList.of("FeatureCollection")))
-                .addProperties("features", new ArraySchema().items(new Schema().$ref(SchemaGeneratorFeature.referenceForCollection(collectionId))))
+                .addProperties("features", new ArraySchema().items(new Schema().$ref(schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId))))
                 .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")))
-                .addProperties("timestamp", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/timestamp"))
+                .addProperties("timeStamp", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/timeStamp"))
                 .addProperties("numberMatched", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberMatched"))
                 .addProperties("numberReturned", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberReturned"));
     }
 
-    public static String referenceByName(String name) { return "#/components/schemas/featureCollectionGeoJson_"+name; }
+    public String getSchemaReferenceByName(String name) { return "#/components/schemas/featureCollectionGeoJson_"+name; }
 
-    public Schema generateForName(String name) {
+    public Schema getSchemaOpenApiForName(String name) {
         return new ObjectSchema()
                 .required(ImmutableList.of("type","features"))
                 .addProperties("type", new StringSchema()._enum(ImmutableList.of("FeatureCollection")))
-                .addProperties("features", new ArraySchema().items(new Schema().$ref(SchemaGeneratorFeature.referenceByName(name)))
+                .addProperties("features", new ArraySchema().items(new Schema().$ref(schemaGeneratorFeature.getSchemaReferenceOpenApi(name)))
                 .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")))
-                .addProperties("timestamp", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/timestamp")))
+                .addProperties("timeStamp", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/timeStamp")))
                 .addProperties("numberMatched", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberMatched"))
                 .addProperties("numberReturned", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberReturned"));
     }

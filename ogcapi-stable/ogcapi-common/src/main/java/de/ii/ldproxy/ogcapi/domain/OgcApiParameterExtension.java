@@ -13,6 +13,7 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import java.util.Map;
 import java.util.Set;
 
+// TODO no longer used
 public interface OgcApiParameterExtension extends OgcApiExtension {
 
     ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath);

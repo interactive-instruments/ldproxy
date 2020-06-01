@@ -285,12 +285,13 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
             Map<String, String> htmlNames = new LinkedHashMap<>();
             if (featuresCoreConfiguration.isPresent()) {
-                featuresCoreConfiguration.get()
-                                         .getFeatureTypes()
-                                         .forEach(featureTypeId -> {
-                                             //TODO: add function to FeatureSchema instead of using Visitor
-                                            providerData.getTypes().get(featureTypeId).accept(new FeatureSchemaToTypeVisitor(featureTypeId)).getProperties().keySet().forEach(property -> htmlNames.putIfAbsent(property, property));
-                                         });
+                List<String> featureTypeIds = featuresCoreConfiguration.get().getFeatureTypes();
+                if (featureTypeIds.isEmpty())
+                    featureTypeIds = ImmutableList.of(collectionName);
+                featureTypeIds.forEach(featureTypeId -> {
+                     //TODO: add function to FeatureSchema instead of using Visitor
+                    providerData.getTypes().get(featureTypeId).accept(new FeatureSchemaToTypeVisitor(featureTypeId)).getProperties().keySet().forEach(property -> htmlNames.putIfAbsent(property, property));
+                 });
 
                 //TODO: apply rename transformers
                 //Map<String, List<FeaturePropertyTransformation>> transformations = htmlConfiguration.getTransformations();

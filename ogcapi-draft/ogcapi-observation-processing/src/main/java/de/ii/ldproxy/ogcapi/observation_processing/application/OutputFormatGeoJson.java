@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
 import de.ii.ldproxy.target.geojson.SchemaGeneratorFeatureCollection;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -19,7 +20,6 @@ import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableFeatureTransform
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
 import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV1;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.akka.http.Http;
@@ -55,6 +55,9 @@ public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
 
     @Requires
     private Http http;
+
+    @Requires
+    SchemaGeneratorFeatureCollection schemaGeneratorFeatureCollection;
 
     @Override
     public OgcApiMediaType getMediaType() {
@@ -113,8 +116,8 @@ public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         // TODO specific schemas and example
         return new ImmutableOgcApiMediaTypeContent.Builder()
-                .schema(SchemaGeneratorFeatureCollection.getGeneric())
-                .schemaRef(SchemaGeneratorFeatureCollection.referenceGeneric())
+                .schema(schemaGeneratorFeatureCollection.getSchemaOpenApi())
+                .schemaRef(schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi())
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
     }

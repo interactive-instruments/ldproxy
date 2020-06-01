@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.Optional;
 
+@Deprecated
 public abstract class SchemaBase {
     public String id = null;
     public Optional<String> title = Optional.empty();

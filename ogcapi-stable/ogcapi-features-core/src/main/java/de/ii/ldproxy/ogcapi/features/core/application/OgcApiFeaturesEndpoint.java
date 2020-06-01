@@ -218,18 +218,21 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
             // TODO
         }
 
-        return ImmutableSet.<OgcApiQueryParameter>builder()
-                .addAll(generalList)
-                .addAll(filterableFields.keySet().stream()
-                    .map(field -> new ImmutableOgcApiQueryParameterTemplateQueryable.Builder()
-                                .apiId(apiData.getId())
-                                .collectionId(collectionId)
-                                .name(field)
-                                .description("Filter the collection by property '" + field + "'")
-                                .schema(new StringSchema())
-                                .build())
-                    .collect(Collectors.toSet()))
-                .build();
+        if (definitionPath.equals("/collections/{collectionId}/items"))
+            return ImmutableSet.<OgcApiQueryParameter>builder()
+                    .addAll(generalList)
+                    .addAll(filterableFields.keySet().stream()
+                        .map(field -> new ImmutableOgcApiQueryParameterTemplateQueryable.Builder()
+                                    .apiId(apiData.getId())
+                                    .collectionId(collectionId)
+                                    .name(field)
+                                    .description("Filter the collection by property '" + field + "'")
+                                    .schema(new StringSchema())
+                                    .build())
+                        .collect(Collectors.toSet()))
+                    .build();
+
+        return generalList;
     }
 
     @GET

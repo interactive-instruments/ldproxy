@@ -20,6 +20,7 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
 import de.ii.ldproxy.target.geojson.GeoJsonConfig;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
+import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -79,6 +80,9 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
             .subPathPattern("^/?[[\\w\\-]\\-]+/tiles(?:/"+TMS_REGEX+"(?:/(?:metadata|(?:\\w+/\\w+/\\w+)?))?)?$")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .build();
+
+    @Requires
+    SchemaGeneratorFeature schemaGeneratorFeature;
 
     private final I18n i18n;
     //TODO: OgcApiTilesProviders (use features core featureProvider id as fallback)
@@ -360,7 +364,7 @@ public class Wfs3EndpointTilesSingleCollection implements OgcApiEndpointExtensio
         FeatureTransformerGeoJson.NESTED_OBJECTS nestingStrategy = geoJsonConfig.getNestedObjectStrategy();
         FeatureTransformerGeoJson.MULTIPLICITY multiplicityStrategy = geoJsonConfig.getMultiplicityStrategy();
 
-        Map<String, Object> tilejson = new VectorTilesMetadataGenerator().generateTilejson(providers, service.getData(), Optional.of(collectionId), nestingStrategy, multiplicityStrategy, getTileMatrixSetById(tileMatrixSetId), zoomLevels, center, links, i18n, requestContext.getLanguage());
+        Map<String, Object> tilejson = new VectorTilesMetadataGenerator().generateTilejson(providers, schemaGeneratorFeature, service.getData(), Optional.of(collectionId), nestingStrategy, multiplicityStrategy, getTileMatrixSetById(tileMatrixSetId), zoomLevels, center, links, i18n, requestContext.getLanguage());
 
         return Response.ok(tilejson)
                 .build();
