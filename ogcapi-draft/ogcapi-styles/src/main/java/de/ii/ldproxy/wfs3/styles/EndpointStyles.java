@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.styles;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -342,6 +343,7 @@ public class EndpointStyles implements OgcApiEndpointExtension, ConformanceClass
             // prepare Jackson mapper for deserialization
             final ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new Jdk8Module());
+            mapper.registerModule(new GuavaModule());
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             try {
                 // parse input

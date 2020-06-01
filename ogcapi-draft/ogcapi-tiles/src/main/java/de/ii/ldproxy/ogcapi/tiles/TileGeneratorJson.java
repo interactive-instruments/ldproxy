@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationCont
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
+import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
@@ -82,7 +83,8 @@ public class TileGeneratorJson {
                                     Map<String, List<PredefinedFilter>> predefFilters,
                                     Map<String, String> filters, Map<String, String> filterableFields,
                                     URICustomizer uriCustomizer, OgcApiMediaType mediaType, boolean isCollection,
-                                    VectorTile tile, I18n i18n, Optional<Locale> language, OgcApiFeaturesQuery queryParser) {
+                                    VectorTile tile, I18n i18n, Optional<Locale> language, OgcApiFeaturesQuery queryParser,
+                                    Map<String, Codelist> codelists) {
         // TODO add support for multi-collection GeoJSON output
 
         String collectionId = tile.getCollectionId();
@@ -221,6 +223,7 @@ public class TileGeneratorJson {
                             .requestUri(uriCustomizer.build())
                             .mediaType(mediaType)
                             .build())
+                    .codelists(codelists)
                     //TODO: support 3d?
                     .crsTransformer(crsTransformerFactory.getTransformer(featureProvider.crs().getNativeCrs(), OgcCrs.CRS84))
                     .defaultCrs(OgcCrs.CRS84)

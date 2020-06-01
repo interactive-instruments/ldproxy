@@ -84,12 +84,13 @@ public class OgcApiCollectionView extends LdproxyView {
                 .map(OgcApiFeaturesCollectionQueryables::getSpatial)
                 .filter(spatial -> !spatial.isEmpty())
                 .isPresent();
-        this.defaultStyle = collection
-                .getDefaultStyle()
-                .orElse(null);
-        this.styleEntries = collection
-                .getStyles()
-                .orElse(null);
+        Optional<String> defaultStyleOrNull = (Optional<String>) collection
+                .getExtensions()
+                .get("defaultStyle");
+        this.defaultStyle = defaultStyleOrNull==null ? null : defaultStyleOrNull.get();
+        this.styleEntries = (List<StyleEntry>) collection
+                .getExtensions()
+                .get("styles");
         this.withStyleInfos = (this.styleEntries!=null);
         Optional<OgcApiExtent> extent = collection.getExtent();
         if (extent.isPresent()) {
