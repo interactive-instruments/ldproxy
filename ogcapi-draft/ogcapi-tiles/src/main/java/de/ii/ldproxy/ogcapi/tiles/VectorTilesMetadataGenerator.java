@@ -10,18 +10,25 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
-import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
+import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureType;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import io.swagger.v3.oas.models.media.*;
 
 import javax.ws.rs.ServerErrorException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -42,8 +49,8 @@ public class VectorTilesMetadataGenerator {
      * @param language the requested language (optional)
      * @return a List with links
      */
-    public Map<String,Object> generateTilejson(OgcApiFeatureCoreProviders providers, OgcApiApiDataV2 serviceData,
-                                               Optional<String> collectionId,
+    public Map<String,Object> generateTilejson(OgcApiFeatureCoreProviders providers, SchemaGeneratorFeature schemaGeneratorFeature,
+                                               OgcApiApiDataV2 serviceData, Optional<String> collectionId,
                                                FeatureTransformerGeoJson.NESTED_OBJECTS nestingStrategy,
                                                FeatureTransformerGeoJson.MULTIPLICITY multiplicityStrategy,
                                                TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center,
@@ -81,45 +88,77 @@ public class VectorTilesMetadataGenerator {
                             return ImmutableMap.<String,Object>of();
                     }
                     FeatureProvider2 featureProvider = providers.getFeatureProvider(serviceData, featureTypeApi);
-                    FeatureType featureType = featureProvider.getData()
-                            .getTypes()
-                            .get(featureTypeApi.getId());
+                    FeatureSchema featureType = featureProvider.getData()
+                                                               .getTypes()
+                                                               .get(featureTypeApi.getId());
                     Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = featureTypeApi.getExtension(OgcApiFeaturesCoreConfiguration.class);
 
-                    SchemaObject schema = serviceData.getSchema(featureType,
-                            nestingStrategy == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
-                            multiplicityStrategy == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX);
+                    boolean flatten = nestingStrategy == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
+                                      multiplicityStrategy == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX;
+                    List<FeatureSchema> properties = flatten ? featureType.getAllNestedProperties() : featureType.getProperties();
+                    // maps from the dotted path name to the path name with array brackets
+                    Map<String,String> propertyNameMap = !flatten ? ImmutableMap.of() :
+                            schemaGeneratorFeature.getPropertyNames(serviceData, featureTypeApi.getId(),false, true).stream()
+                                .map(name -> new AbstractMap.SimpleImmutableEntry<String,String>(name.replace("[]",""), name))
+                                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
                     ImmutableMap.Builder<String, Object> fieldsBuilder = ImmutableMap.<String, Object>builder();
-                    schema.properties.stream()
-                            .forEach(prop -> {
-                                boolean isArray = prop.maxItems > 1;
-                                if (prop.literalType.isPresent()) {
-                                    fieldsBuilder.put(prop.id, prop.literalType.get());
-                                } else if (prop.wellknownType.isPresent()) {
-                                    switch (prop.wellknownType.get()) {
-                                        case "Link":
-                                            fieldsBuilder.put(prop.id, "link");
-                                            break;
-                                        case "Point":
-                                        case "MultiPoint":
-                                        case "LineString":
-                                        case "MultiLineString":
-                                        case "Polygon":
-                                        case "MultiPolygon":
-                                        case "Geometry":
-                                        default:
-                                            break;
-                                    }
-                                } else if (prop.objectType.isPresent()) {
-                                    fieldsBuilder.put(prop.id, "object");
+                    AtomicReference<String> geometryType = new AtomicReference<>("unknown");
+                    properties.stream()
+                            .forEach(property -> {
+                                boolean isArray = property.isArray();
+                                SchemaBase.Type propType = property.getType();
+                                String propertyName = !flatten || property.isObject() ? property.getName() : propertyNameMap.get(String.join(".", property.getFullPath()));
+                                if (flatten && propertyName!=null)
+                                    propertyName = propertyName.replace("[]",".1");
+                                switch (propType) {
+                                    case FLOAT:
+                                    case INTEGER:
+                                    case STRING:
+                                    case BOOLEAN:
+                                    case DATETIME:
+                                        fieldsBuilder.put(propertyName, getType(propType));
+                                        break;
+                                    case OBJECT:
+                                    case OBJECT_ARRAY:
+                                        if (!flatten) {
+                                            if (property.getObjectType().orElse("").equals("Link")) {
+                                                fieldsBuilder.put(propertyName, "link");
+                                                break;
+                                            }
+                                            fieldsBuilder.put(propertyName, "object");
+                                        }
+                                        break;
+                                    case VALUE_ARRAY:
+                                        fieldsBuilder.put(propertyName, property.getValueType().orElse(SchemaBase.Type.UNKNOWN));
+                                        break;
+                                    case GEOMETRY:
+                                        switch (property.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
+                                            case POINT:
+                                            case MULTI_POINT:
+                                                geometryType.set("point");
+                                                break;
+                                            case LINE_STRING:
+                                            case MULTI_LINE_STRING:
+                                                geometryType.set("line");
+                                                break;
+                                            case POLYGON:
+                                            case MULTI_POLYGON:
+                                                geometryType.set("polygon");
+                                                break;
+                                            case GEOMETRY_COLLECTION:
+                                            case ANY:
+                                            case NONE:
+                                            default:
+                                                geometryType.set("unknown");
+                                                break;
+                                        }
+                                        break;
+                                    case UNKNOWN:
+                                    default:
+                                        fieldsBuilder.put(propertyName, "unknown");
+                                        break;
                                 }
                             });
-
-                    // TODO temporary hack for VTP2 pilot, find general solution
-                    boolean point = featureTypeApi.getId().endsWith("Pnt") || featureTypeApi.getId().endsWith("_p");
-                    boolean line = featureTypeApi.getId().endsWith("Crv") || featureTypeApi.getId().endsWith("_l");
-                    boolean polygon = featureTypeApi.getId().endsWith("Srf") || featureTypeApi.getId().endsWith("_a");
-                    String geometryType = point ? "point" : line ? "line" : polygon ? "polygon" : "unknown";
 
                     // TODO support layer-specific min/max zoom levels
                     return ImmutableMap.<String, Object>builder()
@@ -136,6 +175,22 @@ public class VectorTilesMetadataGenerator {
         tilejson.put("vector_layers", layers);
 
         return tilejson.build();
+    }
+
+    private String getType(de.ii.xtraplatform.features.domain.SchemaBase.Type type) {
+        switch (type) {
+            case INTEGER:
+                return "integer";
+            case FLOAT:
+                return "number";
+            case BOOLEAN:
+                return "boolean";
+            case DATETIME:
+                return "string, format=date-time";
+            case STRING:
+                return "string";
+        }
+        return "unknown";
     }
 
     private String getTilesUriTemplate(List<OgcApiLink> links, TileMatrixSet tileMatrixSet) {

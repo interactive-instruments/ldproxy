@@ -9,14 +9,18 @@ package de.ii.ldproxy.wfs3.transactional;
 
 import akka.Done;
 import akka.japi.function.Creator;
+import akka.stream.IOResult;
 import akka.stream.javadsl.Keep;
 import akka.stream.javadsl.RunnableGraph;
 import akka.stream.javadsl.Sink;
+import akka.stream.javadsl.Source;
 import akka.stream.javadsl.StreamConverters;
 import akka.util.ByteString;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.feature.transformer.geojson.FeatureDecoderGeoJson;
+import de.ii.xtraplatform.features.domain.FeatureDecoder;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import de.ii.xtraplatform.features.domain.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
@@ -24,6 +28,7 @@ import de.ii.xtraplatform.feature.transformer.geojson.GeoJsonStreamParser;
 import de.ii.xtraplatform.feature.transformer.geojson.MappingSwapper;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
@@ -38,9 +43,22 @@ public class CommandHandlerTransactional {
     public Response postItemsResponse(
             FeatureTransactions featureProvider,
             OgcApiMediaType mediaType, URICustomizer uriCustomizer, String collectionName,
-            FeatureTypeMapping featureTypeMapping, CrsTransformer defaultReverseTransformer,
             InputStream requestBody) {
-        List<String> ids = featureProvider.addFeaturesFromStream(collectionName, defaultReverseTransformer, getFeatureTransformStream(mediaType, featureTypeMapping, requestBody));
+
+        FeatureDecoder.WithSource featureSource = getFeatureSource(mediaType, requestBody);
+
+        //TODO: collectionName != featureType
+        FeatureTransactions.MutationResult result = featureProvider.createFeatures(collectionName, featureSource);
+
+        if (result.getError().isPresent()) {
+            //TODO: see FeaturesCoreQueryHandler
+            throw new InternalServerErrorException();
+        }
+
+        List<String> ids = result.getIds();
+        //List<String> ids = featureProvider.addFeaturesFromStream(collectionName, defaultReverseTransformer, getFeatureTransformStream(mediaType, featureTypeMapping, requestBody));
+
+
 
         if (ids.isEmpty()) {
             throw new BadRequestException("No features found in input");
@@ -61,9 +79,17 @@ public class CommandHandlerTransactional {
     public Response putItemResponse(
             FeatureTransactions featureProvider,
             OgcApiMediaType mediaType, String collectionName, String featureId,
-            FeatureTypeMapping featureTypeMapping, CrsTransformer defaultReverseTransformer,
             InputStream requestBody) {
-        featureProvider.updateFeatureFromStream(collectionName, featureId, defaultReverseTransformer, getFeatureTransformStream(mediaType, featureTypeMapping, requestBody));
+
+        FeatureDecoder.WithSource featureSource = getFeatureSource(mediaType, requestBody);
+
+        //TODO: collectionName != featureType
+        FeatureTransactions.MutationResult result = featureProvider.updateFeature(collectionName, featureSource, featureId);
+
+        if (result.getError().isPresent()) {
+            //TODO: see FeaturesCoreQueryHandler
+            throw new InternalServerErrorException();
+        }
 
         return Response.noContent()
                        .build();
@@ -72,10 +98,26 @@ public class CommandHandlerTransactional {
     public Response deleteItemResponse(
             FeatureTransactions featureProvider,
             String collectionName, String featureId) {
-        featureProvider.deleteFeature(collectionName, featureId);
+
+        FeatureTransactions.MutationResult result = featureProvider.deleteFeature(collectionName, featureId);
+
+        if (result.getError().isPresent()) {
+            //TODO: see FeaturesCoreQueryHandler
+            throw new InternalServerErrorException();
+        }
 
         return Response.noContent()
                        .build();
+    }
+
+    private FeatureDecoder.WithSource getFeatureSource(OgcApiMediaType mediaType, InputStream requestBody) {
+
+        //TODO: to inputformat extension, for the time being make it static
+        FeatureDecoderGeoJson featureDecoderGeoJson = new FeatureDecoderGeoJson();
+
+        Source<ByteString, CompletionStage<IOResult>> source = StreamConverters.fromInputStream((Creator<InputStream>) () -> requestBody);
+
+        return featureDecoderGeoJson.withSource(source);
     }
 
     // TODO
