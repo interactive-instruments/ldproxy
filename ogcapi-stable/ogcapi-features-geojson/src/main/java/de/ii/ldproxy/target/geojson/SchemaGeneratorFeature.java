@@ -332,19 +332,18 @@ public class SchemaGeneratorFeature {
         boolean flatten = geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
                 geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX;
 
-        ContextJsonSchema featureContext = processPropertiesJsonSchema(featureType, true, flatten, 0);
+        ContextJsonSchema featureContext = processPropertiesJsonSchema(featureType, true, flatten);
 
         ImmutableMap.Builder<String, Object> definitionsMapBuilder = ImmutableMap.<String, Object>builder();
         Set<FeatureSchema> processed = new HashSet<>();
         Set<FeatureSchema> current = featureContext.definitions;
 
-        AtomicInteger idx = new AtomicInteger(1);
         while (!flatten && !current.isEmpty()) {
             Set<FeatureSchema> next = new HashSet<>();
             current.stream()
                     .filter(defObject -> !processed.contains(defObject))
                     .forEach(defObject -> {
-                        ContextJsonSchema definitionContext = processPropertiesJsonSchema(defObject, false, false, idx.getAndIncrement());
+                        ContextJsonSchema definitionContext = processPropertiesJsonSchema(defObject, false, false);
                         definitionsMapBuilder.put(definitionContext.objectKey, ImmutableMap.<String, Object>builder()
                                 .put("type", "object")
                                 .put("title", defObject.getLabel())
@@ -407,10 +406,14 @@ public class SchemaGeneratorFeature {
         return ImmutableMap.of();
     }
 
-    private ContextJsonSchema processPropertiesJsonSchema(FeatureSchema schema, boolean isFeature, boolean flatten, int idx) {
+    private String getFallbackTypeName(FeatureSchema property) {
+        return "type_"+Integer.toHexString(property.hashCode());
+    }
+
+    private ContextJsonSchema processPropertiesJsonSchema(FeatureSchema schema, boolean isFeature, boolean flatten) {
 
         ContextJsonSchema context = new ContextJsonSchema();
-        context.objectKey = schema.getObjectType().orElse("type_"+idx);
+        context.objectKey = schema.getObjectType().orElse(getFallbackTypeName(schema));
 
         List<FeatureSchema> properties = flatten ? schema.getAllNestedProperties() : schema.getProperties();
         // maps from the dotted path name to the path name with array brackets
@@ -446,7 +449,7 @@ public class SchemaGeneratorFeature {
                                     pSchema = ImmutableMap.of("$ref", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link");
                                     break;
                                 }
-                                pSchema = ImmutableMap.of("$ref", "#/"+DEFINITIONS_TOKEN+"/"+property.getObjectType().orElse("type"));
+                                pSchema = ImmutableMap.of("$ref", "#/"+DEFINITIONS_TOKEN+"/"+property.getObjectType().orElse(getFallbackTypeName(property)));
                                 context.definitions.add(property);
                             }
                             break;
