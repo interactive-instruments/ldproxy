@@ -29,6 +29,13 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
     protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
                                                     Set<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                     String operationSummary, Optional<String> operationDescription, List<String> tags) {
+        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, tags, false);
+    }
+
+    protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
+                                                    Set<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
+                                                    String operationSummary, Optional<String> operationDescription, List<String> tags,
+                                                    boolean hide) {
         final String path = "/collections/"+collectionId+subSubPath;
         OgcApiRequestBody body = null;
         if (method==OgcApiContext.HttpMethods.POST || method==OgcApiContext.HttpMethods.PUT || method==OgcApiContext.HttpMethods.PATCH) {
@@ -63,7 +70,8 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
                 .description(operationDescription)
                 .tags(tags)
                 .queryParameters(queryParameters)
-                .success(responseBuilder.build());
+                .success(responseBuilder.build())
+                .hideInOpenAPI(hide);
         if (body!=null)
             operationBuilder.requestBody(body);
         return operationBuilder.build();

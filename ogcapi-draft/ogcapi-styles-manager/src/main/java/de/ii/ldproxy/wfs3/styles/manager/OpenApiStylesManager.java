@@ -62,6 +62,7 @@ public class OpenApiStylesManager implements OpenApiExtension {
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
 
+        /*
         if (!isEnabledForApi(datasetData)) {
             return openAPI;
         }
@@ -358,6 +359,7 @@ public class OpenApiStylesManager implements OpenApiExtension {
             pathItemMetadata.put(opPutMetadata.responses(putMetadata))
                             .patch(opPatchMetadata.responses(patchMetadata));
         }
+         */
 
         return openAPI;
     }

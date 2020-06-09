@@ -211,10 +211,31 @@ public class OgcApiRequestDispatcher implements ServiceResource {
     private Optional<OgcApiEndpointExtension> findEndpoint(OgcApiApiDataV2 dataset,
                                                            @PathParam("entrypoint") String entrypoint,
                                                            String subPath, String method) {
+        if (method=="OPTIONS") {
+            // special treatment for OPTIONS
+            // check that the resource exists and in that case use the general endpoint for all OPTIONS requests
+            boolean resourceExists = getEndpoints().stream()
+                    .filter(endpoint -> endpoint.isEnabledForApi(dataset))
+                    .anyMatch(endpoint -> {
+                        OgcApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
+                        if (apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY) {
+                            return apiDef.matches("/"+entrypoint+subPath, null);
+                        } else
+                            return endpoint.getApiContext()
+                                    .matches(entrypoint, subPath, null);
+                    });
+            if (!resourceExists)
+                throw new NotFoundException();
+
+            return getEndpoints().stream()
+                    .filter(endpoint -> endpoint.getClass()==OgcApiOptionsEndpoint.class)
+                    .findAny();
+        }
+
         return getEndpoints().stream()
                              .filter(endpoint -> {
                                  OgcApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
-                                 if (apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY) {
+                                 if (apiDef!=null && apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY) {
                                      return apiDef.matches("/"+entrypoint+subPath, method);
                                  } else
                                      return endpoint.getApiContext()

@@ -64,6 +64,11 @@ public class OgcApiOutputFormatJson implements CollectionsFormatExtension, Commo
     }
 
     @Override
+    public boolean canSupportTransactions() {
+        return true;
+    }
+
+    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
 
         // TODO add examples

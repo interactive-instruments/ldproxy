@@ -89,6 +89,9 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
 
     @Override
     public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+        if (!isEnabledForApi(apiData))
+            return super.getDefinition(apiData);
+
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
@@ -226,7 +229,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
     }
 
     @GET
-    @Path("/{collectionId}/"+DAPA_PATH_ELEMENT+"/{processIds: [\\w\\-/]+}")
+    @Path("/{collectionId}/"+DAPA_PATH_ELEMENT+"/{processIds}")
     @Produces("application/geo+json")
     public Response getProcessResult(@Auth Optional<User> optionalUser,
                                      @Context OgcApiApi api,

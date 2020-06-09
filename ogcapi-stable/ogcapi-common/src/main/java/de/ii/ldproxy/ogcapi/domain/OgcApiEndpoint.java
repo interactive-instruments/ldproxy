@@ -82,7 +82,10 @@ public abstract class OgcApiEndpoint implements OgcApiEndpointExtension {
                 .queryParameters(queryParameters)
                 .success(responseBuilder.build());
         if ((method==OgcApiContext.HttpMethods.POST || method==OgcApiContext.HttpMethods.PUT || method==OgcApiContext.HttpMethods.PATCH) && content!=null)
-            operationBuilder.requestBody(new ImmutableOgcApiRequestBody.Builder().content(content).build());
+            operationBuilder.requestBody(new ImmutableOgcApiRequestBody.Builder()
+                    .content(content)
+                    .description(method==OgcApiContext.HttpMethods.POST ? "The new resource to be added." : "The new resource to be added or updated.")
+                    .build());
         return operationBuilder.build();
     }
 

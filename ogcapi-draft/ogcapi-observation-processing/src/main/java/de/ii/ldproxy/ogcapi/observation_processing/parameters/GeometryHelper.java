@@ -16,7 +16,7 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class QueryParameterGeometryHelper {
+public abstract class GeometryHelper {
 
     static final String NUMBER_REGEX_NOGROUP = "[+-]?\\d+\\.?\\d*";
     static final String NUMBER_REGEX = "([+-]?\\d+\\.?\\d*)";

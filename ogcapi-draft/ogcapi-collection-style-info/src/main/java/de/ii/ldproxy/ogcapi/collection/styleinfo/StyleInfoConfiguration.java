@@ -9,6 +9,8 @@ package de.ii.ldproxy.ogcapi.collection.styleinfo;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -21,4 +23,13 @@ public abstract class StyleInfoConfiguration implements ExtensionConfiguration {
     public boolean getEnabled() {
         return false;
     }
+
+    @Override
+    public <T extends ExtensionConfiguration> T mergeDefaults(T extensionConfigurationDefault) {
+
+        return (T) new ImmutableStyleInfoConfiguration.Builder().from(extensionConfigurationDefault)
+                .from(this)
+                .build();
+    }
+
 }

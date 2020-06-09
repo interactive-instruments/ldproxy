@@ -101,7 +101,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         ObservationProcessingOutputFormatVariables outputFormat = api.getOutputFormat(
                 ObservationProcessingOutputFormatVariables.class,
                 requestContext.getMediaType(),
-                "/collections/"+collectionId+DAPA_PATH_ELEMENT+"/variables")
+                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/variables")
                 .orElseThrow(NotAcceptableException::new);
 
         ensureCollectionIdExists(api.getData(), collectionId);
@@ -144,7 +144,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         ObservationProcessingOutputFormatProcessing outputFormat = api.getOutputFormat(
                 ObservationProcessingOutputFormatProcessing.class,
                 requestContext.getMediaType(),
-                "/collections/"+collectionId+DAPA_PATH_ELEMENT)
+                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT)
                 .orElseThrow(NotAcceptableException::new);
 
         ensureCollectionIdExists(api.getData(), collectionId);

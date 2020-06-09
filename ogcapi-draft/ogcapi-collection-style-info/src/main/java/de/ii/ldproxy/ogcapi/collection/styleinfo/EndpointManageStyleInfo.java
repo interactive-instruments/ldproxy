@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -25,6 +26,8 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -36,6 +39,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -45,10 +50,9 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointManageStyleInfo implements OgcApiEndpointExtension, ConformanceClass {
+public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection implements ConformanceClass {
 
-    @Requires
-    I18n i18n;
+    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointManageStyleInfo.class);
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
@@ -56,12 +60,13 @@ public class EndpointManageStyleInfo implements OgcApiEndpointExtension, Conform
             .subPathPattern("^/?[\\w\\-]+/?$")
             .build();
 
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private static final List<String> TAGS = ImmutableList.of("Mutate data collections");
+
     private final File styleInfosStore;
 
     public EndpointManageStyleInfo(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
                                    @Requires OgcApiExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+        super(extensionRegistry);
         this.styleInfosStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styleInfos");
         if (!styleInfosStore.exists()) {
             styleInfosStore.mkdirs();
@@ -78,6 +83,7 @@ public class EndpointManageStyleInfo implements OgcApiEndpointExtension, Conform
         return API_CONTEXT;
     }
 
+    /*
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         return ImmutableSet.of(
@@ -85,6 +91,7 @@ public class EndpointManageStyleInfo implements OgcApiEndpointExtension, Conform
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build());
     }
+     */
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
@@ -96,6 +103,47 @@ public class EndpointManageStyleInfo implements OgcApiEndpointExtension, Conform
             return true;
         }
         return false;
+    }
+
+    @Override
+    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+        String apiId = apiData.getId();
+        if (!apiDefinitions.containsKey(apiId)) {
+            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+                    .apiEntrypoint("collections")
+                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLE_INFO);
+            String path = "/collections/{collectionId}";
+            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+            if (!optCollectionIdParam.isPresent()) {
+                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
+            } else {
+                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+                final boolean explode = collectionIdParam.getExplodeInOpenApi();
+                final Set<String> collectionIds = (explode) ?
+                        collectionIdParam.getValues(apiData) :
+                        ImmutableSet.of("{collectionId}");
+                for (String collectionId : collectionIds) {
+                    final Set<OgcApiQueryParameter> queryParameters = explode ?
+                            getQueryParameters(extensionRegistry, apiData, collectionId, path, HttpMethods.PATCH) :
+                            getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PATCH);
+                    final String operationSummary = "update the information about available styles for the feature collection '" + collectionId + "'";
+                    Optional<String> operationDescription = Optional.of("The content of the request may include an updated list of styles and/or an update to the default style.");
+                    String resourcePath = "/collections/" + collectionId;
+                    ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                            .path(resourcePath)
+                            .pathParameters(pathParameters);
+                    // TODO secure the PATCH operation and remove hide=true
+                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.PATCH, queryParameters, collectionId, "", operationSummary, operationDescription, TAGS, true);
+                    if (operation!=null)
+                        resourceBuilder.putOperations("PATCH", operation);
+                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
+                }
+            }
+            apiDefinitions.put(apiId, definitionBuilder.build());
+        }
+
+        return apiDefinitions.get(apiId);
     }
 
     /**
@@ -112,74 +160,27 @@ public class EndpointManageStyleInfo implements OgcApiEndpointExtension, Conform
                                        @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
-        checkCollectionId(collectionId);
+        checkCollectionExists(dataset.getData(), collectionId);
 
-        final String apiId = dataset.getData().getId();
-        File apiDir = new File(styleInfosStore + File.separator + apiId);
-        if (!apiDir.exists()) {
-            apiDir.mkdirs();
-        }
+        CollectionStyleInfoFormatExtension outputFormat = getFormats().stream()
+                .filter(format -> format.getMediaType().matches(ogcApiRequest.getMediaType().type()))
+                .map(CollectionStyleInfoFormatExtension.class::cast)
+                .findAny()
+                .orElseThrow(() -> new NotAcceptableException());
 
-        boolean newStyleInfos = isNewStyleInfo(dataset.getId(), collectionId);
-
-        // prepare Jackson mapper for deserialization
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new Jdk8Module());
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        try {
-            ObjectReader objectReader;
-            StyleInfos updatedContent;
-            if (newStyleInfos) {
-                updatedContent = mapper.readValue(requestBody, StyleInfos.class);
-            } else {
-                /* TODO currently treat it like a put, change to proper PATCH
-                mapper.readValue(requestBody, StyleInfos.class);
-                File metadataFile = new File( styleInfosStore + File.separator + dataset.getId() + File.separator + collectionId);
-                StyleInfos currentContent = mapper.readValue(metadataFile, StyleInfos.class);
-                objectReader = mapper.readerForUpdating(currentContent);
-                updatedContent = objectReader.readValue(requestBody);
-                 */
-                updatedContent = mapper.readValue(requestBody, StyleInfos.class);
-            }
-            // parse input for validation
-            byte[] updatedContentString = mapper.writerWithDefaultPrettyPrinter()
-                    .writeValueAsBytes(updatedContent); // TODO: remove pretty print
-            putStylesInfoDocument(dataset.getId(), collectionId, updatedContentString);
-        } catch (IOException e) {
-            throw new BadRequestException(e.getMessage());
-        }
+        outputFormat.patchStyleInfos(requestBody, styleInfosStore, dataset, collectionId);
 
         return Response.noContent()
                        .build();
     }
 
-    private boolean isNewStyleInfo(String datasetId, String collectionId) {
-
-        File file = new File( styleInfosStore + File.separator + datasetId + File.separator + collectionId);
-        return !file.exists();
-    }
-
-    /**
-     * search for the style in the store and update it, or create a new one
-     *  @param datasetId       the dataset id
-     * @param collectionId           the id of the collection, for which a styleInfos document should be updated or created
-     * @param payload the new Style as a byte array
-     */
-    private void putStylesInfoDocument(String datasetId, String collectionId, byte[] payload) {
-
-        checkCollectionId(collectionId);
-        File styleFile = new File(styleInfosStore + File.separator + datasetId + File.separator + collectionId);
-        try {
-            Files.write(styleFile.toPath(), payload);
-        } catch (IOException e) {
-            throw new ServerErrorException("could not PATCH style information: "+collectionId, 500);
-        }
-    }
-
-    private static void checkCollectionId(String collectionId) {
-        if (!collectionId.matches("[\\w\\-]+")) {
-            throw new BadRequestException("Only character 0-9, A-Z, a-z, dash and underscore are allowed in a collection identifier. Found: "+collectionId);
-        }
+    @Override
+    public List<? extends FormatExtension> getFormats() {
+        if (formats==null)
+            formats = extensionRegistry.getExtensionsForType(CollectionStyleInfoFormatExtension.class)
+                .stream()
+                .filter(CollectionStyleInfoFormatExtension::canSupportTransactions)
+                .collect(Collectors.toList());
+        return formats;
     }
 }

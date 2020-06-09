@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.collection.queryables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -26,12 +27,13 @@ import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
 @Provides
 @Instantiate
-public class OgcApiSchemaEndpoint implements OgcApiEndpointExtension, ConformanceClass {
+public class OgcApiSchemaEndpoint extends OgcApiEndpointSubCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiSchemaEndpoint.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
@@ -40,13 +42,13 @@ public class OgcApiSchemaEndpoint implements OgcApiEndpointExtension, Conformanc
             .subPathPattern("^/[\\w\\-]+/schema/?$")
             .build();
 
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private static final List<String> TAGS = ImmutableList.of("Access data collections");
 
     @Requires
     private OgcApiQueryablesQueriesHandler queryHandler;
 
     public OgcApiSchemaEndpoint(@Requires OgcApiExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+        super(extensionRegistry);
     }
 
     @Override
@@ -54,6 +56,12 @@ public class OgcApiSchemaEndpoint implements OgcApiEndpointExtension, Conformanc
         return API_CONTEXT;
     }
 
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://ldproxy.net/tbd/1.0/conf/schema");
+    }
+
+    /*
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/[\\w\\-]+/schema/?$"))
@@ -64,11 +72,6 @@ public class OgcApiSchemaEndpoint implements OgcApiEndpointExtension, Conformanc
                                     .collect(ImmutableSet.toImmutableSet());
 
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    @Override
-    public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://ldproxy.net/tbd/1.0/conf/schema");
     }
 
     @Override
@@ -94,10 +97,62 @@ public class OgcApiSchemaEndpoint implements OgcApiEndpointExtension, Conformanc
 
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
+     */
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, QueryablesConfiguration.class);
+    }
+
+    @Override
+    public List<? extends FormatExtension> getFormats() {
+        if (formats==null)
+            formats = extensionRegistry.getExtensionsForType(OgcApiSchemaFormatExtension.class);
+        return formats;
+    }
+
+    @Override
+    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+        if (!isEnabledForApi(apiData))
+            return super.getDefinition(apiData);
+
+        String apiId = apiData.getId();
+        if (!apiDefinitions.containsKey(apiId)) {
+            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+                    .apiEntrypoint("collections")
+                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_SCHEMA);
+            String subSubPath = "/schema";
+            String path = "/collections/{collectionId}" + subSubPath;
+            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+            if (!optCollectionIdParam.isPresent()) {
+                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
+            } else {
+                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+                final boolean explode = collectionIdParam.getExplodeInOpenApi();
+                final Set<String> collectionIds = (explode) ?
+                        collectionIdParam.getValues(apiData) :
+                        ImmutableSet.of("{collectionId}");
+                for (String collectionId : collectionIds) {
+                    final Set<OgcApiQueryParameter> queryParameters = explode ?
+                            getQueryParameters(extensionRegistry, apiData, collectionId, path) :
+                            getQueryParameters(extensionRegistry, apiData, path);
+                    final String operationSummary = "retrieve the schema of features in the feature collection '" + collectionId + "'";
+                    Optional<String> operationDescription = Optional.empty(); // TODO
+                    String resourcePath = "/collections/" + collectionId + subSubPath;
+                    ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                            .path(resourcePath)
+                            .pathParameters(pathParameters);
+                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                    if (operation!=null)
+                        resourceBuilder.putOperations("GET", operation);
+                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
+                }
+            }
+            apiDefinitions.put(apiId, definitionBuilder.build());
+        }
+
+        return apiDefinitions.get(apiId);
     }
 
     @GET

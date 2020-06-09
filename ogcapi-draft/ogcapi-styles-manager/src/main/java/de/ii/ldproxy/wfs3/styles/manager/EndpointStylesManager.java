@@ -22,15 +22,19 @@ import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.wfs3.styles.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,6 +56,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -63,26 +68,26 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointStylesManager implements OgcApiEndpointExtension, ConformanceClass {
+public class EndpointStylesManager extends OgcApiEndpoint implements ConformanceClass {
 
     @Requires
     I18n i18n;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStylesManager.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("styles")
             .addMethods(HttpMethods.POST, HttpMethods.PUT, HttpMethods.DELETE, HttpMethods.PATCH)
-            .subPathPattern("^/?(?:\\w+(?:/metadata)?)?$")
+            .subPathPattern("^/?(?:\\w+)?$")
             .putSubPathsAndMethods("^/?$", Arrays.asList(new HttpMethods[]{HttpMethods.POST}))
             .putSubPathsAndMethods("^/?\\w+$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.DELETE}))
-            .putSubPathsAndMethods("^/?\\w+/metadata$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.PATCH}))
             .build();
+    private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
 
     private final File stylesStore;
-    private final OgcApiExtensionRegistry extensionRegistry;
 
     public EndpointStylesManager(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
                                  @Requires OgcApiExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+        super(extensionRegistry);
         this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
         if (!stylesStore.exists()) {
             stylesStore.mkdirs();
@@ -99,6 +104,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
         return API_CONTEXT;
     }
 
+    /*
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/?\\w+/metadata$"))
@@ -142,6 +148,7 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                                 .stream()
                                 .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(dataset));
     }
+     */
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
@@ -163,6 +170,105 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                 .isPresent();
     }
 
+    @Override
+    public List<? extends FormatExtension> getFormats() {
+        if (formats==null)
+            formats = extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
+                    .stream()
+                    .filter(StyleFormatExtension::canSupportTransactions)
+                    .collect(Collectors.toList());
+        return formats;
+    }
+
+    private Map<MediaType, OgcApiMediaTypeContent> getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
+        return getFormats().stream()
+                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                .map(f -> f.getRequestContent(apiData, path, method))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(),c -> c));
+    }
+
+    @Override
+    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+        if (!isEnabledForApi(apiData))
+            return super.getDefinition(apiData);
+
+        String apiId = apiData.getId();
+        if (!apiDefinitions.containsKey(apiId)) {
+            Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+                    .apiEntrypoint("styles")
+                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLES_MANAGER);
+            String path = "/styles";
+            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.POST);
+            String operationSummary = "add a new style";
+            String description = "Adds a style to the style repository";
+            if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
+                description += " or just validates a style.\n" +
+                        "If the parameter `validate` is set to `yes`, the style will be validated before adding " +
+                        "the style to the server. If the parameter `validate` is set to `only`, the server will " +
+                        "not be changed and only the validation result will be returned";
+            }
+            description += ".\n" +
+                    "If a new style is created, the following rules apply:\n" +
+                    "* If the style submitted in the request body includes an identifier (this depends on " +
+                    "the style encoding), that identifier will be used. If a style with that identifier " +
+                    "already exists, an error is returned.\n" +
+                    "* If no identifier can be determined from the submitted style, the server will assign " +
+                    "a new identifier to the style.\n" +
+                    "* A minimal style metadata resource is created at `/styles/{styleId}/metadata`. Please " +
+                    "update the metadata using a PUT request to keep the style metadata consistent with " +
+                    "the style definition.\n" +
+                    "* The URI of the new style is returned in the header `Location`.\n";
+            Optional<String> operationDescription = Optional.of(description);
+            ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                    .path(path);
+            Map<MediaType, OgcApiMediaTypeContent> requestContent = getRequestContent(apiData, path, HttpMethods.POST);
+            OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.POST, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+            if (operation!=null)
+                resourceBuilder.putOperations("POST", operation);
+            definitionBuilder.putResources(path, resourceBuilder.build());
+            path = "/styles/{styleId}";
+            ImmutableSet<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
+            operationSummary = "replace a style or add a new style";
+            description = "Replace an existing style with the id `styleId`. If no such style exists, " +
+                    "a new style with that id is added.\n";
+            if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
+                description +=
+                        "If the parameter `validate` is set to `yes`, the style will be validated before adding " +
+                                "the style to the server. If the parameter `validate` is set to `only`, the server will " +
+                                "not be changed and only the validation result will be returned.\n";
+            }
+            description += "For updated styles, the style metadata resource at `/styles/{styleId}/metadata` " +
+                    "is not updated. For new styles a minimal style metadata resource is created. Please " +
+                    "update the metadata using a PUT request to keep the style metadata consistent with " +
+                    "the style definition.";
+            operationDescription = Optional.of(description);
+            resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                    .path(path)
+                    .pathParameters(pathParameters);
+            requestContent = getRequestContent(apiData, path, HttpMethods.PUT);
+            operation = addOperation(apiData, OgcApiContext.HttpMethods.PUT, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+            if (operation!=null)
+                resourceBuilder.putOperations("PUT", operation);
+            queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
+            operationSummary = "delete a style";
+            operationDescription = Optional.of("Delete an existing style with the id `styleId`. If no such style exists, " +
+                    "an error is returned. Deleting a style also deletes the subordinate resources, " +
+                    "i.e., the style metadata.");
+            requestContent = getRequestContent(apiData, path, HttpMethods.DELETE);
+            operation = addOperation(apiData, OgcApiContext.HttpMethods.DELETE, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+            if (operation!=null)
+                resourceBuilder.putOperations("DELETE", operation);
+            definitionBuilder.putResources(path, resourceBuilder.build());
+
+            apiDefinitions.put(apiId, definitionBuilder.build());
+        }
+
+        return apiDefinitions.get(apiId);
+    }
+
     /**
      * creates a new style
      *
@@ -179,7 +285,6 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                               byte[] requestBody) {
 
         checkAuthorization(api.getData(), optionalUser);
-        checkValidate(api.getData(), validate);
         String datasetId = api.getId();
 
         String contentType = request.getContentType();
@@ -255,8 +360,6 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                              byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
-        checkValidate(dataset.getData(), validate);
-        checkStyleId(styleId);
 
         boolean newStyle = isNewStyle(dataset.getId(), styleId);
         String contentType = request.getContentType();
@@ -285,90 +388,6 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
 
                 break;
             }
-        }
-
-        return Response.noContent()
-                       .build();
-    }
-
-    /**
-     * updates the metadata document of a style
-     *
-     * @param styleId the local identifier of a specific style
-     * @return empty response (204)
-     */
-    @Path("/{styleId}/metadata")
-    @PUT
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response putStyleMetadata(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                                     @Context OgcApiApi dataset, @Context OgcApiRequestContext ogcApiRequest,
-                                     @Context HttpServletRequest request, byte[] requestBody) {
-
-        checkAuthorization(dataset.getData(), optionalUser);
-        checkStyleId(styleId);
-
-        boolean newStyle = isNewStyle(dataset.getId(), styleId);
-        if (newStyle) {
-            throw new NotFoundException();
-        }
-
-        // prepare Jackson mapper for deserialization
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new Jdk8Module());
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        try {
-            // parse input for validation
-            mapper.readValue(requestBody, StyleMetadata.class);
-            putStyleDocument(dataset.getId(), styleId, "metadata", requestBody);
-        } catch (IOException e) {
-            throw new BadRequestException(e.getMessage());
-        }
-
-        return Response.noContent()
-                       .build();
-    }
-
-    /**
-     * partial update to the metadata of a style
-     *
-     * @param styleId the local identifier of a specific style
-     * @return empty response (204)
-     */
-    @Path("/{styleId}/metadata")
-    @PATCH
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response patchStyleMetadata(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                                       @Context OgcApiApi dataset, @Context OgcApiRequestContext ogcApiRequest,
-                                       @Context HttpServletRequest request, byte[] requestBody) {
-
-        checkAuthorization(dataset.getData(), optionalUser);
-        checkStyleId(styleId);
-
-        boolean newStyle = isNewStyle(dataset.getId(), styleId);
-        if (newStyle) {
-            throw new NotFoundException();
-        }
-
-        // prepare Jackson mapper for deserialization
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new Jdk8Module());
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        Map<String, Object> currentMetadata;
-        Map<String, Object> updatedMetadata;
-        try {
-            // parse input for validation
-            mapper.readValue(requestBody, StyleMetadata.class);
-            File metadataFile = new File( stylesStore + File.separator + dataset.getId() + File.separator + styleId + ".metadata");
-            currentMetadata = mapper.readValue(metadataFile, new TypeReference<LinkedHashMap>() {
-            });
-            ObjectReader objectReader = mapper.readerForUpdating(currentMetadata);
-            updatedMetadata = objectReader.readValue(requestBody);
-            byte[] updatedMetadataString = mapper.writerWithDefaultPrettyPrinter()
-                                                 .writeValueAsBytes(updatedMetadata); // TODO: remove pretty print
-            putStyleDocument(dataset.getId(), styleId, "metadata", updatedMetadataString);
-        } catch (IOException e) {
-            throw new BadRequestException(e.getMessage());
         }
 
         return Response.noContent()
@@ -433,7 +452,6 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
                                 @Context OgcApiApi dataset) {
 
         checkAuthorization(dataset.getData(), optionalUser);
-        checkStyleId(styleId);
 
         deleteStyle(dataset.getId(), styleId);
 
@@ -474,7 +492,6 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
      */
     private void putStyleDocument(String datasetId, String styleId, String fileExtension, byte[] payload) {
 
-        checkStyleId(styleId);
         String key = styleId + "." + fileExtension;
         File styleFile = new File(stylesStore + File.separator + datasetId + File.separator + styleId + "." + fileExtension);
 
@@ -606,18 +623,6 @@ public class EndpointStylesManager implements OgcApiEndpointExtension, Conforman
             // not a valid type, fall back to wildcard
             return MediaType.WILDCARD_TYPE;
         }
-    }
-
-    private static void checkStyleId(String styleId) {
-        if (!styleId.matches("\\w+")) {
-            throw new BadRequestException("Only character 0-9, A-Z, a-z and underscore are allowed in a style identifier. Found: "+styleId);
-
-        }
-    }
-
-    private static void checkValidate(OgcApiApiDataV2 data, String validate) {
-        if (Objects.nonNull(validate) && !validate.matches("no|yes|only"))
-            throw new BadRequestException("Parameter validate has an invalid value: " + validate);
     }
 
     private static void validateRequestBodyMbStyle(byte[] requestBody, boolean validate, URL xsdPath){

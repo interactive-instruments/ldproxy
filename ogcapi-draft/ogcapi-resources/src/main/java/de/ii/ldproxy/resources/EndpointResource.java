@@ -8,14 +8,10 @@
 package de.ii.ldproxy.resources;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.io.ByteSource;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.wfs3.styles.EndpointStyles;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
-import de.ii.ldproxy.wfs3.styles.StylesFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -30,7 +26,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
@@ -46,34 +41,29 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointResources extends OgcApiEndpoint implements ConformanceClass {
+public class EndpointResource extends OgcApiEndpoint {
 
     @Requires
     I18n i18n;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResources.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResource.class);
 
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("resources")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/?$")
+            .subPathPattern("^/[^/]+$")
             .build();
 
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
     private final File resourcesStore; // TODO: change to Store
 
-    public EndpointResources(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires OgcApiExtensionRegistry extensionRegistry) {
+    public EndpointResource(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires OgcApiExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
         this.resourcesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "resources");
         if (!resourcesStore.exists()) {
             resourcesStore.mkdirs();
         }
-    }
-
-    @Override
-    public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/resources");
     }
 
     @Override
@@ -131,7 +121,7 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
     @Override
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(ResourcesFormatExtension.class);
+            formats = extensionRegistry.getExtensionsForType(ResourceFormatExtension.class);
         return formats;
     }
 
@@ -144,20 +134,24 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
         if (!apiDefinitions.containsKey(apiId)) {
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
                     .apiEntrypoint("resources")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_RESOURCES);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/resources");
-            String operationSummary = "information about the available file resources";
-            Optional<String> operationDescription = Optional.of("This operation fetches the set of file resources that have been " +
-                    "created and that may be used by reference, for example, in stylesheets. For each resource the id and " +
-                    "a link to the resource is provided.");
-            String path = "/resources";
-            ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
-                    .path(path)
-                    .subResourceType("File Resource");
-            OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilderSet.putOperations("GET", operation);
-            definitionBuilder.putResources(path, resourceBuilderSet.build());
+                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_RESOURCE);
+            String path = "/resources/{resourceId}";
+            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            if (!pathParameters.stream().filter(param -> param.getName().equals("resourceId")).findAny().isPresent()) {
+                LOGGER.error("Path parameter 'resourceId' missing for resource at path '" + path + "'. The GET method will not be available.");
+            } else {
+                String operationSummary = "fetch the file resource `{resourceId}`";
+                Optional<String> operationDescription = Optional.of("Fetches the file resource with identifier `resourceId`. The set of " +
+                        "available resources can be retrieved at `/resources`.");
+                ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                        .path(path)
+                        .pathParameters(pathParameters);
+                OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+                if (operation!=null)
+                    resourceBuilder.putOperations("GET", operation);
+                definitionBuilder.putResources(path, resourceBuilder.build());
+            }
 
             apiDefinitions.put(apiId, definitionBuilder.build());
         }
@@ -166,46 +160,40 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
     }
 
     /**
-     * fetch all available resources
+     * Fetch a resource by id
      *
-     * @return all resources in a JSON resources object
+     * @param resourceId the local identifier of a specific style
+     * @return the style in a json file
      */
-    @Path("/")
+    @Path("/{resourceId}")
     @GET
-    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
-    public Response getResources(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
-        final ResourcesLinkGenerator resourcesLinkGenerator = new ResourcesLinkGenerator();
+    @Produces(MediaType.WILDCARD)
+    public Response getResource(@PathParam("resourceId") String resourceId, @Context OgcApiApi api,
+                                @Context OgcApiRequestContext requestContext) {
 
-        final String apiId = api.getId();
-        File apiDir = new File(resourcesStore + File.separator + apiId);
+        final String datasetId = api.getId();
+        final File apiDir = new File(resourcesStore + File.separator + datasetId);
         if (!apiDir.exists()) {
             apiDir.mkdirs();
         }
 
-        Resources resources = ImmutableResources.builder()
-            .resources(
-                Arrays.stream(apiDir.listFiles())
-                .filter(file -> !file.isHidden())
-                .map(File::getName)
-                .sorted()
-                .map(filename -> ImmutableResource.builder()
-                        .id(filename)
-                        .link(resourcesLinkGenerator.generateResourceLink(requestContext.getUriCustomizer(), filename))
-                        .build())
-                .collect(Collectors.toList()))
-            .links(new DefaultLinksGenerator()
-                    .generateLinks(requestContext.getUriCustomizer(),
-                            requestContext.getMediaType(),
-                            requestContext.getAlternateMediaTypes(),
-                            i18n,
-                            requestContext.getLanguage()))
-            .build();
+        File resourceFile = new File(apiDir + File.separator + resourceId);
 
-        return getFormats().stream()
-                .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
-                .findAny()
-                .map(ResourcesFormatExtension.class::cast)
-                .orElseThrow(() -> new NotAcceptableException())
-                .getResourcesResponse(resources, api, requestContext);
+        if (!resourceFile.exists()) {
+            throw new NotFoundException();
+        }
+
+        try {
+            final byte[] resource = Files.readAllBytes(resourceFile.toPath());
+
+            return getFormats().stream()
+                    .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
+                    .findAny()
+                    .map(ResourceFormatExtension.class::cast)
+                    .orElseThrow(() -> new NotAcceptableException())
+                    .getResourceResponse(resource, resourceId, api, requestContext);
+        } catch (IOException e) {
+            throw new ServerErrorException("resource could not be read: "+resourceId, 500);
+        }
     }
 }

@@ -98,6 +98,9 @@ public class EndpointStyle extends OgcApiEndpoint {
 
     @Override
     public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+        if (!isEnabledForApi(apiData))
+            return super.getDefinition(apiData);
+
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()

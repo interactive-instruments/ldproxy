@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, ConformanceClass {
+public class OgcApiQueryablesEndpoint extends OgcApiEndpointSubCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiQueryablesEndpoint.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
@@ -37,13 +37,13 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
             .subPathPattern("^/[\\w\\-]+/queryables/?$")
             .build();
 
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private static final List<String> TAGS = ImmutableList.of("Access data collections");
 
     @Requires
     private OgcApiQueryablesQueriesHandler queryHandler;
 
     public OgcApiQueryablesEndpoint(@Requires OgcApiExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+        super(extensionRegistry);
     }
 
     @Override
@@ -51,6 +51,12 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
         return API_CONTEXT;
     }
 
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/queryables");
+    }
+
+    /*
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
         if (subPath.matches("^/[\\w\\-]+/queryables/?$"))
@@ -61,11 +67,6 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
                                     .collect(ImmutableSet.toImmutableSet());
 
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    @Override
-    public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/queryables");
     }
 
     @Override
@@ -92,9 +93,76 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
     }
 
+    public static Map<String, String> getFiltersFromQuery(Map<String, String> query,
+                                                          Map<String, String> filterableFields) {
+
+        Map<String, String> filters = new LinkedHashMap<>();
+
+        for (String filterKey : query.keySet()) {
+            if (filterableFields.containsKey(filterKey)) {
+                String filterValue = query.get(filterKey);
+                filters.put(filterKey, filterValue);
+            }
+        }
+
+        return filters;
+    }
+     */
+
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, QueryablesConfiguration.class);
+    }
+
+    @Override
+    public List<? extends FormatExtension> getFormats() {
+        if (formats==null)
+            formats = extensionRegistry.getExtensionsForType(OgcApiQueryablesFormatExtension.class);
+        return formats;
+    }
+
+    @Override
+    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+        if (!isEnabledForApi(apiData))
+            return super.getDefinition(apiData);
+
+        String apiId = apiData.getId();
+        if (!apiDefinitions.containsKey(apiId)) {
+            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+                    .apiEntrypoint("collections")
+                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_QUERYABLES);
+            String subSubPath = "/queryables";
+            String path = "/collections/{collectionId}" + subSubPath;
+            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+            if (!optCollectionIdParam.isPresent()) {
+                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
+            } else {
+                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+                final boolean explode = collectionIdParam.getExplodeInOpenApi();
+                final Set<String> collectionIds = (explode) ?
+                        collectionIdParam.getValues(apiData) :
+                        ImmutableSet.of("{collectionId}");
+                for (String collectionId : collectionIds) {
+                    final Set<OgcApiQueryParameter> queryParameters = explode ?
+                            getQueryParameters(extensionRegistry, apiData, collectionId, path) :
+                            getQueryParameters(extensionRegistry, apiData, path);
+                    final String operationSummary = "retrieve the queryables of the feature collection '" + collectionId + "'";
+                    Optional<String> operationDescription = Optional.empty(); // TODO once the specification is more stable
+                    String resourcePath = "/collections/" + collectionId + subSubPath;
+                    ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                            .path(resourcePath)
+                            .pathParameters(pathParameters);
+                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                    if (operation!=null)
+                        resourceBuilder.putOperations("GET", operation);
+                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
+                }
+            }
+            apiDefinitions.put(apiId, definitionBuilder.build());
+        }
+
+        return apiDefinitions.get(apiId);
     }
 
     @GET
@@ -121,38 +189,5 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
                 .build();
 
         return queryHandler.handle(OgcApiQueryablesQueriesHandler.Query.QUERYABLES, queryInput, requestContext);
-    }
-
-    public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
-        return toFlatMap(queryParameters, false);
-    }
-
-    public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters,
-                                                boolean keysToLowerCase) {
-        return queryParameters.entrySet()
-                .stream()
-                .map(entry -> {
-                    String key = keysToLowerCase ? entry.getKey()
-                            .toLowerCase() : entry.getKey();
-                    return new AbstractMap.SimpleImmutableEntry<>(key, entry.getValue()
-                            .isEmpty() ? "" : entry.getValue()
-                            .get(0));
-                })
-                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    public static Map<String, String> getFiltersFromQuery(Map<String, String> query,
-                                                          Map<String, String> filterableFields) {
-
-        Map<String, String> filters = new LinkedHashMap<>();
-
-        for (String filterKey : query.keySet()) {
-            if (filterableFields.containsKey(filterKey)) {
-                String filterValue = query.get(filterKey);
-                filters.put(filterKey, filterValue);
-            }
-        }
-
-        return filters;
     }
 }

@@ -1,6 +1,5 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
-import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
@@ -24,7 +23,7 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCoordPosition extends QueryParameterGeometryHelper implements OgcApiQueryParameter {
+public class QueryParameterCoordPosition extends GeometryHelper implements OgcApiQueryParameter {
 
     static final double BUFFER = 75.0; // buffer in km
     static final double R = 6378.1f; // earth radius in km

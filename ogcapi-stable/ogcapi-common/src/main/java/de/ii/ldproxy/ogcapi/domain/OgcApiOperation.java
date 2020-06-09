@@ -15,4 +15,6 @@ public interface OgcApiOperation {
     Set<OgcApiQueryParameter> getQueryParameters();
     Optional<OgcApiRequestBody> getRequestBody();
     Optional<OgcApiResponse> getSuccess();
+    @Value.Default
+    default boolean getHideInOpenAPI() { return false; }
 }

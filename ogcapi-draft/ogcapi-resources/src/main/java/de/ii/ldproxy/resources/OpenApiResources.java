@@ -60,6 +60,7 @@ public class OpenApiResources implements OpenApiExtension {
 
         if (isEnabledForApi(datasetData) &&
                 getExtensionConfiguration(datasetData, StylesConfiguration.class).isPresent()) {
+/*
 
             StylesConfiguration stylesExtension = getExtensionConfiguration(datasetData, StylesConfiguration.class).get();
 
@@ -150,7 +151,7 @@ public class OpenApiResources implements OpenApiExtension {
                 description = "Fetches the resource with identifier `resourceId`. The set of \n" +
                         "available resources can be retrieved at `/resources`.";
                 Content contentResource = new Content();
-                contentResource.addMediaType("*/*", new MediaType());
+                contentResource.addMediaType("* / *", new MediaType());
 
                 pathItemResource.get(new Operation()
                         .addTagsItem(TAG)
@@ -164,6 +165,7 @@ public class OpenApiResources implements OpenApiExtension {
                                 .addApiResponse("400", status400)
                                 .addApiResponse("406", status406)));
             }
+             */
         }
         return openAPI;
     }

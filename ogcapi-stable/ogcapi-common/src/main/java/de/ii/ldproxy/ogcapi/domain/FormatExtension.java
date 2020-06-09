@@ -74,5 +74,11 @@ public interface FormatExtension extends OgcApiExtension {
      * @return {@code true}, if the response content varies from resource to resource
      */
     default boolean contentPerResource() { return false; }
+
+    /**
+     *
+     * @return {@code true}, if the format can be used in POST, PUT or PATCH requests
+     */
+    default boolean canSupportTransactions() { return false; }
 }
 

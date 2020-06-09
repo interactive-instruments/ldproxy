@@ -1,5 +1,6 @@
 package de.ii.ldproxy.ogcapi.infra.json;
 
+import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.media.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -34,6 +35,8 @@ public class SchemaGeneratorImpl implements SchemaGenerator {
         switch (clazz.getSimpleName()) {
             case "String":
                 return new StringSchema();
+            case "Locale":
+                return new StringSchema().pattern("^[a-zA-Z]{1,8}(?:\\-[a-zA-Z0-9]{1,8})?$");
             case "int":
             case "Integer":
             case "long":

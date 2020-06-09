@@ -23,14 +23,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterPropertiesFeatures implements OgcApiQueryParameter {
+public class QueryParameterProperties implements OgcApiQueryParameter {
 
     @Requires
     SchemaGeneratorFeature schemaGeneratorFeature;
 
     @Override
     public String getId(String collectionId) {
-        return "propertiesFeatures_"+collectionId;
+        return "properties_"+collectionId;
     }
 
     @Override
@@ -48,7 +48,9 @@ public class QueryParameterPropertiesFeatures implements OgcApiQueryParameter {
         return isEnabledForApi(apiData) &&
                 method==OgcApiContext.HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                 definitionPath.equals("/collections/{collectionId}/items/{featureId}"));
+                 definitionPath.equals("/collections/{collectionId}/items/{featureId}") ||
+                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
+                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
     }
 
     private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();

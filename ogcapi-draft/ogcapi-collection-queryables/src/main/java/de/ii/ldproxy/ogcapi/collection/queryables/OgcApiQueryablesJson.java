@@ -8,11 +8,15 @@
 package de.ii.ldproxy.ogcapi.collection.queryables;
 
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
 import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -20,6 +24,16 @@ import javax.ws.rs.core.Response;
 @Provides
 @Instantiate
 public class OgcApiQueryablesJson implements OgcApiQueryablesFormatExtension {
+
+    @Requires
+    SchemaGenerator schemaGenerator;
+
+    private final Schema schema;
+    public final static String SCHEMA_REF = "#/components/schemas/Queryables";
+
+    public OgcApiQueryablesJson() {
+        schema = schemaGenerator.getSchema(Queryables.class);
+    }
 
     public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(new MediaType("application", "json"))
@@ -42,8 +56,8 @@ public class OgcApiQueryablesJson implements OgcApiQueryablesFormatExtension {
     @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         return new ImmutableOgcApiMediaTypeContent.Builder()
-                .schema(new ObjectSchema())
-                .schemaRef("#/components/schemas/anyObject")
+                .schema(schema)
+                .schemaRef(SCHEMA_REF)
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
     }

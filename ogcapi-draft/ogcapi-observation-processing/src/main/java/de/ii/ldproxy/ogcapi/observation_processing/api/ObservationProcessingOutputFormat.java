@@ -21,11 +21,12 @@ import java.util.Optional;
 
 public interface ObservationProcessingOutputFormat extends FormatExtension {
 
+    final static String DAPA_PATH_ELEMENT = "dapa";
+
     default String getPathPattern() {
-        String DAPA_PATH_ELEMENT = "dapa";
-        return "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/position(?:/aggregate-time)?/?$)|" +
-                "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/area(?:/aggregate-(space|time|space-time)/?$)|" +
-                "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/resample-to-grid(?:/aggregate-time)?)?/?$)";
+        return "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/position(?:\\:aggregate-time)?/?$)|" +
+                "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/area(?:\\:aggregate-(space|time|space-time))?/?$)|" +
+                "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/resample-to-grid(?:\\:aggregate-time)?/?$)";
     }
 
     // TODO

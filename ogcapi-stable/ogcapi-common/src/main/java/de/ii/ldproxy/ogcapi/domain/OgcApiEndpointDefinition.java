@@ -44,12 +44,20 @@ public abstract class OgcApiEndpointDefinition {
     // draft 1000 - 9999
     public static final int SORT_PRIORITY_FEATURES_TRANSACTION = 1000;
     public static final int SORT_PRIORITY_FEATURES_JSONLD_CONTEXT = 1100;
+    public static final int SORT_PRIORITY_QUERYABLES = 1200;
+    public static final int SORT_PRIORITY_SCHEMA = 1300;
+    public static final int SORT_PRIORITY_TILES = 1500;
+    public static final int SORT_PRIORITY_TILES_COLLECTION = 1510;
+    public static final int SORT_PRIORITY_TILE_MATRIX_SETS = 1520;
     public static final int SORT_PRIORITY_STYLES = 2000;
     public static final int SORT_PRIORITY_STYLESHEET = 2010;
-    public static final int SORT_PRIORITY_STYLES_MANAGER = 2020;
-    public static final int SORT_PRIORITY_STYLE_MAP = 2030;
+    public static final int SORT_PRIORITY_STYLE_METADATA = 2020;
+    public static final int SORT_PRIORITY_STYLES_MANAGER = 2030;
+    public static final int SORT_PRIORITY_STYLE_METADATA_MANAGER = 2040;
     public static final int SORT_PRIORITY_RESOURCES = 2050;
-    public static final int SORT_PRIORITY_RESOURCES_MANAGER = 2060;
+    public static final int SORT_PRIORITY_RESOURCE = 2060;
+    public static final int SORT_PRIORITY_RESOURCES_MANAGER = 2070;
+    public static final int SORT_PRIORITY_STYLE_INFO = 2070;
 
 
     public static final int SORT_PRIORITY_DUMMY = Integer.MAX_VALUE;
@@ -65,6 +73,8 @@ public abstract class OgcApiEndpointDefinition {
      * @param subPath
      * @return
      */
+    @Value.Derived
+    @Value.Auxiliary
     public String getPath(String subPath) {
         return  "/" + getApiEntrypoint() + subPath;
     }
@@ -240,6 +250,9 @@ public abstract class OgcApiEndpointDefinition {
                         boolean status415 = method.equals("POST") || method.equals("PUT");
                         OgcApiOperation operation = operationEntry.getValue();
                         if (!operation.getSuccess().isPresent())
+                            // skip
+                            continue;
+                        if (operation.getHideInOpenAPI())
                             // skip
                             continue;
                         Operation op = new Operation();

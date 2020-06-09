@@ -45,7 +45,6 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
             .addMethods(OgcApiContext.HttpMethods.OPTIONS)
             .subPathPattern(".*")
             .build();
-
     private final OgcApiExtensionRegistry extensionRegistry;
 
     @Requires
@@ -61,7 +60,7 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath, String method) {
         return ImmutableSet.<OgcApiMediaType>builder().add(new ImmutableOgcApiMediaType.Builder()
                 .type(MediaType.TEXT_PLAIN_TYPE)
                 .build()).build();
@@ -125,13 +124,13 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
                 .build();
     }
 
-    private Optional<OgcApiEndpointExtension> findEndpoint(OgcApiApiDataV2 api,
+    private Optional<OgcApiEndpointExtension> findEndpoint(OgcApiApiDataV2 apiData,
                                                            String entrypoint,
-                                                           String subPath, String method) {
+                                                           String subPath,
+                                                           String method) {
         return getEndpoints().stream()
-                .filter(wfs3Endpoint -> wfs3Endpoint.getApiContext()
-                        .matches(entrypoint, subPath, method))
-                .filter(wfs3Endpoint -> wfs3Endpoint.isEnabledForApi(api))
+                .filter(endpoint -> endpoint.getDefinition(apiData).matches("/"+entrypoint+subPath, method))
+                .filter(endpoint -> endpoint.isEnabledForApi(apiData))
                 .findFirst();
     }
 

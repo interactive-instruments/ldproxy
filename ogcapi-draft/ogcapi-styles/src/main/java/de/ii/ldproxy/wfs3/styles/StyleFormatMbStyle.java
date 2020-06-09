@@ -67,8 +67,21 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public boolean canSupportTransactions() {
+        return true;
+    }
 
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(schemaStyle)
+                .schemaRef(SCHEMA_REF_STYLE)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
         return new ImmutableOgcApiMediaTypeContent.Builder()
                 .schema(schemaStyle)
                 .schemaRef(SCHEMA_REF_STYLE)

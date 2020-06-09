@@ -7,10 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.collection.queryables;
 
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
+import io.swagger.v3.oas.models.media.Schema;
 
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Response;
 
 public interface OgcApiQueryablesFormatExtension extends FormatExtension {
@@ -20,4 +20,5 @@ public interface OgcApiQueryablesFormatExtension extends FormatExtension {
     }
 
     Response getResponse(Queryables queryables, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
+
 }

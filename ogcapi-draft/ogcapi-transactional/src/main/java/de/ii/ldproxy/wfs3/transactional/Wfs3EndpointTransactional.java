@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -94,6 +95,16 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, TransactionalConfiguration.class) && providers.getFeatureProvider(apiData).supportsTransactions();
+    }
+
+    @Override
+    public List<? extends FormatExtension> getFormats() {
+        if (formats==null)
+            formats = extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
+                    .stream()
+                    .filter(OgcApiFeatureFormatExtension::canSupportTransactions)
+                    .collect(Collectors.toList());
+        return formats;
     }
 
     @Override
@@ -226,12 +237,5 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
         if (!(featureProvider instanceof FeatureTransactions)) {
             throw new NotAllowedException("GET");
         }
-    }
-
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class);
-        return formats;
     }
 }

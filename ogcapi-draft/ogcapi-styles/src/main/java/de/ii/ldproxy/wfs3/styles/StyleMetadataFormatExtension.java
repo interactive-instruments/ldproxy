@@ -14,11 +14,11 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 
 import javax.ws.rs.core.Response;
 
-public interface StylesFormatExtension extends FormatExtension {
+public interface StyleMetadataFormatExtension extends FormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^/?styles/?$";
+        return "^/?styles/[^\\/]+/metadata/?$";
     }
 
     @Override
@@ -26,8 +26,8 @@ public interface StylesFormatExtension extends FormatExtension {
         return isExtensionEnabled(apiData, StylesConfiguration.class);
     }
 
-    Response getStylesResponse(Styles styles,
-                               OgcApiApi api,
-                               OgcApiRequestContext requestContext);
+    Response getStyleMetadataResponse(StyleMetadata metadata,
+                                      OgcApiApi api,
+                                      OgcApiRequestContext requestContext);
 
 }

@@ -74,6 +74,11 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
     }
 
     @Override
+    public boolean canSupportTransactions() {
+        return true;
+    }
+
+    @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }

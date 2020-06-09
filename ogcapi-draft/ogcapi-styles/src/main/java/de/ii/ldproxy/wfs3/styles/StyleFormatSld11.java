@@ -46,7 +46,21 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
+    public boolean canSupportTransactions() {
+        return true;
+    }
+
+    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new ObjectSchema())
+                .schemaRef("#/components/schemas/anyObject")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
         return new ImmutableOgcApiMediaTypeContent.Builder()
                 .schema(new ObjectSchema())
                 .schemaRef("#/components/schemas/anyObject")

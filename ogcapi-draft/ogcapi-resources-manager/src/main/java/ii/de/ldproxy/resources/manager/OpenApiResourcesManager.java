@@ -65,6 +65,7 @@ public class OpenApiResourcesManager implements OpenApiExtension {
     @Override
     public OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 datasetData) {
 
+        /*
         if (!isEnabledForApi(datasetData)) {
             return openAPI;
         }
@@ -148,6 +149,7 @@ public class OpenApiResourcesManager implements OpenApiExtension {
             pathItemResource.put(opPutResource.responses(putResource))
                          .delete(opDeleteResource.responses(deleteResource));
         }
+         */
 
         return openAPI;
     }

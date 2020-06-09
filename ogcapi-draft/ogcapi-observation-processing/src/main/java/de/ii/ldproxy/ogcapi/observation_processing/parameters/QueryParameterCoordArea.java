@@ -26,7 +26,7 @@ import java.util.Vector;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCoordArea extends QueryParameterGeometryHelper implements OgcApiQueryParameter {
+public class QueryParameterCoordArea extends GeometryHelper implements OgcApiQueryParameter {
 
     final OgcApiFeatureCoreProviders providers;
     final FeatureProcessInfo featureProcessInfo;

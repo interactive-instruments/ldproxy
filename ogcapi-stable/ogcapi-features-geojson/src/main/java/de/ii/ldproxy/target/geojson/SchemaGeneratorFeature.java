@@ -15,8 +15,9 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Component
@@ -33,6 +34,9 @@ public class SchemaGeneratorFeature {
             .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")));
 
     final static String DEFINITIONS_TOKEN = "definitions";
+
+    private ConcurrentMap<String, Schema> schemaMapOpenApi = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, Map<String, Object>> schemaMapJson = new ConcurrentHashMap<>();
 
     @Requires
     OgcApiFeatureCoreProviders providers;
@@ -53,27 +57,30 @@ public class SchemaGeneratorFeature {
     }
 
     public Schema getSchemaOpenApi(OgcApiApiDataV2 apiData, String collectionId) {
+        String key = apiData.getId()+"__"+collectionId;
+        if (!schemaMapOpenApi.containsKey(key)) {
+            FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
+                    .get(collectionId);
+            FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
+            FeatureSchema featureType = featureProvider.getData()
+                    .getTypes()
+                    .get(collectionId);
 
-        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
-                .get(collectionId);
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
-        FeatureSchema featureType = featureProvider.getData()
-                .getTypes()
-                .get(collectionId);
+            boolean flatten = geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
+                    geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX;
 
-        boolean flatten = geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
-                geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX;
-
-        ContextOpenApi featureContext = processPropertiesOpenApi(featureType, true, flatten);
-        return new ObjectSchema()
-                .title(featureType.getLabel().orElse(null))
-                .description(featureType.getDescription().orElse(null))
-                .required(ImmutableList.of("type", "geometry", "properties"))
-                .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
-                .addProperties("geometry", featureContext.geometry)
-                .addProperties("properties", featureContext.properties)
-                .addProperties("id", new StringSchema())
-                .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")));
+            ContextOpenApi featureContext = processPropertiesOpenApi(featureType, true, flatten);
+            schemaMapOpenApi.put(key, new ObjectSchema()
+                    .title(featureType.getLabel().orElse(null))
+                    .description(featureType.getDescription().orElse(null))
+                    .required(ImmutableList.of("type", "geometry", "properties"))
+                    .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
+                    .addProperties("geometry", featureContext.geometry)
+                    .addProperties("properties", featureContext.properties)
+                    .addProperties("id", new StringSchema())
+                    .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link"))));
+        }
+        return schemaMapOpenApi.get(key);
     }
 
     public List<String> getPropertyNames(OgcApiApiDataV2 apiData, String collectionId) {
@@ -321,74 +328,76 @@ public class SchemaGeneratorFeature {
     }
 
     public Map<String, Object> getSchemaJson(OgcApiApiDataV2 apiData, String collectionId, Optional<String> schemaUri) {
+        String key = apiData.getId()+"__"+collectionId;
+        if (!schemaMapJson.containsKey(key)) {
 
-        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
-                .get(collectionId);
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
-        FeatureSchema featureType = featureProvider.getData()
-                .getTypes()
-                .get(collectionId);
+            FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
+                    .get(collectionId);
+            FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
+            FeatureSchema featureType = featureProvider.getData()
+                    .getTypes()
+                    .get(collectionId);
 
-        boolean flatten = geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
-                geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX;
+            boolean flatten = geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
+                    geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX;
 
-        ContextJsonSchema featureContext = processPropertiesJsonSchema(featureType, true, flatten, 0);
+            ContextJsonSchema featureContext = processPropertiesJsonSchema(featureType, true, flatten);
 
-        ImmutableMap.Builder<String, Object> definitionsMapBuilder = ImmutableMap.<String, Object>builder();
-        Set<FeatureSchema> processed = new HashSet<>();
-        Set<FeatureSchema> current = featureContext.definitions;
+            ImmutableMap.Builder<String, Object> definitionsMapBuilder = ImmutableMap.<String, Object>builder();
+            Set<FeatureSchema> processed = new HashSet<>();
+            Set<FeatureSchema> current = featureContext.definitions;
 
-        AtomicInteger idx = new AtomicInteger(1);
-        while (!flatten && !current.isEmpty()) {
-            Set<FeatureSchema> next = new HashSet<>();
-            current.stream()
-                    .filter(defObject -> !processed.contains(defObject))
-                    .forEach(defObject -> {
-                        ContextJsonSchema definitionContext = processPropertiesJsonSchema(defObject, false, false, idx.getAndIncrement());
-                        definitionsMapBuilder.put(definitionContext.objectKey, ImmutableMap.<String, Object>builder()
-                                .put("type", "object")
-                                .put("title", defObject.getLabel())
-                                .put("description", defObject.getDescription())
-                                .put("required", ImmutableList.builder()
-                                        .addAll(definitionContext.required)
-                                        .build())
-                                .put("properties", definitionContext.properties)
-                                .build());
-                        next.addAll(definitionContext.definitions);
-                        processed.add(defObject);
-                    });
-            current = next;
+            while (!flatten && !current.isEmpty()) {
+                Set<FeatureSchema> next = new HashSet<>();
+                current.stream()
+                        .filter(defObject -> !processed.contains(defObject))
+                        .forEach(defObject -> {
+                            ContextJsonSchema definitionContext = processPropertiesJsonSchema(defObject, false, false);
+                            definitionsMapBuilder.put(definitionContext.objectKey, ImmutableMap.<String, Object>builder()
+                                    .put("type", "object")
+                                    .put("title", defObject.getLabel())
+                                    .put("description", defObject.getDescription())
+                                    .put("required", ImmutableList.builder()
+                                            .addAll(definitionContext.required)
+                                            .build())
+                                    .put("properties", definitionContext.properties)
+                                    .build());
+                            next.addAll(definitionContext.definitions);
+                            processed.add(defObject);
+                        });
+                current = next;
+            }
+
+            schemaMapJson.put(key, ImmutableMap.<String, Object>builder()
+                    .put("$schema", "http://json-schema.org/draft-07/schema#")
+                    .put("$id", schemaUri)
+                    .put("type", "object")
+                    .put("title", featureType.getLabel())
+                    .put("description", featureType.getDescription())
+                    .put("required", ImmutableList.builder()
+                            .add("type", "geometry", "properties")
+                            .build())
+                    .put("properties", ImmutableMap.builder()
+                            .put("type", ImmutableMap.builder()
+                                    .put("type", "string")
+                                    .put("enum", ImmutableList.builder()
+                                            .add("Feature")
+                                            .build())
+                                    .build())
+                            .put("id", ImmutableMap.builder()
+                                    .put("type", "string")
+                                    .build())
+                            .put("links", ImmutableMap.builder()
+                                    .put("type", "array")
+                                    .put("items", ImmutableMap.builder().put("$ref", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link").build())
+                                    .build())
+                            .put("geometry", featureContext.geometry)
+                            .put("properties", featureContext.properties)
+                            .build())
+                    .put(DEFINITIONS_TOKEN, definitionsMapBuilder.build())
+                    .build());
         }
-
-        return ImmutableMap.<String, Object>builder()
-                .put("$schema", "http://json-schema.org/draft-07/schema#")
-                .put("$id", schemaUri)
-                .put("type", "object")
-                .put("title", featureType.getLabel())
-                .put("description", featureType.getDescription())
-                .put("required", ImmutableList.builder()
-                        .add("type", "geometry", "properties")
-                        .build())
-                .put("properties", ImmutableMap.builder()
-                        .put("type", ImmutableMap.builder()
-                                .put("type", "string")
-                                .put("enum", ImmutableList.builder()
-                                        .add("Feature")
-                                        .build())
-                                .build())
-                        .put("id", ImmutableMap.builder()
-                                .put("type", "string")
-                                .build())
-                        .put("links", ImmutableMap.builder()
-                                .put("type", "array")
-                                .put("items", ImmutableMap.builder().put("$ref", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link").build())
-                                .build())
-                        .put("geometry", featureContext.geometry)
-                        .put("properties", featureContext.properties)
-                        .build())
-                .put(DEFINITIONS_TOKEN, definitionsMapBuilder.build())
-                .build();
-
+        return schemaMapJson.get(key);
     }
 
     private Map<String, Object> getJsonSchemaForLiteralType(de.ii.xtraplatform.features.domain.SchemaBase.Type type) {
@@ -407,10 +416,14 @@ public class SchemaGeneratorFeature {
         return ImmutableMap.of();
     }
 
-    private ContextJsonSchema processPropertiesJsonSchema(FeatureSchema schema, boolean isFeature, boolean flatten, int idx) {
+    private String getFallbackTypeName(FeatureSchema property) {
+        return "type_"+Integer.toHexString(property.hashCode());
+    }
+
+    private ContextJsonSchema processPropertiesJsonSchema(FeatureSchema schema, boolean isFeature, boolean flatten) {
 
         ContextJsonSchema context = new ContextJsonSchema();
-        context.objectKey = schema.getObjectType().orElse("type_"+idx);
+        context.objectKey = schema.getObjectType().orElse(getFallbackTypeName(schema));
 
         List<FeatureSchema> properties = flatten ? schema.getAllNestedProperties() : schema.getProperties();
         // maps from the dotted path name to the path name with array brackets
@@ -446,7 +459,7 @@ public class SchemaGeneratorFeature {
                                     pSchema = ImmutableMap.of("$ref", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link");
                                     break;
                                 }
-                                pSchema = ImmutableMap.of("$ref", "#/"+DEFINITIONS_TOKEN+"/"+property.getObjectType().orElse("type"));
+                                pSchema = ImmutableMap.of("$ref", "#/"+DEFINITIONS_TOKEN+"/"+property.getObjectType().orElse(getFallbackTypeName(property)));
                                 context.definitions.add(property);
                             }
                             break;

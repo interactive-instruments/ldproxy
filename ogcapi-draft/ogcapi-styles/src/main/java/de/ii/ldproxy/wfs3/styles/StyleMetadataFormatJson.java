@@ -2,7 +2,6 @@ package de.ii.ldproxy.wfs3.styles;
 
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.infra.json.SchemaGeneratorImpl;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -17,7 +16,7 @@ import javax.ws.rs.core.Response;
 @Component
 @Provides
 @Instantiate
-public class StylesFormatJson implements StylesFormatExtension {
+public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
 
     @Requires
     SchemaGenerator schemaGenerator;
@@ -28,13 +27,10 @@ public class StylesFormatJson implements StylesFormatExtension {
             .parameter("json")
             .build();
 
-    private final Schema schemaStyles;
-    public final static String SCHEMA_REF_STYLES = "#/components/schemas/Styles";
     private final Schema schemaStyleMetadata;
     public final static String SCHEMA_REF_STYLE_METADATA = "#/components/schemas/StyleMetadata";
 
-    public StylesFormatJson() {
-        schemaStyles = schemaGenerator.getSchema(Styles.class);
+    public StyleMetadataFormatJson() {
         schemaStyleMetadata = schemaGenerator.getSchema(StyleMetadata.class);
     }
 
@@ -44,14 +40,20 @@ public class StylesFormatJson implements StylesFormatExtension {
     }
 
     @Override
-    public Response getStylesResponse(Styles styles, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public boolean canSupportTransactions() {
+        return true;
+    }
+
+    @Override
+    public Response getStyleMetadataResponse(StyleMetadata metadata, OgcApiApi api, OgcApiRequestContext requestContext) {
         boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
-        return Response.ok(styles)
+        return Response.ok()
+                .entity(metadata)
+                .links(includeLinkHeader ? metadata.getLinks().stream().map(link -> link.getLink()).toArray(Link[]::new) : null)
                 .type(MediaType.APPLICATION_JSON_TYPE)
-                .links(includeLinkHeader ? styles.getLinks().stream().map(link -> link.getLink()).toArray(Link[]::new) : null)
                 .build();
     }
 
@@ -59,13 +61,19 @@ public class StylesFormatJson implements StylesFormatExtension {
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
 
         // TODO add examples
-        if (path.equals("/styles"))
+        if (path.equals("/styles/{styleId}/metadata"))
             return new ImmutableOgcApiMediaTypeContent.Builder()
-                    .schema(schemaStyles)
-                    .schemaRef(SCHEMA_REF_STYLES)
+                    .schema(schemaStyleMetadata)
+                    .schemaRef(SCHEMA_REF_STYLE_METADATA)
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
-        else if (path.equals("/styles/{styleId}/metadata"))
+
+        throw new ServerErrorException("Unexpected path "+path,500);
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
+        if (path.equals("/styles/{styleId}/metadata") && (method==OgcApiContext.HttpMethods.PUT || method==OgcApiContext.HttpMethods.PATCH))
             return new ImmutableOgcApiMediaTypeContent.Builder()
                     .schema(schemaStyleMetadata)
                     .schemaRef(SCHEMA_REF_STYLE_METADATA)

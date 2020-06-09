@@ -1,6 +1,5 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
-import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
@@ -26,7 +25,7 @@ import java.util.Vector;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterBbox extends QueryParameterGeometryHelper implements OgcApiQueryParameter {
+public class QueryParameterBbox extends GeometryHelper implements OgcApiQueryParameter {
 
     private final Schema baseSchema;
     final FeatureProcessInfo featureProcessInfo;
