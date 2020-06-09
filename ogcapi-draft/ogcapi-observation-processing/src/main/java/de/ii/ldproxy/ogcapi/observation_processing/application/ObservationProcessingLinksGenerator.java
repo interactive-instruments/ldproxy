@@ -22,6 +22,8 @@ import java.util.Optional;
  */
 public class ObservationProcessingLinksGenerator {
 
+    private static final String DAPA_PATH_ELEMENT = "dapa";
+
     /**
      * generates the links on the page /{apiId}/collections/{collectionId}
      *
@@ -37,7 +39,7 @@ public class ObservationProcessingLinksGenerator {
                 .add(new ImmutableOgcApiLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
-                                .ensureLastPathSegment("variables")
+                                .ensureLastPathSegments(DAPA_PATH_ELEMENT, "variables")
                                 .removeParameters("f")
                                 .toString()
                         )
