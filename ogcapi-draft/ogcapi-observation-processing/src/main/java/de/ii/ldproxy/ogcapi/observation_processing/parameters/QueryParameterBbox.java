@@ -103,7 +103,7 @@ public class QueryParameterBbox extends GeometryHelper implements OgcApiQueryPar
     @Override
     public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType, Map<String, Object> context, Map<String, String> parameters, OgcApiApiDataV2 apiData) {
         String bbox = parameters.get(getName());
-        if (bbox==null)
+        if (bbox==null && !parameters.containsKey("coord"))
             bbox = getDefault(apiData, Optional.of(featureType.getId())).orElse(null);
         if (bbox!=null) {
             List<List<List<List<Float>>>> area = new Vector<>();
