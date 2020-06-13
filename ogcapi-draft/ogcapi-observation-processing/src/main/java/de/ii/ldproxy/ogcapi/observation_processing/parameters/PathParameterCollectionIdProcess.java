@@ -116,7 +116,7 @@ public class PathParameterCollectionIdProcess implements OgcApiPathParameter {
                     for (String requiredProperty: new String[]{"observedProperty", "result", "phenomenonTime"}) {
                         // note: this also checks implicitly that these have literal values (no object, no array)
                         if (!featureProperties.stream().anyMatch(property -> property.getName().equals(requiredProperty))) {
-                            LOGGER.info("Building block OBSERVATION_PROCESSING deactivated for collection '{}'. Features with a with a property '{}' are required.", collectionId, requiredProperty);
+                            LOGGER.info("Building block OBSERVATION_PROCESSING deactivated for collection '{}'. Features with a property '{}' are required.", collectionId, requiredProperty);
                             return;
                         }
                         Optional<OgcApiFeaturesCollectionQueryables> queryables = apiData.getCollections()

@@ -3,6 +3,7 @@ package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
@@ -21,6 +22,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ServerErrorException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -94,18 +96,15 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
             final Map<String, String> filterableFields = featureType.getExtension(OgcApiFeaturesCoreConfiguration.class)
                     .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
                     .orElse(ImmutableMap.of());
+            if (!filterableFields.containsKey("observedProperty")) {
+                throw new ServerErrorException(String.format("The observation collection '%s' has no 'observedProperty' attribute.", featureType.getId()), 500);
+            }
             Set<String> variables = new TreeSet<>();
             List<String> vars = Splitter.on(",")
                     .trimResults()
                     .omitEmptyStrings()
                     .splitToList(parameters.get("variables"));
-            for (String varName : vars) {
-                if (filterableFields.containsKey("observedProperty")) {
-                    variables.add(varName);
-                } else {
-                    throw new BadRequestException(String.format("The parameter '%s' includes an unknown variable '%s'.", "variables", varName));
-                }
-            }
+            variables.addAll(vars);
             if (!variables.isEmpty()) {
                 String filter = parameters.get("filter");
                 filter = (filter==null? "" : filter+" AND ") + "(observedProperty IN ('" + String.join("','", variables) + "'))";
@@ -114,6 +113,11 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
             // NOTE: don't remove the parameter, we still need it for the query builder
         }
         return parameters;
+    }
+
+    @Override
+    public Set<String> getFilterParameters(Set<String> filterParameters, OgcApiApiDataV2 apiData, String collectionId) {
+        return ImmutableSet.<String>builder().addAll(filterParameters).add("filter").build();
     }
 
     @Override
