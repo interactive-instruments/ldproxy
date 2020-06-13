@@ -44,7 +44,13 @@ public class QueryParameterBbox extends GeometryHelper implements OgcApiQueryPar
 
     @Override
     public String getDescription() {
-        return "TODO";
+        return "Only features that have a geometry that intersects the bounding box are selected. " +
+                "The bounding box is provided as four numbers:\n\n" +
+                "* Lower left corner, coordinate axis 1 \n" +
+                "* Lower left corner, coordinate axis 2 \n" +
+                "* Upper right corner, coordinate axis 1 \n" +
+                "* Upper right corner, coordinate axis 2 \n\n" +
+                "The coordinate reference system of the values is WGS 84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84).";
     }
 
     @Override
