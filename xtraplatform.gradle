@@ -9,7 +9,7 @@ dependencies {
 allprojects {
     repositories {
         maven {
-            url "https://repo.boundlessgeo.com/main/"
+            url "https://repo.osgeo.org/repository/release"
         }
         maven {
             url "http://maven.geomajas.org"
