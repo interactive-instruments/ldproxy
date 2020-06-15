@@ -72,7 +72,7 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
                                               .orElse(ImmutableList.of("geojson:Feature"));
 
             writeContextAndJsonLdType(transformationContext, jsonLdOptions.get()
-                                                                          .getContext(), types, false);
+                                                                          .getContext(), types, !transformationContext.isFeatureCollection());
         }
 
         // next chain for extensions
