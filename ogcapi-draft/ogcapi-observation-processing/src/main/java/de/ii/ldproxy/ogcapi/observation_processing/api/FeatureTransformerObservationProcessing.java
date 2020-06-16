@@ -178,13 +178,12 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
                         result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
             } else if (data instanceof ObservationCollectionPointList) {
                 ObservationCollectionPointList result = (ObservationCollectionPointList) data;
-                result.stream().forEach(pos -> pos.getValues().entrySet().stream().forEach(entry ->
-                        addFeature(features.addObject(), pos.getCode(), pos.getName(), pos.getGeometry(),
-                                pos.getInterval().getBegin(), pos.getInterval().getEnd(), pos.getValues())));
+                result.stream().forEach(pos -> addFeature(features.addObject(), pos.getCode(), pos.getName(), pos.getGeometry(),
+                                                          pos.getInterval().getBegin(), pos.getInterval().getEnd(), pos.getValues()));
             } else if (data instanceof ObservationCollectionArea) {
                 ObservationCollectionArea result = (ObservationCollectionArea) data;
                 addFeature(features.addObject(), Optional.empty(), Optional.empty(), result.getGeometry(),
-                        result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
+                           result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
             } else if (data instanceof DataArrayXyt) {
                 DataArrayXyt result = (DataArrayXyt) data;
                 Vector<String> vars = result.getVars();

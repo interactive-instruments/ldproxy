@@ -188,7 +188,6 @@ public class SchemaGeneratorFeature {
         Map<String,String> nameTitleMap = !flatten ? ImmutableMap.of() : getNameTitleMap(schema);
         properties.stream()
                 .forEachOrdered(property -> {
-                    boolean geometry = false;
                     Schema pSchema = null;
                     SchemaBase.Type propType = property.getType();
                     String propertyPath = String.join(".", property.getFullPath());
@@ -221,36 +220,36 @@ public class SchemaGeneratorFeature {
                             switch (property.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
                                 case POINT:
                                     pSchema = new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/pointGeoJSON");
-                                    geometry = true;
+                                    hasGeometry.set(true);
                                     break;
                                 case MULTI_POINT:
                                     pSchema = new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multipointGeoJSON");
-                                    geometry = true;
+                                    hasGeometry.set(true);
                                     break;
                                 case LINE_STRING:
                                     pSchema = new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/linestringGeoJSON");
-                                    geometry = true;
+                                    hasGeometry.set(true);
                                     break;
                                 case MULTI_LINE_STRING:
                                     pSchema = new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multilinestringGeoJSON");
-                                    geometry = true;
+                                    hasGeometry.set(true);
                                     break;
                                 case POLYGON:
                                     pSchema = new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/polygonGeoJSON");
-                                    geometry = true;
+                                    hasGeometry.set(true);
                                     break;
                                 case MULTI_POLYGON:
                                     pSchema = new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multipolygonGeoJSON");
-                                    geometry = true;
+                                    hasGeometry.set(true);
                                     break;
                                 case GEOMETRY_COLLECTION:
                                 case ANY:
                                 default:
                                     pSchema = new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/geometryGeoJSON");
-                                    geometry = true;
+                                    hasGeometry.set(true);
                                     break;
                                 case NONE:
-                                    geometry = false;
+                                    hasGeometry.set(true);
                                     break;
                             }
                             break;
@@ -260,7 +259,7 @@ public class SchemaGeneratorFeature {
                             break;
                     }
 
-                    if (isFeature && geometry) {
+                    if (isFeature && hasGeometry.get()) {
                         // only one geometry per feature, last one wins
                         context.geometry = pSchema;
                     } else if (!flatten) {

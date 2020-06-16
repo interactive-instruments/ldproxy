@@ -120,7 +120,7 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
                 .header("Access-Control-Allow-Origin","*") // TODO * not allowed with credentials
                 .header("Access-Control-Allow-Credentials","true")
                 .header("Access-Control-Allow-Methods", String.join(", ", supportedMethods))
-                .header("Access-Control-Allow-Headers", "Accept, Accept-Language, Origin, Content-Type, Content-Language, Authorization")
+                .header("Access-Control-Allow-Headers", "Accept, Accept-Language, Origin, Content-Type, Content-Language, Content-Crs, Authorization")
                 .build();
     }
 

@@ -165,6 +165,13 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
                                                 .addParameter("f","json")
                                                 .toString()
                                                 + "#/paths/" + path.replace("/","~1"))
+                                        .addLinks(new ImmutableOgcApiLink.Builder()
+                                                .href(requestContext.getUriCustomizer()
+                                                        .copy()
+                                                        .ensureLastPathSegment(path.substring(path.lastIndexOf("/")+1))
+                                                        .toString())
+                                                .rel("ogc-dapa-endpoint")
+                                                .build())
                                         .build();
                             return null;
                         })

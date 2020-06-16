@@ -61,20 +61,18 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     @Override
     public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
                                Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (!transformationContext.isFeatureCollection()) {
-            Optional<JsonLdOptions> jsonLdOptions = transformationContext.getApiData()
-                                                                         .getCollections()
-                                                                         .get(transformationContext.getCollectionId())
-                                                                         .getExtension(GeoJsonConfiguration.class)
-                                                                         .flatMap(GeoJsonConfiguration::getJsonLd);
+        Optional<JsonLdOptions> jsonLdOptions = transformationContext.getApiData()
+                                                                     .getCollections()
+                                                                     .get(transformationContext.getCollectionId())
+                                                                     .getExtension(GeoJsonConfiguration.class)
+                                                                     .flatMap(GeoJsonConfiguration::getJsonLd);
 
-            if (jsonLdOptions.isPresent()) {
-                List<String> types = jsonLdOptions.map(JsonLdOptions::getTypes)
-                                                  .orElse(ImmutableList.of("geojson:Feature"));
+        if (jsonLdOptions.isPresent()) {
+            List<String> types = jsonLdOptions.map(JsonLdOptions::getTypes)
+                                              .orElse(ImmutableList.of("geojson:Feature"));
 
-                writeContextAndJsonLdType(transformationContext, jsonLdOptions.get()
-                                                                              .getContext(), types);
-            }
+            writeContextAndJsonLdType(transformationContext, jsonLdOptions.get()
+                                                                          .getContext(), types, !transformationContext.isFeatureCollection());
         }
 
         // next chain for extensions
@@ -130,11 +128,19 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     private void writeContextAndJsonLdType(FeatureTransformationContextGeoJson transformationContext,
                                            String ldContext,
                                            List<String> types) throws IOException {
+        writeContextAndJsonLdType(transformationContext, ldContext, types, true);
+    }
 
-        transformationContext.getJson()
-                             .writeStringField("@context",
-                                     ldContext.replace("{{serviceUrl}}", transformationContext.getServiceUrl())
-                                              .replace("{{collectionId}}", transformationContext.getCollectionId()));
+    private void writeContextAndJsonLdType(FeatureTransformationContextGeoJson transformationContext,
+                                           String ldContext,
+                                           List<String> types,
+                                           boolean writeContext) throws IOException {
+
+        if (writeContext)
+            transformationContext.getJson()
+                                 .writeStringField("@context",
+                                         ldContext.replace("{{serviceUrl}}", transformationContext.getServiceUrl())
+                                                  .replace("{{collectionId}}", transformationContext.getCollectionId()));
 
         if (types.size() == 1) {
             // write @type

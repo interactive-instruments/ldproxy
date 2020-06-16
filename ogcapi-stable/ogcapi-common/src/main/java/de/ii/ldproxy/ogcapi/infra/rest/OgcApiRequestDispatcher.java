@@ -100,7 +100,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                     String.join(", ", knownParameters));
         }
 
-        ImmutableSet<OgcApiMediaType> supportedMediaTypes = method.equals("GET") ?
+        ImmutableSet<OgcApiMediaType> supportedMediaTypes = method.equals("GET") || method.equals("HEAD") ?
                 ogcApiEndpoint.getMediaTypes(service.getData(), subPath):
                 ogcApiEndpoint.getMediaTypes(service.getData(), subPath, method);
 

@@ -44,18 +44,18 @@ public interface OgcApiParameter extends OgcApiExtension {
         try {
             SchemaValidator validator = new SchemaValidatorImpl();
             String schemaContent = Json.mapper().writeValueAsString(getSchema(apiData, collectionId));
-            if (values.size()==1 && !getExplode() && values.get(0).contains(",")) {
-                values = Splitter.on(",")
-                        .trimResults()
-                        .omitEmptyStrings()
-                        .splitToList(values.get(0));
-            }
             Optional<String> result1 = Optional.empty();
             if (values.size()==1) {
                 // try non-array variant first
                 result1 = validator.validate(schemaContent, "\""+values.get(0)+"\"");
                 if (!result1.isPresent())
                     return Optional.empty();
+                if (!getExplode() && values.get(0).contains(",")) {
+                    values = Splitter.on(",")
+                            .trimResults()
+                            .omitEmptyStrings()
+                            .splitToList(values.get(0));
+                }
             }
             Optional<String> resultn = validator.validate(schemaContent, "[\"" + String.join("\",\"", values) + "\"]");
             if (resultn.isPresent()) {

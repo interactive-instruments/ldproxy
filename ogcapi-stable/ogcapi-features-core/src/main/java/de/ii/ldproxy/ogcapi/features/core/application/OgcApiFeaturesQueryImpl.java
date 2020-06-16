@@ -140,6 +140,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                                    .orElse(ImmutableMap.of());
 
         Set<String> filterParameters = ImmutableSet.of();
+        // TODO no longer needed
         for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
             filterParameters = parameterExtension.getFilterParameters(filterParameters, apiData);
             parameters = parameterExtension.transformParameters(collectionData, parameters, apiData);
