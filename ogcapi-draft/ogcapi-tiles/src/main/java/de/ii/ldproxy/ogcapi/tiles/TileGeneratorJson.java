@@ -172,7 +172,6 @@ public class TileGeneratorJson {
                 if (predefFilter != null) {
                     configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
                 }
-
                 CqlFilter combinedFilter;
                 if (otherFilters.isPresent() && configFilter.isPresent()) {
                     combinedFilter = CqlFilter.of(And.of(otherFilters.get(), configFilter.get(), spatialPredicate));

@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-public class ObservationProcessingVariablesView extends LdproxyView {
+public class ObservationProcessingVariablesView extends OgcApiView {
     public List<Variable> variables;
     public String uomTitle;
     public String none;
