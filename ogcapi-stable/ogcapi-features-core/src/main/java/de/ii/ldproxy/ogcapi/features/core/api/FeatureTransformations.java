@@ -61,6 +61,13 @@ public interface FeatureTransformations {
         getTransformations().forEach((property, mapping) -> {
             transformations.putIfAbsent(property, new ArrayList<>());
 
+            mapping.getNull()
+                    .ifPresent(nullValue -> transformations.get(property)
+                                                           .add(new ImmutableFeaturePropertyTransformerNullValue.Builder()
+                                                                                                            .propertyName(property)
+                                                                                                            .parameter(nullValue)
+                                                                                                            .build()));
+
             mapping.getStringFormat()
                    .ifPresent(stringFormat -> transformations.get(property)
                                                              .add(ImmutableFeaturePropertyTransformerStringFormat.builder()

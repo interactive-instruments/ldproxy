@@ -12,8 +12,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
@@ -21,6 +23,7 @@ import java.util.Map;
 public abstract class TileCollections extends PageRepresentation {
 
     public abstract List<TileCollection> getTileMatrixSetLinks();
+    public abstract Optional<double[]> getDefaultCenter();
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();

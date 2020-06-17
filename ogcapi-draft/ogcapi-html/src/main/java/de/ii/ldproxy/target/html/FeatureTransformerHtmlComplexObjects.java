@@ -343,7 +343,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
     private void postProcessLinkTitles(ObjectDTO object) {
         for (PropertyDTO property: object.properties()) {
             for (ValueDTO value: property.values) {
-                int idx = value.value.indexOf("{{title}}");
+                int idx = (Objects.nonNull(value.value)) ? value.value.indexOf("{{title}}") : -1;
                 if (idx != -1) {
                     try {
                         String href = value.value.substring(9,idx-2);
@@ -429,28 +429,32 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                 value = valueTransformations.get().transform(currentProperty, value);
             }
 
-            if (currentFeature.name != null) {
-                int pos = currentFeature.name.indexOf("{{" + currentProperty.getName() + "}}");
-                if (pos > -1) {
-                    currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
+            // skip, if the value has been transformed to null
+            if (Objects.nonNull(value)) {
+                if (currentFeature.name != null) {
+                    int pos = currentFeature.name.indexOf("{{" + currentProperty.getName() + "}}");
+                    if (pos > -1) {
+                        currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
+                    }
                 }
-            }
 
-            // special treatment for links - TODO generalize, use transformations?
-            if (currentProperty.getType() == FeatureProperty.Type.STRING &&
-                currentProperty.getAdditionalInfo().containsKey("role")) {
-                if (currentProperty.getAdditionalInfo().get("role").equalsIgnoreCase("LINKHREF")) {
-                    String updatedValue = currentValue.value.replaceAll("\\{\\{href\\}\\}", value);
-                    currentValue.setValue(updatedValue);
-                } else if (currentProperty.getAdditionalInfo().get("role").equalsIgnoreCase("LINKTITLE")) {
-                    String updatedValue = currentValue.value.replaceAll("\\{\\{title\\}\\}", value);
-                    currentValue.setValue(updatedValue);
+                // special treatment for links - TODO generalize, use transformations?
+                if (currentProperty.getType() == FeatureProperty.Type.STRING &&
+                        currentProperty.getAdditionalInfo().containsKey("role")) {
+                    if (currentProperty.getAdditionalInfo().get("role").equalsIgnoreCase("LINKHREF")) {
+                        String updatedValue = currentValue.value.replaceAll("\\{\\{href\\}\\}", value);
+                        currentValue.setValue(updatedValue);
+                    } else if (currentProperty.getAdditionalInfo().get("role").equalsIgnoreCase("LINKTITLE")) {
+                        String updatedValue = currentValue.value.replaceAll("\\{\\{title\\}\\}", value);
+                        currentValue.setValue(updatedValue);
+                    }
+                } else {
+                    // the default
+                    currentValue.setValue(value);
                 }
             } else {
-                // the default
-                currentValue.setValue(value);
+                currentValue.setValue(null);
             }
-
         }
 
         // reset

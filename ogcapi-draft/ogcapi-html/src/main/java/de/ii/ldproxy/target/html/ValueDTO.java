@@ -17,16 +17,20 @@ public class ValueDTO implements ObjectOrPropertyOrValueDTO {
         this.value = value;
     }
 
+    public boolean isNull() {
+        return Objects.isNull(value);
+    }
+
     public boolean isHtml() {
-        return value.startsWith("<") && (value.endsWith(">") || value.endsWith(">\n")) && value.contains("</");
+        return Objects.isNull(value) ? false : value.startsWith("<") && (value.endsWith(">") || value.endsWith(">\n")) && value.contains("</");
     }
 
     public boolean isUrl() {
-        return value.startsWith("http://") || value.startsWith("https://");
+        return Objects.isNull(value) ? false : value.startsWith("http://") || value.startsWith("https://");
     }
 
     public boolean isImageUrl() {
-        return isUrl() && (value.toLowerCase()
+        return Objects.isNull(value) ? false : isUrl() && (value.toLowerCase()
                 .endsWith(".png") || value.toLowerCase()
                 .endsWith(".jpg") || value.toLowerCase()
                 .endsWith(".jpeg") || value.toLowerCase()
@@ -39,6 +43,14 @@ public class ValueDTO implements ObjectOrPropertyOrValueDTO {
 
     public boolean isLevel3() {
         return getLevel()==3;
+    }
+
+    public boolean isLevel4() {
+        return getLevel()==4;
+    }
+
+    public boolean isLevel5() {
+        return getLevel()==5;
     }
 
     private int getLevel() {

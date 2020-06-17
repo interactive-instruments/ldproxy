@@ -42,19 +42,19 @@
             return new ol.style.Style({
                 stroke: new ol.style.Stroke({
                     width: 1,
-                    color: 'rgba(0, 102, 204, 0.6)'
+                    color: 'rgba(0, 102, 204, 0.9)'
                 }),
                 fill: new ol.style.Fill({
-                    color: 'rgba(0, 102, 204, 0.15)'
+                    color: 'rgba(0, 102, 204, 0.3)'
                 }),
                 image: new ol.style.Circle({
                     radius: 3,
                     fill: new ol.style.Fill({
-                        color: 'rgba(0, 102, 204, 0.15)'
+                        color: 'rgba(0, 102, 204, 0.6)'
                     }),
                     stroke: new ol.style.Stroke({
-                        width: 1,
-                        color: 'rgba(0, 102, 204, 0.8)'
+                        width: 2,
+                        color: 'rgba(0, 102, 204, 0.9)'
                     })
                 })
             })
@@ -100,11 +100,16 @@
             sizes: sizes{{tileMatrixSet}}
         });
 
-		var tilesUrl{{tileMatrixSet}} = template.replace("{tileMatrixSetId}","{{tileMatrixSet}}").replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}")
+		var tilesUrl{{tileMatrixSet}} = template.replace("{tileMatrixSetId}","{{tileMatrixSet}}").replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}");
+
+        {{#tileJsonLink}}
+		var tileJsonUrl{{tileMatrixSet}} = "{{href}}".replace("{tileMatrixSetId}","{{tileMatrixSet}}");
+        {{/tileJsonLink}}
 
 		var view{{tileMatrixSet}} = new ol.View({
 							projection: '{{projection}}'
 						});
+
 		var layer{{tileMatrixSet}} = new ol.layer.VectorTile({
 								declutter: true,
 								title: "Vector Tiles",
@@ -118,6 +123,9 @@
 								style: defaultStyle
 							});
         const extent{{tileMatrixSet}} = ol.proj.transformExtent(window._ldproxy.ol_map.extent, 'EPSG:4326', '{{projection}}');
+        const center{{tileMatrixSet}} = ol.proj.fromLonLat([ {{defaultCenterLon}}, {{defaultCenterLat}} ], '{{projection}}');
+		const zoom{{tileMatrixSet}} = {{defaultZoomLevel}};
+
     {{/tileCollections}}
     {{^tileCollections}}
          var tilesUrl = template.replace("{tileMatrixSetId}","WebMercatorQuad").replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}")
@@ -175,7 +183,10 @@
 		  if (val === "{{tileMatrixSet}}") {
 			map.setView(view{{tileMatrixSet}});
 			map.getLayers().setAt(1, layer{{tileMatrixSet}});
-			map.getView().fit(extent{{tileMatrixSet}}, map.getSize());
+			map.getView().setCenter(center{{tileMatrixSet}})
+			map.getView().setZoom(zoom{{tileMatrixSet}});
+			// map.getView().fit(extent{{tileMatrixSet}}, map.getSize());
+            tilejson.href = tileJsonUrl{{tileMatrixSet}};
 		  }
     {{/tileCollections}}
 		  info.innerText = '';

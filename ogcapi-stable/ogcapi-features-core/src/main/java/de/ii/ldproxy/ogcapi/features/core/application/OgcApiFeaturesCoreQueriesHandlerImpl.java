@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeaturesLinksGenerator;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreQueriesHandler;
+import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -39,7 +40,10 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
@@ -60,16 +64,21 @@ import static com.codahale.metrics.MetricRegistry.name;
 @Provides
 public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQueriesHandler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFeaturesCoreQueriesHandlerImpl.class);
+
     private final I18n i18n;
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
+    private CodelistRegistry codelistRegistry;
 
     public OgcApiFeaturesCoreQueriesHandlerImpl(@Requires I18n i18n,
                                                 @Requires CrsTransformerFactory crsTransformerFactory,
-                                                @Requires Dropwizard dropwizard) {
+                                                @Requires Dropwizard dropwizard,
+                                                @Requires CodelistRegistry codelistRegistry) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
+        this.codelistRegistry = codelistRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
@@ -159,15 +168,19 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         Optional<CrsTransformer> crsTransformer = Optional.empty();
         boolean swapCoordinates = false;
 
+        EpsgCrs targetCrs = query.getCrs()
+                                 .orElse(defaultCrs);
         if (featureProvider.supportsCrs()) {
-            EpsgCrs sourceCrs = featureProvider.crs().getNativeCrs();
-            EpsgCrs targetCrs = query.getCrs().orElse(defaultCrs);
+            EpsgCrs sourceCrs = featureProvider.crs()
+                                               .getNativeCrs();
             //TODO: warmup on service start
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
             swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get()
-                                                                                 .needsCoordinateSwap() : query.getCrs().isPresent() && featureProvider.crs().shouldSwapCoordinates(query.getCrs().get());
+                                                                         .needsCoordinateSwap() : query.getCrs()
+                                                                                                       .isPresent() && featureProvider.crs()
+                                                                                                                                      .shouldSwapCoordinates(query.getCrs()
+                                                                                                                                                                  .get());
         }
-
 
 
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
@@ -182,6 +195,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
+                .codelists(codelistRegistry.getCodelists())
                 .defaultCrs(defaultCrs)
                 .links(links)
                 .isFeatureCollection(isCollection)
@@ -201,56 +215,63 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         if (outputFormat.canPassThroughFeatures() && featureProvider.supportsPassThrough() && outputFormat.getMediaType()
                                                                                                           .matches(featureProvider.passThrough()
                                                                                                                                   .getMediaType())) {
-            FeatureSourceStream featureStream = featureProvider.passThrough()
-                                                               .getFeatureSourceStream(query);
+            FeatureSourceStream<?> featureStream = featureProvider.passThrough()
+                                                                  .getFeatureSourceStream(query);
 
-            streamingOutput = stream2(featureStream, outputStream -> outputFormat.getFeatureConsumer(transformationContext.outputStream(outputStream)
-                                                                                                                          .build())
-                                                                                 .get());
+            streamingOutput = stream2(featureStream, !isCollection, outputStream -> outputFormat.getFeatureConsumer(transformationContext.outputStream(outputStream)
+                                                                                                                                         .build())
+                                                                                                .get());
         } else if (outputFormat.canTransformFeatures()) {
             FeatureStream2 featureStream = featureProvider.queries()
                                                           .getFeatureStream2(query);
 
-            streamingOutput = stream(featureStream, outputStream -> outputFormat.getFeatureTransformer(transformationContext.outputStream(outputStream)
-                                                                                                                            .build(), requestContext.getLanguage())
-                                                                                .get());
+            streamingOutput = stream(featureStream, !isCollection, outputStream -> outputFormat.getFeatureTransformer(transformationContext.outputStream(outputStream)
+                                                                                                                                           .build(), requestContext.getLanguage())
+                                                                                               .get());
         } else {
             throw new NotAcceptableException();
         }
 
-        // TODO add Content-Crs header
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
         // TODO For now remove the "next" links from the headers since at this point we don't know, whether there will be a next page
 
         return response(streamingOutput,
                 requestContext.getMediaType(),
                 requestContext.getLanguage(),
-                includeLinkHeader ? links.stream()
-                                         .filter(link -> !link.getRel().equalsIgnoreCase("next"))
-                                         .collect(ImmutableList.toImmutableList()) :
-                        null);
+                includeLinkHeader
+                        ? links.stream()
+                               .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
+                               .collect(ImmutableList.toImmutableList())
+                        : ImmutableList.of(),
+                targetCrs);
     }
 
     private Response response(Object entity, OgcApiMediaType mediaType, Optional<Locale> language,
-                              List<OgcApiLink> links) {
+                              List<OgcApiLink> links, EpsgCrs crs) {
         Response.ResponseBuilder response = Response.ok()
                                                     .entity(entity);
 
-        if (mediaType != null)
+        if (mediaType != null) {
             response.type(mediaType.type()
                                    .toString());
+        }
 
-        if (language.isPresent())
+        if (language.isPresent()) {
             response.language(language.get());
+        }
 
-        if (links != null)
-            links.stream()
-                 .forEach(link -> response.links(link.getLink()));
+        if (links != null) {
+            links.forEach(link -> response.links(link.getLink()));
+        }
+
+        if (crs != null) {
+            response.header("Content-Crs", crs.toUriString());
+        }
 
         return response.build();
     }
 
-    private StreamingOutput stream(FeatureStream2 featureTransformStream,
+    private StreamingOutput stream(FeatureStream2 featureTransformStream, boolean failIfEmpty,
                                    final Function<OutputStream, FeatureTransformer2> featureTransformer) {
         Timer.Context timer = metricRegistry.timer(name(OgcApiFeaturesCoreQueriesHandlerImpl.class, "stream"))
                                             .time();
@@ -259,10 +280,23 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
         return outputStream -> {
             try {
-                featureTransformStream.runWith(featureTransformer.apply(outputStream))
-                                      .toCompletableFuture()
-                                      .join();
+                FeatureStream2.Result result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
+                                                                     .toCompletableFuture()
+                                                                     .join();
                 timer.stop();
+
+                if (result.getError()
+                          .isPresent()) {
+                    LOGGER.error("Feature stream error", result.getError()
+                                                               .get());
+
+                    throw new InternalServerErrorException("There was an error processing your request. It has been logged.");
+                }
+
+                if (result.isEmpty() && failIfEmpty) {
+                    throw new NotFoundException();
+                }
+
             } catch (CompletionException e) {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
@@ -272,13 +306,25 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         };
     }
 
-    private StreamingOutput stream2(FeatureSourceStream featureTransformStream,
+    private StreamingOutput stream2(FeatureSourceStream<?> featureTransformStream, boolean failIfEmpty,
                                     final Function<OutputStream, FeatureConsumer> featureTransformer) {
         return outputStream -> {
             try {
-                featureTransformStream.runWith(featureTransformer.apply(outputStream))
-                                      .toCompletableFuture()
-                                      .join();
+                FeatureStream2.Result result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
+                                                                     .toCompletableFuture()
+                                                                     .join();
+
+                if (result.getError()
+                          .isPresent()) {
+                    LOGGER.error("Feature stream error", result.getError()
+                                                               .get());
+
+                    throw new InternalServerErrorException("There was an error processing your request. It has been logged.");
+                }
+
+                if (result.isEmpty() && failIfEmpty) {
+                    throw new NotFoundException();
+                }
             } catch (CompletionException e) {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();

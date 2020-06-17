@@ -7,12 +7,33 @@
     <br/>
 
     <div class="row my-3">
-        <div class="col-md-3">
+        <div class="col-md-2 font-weight-bold">{{tileMatrixSetTitle}}</div>
+        <div class="col-md-10">
             <select id="tilingScheme" onchange="setTilingScheme()">
                 {{#tileCollections}}<option value="{{tileMatrixSet}}">{{tileMatrixSet}}</option>{{/tileCollections}}
             </select>
         </div>
-        <div class="col-md-9">
+    </div>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{metadataTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#tileJsonLink}}
+                    <li>
+                        <a id="tilejson" href="{{href}}" target="_blank">{{title}}</a>
+                    </li>
+                {{/tileJsonLink}}
+                {{^links}}
+                    <li>{{none}}</li>
+                {{/links}}
+            </ul>
+        </div>
+    </div>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{mapTitle}}</div>
+        <div class="col-md-10">
             <div id="map-container" class="map">
                 <small><span id="info" class="info"></small>
             </div>

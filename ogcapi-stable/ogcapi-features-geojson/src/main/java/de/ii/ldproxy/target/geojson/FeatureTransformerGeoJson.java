@@ -29,13 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -191,14 +185,16 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
             for (FeaturePropertyValueTransformer valueTransformer : valueTransformations) {
                 value = valueTransformer.transform(value);
             }
-            transformationContext.getState()
-                                 .setCurrentValue(value);
+            // skip, if the value has been transformed to null
+            if (Objects.nonNull(value)) {
+                transformationContext.getState()
+                        .setCurrentValue(value);
+
+                transformationContext.getState()
+                        .setEvent(FeatureTransformationContext.Event.PROPERTY);
+                executePipeline(featureWriters.iterator()).accept(transformationContext);
+            }
             stringBuilder.setLength(0);
-
-
-            transformationContext.getState()
-                                 .setEvent(FeatureTransformationContext.Event.PROPERTY);
-            executePipeline(featureWriters.iterator()).accept(transformationContext);
         }
 
         transformationContext.getState()
@@ -213,7 +209,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2, OnTheFly 
         List<FeaturePropertyValueTransformer> valueTransformations = null;
         if (baseTransformations.isPresent()) {
             valueTransformations = baseTransformations.get()
-                                                      .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
+                                                      .getValueTransformations(transformationContext.getCodelists(), transformationContext.getServiceUrl())
                                                       .get(featureProperty.getName()
                                                                           .replaceAll("\\[[^\\]]+?\\]", "[]"));
         }

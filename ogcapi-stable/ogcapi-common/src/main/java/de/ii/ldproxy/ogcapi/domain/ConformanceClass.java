@@ -8,8 +8,10 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 
+import java.util.List;
+
 public interface ConformanceClass extends OgcApiExtension {
-    String getConformanceClass();
+    List<String> getConformanceClassUris();
 
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return true;

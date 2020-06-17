@@ -63,7 +63,7 @@ public class OgcApiEndpointStylesRepresentation implements OgcApiEndpointExtensi
 
         if (!stylesExtension.isPresent() || !stylesExtension.get()
                                                             .getMapsEnabled()) {
-            throw new NotFoundException();
+            return false;
         }
 
         return true;

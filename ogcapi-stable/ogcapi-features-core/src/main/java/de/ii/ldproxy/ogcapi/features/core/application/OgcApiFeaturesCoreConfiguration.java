@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
@@ -78,6 +79,11 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
     @Value.Default
     public boolean getShowsFeatureSelfLink() {
         return false;
+    }
+
+    @Value.Default
+    public Map<String,List<OgcApiLink>> getAdditionalLinks() {
+        return ImmutableMap.of();
     }
 
     public abstract Optional<OgcApiFeaturesCollectionQueryables> getQueryables();

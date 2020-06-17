@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -18,10 +19,7 @@ import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -80,11 +78,14 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                 i18n,
                 requestContext.getLanguage());
 
+        BoundingBox bbox = requestContext.getApi().getData().getSpatialExtent();
+        OgcApiExtent spatialExtent = Objects.nonNull(bbox) ? new OgcApiExtent(bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax()) : null;
+
         ImmutableLandingPage.Builder apiLandingPage = new ImmutableLandingPage.Builder()
                 .title(requestContext.getApi().getData().getLabel())
                 .description(requestContext.getApi().getData().getDescription().orElse(""))
+                .extent(Optional.ofNullable(spatialExtent))
                 .links(ogcApiLinks);
-
 
         for (OgcApiLandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
             apiLandingPage = ogcApiLandingPageExtension.process(apiLandingPage,
@@ -142,7 +143,8 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         ImmutableConformanceDeclaration.Builder conformanceDeclaration = new ImmutableConformanceDeclaration.Builder()
                 .links(ogcApiLinks)
                 .conformsTo(conformanceClasses.stream()
-                                              .map(ConformanceClass::getConformanceClass)
+                                              .map(ConformanceClass::getConformanceClassUris)
+                                              .flatMap(List::stream)
                                               .collect(Collectors.toList()));
 
         for (OgcApiConformanceDeclarationExtension ogcApiConformanceDeclarationExtension : getConformanceExtenders()) {

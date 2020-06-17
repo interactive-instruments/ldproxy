@@ -15,8 +15,11 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
+import de.ii.ldproxy.target.geojson.GeoJsonConfig;
+import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureType;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -33,7 +36,7 @@ import java.util.*;
 @Provides(specifications = {OgcApiQueryablesQueriesHandler.class})
 public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcApiQueryablesQueriesHandler.Query> {
 
-    public enum Query implements OgcApiQueryIdentifier {QUERYABLES}
+    public enum Query implements OgcApiQueryIdentifier {QUERYABLES, SCHEMA}
 
     @Value.Immutable
     public interface OgcApiQueryInputQueryables extends OgcApiQueryInput {
@@ -44,18 +47,24 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         boolean getIncludeLinkHeader();
     }
 
+    @Requires
+    SchemaGeneratorFeature schemaGeneratorFeature;
 
     private final I18n i18n;
     private final OgcApiFeatureCoreProviders providers;
+    private final GeoJsonConfig geoJsonConfig;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
 
     public OgcApiQueryablesQueriesHandler(@Requires I18n i18n,
-                                          @Requires OgcApiFeatureCoreProviders providers) {
+                                          @Requires OgcApiFeatureCoreProviders providers,
+                                          @Requires GeoJsonConfig geoJsonConfig) {
         this.i18n = i18n;
         this.providers = providers;
+        this.geoJsonConfig = geoJsonConfig;
 
         this.queryHandlers = ImmutableMap.of(
-                Query.QUERYABLES, OgcApiQueryHandler.with(OgcApiQueryInputQueryables.class, this::getQueryablesResponse)
+                Query.QUERYABLES, OgcApiQueryHandler.with(OgcApiQueryInputQueryables.class, this::getQueryablesResponse),
+                Query.SCHEMA, OgcApiQueryHandler.with(OgcApiQueryInputQueryables.class, this::getSchemaResponse)
         );
     }
 
@@ -70,6 +79,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         }
     }
 
+    // TODO consolidate code
     private Response getQueryablesResponse(OgcApiQueryInputQueryables queryInput, OgcApiRequestContext requestContext) {
 
         OgcApiApi api = requestContext.getApi();
@@ -97,9 +107,9 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
         Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
 
-        List<String> featureTypeIds = featuresCoreConfiguration
-                .map(OgcApiFeaturesCoreConfiguration::getFeatureTypes)
-                .orElse(ImmutableList.of());
+        List<String> featureTypeIds = featuresCoreConfiguration.get().getFeatureTypes();
+        if (featureTypeIds.isEmpty())
+            featureTypeIds = ImmutableList.of(collectionId);
 
         List<String> otherQueryables = featuresCoreConfiguration
                 .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
@@ -119,21 +129,43 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         List<String> visitedProperties = new ArrayList<>();
 
         featureTypeIds.forEach(featureTypeId -> {
-            FeatureType featureType = featureProvider.getData()
-                                                     .getTypes()
-                                                     .get(featureTypeId);
+            FeatureSchema featureType = featureProvider.getData()
+                                                       .getTypes()
+                                                       .get(featureTypeId);
+
+            Optional<Locale> language = featureProvider.getData().getDefaultLanguage().isPresent() ?
+                    Optional.of(Locale.forLanguageTag(featureProvider.getData().getDefaultLanguage().get())) :
+                    Optional.empty();
 
             if (Objects.nonNull(featureType)) {
-                featureType.getProperties()
-                           .forEach((name, featureProperty) -> {
-                               if (visitedProperties.contains(name)) {
+                featureType.getAllNestedProperties()
+                           .forEach(featureProperty -> {
+                               if (featureProperty.isObject()) {
                                    return;
                                }
 
-                               // no "[...]" in filters, just dots to separate the segments
-                               String nameInFilters = name.replaceAll("\\[[^\\]]*\\]", "");
+                               String nameInFilters = String.join(".", featureProperty.getFullPath());
 
-                               if (otherQueryables.contains(name)) {
+                               if (visitedProperties.contains(nameInFilters)) {
+                                   return;
+                               }
+
+                               Optional<Boolean> required = featureProperty.getConstraints().isPresent() ?
+                                       featureProperty.getConstraints().get().getRequired() : Optional.empty();
+
+                               Optional<String> pattern = featureProperty.getConstraints().isPresent() ?
+                                       featureProperty.getConstraints().get().getRegex() : Optional.empty();
+                               Optional<Double> min = featureProperty.getConstraints().isPresent() ?
+                                       featureProperty.getConstraints().get().getMin() : Optional.empty();
+                               Optional<Double> max = featureProperty.getConstraints().isPresent() ?
+                                       featureProperty.getConstraints().get().getMax() : Optional.empty();
+                               List<String> values = featureProperty.getConstraints().isPresent() ?
+                                       featureProperty.getConstraints().get().getEnumValues() : ImmutableList.of();
+
+
+                               // TODO: add more information to the configuration and include it in the Queryable values
+
+                               if (otherQueryables.contains(nameInFilters)) {
                                    String type;
                                    switch (featureProperty.getType()) {
                                        case INTEGER:
@@ -152,25 +184,39 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                                            return;
                                    }
 
-                                   // TODO: add more information to the configuration and include it in the Queryable values
-
                                    queryables.addQueryables(ImmutableQueryable.builder()
                                                                               .id(nameInFilters)
                                                                               .type(type)
+                                                                              .title(featureProperty.getLabel())
+                                                                              .description(featureProperty.getDescription())
+                                                                              .values(values)
+                                                                              .pattern(pattern)
+                                                                              .min(min)
+                                                                              .max(max)
+                                                                              .required(required)
+                                                                              .language(language)
                                                                               .build());
-                                   visitedProperties.add(name);
-                               } else if (temporalQueryables.contains(name)) {
+                                   visitedProperties.add(nameInFilters);
+                               } else if (temporalQueryables.contains(nameInFilters)) {
                                    queryables.addQueryables(ImmutableQueryable.builder()
                                                                               .id(nameInFilters)
                                                                               .type("dateTime")
+                                                                              .title(featureProperty.getLabel())
+                                                                              .description(featureProperty.getDescription())
+                                                                              .required(required)
+                                                                              .language(language)
                                                                               .build());
-                                   visitedProperties.add(name);
-                               } else if (spatialQueryables.contains(name)) {
+                                   visitedProperties.add(nameInFilters);
+                               } else if (spatialQueryables.contains(nameInFilters)) {
                                    queryables.addQueryables(ImmutableQueryable.builder()
                                                                               .id(nameInFilters)
                                                                               .type("geometry")
+                                                                              .title(featureProperty.getLabel())
+                                                                              .description(featureProperty.getDescription())
+                                                                              .required(required)
+                                                                              .language(language)
                                                                               .build());
-                                   visitedProperties.add(name);
+                                   visitedProperties.add(nameInFilters);
                                }
                            });
             }
@@ -178,17 +224,61 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
         queryables.links(links);
 
-        Optional<OgcApiQueryablesFormatExtension> outputFormatExtension = api.getOutputFormat(
-                OgcApiQueryablesFormatExtension.class,
+        Response queryablesResponse = outputFormat.getResponse(queryables.build(), collectionId, api, requestContext);
+
+        Response.ResponseBuilder response = Response.ok()
+                .entity(queryablesResponse.getEntity())
+                .type(requestContext
+                        .getMediaType()
+                        .type());
+
+        Optional<Locale> language = requestContext.getLanguage();
+        if (language.isPresent())
+            response.language(language.get());
+
+        if (queryInput.getIncludeLinkHeader() && links != null)
+            links.stream()
+                    .forEach(link -> response.links(link.getLink()));
+
+        return response.build();
+    }
+
+    private Response getSchemaResponse(OgcApiQueryInputQueryables queryInput, OgcApiRequestContext requestContext) {
+
+        OgcApiApi api = requestContext.getApi();
+        OgcApiApiDataV2 apiData = api.getData();
+        String collectionId = queryInput.getCollectionId();
+        if (!apiData.isCollectionEnabled(collectionId))
+            throw new NotFoundException();
+
+        OgcApiSchemaFormatExtension outputFormat = api.getOutputFormat(
+                OgcApiSchemaFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/"+collectionId+"/queryables");
+                "/collections/"+collectionId+"/schema")
+                .orElseThrow(NotAcceptableException::new);
+
+        checkCollectionId(api.getData(), collectionId);
+        List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
+
+        List<OgcApiLink> links =
+                new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
+
+        Map<String,Object> jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
+                .filter(link -> link.getRel().equals("self"))
+                .map(link -> link.getHref())
+                .findAny());
+
+        Optional<OgcApiSchemaFormatExtension> outputFormatExtension = api.getOutputFormat(
+                OgcApiSchemaFormatExtension.class,
+                requestContext.getMediaType(),
+                "/collections/"+collectionId+"/schema");
 
         if (outputFormatExtension.isPresent()) {
-            Response queryablesResponse = outputFormatExtension.get()
-                                                               .getResponse(queryables.build(), collectionId, api, requestContext);
+            Response schemaResponse = outputFormatExtension.get()
+                    .getResponse(jsonSchema, collectionId, api, requestContext);
 
             Response.ResponseBuilder response = Response.ok()
-                    .entity(queryablesResponse.getEntity())
+                    .entity(schemaResponse.getEntity())
                     .type(requestContext
                             .getMediaType()
                             .type());
@@ -199,7 +289,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
             if (queryInput.getIncludeLinkHeader() && links != null)
                 links.stream()
-                     .forEach(link -> response.links(link.getLink()));
+                        .forEach(link -> response.links(link.getLink()));
 
             return response.build();
         }

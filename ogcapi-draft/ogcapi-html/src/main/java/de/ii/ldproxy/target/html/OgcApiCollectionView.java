@@ -15,6 +15,8 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,7 +40,9 @@ public class OgcApiCollectionView extends OgcApiView {
     public boolean withStyleInfos;
     public String itemTypeTitle;
     public String dataTitle;
+    public String metadataTitle;
     public String licenseTitle;
+    public String downloadTitle;
     public String spatialExtentTitle;
     public String temporalExtentTitle;
     public String supportedCrsTitle;
@@ -80,12 +84,13 @@ public class OgcApiCollectionView extends OgcApiView {
                 .map(OgcApiFeaturesCollectionQueryables::getSpatial)
                 .filter(spatial -> !spatial.isEmpty())
                 .isPresent();
-        this.defaultStyle = collection
-                .getDefaultStyle()
-                .orElse(null);
-        this.styleEntries = collection
-                .getStyles()
-                .orElse(null);
+        Optional<String> defaultStyleOrNull = (Optional<String>) collection
+                .getExtensions()
+                .get("defaultStyle");
+        this.defaultStyle = defaultStyleOrNull==null ? null : defaultStyleOrNull.get();
+        this.styleEntries = (List<StyleEntry>) collection
+                .getExtensions()
+                .get("styles");
         this.withStyleInfos = (this.styleEntries!=null);
         Optional<OgcApiExtent> extent = collection.getExtent();
         if (extent.isPresent()) {
@@ -109,14 +114,14 @@ public class OgcApiCollectionView extends OgcApiView {
                     this.temporalExtent = ImmutableMap.of();
                 else if (interval[0]==null)
                     this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                            "end", interval[1]==null ? null : interval[1].toString());
+                            "end", interval[1]==null ? null : String.valueOf(Instant.parse(interval[1]).toEpochMilli()));
                 else if (interval[1]==null)
                     this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                            "start", interval[0]==null ? null : interval[0].toString());
+                            "start", interval[0]==null ? null : String.valueOf(Instant.parse(interval[0]).toEpochMilli()));
                 else
                     this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                            "start", interval[0]==null ? null : interval[0].toString(),
-                            "end", interval[1]==null ? null : interval[1].toString());
+                            "start", interval[0]==null ? null : String.valueOf(Instant.parse(interval[0]).toEpochMilli()),
+                            "end", interval[1]==null ? null : String.valueOf(Instant.parse(interval[1]).toEpochMilli()));
             }
         } else {
             this.bbox2 = null;
@@ -127,6 +132,8 @@ public class OgcApiCollectionView extends OgcApiView {
         this.itemTypeTitle = i18n.get("itemTypeTitle", language);
         this.dataTitle = i18n.get("dataTitle", language);
         this.licenseTitle = i18n.get("licenseTitle", language);
+        this.metadataTitle = i18n.get("metadataTitle", language);
+        this.downloadTitle = i18n.get("downloadTitle", language);
         this.spatialExtentTitle = i18n.get("spatialExtentTitle", language);
         this.temporalExtentTitle = i18n.get("temporalExtentTitle", language);
         this.supportedCrsTitle = i18n.get("supportedCrsTitle", language);
@@ -142,7 +149,40 @@ public class OgcApiCollectionView extends OgcApiView {
     public List<OgcApiLink> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|home)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|home|describedby|license|enclosure)$"))
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasMetadata() {
+        return !getMetadataLinks().isEmpty();
+    }
+
+    public List<OgcApiLink> getMetadataLinks() {
+        return links
+                .stream()
+                .filter(link -> link.getRel().matches("^(?:describedby)$"))
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasLicense() {
+        return !getLicenseLinks().isEmpty();
+    }
+
+    public List<OgcApiLink> getLicenseLinks() {
+        return links
+                .stream()
+                .filter(link -> link.getRel().matches("^(?:license)$"))
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasDownload() {
+        return !getDownloadLinks().isEmpty();
+    }
+
+    public List<OgcApiLink> getDownloadLinks() {
+        return links
+                .stream()
+                .filter(link -> link.getRel().matches("^(?:enclosure)$"))
                 .collect(Collectors.toList());
     }
 

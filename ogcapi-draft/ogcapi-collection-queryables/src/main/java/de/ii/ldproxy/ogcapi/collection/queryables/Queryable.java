@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Value.Immutable
@@ -26,9 +27,11 @@ public abstract class Queryable {
     public abstract Optional<String> getDescription();
     public abstract Optional<Boolean> getRequired();
     public abstract Optional<List<String>> getMediaTypes();
+    public abstract Optional<Locale> getLanguage();
 
     public abstract Optional<String> getPattern();
-    public abstract Optional<List<Object>> getRange();
-    public abstract Optional<List<String>> getValues();
+    public abstract Optional<Object> getMin();
+    public abstract Optional<Object> getMax();
+    public abstract List<String> getValues();
 
 }

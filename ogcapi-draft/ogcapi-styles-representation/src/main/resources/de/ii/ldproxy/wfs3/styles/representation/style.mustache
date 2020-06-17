@@ -48,7 +48,7 @@
     const extent = ol.proj.transformExtent([-180,-90,180,90], 'EPSG:4326', 'EPSG:3857');
     {{/bbox}}
     var map = olms.apply('map-container', '{{{styleUrl}}}');
-    map.getView().fit(extent, map.getSize());
+    // map.getView().fit(extent, map.getSize());
 
     map.on('pointermove', showInfo);
 

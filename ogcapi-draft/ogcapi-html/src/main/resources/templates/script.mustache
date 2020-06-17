@@ -3,19 +3,19 @@
         map: {
             {{#htmlConfig}}
             url: '{{{leafletUrl}}}',
-            attribution: '{{{leafletAttribution}}}',
+            attribution: '{{{leafletAttribution}}}'
             {{/htmlConfig}}
             {{#bbox2}}
-            bounds: [[{{minLat}},{{minLng}}],[{{maxLat}},{{maxLng}}]]
+            ,bounds: [[{{minLat}},{{minLng}}],[{{maxLat}},{{maxLng}}]]
             {{/bbox2}}
         },
         ol_map: {
             {{#htmlConfig}}
             url: '{{{openLayersUrl}}}',
-            attribution: '{{{openLayersAttribution}}}',
+            attribution: '{{{openLayersAttribution}}}'
             {{/htmlConfig}}
             {{#bbox2}}
-            extent: [{{minLng}},{{minLat}},{{maxLng}},{{maxLat}}]
+            ,extent: [{{minLng}},{{minLat}},{{maxLng}},{{maxLat}}]
             {{/bbox2}}
         },
         time: {

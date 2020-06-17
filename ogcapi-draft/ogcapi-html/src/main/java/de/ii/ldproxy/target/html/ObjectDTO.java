@@ -56,6 +56,11 @@ public class ObjectDTO extends ObjectOrPropertyDTO {
                 .collect(ImmutableList.toImmutableList());
     }
 
+    public boolean hasNonNullProperty() {
+        return childList.stream()
+                .anyMatch(child -> child instanceof PropertyDTO && ((PropertyDTO)child).hasValues() || !((PropertyDTO)child).objectValues().isEmpty());
+    }
+
     public boolean isLevel1() {
         return getLevel()==1;
     }
@@ -66,6 +71,14 @@ public class ObjectDTO extends ObjectOrPropertyDTO {
 
     public boolean isLevel3() {
         return getLevel()==3;
+    }
+
+    public boolean isLevel4() {
+        return getLevel()==4;
+    }
+
+    public boolean isLevel5() {
+        return getLevel()==5;
     }
 
     public int getLevel() {

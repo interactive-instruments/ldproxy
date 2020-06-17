@@ -12,10 +12,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableLandingPage.Builder.class)
 public abstract class LandingPage extends PageRepresentation {
+
+    public abstract Optional<OgcApiExtent> getExtent();
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();

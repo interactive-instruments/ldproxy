@@ -7,12 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
 
 import java.net.URI;
 import java.util.Optional;
 
+@Component
+@Provides
+@Instantiate
 public class WorldMercatorWGS84Quad extends AbstractTileMatrixSet implements TileMatrixSet {
 
     private static final EpsgCrs CRS = EpsgCrs.of(3395);
@@ -25,6 +32,11 @@ public class WorldMercatorWGS84Quad extends AbstractTileMatrixSet implements Til
     private static final double BBOX_MIN_Y = -20037508.3427892;
     private static final double BBOX_MAX_Y = 20037508.3427892;
     private static final BoundingBox BBOX = new BoundingBox(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+        return isExtensionEnabled(apiData, TilesConfiguration.class);
+    }
 
     @Override
     public String getId() {

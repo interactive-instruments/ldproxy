@@ -8,10 +8,12 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.TileCollections;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -27,11 +29,15 @@ import java.util.stream.Collectors;
 public class TilesView extends OgcApiView {
     public List<Map<String,String>> tileCollections;
     public String tilesUrl;
+    public OgcApiLink tileJsonLink;
     public String mapTitle;
+    public String metadataTitle;
+    public String tileMatrixSetTitle;
     public String none;
     public boolean withOlMap;
     public boolean spatialSearch;
     public Map<String, String> bbox2;
+    private Map<String, String> center;
     public Map<String, String> temporalExtent;
 
     public TilesView(OgcApiApiDataV2 apiData,
@@ -51,7 +57,18 @@ public class TilesView extends OgcApiView {
                 tiles.getDescription()
                      .orElse(""));
 
-        this.tileCollections = tiles.getTileMatrixSetLinks()
+        BoundingBox spatialExtent = apiData.getSpatialExtent();
+        this.bbox2 = spatialExtent==null ? null : ImmutableMap.of(
+                "minLng", Double.toString(spatialExtent.getXmin()),
+                "minLat", Double.toString(spatialExtent.getYmin()),
+                "maxLng", Double.toString(spatialExtent.getXmax()),
+                "maxLat", Double.toString(spatialExtent.getYmax()));
+        this.center = tiles.getDefaultCenter().isPresent() && tiles.getDefaultCenter().get().length>=2 ? ImmutableMap.of(
+                "lon", Double.toString(tiles.getDefaultCenter().get()[0]),
+                "lat", Double.toString(tiles.getDefaultCenter().get()[1])) : Objects.nonNull(spatialExtent) ? ImmutableMap.of(
+                "lon", Double.toString(spatialExtent.getXmax()*0.5+spatialExtent.getXmin()*0.5),
+                "lat", Double.toString(spatialExtent.getYmax()*0.5+spatialExtent.getYmin()*0.5)) : ImmutableMap.of();
+        this.tileCollections = spatialExtent==null ? ImmutableList.of() :tiles.getTileMatrixSetLinks()
                 .stream()
                 .filter(tms -> tms.getTileMatrixSet().isPresent())
                 .map(tms -> new ImmutableMap.Builder<String,String>()
@@ -63,6 +80,11 @@ public class TilesView extends OgcApiView {
                                 .orElse(-1)
                                 .toString())
                         .put("extent",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "[-180,-90,180,90]" : "[-20037508.3427892,-20037508.3427892,20037508.3427892,20037508.3427892]")
+                        // TODO: The +1 for CRS84 is necessary as OpenLayers seems to change the zoom levels by 1 for this tile grid
+                        // TODO: we should have a better fallback than simply "10"
+                        .put("defaultZoomLevel",Integer.toString(tms.getDefaultZoomLevel().orElse(10) + (tms.getTileMatrixSet().get().equals("WorldCRS84Quad")?1:0)))
+                        .put("defaultCenterLon",this.center.get("lon"))
+                        .put("defaultCenterLat",this.center.get("lat"))
                         .put("resolutionAt0",Double.toString(tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? 360.0/512 : 2*20037508.3427892/256))
                         .put("widthAtL0",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "2" : "1")
                         .put("projection",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "EPSG:4326" : tms.getTileMatrixSet().get().equals("WorldMercatorWGS84Quad") ? "EPSG:3395" : "EPSG:3857")
@@ -76,17 +98,20 @@ public class TilesView extends OgcApiView {
                 .findFirst()
                 .orElse(null);
 
+        this.tileJsonLink = links.stream()
+                .filter(link -> Objects.equals(link.getRel(),"describedby"))
+                .filter(link -> Objects.equals(link.getType(), "application/json"))
+                .findFirst()
+                .orElse(null);
+
         this.mapTitle = i18n.get("mapTitle", language);
+        this.metadataTitle = i18n.get("metadataTitle", language);
+        this.tileMatrixSetTitle = i18n.get("tileMatrixSetTitle", language);
         this.none = i18n.get ("none", language);
 
         this.withOlMap = true;
         this.spatialSearch = false;
-        BoundingBox spatialExtent = apiData.getSpatialExtent();
-        this.bbox2 = spatialExtent==null ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent.getXmin()),
-                "minLat", Double.toString(spatialExtent.getYmin()),
-                "maxLng", Double.toString(spatialExtent.getXmax()),
-                "maxLat", Double.toString(spatialExtent.getYmax()));
+
         Long[] interval = apiData.getCollections()
                 .values()
                 .stream()

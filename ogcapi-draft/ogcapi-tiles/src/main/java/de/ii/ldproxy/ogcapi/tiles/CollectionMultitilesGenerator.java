@@ -55,7 +55,7 @@ public class CollectionMultitilesGenerator {
 
     /**
      * Construct a response for a multiple tiles request
-     * @param tileMatrixSetId identifier of tile matrix set
+     * @param tileMatrixSet the tile matrix set
      * @param bboxParam value of the bbox request parameter
      * @param scaleDenominatorParam value of the scaleDenominator request parameter
      * @param multiTileType value of the multiTileType request parameter
@@ -63,13 +63,12 @@ public class CollectionMultitilesGenerator {
      * @param crsTransformerFactory
      * @return multiple tiles
      */
-    Response getMultitiles(String tileMatrixSetId, String bboxParam, String scaleDenominatorParam, String multiTileType,
+    Response getMultitiles(TileMatrixSet tileMatrixSet, String bboxParam, String scaleDenominatorParam, String multiTileType,
                            URICustomizer uriCustomizer, String tileFormatParam, String collectionId, CrsTransformerFactory crsTransformerFactory,
                            UriInfo uriInfo, I18n i18n, Optional<Locale> language, OgcApiApi service, VectorTilesCache cache,
                            OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson) {
 
         String tileFormat = MultitilesUtils.parseTileFormat(tileFormatParam);
-        TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
         List<Integer> tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominatorParam, tileMatrixSet);
         double[] bbox = MultitilesUtils.parseBbox(bboxParam, tileMatrixSet);
         LOGGER.debug("GET TILE MULTITILES {} {}-{} {} {}", bbox, tileMatrices.get(0), tileMatrices.get(tileMatrices.size()-1), multiTileType, tileFormat);
@@ -80,7 +79,7 @@ public class CollectionMultitilesGenerator {
                     .type("application/geo+json")
                     .build();
         } else if (multiTileType == null || "tiles".equals(multiTileType) || "full".equals(multiTileType)) {
-            File zip = generateZip(tileSetEntries, tileMatrixSetId, collectionId, "full".equals(multiTileType), crsTransformerFactory,
+            File zip = generateZip(tileSetEntries, tileMatrixSet, collectionId, "full".equals(multiTileType), crsTransformerFactory,
                     uriInfo, i18n, language, uriCustomizer, service, cache, wfs3OutputFormatGeoJson, tileFormat);
             return Response.ok(zip)
                     .type("application/zip")
@@ -121,7 +120,7 @@ public class CollectionMultitilesGenerator {
         return tileSets;
     }
 
-    protected File generateZip(List<TileSetEntry> tileSetEntries, String tileMatrixSetId, String collectionId,
+    protected File generateZip(List<TileSetEntry> tileSetEntries, TileMatrixSet tileMatrixSet, String collectionId,
                                boolean isFull, CrsTransformerFactory crsTransformation, UriInfo uriInfo, I18n i18n,
                                Optional<Locale> language, URICustomizer uriCustomizer, OgcApiApi service,
                                VectorTilesCache cache, OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson,
@@ -129,7 +128,7 @@ public class CollectionMultitilesGenerator {
         File zip = null;
 
         try {
-            zip = File.createTempFile(tileMatrixSetId, ".zip");
+            zip = File.createTempFile(tileMatrixSet.getId(), ".zip");
             FileOutputStream fout = new FileOutputStream(zip);
             ZipOutputStream zout = new ZipOutputStream(fout);
 
@@ -137,12 +136,12 @@ public class CollectionMultitilesGenerator {
                 // add tileSet response document in the archive
                 ObjectMapper mapper = new ObjectMapper();
                 String jsonString = mapper.writeValueAsString(ImmutableMap.of("tileSet", tileSetEntries));
-                File tmpFile = File.createTempFile(tileMatrixSetId, ".json");
+                File tmpFile = File.createTempFile(tileMatrixSet.getId(), ".json");
                 FileWriter writer = new FileWriter(tmpFile);
                 writer.write(jsonString);
                 writer.close();
 
-                zout.putNextEntry(new ZipEntry(tileMatrixSetId + ".json"));
+                zout.putNextEntry(new ZipEntry(tileMatrixSet.getId() + ".json"));
 
                 try (FileInputStream fis = new FileInputStream(tmpFile.getAbsolutePath());
                      BufferedInputStream bis = new BufferedInputStream(fis, 1024)) {
@@ -161,7 +160,7 @@ public class CollectionMultitilesGenerator {
 
             for (TileSetEntry entry : tileSetEntries) {
                 File tileFile;
-                VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, String.valueOf(entry.getTileMatrix()),
+                VectorTile tile = new VectorTile(collectionId, tileMatrixSet, String.valueOf(entry.getTileMatrix()),
                         String.valueOf(entry.getTileRow()), String.valueOf(entry.getTileCol()), service, false, cache,
                         featureProvider, wfs3OutputFormatGeoJson);
                 File tileFileJson = tile.getFile(cache, "json");
@@ -171,12 +170,12 @@ public class CollectionMultitilesGenerator {
                             .type(new MediaType("application", "geo+json"))
                             .label("GeoJSON")
                             .build();
-                    TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, uriCustomizer,
-                            geoJsonMediaType, true, tile, i18n, language, queryParser);
+                    TileGeneratorJson.generateTileJson(tileFileJson, crsTransformation, uriInfo, null, null, null, uriCustomizer,
+                            geoJsonMediaType, true, tile, i18n, language, queryParser, ImmutableMap.of()); // TODO codelists
                 }
 
                     // add the generated tile to the archive
-                    String path = new StringBuilder(tileMatrixSetId)
+                    String path = new StringBuilder(tileMatrixSet.getId())
                             .append(File.separator)
                             .append(entry.getTileMatrix())
                             .append(File.separator)

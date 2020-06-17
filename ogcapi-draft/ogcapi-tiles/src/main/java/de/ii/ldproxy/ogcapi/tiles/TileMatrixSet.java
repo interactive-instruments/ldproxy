@@ -8,6 +8,8 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContentExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -21,7 +23,10 @@ import java.util.Optional;
 /**
  * This class provides derived information from a tile matrix set.
  */
-public interface TileMatrixSet {
+public interface TileMatrixSet extends OgcApiContentExtension {
+
+    @Override
+    default String getResourceName() { return "TileMatrixSet"; };
 
     /**
      * fetch the local identifier for the tiling scheme

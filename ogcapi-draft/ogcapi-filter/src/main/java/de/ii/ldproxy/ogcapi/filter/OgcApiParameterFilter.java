@@ -7,7 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.filter;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
@@ -17,13 +19,14 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.BadRequestException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 @Component
 @Provides
 @Instantiate
-public class OgcApiParameterFilter implements OgcApiParameterExtension {
+public class OgcApiParameterFilter implements OgcApiParameterExtension, ConformanceClass {
 
     private static final String FILTER_LANG_CQL = "cql-text";
     private static final String FILTER_LANG_JSON = "cql-json";
@@ -31,6 +34,15 @@ public class OgcApiParameterFilter implements OgcApiParameterExtension {
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, FilterConfiguration.class);
+    }
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter",
+                "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter",
+                "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/simple-cql",
+                "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/cql-text",
+                "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/cql-json");
     }
 
     @Override

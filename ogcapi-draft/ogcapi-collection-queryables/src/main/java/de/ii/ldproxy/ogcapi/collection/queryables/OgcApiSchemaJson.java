@@ -14,14 +14,15 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
 @Component
 @Provides
 @Instantiate
-public class OgcApiQueryablesHtml implements OgcApiQueryablesFormatExtension {
+public class OgcApiSchemaJson implements OgcApiSchemaFormatExtension {
 
     public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
-            .type(new MediaType("application", "json"))
+            .type(new MediaType("application", "schema+json"))
             .label("JSON")
             .parameter("json")
             .build();
@@ -39,9 +40,9 @@ public class OgcApiQueryablesHtml implements OgcApiQueryablesFormatExtension {
     }
 
     @Override
-    public Response getResponse(Queryables queryables, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Response getResponse(Map<String,Object> schema, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
         return Response.ok()
-                .entity(queryables)
+                .entity(schema)
                 .build();
     }
 }

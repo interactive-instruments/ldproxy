@@ -186,7 +186,7 @@ class LandingPageSpec extends Specification {
                     return ImmutableList.of((T) new ConformanceClass() {
 
                         @Override
-                        String getConformanceClass() {
+                        List<String> getConformanceClassUris() {
                             return 'foo bar 1234'
                         }
 

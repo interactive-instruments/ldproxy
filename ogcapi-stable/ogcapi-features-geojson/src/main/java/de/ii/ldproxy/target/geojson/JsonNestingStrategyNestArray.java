@@ -26,7 +26,7 @@ public class JsonNestingStrategyNestArray implements JsonNestingStrategy {
     }
 
     @Override
-    public void openObjectInArray(JsonGenerator json, String key) throws IOException {
+    public void openObjectInArray(JsonGenerator json, String key, boolean firstObject) throws IOException {
         json.writeStartObject();
         if (LOGGER.isTraceEnabled())
             LOGGER.trace("OPEN OBJECT IN ARRAY");

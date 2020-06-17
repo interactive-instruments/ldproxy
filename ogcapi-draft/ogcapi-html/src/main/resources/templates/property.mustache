@@ -1,10 +1,10 @@
 {{#hasValues}}
 <div class="row my-1">
-<div class="col-md-{{#complexObjects}}4{{/complexObjects}}{{#classic}}6{{/classic}} {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}font-weight-bold text-truncate">{{name}}</div>
+<div class="col-md-{{#complexObjects}}4{{/complexObjects}}{{#classic}}6{{/classic}} {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}font-weight-bold text-truncate">{{name}}</div>
 <div class="col-md-{{#complexObjects}}8{{/complexObjects}}{{#classic}}6{{/classic}}">
 <ul class="list-unstyled">
 {{#values}}
-<li>{{#isUrl}}<a target="_blank" href="{{value}}">{{value}}</a>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src="{{value}}" class="img-fluid"/>{{/isImg}}{{^isImg}}{{#isHtml}}{{{value}}}{{/isHtml}}{{^isHtml}}{{value}}{{/isHtml}}{{/isImg}}{{/isUrl}}</li>
+{{^isNull}}<li>{{#isUrl}}<div class="text-truncate"><a target="_blank" href="{{value}}">{{value}}</a></div>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src="{{value}}" class="img-fluid"/>{{/isImg}}{{^isImg}}{{#isHtml}}{{{value}}}{{/isHtml}}{{^isHtml}}{{value}}{{/isHtml}}{{/isImg}}{{/isUrl}}</li>{{/isNull}}
 {{/values}}
 </ul>
 </div>
@@ -13,10 +13,10 @@
 {{#objectValues}}
 <div class="row my-1">
 {{#isFirstObject}}
-<div class="col-md-12 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}font-weight-bold text-truncate">{{name}}</div>
+<div class="col-md-12 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}font-weight-bold text-truncate">{{name}}</div>
 {{/isFirstObject}}
 {{^isFirstObject}}
-<div class="col-md-12 {{#isLevel1}}pl-4x {{/isLevel1}}{{#isLevel2}}pl-5 {{/isLevel2}}object-separator text-truncate">{{name}}</div>
+<div class="col-md-12 {{#isLevel1}}pl-4x {{/isLevel1}}{{#isLevel2}}pl-5 {{/isLevel2}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}object-separator text-truncate">{{name}}</div>
 {{/isFirstObject}}
 </div>
 {{#properties}}

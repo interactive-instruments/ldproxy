@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.target.geojson;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
@@ -25,11 +26,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author zahnen
@@ -60,8 +57,8 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
 
 
     @Override
-    public String getConformanceClass() {
-        return CONFORMANCE_CLASS;
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of(CONFORMANCE_CLASS);
     }
 
     @Override

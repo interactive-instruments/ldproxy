@@ -7,19 +7,15 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiStartupTask;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
+import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -37,12 +33,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -77,6 +68,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
     @Requires
     private OgcApiFeatureCoreProviders providers;
+
+    @Requires
+    private CodelistRegistry codelistRegistry;
 
     private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
 
@@ -204,7 +198,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                 Map<String, MinMax> seeding = seedingMap.get(collectionId);
                 tileMatrixSetIdsCollection = seeding.keySet();
                 for (String tileMatrixSetId : tileMatrixSetIdsCollection) {
-                    TileMatrixSet tileMatrixSet = TileMatrixSetCache.getTileMatrixSet(tileMatrixSetId);
+                    TileMatrixSet tileMatrixSet = getTileMatrixSetById(tileMatrixSetId);
                     if (seeding.size() != 0) {
                         int maxZoom = seeding.get(tileMatrixSetId)
                                 .getMax();
@@ -231,7 +225,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                         // generates both GeoJSON and MVT files
                                         generateMVT(service, collectionId, tileMatrixSetId, level, row, col, cache, crsTransformerFactory, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
 
-                                        VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+                                        VectorTile tile = new VectorTile(collectionId, tileMatrixSet, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
                                         File tileFileJson = tile.getFile(cache, "json");
                                         if (tileFileJson!=null) {
                                             Map<String,File> layers = fileMap.get(tileKey);
@@ -259,7 +253,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
             int col = Integer.parseInt(keys[3]);
 
             Map<String, File> layers = entry.getValue();
-            VectorTile tile = new VectorTile(null, tileMatrixSetId, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+            VectorTile tile = new VectorTile(null, getTileMatrixSetById(tileMatrixSetId), Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
             File tileFileMvt = tile.getFile(cache, "pbf");
             boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformerFactory, tile, true);
             if (!success) {
@@ -290,7 +284,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                              FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
 
-        VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+        VectorTile tile = new VectorTile(collectionId, getTileMatrixSetById(tileMatrixSetId), Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
         File tileFileMvt = tile.getFile(cache, "pbf");
         if (!tileFileMvt.exists()) {
             LOGGER.debug("seeding - " + collectionId + " | " + tileMatrixSetId + " | level: " + level + " | row: " + row + " | col: " + col + " | format: MVT");
@@ -336,7 +330,15 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                                          .get()
                                                          .getAllFilterParameters();
 
-        VectorTile tile = new VectorTile(collectionId, tileMatrixSetId, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
+        TilesConfiguration tilesConfiguration = service.getData()
+                .getCollections()
+                .get(collectionId)
+                .getExtension(TilesConfiguration.class)
+                .orElse(null);
+
+        Map<String, List<PredefinedFilter>> predefFilters = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getFilters() : ImmutableMap.of();
+        
+        VectorTile tile = new VectorTile(collectionId, getTileMatrixSetById(tileMatrixSetId), Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
         File tileFileJson = tile.getFile(cache, "json");
 
         if (!tileFileJson.exists()) {
@@ -358,7 +360,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                     .type(new MediaType("application", "json"))
                     .label("JSON")
                     .build();
-            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, null, null, filterableFields, uriCustomizer, mediaType, true, tile, i18n, language, queryParser);
+            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, null, predefFilters, null, filterableFields, uriCustomizer, mediaType, true, tile, i18n, language, queryParser, codelistRegistry.getCodelists());
         }
         return tileFileJson;
     }
@@ -369,5 +371,17 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                 .filter(wfs3OutputFormatExtension -> wfs3OutputFormatExtension.getMediaType()
                                                                                               .equals(mediaType))
                                 .findFirst();
+    }
+
+    private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {
+        TileMatrixSet tileMatrixSet = null;
+        for (OgcApiContentExtension contentExtension : extensionRegistry.getExtensionsForType(OgcApiContentExtension.class)) {
+            if (contentExtension instanceof TileMatrixSet && ((TileMatrixSet) contentExtension).getId().equals(tileMatrixSetId)) {
+                tileMatrixSet = (TileMatrixSet) contentExtension;
+                break;
+            }
+        }
+
+        return tileMatrixSet;
     }
 }

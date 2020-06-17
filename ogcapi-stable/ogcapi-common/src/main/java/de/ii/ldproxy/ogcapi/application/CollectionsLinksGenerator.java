@@ -23,6 +23,8 @@ public class CollectionsLinksGenerator extends DefaultLinksGenerator {
                                           Optional<String> describeFeatureTypeUrl,
                                           OgcApiMediaType mediaType,
                                           List<OgcApiMediaType> alternateMediaTypes,
+                                          Optional<String> licenseUrl,
+                                          Optional<String> licenseName,
                                           boolean homeLink,
                                           I18n i18n,
                                           Optional<Locale> language)
@@ -42,10 +44,18 @@ public class CollectionsLinksGenerator extends DefaultLinksGenerator {
                     .title(i18n.get("homeLink",language))
                     .build());
 
+        if (licenseUrl.isPresent()) {
+            builder.add(new ImmutableOgcApiLink.Builder()
+                    .href(licenseUrl.get())
+                    .rel("license")
+                    .title(licenseName.isPresent() ? licenseName.get() : i18n.get("licenseLink",language))
+                    .build());
+        }
+
         if (describeFeatureTypeUrl.isPresent()) {
             builder.add(new ImmutableOgcApiLink.Builder()
                         .href(describeFeatureTypeUrl.get())
-                        .rel("describedBy")
+                        .rel("describedby")
                         .type("application/xml")
                         .title(i18n.get("describedByXsdLink",language))
                         .build());

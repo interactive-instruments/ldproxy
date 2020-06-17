@@ -9,8 +9,8 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.wfs3.oas30.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -24,6 +24,7 @@ import io.swagger.v3.oas.models.tags.Tag;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -37,6 +38,13 @@ import java.util.*;
 @Provides
 @Instantiate
 public class OpenApiVectorTiles implements OpenApiExtension {
+
+    private final OgcApiExtensionRegistry extensionRegistry;
+
+    public OpenApiVectorTiles(@Requires OgcApiExtensionRegistry extensionRegistry) {
+        this.extensionRegistry = extensionRegistry;
+    }
+
     @Override
     public int getSortPriority() {
         return 20;
@@ -129,9 +137,12 @@ public class OpenApiVectorTiles implements OpenApiExtension {
             Schema tileMatrixSetIdSchema = new Schema();
             tileMatrixSetIdSchema.setType("string");
 
-            List<String> tileMatrixSetEnum = new ArrayList<>(TileMatrixSetCache.getTileMatrixSetIds());
-
-            tileMatrixSetId.setSchema(new StringSchema()._enum(tileMatrixSetEnum));
+            ImmutableList.Builder<String> tileMatrixSetIdsBuilder = ImmutableList.builder();
+            for (OgcApiContentExtension contentExtension : extensionRegistry.getExtensionsForType(OgcApiContentExtension.class)) {
+                if (contentExtension instanceof TileMatrixSet)
+                    tileMatrixSetIdsBuilder.add(((TileMatrixSet) contentExtension).getId());
+            }
+            tileMatrixSetId.setSchema(new StringSchema()._enum(tileMatrixSetIdsBuilder.build()));
             tileMatrixSetId.example("WebMercatorQuad");
 
             Parameter tileMatrixParameter = new Parameter();

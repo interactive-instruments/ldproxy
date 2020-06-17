@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
@@ -20,10 +21,7 @@ import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import java.io.OutputStream;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
 
 /**
  * @author zahnen
@@ -52,6 +50,8 @@ public interface FeatureTransformationContext {
     List<OgcApiLink> getLinks();
 
     boolean isFeatureCollection();
+
+    Map<String, Codelist> getCodelists();
 
     @Value.Default
     default boolean getShowsFeatureSelfLink() {

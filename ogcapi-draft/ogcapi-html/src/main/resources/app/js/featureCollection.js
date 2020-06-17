@@ -32,7 +32,7 @@ if ($('#map').length ) {
             onEachFeature: function (feature, layer) {
                 if (feature.geometry.type != 'Point') {
                     layer.bindPopup(feature.id);
-                    L.marker(layer.getBounds().getCenter(), {title: feature.id}).addTo(map);
+                    // L.marker(layer.getBounds().getCenter(), {title: feature.id}).addTo(map);
                 }
             },
             pointToLayer: function (feature, latlng) {

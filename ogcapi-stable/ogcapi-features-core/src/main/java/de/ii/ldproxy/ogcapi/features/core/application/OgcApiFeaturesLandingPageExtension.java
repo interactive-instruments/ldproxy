@@ -44,12 +44,19 @@ public class OgcApiFeaturesLandingPageExtension implements OgcApiLandingPageExte
 
         landingPageBuilder.addLinks(new ImmutableOgcApiLink.Builder()
                         .href(uriCustomizer.copy()
+                                .ensureNoTrailingSlash()
                                 .ensureLastPathSegment("collections")
                                 .removeParameters("f")
                                 .toString())
                         .rel("data")
                         .title(i18n.get("dataLink",language))
                         .build());
+
+        Optional<OgcApiFeaturesCoreConfiguration> config = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class);
+        if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/")) {
+            List<OgcApiLink> additionalLinks = config.get().getAdditionalLinks().get("/");
+            additionalLinks.stream().forEach(link -> landingPageBuilder.addLinks(link));
+        }
 
         return landingPageBuilder;
     }

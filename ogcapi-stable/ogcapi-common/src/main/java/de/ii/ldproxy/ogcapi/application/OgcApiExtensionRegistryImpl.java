@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -63,7 +64,7 @@ public class OgcApiExtensionRegistryImpl implements OgcApiExtensionRegistry {
             if (extension instanceof ConformanceClass) {
                 final ConformanceClass conformanceClass = (ConformanceClass) extension;
 
-                LOGGER.debug("CONFORMANCE CLASS {}", conformanceClass.getConformanceClass());
+                LOGGER.debug("CONFORMANCE CLASS {}", conformanceClass.getConformanceClassUris().toString());
             }
 
             if (extension instanceof FormatExtension) {

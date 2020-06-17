@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.collection.queryables;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
@@ -21,20 +20,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import java.util.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
 @Provides
 @Instantiate
-public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, ConformanceClass {
+public class OgcApiSchemaEndpoint implements OgcApiEndpointExtension, ConformanceClass {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiQueryablesEndpoint.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiSchemaEndpoint.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[\\w\\-]+/queryables/?$")
+            .subPathPattern("^/[\\w\\-]+/schema/?$")
             .build();
 
     private final OgcApiExtensionRegistry extensionRegistry;
@@ -42,7 +45,7 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
     @Requires
     private OgcApiQueryablesQueriesHandler queryHandler;
 
-    public OgcApiQueryablesEndpoint(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public OgcApiSchemaEndpoint(@Requires OgcApiExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 
@@ -53,11 +56,11 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
 
     @Override
     public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/[\\w\\-]+/queryables/?$"))
-            return extensionRegistry.getExtensionsForType(OgcApiQueryablesFormatExtension.class)
+        if (subPath.matches("^/[\\w\\-]+/schema/?$"))
+            return extensionRegistry.getExtensionsForType(OgcApiSchemaFormatExtension.class)
                                     .stream()
                                     .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))
-                                    .map(OgcApiQueryablesFormatExtension::getMediaType)
+                                    .map(OgcApiSchemaFormatExtension::getMediaType)
                                     .collect(ImmutableSet.toImmutableSet());
 
         throw new ServerErrorException("Invalid sub path: "+subPath, 500);
@@ -65,7 +68,7 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/queryables");
+        return ImmutableList.of("http://ldproxy.net/tbd/1.0/conf/schema");
     }
 
     @Override
@@ -81,8 +84,8 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
                 .collect(Collectors.toSet()))
             .build();
 
-        if (subPath.matches("^/[\\w\\-]+/queryables/?$")) {
-            // Queryables
+        if (subPath.matches("^/[\\w\\-]+/schema/?$")) {
+            // Schema
             return new ImmutableSet.Builder<String>()
                     .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
                     .addAll(parametersFromExtensions)
@@ -98,9 +101,9 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
     }
 
     @GET
-    @Path("/{collectionId}/queryables")
-    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
-    public Response getQueryables(@Auth Optional<User> optionalUser,
+    @Path("/{collectionId}/schema")
+    @Produces("application/schema+json")
+    public Response getSchema(@Auth Optional<User> optionalUser,
                              @Context OgcApiApi api,
                              @Context OgcApiRequestContext requestContext,
                              @Context UriInfo uriInfo,
@@ -120,39 +123,6 @@ public class OgcApiQueryablesEndpoint implements OgcApiEndpointExtension, Confor
                 .includeLinkHeader(includeLinkHeader)
                 .build();
 
-        return queryHandler.handle(OgcApiQueryablesQueriesHandler.Query.QUERYABLES, queryInput, requestContext);
-    }
-
-    public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
-        return toFlatMap(queryParameters, false);
-    }
-
-    public static Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters,
-                                                boolean keysToLowerCase) {
-        return queryParameters.entrySet()
-                .stream()
-                .map(entry -> {
-                    String key = keysToLowerCase ? entry.getKey()
-                            .toLowerCase() : entry.getKey();
-                    return new AbstractMap.SimpleImmutableEntry<>(key, entry.getValue()
-                            .isEmpty() ? "" : entry.getValue()
-                            .get(0));
-                })
-                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    public static Map<String, String> getFiltersFromQuery(Map<String, String> query,
-                                                          Map<String, String> filterableFields) {
-
-        Map<String, String> filters = new LinkedHashMap<>();
-
-        for (String filterKey : query.keySet()) {
-            if (filterableFields.containsKey(filterKey)) {
-                String filterValue = query.get(filterKey);
-                filters.put(filterKey, filterValue);
-            }
-        }
-
-        return filters;
+        return queryHandler.handle(OgcApiQueryablesQueriesHandler.Query.SCHEMA, queryInput, requestContext);
     }
 }
