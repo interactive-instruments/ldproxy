@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-public class ResourcesView extends LdproxyView {
+public class ResourcesView extends OgcApiView {
     private List<Resource> resourceList;
     public String none;
 

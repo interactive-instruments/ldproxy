@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class OgcApiConformanceDeclarationView extends LdproxyView {
+public class OgcApiConformanceDeclarationView extends OgcApiView {
 
     private final ConformanceDeclaration conformanceDeclaration;
 

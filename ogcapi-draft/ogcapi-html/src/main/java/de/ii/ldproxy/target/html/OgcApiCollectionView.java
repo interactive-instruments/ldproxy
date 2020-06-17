@@ -20,7 +20,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class OgcApiCollectionView extends LdproxyView {
+public class OgcApiCollectionView extends OgcApiView {
 
     @Requires
     private I18n i18n;

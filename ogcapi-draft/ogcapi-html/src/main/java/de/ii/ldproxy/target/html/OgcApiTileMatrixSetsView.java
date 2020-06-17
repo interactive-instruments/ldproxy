@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-public class OgcApiTileMatrixSetsView extends LdproxyView {
+public class OgcApiTileMatrixSetsView extends OgcApiView {
     public List<TileMatrixSetLinks> tileMatrixSets;
     public String none;
 

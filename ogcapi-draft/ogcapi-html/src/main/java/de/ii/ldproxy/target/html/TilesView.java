@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class TilesView extends LdproxyView {
+public class TilesView extends OgcApiView {
     public List<Map<String,String>> tileCollections;
     public String tilesUrl;
     public OgcApiLink tileJsonLink;

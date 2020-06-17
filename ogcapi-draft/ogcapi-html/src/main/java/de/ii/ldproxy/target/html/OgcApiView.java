@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public abstract class LdproxyView extends View {
+public abstract class OgcApiView extends View {
 
     protected final OgcApiApiDataV2 apiData;
     protected final List<NavigationDTO> breadCrumbs;
@@ -29,10 +29,10 @@ public abstract class LdproxyView extends View {
     protected final String description;
     protected final boolean noIndex;
 
-    protected LdproxyView(String templateName, @Nullable Charset charset, @Nullable OgcApiApiDataV2 apiData,
-                          List<NavigationDTO> breadCrumbs, HtmlConfig htmlConfig, boolean noIndex, String urlPrefix,
-                          @Nullable List<OgcApiLink> links, @Nullable String title, @Nullable String description) {
-        super(templateName, charset);
+    protected OgcApiView(String templateName, @Nullable Charset charset, @Nullable OgcApiApiDataV2 apiData,
+                         List<NavigationDTO> breadCrumbs, HtmlConfig htmlConfig, boolean noIndex, String urlPrefix,
+                         @Nullable List<OgcApiLink> links, @Nullable String title, @Nullable String description) {
+        super(String.format("/templates/%s", templateName), charset);
         this.apiData = apiData;
         this.breadCrumbs = breadCrumbs;
         this.links = links;
