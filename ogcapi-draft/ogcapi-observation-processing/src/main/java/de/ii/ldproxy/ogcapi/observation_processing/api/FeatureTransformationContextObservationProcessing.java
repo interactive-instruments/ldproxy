@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.observation_processing.api;
 
-import de.ii.ldproxy.ogcapi.feature_processing.api.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.xtraplatform.codelists.Codelist;

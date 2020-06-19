@@ -20,12 +20,12 @@ public interface TileMatrixSetsFormatExtension extends FormatExtension {
         return "^/tileMatrixSets(?:/\\w+)?/?$";
     }
 
-    Response getTileMatrixSetsResponse(TileMatrixSets tileMatrixSets,
-                                       OgcApiApi api,
-                                       OgcApiRequestContext requestContext);
+    Object getTileMatrixSetsEntity(TileMatrixSets tileMatrixSets,
+                                   OgcApiApi api,
+                                   OgcApiRequestContext requestContext);
 
-    Response getTileMatrixSetResponse(TileMatrixSetData tileMatrixSet,
-                                      OgcApiApi api,
-                                      OgcApiRequestContext requestContext);
+    Object getTileMatrixSetEntity(TileMatrixSetData tileMatrixSet,
+                                  OgcApiApi api,
+                                  OgcApiRequestContext requestContext);
 
 }

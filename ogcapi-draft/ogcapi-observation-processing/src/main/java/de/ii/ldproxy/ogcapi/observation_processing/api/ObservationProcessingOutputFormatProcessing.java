@@ -10,13 +10,9 @@ package de.ii.ldproxy.ogcapi.observation_processing.api;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.feature_processing.api.FeatureProcessChain;
-import de.ii.ldproxy.ogcapi.feature_processing.api.Processing;
-import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
-import de.ii.ldproxy.ogcapi.observation_processing.application.Variables;
+import de.ii.ldproxy.ogcapi.features.processing.Processing;
 
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 public interface ObservationProcessingOutputFormatProcessing extends FormatExtension {
 

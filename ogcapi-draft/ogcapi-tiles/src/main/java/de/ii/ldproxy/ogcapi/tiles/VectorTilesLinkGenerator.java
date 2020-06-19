@@ -77,7 +77,6 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                         .removeParameters("f")
                                         .toString())
                         .rel("item")
-                        .type("application/json")
                         .title(i18n.get("tileMatrixSetLink", language).replace("{{tileMatrixSetId}}", tileMatrixSetId))
                         .build())
                 .build();

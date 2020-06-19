@@ -8,8 +8,7 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
 
@@ -29,6 +28,30 @@ public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
         }
 
         return queryHandler.handle(queryInput, requestContext);
+    }
+
+    default Response.ResponseBuilder prepareSuccessResponse(OgcApiApi api,
+                                                            OgcApiRequestContext requestContext) {
+        return prepareSuccessResponse(api, requestContext, null);
+    }
+
+    default Response.ResponseBuilder prepareSuccessResponse(OgcApiApi api,
+                                                            OgcApiRequestContext requestContext,
+                                                            List<OgcApiLink> links) {
+        Response.ResponseBuilder response = Response.ok()
+                                                    .type(requestContext
+                                                        .getMediaType()
+                                                        .type());
+
+        Optional<Locale> language = requestContext.getLanguage();
+        if (language.isPresent())
+            response.language(language.get());
+
+        if (links != null)
+            links.stream()
+                    .forEach(link -> response.links(link.getLink()));
+
+        return response;
     }
 
 }

@@ -9,12 +9,18 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import org.immutables.value.Value;
 
-public interface OgcApiQueryInput {
+@Value.Immutable
+public abstract class OgcApiQueryInputGeneric implements OgcApiQueryInput {
 
-    // general output options
+    @Override
     @Value.Default
-    default boolean getIncludeLinkHeader() { return false; }
+    public boolean getIncludeHomeLink() {
+        return false;
+    }
 
+    @Override
     @Value.Default
-    default boolean getIncludeHomeLink() { return false; }
+    public boolean getIncludeLinkHeader() {
+        return false;
+    }
 }

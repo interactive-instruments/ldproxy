@@ -19,3 +19,5 @@ rootDir.listFiles().each { file ->
 includeBuild 'ogcapi-stable'
 includeBuild 'ogcapi-draft'
 includeBuild 'ogcapi-experimental'
+include 'ogcapi-feature-processing'
+

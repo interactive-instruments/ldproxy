@@ -125,4 +125,20 @@ public abstract class OgcApiEndpoint implements OgcApiEndpointExtension {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(),c -> c));
     }
+
+    protected OgcApiQueryInput getGenericQueryInput(OgcApiApiDataV2 apiData) {
+        final boolean includeHomeLink = getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+                .orElse(false);
+        final boolean includeLinkHeader = getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+                .orElse(false);
+
+        OgcApiQueryInput queryInput = new ImmutableOgcApiQueryInputGeneric.Builder()
+                .includeLinkHeader(includeLinkHeader)
+                .includeHomeLink(includeHomeLink)
+                .build();
+
+        return queryInput;
+    }
 }

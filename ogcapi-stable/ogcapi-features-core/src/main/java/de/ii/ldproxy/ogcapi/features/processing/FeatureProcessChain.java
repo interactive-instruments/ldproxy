@@ -1,6 +1,5 @@
-package de.ii.ldproxy.ogcapi.feature_processing.api;
+package de.ii.ldproxy.ogcapi.features.processing;
 
-import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import org.immutables.value.Value;
 
 import java.util.List;

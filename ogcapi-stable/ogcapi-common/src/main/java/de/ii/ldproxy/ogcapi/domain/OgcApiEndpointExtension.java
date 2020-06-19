@@ -145,4 +145,6 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return false;
     }
+
+
 }

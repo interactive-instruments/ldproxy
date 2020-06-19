@@ -35,6 +35,9 @@ public class SchemaGeneratorImpl implements SchemaGenerator {
         switch (clazz.getSimpleName()) {
             case "String":
                 return new StringSchema();
+            case "EpsgCrs":
+            case "URI":
+                return new StringSchema().format("uri-reference");
             case "Locale":
                 return new StringSchema().pattern("^[a-zA-Z]{1,8}(?:\\-[a-zA-Z0-9]{1,8})?$");
             case "int":

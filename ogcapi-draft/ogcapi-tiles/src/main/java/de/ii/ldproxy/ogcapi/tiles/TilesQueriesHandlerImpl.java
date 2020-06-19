@@ -5,25 +5,26 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.observation_processing.application;
+package de.ii.ldproxy.ogcapi.tiles;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.features.processing.ImmutableProcessing;
 import de.ii.ldproxy.ogcapi.features.processing.Processing;
-import de.ii.ldproxy.ogcapi.observation_processing.api.*;
 import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.features.domain.*;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureStream2;
+import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -31,46 +32,49 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
 @Component
 @Instantiate
 @Provides
-public class ObservationProcessingQueriesHandlerImpl implements ObservationProcessingQueriesHandler {
+public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
-    private static final String DAPA_PATH_ELEMENT = "dapa";
     private final I18n i18n;
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
     private CodelistRegistry codelistRegistry;
+    private final OgcApiExtensionRegistry extensionRegistry;
 
-    public ObservationProcessingQueriesHandlerImpl(@Requires I18n i18n,
-                                                   @Requires CrsTransformerFactory crsTransformerFactory,
-                                                   @Requires Dropwizard dropwizard,
-                                                   @Requires CodelistRegistry codelistRegistry) {
+    public TilesQueriesHandlerImpl(@Requires I18n i18n,
+                                   @Requires CrsTransformerFactory crsTransformerFactory,
+                                   @Requires Dropwizard dropwizard,
+                                   @Requires CodelistRegistry codelistRegistry,
+                                   @Requires OgcApiExtensionRegistry extensionRegistry) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.codelistRegistry = codelistRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
+        this.extensionRegistry = extensionRegistry;
 
         this.queryHandlers = ImmutableMap.of(
-                Query.PROCESS,
-                OgcApiQueryHandler.with(OgcApiQueryInputObservationProcessing.class, this::getProcessResponse),
-                Query.VARIABLES,
-                OgcApiQueryHandler.with(OgcApiQueryInputVariables.class, this::getVariablesResponse),
-                Query.LIST,
-                OgcApiQueryHandler.with(OgcApiQueryInputProcessing.class, this::getProcessingResponse)
+                Query.TILE_MATRIX_SETS,
+                OgcApiQueryHandler.with(OgcApiQueryInputTileMatrixSets.class, this::getTileMatrixSetsResponse),
+                Query.TILE_MATRIX_SET,
+                OgcApiQueryHandler.with(OgcApiQueryInputTileMatrixSet.class, this::getTileMatrixSetResponse)
         );
     }
 
@@ -79,104 +83,87 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         return queryHandlers;
     }
 
-    public static void ensureCollectionIdExists(OgcApiApiDataV2 apiData, String collectionId) {
-        if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException();
-        }
-    }
-
-    private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
-        if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("feature provider does not support queries");
-        }
-    }
-
-    private Response getVariablesResponse(OgcApiQueryInputVariables queryInput, OgcApiRequestContext requestContext) {
+    private Response getTileMatrixSetsResponse(OgcApiQueryInputTileMatrixSets queryInput, OgcApiRequestContext requestContext) {
         OgcApiApi api = requestContext.getApi();
-        OgcApiApiDataV2 apiData = api.getData();
-        String collectionId = queryInput.getCollectionId();
-        if (!apiData.isCollectionEnabled(collectionId))
-            throw new NotFoundException();
+        String path = "/tileMatrixSets";
 
-        ObservationProcessingOutputFormatVariables outputFormat = api.getOutputFormat(
-                ObservationProcessingOutputFormatVariables.class,
-                requestContext.getMediaType(),
-                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/variables")
+        TileMatrixSetsFormatExtension outputFormat = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), path)
                 .orElseThrow(NotAcceptableException::new);
 
-        ensureCollectionIdExists(api.getData(), collectionId);
+        final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
-        List<OgcApiLink> links =
-                new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
+        List<OgcApiLink> links = new TileMatrixSetsLinksGenerator().generateLinks(
+                requestContext.getUriCustomizer(),
+                requestContext.getMediaType(),
+                requestContext.getAlternateMediaTypes(),
+                queryInput.getIncludeHomeLink(),
+                true,
+                i18n,
+                requestContext.getLanguage());
 
-        Variables variables = ImmutableVariables.builder()
-                .variables(queryInput.getVariables())
+        TileMatrixSets tileMatrixSets = ImmutableTileMatrixSets.builder()
+                .tileMatrixSets(
+                        queryInput.getTileMatrixSets()
+                                .stream()
+                                .map(tileMatrixSet -> ImmutableTileMatrixSetLinks.builder()
+                                        .id(tileMatrixSet.getId())
+                                        .title(tileMatrixSet.getTileMatrixSetData().getTitle())
+                                        .links(vectorTilesLinkGenerator.generateTileMatrixSetsLinks(
+                                                requestContext.getUriCustomizer(),
+                                                tileMatrixSet.getId().toString(),
+                                                i18n,
+                                                requestContext.getLanguage()))
+                                        .build())
+                                .collect(Collectors.toList()))
                 .links(links)
                 .build();
 
-        Response variablesResponse = outputFormat.getResponse(variables, collectionId, api, requestContext);
-
-        Response.ResponseBuilder response = Response.ok()
-                .entity(variablesResponse.getEntity())
-                .type(requestContext
-                        .getMediaType()
-                        .type());
-
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (queryInput.getIncludeLinkHeader() && links != null)
-            links.stream()
-                    .forEach(link -> response.links(link.getLink()));
-
-        return response.build();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+                .entity(outputFormat.getTileMatrixSetsEntity(tileMatrixSets, api, requestContext))
+                .build();
     }
 
-    private Response getProcessingResponse(OgcApiQueryInputProcessing queryInput, OgcApiRequestContext requestContext) {
+    private Response getTileMatrixSetResponse(OgcApiQueryInputTileMatrixSet queryInput, OgcApiRequestContext requestContext) {
         OgcApiApi api = requestContext.getApi();
-        OgcApiApiDataV2 apiData = api.getData();
-        String collectionId = queryInput.getCollectionId();
-        if (!apiData.isCollectionEnabled(collectionId))
-            throw new NotFoundException();
+        String tileMatrixSetId = queryInput.getTileMatrixSetId();
+        String path = "/tileMatrixSets/"+tileMatrixSetId;
 
-        ObservationProcessingOutputFormatProcessing outputFormat = api.getOutputFormat(
-                ObservationProcessingOutputFormatProcessing.class,
-                requestContext.getMediaType(),
-                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT)
+        TileMatrixSetsFormatExtension outputFormat = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), path)
                 .orElseThrow(NotAcceptableException::new);
 
-        ensureCollectionIdExists(api.getData(), collectionId);
+        final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
-        List<OgcApiLink> links =
-                new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
+        List<OgcApiLink> links = new TileMatrixSetsLinksGenerator().generateLinks(
+                requestContext.getUriCustomizer(),
+                requestContext.getMediaType(),
+                requestContext.getAlternateMediaTypes(),
+                queryInput.getIncludeHomeLink(),
+                false,
+                i18n,
+                requestContext.getLanguage());
 
-        Processing processing = ImmutableProcessing.builder()
-                .from(queryInput.getProcessing())
+        TileMatrixSet tileMatrixSet = null;
+        for (OgcApiContentExtension contentExtension : extensionRegistry.getExtensionsForType(OgcApiContentExtension.class)) {
+            if (contentExtension instanceof TileMatrixSet && ((TileMatrixSet) contentExtension).getId().equals(tileMatrixSetId)) {
+                tileMatrixSet = (TileMatrixSet) contentExtension;
+                break;
+            }
+        }
+        if (Objects.isNull(tileMatrixSet)) {
+            throw new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId);
+        }
+
+        TileMatrixSetData tileMatrixSetData = ImmutableTileMatrixSetData.builder()
+                .from(tileMatrixSet.getTileMatrixSetData())
                 .links(links)
                 .build();
 
-        Response processingResponse = outputFormat.getResponse(processing, collectionId, api, requestContext);
-
-        Response.ResponseBuilder response = Response.ok()
-                .entity(processingResponse.getEntity())
-                .type(requestContext
-                        .getMediaType()
-                        .type());
-
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (queryInput.getIncludeLinkHeader() && links != null)
-            links.stream()
-                    .forEach(link -> response.links(link.getLink()));
-
-        return response.build();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+                .entity(outputFormat.getTileMatrixSetEntity(tileMatrixSetData, api, requestContext))
+                .build();
     }
 
+/*
     private Response getProcessResponse(OgcApiQueryInputObservationProcessing queryInput, OgcApiRequestContext requestContext) {
         OgcApiApi api = requestContext.getApi();
         OgcApiApiDataV2 apiData = api.getData();
@@ -295,4 +282,17 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
             }
         };
     }
+
+    public static void ensureCollectionIdExists(OgcApiApiDataV2 apiData, String collectionId) {
+        if (!apiData.isCollectionEnabled(collectionId)) {
+            throw new NotFoundException();
+        }
+    }
+
+    private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
+        if (!featureProvider.supportsQueries()) {
+            throw new IllegalStateException("feature provider does not support queries");
+        }
+    }
+ */
 }

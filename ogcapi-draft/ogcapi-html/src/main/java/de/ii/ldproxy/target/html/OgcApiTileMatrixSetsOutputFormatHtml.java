@@ -70,9 +70,9 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
     }
 
     @Override
-    public Response getTileMatrixSetsResponse(TileMatrixSets tileMatrixSets,
-                                              OgcApiApi api,
-                                              OgcApiRequestContext requestContext) {
+    public Object getTileMatrixSetsEntity(TileMatrixSets tileMatrixSets,
+                                          OgcApiApi api,
+                                          OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
 
@@ -91,16 +91,13 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
 
         OgcApiTileMatrixSetsView tileMatrixSetsView = new OgcApiTileMatrixSetsView(api.getData(), tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
-        return Response.ok()
-                .type(getMediaType().type())
-                .entity(tileMatrixSetsView)
-                .build();
+        return tileMatrixSetsView;
     }
 
     @Override
-    public Response getTileMatrixSetResponse(TileMatrixSetData tileMatrixSet,
-                                             OgcApiApi api,
-                                             OgcApiRequestContext requestContext) {
+    public Object getTileMatrixSetEntity(TileMatrixSetData tileMatrixSet,
+                                         OgcApiApi api,
+                                         OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
         String title = tileMatrixSet.getTitle().orElse(tileMatrixSet.getIdentifier());
@@ -125,9 +122,6 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
 
         OgcApiTileMatrixSetView tileMatrixSetView = new OgcApiTileMatrixSetView(api.getData(), tileMatrixSet, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
-        return Response.ok()
-                .type(getMediaType().type())
-                .entity(tileMatrixSetView)
-                .build();
+        return tileMatrixSetView;
     }
 }
