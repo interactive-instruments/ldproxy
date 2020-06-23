@@ -146,7 +146,7 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
                     final Set<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
                             getQueryParameters(extensionRegistry, apiData, path);
                     final String operationSummary = "retrieve features in the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.of("The response is a document consisting of features in the collection. " +
@@ -184,7 +184,7 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
                     final Set<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
                             getQueryParameters(extensionRegistry, apiData, path);
                     final String operationSummary = "retrieve a feature in the feature collection '" + collectionId + "'";
                     final Optional<String> operationDescription = Optional.of("Fetch the feature with id `{featureId}`.");
@@ -206,11 +206,13 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String collectionId, String definitionPath) {
-        ImmutableSet<OgcApiQueryParameter> generalList = super.getQueryParameters(extensionRegistry, apiData, collectionId, definitionPath);
+    public ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
+        ImmutableSet<OgcApiQueryParameter> generalList = super.getQueryParameters(extensionRegistry, apiData, definitionPath, collectionId);
 
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-        Optional<OgcApiFeaturesCoreConfiguration> coreConfiguration = featureType.getExtension(OgcApiFeaturesCoreConfiguration.class);
+        Optional<OgcApiFeaturesCoreConfiguration> coreConfiguration = featureType==null ?
+                getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class) :
+                featureType.getExtension(OgcApiFeaturesCoreConfiguration.class);
 
         final Map<String, String> filterableFields = coreConfiguration.map(OgcApiFeaturesCoreConfiguration::getOtherFilterParameters)
                 .orElse(ImmutableMap.of());

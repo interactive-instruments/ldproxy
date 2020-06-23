@@ -13,6 +13,14 @@ public interface OgcApiExtension {
 
     boolean isEnabledForApi(OgcApiApiDataV2 apiData);
 
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isEnabledForApi(apiData);
+    }
+
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, Optional<String> collectionId) {
+        return collectionId.isPresent() ? isEnabledForApi(apiData, collectionId.get()) : isEnabledForApi(apiData);
+    }
+
     default <T extends ExtensionConfiguration> Optional<T> getExtensionConfiguration(
             ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
 

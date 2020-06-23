@@ -135,7 +135,7 @@ public class OgcApiSchemaEndpoint extends OgcApiEndpointSubCollection implements
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
                     final Set<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
                             getQueryParameters(extensionRegistry, apiData, path);
                     final String operationSummary = "retrieve the schema of features in the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.empty(); // TODO

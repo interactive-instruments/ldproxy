@@ -33,8 +33,8 @@ public class PathParameterCollectionIdQueryables extends PathParameterCollection
     };
 
     @Override
-    public String getPattern() {
-        return "[\\w\\-]+/queryables";
+    public String getId() {
+        return "collectionIdQueryables";
     }
 
     @Override

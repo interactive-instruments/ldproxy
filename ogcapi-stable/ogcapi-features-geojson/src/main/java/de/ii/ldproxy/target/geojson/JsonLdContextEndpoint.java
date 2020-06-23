@@ -132,7 +132,7 @@ public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
                         // skip, if no context is available
                         continue;
                     final Set<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
                             getQueryParameters(extensionRegistry, apiData, path);
                     final String operationSummary = "retrieve the JSON-LD context for the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.empty();

@@ -119,14 +119,24 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
         }
     }
 
-    public ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String collectionId, String definitionPath) {
-        // just return the standard list
-        return super.getQueryParameters(extensionRegistry, apiData, definitionPath, OgcApiContext.HttpMethods.GET);
+    public ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
+        return getQueryParameters(extensionRegistry, apiData, definitionPath, collectionId, OgcApiContext.HttpMethods.GET);
     }
 
-    public ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String collectionId, String definitionPath, OgcApiContext.HttpMethods method) {
-        // just return the standard list
-        return super.getQueryParameters(extensionRegistry, apiData, definitionPath, method);
+    public ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, String collectionId, OgcApiContext.HttpMethods method) {
+        return extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class)
+                .stream()
+                .filter(param -> param.isApplicable(apiData, definitionPath, collectionId, method))
+                .collect(ImmutableSet.toImmutableSet());
     }
+
+    /* TODO do we need collection-specific path parameters? The API definitions would need to be adapted for this, too
+    ImmutableSet<OgcApiPathParameter> getPathParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
+        return extensionRegistry.getExtensionsForType(OgcApiPathParameter.class)
+                .stream()
+                .filter(param -> param.isApplicable(apiData, definitionPath, collectionId))
+                .collect(ImmutableSet.toImmutableSet());
+    }
+    */
 
 }

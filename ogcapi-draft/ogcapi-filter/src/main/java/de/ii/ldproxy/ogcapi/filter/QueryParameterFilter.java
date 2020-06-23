@@ -37,8 +37,7 @@ public class QueryParameterFilter implements OgcApiQueryParameter, ConformanceCl
         return isEnabledForApi(apiData) &&
                 method==OgcApiContext.HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
-                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+                 definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
     }
 
     private final Schema schema = new StringSchema();
@@ -60,6 +59,12 @@ public class QueryParameterFilter implements OgcApiQueryParameter, ConformanceCl
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, FilterConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
+        return isExtensionEnabled(apiData, featureType, FilterConfiguration.class);
     }
 
     @Override

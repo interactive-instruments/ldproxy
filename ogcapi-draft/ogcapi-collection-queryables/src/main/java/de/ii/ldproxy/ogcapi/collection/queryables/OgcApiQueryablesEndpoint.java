@@ -145,7 +145,7 @@ public class OgcApiQueryablesEndpoint extends OgcApiEndpointSubCollection implem
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
                     final Set<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
                             getQueryParameters(extensionRegistry, apiData, path);
                     final String operationSummary = "retrieve the queryables of the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.empty(); // TODO once the specification is more stable

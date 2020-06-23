@@ -125,7 +125,7 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
                     final Set<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path, HttpMethods.PATCH) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PATCH) :
                             getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PATCH);
                     final String operationSummary = "update the information about available styles for the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.of("The content of the request may include an updated list of styles and/or an update to the default style.");

@@ -48,7 +48,9 @@ public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
             response.language(language.get());
 
         if (links != null)
+            // skip URI templates in the header as these are not RFC 8288 links
             links.stream()
+                    .filter(link -> link.getTemplated()==null || !link.getTemplated())
                     .forEach(link -> response.links(link.getLink()));
 
         return response;
