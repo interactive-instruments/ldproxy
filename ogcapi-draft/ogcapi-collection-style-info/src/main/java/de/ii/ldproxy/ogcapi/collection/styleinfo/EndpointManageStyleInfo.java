@@ -48,12 +48,6 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointManageStyleInfo.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(HttpMethods.PATCH)
-            .subPathPattern("^/?[\\w\\-]+/?$")
-            .build();
-
     private static final List<String> TAGS = ImmutableList.of("Mutate data collections");
 
     private final File styleInfosStore;
@@ -71,21 +65,6 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
     public List<String> getConformanceClassUris() {
         return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/style-info");
     }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        return ImmutableSet.of(
-                new ImmutableOgcApiMediaType.Builder()
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .build());
-    }
-     */
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {

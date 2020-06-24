@@ -50,6 +50,8 @@ import java.util.Optional;
 @Instantiate
 public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
 
+    // TODO change to new style for endpoints
+
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("collections")
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
@@ -71,7 +73,6 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
         this.providers = providers;
     }
 
-    @Override
     public OgcApiContext getApiContext() {
         return API_CONTEXT;
     }

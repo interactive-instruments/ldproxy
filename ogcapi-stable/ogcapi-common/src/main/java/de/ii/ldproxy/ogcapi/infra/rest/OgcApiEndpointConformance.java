@@ -38,11 +38,6 @@ public class OgcApiEndpointConformance extends OgcApiEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEndpointConformance.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("conformance")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/?$")
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
     @Requires
@@ -58,30 +53,11 @@ public class OgcApiEndpointConformance extends OgcApiEndpoint {
     }
 
     @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    @Override
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(CommonFormatExtension.class);
         return formats;
     }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/?$"))
-            return extensionRegistry.getExtensionsForType(CommonFormatExtension.class)
-                                    .stream()
-                                    .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))
-                                    .map(CommonFormatExtension::getMediaType)
-                                    .collect(ImmutableSet.toImmutableSet());
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-     */
 
     @Override
     public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {

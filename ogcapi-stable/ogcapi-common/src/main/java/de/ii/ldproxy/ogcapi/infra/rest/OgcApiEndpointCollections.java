@@ -34,11 +34,6 @@ import java.util.Set;
 public class OgcApiEndpointCollections extends OgcApiEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEndpointCollections.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/?$")
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
     @Requires
@@ -54,30 +49,11 @@ public class OgcApiEndpointCollections extends OgcApiEndpoint {
     }
 
     @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    @Override
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(CollectionsFormatExtension.class);
         return formats;
     }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/?$"))
-            return extensionRegistry.getExtensionsForType(CollectionsFormatExtension.class)
-                                    .stream()
-                                    .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))
-                                    .map(CollectionsFormatExtension::getMediaType)
-                                    .collect(ImmutableSet.toImmutableSet());
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-     */
 
     @Override
     public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {

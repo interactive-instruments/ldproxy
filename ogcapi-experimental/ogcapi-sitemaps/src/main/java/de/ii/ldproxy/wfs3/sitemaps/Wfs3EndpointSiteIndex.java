@@ -46,6 +46,8 @@ import java.util.Set;
 @Instantiate
 public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
 
+    // TODO change to new style for endpoints
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointSiteIndex.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("sitemap_index.xml")
@@ -68,7 +70,6 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
         this.providers = providers;
     }
 
-    @Override
     public OgcApiContext getApiContext() {
         return API_CONTEXT;
     }

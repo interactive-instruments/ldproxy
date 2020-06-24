@@ -40,11 +40,6 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiOptionsEndpoint.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint(".*")
-            .addMethods(OgcApiContext.HttpMethods.OPTIONS)
-            .subPathPattern(".*")
-            .build();
     private final OgcApiExtensionRegistry extensionRegistry;
 
     @Requires
@@ -52,11 +47,6 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
 
     public OgcApiOptionsEndpoint(@Requires OgcApiExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
-    }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
     }
 
     @Override

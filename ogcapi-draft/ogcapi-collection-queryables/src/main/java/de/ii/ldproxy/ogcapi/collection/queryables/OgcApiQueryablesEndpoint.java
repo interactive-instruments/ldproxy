@@ -37,11 +37,6 @@ import java.util.Set;
 public class OgcApiQueryablesEndpoint extends OgcApiEndpointSubCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiQueryablesEndpoint.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[\\w\\-]+/queryables/?$")
-            .build();
 
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
@@ -53,67 +48,9 @@ public class OgcApiQueryablesEndpoint extends OgcApiEndpointSubCollection implem
     }
 
     @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    @Override
     public List<String> getConformanceClassUris() {
         return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/queryables");
     }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/[\\w\\-]+/queryables/?$"))
-            return extensionRegistry.getExtensionsForType(OgcApiQueryablesFormatExtension.class)
-                                    .stream()
-                                    .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))
-                                    .map(OgcApiQueryablesFormatExtension::getMediaType)
-                                    .collect(ImmutableSet.toImmutableSet());
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    @Override
-    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
-        if (!isEnabledForApi(apiData))
-            return ImmutableSet.of();
-
-        ImmutableSet<String> parametersFromExtensions = new ImmutableSet.Builder<String>()
-            .addAll(extensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)
-                .stream()
-                .map(ext -> ext.getParameters(apiData, subPath))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet()))
-            .build();
-
-        if (subPath.matches("^/[\\w\\-]+/queryables/?$")) {
-            // Queryables
-            return new ImmutableSet.Builder<String>()
-                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
-                    .addAll(parametersFromExtensions)
-                    .build();
-        }
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    public static Map<String, String> getFiltersFromQuery(Map<String, String> query,
-                                                          Map<String, String> filterableFields) {
-
-        Map<String, String> filters = new LinkedHashMap<>();
-
-        for (String filterKey : query.keySet()) {
-            if (filterableFields.containsKey(filterKey)) {
-                String filterValue = query.get(filterKey);
-                filters.put(filterKey, filterValue);
-            }
-        }
-
-        return filters;
-    }
-     */
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {

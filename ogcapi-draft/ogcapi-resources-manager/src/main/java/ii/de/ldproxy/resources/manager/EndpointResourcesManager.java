@@ -42,11 +42,6 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 public class EndpointResourcesManager extends OgcApiEndpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResourcesManager.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("resources")
-            .addMethods(HttpMethods.PUT, HttpMethods.DELETE)
-            .subPathPattern("^/?[^/]+$")
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
 
     private final File resourcesStore;
@@ -64,24 +59,6 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
     public List<String> getConformanceClassUris() {
         return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/manage-resources");
     }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/?[^/]+$"))
-            return ImmutableSet.of(
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(MediaType.WILDCARD_TYPE)
-                            .build());
-
-        throw new ServerErrorException("Invalid sub path: " + subPath, 500);
-    }
-     */
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {

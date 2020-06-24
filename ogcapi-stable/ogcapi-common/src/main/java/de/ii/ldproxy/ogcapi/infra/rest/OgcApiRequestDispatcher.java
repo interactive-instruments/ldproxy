@@ -89,15 +89,15 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         }
 
         Set<String> parameters = requestContext.getUriInfo().getQueryParameters().keySet();
-        Set<String> knownParameters = ogcApiEndpoint.getParameters(service.getData(), subPath);
+        Set<OgcApiQueryParameter> knownParameters = ogcApiEndpoint.getParameters(service.getData(), subPath);
         Set<String> unknownParameters = parameters.stream()
-                .filter(parameter -> !knownParameters.contains(parameter))
+                .filter(parameter -> !knownParameters.stream().filter(param -> param.getName().equalsIgnoreCase(parameter)).findAny().isPresent())
                 .collect(Collectors.toSet());
         if (!unknownParameters.isEmpty()) {
             throw new BadRequestException("The following query parameters are rejected: " +
                     String.join(", ", unknownParameters) +
                     ". Valid parameters for this request are: " +
-                    String.join(", ", knownParameters));
+                    String.join(", ", knownParameters.stream().map(OgcApiParameter::getName).collect(Collectors.toList())));
         }
 
         ImmutableSet<OgcApiMediaType> supportedMediaTypes = method.equals("GET") || method.equals("HEAD") ?
@@ -218,11 +218,9 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                     .filter(endpoint -> endpoint.isEnabledForApi(dataset))
                     .anyMatch(endpoint -> {
                         OgcApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
-                        if (apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY) {
+                        if (apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY)
                             return apiDef.matches("/"+entrypoint+subPath, null);
-                        } else
-                            return endpoint.getApiContext()
-                                    .matches(entrypoint, subPath, null);
+                        return false;
                     });
             if (!resourceExists)
                 throw new NotFoundException();
@@ -235,11 +233,9 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         return getEndpoints().stream()
                              .filter(endpoint -> {
                                  OgcApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
-                                 if (apiDef!=null && apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY) {
+                                 if (apiDef!=null && apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY)
                                      return apiDef.matches("/"+entrypoint+subPath, method);
-                                 } else
-                                     return endpoint.getApiContext()
-                                             .matches(entrypoint, subPath, method);
+                                 return false;
                              })
                              .filter(endpoint -> endpoint.isEnabledForApi(dataset))
                              .findFirst();

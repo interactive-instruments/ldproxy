@@ -45,13 +45,6 @@ import java.util.stream.Collectors;
 public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointTransactional.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .subPathPattern("^/(?:[\\w\\-]+)/items/?[^/\\s]*$")
-            .addMethods(HttpMethods.POST, HttpMethods.PUT, HttpMethods.DELETE)
-            .putSubPathsAndMethods("^/(?:[\\w\\-]+)/items/?", Arrays.asList(new HttpMethods[]{HttpMethods.POST}))
-            .putSubPathsAndMethods("^/(?:[\\w\\-]+)/items/?(?:[^/\\s]+)$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.DELETE}))
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Mutate data");
 
     private final OgcApiFeatureCoreProviders providers;
@@ -63,26 +56,6 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
         this.providers = providers;
         this.commandHandler = new CommandHandlerTransactional();
     }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/(?:[\\w\\-]+)/items/?[^/\\s]*$"))
-            return ImmutableSet.of(
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(new MediaType("application", "geo+json"))
-                            .build()
-            );
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-     */
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {

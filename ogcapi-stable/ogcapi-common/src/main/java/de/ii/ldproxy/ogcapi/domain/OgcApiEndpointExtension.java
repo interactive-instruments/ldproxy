@@ -20,11 +20,7 @@ import java.util.Set;
 
 import static de.ii.ldproxy.ogcapi.domain.OgcApiEndpointDefinition.SORT_PRIORITY_DUMMY;
 
-
 public interface OgcApiEndpointExtension extends OgcApiExtension {
-
-    // TODO delete
-    OgcApiContext getApiContext();
 
     default OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
         return new ImmutableOgcApiEndpointDefinition.Builder()
@@ -60,8 +56,7 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
         throw new ServerErrorException("Invalid sub path: "+requestSubPath, 500);
     }
 
-    // TODO rename
-    default Set<OgcApiQueryParameter> getParameters2(OgcApiApiDataV2 apiData, String requestSubPath) {
+    default Set<OgcApiQueryParameter> getParameters(OgcApiApiDataV2 apiData, String requestSubPath) {
         OgcApiEndpointDefinition apiDef = getDefinition(apiData);
         if (apiDef.getResources().isEmpty())
             return ImmutableSet.of();
@@ -93,35 +88,6 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
                 .stream()
                 .filter(param -> param.isApplicable(apiData, definitionPath, method))
                 .collect(ImmutableSet.toImmutableSet());
-    }
-
-    // TODO delete
-    default ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String requestSubPath) {
-        OgcApiEndpointDefinition apiDef = getDefinition(apiData);
-        if (apiDef.getResources().isEmpty()) {
-            boolean useLangParameter = getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
-                    .map(OgcApiCommonConfiguration::getUseLangParameter)
-                    .orElse(false);
-            if (!useLangParameter)
-                return ImmutableSet.of("f");
-
-            return ImmutableSet.of("f", "lang");
-        }
-
-        OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath))
-                .orElse(null);
-        if (resource!=null) {
-            OgcApiOperation operation = resource.getOperations().get("GET");
-            if (operation!=null && operation.getSuccess().isPresent()) {
-                return operation.getQueryParameters()
-                        .stream()
-                        .map(param -> param.getName())
-                        .collect(ImmutableSet.toImmutableSet());
-            }
-            return ImmutableSet.of();
-        }
-
-        throw new ServerErrorException("Invalid sub path: "+requestSubPath, 500);
     }
 
     default void checkAuthorization(OgcApiApiDataV2 apiData, Optional<User> optionalUser) {

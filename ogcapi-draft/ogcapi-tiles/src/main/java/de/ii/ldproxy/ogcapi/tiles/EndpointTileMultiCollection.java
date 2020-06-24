@@ -49,11 +49,6 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMultiCollection.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("tiles")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/\\w+/\\w+/\\w+/\\w+/?$")
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
     private final OgcApiFeatureCoreProviders providers;
@@ -74,11 +69,6 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
         this.crsTransformerFactory = crsTransformerFactory;
         this.limitsGenerator = limitsGenerator;
         this.cache = cache;
-    }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
     }
 
     @Override

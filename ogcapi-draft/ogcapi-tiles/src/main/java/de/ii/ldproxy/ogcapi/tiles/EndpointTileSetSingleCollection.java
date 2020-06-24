@@ -36,11 +36,6 @@ public class EndpointTileSetSingleCollection extends OgcApiEndpointSubCollection
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSetSingleCollection.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[\\w\\-]+/tiles/\\w+/?$")
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
 
     private final TilesQueriesHandler queryHandler;
@@ -49,11 +44,6 @@ public class EndpointTileSetSingleCollection extends OgcApiEndpointSubCollection
                                     @Requires TilesQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
-    }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
     }
 
     @Override

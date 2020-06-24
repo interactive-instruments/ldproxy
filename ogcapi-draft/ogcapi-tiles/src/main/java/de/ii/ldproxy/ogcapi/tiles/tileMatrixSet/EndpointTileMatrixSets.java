@@ -41,12 +41,6 @@ public class EndpointTileMatrixSets extends OgcApiEndpoint implements Conformanc
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMatrixSets.class);
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch tiling schemes");
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("tileMatrixSets")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/?(?:\\w+)?$")
-            .build();
-
     private final TileMatrixSetsQueriesHandler queryHandler;
 
     EndpointTileMatrixSets(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
@@ -54,11 +48,6 @@ public class EndpointTileMatrixSets extends OgcApiEndpoint implements Conformanc
                            @Requires TileMatrixSetsQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
-    }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
     }
 
     @Override

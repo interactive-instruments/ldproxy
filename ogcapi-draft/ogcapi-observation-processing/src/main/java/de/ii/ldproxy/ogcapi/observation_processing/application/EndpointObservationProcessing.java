@@ -45,10 +45,6 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
     private static final List<String> TAGS = ImmutableList.of("DAPA"); // TODO make configurable
     private static final String DAPA_PATH_ELEMENT = "dapa";
 
-    static String subSubPath(String path) {
-        return path.replaceFirst("/\\{collectionId\\}", "");
-    }
-
     final OgcApiFeatureCoreProviders providers;
     final OgcApiFeaturesQuery ogcApiFeaturesQuery;
     final ObservationProcessingQueriesHandler queryHandler;
@@ -75,21 +71,6 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(ObservationProcessingOutputFormat.class);
         return formats;
-    }
-
-    // TODO delete after consolidation
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("(?:^/[\\w\\-]+/"+DAPA_PATH_ELEMENT +"/position(?:\\:aggregate-time)?/?$)|" +
-                            "(?:^/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/area(?:\\:aggregate-(space|time|space-time)?)?/?$)|" +
-                            "(?:^/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/resample-to-grid(?:\\:aggregate-time)?/?$)")
-            .build();
-
-    // TODO delete after consolidation
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
     }
 
     @Override

@@ -41,11 +41,6 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonLdContextEndpoint.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .subPathPattern("^/?[[\\w\\-]\\-]+/context/?$")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Access data");
 
     private static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
@@ -68,18 +63,6 @@ public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class) &&
                 isExtensionEnabled(apiData, GeoJsonConfiguration.class);
     }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 apiData, String subPath) {
-        return MEDIA_TYPES;
-    }
-     */
 
     @Path("/{collectionId}/context")
     @GET

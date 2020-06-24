@@ -39,11 +39,6 @@ import java.util.stream.Collectors;
 public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFeaturesEndpoint.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[\\w\\-]+/items(?:/[^/\\s]+)?/?$")
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Access data");
 
     private final OgcApiFeatureCoreProviders providers;
@@ -64,56 +59,6 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    /* TODO
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/[\\w\\-]+/items(?:/[^/\\s]+)?/?$"))
-            return extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
-                                    .stream()
-                                    .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))
-                                    .map(OgcApiFeatureFormatExtension::getMediaType)
-                                    .collect(ImmutableSet.toImmutableSet());
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    @Override
-    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
-        if (!isEnabledForApi(apiData))
-            return ImmutableSet.of();
-
-        ImmutableSet<String> parametersFromExtensions = new ImmutableSet.Builder<String>()
-            .addAll(extensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)
-                .stream()
-                .map(ext -> ext.getParameters(apiData, subPath))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet()))
-            .build();
-
-        if (subPath.matches("^/[\\w\\-]+/items/?$")) {
-            // Features
-            return new ImmutableSet.Builder<String>()
-                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
-                    .add("datetime", "bbox", "limit", "offset")
-                    .addAll(parametersFromExtensions)
-                    .build();
-        } else if (subPath.matches("^/[\\w\\-]+/items/[^/\\s]+/?$")) {
-            // Feature
-            return new ImmutableSet.Builder<String>()
-                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
-                    .addAll(parametersFromExtensions)
-                    .build();
-        }
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-     */
 
     @Override
     public List<? extends FormatExtension> getFormats() {

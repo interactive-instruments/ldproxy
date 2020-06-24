@@ -45,12 +45,6 @@ public class EndpointResource extends OgcApiEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResource.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("resources")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[^/]+$")
-            .build();
-
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
     private final File resourcesStore; // TODO: change to Store
@@ -62,46 +56,6 @@ public class EndpointResource extends OgcApiEndpoint {
             resourcesStore.mkdirs();
         }
     }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/?$"))
-            return ImmutableSet.of(
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(MediaType.APPLICATION_JSON_TYPE)
-                            .build(),
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(MediaType.TEXT_HTML_TYPE)
-                            .build());
-        else if (subPath.matches("^/?[^/]+$"))
-            return ImmutableSet.of(
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(MediaType.WILDCARD_TYPE)
-                            .build());
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    @Override
-    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
-        if (!isEnabledForApi(apiData))
-            return ImmutableSet.of();
-
-        if (subPath.matches("^/?$")) {
-            return OgcApiEndpointExtension.super.getParameters(apiData, subPath);
-        } else if (subPath.matches("^/?[^/]+$")) {
-            return ImmutableSet.of();
-        }
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-     */
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {

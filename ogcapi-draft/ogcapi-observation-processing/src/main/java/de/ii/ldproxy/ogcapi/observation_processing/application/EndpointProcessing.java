@@ -48,13 +48,6 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
     @Requires
     I18n i18n;
 
-    // TODO delete
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/?$")
-            .build();
-
     private final ObservationProcessingQueriesHandler queryHandler;
 
     public EndpointProcessing(@Requires OgcApiExtensionRegistry extensionRegistry,
@@ -67,12 +60,6 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(ObservationProcessingOutputFormatProcessing.class);
         return formats;
-    }
-
-    // TODO delete
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
     }
 
     @Override

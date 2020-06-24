@@ -43,13 +43,6 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
     private static final String DAPA_PATH_ELEMENT = "dapa";
     private static final List<String> TAGS = ImmutableList.of("DAPA");
 
-    // TODO delete
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[\\w\\-]+/"+ DAPA_PATH_ELEMENT +"/variables/?$")
-            .build();
-
     private final ObservationProcessingQueriesHandler queryHandler;
 
     public EndpointVariables(@Requires OgcApiExtensionRegistry extensionRegistry,
@@ -62,12 +55,6 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(ObservationProcessingOutputFormatVariables.class);
         return formats;
-    }
-
-    // TODO delete
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
     }
 
     @Override

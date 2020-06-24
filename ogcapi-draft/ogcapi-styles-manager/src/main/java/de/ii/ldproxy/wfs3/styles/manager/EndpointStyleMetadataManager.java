@@ -72,12 +72,6 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
     I18n i18n;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyleMetadataManager.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("styles")
-            .addMethods(HttpMethods.POST, HttpMethods.PUT, HttpMethods.DELETE, HttpMethods.PATCH)
-            .subPathPattern("^/?\\w+/metadata$")
-            .putSubPathsAndMethods("^/?\\w+/metadata$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.PATCH}))
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
 
     private final File stylesStore;
@@ -91,10 +85,6 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
         }
     }
 
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
