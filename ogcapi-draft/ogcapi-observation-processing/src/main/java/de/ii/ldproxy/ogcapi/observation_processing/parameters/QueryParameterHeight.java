@@ -56,6 +56,11 @@ public class QueryParameterHeight implements OgcApiQueryParameter {
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    }
+
+    @Override
     public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType,
                                                 Map<String, Object> context,
                                                 Map<String, String> parameters,

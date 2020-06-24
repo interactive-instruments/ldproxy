@@ -51,6 +51,11 @@ public class QueryParameterMaxAllowableOffsetFeatures implements OgcApiQueryPara
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), GeneralizationConfiguration.class);
+    }
+
+    @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiApiDataV2 datasetData) {

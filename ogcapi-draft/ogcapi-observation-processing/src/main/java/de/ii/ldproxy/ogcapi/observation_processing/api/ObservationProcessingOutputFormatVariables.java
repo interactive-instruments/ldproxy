@@ -7,11 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.observation_processing.api;
 
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.observation_processing.application.Variables;
-
-import javax.ws.rs.core.Response;
 
 public interface ObservationProcessingOutputFormatVariables extends FormatExtension {
 
@@ -20,5 +19,5 @@ public interface ObservationProcessingOutputFormatVariables extends FormatExtens
         return "^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/variables/?$";
     }
 
-    Response getResponse(Variables variables, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
+    Object getEntity(Variables variables, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
 }

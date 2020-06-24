@@ -43,4 +43,8 @@ public class QueryParameterFProcesses extends QueryParameterF {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
     }
 
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    }
 }

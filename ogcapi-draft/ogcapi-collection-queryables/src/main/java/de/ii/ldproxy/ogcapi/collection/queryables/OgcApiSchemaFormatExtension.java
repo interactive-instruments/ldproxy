@@ -11,7 +11,6 @@ import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 
-import javax.ws.rs.core.Response;
 import java.util.Map;
 
 public interface OgcApiSchemaFormatExtension extends FormatExtension {
@@ -20,5 +19,5 @@ public interface OgcApiSchemaFormatExtension extends FormatExtension {
         return "^\\/?collections\\/[^\\/]+\\/schema/?$";
     }
 
-    Response getResponse(Map<String,Object> schema, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
+    Object getEntity(Map<String,Object> schema, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
 }

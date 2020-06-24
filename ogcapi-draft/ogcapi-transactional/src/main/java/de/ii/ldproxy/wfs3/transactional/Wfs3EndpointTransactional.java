@@ -25,16 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.NotAllowedException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -98,6 +90,11 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), TransactionalConfiguration.class) && providers.getFeatureProvider(apiData).supportsTransactions();
+    }
+
+    @Override
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
@@ -128,7 +125,7 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
                     final Set<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path, HttpMethods.POST) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.POST) :
                             getQueryParameters(extensionRegistry, apiData, path, HttpMethods.POST);
                     final String operationSummary = "add a feature in the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.of("The content of the request is a new feature in one of the supported encodings. The URI of the new feature is returned in the header `Location`.");
@@ -156,7 +153,7 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
                     Set<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path, HttpMethods.PUT) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PUT) :
                             getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
                     String operationSummary = "add or update a feature in the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.of("The content of the request is a new feature in one of the supported encodings. The id of the new or updated feature is `{featureId}`.");
@@ -168,7 +165,7 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
                     if (operation!=null)
                         resourceBuilder.putOperations("PUT", operation);
                     queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path, HttpMethods.DELETE) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.DELETE) :
                             getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
                     operationSummary = "delete a feature in the feature collection '" + collectionId + "'";
                     operationDescription = Optional.of("The feature with id `{featureId}` will be deleted.");

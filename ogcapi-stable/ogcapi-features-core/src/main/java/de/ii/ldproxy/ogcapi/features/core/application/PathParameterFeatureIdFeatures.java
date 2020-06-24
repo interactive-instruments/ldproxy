@@ -36,11 +36,6 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
     }
 
     @Override
-    public boolean getExplodeInOpenApi() {
-        return false;
-    }
-
-    @Override
     public Set<String> getValues(OgcApiApiDataV2 apiData) {
         return ImmutableSet.of();
     }

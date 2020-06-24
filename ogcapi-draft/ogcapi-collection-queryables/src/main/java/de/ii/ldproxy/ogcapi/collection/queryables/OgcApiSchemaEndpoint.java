@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.collection.queryables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -20,15 +19,16 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 @Provides
@@ -42,7 +42,7 @@ public class OgcApiSchemaEndpoint extends OgcApiEndpointSubCollection implements
             .subPathPattern("^/[\\w\\-]+/schema/?$")
             .build();
 
-    private static final List<String> TAGS = ImmutableList.of("Access data collections");
+    private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
     @Requires
     private OgcApiQueryablesQueriesHandler queryHandler;
@@ -102,6 +102,11 @@ public class OgcApiSchemaEndpoint extends OgcApiEndpointSubCollection implements
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, QueryablesConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), QueryablesConfiguration.class);
     }
 
     @Override

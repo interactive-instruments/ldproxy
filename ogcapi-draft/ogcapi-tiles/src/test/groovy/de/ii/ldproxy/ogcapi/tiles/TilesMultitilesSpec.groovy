@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.tiles
 
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.WebMercatorQuad
 import spock.lang.Specification
 
 import javax.ws.rs.NotFoundException

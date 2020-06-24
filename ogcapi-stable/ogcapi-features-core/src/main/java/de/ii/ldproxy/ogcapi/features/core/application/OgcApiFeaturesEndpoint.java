@@ -267,7 +267,7 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
-        Set<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items");
+        Set<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
 
         OgcApiFeaturesCoreQueriesHandlerImpl.OgcApiQueryInputFeatures queryInput = new ImmutableOgcApiQueryInputFeatures.Builder()
@@ -308,7 +308,7 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
-        Set<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items/{featureId}");
+        Set<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items/{featureId}", collectionId);
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, toFlatMap(uriInfo.getQueryParameters()), allowedParameters, featureId);
 
         OgcApiFeaturesCoreQueriesHandlerImpl.OgcApiQueryInputFeature queryInput = new ImmutableOgcApiQueryInputFeature.Builder()

@@ -8,14 +8,10 @@
 package de.ii.ldproxy.resources;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.io.ByteSource;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.wfs3.styles.EndpointStyles;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
-import de.ii.ldproxy.wfs3.styles.StylesFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -24,14 +20,14 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.IOException;
-import java.net.URLConnection;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -120,9 +116,8 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() &&
-                stylesExtension.get()
-                        .getResourcesEnabled()) {
+        if (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getResourcesEnabled()) {
             return true;
         }
         return false;

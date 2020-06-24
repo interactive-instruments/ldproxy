@@ -7,7 +7,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -77,6 +76,11 @@ public class QueryParameterBboxCrsFeatures implements OgcApiQueryParameter {
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, CrsConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), CrsConfiguration.class);
     }
 
     @Override

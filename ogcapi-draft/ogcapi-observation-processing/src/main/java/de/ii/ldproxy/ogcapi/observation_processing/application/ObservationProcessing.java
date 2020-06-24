@@ -37,4 +37,8 @@ public class ObservationProcessing implements ConformanceClass {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    }
 }

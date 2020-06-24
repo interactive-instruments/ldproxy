@@ -8,11 +8,10 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputApiDefinition;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.OgcApiQueryInputApiDefinition;
+import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;

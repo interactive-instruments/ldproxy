@@ -39,7 +39,7 @@ public class OgcApiEndpointCollections extends OgcApiEndpoint {
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/?$")
             .build();
-    private static final List<String> TAGS = ImmutableList.of("Access data collections");
+    private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
     @Requires
     private OgcApiQueriesHandlerCollections queryHandler;

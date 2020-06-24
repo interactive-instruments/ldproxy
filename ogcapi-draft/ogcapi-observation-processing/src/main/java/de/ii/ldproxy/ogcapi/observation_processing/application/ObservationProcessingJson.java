@@ -18,7 +18,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 @Component
 @Provides
@@ -49,9 +48,12 @@ public class ObservationProcessingJson implements ObservationProcessingOutputFor
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class)
-                .map(ObservationProcessingConfiguration::getEnabled)
-                .orElse(false);
+        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     @Override
@@ -72,9 +74,7 @@ public class ObservationProcessingJson implements ObservationProcessingOutputFor
     }
 
     @Override
-    public Response getResponse(Processing processList, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
-        return Response.ok()
-                .entity(processList)
-                .build();
+    public Object getEntity(Processing processList, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
+        return processList;
     }
 }

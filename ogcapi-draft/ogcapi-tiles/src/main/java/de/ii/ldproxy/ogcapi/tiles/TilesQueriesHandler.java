@@ -13,11 +13,11 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiQueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import org.immutables.value.Value;
 
-import java.util.List;
+import java.io.File;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,33 +26,63 @@ public interface TilesQueriesHandler extends OgcApiQueriesHandler<TilesQueriesHa
     @Override
     Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> getQueryHandlers();
 
-    enum Query implements OgcApiQueryIdentifier {TILE_MATRIX_SETS, TILE_MATRIX_SET}
+    enum Query implements OgcApiQueryIdentifier {TILE_SETS, TILE_SET, SINGLE_LAYER_TILE, MULTI_LAYER_TILE, TILE_FILE, EMPTY_TILE}
 
     @Value.Immutable
-    interface OgcApiQueryInputTiles extends OgcApiQueryInput {
+    interface OgcApiQueryInputTileEmpty extends OgcApiQueryInput {
 
-        // the query
-        FeatureProvider2 getFeatureProvider();
-        Optional<String> getCollectionId();
+        Tile getTile();
+    }
+
+    @Value.Immutable
+    interface OgcApiQueryInputTileFile extends OgcApiQueryInput {
+
+        Tile getTile();
+        File getTileFile();
+    }
+
+    @Value.Immutable
+    interface OgcApiQueryInputTileMultiLayer extends OgcApiQueryInput {
+
+        Tile getTile();
+        Map<String, Tile> getSingleLayerTileMap();
+        Map<String, FeatureQuery> getQueryMap();
+        EpsgCrs getDefaultCrs();
+
+        // the processing
+        Optional<OutputStream> getOutputStream();
+        Optional<FeatureProcessChain> getProcesses();
+        Map<String, Object> getProcessingParameters();
+    }
+
+    @Value.Immutable
+    interface OgcApiQueryInputTileSingleLayer extends OgcApiQueryInput {
+
+        Tile getTile();
         FeatureQuery getQuery();
         EpsgCrs getDefaultCrs();
 
         // the processing
-        FeatureProcessChain getProcesses();
+        Optional<OutputStream> getOutputStream();
+        Optional<FeatureProcessChain> getProcesses();
         Map<String, Object> getProcessingParameters();
-
     }
 
     @Value.Immutable
-    interface OgcApiQueryInputTileMatrixSets extends OgcApiQueryInput {
+    interface OgcApiQueryInputTileSets extends OgcApiQueryInput {
 
-        List<TileMatrixSet> getTileMatrixSets();
+        Optional<String> getCollectionId();
+        double[] getCenter();
+        Map<String, MinMax> getTileMatrixSetZoomLevels();
     }
 
     @Value.Immutable
-    interface OgcApiQueryInputTileMatrixSet extends OgcApiQueryInput {
+    interface OgcApiQueryInputTileSet extends OgcApiQueryInput {
 
+        Optional<String> getCollectionId();
         String getTileMatrixSetId();
+        double[] getCenter();
+        MinMax getZoomLevels();
     }
 
 }

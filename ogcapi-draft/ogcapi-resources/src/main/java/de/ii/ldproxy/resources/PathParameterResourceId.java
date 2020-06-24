@@ -30,11 +30,6 @@ public class PathParameterResourceId implements OgcApiPathParameter {
     }
 
     @Override
-    public boolean getExplodeInOpenApi() {
-        return false;
-    }
-
-    @Override
     public Set<String> getValues(OgcApiApiDataV2 apiData) {
         return ImmutableSet.of();
     }
@@ -63,9 +58,8 @@ public class PathParameterResourceId implements OgcApiPathParameter {
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() &&
-                stylesExtension.get()
-                        .getResourcesEnabled()) {
+        if (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getResourcesEnabled()) {
             return true;
         }
         return false;

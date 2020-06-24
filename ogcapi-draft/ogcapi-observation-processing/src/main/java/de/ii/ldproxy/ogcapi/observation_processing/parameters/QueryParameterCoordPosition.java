@@ -94,6 +94,11 @@ public class QueryParameterCoordPosition extends GeometryHelper implements OgcAp
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    }
+
+    @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
                                                    OgcApiApiDataV2 apiData) {

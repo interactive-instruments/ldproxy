@@ -28,6 +28,11 @@ public class StatisticalFunctionMean implements ObservationProcessingStatistical
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    }
+
+    @Override
     public String getName() {
         return "mean";
     }

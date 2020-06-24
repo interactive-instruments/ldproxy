@@ -81,6 +81,11 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    }
+
+    @Override
     public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);

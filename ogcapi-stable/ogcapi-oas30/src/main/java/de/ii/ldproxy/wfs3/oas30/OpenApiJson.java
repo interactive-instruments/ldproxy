@@ -59,7 +59,6 @@ public class OpenApiJson implements ApiDefinitionFormatExtension {
     @Override
     public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
                                              OgcApiRequestContext wfs3Request) {
-        LOGGER.debug("MIME {}", "JSON");
         return openApiDefinition.getOpenApi("json", wfs3Request.getUriCustomizer().copy(), apiData);
     }
 }

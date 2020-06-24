@@ -1,7 +1,6 @@
 package de.ii.ldproxy.wfs3.oas30;
 
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
@@ -16,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @Component
@@ -34,11 +32,6 @@ public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
     @Override
     public String getPattern() {
         return "[^/]+";
-    }
-
-    @Override
-    public boolean getExplodeInOpenApi() {
-        return false;
     }
 
     @Override

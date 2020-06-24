@@ -32,6 +32,11 @@ public class OgcApiCollectionNearby implements OgcApiCollectionExtension {
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), NearbyConfiguration.class);
+    }
+
+    @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                      OgcApiApiDataV2 apiData,

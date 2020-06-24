@@ -2,19 +2,17 @@ package de.ii.ldproxy.ogcapi.filter;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import io.swagger.v3.oas.models.media.NumberSchema;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import javax.ws.rs.BadRequestException;
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Component
@@ -63,8 +61,7 @@ public class QueryParameterFilter implements OgcApiQueryParameter, ConformanceCl
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-        return isExtensionEnabled(apiData, featureType, FilterConfiguration.class);
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), FilterConfiguration.class);
     }
 
     @Override

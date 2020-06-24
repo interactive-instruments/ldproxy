@@ -46,7 +46,9 @@ public interface OgcApiExtension {
 
     default boolean isExtensionEnabled(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {
 
-        return getExtensionConfiguration(defaultExtendableConfiguration, extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
+        return extendableConfiguration!=null ?
+                getExtensionConfiguration(defaultExtendableConfiguration, extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent() :
+                getExtensionConfiguration(defaultExtendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
     }
 
     default boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {

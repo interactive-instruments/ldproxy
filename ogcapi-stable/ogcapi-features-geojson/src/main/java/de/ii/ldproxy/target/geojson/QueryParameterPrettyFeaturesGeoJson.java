@@ -1,23 +1,16 @@
 package de.ii.ldproxy.target.geojson;
 
-import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.runtime.FelixRuntime;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Context;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
 import org.osgi.framework.BundleContext;
-
-import javax.ws.rs.BadRequestException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Provides
@@ -57,5 +50,10 @@ public class QueryParameterPrettyFeaturesGeoJson implements OgcApiQueryParameter
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, GeoJsonConfiguration.class) && allowDebug;
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), GeoJsonConfiguration.class) && allowDebug;
     }
 }

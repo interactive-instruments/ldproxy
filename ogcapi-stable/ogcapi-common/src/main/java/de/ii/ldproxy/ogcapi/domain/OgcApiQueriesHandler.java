@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+
 import javax.ws.rs.core.Response;
 import java.util.*;
 
@@ -38,6 +40,13 @@ public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
     default Response.ResponseBuilder prepareSuccessResponse(OgcApiApi api,
                                                             OgcApiRequestContext requestContext,
                                                             List<OgcApiLink> links) {
+        return prepareSuccessResponse(api, requestContext, null, null);
+    }
+
+    default Response.ResponseBuilder prepareSuccessResponse(OgcApiApi api,
+                                                            OgcApiRequestContext requestContext,
+                                                            List<OgcApiLink> links,
+                                                            EpsgCrs crs) {
         Response.ResponseBuilder response = Response.ok()
                                                     .type(requestContext
                                                         .getMediaType()
@@ -52,6 +61,9 @@ public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
             links.stream()
                     .filter(link -> link.getTemplated()==null || !link.getTemplated())
                     .forEach(link -> response.links(link.getLink()));
+
+        if (crs != null)
+            response.header("Content-Crs", "<" + crs.toUriString() + ">");
 
         return response;
     }

@@ -51,4 +51,9 @@ public class QueryParameterBareHtml implements OgcApiQueryParameter {
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, HtmlConfiguration.class) && allowDebug;
     }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), HtmlConfiguration.class);
+    }
 }

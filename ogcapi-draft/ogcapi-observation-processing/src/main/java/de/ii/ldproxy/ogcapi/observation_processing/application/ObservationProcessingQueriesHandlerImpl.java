@@ -115,23 +115,9 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                 .links(links)
                 .build();
 
-        Response variablesResponse = outputFormat.getResponse(variables, collectionId, api, requestContext);
-
-        Response.ResponseBuilder response = Response.ok()
-                .entity(variablesResponse.getEntity())
-                .type(requestContext
-                        .getMediaType()
-                        .type());
-
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (queryInput.getIncludeLinkHeader() && links != null)
-            links.stream()
-                    .forEach(link -> response.links(link.getLink()));
-
-        return response.build();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+                .entity(outputFormat.getEntity(variables, collectionId, api, requestContext))
+                .build();
     }
 
     private Response getProcessingResponse(OgcApiQueryInputProcessing queryInput, OgcApiRequestContext requestContext) {
@@ -158,23 +144,9 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                 .links(links)
                 .build();
 
-        Response processingResponse = outputFormat.getResponse(processing, collectionId, api, requestContext);
-
-        Response.ResponseBuilder response = Response.ok()
-                .entity(processingResponse.getEntity())
-                .type(requestContext
-                        .getMediaType()
-                        .type());
-
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (queryInput.getIncludeLinkHeader() && links != null)
-            links.stream()
-                    .forEach(link -> response.links(link.getLink()));
-
-        return response.build();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+                .entity(outputFormat.getEntity(processing, collectionId, api, requestContext))
+                .build();
     }
 
     private Response getProcessResponse(OgcApiQueryInputObservationProcessing queryInput, OgcApiRequestContext requestContext) {
@@ -248,33 +220,9 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
             throw new NotAcceptableException();
         }
 
-        return response(streamingOutput,
-                requestContext.getMediaType(),
-                requestContext.getLanguage(),
-                includeLinkHeader ? links : null,
-                targetCrs);
-    }
-
-    private Response response(Object entity, OgcApiMediaType mediaType, Optional<Locale> language,
-                              List<OgcApiLink> links, EpsgCrs crs) {
-        Response.ResponseBuilder response = Response.ok()
-                                                    .entity(entity);
-
-        if (mediaType != null)
-            response.type(mediaType.type()
-                                   .toString());
-
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (links != null)
-            links.stream()
-                 .forEach(link -> response.links(link.getLink()));
-
-        if (crs != null)
-            response.header("Content-Crs", "<"+crs.toUriString()+">");
-
-        return response.build();
+        return prepareSuccessResponse(api, requestContext, includeLinkHeader ? links : null, targetCrs)
+                .entity(streamingOutput)
+                .build();
     }
 
     private StreamingOutput stream(FeatureStream2 featureTransformStream,

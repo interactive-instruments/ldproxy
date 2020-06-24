@@ -8,7 +8,6 @@
 package de.ii.ldproxy.resources;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
@@ -27,11 +26,9 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -110,9 +107,8 @@ public class EndpointResource extends OgcApiEndpoint {
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() &&
-                stylesExtension.get()
-                        .getResourcesEnabled()) {
+        if (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getResourcesEnabled()) {
             return true;
         }
         return false;

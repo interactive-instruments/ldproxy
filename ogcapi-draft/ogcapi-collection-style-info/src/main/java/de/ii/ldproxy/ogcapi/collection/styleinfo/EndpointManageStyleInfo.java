@@ -7,17 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.collection.styleinfo;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -30,13 +23,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -95,14 +89,12 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<StyleInfoConfiguration> styleInfoExtension = getExtensionConfiguration(apiData, StyleInfoConfiguration.class);
+        return isExtensionEnabled(apiData, StyleInfoConfiguration.class);
+    }
 
-        if (styleInfoExtension.isPresent() &&
-                styleInfoExtension.get()
-                        .getEnabled()) {
-            return true;
-        }
-        return false;
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), StyleInfoConfiguration.class);
     }
 
     @Override

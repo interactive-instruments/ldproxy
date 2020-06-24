@@ -44,6 +44,11 @@ public class OgcApiCollectionsCrs implements OgcApiCollectionsExtension {
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), CrsConfiguration.class);
+    }
+
+    @Override
     public ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder,
                                                 OgcApiApiDataV2 apiData,
                                                 URICustomizer uriCustomizer,

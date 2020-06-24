@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.Collections;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
@@ -22,32 +23,19 @@ import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.features.app.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV1;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.stringtemplates.StringTemplateFilters;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.AbstractMap;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -126,6 +114,11 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), HtmlConfiguration.class);
+    }
+
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
@@ -145,7 +138,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     }
 
     @Override
-    public Response getLandingPageResponse(LandingPage apiLandingPage,
+    public Object getLandingPageEntity(LandingPage apiLandingPage,
                                            OgcApiApi api,
                                            OgcApiRequestContext requestContext) {
 
@@ -160,14 +153,11 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         OgcApiLandingPageView landingPageView = new OgcApiLandingPageView(api.getData(), apiLandingPage, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
-        return Response.ok()
-                .type(getMediaType().type())
-                .entity(landingPageView)
-                .build();
+        return landingPageView;
     }
 
     @Override
-    public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
+    public Object getConformanceEntity(ConformanceDeclaration conformanceDeclaration,
                                            OgcApiApi api, OgcApiRequestContext requestContext)  {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
@@ -188,14 +178,11 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         OgcApiConformanceDeclarationView ogcApiConformanceDeclarationView =
                 new OgcApiConformanceDeclarationView(conformanceDeclaration, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
-        return Response.ok()
-                       .type(getMediaType().type())
-                       .entity(ogcApiConformanceDeclarationView)
-                       .build();
+        return ogcApiConformanceDeclarationView;
     }
 
     @Override
-    public Response getCollectionsResponse(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Object getCollectionsEntity(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
@@ -212,15 +199,12 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), showCollectionDescriptionsInOverview(api.getData()), i18n, requestContext.getLanguage(), providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl());
 
-        return Response.ok()
-                .type(getMediaType().type())
-                .entity(collectionsView)
-                .build();
+        return collectionsView;
     }
 
 
     @Override
-    public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
+    public Object getCollectionEntity(OgcApiCollection ogcApiCollection,
                                           OgcApiApi api,
                                           OgcApiRequestContext requestContext) {
 
@@ -242,10 +226,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
         OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
 
-        return Response.ok()
-                .type(getMediaType().type())
-                .entity(collectionView)
-                .build();
+        return collectionView;
     }
 
     @Override

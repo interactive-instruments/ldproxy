@@ -8,8 +8,6 @@
 package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
-import de.ii.ldproxy.target.geojson.SchemaGeneratorFeatureCollection;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
@@ -18,12 +16,16 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfigur
 import de.ii.ldproxy.ogcapi.observation_processing.api.FeatureTransformerObservationProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableFeatureTransformationContextObservationProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
+import de.ii.ldproxy.target.geojson.SchemaGeneratorFeatureCollection;
+import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
-import de.ii.xtraplatform.akka.http.Http;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
 import java.util.Locale;
@@ -67,6 +69,11 @@ public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     @Override

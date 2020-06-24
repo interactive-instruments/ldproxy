@@ -8,11 +8,9 @@
 package ii.de.ldproxy.resources.manager;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
 import de.ii.ldproxy.resources.ResourceFormatExtension;
-import de.ii.ldproxy.wfs3.styles.StyleFormatExtension;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
@@ -30,8 +28,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -91,9 +87,8 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() &&
-                stylesExtension.get()
-                        .getResourceManagerEnabled()) {
+        if (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getResourceManagerEnabled()) {
             return true;
         }
         return false;

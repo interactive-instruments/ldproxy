@@ -10,9 +10,9 @@ package de.ii.ldproxy.target.html;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.tiles.TileMatrixSetData;
-import de.ii.ldproxy.ogcapi.tiles.TileMatrixSets;
-import de.ii.ldproxy.ogcapi.tiles.TileMatrixSetsFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetData;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSets;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetsFormatExtension;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -20,7 +20,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Component
@@ -52,6 +51,11 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), HtmlConfiguration.class);
     }
 
     @Override

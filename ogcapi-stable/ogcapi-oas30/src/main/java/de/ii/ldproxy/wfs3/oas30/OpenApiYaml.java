@@ -60,7 +60,6 @@ public class OpenApiYaml implements ApiDefinitionFormatExtension {
     @Override
     public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
                                              OgcApiRequestContext wfs3Request) {
-        LOGGER.debug("MIME {}", "YAML");
         return openApiDefinition.getOpenApi("yaml", wfs3Request.getUriCustomizer().copy(), apiData);
     }
 }

@@ -10,15 +10,18 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
-import de.ii.ldproxy.ogcapi.observation_processing.api.*;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableOgcApiQueryInputObservationProcessing;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
 import de.ii.xtraplatform.auth.api.User;
-import de.ii.xtraplatform.features.domain.*;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -28,7 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.*;
 
 @Component
@@ -244,7 +249,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                 .orElseThrow(() -> new NotFoundException());
         final String path = "/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/"+processIds;
         checkPathParameter(extensionRegistry, api.getData(), path, "collectionId", collectionId);
-        final Set<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), path);
+        final Set<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), path, collectionId);
         return getResponse(optionalUser, api.getData(), requestContext, uriInfo, collectionId, allowedParameters, processChain);
     }
 

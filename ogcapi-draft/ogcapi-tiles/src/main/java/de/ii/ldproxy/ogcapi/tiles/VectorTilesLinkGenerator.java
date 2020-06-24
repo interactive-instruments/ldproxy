@@ -156,9 +156,8 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                                boolean homeLink,
                                                boolean isCollectionTile,
                                                boolean isMetadata,
-                                               boolean mvt,
-                                               boolean json,
-                                               boolean multitilesEnabled,
+                                               List<OgcApiMediaType> tileSetFormats,
+                                               List<OgcApiMediaType> tileFormats,
                                                I18n i18n,
                                                Optional<Locale> language) {
 
@@ -177,54 +176,37 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                     .title(i18n.get("homeLink",language))
                     .build());
 
-        if (json) {
-            builder.add(new ImmutableOgcApiLink.Builder()
-                    .href(uriBuilder.copy()
+        tileFormats.stream()
+                .forEach(format -> {
+                    builder.add(new ImmutableOgcApiLink.Builder()
+                            .href(uriBuilder.copy()
                                     .clearParameters()
                                     .removeLastPathSegments(isMetadata ? 2 : 0)
                                     .ensureNoTrailingSlash()
-                                    .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f=json")
-                    .rel("item")
-                    .type("application/geo+json")
-                    .title(i18n.get("tilesLinkTemplateGeoJSON", language))
-                    .templated(true)
-                    .build());
-        }
-        if (mvt) {
-            builder.add(new ImmutableOgcApiLink.Builder()
-                    .href(uriBuilder.copy()
-                                    .clearParameters()
-                                    .removeLastPathSegments(isMetadata ? 2 : 0)
-                                    .ensureNoTrailingSlash()
-                                    .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f=mvt")
-                    .rel("item")
-                    .type("application/vnd.mapbox-vector-tile")
-                    .title(i18n.get("tilesLinkTemplateMVT", language))
-                    .templated(true)
-                    .build());
-            if (!isMetadata) {
-                builder.add(new ImmutableOgcApiLink.Builder()
-                        .href(uriBuilder.copy()
-                                .clearParameters()
-                                .ensureNoTrailingSlash()
-                                .toString() + "/{tileMatrixSetId}/metadata")
-                        .rel("describedby")
-                        .type("application/json")
-                        .title(i18n.get("tilejsonLink", language))
-                        .templated(true)
-                        .build());
-            }
-        }
-        if (multitilesEnabled && !isMetadata) {
-            builder.add(new ImmutableOgcApiLink.Builder()
-                    .href(uriBuilder.copy()
-                            .clearParameters()
-                            .ensureNoTrailingSlash()
-                            .toString() + "/{tileMatrixSetId}")
-                    .rel("items")
-                    .templated(true)
-                    .build());
-        }
+                                    .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f="+format.parameter())
+                            .rel("item")
+                            .type(format.type().toString())
+                            .title(i18n.get("tilesLinkTemplate"+format.label(), language))
+                            .templated(true)
+                            .build());
+
+                });
+
+
+        if (!isMetadata)
+            tileSetFormats.stream()
+                    .forEach(format -> {
+                        builder.add(new ImmutableOgcApiLink.Builder()
+                                .href(uriBuilder.copy()
+                                        .clearParameters()
+                                        .ensureNoTrailingSlash()
+                                        .toString() + "/{tileMatrixSetId}")
+                                .rel("describedby")
+                                .type(format.type().toString())
+                                .title(i18n.get("tilejsonLink", language)) // TODO
+                                .templated(true)
+                                .build());
+                    });
 
         return builder.build();
     }

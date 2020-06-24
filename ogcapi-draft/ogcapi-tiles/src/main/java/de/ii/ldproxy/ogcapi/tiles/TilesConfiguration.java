@@ -17,12 +17,16 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public abstract class TilesConfiguration implements ExtensionConfiguration {
+
+    private static final int LIMIT_DEFAULT = 100000;
+    private static final int MAX_POLYGON_PER_TILE_DEFAULT = 10000;
+    private static final int MAX_LINE_STRING_PER_TILE_DEFAULT = 10000;
+    private static final int MAX_POINT_PER_TILE_DEFAULT = 10000;
 
     @Value.Default
     @Override
@@ -30,11 +34,24 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
         return false;
     }
 
-    public abstract Optional<String> getFeatureProvider();
+    @Value.Default
+    public int getLimit() {
+        return LIMIT_DEFAULT;
+    }
 
     @Value.Default
-    public boolean getMultiTilesEnabled() {
-        return false;
+    public int getMaxPointPerTileDefault() {
+        return MAX_POINT_PER_TILE_DEFAULT;
+    }
+
+    @Value.Default
+    public int getMaxLineStringPerTileDefault() {
+        return MAX_LINE_STRING_PER_TILE_DEFAULT;
+    }
+
+    @Value.Default
+    public int getMaxPolygonPerTileDefault() {
+        return MAX_POLYGON_PER_TILE_DEFAULT;
     }
 
     @Value.Default
@@ -64,6 +81,7 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
         Map<String, MinMax> seeding = this.getSeeding();
         Map<String, MinMax> zoomLevels = this.getZoomLevels();
         Map<String, List<PredefinedFilter>> predefFilters = this.getFilters();
+        int limit = this.getLimit();
         double[] center = this.getCenter();
         ImmutableTilesConfiguration.Builder configBuilder = new ImmutableTilesConfiguration.Builder().from(baseConfiguration);
 
@@ -77,8 +95,9 @@ public abstract class TilesConfiguration implements ExtensionConfiguration {
             configBuilder.filters(predefFilters);
         if (Objects.nonNull(center))
             configBuilder.center(center);
+        if (Objects.nonNull(limit))
+            configBuilder.limit(limit);
 
         return (T) configBuilder.build();
     }
-
 }

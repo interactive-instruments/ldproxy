@@ -2,7 +2,6 @@ package de.ii.ldproxy.resources;
 
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
-import de.ii.ldproxy.wfs3.styles.StylesFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -38,9 +37,8 @@ public class QueryParameterFResources extends QueryParameterF {
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() &&
-                stylesExtension.get()
-                        .getResourcesEnabled()) {
+        if (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getResourcesEnabled()) {
             return true;
         }
         return false;

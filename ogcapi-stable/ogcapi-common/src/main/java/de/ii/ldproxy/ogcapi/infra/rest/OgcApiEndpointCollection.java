@@ -21,7 +21,9 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -39,7 +41,7 @@ public class OgcApiEndpointCollection extends OgcApiEndpointSubCollection {
             .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
             .subPathPattern("^/[\\w\\-]+/?$")
             .build();
-    private static final List<String> TAGS = ImmutableList.of("Access data collections");
+    private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
     @Requires
     private OgcApiQueriesHandlerCollections queryHandler;
@@ -51,6 +53,11 @@ public class OgcApiEndpointCollection extends OgcApiEndpointSubCollection {
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, OgcApiCommonConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), OgcApiCommonConfiguration.class);
     }
 
     @Override

@@ -93,6 +93,11 @@ public class FeatureProcessArea implements ObservationProcess {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
     }
 
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    }
+
     public Class<?> getOutputType() {
         return ObservationCollectionPointTimeSeriesList.class;
     }

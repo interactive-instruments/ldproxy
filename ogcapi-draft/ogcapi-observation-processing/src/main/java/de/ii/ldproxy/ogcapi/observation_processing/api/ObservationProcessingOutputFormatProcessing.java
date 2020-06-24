@@ -12,8 +12,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.processing.Processing;
 
-import javax.ws.rs.core.Response;
-
 public interface ObservationProcessingOutputFormatProcessing extends FormatExtension {
 
     default String getPathPattern() {
@@ -21,5 +19,5 @@ public interface ObservationProcessingOutputFormatProcessing extends FormatExten
         return "^/collections/[\\w\\-]+/"+ DAPA_PATH_ELEMENT+"/?$";
     }
 
-    Response getResponse(Processing processList, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
+    Object getEntity(Processing processList, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
 }
