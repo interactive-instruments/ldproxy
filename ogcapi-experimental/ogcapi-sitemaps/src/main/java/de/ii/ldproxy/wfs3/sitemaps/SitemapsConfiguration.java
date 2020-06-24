@@ -21,4 +21,12 @@ public abstract class SitemapsConfiguration implements ExtensionConfiguration {
     public boolean getEnabled() {
         return false;
     }
+
+    @Override
+    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+        return new ImmutableSitemapsConfiguration.Builder()
+                .from(extensionConfigurationDefault)
+                .from(this)
+                .build();
+    }
 }

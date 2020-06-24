@@ -21,4 +21,12 @@ public abstract class TransactionalConfiguration implements ExtensionConfigurati
     public boolean getEnabled() {
         return false;
     }
+
+    @Override
+    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+        return new ImmutableTransactionalConfiguration.Builder()
+                .from(extensionConfigurationDefault)
+                .from(this)
+                .build();
+    }
 }

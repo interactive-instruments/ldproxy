@@ -21,4 +21,12 @@ public abstract class GeneralizationConfiguration implements ExtensionConfigurat
     public boolean getEnabled() {
         return false;
     }
+
+    @Override
+    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+        return new ImmutableGeneralizationConfiguration.Builder()
+                .from(extensionConfigurationDefault)
+                .enabled(getEnabled())
+                .build();
+    }
 }

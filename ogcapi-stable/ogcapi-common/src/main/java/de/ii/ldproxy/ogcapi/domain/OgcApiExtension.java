@@ -38,7 +38,7 @@ public interface OgcApiExtension {
         } else if (!defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
             return extensionConfiguration;
         } else if (defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
-            return Optional.of(extensionConfiguration.get().mergeDefaults(defaultExtensionConfiguration.get()));
+            return Optional.ofNullable(extensionConfiguration.get().mergeDefaults(defaultExtensionConfiguration.get()));
         }
 
         return Optional.empty();

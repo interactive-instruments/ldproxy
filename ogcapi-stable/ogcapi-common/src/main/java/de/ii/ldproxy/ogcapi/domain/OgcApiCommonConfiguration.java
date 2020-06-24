@@ -30,4 +30,11 @@ public abstract class OgcApiCommonConfiguration implements ExtensionConfiguratio
     @Value.Default
     public boolean getIncludeLinkHeader() { return true; }
 
+    @Override
+    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+        return new ImmutableOgcApiCommonConfiguration.Builder()
+                .from(extensionConfigurationDefault)
+                .from(this)
+                .build();
+    }
 }

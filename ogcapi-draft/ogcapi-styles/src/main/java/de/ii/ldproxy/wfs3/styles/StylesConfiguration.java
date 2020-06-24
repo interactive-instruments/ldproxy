@@ -72,4 +72,11 @@ public abstract class StylesConfiguration implements ExtensionConfiguration {
         return false;
     }
 
+    @Override
+    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+        return new ImmutableStylesConfiguration.Builder()
+                .from(extensionConfigurationDefault)
+                .from(this)
+                .build();
+    }
 }

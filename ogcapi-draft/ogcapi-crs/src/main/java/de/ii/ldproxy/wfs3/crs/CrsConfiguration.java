@@ -13,6 +13,7 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Objects;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -27,4 +28,18 @@ public abstract class CrsConfiguration implements ExtensionConfiguration {
 
     //TODO: migrate
     public abstract List<EpsgCrs> getAdditionalCrs();
+
+    @Override
+    public <T extends ExtensionConfiguration> T mergeDefaults(T extensionConfigurationDefault) {
+        boolean enabled = this.getEnabled();
+        List<EpsgCrs> crsList = this.getAdditionalCrs();
+        ImmutableCrsConfiguration.Builder configBuilder = new ImmutableCrsConfiguration.Builder().from(extensionConfigurationDefault);
+
+        if (Objects.nonNull(enabled))
+            configBuilder.enabled(enabled);
+        if (Objects.nonNull(crsList) && !crsList.isEmpty())
+            configBuilder.additionalCrs(crsList);
+
+        return (T) configBuilder.build();
+    }
 }
