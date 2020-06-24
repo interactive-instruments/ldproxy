@@ -11,9 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesEndpoint;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -23,11 +21,7 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -47,11 +41,6 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonLdContextEndpoint.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .subPathPattern("^/?[[\\w\\-]\\-]+/context/?$")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Access data");
 
     private static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
@@ -74,18 +63,6 @@ public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class) &&
                 isExtensionEnabled(apiData, GeoJsonConfiguration.class);
     }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 apiData, String subPath) {
-        return MEDIA_TYPES;
-    }
-     */
 
     @Path("/{collectionId}/context")
     @GET
@@ -132,7 +109,7 @@ public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
                         // skip, if no context is available
                         continue;
                     final Set<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
                             getQueryParameters(extensionRegistry, apiData, path);
                     final String operationSummary = "retrieve the JSON-LD context for the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.empty();

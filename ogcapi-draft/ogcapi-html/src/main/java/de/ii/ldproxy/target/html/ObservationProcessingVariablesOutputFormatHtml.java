@@ -20,7 +20,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Component
@@ -61,6 +60,11 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), HtmlConfiguration.class);
+    }
+
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
         return getExtensionConfiguration(apiData, HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
@@ -68,7 +72,7 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
     }
 
     @Override
-    public Response getResponse(Variables variables,
+    public Object getEntity(Variables variables,
                                 String collectionId,
                                 OgcApiApi api,
                                 OgcApiRequestContext requestContext) {
@@ -95,11 +99,7 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
                 .add(new NavigationDTO(variablesTitle))
                 .build();
 
-        ObservationProcessingVariablesView view = new ObservationProcessingVariablesView(api.getData(), variables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
-
-        return Response.ok()
-                .entity(view)
-                .build();
+        return new ObservationProcessingVariablesView(api.getData(), variables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 
 }

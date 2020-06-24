@@ -4,13 +4,11 @@ package de.ii.ldproxy.wfs3.styles;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +25,6 @@ public class PathParameterStyleId implements OgcApiPathParameter {
     @Override
     public String getPattern() {
         return "[\\w]+";
-    }
-
-    @Override
-    public boolean getExplodeInOpenApi() {
-        return false;
     }
 
     @Override

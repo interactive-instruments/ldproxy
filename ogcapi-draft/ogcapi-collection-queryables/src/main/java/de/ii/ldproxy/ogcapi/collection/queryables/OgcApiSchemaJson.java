@@ -14,7 +14,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Map;
 
 @Component
@@ -35,9 +34,12 @@ public class OgcApiSchemaJson implements OgcApiSchemaFormatExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, QueryablesConfiguration.class)
-                .map(QueryablesConfiguration::getEnabled)
-                .orElse(false);
+        return isExtensionEnabled(apiData, QueryablesConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), QueryablesConfiguration.class);
     }
 
     @Override
@@ -50,9 +52,7 @@ public class OgcApiSchemaJson implements OgcApiSchemaFormatExtension {
     }
 
     @Override
-    public Response getResponse(Map<String,Object> schema, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
-        return Response.ok()
-                .entity(schema)
-                .build();
+    public Object getEntity(Map<String,Object> schema, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
+        return schema;
     }
 }

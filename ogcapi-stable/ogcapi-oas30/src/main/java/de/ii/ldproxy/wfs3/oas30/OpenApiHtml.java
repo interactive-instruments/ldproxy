@@ -85,7 +85,6 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
             throw new NotFoundException();
         }
 
-        LOGGER.debug("MIME {}", "HTML");
         return openApiViewerResource.getFile("index.html");
     }
 }

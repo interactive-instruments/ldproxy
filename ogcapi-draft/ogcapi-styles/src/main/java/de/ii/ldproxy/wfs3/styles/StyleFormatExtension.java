@@ -21,7 +21,7 @@ public interface StyleFormatExtension extends FormatExtension {
 
     @Override
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return true;
+        return isExtensionEnabled(apiData, StylesConfiguration.class);
     }
 
     @Override

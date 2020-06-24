@@ -10,13 +10,7 @@ package de.ii.ldproxy.ogcapi.observation_processing.api;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.feature_processing.api.FeatureProcessChain;
-import de.ii.ldproxy.ogcapi.feature_processing.api.Processing;
-import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
-import de.ii.ldproxy.ogcapi.observation_processing.application.Variables;
-
-import javax.ws.rs.core.Response;
-import java.util.List;
+import de.ii.ldproxy.ogcapi.features.processing.Processing;
 
 public interface ObservationProcessingOutputFormatProcessing extends FormatExtension {
 
@@ -25,5 +19,5 @@ public interface ObservationProcessingOutputFormatProcessing extends FormatExten
         return "^/collections/[\\w\\-]+/"+ DAPA_PATH_ELEMENT+"/?$";
     }
 
-    Response getResponse(Processing processList, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
+    Object getEntity(Processing processList, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
 }

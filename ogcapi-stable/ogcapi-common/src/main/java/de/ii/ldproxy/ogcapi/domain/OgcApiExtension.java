@@ -13,6 +13,14 @@ public interface OgcApiExtension {
 
     boolean isEnabledForApi(OgcApiApiDataV2 apiData);
 
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isEnabledForApi(apiData);
+    }
+
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, Optional<String> collectionId) {
+        return collectionId.isPresent() ? isEnabledForApi(apiData, collectionId.get()) : isEnabledForApi(apiData);
+    }
+
     default <T extends ExtensionConfiguration> Optional<T> getExtensionConfiguration(
             ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
 
@@ -30,7 +38,7 @@ public interface OgcApiExtension {
         } else if (!defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
             return extensionConfiguration;
         } else if (defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
-            return Optional.of(extensionConfiguration.get().mergeDefaults(defaultExtensionConfiguration.get()));
+            return Optional.ofNullable(extensionConfiguration.get().mergeDefaults(defaultExtensionConfiguration.get()));
         }
 
         return Optional.empty();
@@ -38,7 +46,9 @@ public interface OgcApiExtension {
 
     default boolean isExtensionEnabled(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {
 
-        return getExtensionConfiguration(defaultExtendableConfiguration, extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
+        return extendableConfiguration!=null ?
+                getExtensionConfiguration(defaultExtendableConfiguration, extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent() :
+                getExtensionConfiguration(defaultExtendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
     }
 
     default boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {

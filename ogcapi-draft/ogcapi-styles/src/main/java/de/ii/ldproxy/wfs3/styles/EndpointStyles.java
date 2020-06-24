@@ -56,12 +56,6 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyles.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("styles")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/?$")
-            .build();
-
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
     private final File stylesStore;
@@ -79,32 +73,6 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
     public List<String> getConformanceClassUris() {
         return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/core");
     }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/?$|^/?\\w+/metadata$"))
-            return ImmutableSet.of(
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(MediaType.APPLICATION_JSON_TYPE)
-                            .build(),
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(MediaType.TEXT_HTML_TYPE)
-                            .build()
-                    );
-        else if (subPath.matches("^/?\\w+$"))
-            return getStyleFormatStream(dataset).map(StyleFormatExtension::getMediaType)
-                    .collect(ImmutableSet.toImmutableSet());
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-     */
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {

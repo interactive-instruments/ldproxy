@@ -74,13 +74,6 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
     I18n i18n;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStylesManager.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("styles")
-            .addMethods(HttpMethods.POST, HttpMethods.PUT, HttpMethods.DELETE, HttpMethods.PATCH)
-            .subPathPattern("^/?(?:\\w+)?$")
-            .putSubPathsAndMethods("^/?$", Arrays.asList(new HttpMethods[]{HttpMethods.POST}))
-            .putSubPathsAndMethods("^/?\\w+$", Arrays.asList(new HttpMethods[]{HttpMethods.PUT, HttpMethods.DELETE}))
-            .build();
     private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
 
     private final File stylesStore;
@@ -98,57 +91,6 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
     public List<String> getConformanceClassUris() {
         return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/manage-styles");
     }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/?\\w+/metadata$"))
-            return ImmutableSet.of(
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(MediaType.APPLICATION_JSON_TYPE)
-                            .build());
-        else if (subPath.matches("^/?\\w*$"))
-            return getStyleFormatStream(dataset).map(StyleFormatExtension::getMediaType)
-                    .collect(ImmutableSet.toImmutableSet());
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    @Override
-    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
-        if (subPath.matches("^/?\\w+/metadata$"))
-            return new ImmutableSet.Builder<String>()
-                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
-                    .build();
-        else if (subPath.matches("^/?\\w*$"))
-            if (isValidationEnabledForApi(apiData))
-                return new ImmutableSet.Builder<String>()
-                        .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
-                        .add("validate")
-                        .build();
-            else
-                return new ImmutableSet.Builder<String>()
-                        .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
-                        .build();
-        else if (subPath.matches("^/?$"))
-            return new ImmutableSet.Builder<String>()
-                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
-                    .build();
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiApiDataV2 dataset) {
-        return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
-                                .stream()
-                                .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(dataset));
-    }
-     */
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {

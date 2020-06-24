@@ -12,7 +12,7 @@ allprojects {
             url "https://repo.osgeo.org/repository/release"
         }
         maven {
-            url "http://maven.geomajas.org"
+            url "https://maven.ecc.no/releases"
         }
     }
 }

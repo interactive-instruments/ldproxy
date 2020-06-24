@@ -10,7 +10,9 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.observation_processing.api.*;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableOgcApiQueryInputVariables;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormatVariables;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -20,9 +22,17 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import java.util.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Provides
@@ -32,13 +42,6 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointVariables.class);
     private static final String DAPA_PATH_ELEMENT = "dapa";
     private static final List<String> TAGS = ImmutableList.of("DAPA");
-
-    // TODO delete
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[\\w\\-]+/"+ DAPA_PATH_ELEMENT +"/variables/?$")
-            .build();
 
     private final ObservationProcessingQueriesHandler queryHandler;
 
@@ -54,15 +57,14 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
         return formats;
     }
 
-    // TODO delete
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     @Override

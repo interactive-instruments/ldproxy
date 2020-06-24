@@ -10,15 +10,18 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.feature_processing.api.FeatureProcess;
-import de.ii.ldproxy.ogcapi.feature_processing.api.FeatureProcessChain;
-import de.ii.ldproxy.ogcapi.feature_processing.api.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
-import de.ii.ldproxy.ogcapi.observation_processing.api.*;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableOgcApiQueryInputObservationProcessing;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
 import de.ii.xtraplatform.auth.api.User;
-import de.ii.xtraplatform.features.domain.*;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -28,7 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.*;
 
 @Component
@@ -39,10 +44,6 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointObservationProcessing.class);
     private static final List<String> TAGS = ImmutableList.of("DAPA"); // TODO make configurable
     private static final String DAPA_PATH_ELEMENT = "dapa";
-
-    static String subSubPath(String path) {
-        return path.replaceFirst("/\\{collectionId\\}", "");
-    }
 
     final OgcApiFeatureCoreProviders providers;
     final OgcApiFeaturesQuery ogcApiFeaturesQuery;
@@ -70,21 +71,6 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(ObservationProcessingOutputFormat.class);
         return formats;
-    }
-
-    // TODO delete after consolidation
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("(?:^/[\\w\\-]+/"+DAPA_PATH_ELEMENT +"/position(?:\\:aggregate-time)?/?$)|" +
-                            "(?:^/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/area(?:\\:aggregate-(space|time|space-time)?)?/?$)|" +
-                            "(?:^/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/resample-to-grid(?:\\:aggregate-time)?/?$)")
-            .build();
-
-    // TODO delete after consolidation
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
     }
 
     @Override
@@ -244,7 +230,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                 .orElseThrow(() -> new NotFoundException());
         final String path = "/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/"+processIds;
         checkPathParameter(extensionRegistry, api.getData(), path, "collectionId", collectionId);
-        final Set<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), path);
+        final Set<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), path, collectionId);
         return getResponse(optionalUser, api.getData(), requestContext, uriInfo, collectionId, allowedParameters, processChain);
     }
 

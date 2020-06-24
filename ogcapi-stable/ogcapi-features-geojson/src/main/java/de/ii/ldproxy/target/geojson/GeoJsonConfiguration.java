@@ -39,4 +39,12 @@ public abstract class GeoJsonConfiguration implements ExtensionConfiguration, Fe
         Optional<String> getIdTemplate();
     }
 
+    @Override
+    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+        return new ImmutableGeoJsonConfiguration.Builder()
+                .from(extensionConfigurationDefault)
+                .enabled(getEnabled())
+                .jsonLd(getJsonLd())
+                .build();
+    }
 }

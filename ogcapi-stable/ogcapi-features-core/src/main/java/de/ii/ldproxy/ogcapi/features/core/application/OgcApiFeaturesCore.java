@@ -35,4 +35,8 @@ public class OgcApiFeaturesCore implements ConformanceClass {
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), OgcApiFeaturesCoreConfiguration.class);
+    }
 }

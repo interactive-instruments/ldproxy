@@ -2,7 +2,7 @@ package de.ii.ldproxy.ogcapi.observation_processing.processes;
 
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.feature_processing.api.FeatureProcess;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;

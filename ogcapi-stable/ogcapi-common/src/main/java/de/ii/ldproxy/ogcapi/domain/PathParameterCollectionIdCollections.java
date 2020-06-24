@@ -25,7 +25,6 @@ public class PathParameterCollectionIdCollections implements OgcApiPathParameter
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterCollectionIdCollections.class);
     Map<String,Set<String>> apiCollectionMap;
 
-
     public PathParameterCollectionIdCollections() {
         apiCollectionMap = new HashMap<>();
     };
@@ -57,6 +56,11 @@ public class PathParameterCollectionIdCollections implements OgcApiPathParameter
     }
 
     @Override
+    public String getId() {
+        return "collectionIdCollections";
+    }
+
+    @Override
     public String getName() {
         return "collectionId";
     }
@@ -69,11 +73,11 @@ public class PathParameterCollectionIdCollections implements OgcApiPathParameter
     @Override
     public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
-                definitionPath.matches("/collections(?:/\\{collectionId\\})?");
+                definitionPath.equals("/collections/{collectionId}");
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return true;
+        return isExtensionEnabled(apiData, OgcApiCommonConfiguration.class);
     }
 }

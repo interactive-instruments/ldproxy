@@ -48,9 +48,8 @@ public class ResourcesOnLandingPage implements OgcApiLandingPageExtension {
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() &&
-                stylesExtension.get()
-                        .getResourcesEnabled()) {
+        if (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getResourcesEnabled()) {
             return true;
         }
         return false;

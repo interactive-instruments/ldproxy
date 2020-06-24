@@ -8,14 +8,10 @@
 package de.ii.ldproxy.resources;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.io.ByteSource;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.wfs3.styles.EndpointStyles;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
-import de.ii.ldproxy.wfs3.styles.StylesFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -24,14 +20,14 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.IOException;
-import java.net.URLConnection;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -53,12 +49,6 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResources.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("resources")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/?$")
-            .build();
-
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
     private final File resourcesStore; // TODO: change to Store
@@ -77,52 +67,11 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
     }
 
     @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/?$"))
-            return ImmutableSet.of(
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(MediaType.APPLICATION_JSON_TYPE)
-                            .build(),
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(MediaType.TEXT_HTML_TYPE)
-                            .build());
-        else if (subPath.matches("^/?[^/]+$"))
-            return ImmutableSet.of(
-                    new ImmutableOgcApiMediaType.Builder()
-                            .type(MediaType.WILDCARD_TYPE)
-                            .build());
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    @Override
-    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
-        if (!isEnabledForApi(apiData))
-            return ImmutableSet.of();
-
-        if (subPath.matches("^/?$")) {
-            return OgcApiEndpointExtension.super.getParameters(apiData, subPath);
-        } else if (subPath.matches("^/?[^/]+$")) {
-            return ImmutableSet.of();
-        }
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-     */
-
-    @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() &&
-                stylesExtension.get()
-                        .getResourcesEnabled()) {
+        if (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getResourcesEnabled()) {
             return true;
         }
         return false;

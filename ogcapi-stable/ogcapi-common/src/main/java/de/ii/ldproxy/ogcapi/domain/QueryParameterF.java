@@ -38,12 +38,27 @@ public abstract class QueryParameterF implements OgcApiQueryParameter {
 
     @Override
     public Schema getSchema(OgcApiApiDataV2 apiData) {
-        String key = apiData.getId();
+        String key = apiData.getId()+"_*";
         if (!schemaMap.containsKey(key)) {
             List<String> fEnum = new ArrayList<>();
             extensionRegistry.getExtensionsForType(getFormatClass())
                     .stream()
                     .filter(f -> f.isEnabledForApi(apiData))
+                    .filter(f -> !f.getMediaType().parameter().equals("*"))
+                    .forEach(f -> fEnum.add(f.getMediaType().parameter()));
+            schemaMap.put(key, new StringSchema()._enum(fEnum));
+        }
+        return schemaMap.get(key);
+    }
+
+    @Override
+    public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
+        String key = apiData.getId()+"_"+collectionId;
+        if (!schemaMap.containsKey(key)) {
+            List<String> fEnum = new ArrayList<>();
+            extensionRegistry.getExtensionsForType(getFormatClass())
+                    .stream()
+                    .filter(f -> f.isEnabledForApi(apiData, collectionId))
                     .filter(f -> !f.getMediaType().parameter().equals("*"))
                     .forEach(f -> fEnum.add(f.getMediaType().parameter()));
             schemaMap.put(key, new StringSchema()._enum(fEnum));

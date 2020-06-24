@@ -7,12 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
@@ -25,10 +22,9 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.immutables.value.Value;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.ServerErrorException;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Optional;
 
 @Value.Immutable
 public abstract class OgcApiEndpointDefinition {
@@ -46,9 +42,13 @@ public abstract class OgcApiEndpointDefinition {
     public static final int SORT_PRIORITY_FEATURES_JSONLD_CONTEXT = 1100;
     public static final int SORT_PRIORITY_QUERYABLES = 1200;
     public static final int SORT_PRIORITY_SCHEMA = 1300;
-    public static final int SORT_PRIORITY_TILES = 1500;
-    public static final int SORT_PRIORITY_TILES_COLLECTION = 1510;
-    public static final int SORT_PRIORITY_TILE_MATRIX_SETS = 1520;
+    public static final int SORT_PRIORITY_TILE_SETS = 1500;
+    public static final int SORT_PRIORITY_TILE_SET = 1510;
+    public static final int SORT_PRIORITY_TILE = 1520;
+    public static final int SORT_PRIORITY_TILE_SETS_COLLECTION = 1530;
+    public static final int SORT_PRIORITY_TILE_SET_COLLECTION = 1540;
+    public static final int SORT_PRIORITY_TILE_COLLECTION = 1550;
+    public static final int SORT_PRIORITY_TILE_MATRIX_SETS = 1590;
     public static final int SORT_PRIORITY_STYLES = 2000;
     public static final int SORT_PRIORITY_STYLESHEET = 2010;
     public static final int SORT_PRIORITY_STYLE_METADATA = 2020;

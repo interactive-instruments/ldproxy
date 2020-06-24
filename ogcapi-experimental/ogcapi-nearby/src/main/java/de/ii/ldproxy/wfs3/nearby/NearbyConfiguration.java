@@ -60,5 +60,4 @@ public abstract class NearbyConfiguration implements ExtensionConfiguration {
                                                     .from(this)
                                                     .build();
     }
-
 }

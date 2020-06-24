@@ -317,9 +317,8 @@ public class FeatureTransformerGmlUpgrade implements FeatureConsumer {
             }
         }
 
-        // TODO: Update schema locations after publication
-        locations.put("http://www.opengis.net/ogcapi-features-1/1.0/sf", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/xml/core-sf.xsd");
-        locations.put("http://www.opengis.net/ogcapi-features-1/1.0", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/xml/core.xsd");
+        locations.put("http://www.opengis.net/ogcapi-features-1/1.0/sf", "http://schemas.opengis.net/ogcapi/features/part1/1.0/xml/core-sf.xsd");
+        locations.put("http://www.opengis.net/ogcapi-features-1/1.0", "http://schemas.opengis.net/ogcapi/features/part1/1.0/xml/core.xsd");
         locations.put("http://www.w3.org/2005/Atom", "http://schemas.opengis.net/kml/2.3/atom-author-link.xsd");
 
 

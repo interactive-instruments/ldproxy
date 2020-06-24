@@ -14,7 +14,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.infra.json.SchemaGeneratorImpl;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormatVariables;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -23,7 +22,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -102,10 +100,8 @@ public class ObservationProcessingVariablesJson implements ObservationProcessing
     }
 
     @Override
-    public Response getResponse(Variables variables, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
-        return Response.ok()
-                .entity(variables)
-                .build();
+    public Object getEntity(Variables variables, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
+        return variables;
     }
 
 }

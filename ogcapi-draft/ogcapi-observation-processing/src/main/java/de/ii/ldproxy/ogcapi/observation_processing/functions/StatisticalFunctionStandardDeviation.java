@@ -28,6 +28,11 @@ public class StatisticalFunctionStandardDeviation implements ObservationProcessi
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    }
+
+    @Override
     public String getName() {
         return "std-dev";
     }

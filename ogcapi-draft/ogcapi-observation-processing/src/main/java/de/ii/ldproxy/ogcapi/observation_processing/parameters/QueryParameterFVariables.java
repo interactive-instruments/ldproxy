@@ -1,20 +1,12 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.feature_processing.api.FeatureProcessInfo;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormatVariables;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 @Provides
@@ -48,4 +40,8 @@ public class QueryParameterFVariables extends QueryParameterF {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
     }
 
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    }
 }

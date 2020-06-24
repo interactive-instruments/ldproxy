@@ -9,7 +9,6 @@ package de.ii.ldproxy.target.geojson;
 
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.infra.json.SchemaGeneratorImpl;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -18,7 +17,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * @author zahnen
@@ -64,6 +62,11 @@ public class OgcApiOutputFormatJson implements CollectionsFormatExtension, Commo
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), GeoJsonConfiguration.class);
+    }
+
+    @Override
     public boolean canSupportTransactions() {
         return true;
     }
@@ -106,39 +109,25 @@ public class OgcApiOutputFormatJson implements CollectionsFormatExtension, Commo
     }
 
     @Override
-    public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
-        return response(apiLandingPage);
+    public Object getLandingPageEntity(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
+        return apiLandingPage;
     }
 
     @Override
-    public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
+    public Object getConformanceEntity(ConformanceDeclaration conformanceDeclaration,
                                            OgcApiApi api, OgcApiRequestContext requestContext) {
-        return response(conformanceDeclaration);
+        return conformanceDeclaration;
     }
 
     @Override
-    public Response getCollectionsResponse(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
-        return response(collections);
+    public Object getCollectionsEntity(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
+        return collections;
     }
 
     @Override
-    public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
+    public Object getCollectionEntity(OgcApiCollection ogcApiCollection,
                                           OgcApiApi api,
                                           OgcApiRequestContext requestContext) {
-        return response(ogcApiCollection);
-    }
-
-    private Response response(Object entity) {
-        return response(entity, null);
-    }
-
-    private Response response(Object entity, String type) {
-        Response.ResponseBuilder response = Response.ok()
-                                                    .entity(entity);
-        if (type != null) {
-            response.type(type);
-        }
-
-        return response.build();
+        return ogcApiCollection;
     }
 }

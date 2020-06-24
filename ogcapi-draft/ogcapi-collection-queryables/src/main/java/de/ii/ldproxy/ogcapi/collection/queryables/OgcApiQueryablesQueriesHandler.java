@@ -15,7 +15,6 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
 import de.ii.ldproxy.target.geojson.GeoJsonConfig;
 import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -225,23 +224,9 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
         queryables.links(links);
 
-        Response queryablesResponse = outputFormat.getResponse(queryables.build(), collectionId, api, requestContext);
-
-        Response.ResponseBuilder response = Response.ok()
-                .entity(queryablesResponse.getEntity())
-                .type(requestContext
-                        .getMediaType()
-                        .type());
-
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (queryInput.getIncludeLinkHeader() && links != null)
-            links.stream()
-                    .forEach(link -> response.links(link.getLink()));
-
-        return response.build();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+                .entity(outputFormat.getEntity(queryables.build(), collectionId, api, requestContext))
+                .build();
     }
 
     private Response getSchemaResponse(OgcApiQueryInputQueryables queryInput, OgcApiRequestContext requestContext) {
@@ -274,27 +259,11 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                 requestContext.getMediaType(),
                 "/collections/"+collectionId+"/schema");
 
-        if (outputFormatExtension.isPresent()) {
-            Response schemaResponse = outputFormatExtension.get()
-                    .getResponse(jsonSchema, collectionId, api, requestContext);
+        if (!outputFormatExtension.isPresent())
+            throw new NotAcceptableException();
 
-            Response.ResponseBuilder response = Response.ok()
-                    .entity(schemaResponse.getEntity())
-                    .type(requestContext
-                            .getMediaType()
-                            .type());
-
-            Optional<Locale> language = requestContext.getLanguage();
-            if (language.isPresent())
-                response.language(language.get());
-
-            if (queryInput.getIncludeLinkHeader() && links != null)
-                links.stream()
-                        .forEach(link -> response.links(link.getLink()));
-
-            return response.build();
-        }
-
-        throw new NotAcceptableException();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+                .entity(outputFormatExtension.get().getEntity(jsonSchema, collectionId, api, requestContext))
+                .build();
     }
 }

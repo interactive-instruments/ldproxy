@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.projections;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiCommonConfiguration;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -20,5 +21,13 @@ public abstract class ProjectionsConfiguration implements ExtensionConfiguration
     @Override
     public boolean getEnabled() {
         return false;
+    }
+
+    @Override
+    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+        return new ImmutableProjectionsConfiguration.Builder()
+                .from(extensionConfigurationDefault)
+                .from(this)
+                .build();
     }
 }

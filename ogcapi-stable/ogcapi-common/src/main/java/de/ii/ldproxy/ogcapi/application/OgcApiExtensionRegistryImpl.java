@@ -81,13 +81,13 @@ public class OgcApiExtensionRegistryImpl implements OgcApiExtensionRegistry {
             if (extension instanceof OgcApiCapabilityExtension) {
                 final OgcApiCapabilityExtension capabilityExtension = (OgcApiCapabilityExtension) extension;
 
-                LOGGER.debug("CAPABILITY {}", capabilityExtension.getClass().getName());
+                LOGGER.debug("CAPABILITY {}", capabilityExtension.getClass().getSimpleName());
             }
 
             if (extension instanceof OgcApiEndpointExtension) {
-                final OgcApiEndpointExtension wfs3Endpoint = (OgcApiEndpointExtension) extension;
+                final OgcApiEndpointExtension endpoint = (OgcApiEndpointExtension) extension;
 
-                LOGGER.debug("ENDPOINT {}", wfs3Endpoint.getApiContext());
+                LOGGER.debug("ENDPOINT {}", endpoint.getClass().getSimpleName());
             }
 
             if (extension instanceof OgcApiStartupTask) {

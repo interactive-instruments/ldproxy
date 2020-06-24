@@ -49,8 +49,7 @@ public class QueryParameterProperties implements OgcApiQueryParameter {
                 method==OgcApiContext.HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
                  definitionPath.equals("/collections/{collectionId}/items/{featureId}") ||
-                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
-                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+                 definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
     }
 
     private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();
@@ -67,6 +66,11 @@ public class QueryParameterProperties implements OgcApiQueryParameter {
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ProjectionsConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ProjectionsConfiguration.class);
     }
 
     @Override

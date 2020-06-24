@@ -47,12 +47,6 @@ public class EndpointStyle extends OgcApiEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyle.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("styles")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[^/]+/?$")
-            .build();
-
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
     private final File stylesStore;
@@ -64,11 +58,6 @@ public class EndpointStyle extends OgcApiEndpoint {
         if (!stylesStore.exists()) {
             stylesStore.mkdirs();
         }
-    }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
     }
 
     private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiApiDataV2 apiData) {

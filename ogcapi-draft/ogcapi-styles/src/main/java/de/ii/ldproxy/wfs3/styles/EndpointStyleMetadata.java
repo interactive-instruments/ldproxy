@@ -52,12 +52,6 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyleMetadata.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("styles")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/?[^/]+/metadata/?$")
-            .build();
-
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
     private final File stylesStore;
@@ -69,20 +63,6 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
         if (!stylesStore.exists()) {
             stylesStore.mkdirs();
         }
-    }
-
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    private List<OgcApiMediaType> getStylesheetMediaTypes(OgcApiApiDataV2 apiData, File apiDir, String styleId) {
-        return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
-                .stream()
-                .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(apiData))
-                .filter(styleFormat -> new File(apiDir + File.separator + styleId + "." + styleFormat.getFileExtension()).exists())
-                .map(StyleFormatExtension::getMediaType)
-                .collect(Collectors.toList());
     }
 
     @Override

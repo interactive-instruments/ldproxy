@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.collection.queryables;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
@@ -20,10 +19,17 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import java.util.*;
-import java.util.stream.Collectors;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Provides
@@ -31,13 +37,8 @@ import java.util.stream.Collectors;
 public class OgcApiQueryablesEndpoint extends OgcApiEndpointSubCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiQueryablesEndpoint.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[\\w\\-]+/queryables/?$")
-            .build();
 
-    private static final List<String> TAGS = ImmutableList.of("Access data collections");
+    private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
     @Requires
     private OgcApiQueryablesQueriesHandler queryHandler;
@@ -47,71 +48,18 @@ public class OgcApiQueryablesEndpoint extends OgcApiEndpointSubCollection implem
     }
 
     @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    @Override
     public List<String> getConformanceClassUris() {
         return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/queryables");
     }
 
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/[\\w\\-]+/queryables/?$"))
-            return extensionRegistry.getExtensionsForType(OgcApiQueryablesFormatExtension.class)
-                                    .stream()
-                                    .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))
-                                    .map(OgcApiQueryablesFormatExtension::getMediaType)
-                                    .collect(ImmutableSet.toImmutableSet());
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    @Override
-    public ImmutableSet<String> getParameters(OgcApiApiDataV2 apiData, String subPath) {
-        if (!isEnabledForApi(apiData))
-            return ImmutableSet.of();
-
-        ImmutableSet<String> parametersFromExtensions = new ImmutableSet.Builder<String>()
-            .addAll(extensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)
-                .stream()
-                .map(ext -> ext.getParameters(apiData, subPath))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet()))
-            .build();
-
-        if (subPath.matches("^/[\\w\\-]+/queryables/?$")) {
-            // Queryables
-            return new ImmutableSet.Builder<String>()
-                    .addAll(OgcApiEndpointExtension.super.getParameters(apiData, subPath))
-                    .addAll(parametersFromExtensions)
-                    .build();
-        }
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-
-    public static Map<String, String> getFiltersFromQuery(Map<String, String> query,
-                                                          Map<String, String> filterableFields) {
-
-        Map<String, String> filters = new LinkedHashMap<>();
-
-        for (String filterKey : query.keySet()) {
-            if (filterableFields.containsKey(filterKey)) {
-                String filterValue = query.get(filterKey);
-                filters.put(filterKey, filterValue);
-            }
-        }
-
-        return filters;
-    }
-     */
-
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, QueryablesConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), QueryablesConfiguration.class);
     }
 
     @Override
@@ -145,7 +93,7 @@ public class OgcApiQueryablesEndpoint extends OgcApiEndpointSubCollection implem
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
                     final Set<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, collectionId, path) :
+                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
                             getQueryParameters(extensionRegistry, apiData, path);
                     final String operationSummary = "retrieve the queryables of the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.empty(); // TODO once the specification is more stable

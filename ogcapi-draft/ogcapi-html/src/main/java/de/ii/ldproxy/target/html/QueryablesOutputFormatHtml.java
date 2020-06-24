@@ -19,7 +19,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Component
@@ -54,6 +53,11 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), HtmlConfiguration.class);
+    }
+
+    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         return new ImmutableOgcApiMediaTypeContent.Builder()
                 .schema(new StringSchema().example("<html>...</html>"))
@@ -69,7 +73,7 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
     }
 
     @Override
-    public Response getResponse(Queryables queryables,
+    public Object getEntity(Queryables queryables,
                                 String collectionId,
                                 OgcApiApi api,
                                 OgcApiRequestContext requestContext) {
@@ -96,11 +100,7 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
                 .add(new NavigationDTO(queryablesTitle))
                 .build();
 
-        QueryablesView view = new QueryablesView(api.getData(), queryables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
-
-        return Response.ok()
-                .entity(view)
-                .build();
+        return new QueryablesView(api.getData(), queryables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 
 }

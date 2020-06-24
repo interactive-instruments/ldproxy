@@ -69,6 +69,8 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
 
     private Response getLandingPageResponse(OgcApiQueryInputLandingPage queryInput, OgcApiRequestContext requestContext) {
         final LandingPageLinksGenerator linksGenerator = new LandingPageLinksGenerator();
+        OgcApiApi api = requestContext.getApi();
+        OgcApiApiDataV2 apiData = api.getData();
 
         List<OgcApiLink> ogcApiLinks = linksGenerator.generateLinks(requestContext.getUriCustomizer()
                                                                                              .copy(),
@@ -78,18 +80,18 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                 i18n,
                 requestContext.getLanguage());
 
-        BoundingBox bbox = requestContext.getApi().getData().getSpatialExtent();
+        BoundingBox bbox = apiData.getSpatialExtent();
         OgcApiExtent spatialExtent = Objects.nonNull(bbox) ? new OgcApiExtent(bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax()) : null;
 
         ImmutableLandingPage.Builder apiLandingPage = new ImmutableLandingPage.Builder()
-                .title(requestContext.getApi().getData().getLabel())
-                .description(requestContext.getApi().getData().getDescription().orElse(""))
+                .title(apiData.getLabel())
+                .description(apiData.getDescription().orElse(""))
                 .extent(Optional.ofNullable(spatialExtent))
                 .links(ogcApiLinks);
 
         for (OgcApiLandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
             apiLandingPage = ogcApiLandingPageExtension.process(apiLandingPage,
-                    requestContext.getApi().getData(),
+                    apiData,
                     requestContext.getUriCustomizer()
                                   .copy(),
                     requestContext.getMediaType(),
@@ -97,30 +99,15 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                     requestContext.getLanguage());
         }
 
-        CommonFormatExtension outputFormatExtension = requestContext.getApi()
-                .getOutputFormat(CommonFormatExtension.class,
-                        requestContext.getMediaType(),
-                        "/")
+        CommonFormatExtension outputFormatExtension = api.getOutputFormat(CommonFormatExtension.class,
+                                                                          requestContext.getMediaType(),"/")
                 .orElseThrow(NotAcceptableException::new);
 
-        ImmutableLandingPage responseObject = apiLandingPage.build();
-        Response landingPageResponse = outputFormatExtension.getLandingPageResponse(responseObject,
-                requestContext.getApi(),
-                requestContext);
-
-        Response.ResponseBuilder response = Response.ok()
-                .entity(landingPageResponse.getEntity())
-                .type(requestContext.getMediaType()
-                        .type());
-
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (queryInput.getIncludeLinkHeader())
-            addLinks(response, responseObject.getLinks());
-
-        return response.build();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? ogcApiLinks : null)
+                .entity(outputFormatExtension.getLandingPageEntity(apiLandingPage.build(),
+                                                                   requestContext.getApi(),
+                                                                   requestContext))
+                .build();
     }
 
     private Response getConformanceResponse(OgcApiQueryInputConformance queryInput,
@@ -157,24 +144,11 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                     requestContext.getLanguage());
         }
 
-        ImmutableConformanceDeclaration responseObject = conformanceDeclaration.build();
-        Response conformanceDeclarationResponse = outputFormatExtension.getConformanceResponse(responseObject,
-                requestContext.getApi(),
-                requestContext);
-
-        Response.ResponseBuilder response = Response.ok()
-                .entity(conformanceDeclarationResponse.getEntity())
-                .type(requestContext.getMediaType()
-                        .type());
-
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (queryInput.getIncludeLinkHeader())
-            addLinks(response, responseObject.getLinks());
-
-        return response.build();
+        return prepareSuccessResponse(requestContext.getApi(), requestContext, queryInput.getIncludeLinkHeader() ? ogcApiLinks : null)
+                .entity(outputFormatExtension.getConformanceEntity(conformanceDeclaration.build(),
+                        requestContext.getApi(),
+                        requestContext))
+                .build();
     }
 
     private Response getApiDefinitionResponse(OgcApiQueryInputApiDefinition queryInput,

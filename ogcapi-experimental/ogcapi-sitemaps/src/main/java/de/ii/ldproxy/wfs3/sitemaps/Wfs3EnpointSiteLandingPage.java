@@ -40,6 +40,8 @@ import java.util.Optional;
 @Instantiate
 public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
 
+    // TODO change to new style for endpoints
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EnpointSiteLandingPage.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("sitemap_landingPage.xml")
@@ -50,7 +52,6 @@ public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
     @Requires
     private CoreServerConfig coreServerConfig;
 
-    @Override
     public OgcApiContext getApiContext() {
         return API_CONTEXT;
     }

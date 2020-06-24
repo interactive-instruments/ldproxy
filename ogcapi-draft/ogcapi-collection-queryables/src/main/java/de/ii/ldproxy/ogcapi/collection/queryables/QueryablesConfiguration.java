@@ -21,4 +21,12 @@ public abstract class QueryablesConfiguration implements ExtensionConfiguration 
     public boolean getEnabled() {
         return false;
     }
+
+    @Override
+    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+        return new ImmutableQueryablesConfiguration.Builder()
+                .from(extensionConfigurationDefault)
+                .from(this)
+                .build();
+    }
 }

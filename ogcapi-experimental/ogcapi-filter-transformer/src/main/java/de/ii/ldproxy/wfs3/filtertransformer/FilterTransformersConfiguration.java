@@ -35,7 +35,8 @@ public abstract class FilterTransformersConfiguration implements ExtensionConfig
     public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
         return new ImmutableFilterTransformersConfiguration.Builder()
                                                        .from(extensionConfigurationDefault)
-                                                       .from(this)
-                                                       .build(); //TODO
+                                                       .enabled(getEnabled())
+                                                       .addAllTransformers(getTransformers())
+                                                       .build();
     }
 }

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-public class StylesView extends LdproxyView {
+public class StylesView extends OgcApiView {
     private List<StyleEntry> styleEntries;
     public String none;
 

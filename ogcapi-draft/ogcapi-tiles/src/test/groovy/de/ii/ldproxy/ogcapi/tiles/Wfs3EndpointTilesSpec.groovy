@@ -23,7 +23,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: "checkTilesParameterCollection is called"
 
-        Wfs3EndpointTiles.checkTilesParameterDataset(enabledMap)
+        EndpointTileSetsMultiCollection.checkTilesParameterDataset(enabledMap)
 
         then: thrown NotFoundException
     }
@@ -42,7 +42,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: "checkTilesParameterCollection is called"
 
-        Wfs3EndpointTiles.checkTilesParameterDataset(enabledMap)
+        EndpointTileSetsMultiCollection.checkTilesParameterDataset(enabledMap)
 
         then: thrown NotFoundException
     }
@@ -60,7 +60,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: "checkTilesParameterCollection is called"
 
-        def result = Wfs3EndpointTiles.checkTilesParameterDataset(enabledMap)
+        def result = EndpointTileSetsMultiCollection.checkTilesParameterDataset(enabledMap)
 
         then: "it should return true"
 
@@ -71,7 +71,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
     def 'get all Collection ids multiple tests with data table'(boolean mvtEnabled,boolean onlyJson, boolean startSeeding,Set<String>allCollectionIds,Map<String,Boolean> enabledMap,Map<String,List<String>> formatsMap,Map<String,Map<String,MinMax>> seedingMap, HashSet<String> result){
 
-        expect: Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)==result
+        expect: EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)==result
 
         where:
 
@@ -125,7 +125,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return a Set with one entry: collection2'
 
@@ -163,7 +163,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return a Set with one entry: collection1'
 
@@ -199,7 +199,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return a Set with one entry: collection 0'
 
@@ -237,7 +237,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return a Set with two entries:\'collection2\' and \'collection3\''
 
@@ -260,7 +260,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result=Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result=EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return an empty Set'
 
@@ -281,7 +281,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return an empty Set'
 
@@ -303,7 +303,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return an empty Set'
 
@@ -324,7 +324,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return an empty Set'
 
@@ -362,7 +362,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return an empty Set'
 
@@ -401,7 +401,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return a Set which is equal to the set \'allCollectionIds\''
 
@@ -440,7 +440,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return an empty Set'
 
@@ -478,7 +478,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return a Set which is equal to the set \'allCollectionIds\''
 
@@ -517,7 +517,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return an empty Set '
 
@@ -556,7 +556,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return a Set which is equal to the set \'allCollectionIds\''
 
@@ -593,7 +593,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return an empty Set'
 
@@ -630,7 +630,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
         when: 'getCollectionIdsDataset is called'
 
-        def result = Wfs3EndpointTiles.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
+        def result = EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)
 
         then: 'it should return a Set which is equal to the set \'allCollectionIds\''
 

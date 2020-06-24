@@ -11,7 +11,7 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
 
     //TODO: might come from xtraplatform-geotools
-    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.15.1')
+    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.16.1')
 
     testImplementation group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
     testImplementation group: 'de.interactive_instruments', name: 'xtraplatform-event-store'

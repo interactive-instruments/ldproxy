@@ -3,16 +3,16 @@ package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.feature_processing.api.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.application.PathParameterCollectionIdFeatures;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
-import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
-import de.ii.xtraplatform.features.domain.*;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -27,31 +27,20 @@ import java.util.*;
 @Component
 @Provides
 @Instantiate
-public class PathParameterCollectionIdProcess implements OgcApiPathParameter {
+public class PathParameterCollectionIdProcess extends PathParameterCollectionIdFeatures {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterCollectionIdProcess.class);
     private static final String DAPA_PATH_ELEMENT = "dapa";
     Map<String,Set<String>> apiCollectionMap;
 
-    final OgcApiFeatureCoreProviders providers;
     final FeatureProcessInfo featureProcessInfo;
 
     public PathParameterCollectionIdProcess(@Requires OgcApiFeatureCoreProviders providers,
                                             @Requires FeatureProcessInfo featureProcessInfo) {
-        this.providers = providers;
+        super(providers);
         this.featureProcessInfo = featureProcessInfo;
         apiCollectionMap = new HashMap<>();
     };
-
-    @Override
-    public String getPattern() {
-        return "[\\w\\-]+";
-    }
-
-    @Override
-    public boolean getExplodeInOpenApi() {
-        return true;
-    }
 
     @Override
     public Set<String> getValues(OgcApiApiDataV2 apiData) {
@@ -67,13 +56,8 @@ public class PathParameterCollectionIdProcess implements OgcApiPathParameter {
     }
 
     @Override
-    public String getName() {
-        return "collectionId";
-    }
-
-    @Override
-    public String getDescription() {
-        return "The local identifier of a feature collection.";
+    public String getId() {
+        return "collectionIdObservationProcessing";
     }
 
     @Override
@@ -86,7 +70,7 @@ public class PathParameterCollectionIdProcess implements OgcApiPathParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return true;
+        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
     }
 
     private Set<String> returnObservationCollections(OgcApiApiDataV2 apiData) {

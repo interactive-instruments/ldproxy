@@ -12,7 +12,6 @@ import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.*;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * @author zahnen
@@ -67,42 +66,28 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
     }
 
     @Override
-    public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Object getLandingPageEntity(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
         String title = requestContext.getApi().getData().getLabel();
         String description = requestContext.getApi().getData().getDescription().orElse(null);
-        return response(new LandingPageXml(apiLandingPage.getLinks(), title, description));
+        return new LandingPageXml(apiLandingPage.getLinks(), title, description);
     }
 
     @Override
-    public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
+    public Object getConformanceEntity(ConformanceDeclaration conformanceDeclaration,
                                            OgcApiApi api, OgcApiRequestContext requestContext) {
-        return response(new Wfs3ConformanceClassesXml(conformanceDeclaration));
+        return new Wfs3ConformanceClassesXml(conformanceDeclaration);
     }
 
     @Override
-    public Response getCollectionsResponse(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
-        return response(new Wfs3CollectionsXml(collections));
+    public Object getCollectionsEntity(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
+        return new Wfs3CollectionsXml(collections);
     }
 
     @Override
-    public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
+    public Object getCollectionEntity(OgcApiCollection ogcApiCollection,
                                           OgcApiApi api, OgcApiRequestContext requestContext) {
-        return response(new Wfs3CollectionsXml(new ImmutableCollections.Builder()
+        return new Wfs3CollectionsXml(new ImmutableCollections.Builder()
                 .addCollections(ogcApiCollection)
-                .build()));
-    }
-
-    private Response response(Object entity) {
-        return response(entity, null);
-    }
-
-    private Response response(Object entity, String type) {
-        Response.ResponseBuilder response = Response.ok()
-                                                    .entity(entity);
-        if (type != null) {
-            response.type(type);
-        }
-
-        return response.build();
+                .build());
     }
 }

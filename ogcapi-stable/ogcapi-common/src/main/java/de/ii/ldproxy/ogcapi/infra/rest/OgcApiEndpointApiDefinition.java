@@ -8,11 +8,10 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputApiDefinition;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.OgcApiQueryInputApiDefinition;
+import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
@@ -39,12 +38,6 @@ public class OgcApiEndpointApiDefinition extends OgcApiEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEndpointApiDefinition.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("api")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^(?:/[^/]*)?$")
-            .build();
-
     @Requires
     private OgcApiQueriesHandlerCommon queryHandler;
 
@@ -58,27 +51,11 @@ public class OgcApiEndpointApiDefinition extends OgcApiEndpoint {
     }
 
     @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    @Override
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class);
         return formats;
     }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        return extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class)
-                                .stream()
-                                .filter(formatExtension -> ("/api"+subPath).matches(formatExtension.getPathPattern()))
-                                .map(ApiDefinitionFormatExtension::getMediaType)
-                                .collect(ImmutableSet.toImmutableSet());
-    }
-     */
 
     @Override
     public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {

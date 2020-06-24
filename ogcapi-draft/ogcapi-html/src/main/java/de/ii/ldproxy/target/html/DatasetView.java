@@ -47,7 +47,7 @@ public class DatasetView extends GenericView {
     }
 
     public DatasetView(String template, URI uri, Object data, String urlPrefix, HtmlConfig htmlConfig, boolean noIndex) {
-        super(template, uri, data);
+        super(String.format("/templates/%s", template), uri, data);
         this.keywords = new ArrayList<>();
         this.featureTypes = new ArrayList<>();
         this.urlPrefix = urlPrefix;

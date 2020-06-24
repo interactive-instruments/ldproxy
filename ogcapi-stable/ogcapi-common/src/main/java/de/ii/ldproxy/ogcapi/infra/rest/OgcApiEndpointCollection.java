@@ -21,7 +21,9 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -34,12 +36,7 @@ import java.util.Set;
 public class OgcApiEndpointCollection extends OgcApiEndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEndpointCollection.class);
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[\\w\\-]+/?$")
-            .build();
-    private static final List<String> TAGS = ImmutableList.of("Access data collections");
+    private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
     @Requires
     private OgcApiQueriesHandlerCollections queryHandler;
@@ -54,8 +51,8 @@ public class OgcApiEndpointCollection extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), OgcApiCommonConfiguration.class);
     }
 
     @Override
@@ -64,20 +61,6 @@ public class OgcApiEndpointCollection extends OgcApiEndpointSubCollection {
             formats = extensionRegistry.getExtensionsForType(CollectionsFormatExtension.class);
         return formats;
     }
-
-    /*
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        if (subPath.matches("^/[\\w\\-]+/?$"))
-            return extensionRegistry.getExtensionsForType(CollectionsFormatExtension.class)
-                                    .stream()
-                                    .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(dataset))
-                                    .map(CollectionsFormatExtension::getMediaType)
-                                    .collect(ImmutableSet.toImmutableSet());
-
-        throw new ServerErrorException("Invalid sub path: "+subPath, 500);
-    }
-     */
 
     @Override
     public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {

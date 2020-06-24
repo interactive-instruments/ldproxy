@@ -21,4 +21,12 @@ public abstract class Oas30Configuration implements ExtensionConfiguration {
     public boolean getEnabled() {
         return false;
     }
+
+    @Override
+    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
+        return new ImmutableOas30Configuration.Builder()
+                .from(extensionConfigurationDefault)
+                .from(this)
+                .build();
+    }
 }

@@ -53,8 +53,12 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class).filter(OgcApiFeaturesCoreConfiguration::getEnabled)
-                                                                                        .isPresent();
+        return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), OgcApiFeaturesCoreConfiguration.class);
     }
 
     @Override

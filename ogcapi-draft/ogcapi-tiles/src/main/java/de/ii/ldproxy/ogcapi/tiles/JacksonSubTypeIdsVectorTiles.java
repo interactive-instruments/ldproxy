@@ -16,10 +16,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import java.util.Map;
 
-
-/**
- * @author zahnen
- */
 @Component
 @Provides
 @Instantiate

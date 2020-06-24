@@ -46,4 +46,9 @@ public class QueryParameterResolveNearby implements OgcApiQueryParameter {
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, NearbyConfiguration.class);
     }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), NearbyConfiguration.class);
+    }
 }

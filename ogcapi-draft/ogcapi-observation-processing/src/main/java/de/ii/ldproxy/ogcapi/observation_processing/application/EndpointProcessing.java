@@ -11,9 +11,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.feature_processing.api.ImmutableProcess;
-import de.ii.ldproxy.ogcapi.feature_processing.api.ImmutableProcessing;
-import de.ii.ldproxy.ogcapi.feature_processing.api.Processing;
+import de.ii.ldproxy.ogcapi.features.processing.ImmutableProcess;
+import de.ii.ldproxy.ogcapi.features.processing.ImmutableProcessing;
+import de.ii.ldproxy.ogcapi.features.processing.Processing;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.api.*;
 import de.ii.xtraplatform.auth.api.User;
@@ -48,13 +48,6 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
     @Requires
     I18n i18n;
 
-    // TODO delete
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("collections")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/?$")
-            .build();
-
     private final ObservationProcessingQueriesHandler queryHandler;
 
     public EndpointProcessing(@Requires OgcApiExtensionRegistry extensionRegistry,
@@ -69,15 +62,14 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
         return formats;
     }
 
-    // TODO delete
-    @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     @Override
