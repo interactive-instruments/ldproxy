@@ -130,23 +130,6 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                 .api(service)
                 .build();
 
-        /* TODO delete
-        // validate generic parameters
-        String f = requestContext.getUriInfo().getQueryParameters().getFirst("f");
-        if (f!=null) {
-            boolean found = supportedMediaTypes.stream()
-                    .map(mediaType -> mediaType.parameter())
-                    .anyMatch(value -> value != null && value.equalsIgnoreCase(f));
-            if (!found) {
-                Set<String> validValues = supportedMediaTypes.stream()
-                        .map(mediaType -> mediaType.parameter())
-                        .filter(value -> value != null && !value.isEmpty())
-                        .collect(Collectors.toSet());
-                throw new BadRequestException("Invalid value for parameter 'f': " + f + ". Valid values: " + String.join(", ",validValues)+".");
-            }
-        }
-         */
-
         // validate request
         OgcApiEndpointDefinition apiDef = ogcApiEndpoint.getDefinition(service.getData());
         if (!apiDef.getResources().isEmpty()) {

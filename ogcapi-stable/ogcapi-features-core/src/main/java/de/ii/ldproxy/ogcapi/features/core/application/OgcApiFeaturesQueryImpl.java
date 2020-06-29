@@ -101,11 +101,6 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                               Map<String, String> parameters, Set<OgcApiQueryParameter> allowedParameters,
                                               String featureId) {
 
-        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            parameters = parameterExtension.transformParameters(collectionData, parameters, apiData);
-        }
-
-        // TODO
         for (OgcApiQueryParameter parameter : allowedParameters) {
             parameters = parameter.transformParameters(collectionData, parameters, apiData);
         }
@@ -117,11 +112,6 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                                                 .filter(filter)
                                                                                 .crs(coreConfiguration.getDefaultEpsgCrs());
 
-        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            parameterExtension.transformQuery(collectionData, queryBuilder, parameters, apiData);
-        }
-
-        // TODO
         for (OgcApiQueryParameter parameter : allowedParameters) {
             parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
         }
@@ -140,13 +130,6 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                                    .orElse(ImmutableMap.of());
 
         Set<String> filterParameters = ImmutableSet.of();
-        // TODO no longer needed
-        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            filterParameters = parameterExtension.getFilterParameters(filterParameters, apiData);
-            parameters = parameterExtension.transformParameters(collectionData, parameters, apiData);
-        }
-
-        // TODO
         for (OgcApiQueryParameter parameter : allowedParameters) {
             filterParameters = parameter.getFilterParameters(filterParameters, apiData, collectionData.getId());
             parameters = parameter.transformParameters(collectionData, parameters, apiData);
@@ -181,11 +164,6 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                                                 .offset(offset)
                                                                                 .hitsOnly(hitsOnly);
 
-        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            parameterExtension.transformQuery(collectionData, queryBuilder, parameters, apiData);
-        }
-
-        // TODO
         for (OgcApiQueryParameter parameter : allowedParameters) {
             parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
         }
