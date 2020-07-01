@@ -246,14 +246,11 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
 
         OgcApiApiDataV2 migrated = new ImmutableOgcApiApiDataV2.Builder().from((ServiceData) entityData)
                                                                          .serviceType("OGC_API")
+                                                                         .entityStorageVersion(getTargetVersion())
                                                                          .metadata(Optional.ofNullable(entityData.getMetadata()))
                                                                          .collections(collections)
                                                                          .extensions(extensions)
                                                                          .build();
-
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Migrated schema for entity '{}' with type 'services': v{} -> v{}", entityData.getId(), getSourceVersion(), getTargetVersion());
-        }
 
         return migrated;
     }
