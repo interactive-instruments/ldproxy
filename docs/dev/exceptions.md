@@ -12,11 +12,20 @@
  
    All other classes throw other exceptions that are suitable for the cause, e.g. standard Java language exceptions.
    
+1. Log messages for exceptions should in general be written in the web-layer classes, too. For exceptions that are internal errors, the messages should have "error" level and the stacktrace should be written with "debug" level. For example:
+
+   ```
+   LOGGER.error("Feature provider with id '{}' could not be started: {}", getId(), e.getMessage());
+   if (LOGGER.isDebugEnabled()) {
+       LOGGER.debug("Stacktrace:", e);
+   }   
+   ```
+   
 1. All exceptions are caught in `OgcApiExceptionMapper` (currently still `Wfs3ExceptionMapper`, to be renamed) and, if necessary, mapped to a web exception and the selected media type. 
 
 1. For 4xx responses, the exception message documents the cause of the exception.
 
-1. For 5xx responses, the exception message does not document the cause of the exception and only provides enough information to find mot information in the log file. The cause of the exception and the stackdump are written to the logfile.
+1. For 5xx responses, the exception message does not document the cause of the exception and only provides enough information to find mot information in the log file. The cause of the exception and the stackdump are written to the logfile.   
    
 1. The default media type of an exception response is `application/problem+json` as defined in [RFC 7807](https://tools.ietf.org/html/rfc7807).
 
@@ -33,6 +42,7 @@
 1. If the requested media type of the response is "text/html", return a HTML page.
 
    For now, create a simple plain HTML page with all the information in the JSON response. (In the future, we could support exception format extension classes.)
+   
    
    
 
