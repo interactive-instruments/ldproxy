@@ -46,7 +46,7 @@ public class QueryParameterCoordArea extends GeometryHelper implements OgcApiQue
     public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
         return isEnabledForApi(apiData) &&
                 method==OgcApiContext.HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area", "resample-to-grid");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area");
     }
 
     @Override

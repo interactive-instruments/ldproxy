@@ -7,35 +7,39 @@
  */
 package de.ii.ldproxy.ogcapi.observation_processing.application;
 
-import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.observation_processing.api.FeatureTransformerObservationProcessing;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableFeatureTransformationContextObservationProcessing;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
+import de.ii.ldproxy.ogcapi.observation_processing.data.Geometry;
+import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryMultiPolygon;
+import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryPoint;
 import de.ii.ldproxy.target.geojson.SchemaGeneratorFeatureCollection;
-import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
-import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.time.temporal.Temporal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Provides(specifications = {OutputFormatGeoJson.class, ObservationProcessingOutputFormat.class, FormatExtension.class, OgcApiExtension.class})
 @Instantiate
 public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OutputFormatGeoJson.class);
 
     public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(new MediaType("application", "geo+json"))
@@ -43,20 +47,7 @@ public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
             .parameter("json")
             .build();
 
-    @Requires
-    private Dropwizard dropwizard;
-
-    @Requires
-    private I18n i18n;
-
-    @Requires
-    private CodelistRegistry codelistRegistry;
-
-    @Requires
-    private OgcApiFeatureCoreProviders providers;
-
-    @Requires
-    private Http http;
+    private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     @Requires
     SchemaGeneratorFeatureCollection schemaGeneratorFeatureCollection;
@@ -67,56 +58,65 @@ public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStreamWriter outputStreamWriter) {
+        Result result = new Result(processes.getSubSubPath(), processingParameters, outputStreamWriter);
+        result.featureCollection.put("type", "FeatureCollection");
+        ArrayNode features = result.featureCollection.putArray("features");
+        return result;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    public void addFeature(Object result, Optional<String> locationCode, Optional<String> locationName, Geometry geometry, Temporal timeBegin, Temporal timeEnd, Map<String, Number> values) {
+        ObjectNode featureCollection = ((Result) result).featureCollection;
+        ArrayNode features = (ArrayNode) (featureCollection.get("features"));
+        ObjectNode feature = features.addObject();
+        feature.put("type", "Feature");
+        addGeometry(feature, geometry);
+        ObjectNode properties = feature.putObject("properties");
+        if (locationCode.isPresent())
+            properties.put("locationCode", locationCode.get());
+        if (locationName.isPresent())
+            properties.put("locationName", locationName.get());
+        if (timeBegin==timeEnd)
+            properties.put("phenomenonTime", timeBegin.toString());
+        else
+            properties.put("phenomenonTime", timeBegin.toString()+"/"+timeEnd.toString());
+        values.entrySet().parallelStream()
+                .forEach(entry -> {
+                    String variable = entry.getKey();
+                    Number val = entry.getValue();
+                    if (val instanceof Integer)
+                        properties.put(variable, val.intValue());
+                    else
+                        properties.put(variable, val.floatValue());
+                });
     }
 
-    @Override
-    public boolean canTransformFeatures() {
-        return true;
-    }
-
-    @Override
-    public Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContext transformationContext, Optional<Locale> language) {
-        OgcApiApiDataV2 serviceData = transformationContext.getApiData();
-        String collectionName = transformationContext.getCollectionId();
-        String staticUrlPrefix = transformationContext.getOgcApiRequest()
-                                                      .getStaticUrlPrefix();
-        URICustomizer uriCustomizer = transformationContext.getOgcApiRequest()
-                                                           .getUriCustomizer();
-
-        if (transformationContext.isFeatureCollection()) {
-            FeatureTypeConfigurationOgcApi collectionData = serviceData.getCollections()
-                                                                       .get(collectionName);
-            Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
-            Optional<ObservationProcessingConfiguration> obsProcConfiguration = collectionData.getExtension(ObservationProcessingConfiguration.class);
-            FeatureProviderDataV2 providerData = providers.getFeatureProvider(serviceData, collectionData)
-                                                          .getData();
-
-            Map<String, String> filterableFields = featuresCoreConfiguration
-                                                                 .map(OgcApiFeaturesCoreConfiguration::getOtherFilterParameters)
-                                                                 .orElse(ImmutableMap.of());
-
+    private void addGeometry(ObjectNode feature, Geometry geometry) {
+        ArrayNode coord = feature.putObject("geometry")
+                .put("type", geometry instanceof GeometryPoint ? "Point" : ((GeometryMultiPolygon) geometry).size()==1 ? "Polygon" : "MultiPolygon" )
+                .putArray("coordinates");
+        if (geometry instanceof GeometryPoint) {
+            ((GeometryPoint) geometry).asList().stream().forEachOrdered(ord -> coord.add(ord));
         } else {
-            // TODO throw error
+            GeometryMultiPolygon multiPolygon = (GeometryMultiPolygon) geometry;
+            multiPolygon.asList().stream().forEachOrdered(polygon -> {
+                ArrayNode coordPoly = multiPolygon.size()==1 ? coord : coord.addArray();
+                polygon.stream().forEachOrdered(ring -> {
+                    ArrayNode coordRing = coordPoly.addArray();
+                    ring.stream().forEachOrdered(pos -> {
+                        ArrayNode coordPos = coordRing.addArray();
+                        pos.stream().forEach(ord -> coordPos.add(ord));
+                    });
+                });
+            });
         }
+    }
 
-        ImmutableFeatureTransformationContextObservationProcessing transformationContextObsProc = new ImmutableFeatureTransformationContextObservationProcessing.Builder()
-                .from(transformationContext)
-                .codelists(codelistRegistry.getCodelists())
-                // TODO .mustacheRenderer(dropwizard.getMustacheRenderer())
-                .i18n(i18n)
-                .language(language)
-                .build();
 
-        FeatureTransformer2 transformer = new FeatureTransformerObservationProcessing(transformationContextObsProc, http.getDefaultClient());
-
-        return Optional.of(transformer);
+    @Override
+    public void finalizeResult(Object result) throws IOException {
+        mapper.writeValue(((Result)result).outputStreamWriter, ((Result) result).featureCollection);
     }
 
     @Override
@@ -137,5 +137,26 @@ public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
     @Override
     public boolean contentPerResource() {
         return true;
+    }
+
+    class Result {
+        final String processName;
+        final List<String> variables;
+        final List<ObservationProcessingStatisticalFunction> functions;
+        final List<String> var_funct;
+        final OutputStreamWriter outputStreamWriter;
+        ObjectNode featureCollection;
+        Result(String processName, Map<String, Object> processingParameters, OutputStreamWriter outputStreamWriter) {
+            this.outputStreamWriter = outputStreamWriter;
+            this.processName = processName;
+            variables = (List<String>) processingParameters.getOrDefault("variables", ImmutableList.of());
+            functions = (List<ObservationProcessingStatisticalFunction>) processingParameters.getOrDefault("functions", ImmutableList.of());
+            var_funct = variables.stream()
+                    .map(var -> functions.stream().map(funct -> var+"_"+funct.getName()).collect(Collectors.toList()))
+                    .flatMap(Collection::stream)
+                    .sorted()
+                    .collect(Collectors.toList());
+            featureCollection = mapper.createObjectNode();
+        }
     }
 }

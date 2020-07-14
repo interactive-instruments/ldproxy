@@ -292,8 +292,8 @@ public class Observations {
         int tsteps = gridSteps.orElse(0);
         if (tsteps==0)
             tsteps = interval.getSteps();
-        float diffx = (bbox[2] - bbox[0])/(width-1);
-        float diffy = (bbox[3] - bbox[1])/(height-1);
+        float diffx = (bbox[2] - bbox[0])/width;
+        float diffy = (bbox[3] - bbox[1])/height;
         float difft = tsteps==1 ? 0f : (tend - tbegin)/(tsteps-1);
         List<Float> lons = new Vector<>();
         List<Float> lats = new Vector<>();
@@ -301,7 +301,7 @@ public class Observations {
         for (int i=0; i<width; i++)
             lons.add(bbox[0]+i*diffx);
         for (int i=0; i<height; i++)
-            lats.add(bbox[1]+i*diffy);
+            lats.add(bbox[3]-i*diffy);
         for (int i=0; i<tsteps; i++)
             times.add(tbegin+i*difft);
 
@@ -329,7 +329,7 @@ public class Observations {
                         for (float lat : lats) {
                             int i2 = 0;
                             for (float time : times) {
-                                float val = obsVar.xytInterpolate(lon, lat, time);
+                                float val = obsVar.xytInterpolate(lon+diffx/2, lat-diffy/2, time);
                                 if (val == Observations.NULL)
                                     array.array[i2][i1][i0][i3] = NaN;
                                 else

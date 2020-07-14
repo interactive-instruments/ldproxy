@@ -79,7 +79,9 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
 
     @Override
     public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
-        return new ArraySchema().items(new StringSchema()._enum(getValues(apiData, collectionId)));
+        ArraySchema collectionSchema = new ArraySchema().items(new StringSchema()._enum(getValues(apiData, collectionId)));
+        collectionSchema.setDefault(getValues(apiData, collectionId));
+        return collectionSchema;
     }
 
     @Override
@@ -120,7 +122,7 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
     }
 
     @Override
-    public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType, Map<String, Object> context, Map<String, String> parameters, OgcApiApiDataV2 serviceData) {
+    public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType, Map<String, Object> context, Map<String, String> parameters, OgcApiApiDataV2 apiData) {
         if (parameters.containsKey("variables")) {
             // the variables have been validated already
             Set<String> variables = new TreeSet<>();
@@ -129,6 +131,8 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
                     .omitEmptyStrings()
                     .splitToList(parameters.get("variables"));
             context.put("variables",vars);
+        } else {
+            context.put("variables",getValues(apiData, featureType.getId()));
         }
         return context;
     }

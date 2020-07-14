@@ -216,7 +216,6 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
 
     @GET
     @Path("/{collectionId}/"+DAPA_PATH_ELEMENT+"/{processIds}")
-    @Produces("application/geo+json")
     public Response getProcessResult(@Auth Optional<User> optionalUser,
                                      @Context OgcApiApi api,
                                      @Context OgcApiRequestContext requestContext,

@@ -7,8 +7,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
-import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryMultiPolygon;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
+import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryMultiPolygon;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -23,15 +23,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Vector;
 
+import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterCoordPosition.BUFFER;
+import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterCoordPosition.R;
+
 @Component
 @Provides
 @Instantiate
-public class QueryParameterBbox extends GeometryHelper implements OgcApiQueryParameter {
+public class QueryParameterBboxResampleToGrid extends GeometryHelper implements OgcApiQueryParameter {
 
     private final Schema baseSchema;
     final FeatureProcessInfo featureProcessInfo;
 
-    public QueryParameterBbox(@Requires FeatureProcessInfo featureProcessInfo) {
+    public QueryParameterBboxResampleToGrid(@Requires FeatureProcessInfo featureProcessInfo) {
         this.featureProcessInfo = featureProcessInfo;
 
         // TODO support 6 coordinates
@@ -40,12 +43,12 @@ public class QueryParameterBbox extends GeometryHelper implements OgcApiQueryPar
 
     @Override
     public String getId() {
-        return "bbox-observation-processing";
+        return "bbox-resample-to-grid";
     }
 
     @Override
     public String getId(String collectionId) {
-        return "bbox-observation-processing_"+collectionId;
+        return "bbox-resample-to-grid_"+collectionId;
     }
 
     @Override
@@ -68,7 +71,7 @@ public class QueryParameterBbox extends GeometryHelper implements OgcApiQueryPar
     public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
         return isEnabledForApi(apiData) &&
                method==OgcApiContext.HttpMethods.GET &&
-               featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area");
+               featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"resample-to-grid");
     }
 
     @Override
@@ -108,17 +111,18 @@ public class QueryParameterBbox extends GeometryHelper implements OgcApiQueryPar
                                                    Map<String, String> parameters,
                                                    OgcApiApiDataV2 apiData) {
         // TODO support bbox-crs and other CRSs
-        if (parameters.containsKey("coord")) {
-            if (parameters.containsKey(getName())) {
-                throw new BadRequestException("Only one of the parameters 'bbox' and 'coord' may be provided.");
-            }
-        } else {
-            if (!parameters.containsKey(getName())) {
-                Optional<String> defValue = getDefault(apiData, Optional.of(featureType.getId()));
-                if (defValue.isPresent())
-                    parameters.put(getName(), defValue.get());
-            }
+        String bbox = parameters.get(getName());
+        if (bbox==null) {
+            bbox = getDefault(apiData, Optional.of(featureType.getId())).orElseThrow(() -> new BadRequestException("Missing parameter 'bbox', no bounding box has been provided."));
         }
+        List<String> ords = Splitter.on(",").splitToList(bbox);
+
+        double lonBuffer = BUFFER / (R * Math.cos(Double.valueOf(ords.get(1)) / 180.0 * Math.PI) * Math.PI / 180.0);
+        double latBuffer = BUFFER / (R * Math.PI / 180.0);
+        bbox = (Double.valueOf(ords.get(0)) - lonBuffer) + "," + (Double.valueOf(ords.get(1)) - latBuffer) + "," +
+                (Double.valueOf(ords.get(2)) + lonBuffer) + "," + (Double.valueOf(ords.get(3)) + latBuffer);
+        parameters.put(getName(),bbox);
+
         return parameters;
     }
 

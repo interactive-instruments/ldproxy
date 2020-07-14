@@ -23,6 +23,7 @@ public abstract class FeatureTransformationContextObservationProcessing implemen
 
     public abstract FeatureProcessChain getProcesses();
     public abstract Map<String, Object> getProcessingParameters();
+    public abstract ObservationProcessingOutputFormat getOutputFormat();
 
     // public abstract ViewRenderer getMustacheRenderer();
 

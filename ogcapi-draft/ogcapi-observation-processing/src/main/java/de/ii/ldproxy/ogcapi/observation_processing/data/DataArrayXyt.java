@@ -15,6 +15,9 @@ public class DataArrayXyt {
     private final int width;
     private final int height;
     private final int steps;
+    private final float diffLon;
+    private final float diffLat;
+    private final float diffTime;
     private final Vector<String> vars;
 
     DataArrayXyt(int width, int height, int steps, Vector<String> vars,
@@ -29,6 +32,9 @@ public class DataArrayXyt {
         this.width = width;
         this.height = height;
         this.steps = steps;
+        this.diffLon = width>0 ? (maxLon-minLon)/width : 0.0f;
+        this.diffLat = height>0 ? (maxLat-minLat)/height : 0.0f;
+        this.diffTime = steps>0 ? (maxTime-minTime)/steps : 0.0f;
         this.vars = vars;
         this.array = new float[steps][height][width][vars.size()];
     }
@@ -49,16 +55,12 @@ public class DataArrayXyt {
         return vars;
     }
 
-    public float lon(int i) {
-        return width>1 ? minLon + (maxLon-minLon)*i/(width-1) : minLon;
-    }
+    public float lon(int i) { return minLon + diffLon*i; }
 
-    public float lat(int i) {
-        return height>1 ? minLat + (maxLat-minLat)*i/height : minLat;
-    }
+    public float lat(int i) { return maxLat - diffLat*i; }
 
     public float time(int i) {
-        return steps>1 ? minTime + (maxTime-minTime)*i/steps : minTime;
+        return minTime + diffTime*i;
     }
 
     public LocalDate date(int i) {
