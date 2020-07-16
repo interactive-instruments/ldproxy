@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
@@ -257,7 +256,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                         .build();
 
                                 // generate a query template for an arbitrary collection
-                                FeatureQuery query = outputFormat.getQuery(tile, ImmutableSet.of(), ImmutableMap.of(), tilesConfiguration.get(), uriCustomizer);
+                                FeatureQuery query = outputFormat.getQuery(tile, ImmutableList.of(), ImmutableMap.of(), tilesConfiguration.get(), uriCustomizer);
 
                                 OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class).get();
 
@@ -355,7 +354,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                             .build()));
 
                             // generate a query template for an arbitrary collection
-                            FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collectionIds.get(0)), ImmutableSet.of(), ImmutableMap.of(), tilesConfiguration.get(), uriCustomizer);
+                            FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collectionIds.get(0)), ImmutableList.of(), ImmutableMap.of(), tilesConfiguration.get(), uriCustomizer);
 
                             Map<String, FeatureQuery> queryMap = collectionIds.stream()
                                     .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> ImmutableFeatureQuery.builder()

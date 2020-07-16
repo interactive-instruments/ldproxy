@@ -88,8 +88,8 @@ public class EndpointTileSetsSingleCollection extends OgcApiEndpointSubCollectio
             final String subSubPath = "/tiles";
             final String path = "/collections/{collectionId}" + subSubPath;
             final OgcApiContext.HttpMethods method = OgcApiContext.HttpMethods.GET;
-            final Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+            final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");

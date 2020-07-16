@@ -10,7 +10,6 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
 import de.ii.ldproxy.ogcapi.observation_processing.application.Variables;
@@ -50,7 +49,7 @@ public class ObservationProcessingVariablesView extends OgcApiView {
                 .mapToInt(id -> id.length())
                 .max()
                 .orElse(0);
-        idCols = Math.min(Math.max(2, 1 + maxIdLength/10),6);
+        idCols = Math.min(Math.max(1, 1 + maxIdLength/12),4);
         descCols = 12 - idCols;
         this.uomTitle = i18n.get("uomTitle", language);
         this.none = i18n.get ("none", language);

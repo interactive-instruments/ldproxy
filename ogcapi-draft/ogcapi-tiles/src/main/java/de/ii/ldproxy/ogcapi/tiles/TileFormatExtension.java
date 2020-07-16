@@ -38,7 +38,7 @@ public interface TileFormatExtension extends FormatExtension {
     Object getEmptyTile(Tile tile);
 
     FeatureQuery getQuery(Tile tile,
-                          Set<OgcApiQueryParameter> allowedParameters,
+                          List<OgcApiQueryParameter> allowedParameters,
                           Map<String, String> queryParameters,
                           TilesConfiguration tilesConfiguration,
                           URICustomizer uriCustomizer);

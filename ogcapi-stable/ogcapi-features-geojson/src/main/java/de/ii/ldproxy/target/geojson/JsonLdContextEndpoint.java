@@ -94,7 +94,7 @@ public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_FEATURES_JSONLD_CONTEXT);
             String subSubPath = "/context";
             String path = "/collections/{collectionId}" + subSubPath;
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
@@ -108,7 +108,7 @@ public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
                     if (explode && !Files.isRegularFile(contextDirectory.resolve(collectionId)))
                         // skip, if no context is available
                         continue;
-                    final Set<OgcApiQueryParameter> queryParameters = explode ?
+                    final List<OgcApiQueryParameter> queryParameters = explode ?
                             getQueryParameters(extensionRegistry, apiData, path, collectionId) :
                             getQueryParameters(extensionRegistry, apiData, path);
                     final String operationSummary = "retrieve the JSON-LD context for the feature collection '" + collectionId + "'";

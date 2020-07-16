@@ -44,4 +44,9 @@ public class StatisticalFunctionCount implements ObservationProcessingStatistica
 
     @Override
     public Class getType() { return Integer.class; }
+
+    @Override
+    public boolean isDefault() {
+        return false;
+    }
 }

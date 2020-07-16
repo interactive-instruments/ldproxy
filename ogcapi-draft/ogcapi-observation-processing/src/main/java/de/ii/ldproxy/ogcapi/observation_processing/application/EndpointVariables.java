@@ -25,9 +25,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
@@ -79,8 +77,8 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
                     .sortPriority(10010);
             final String subSubPath = "/"+ DAPA_PATH_ELEMENT +"/variables";
             final String path = "/collections/{collectionId}" + subSubPath;
-            final Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            final Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+            final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
@@ -113,7 +111,6 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
 
     @GET
     @Path("/{collectionId}/"+ DAPA_PATH_ELEMENT +"/variables")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getVariables(@Auth Optional<User> optionalUser,
                              @Context OgcApiApi api,
                              @Context OgcApiRequestContext requestContext,

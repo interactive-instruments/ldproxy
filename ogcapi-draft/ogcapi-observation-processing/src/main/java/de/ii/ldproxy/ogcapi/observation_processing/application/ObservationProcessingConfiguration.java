@@ -10,9 +10,11 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.processing.ProcessDocumentation;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -32,11 +34,12 @@ public abstract class ObservationProcessingConfiguration implements ExtensionCon
 
     public abstract List<Variable> getVariables();
 
-    public abstract Optional<String> getDefaultBbox();
+    public abstract List<Double> getDefaultBbox();
     public abstract Optional<String> getDefaultCoordPosition();
     public abstract Optional<String> getDefaultCoordArea();
     public abstract Optional<String> getDefaultDatetime();
     public abstract OptionalInt getDefaultWidth();
+    public abstract Map<String, ProcessDocumentation> getDocumentation();
 
     @Override
     public <T extends ExtensionConfiguration> T mergeDefaults(T extensionConfigurationDefault) {

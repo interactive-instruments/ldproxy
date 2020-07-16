@@ -89,7 +89,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         }
 
         Set<String> parameters = requestContext.getUriInfo().getQueryParameters().keySet();
-        Set<OgcApiQueryParameter> knownParameters = ogcApiEndpoint.getParameters(service.getData(), subPath);
+        List<OgcApiQueryParameter> knownParameters = ogcApiEndpoint.getParameters(service.getData(), subPath);
         Set<String> unknownParameters = parameters.stream()
                 .filter(parameter -> !knownParameters.stream().filter(param -> param.getName().equalsIgnoreCase(parameter)).findAny().isPresent())
                 .collect(Collectors.toSet());

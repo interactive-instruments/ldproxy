@@ -98,7 +98,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     @Override
     public FeatureQuery requestToFeatureQuery(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
                                               OgcApiFeaturesCoreConfiguration coreConfiguration,
-                                              Map<String, String> parameters, Set<OgcApiQueryParameter> allowedParameters,
+                                              Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
                                               String featureId) {
 
         for (OgcApiQueryParameter parameter : allowedParameters) {
@@ -124,7 +124,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                               OgcApiFeaturesCoreConfiguration coreConfiguration,
                                               int minimumPageSize,
                                               int defaultPageSize, int maxPageSize, Map<String, String> parameters,
-                                              Set<OgcApiQueryParameter> allowedParameters) {
+                                              List<OgcApiQueryParameter> allowedParameters) {
         final Map<String, String> filterableFields = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
                                                                    .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
                                                                    .orElse(ImmutableMap.of());

@@ -10,8 +10,8 @@ package de.ii.ldproxy.target.html;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormatVariables;
-import de.ii.ldproxy.ogcapi.observation_processing.application.Variables;
+import de.ii.ldproxy.ogcapi.features.processing.Processing;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormatProcessing;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -25,7 +25,7 @@ import java.util.List;
 @Component
 @Provides
 @Instantiate
-public class ObservationProcessingVariablesOutputFormatHtml implements ObservationProcessingOutputFormatVariables {
+public class ObservationProcessingProcessingOutputFormatHtml implements ObservationProcessingOutputFormatProcessing {
 
     static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
@@ -72,38 +72,34 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
     }
 
     @Override
-    public Object getEntity(Variables variables,
-                                String collectionId,
-                                OgcApiApi api,
-                                OgcApiRequestContext requestContext) {
+    public Object getEntity(Processing processing,
+                            String collectionId,
+                            OgcApiApi api,
+                            OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
         String processingTitle = i18n.get("processingTitle", requestContext.getLanguage());
-        String variablesTitle = i18n.get("variablesTitle", requestContext.getLanguage());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(5)
+                                .removeLastPathSegments(4)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()
                                 .copy()
-                                .removeLastPathSegments(4)
+                                .removeLastPathSegments(3)
                                 .toString()))
                 .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(3)
+                        .removeLastPathSegments(2)
                         .toString()))
                 .add(new NavigationDTO(api.getData().getCollections().get(collectionId).getLabel(), requestContext.getUriCustomizer().copy()
-                                                                                                                  .removeLastPathSegments(2)
+                                                                                                                  .removeLastPathSegments(1)
                                                                                                                   .toString()))
-                .add(new NavigationDTO(processingTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(1)
-                        .toString()))
-                .add(new NavigationDTO(variablesTitle))
+                .add(new NavigationDTO(processingTitle))
                 .build();
 
-        return new ObservationProcessingVariablesView(api.getData(), variables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        return new ObservationProcessingProcessingView(api.getData(), processing, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 
 }

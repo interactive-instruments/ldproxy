@@ -24,9 +24,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.time.temporal.Temporal;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -57,8 +61,8 @@ public class OutputFormatCsv implements ObservationProcessingOutputFormat {
     }
 
     @Override
-    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStreamWriter outputStreamWriter) throws IOException {
-        Result result = new Result(processes.getSubSubPath(), processingParameters, outputStreamWriter);
+    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStream outputStream) throws IOException {
+        Result result = new Result(processes.getSubSubPath(), processingParameters, outputStream);
         switch (result.processName.substring(DAPA_PATH_ELEMENT.length()+2)) {
             case "position":
                 result.outputStreamWriter.write("phenomenonTime,"+String.join(",", result.variables)+System.lineSeparator());
@@ -155,9 +159,8 @@ public class OutputFormatCsv implements ObservationProcessingOutputFormat {
         final List<ObservationProcessingStatisticalFunction> functions;
         final List<String> var_funct;
         final OutputStreamWriter outputStreamWriter;
-        String csv;
-        Result(String processName, Map<String, Object> processingParameters, OutputStreamWriter outputStreamWriter) {
-            this.outputStreamWriter = outputStreamWriter;
+        Result(String processName, Map<String, Object> processingParameters, OutputStream outputStream) {
+            this.outputStreamWriter = new OutputStreamWriter(outputStream);
             this.processName = processName;
             variables = (List<String>) processingParameters.getOrDefault("variables", ImmutableList.of());
             functions = (List<ObservationProcessingStatisticalFunction>) processingParameters.getOrDefault("functions", ImmutableList.of());
@@ -166,7 +169,6 @@ public class OutputFormatCsv implements ObservationProcessingOutputFormat {
                     .flatMap(Collection::stream)
                     .sorted()
                     .collect(Collectors.toList());
-            csv = "";
         }
     }
 }

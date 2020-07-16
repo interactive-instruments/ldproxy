@@ -86,8 +86,8 @@ public class EndpointResource extends OgcApiEndpoint {
                     .apiEntrypoint("resources")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_RESOURCE);
             String path = "/resources/{resourceId}";
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             if (!pathParameters.stream().filter(param -> param.getName().equals("resourceId")).findAny().isPresent()) {
                 LOGGER.error("Path parameter 'resourceId' missing for resource at path '" + path + "'. The GET method will not be available.");
             } else {

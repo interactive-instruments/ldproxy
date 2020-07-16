@@ -8,11 +8,10 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputConformance;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.OgcApiQueryInputConformance;
+import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
@@ -28,7 +27,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 
 @Component
@@ -69,7 +67,7 @@ public class OgcApiEndpointConformance extends OgcApiEndpoint {
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
                     .apiEntrypoint("conformance")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_CONFORMANCE);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/conformance");
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/conformance");
             String operationSummary = "conformance declaration";
             Optional<String> operationDescription = Optional.of("The URIs of all conformance classes supported by the server. " +
                     "This information is provided to support 'generic' clients that want to access multiple " +

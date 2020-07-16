@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.temporal.Temporal;
 import java.util.*;
@@ -46,7 +46,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerObservationProcessing.class);
 
-    private OutputStreamWriter outputStreamWriter;
+    private OutputStream outputStream;
 
     private final boolean isFeatureCollection;
     private final ViewRenderer mustacheRenderer;
@@ -86,7 +86,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     private String currentLocationName;
 
     public FeatureTransformerObservationProcessing(FeatureTransformationContextObservationProcessing transformationContext, HttpClient httpClient) {
-        this.outputStreamWriter = new OutputStreamWriter(transformationContext.getOutputStream());
+        this.outputStream = transformationContext.getOutputStream();
         this.isFeatureCollection = transformationContext.isFeatureCollection();
         this.pageSize = transformationContext.getLimit();
         this.crsTransformer = transformationContext.getCrsTransformer()
@@ -148,7 +148,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
         LOGGER.debug(observationCount + " observations received.");
 
         try {
-            Object entity = outputFormat.initializeResult(processes, processingParameters, outputStreamWriter);
+            Object entity = outputFormat.initializeResult(processes, processingParameters, outputStream);
 
             Object data = observations;
             for (FeatureProcess process : processes.asList()) {
@@ -192,34 +192,40 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
                                result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
                 } else if (data instanceof DataArrayXyt) {
                     DataArrayXyt result = (DataArrayXyt) data;
-                    Vector<String> vars = result.getVars();
-                    for (int i0=0; i0<result.getWidth(); i0++)
-                        for (int i1=0; i1<result.getHeight(); i1++)
-                            for (int i2=0; i2<result.getSteps(); i2++) {
-                                Map<String, Number> map = new HashMap<>();
-                                for (int i3 = 0; i3 < vars.size(); i3++)
-                                    if (!Float.isNaN(result.array[i2][i1][i0][i3]))
-                                        map.put(vars.get(i3), result.array[i2][i1][i0][i3]);
-                                LocalDate date = result.date(i2);
-                                if (!map.isEmpty())
-                                    outputFormat.addFeature(entity, Optional.empty(), Optional.empty(),
+                    boolean formatAcceptsDataArray = outputFormat.addDataArray(entity, result);
+                    if (!formatAcceptsDataArray) {
+                        Vector<String> vars = result.getVars();
+                        for (int i0 = 0; i0 < result.getWidth(); i0++)
+                            for (int i1 = 0; i1 < result.getHeight(); i1++)
+                                for (int i2 = 0; i2 < result.getSteps(); i2++) {
+                                    Map<String, Number> map = new HashMap<>();
+                                    for (int i3 = 0; i3 < vars.size(); i3++)
+                                        if (!Float.isNaN(result.array[i2][i1][i0][i3]))
+                                            map.put(vars.get(i3), result.array[i2][i1][i0][i3]);
+                                    LocalDate date = result.date(i2);
+                                    if (!map.isEmpty())
+                                        outputFormat.addFeature(entity, Optional.empty(), Optional.empty(),
                                                 new GeometryPoint(result.lon(i0), result.lat(i1)),
                                                 date, date, map);
-                            }
+                                }
+                    }
                 } else if (data instanceof DataArrayXy) {
                     DataArrayXy result = (DataArrayXy) data;
-                    Vector<String> vars = result.getVars();
-                    for (int i0=0; i0<result.getWidth(); i0++)
-                        for (int i1=0; i1<result.getHeight(); i1++) {
-                            Map<String, Number> map = new HashMap<>();
-                            for (int i3 = 0; i3 < vars.size(); i3++)
-                                if (!Float.isNaN(result.array[i1][i0][i3]))
-                                    map.put(vars.get(i3), result.array[i1][i0][i3]);
-                            if (!map.isEmpty())
-                                outputFormat.addFeature(entity, Optional.empty(), Optional.empty(),
-                                        new GeometryPoint(result.lon(i0), result.lat(i1)),
-                                        result.getInterval().getBegin(), result.getInterval().getEnd(), map);
-                        }
+                    boolean formatAcceptsDataArray = outputFormat.addDataArray(entity, result);
+                    if (!formatAcceptsDataArray) {
+                        Vector<String> vars = result.getVars();
+                        for (int i0=0; i0<result.getWidth(); i0++)
+                            for (int i1=0; i1<result.getHeight(); i1++) {
+                                Map<String, Number> map = new HashMap<>();
+                                for (int i3 = 0; i3 < vars.size(); i3++)
+                                    if (!Float.isNaN(result.array[i1][i0][i3]))
+                                        map.put(vars.get(i3), result.array[i1][i0][i3]);
+                                if (!map.isEmpty())
+                                    outputFormat.addFeature(entity, Optional.empty(), Optional.empty(),
+                                            new GeometryPoint(result.lon(i0), result.lat(i1)),
+                                            result.getInterval().getBegin(), result.getInterval().getEnd(), map);
+                            }
+                    }
                 }
             }
 

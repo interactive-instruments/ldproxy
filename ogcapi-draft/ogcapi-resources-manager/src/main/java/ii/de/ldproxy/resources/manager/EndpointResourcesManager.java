@@ -102,8 +102,8 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
             String path = "/resources/{resourceId}";
             HttpMethods method = HttpMethods.PUT;
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
             String operationSummary = "replace a file resource or add a new one";
             Optional<String> operationDescription = Optional.of("Replace an existing resource with the id `resourceId`. If no " +
                     "such resource exists, a new resource with that id is added. " +

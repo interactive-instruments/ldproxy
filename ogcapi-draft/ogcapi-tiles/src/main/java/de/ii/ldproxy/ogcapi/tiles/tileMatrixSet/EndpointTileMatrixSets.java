@@ -79,7 +79,7 @@ public class EndpointTileMatrixSets extends OgcApiEndpoint implements Conformanc
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_TILE_MATRIX_SETS);
             String path = "/tileMatrixSets";
             OgcApiContext.HttpMethods method = OgcApiContext.HttpMethods.GET;
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             String operationSummary = "retrieve a list of the available tiling schemes";
             Optional<String> operationDescription = Optional.of("This operation fetches the set of tiling schemes supported by this API. " +
                     "For each tiling scheme the id, a title and the link to the tiling scheme object is provided.");
@@ -93,7 +93,7 @@ public class EndpointTileMatrixSets extends OgcApiEndpoint implements Conformanc
 
             path = "/tileMatrixSets/{tileMatrixSetId}";
             queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             if (!pathParameters.stream().filter(param -> param.getName().equals("tileMatrixSetId")).findAny().isPresent()) {
                 LOGGER.error("Path parameter 'tileMatrixSetId' missing for resource at path '" + path + "'. The GET method will not be available.");
             } else {

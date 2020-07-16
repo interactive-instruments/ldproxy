@@ -67,7 +67,7 @@ public class OgcApiEndpointLandingPage extends OgcApiEndpoint {
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
                     .apiEntrypoint("")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_LANDING_PAGE);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/");
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/");
             String operationSummary = "landing page";
             Optional<String> operationDescription = Optional.of("The landing page provides links to the API definition " +
                     "(link relations `service-desc` and `service-doc`), the Conformance declaration (path `/conformance`, " +

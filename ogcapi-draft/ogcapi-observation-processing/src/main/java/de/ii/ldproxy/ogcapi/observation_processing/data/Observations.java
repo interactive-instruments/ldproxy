@@ -1,7 +1,6 @@
 package de.ii.ldproxy.ogcapi.observation_processing.data;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterDatetime;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
 import edu.mines.jtk.interp.CubicInterpolator;
 import edu.mines.jtk.interp.SibsonInterpolator3;
@@ -16,15 +15,16 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.IntStream;
 
+import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterDatetime.ANI;
 import static java.lang.Float.NaN;
 
 public class Observations {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Observations.class);
 
+    static double THRESHOLD = 0.000001;
     static float NULL = Float.MIN_VALUE;
     private static final OffsetTime MIDNIGHT_UTC = OffsetTime.of(LocalTime.MIDNIGHT, ZoneOffset.UTC);
-    private static final float ANI = QueryParameterDatetime.ANI; // TODO
     private static LocalDate REFERENCE_DATE = LocalDate.of(1970, Month.JANUARY, 1);
     private static OffsetDateTime REFERENCE_DATETIME = REFERENCE_DATE.atTime(MIDNIGHT_UTC);
     private static OffsetDateTime toOffsetDateTime(Temporal temp) {
@@ -32,9 +32,9 @@ public class Observations {
                 ((LocalDate) temp).atTime(MIDNIGHT_UTC) :
                 (OffsetDateTime) temp;
     }
-    static LocalDate date(float time) {return REFERENCE_DATE.plusDays(Math.round(time / ANI));}
-    static OffsetDateTime datetime(float time) {return REFERENCE_DATETIME.plusSeconds((long)(time/ANI*60*60*24));}
-    private static float temporalToFloat(Temporal temp) {
+    static LocalDate date(double time) {return REFERENCE_DATE.plusDays(Math.round(time / ANI));}
+    static OffsetDateTime datetime(double time) {return REFERENCE_DATETIME.plusSeconds((long)(time/ANI*60*60*24));}
+    private static double temporalToDouble(Temporal temp) {
         return temp instanceof LocalDate ?
                 Duration.between(REFERENCE_DATETIME, ((LocalDate) temp).atTime(MIDNIGHT_UTC)).toDays()*ANI :
                 Duration.between(REFERENCE_DATETIME, temp).getSeconds()*ANI/(60*60*24);
@@ -79,17 +79,17 @@ public class Observations {
         return idx;
     }
 
-    public boolean addValue(float lon, float lat, Temporal time, int varIdx, float result, String locationCode, String locationName) {
-        float convertedTime = temporalToFloat(time);
+    public boolean addValue(double lon, double lat, Temporal time, int varIdx, float result, String locationCode, String locationName) {
+        double convertedTime = temporalToDouble(time);
         long hash = hash(lon, lat, convertedTime, varIdx);
         if (hashes.contains(hash)) {
             LOGGER.warn("Duplicate observation detected. Location code '{}', coordinates '{}'/'{}', time '{}', variable '{}'.", locationCode, lon, lat, time, index2variable.get(varIdx));
             return false;
         }
 
-        cells[0][count] = lon;
-        cells[1][count] = lat;
-        cells[2][count] = convertedTime;
+        cells[0][count] = (float) lon;
+        cells[1][count] = (float) lat;
+        cells[2][count] = (float) convertedTime;
         cells[3][count] = result;
         variableIndex[count] = varIdx;
 
@@ -111,7 +111,7 @@ public class Observations {
         return true;
     }
 
-    private long hash(float lon, float lat, float time, int varIdx) {
+    private long hash(double lon, double lat, double time, int varIdx) {
         long r1 = ((long) (lon * 100000))<<40;
         long r2 = ((long) (lat * 100000))<<24;
         long r3 = ((long) (time * 100))<<3;
@@ -151,10 +151,10 @@ public class Observations {
 
     Observations getObservations(ObservationCollectionPointTimeSeries pos) {
         GeometryPoint loc = pos.getGeometry();
-        float lon = loc.getLon();
-        float lat = loc.getLat();
+        Double lon = loc.getLon();
+        Double lat = loc.getLat();
         int posCount = (int) IntStream.range(0, count).parallel()
-                .filter(i -> cells[0][i] == lon && cells[1][i] == lat)
+                .filter(i -> Math.abs(cells[0][i] - lon) < THRESHOLD && Math.abs(cells[1][i] - lat) < THRESHOLD)
                 .count();
         Observations newObs = new Observations(posCount);
         newObs.count = posCount;
@@ -166,7 +166,7 @@ public class Observations {
 
         int k = 0;
         for (int i = 0; i < count; i++) {
-            if (this.cells[0][i] == lon && this.cells[1][i] == lat) {
+            if (Math.abs(this.cells[0][i] - lon) < THRESHOLD && Math.abs(this.cells[1][i] - lat) < THRESHOLD) {
                 newObs.cells[0][k] = this.cells[0][i];
                 newObs.cells[1][k] = this.cells[1][i];
                 newObs.cells[2][k] = this.cells[2][i];
@@ -183,7 +183,7 @@ public class Observations {
     ObservationCollectionPointTimeSeriesList findUniquePositions() {
         ObservationCollectionPointTimeSeriesList positions = new ObservationCollectionPointTimeSeriesList();
         stationId2index.values().stream()
-                .forEachOrdered(i -> positions.add(new ObservationCollectionPointTimeSeries(new GeometryPoint(ImmutableList.of(cells[0][i], cells[1][i])), index2stationId.get(stationIndex[i]), index2stationName.get(stationIndex[i]))));
+                .forEachOrdered(i -> positions.add(new ObservationCollectionPointTimeSeries(new GeometryPoint(ImmutableList.of((double)cells[0][i], (double)cells[1][i])), index2stationId.get(stationIndex[i]), index2stationName.get(stationIndex[i]))));
         return positions;
     }
 
@@ -209,9 +209,9 @@ public class Observations {
                     Observations obsVar = getObservations(var);
                     obsVar.createXytInterpolator();
                     if (obsVar.count > 0) {
-                        interval.parallelStream()
+                        interval.stream()
                                 .forEach(time -> {
-                                    float val = obsVar.interpolateAll(point.getLon(), point.getLat(), temporalToFloat(time));
+                                    float val = obsVar.interpolateAll(point.getLon(), point.getLat(), temporalToDouble(time));
                                     if (val != NULL) {
                                         timeSeriesPoint.addValue(time, index2variable.get(var), val);
                                     }
@@ -235,7 +235,7 @@ public class Observations {
                                     obsPosVar.createTInterpolator();
                                     interval.parallelStream()
                                             .forEach(time -> {
-                                                float val = obsPosVar.interpolateTime(temporalToFloat(time));
+                                                double val = obsPosVar.interpolateTime(temporalToDouble(time));
                                                 if (val != NULL) {
                                                     pos.addValue(time, index2variable.get(var), val);
                                                 }
@@ -246,23 +246,25 @@ public class Observations {
         return positions;
     }
 
-    private float interpolateTime(float ttime) {
+    private double interpolateTime(double ttime) {
         int count = this.count;
         if (count==1)
             return cells[3][0];
 
         for (int i = 0; i < count; i++) {
-            if (cells[2][i] == ttime) {
+            if (Math.abs(this.cells[2][i] - ttime) < THRESHOLD) {
                 return cells[3][i];
             }
         }
 
-        return ttime < cells[2][0] ? cells[3][0] : ttime > cells[2][count-1] ? cells[3][count-1] : tInterpolator.interpolate(ttime);
+        return ttime < cells[2][0] ? cells[3][0] : ttime > cells[2][count-1] ? cells[3][count-1] : tInterpolator.interpolate((float) ttime);
     }
 
-    float interpolateAll(float tlon, float tlat, float ttime) {
+    float interpolateAll(double tlon, double tlat, double ttime) {
         for (int i = 0; i < cells[0].length; i++) {
-            if (cells[0][i]==tlon && cells[1][i]==tlat && cells[2][i]==ttime) {
+            if (Math.abs(cells[0][i] - tlon) < THRESHOLD &&
+                Math.abs(cells[1][i] - tlat) < THRESHOLD &&
+                Math.abs(cells[2][i] - ttime) < THRESHOLD) {
                 return cells[3][i];
             }
         }
@@ -270,15 +272,15 @@ public class Observations {
         return xytInterpolate(tlon, tlat, ttime);
     }
 
-    float xytInterpolate(float tlon, float tlat, float ttime) {
-        return xytInterpolator.interpolate(tlon, tlat, ttime);
+    float xytInterpolate(double tlon, double tlat, double ttime) {
+        return xytInterpolator.interpolate((float) tlon, (float) tlat, (float) ttime);
     }
 
-    public DataArrayXyt resampleToGrid(float[] bbox, TemporalInterval interval, OptionalInt gridWidth, OptionalInt gridHeight, OptionalInt gridSteps) {
-        float widthLon = bbox[2] - bbox[0];
-        float heightLat = bbox[3] - bbox[1];
-        int width = gridWidth.orElse(0);
-        int height = gridHeight.orElse(0);
+    public DataArrayXyt resampleToGrid(double[] bbox, TemporalInterval interval, OptionalInt gridWidth, OptionalInt gridHeight, OptionalInt gridSteps) {
+        double widthLon = bbox[2] - bbox[0];
+        double heightLat = bbox[3] - bbox[1];
+        long width = gridWidth.orElse(0);
+        long height = gridHeight.orElse(0);
         if (width>0 && height==0)
             height = Math.round(width * heightLat / widthLon);
         else if (width==0 && height>0)
@@ -287,17 +289,17 @@ public class Observations {
             width = 200;
             height = Math.round(width * heightLat / widthLon);
         }
-        float tbegin = temporalToFloat(interval.getBegin());
-        float tend = temporalToFloat(interval.getEnd());
-        int tsteps = gridSteps.orElse(0);
+        double tbegin = temporalToDouble(interval.getBegin());
+        double tend = temporalToDouble(interval.getEnd());
+        long tsteps = gridSteps.orElse(0);
         if (tsteps==0)
             tsteps = interval.getSteps();
-        float diffx = (bbox[2] - bbox[0])/width;
-        float diffy = (bbox[3] - bbox[1])/height;
-        float difft = tsteps==1 ? 0f : (tend - tbegin)/(tsteps-1);
-        List<Float> lons = new Vector<>();
-        List<Float> lats = new Vector<>();
-        List<Float> times = new Vector<>();
+        double diffx = (bbox[2] - bbox[0])/width;
+        double diffy = (bbox[3] - bbox[1])/height;
+        double difft = tsteps==1 ? 0f : (tend - tbegin)/(tsteps-1);
+        List<Double> lons = new Vector<>();
+        List<Double> lats = new Vector<>();
+        List<Double> times = new Vector<>();
         for (int i=0; i<width; i++)
             lons.add(bbox[0]+i*diffx);
         for (int i=0; i<height; i++)
@@ -324,11 +326,11 @@ public class Observations {
                     Observations obsVar = entry.getValue();
                     int i3 = vars.indexOf(index2variable.get(var));
                     int i0 = 0;
-                    for (float lon : lons) {
+                    for (double lon : lons) {
                         int i1 = 0;
-                        for (float lat : lats) {
+                        for (double lat : lats) {
                             int i2 = 0;
-                            for (float time : times) {
+                            for (double time : times) {
                                 float val = obsVar.xytInterpolate(lon+diffx/2, lat-diffy/2, time);
                                 if (val == Observations.NULL)
                                     array.array[i2][i1][i0][i3] = NaN;

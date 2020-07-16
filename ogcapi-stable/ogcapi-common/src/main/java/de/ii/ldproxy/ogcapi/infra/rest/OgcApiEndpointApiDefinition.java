@@ -67,7 +67,7 @@ public class OgcApiEndpointApiDefinition extends OgcApiEndpoint {
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
                     .apiEntrypoint("api")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_API_DEFINITION);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/api");
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/api");
             String operationSummary = "API definition";
             String path = "/api";
             ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
@@ -77,7 +77,7 @@ public class OgcApiEndpointApiDefinition extends OgcApiEndpoint {
                 resourceBuilder.putOperations("GET", operation);
             definitionBuilder.putResources(path, resourceBuilder.build());
             operationSummary = "support files for the API definition in HTML";
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, "/api/{resource}");
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, "/api/{resource}");
             path = "/api/{resource}";
             resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
                     .path(path)

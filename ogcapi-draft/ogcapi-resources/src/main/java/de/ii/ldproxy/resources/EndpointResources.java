@@ -94,7 +94,7 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
                     .apiEntrypoint("resources")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_RESOURCES);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/resources");
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/resources");
             String operationSummary = "information about the available file resources";
             Optional<String> operationDescription = Optional.of("This operation fetches the set of file resources that have been " +
                     "created and that may be used by reference, for example, in stylesheets. For each resource the id and " +

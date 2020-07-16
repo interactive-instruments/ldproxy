@@ -16,13 +16,15 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
+import de.ii.ldproxy.ogcapi.observation_processing.data.DataArrayXy;
+import de.ii.ldproxy.ogcapi.observation_processing.data.DataArrayXyt;
 import de.ii.ldproxy.ogcapi.observation_processing.data.Geometry;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
 import java.time.temporal.Temporal;
 import java.util.Map;
 import java.util.Optional;
@@ -80,7 +82,9 @@ public interface ObservationProcessingOutputFormat extends FormatExtension {
         return Optional.of(transformer);
     }
 
-    Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStreamWriter outputStreamWriter) throws IOException;
+    Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStream outputStream) throws IOException;
+    default boolean addDataArray(Object result, DataArrayXyt array) throws IOException { return false; }
+    default boolean addDataArray(Object result, DataArrayXy array) throws IOException { return false; }
     void addFeature(Object result, Optional<String> locationCode, Optional<String> locationName, Geometry geometry, Temporal timeBegin, Temporal timeEnd, Map<String, Number> values) throws IOException;
     void finalizeResult(Object result) throws IOException;
 }

@@ -65,7 +65,7 @@ public class OgcApiEndpointCollections extends OgcApiEndpoint {
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_COLLECTIONS);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/collections");
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/collections");
             String operationSummary = "feature collections in the dataset '"+apiData.getLabel()+"'";
             Optional<String> operationDescription = Optional.of("The dataset is organized in feature collections. " +
                     "This resource provides information about and access to the feature collections.\n" +

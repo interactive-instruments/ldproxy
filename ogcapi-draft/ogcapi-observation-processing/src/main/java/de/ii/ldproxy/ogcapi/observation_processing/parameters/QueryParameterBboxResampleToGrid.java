@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterCoordPosition.BUFFER;
 import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterCoordPosition.R;
@@ -29,12 +30,15 @@ import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParame
 @Component
 @Provides
 @Instantiate
-public class QueryParameterBboxResampleToGrid extends GeometryHelper implements OgcApiQueryParameter {
+public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
 
     private final Schema baseSchema;
+    private final GeometryHelperWKT geometryHelper;
     final FeatureProcessInfo featureProcessInfo;
 
-    public QueryParameterBboxResampleToGrid(@Requires FeatureProcessInfo featureProcessInfo) {
+    public QueryParameterBboxResampleToGrid(@Requires GeometryHelperWKT geometryHelper,
+                                            @Requires FeatureProcessInfo featureProcessInfo) {
+        this.geometryHelper = geometryHelper;
         this.featureProcessInfo = featureProcessInfo;
 
         // TODO support 6 coordinates
@@ -76,10 +80,10 @@ public class QueryParameterBboxResampleToGrid extends GeometryHelper implements 
 
     @Override
     public Schema getSchema(OgcApiApiDataV2 apiData) {
-        Optional<String> defValue = getDefault(apiData, Optional.empty());
-        if (defValue.isPresent()) {
+        List<Double> defValue = getDefault(apiData, Optional.empty());
+        if (defValue!=null) {
             Schema schema = new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(4);
-            schema.setDefault(Splitter.on(",").splitToList(defValue.get()));
+            schema.setDefault(defValue);
             return schema;
         }
         return baseSchema;
@@ -87,10 +91,10 @@ public class QueryParameterBboxResampleToGrid extends GeometryHelper implements 
 
     @Override
     public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
-        Optional<String> defValue = getDefault(apiData, Optional.of(collectionId));
-        if (defValue.isPresent()) {
+        List<Double> defValue = getDefault(apiData, Optional.empty());
+        if (defValue!=null) {
             Schema schema = new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(4);
-            schema.setDefault(Splitter.on(",").splitToList(defValue.get()));
+            schema.setDefault(defValue);
             return schema;
         }
         return baseSchema;
@@ -111,35 +115,55 @@ public class QueryParameterBboxResampleToGrid extends GeometryHelper implements 
                                                    Map<String, String> parameters,
                                                    OgcApiApiDataV2 apiData) {
         // TODO support bbox-crs and other CRSs
-        String bbox = parameters.get(getName());
-        if (bbox==null) {
-            bbox = getDefault(apiData, Optional.of(featureType.getId())).orElseThrow(() -> new BadRequestException("Missing parameter 'bbox', no bounding box has been provided."));
+        String bboxParam = parameters.get(getName());
+        List<Double> bbox;
+        if (bboxParam==null) {
+            bbox = getDefault(apiData, Optional.of(featureType.getId()));
+            if (bbox==null)
+                throw new BadRequestException("Missing parameter 'bbox', no bounding box has been provided.");
+        } else {
+            bbox = Splitter.on(",").splitToList(bboxParam)
+                    .stream()
+                    .map(str -> Double.valueOf(str))
+                    .collect(Collectors.toList());
         }
-        List<String> ords = Splitter.on(",").splitToList(bbox);
 
-        double lonBuffer = BUFFER / (R * Math.cos(Double.valueOf(ords.get(1)) / 180.0 * Math.PI) * Math.PI / 180.0);
+        double lonBuffer = BUFFER / (R * Math.cos(bbox.get(1) / 180.0 * Math.PI) * Math.PI / 180.0);
         double latBuffer = BUFFER / (R * Math.PI / 180.0);
-        bbox = (Double.valueOf(ords.get(0)) - lonBuffer) + "," + (Double.valueOf(ords.get(1)) - latBuffer) + "," +
-                (Double.valueOf(ords.get(2)) + lonBuffer) + "," + (Double.valueOf(ords.get(3)) + latBuffer);
-        parameters.put(getName(),bbox);
+        bboxParam = ((bbox.get(0) - lonBuffer) + "," + (bbox.get(1) - latBuffer) + "," +
+                (bbox.get(2)) + lonBuffer) + "," + (bbox.get(3) + latBuffer);
+        parameters.put(getName(),bboxParam);
 
         return parameters;
     }
 
     @Override
     public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType, Map<String, Object> context, Map<String, String> parameters, OgcApiApiDataV2 apiData) {
-        String bbox = parameters.get(getName());
-        if (bbox==null && !parameters.containsKey("coord"))
-            bbox = getDefault(apiData, Optional.of(featureType.getId())).orElse(null);
+        if (parameters.containsKey("coordRef"))
+            // ignore bbox
+            return context;
+
+        String bboxParam = parameters.get(getName());
+        List<Double> bbox = null;
+        if (bboxParam==null) {
+            bbox = getDefault(apiData, Optional.of(featureType.getId()));
+            if (bbox==null)
+                throw new BadRequestException("Missing parameter 'bbox', no bounding box has been provided.");
+        } else if (bboxParam!=null) {
+            bbox = Splitter.on(",").splitToList(bboxParam)
+                    .stream()
+                    .map(str -> Double.valueOf(str))
+                    .collect(Collectors.toList());
+        }
         if (bbox!=null) {
-            List<List<List<List<Float>>>> area = new Vector<>();
-            area.add(convertBboxToPolygon(bbox));
+            List<List<List<List<Double>>>> area = new Vector<>();
+            area.add(geometryHelper.convertBboxToPolygon(bbox));
             context.put("area", new GeometryMultiPolygon(area));
         }
         return context;
     }
 
-    private Optional<String> getDefault(OgcApiApiDataV2 apiData, Optional<String> collectionId) {
+    private List<Double> getDefault(OgcApiApiDataV2 apiData, Optional<String> collectionId) {
         FeatureTypeConfigurationOgcApi featureType = collectionId.isPresent() ? apiData.getCollections().get(collectionId.get()) : null;
         Optional<ObservationProcessingConfiguration> config = featureType!=null ?
                 this.getExtensionConfiguration(apiData, featureType, ObservationProcessingConfiguration.class) :
@@ -147,7 +171,7 @@ public class QueryParameterBboxResampleToGrid extends GeometryHelper implements 
         if (config.isPresent()) {
             return config.get().getDefaultBbox();
         }
-        return Optional.empty();
+        return null;
     }
 
 }

@@ -84,7 +84,7 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
                     .apiEntrypoint("collections")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLE_INFO);
             String path = "/collections/{collectionId}";
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
@@ -95,7 +95,7 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
                         collectionIdParam.getValues(apiData) :
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    final Set<OgcApiQueryParameter> queryParameters = explode ?
+                    final List<OgcApiQueryParameter> queryParameters = explode ?
                             getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PATCH) :
                             getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PATCH);
                     final String operationSummary = "update the information about available styles for the feature collection '" + collectionId + "'";

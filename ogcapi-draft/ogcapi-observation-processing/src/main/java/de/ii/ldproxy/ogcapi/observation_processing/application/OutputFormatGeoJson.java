@@ -29,9 +29,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.time.temporal.Temporal;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -58,8 +62,8 @@ public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
     }
 
     @Override
-    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStreamWriter outputStreamWriter) {
-        Result result = new Result(processes.getSubSubPath(), processingParameters, outputStreamWriter);
+    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStream outputStream) {
+        Result result = new Result(processes.getSubSubPath(), processingParameters, outputStream);
         result.featureCollection.put("type", "FeatureCollection");
         ArrayNode features = result.featureCollection.putArray("features");
         return result;
@@ -146,8 +150,8 @@ public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
         final List<String> var_funct;
         final OutputStreamWriter outputStreamWriter;
         ObjectNode featureCollection;
-        Result(String processName, Map<String, Object> processingParameters, OutputStreamWriter outputStreamWriter) {
-            this.outputStreamWriter = outputStreamWriter;
+        Result(String processName, Map<String, Object> processingParameters, OutputStream outputStream) {
+            this.outputStreamWriter = new OutputStreamWriter(outputStream);
             this.processName = processName;
             variables = (List<String>) processingParameters.getOrDefault("variables", ImmutableList.of());
             functions = (List<ObservationProcessingStatisticalFunction>) processingParameters.getOrDefault("functions", ImmutableList.of());

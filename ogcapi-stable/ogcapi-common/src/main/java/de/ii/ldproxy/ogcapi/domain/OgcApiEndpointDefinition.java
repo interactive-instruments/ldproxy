@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -258,6 +259,13 @@ public abstract class OgcApiEndpointDefinition {
                         Operation op = new Operation();
                         op.summary(operation.getSummary());
                         op.description(operation.getDescription().orElse(null));
+                        if (operation.getExternalDocs().isPresent()) {
+                            OgcApiExternalDocumentation externalDocs = operation.getExternalDocs().get();
+                            ExternalDocumentation docs = new ExternalDocumentation().url(externalDocs.getUrl());
+                            if (externalDocs.getDescription().isPresent())
+                                docs.description(externalDocs.getDescription().get());
+                            op.externalDocs(docs);
+                        }
                         operation.getTags().stream().forEach(tag -> op.addTagsItem(tag));
                         if (operation.getOperationId().isPresent())
                             op.operationId(operation.getOperationId().get());

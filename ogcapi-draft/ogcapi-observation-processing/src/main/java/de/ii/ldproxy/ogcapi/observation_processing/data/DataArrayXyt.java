@@ -6,23 +6,23 @@ import java.util.Vector;
 
 public class DataArrayXyt {
     public float[][][][] array;
-    private final float minLon;
-    private final float minLat;
-    private final float minTime;
-    private final float maxLon;
-    private final float maxLat;
-    private final float maxTime;
+    private final double minLon;
+    private final double minLat;
+    private final double minTime;
+    private final double maxLon;
+    private final double maxLat;
+    private final double maxTime;
     private final int width;
     private final int height;
     private final int steps;
-    private final float diffLon;
-    private final float diffLat;
-    private final float diffTime;
+    private final double diffLon;
+    private final double diffLat;
+    private final double diffTime;
     private final Vector<String> vars;
 
     DataArrayXyt(int width, int height, int steps, Vector<String> vars,
-                 float minLon, float minLat, float minTime,
-                 float maxLon, float maxLat, float maxTime) {
+                 double minLon, double minLat, double minTime,
+                 double maxLon, double maxLat, double maxTime) {
         this.minLon = minLon;
         this.minLat = minLat;
         this.minTime = minTime;
@@ -55,11 +55,11 @@ public class DataArrayXyt {
         return vars;
     }
 
-    public float lon(int i) { return minLon + diffLon*i; }
+    public double lon(int i) { return minLon + diffLon*i; }
 
-    public float lat(int i) { return maxLat - diffLat*i; }
+    public double lat(int i) { return maxLat - diffLat*i; }
 
-    public float time(int i) {
+    public double time(int i) {
         return minTime + diffTime*i;
     }
 
