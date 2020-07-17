@@ -154,5 +154,4 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
                 .collect(ImmutableSet.toImmutableSet());
     }
     */
-
 }
