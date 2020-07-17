@@ -130,8 +130,8 @@ public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
 
         double lonBuffer = BUFFER / (R * Math.cos(bbox.get(1) / 180.0 * Math.PI) * Math.PI / 180.0);
         double latBuffer = BUFFER / (R * Math.PI / 180.0);
-        bboxParam = ((bbox.get(0) - lonBuffer) + "," + (bbox.get(1) - latBuffer) + "," +
-                (bbox.get(2)) + lonBuffer) + "," + (bbox.get(3) + latBuffer);
+        bboxParam = String.valueOf(bbox.get(0) - lonBuffer) + "," + String.valueOf(bbox.get(1) - latBuffer) + "," +
+                    String.valueOf(bbox.get(2) + lonBuffer) + "," + String.valueOf(bbox.get(3) + latBuffer);
         parameters.put(getName(),bboxParam);
 
         return parameters;
