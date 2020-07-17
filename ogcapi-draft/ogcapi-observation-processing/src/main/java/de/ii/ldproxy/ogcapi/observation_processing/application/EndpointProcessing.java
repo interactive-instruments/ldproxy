@@ -11,11 +11,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.processing.ImmutableProcess;
 import de.ii.ldproxy.ogcapi.features.processing.ImmutableProcessing;
 import de.ii.ldproxy.ogcapi.features.processing.Processing;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.observation_processing.api.*;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableOgcApiQueryInputProcessing;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormatProcessing;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -27,13 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -84,8 +82,8 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
                     .sortPriority(10000);
             final String subSubPath = "/"+ DAPA_PATH_ELEMENT;
             final String path = "/collections/{collectionId}" + subSubPath;
-            final Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            final Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+            final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
@@ -118,7 +116,6 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
 
     @GET
     @Path("/{collectionId}/"+DAPA_PATH_ELEMENT)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getProcessing(@Auth Optional<User> optionalUser,
                              @Context OgcApiApi api,
                              @Context OgcApiRequestContext requestContext,
@@ -144,15 +141,31 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
                 .endpoints(definition.getResources()
                         .entrySet()
                         .stream()
+                        .sorted(Map.Entry.comparingByKey())
                         .map(entry -> {
                             final String path = entry.getKey();
+                            final String id = path.substring(path.lastIndexOf("/")+1);
                             final OgcApiOperation op = entry.getValue().getOperations().get("GET");
+                            final List<String> mediaTypes = op.getSuccess()
+                                    .orElse(new ImmutableOgcApiResponse.Builder().description("").build())
+                                    .getContent()
+                                    .keySet()
+                                    .stream()
+                                    .map(mediaType -> mediaType.toString())
+                                    .sorted()
+                                    .collect(Collectors.toList());
                             if (op!=null)
                                 return ImmutableProcess.builder()
+                                        .id(id)
                                         .title(op.getSummary())
                                         .description(op.getDescription())
                                         .inputCollectionId(collectionId)
                                         .descriptionUri(uriCustomizer.copy()
+                                                .ensureLastPathSegment("api")
+                                                .addParameter("f","html")
+                                                .toString()
+                                                + "#/"+TAGS.get(0)+"/get" + path.replaceAll("[/\\-:]","_"))
+                                        .definitionUri(uriCustomizer.copy()
                                                 .ensureLastPathSegment("api")
                                                 .addParameter("f","json")
                                                 .toString()
@@ -160,10 +173,13 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
                                         .addLinks(new ImmutableOgcApiLink.Builder()
                                                 .href(requestContext.getUriCustomizer()
                                                         .copy()
-                                                        .ensureLastPathSegment(path.substring(path.lastIndexOf("/")+1))
+                                                        .ensureLastPathSegment(id)
+                                                        .clearParameters()
                                                         .toString())
                                                 .rel("ogc-dapa-endpoint")
                                                 .build())
+                                        .mediaTypes(mediaTypes)
+                                        .externalDocs(op.getExternalDocs())
                                         .build();
                             return null;
                         })

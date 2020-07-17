@@ -96,7 +96,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
                     .apiEntrypoint("styles")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLES);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/styles");
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/styles");
             String operationSummary = "lists the available styles";
             Optional<String> operationDescription = Optional.of("This operation fetches the set of styles available. " +
                     "For each style the id, a title, links to the stylesheet of the style in each supported encoding, " +

@@ -86,7 +86,7 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_FEATURES_TRANSACTION);
             String subSubPath = "/items";
             String path = "/collections/{collectionId}" + subSubPath;
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
@@ -97,7 +97,7 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
                         collectionIdParam.getValues(apiData) :
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    final Set<OgcApiQueryParameter> queryParameters = explode ?
+                    final List<OgcApiQueryParameter> queryParameters = explode ?
                             getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.POST) :
                             getQueryParameters(extensionRegistry, apiData, path, HttpMethods.POST);
                     final String operationSummary = "add a feature in the feature collection '" + collectionId + "'";
@@ -125,7 +125,7 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
                         collectionIdParam.getValues(apiData) :
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    Set<OgcApiQueryParameter> queryParameters = explode ?
+                    List<OgcApiQueryParameter> queryParameters = explode ?
                             getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PUT) :
                             getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
                     String operationSummary = "add or update a feature in the feature collection '" + collectionId + "'";

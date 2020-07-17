@@ -78,24 +78,28 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
                                 OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
+        String processingTitle = i18n.get("processingTitle", requestContext.getLanguage());
         String variablesTitle = i18n.get("variablesTitle", requestContext.getLanguage());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(4)
+                                .removeLastPathSegments(5)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()
                                 .copy()
-                                .removeLastPathSegments(3)
+                                .removeLastPathSegments(4)
                                 .toString()))
                 .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(2)
+                        .removeLastPathSegments(3)
                         .toString()))
                 .add(new NavigationDTO(api.getData().getCollections().get(collectionId).getLabel(), requestContext.getUriCustomizer().copy()
-                                                                                                                  .removeLastPathSegments(1)
+                                                                                                                  .removeLastPathSegments(2)
                                                                                                                   .toString()))
+                .add(new NavigationDTO(processingTitle, requestContext.getUriCustomizer().copy()
+                        .removeLastPathSegments(1)
+                        .toString()))
                 .add(new NavigationDTO(variablesTitle))
                 .build();
 

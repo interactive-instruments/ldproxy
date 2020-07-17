@@ -142,7 +142,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
                     .apiEntrypoint("styles")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLES_MANAGER);
             String path = "/styles";
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.POST);
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.POST);
             String operationSummary = "add a new style";
             String description = "Adds a style to the style repository";
             if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
@@ -171,7 +171,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
                 resourceBuilder.putOperations("POST", operation);
             definitionBuilder.putResources(path, resourceBuilder.build());
             path = "/styles/{styleId}";
-            ImmutableSet<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            ImmutableList<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
             operationSummary = "replace a style or add a new style";
             description = "Replace an existing style with the id `styleId`. If no such style exists, " +

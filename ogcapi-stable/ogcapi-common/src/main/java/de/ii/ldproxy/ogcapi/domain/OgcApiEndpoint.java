@@ -3,7 +3,6 @@ package de.ii.ldproxy.ogcapi.domain;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.StringSchema;
-import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +43,14 @@ public abstract class OgcApiEndpoint implements OgcApiEndpointExtension {
      */
     public abstract List<? extends FormatExtension> getFormats();
 
-    protected OgcApiOperation addOperation(OgcApiApiDataV2 apiData, Set<OgcApiQueryParameter> queryParameters, String path,
+    protected OgcApiOperation addOperation(OgcApiApiDataV2 apiData, List<OgcApiQueryParameter> queryParameters, String path,
                                            String operationSummary, Optional<String> operationDescription, List<String> tags) {
+        return addOperation(apiData, queryParameters, path, operationSummary, operationDescription, Optional.empty(), tags);
+    }
+
+    protected OgcApiOperation addOperation(OgcApiApiDataV2 apiData, List<OgcApiQueryParameter> queryParameters, String path,
+                                           String operationSummary, Optional<String> operationDescription,
+                                           Optional<OgcApiExternalDocumentation> externalDocs, List<String> tags) {
         Map<MediaType, OgcApiMediaTypeContent> responseContent = getContent(apiData, path);
         if (responseContent.isEmpty()) {
             LOGGER.error("No media type supported for resource at path '" + path + "'. The GET method will not be available.");
@@ -59,6 +64,7 @@ public abstract class OgcApiEndpoint implements OgcApiEndpointExtension {
         return new ImmutableOgcApiOperation.Builder()
                 .summary(operationSummary)
                 .description(operationDescription)
+                .externalDocs(externalDocs)
                 .tags(tags)
                 .queryParameters(queryParameters)
                 .success(response)
@@ -66,8 +72,15 @@ public abstract class OgcApiEndpoint implements OgcApiEndpointExtension {
     }
 
     protected OgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method, Map<MediaType, OgcApiMediaTypeContent> content,
-                                           Set<OgcApiQueryParameter> queryParameters, String path,
+                                           List<OgcApiQueryParameter> queryParameters, String path,
                                            String operationSummary, Optional<String> operationDescription, List<String> tags) {
+        return addOperation(apiData, method, content, queryParameters, path, operationSummary, operationDescription, Optional.empty(), tags);
+    }
+
+    protected OgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method, Map<MediaType, OgcApiMediaTypeContent> content,
+                                           List<OgcApiQueryParameter> queryParameters, String path,
+                                           String operationSummary, Optional<String> operationDescription,
+                                           Optional<OgcApiExternalDocumentation> externalDocs, List<String> tags) {
         ImmutableOgcApiResponse.Builder responseBuilder = new ImmutableOgcApiResponse.Builder()
                 .statusCode(SUCCESS_STATUS.get(method))
                 .description("The operation was executed successfully.");
@@ -78,6 +91,7 @@ public abstract class OgcApiEndpoint implements OgcApiEndpointExtension {
         ImmutableOgcApiOperation.Builder operationBuilder = new ImmutableOgcApiOperation.Builder()
                 .summary(operationSummary)
                 .description(operationDescription)
+                .externalDocs(externalDocs)
                 .tags(tags)
                 .queryParameters(queryParameters)
                 .success(responseBuilder.build());

@@ -1,8 +1,8 @@
 package de.ii.ldproxy.ogcapi.domain;
 
-import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.immutables.value.Value;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -10,9 +10,10 @@ import java.util.Set;
 public interface OgcApiOperation {
     String getSummary();
     Optional<String> getDescription();
+    Optional<OgcApiExternalDocumentation> getExternalDocs();
     Set<String> getTags();
     Optional<String> getOperationId();
-    Set<OgcApiQueryParameter> getQueryParameters();
+    List<OgcApiQueryParameter> getQueryParameters();
     Optional<OgcApiRequestBody> getRequestBody();
     Optional<OgcApiResponse> getSuccess();
     @Value.Default

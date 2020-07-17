@@ -1,7 +1,6 @@
 package de.ii.ldproxy.ogcapi.domain;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.slf4j.Logger;
@@ -27,14 +26,29 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
     }
 
     protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
-                                                    Set<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
+                                                    List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                     String operationSummary, Optional<String> operationDescription, List<String> tags) {
-        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, tags, false);
+        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), tags, false);
     }
 
     protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
-                                                    Set<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
+                                                    List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                     String operationSummary, Optional<String> operationDescription, List<String> tags,
+                                                    boolean hide) {
+        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), tags, hide);
+    }
+
+    protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
+                                                    List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
+                                                    String operationSummary, Optional<String> operationDescription,
+                                                    Optional<OgcApiExternalDocumentation> externalDocs, List<String> tags) {
+        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, tags, false);
+    }
+
+    protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
+                                                    List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
+                                                    String operationSummary, Optional<String> operationDescription,
+                                                    Optional<OgcApiExternalDocumentation> externalDocs, List<String> tags,
                                                     boolean hide) {
         final String path = "/collections/"+collectionId+subSubPath;
         OgcApiRequestBody body = null;
@@ -68,6 +82,7 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
         ImmutableOgcApiOperation.Builder operationBuilder = new ImmutableOgcApiOperation.Builder()
                 .summary(operationSummary)
                 .description(operationDescription)
+                .externalDocs(externalDocs)
                 .tags(tags)
                 .queryParameters(queryParameters)
                 .success(responseBuilder.build())
@@ -119,24 +134,24 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
         }
     }
 
-    public ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
+    public ImmutableList<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
         return getQueryParameters(extensionRegistry, apiData, definitionPath, collectionId, OgcApiContext.HttpMethods.GET);
     }
 
-    public ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, String collectionId, OgcApiContext.HttpMethods method) {
+    public ImmutableList<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, String collectionId, OgcApiContext.HttpMethods method) {
         return extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class)
                 .stream()
                 .filter(param -> param.isApplicable(apiData, definitionPath, collectionId, method))
-                .collect(ImmutableSet.toImmutableSet());
+                .sorted(Comparator.comparing(OgcApiParameter::getName))
+                .collect(ImmutableList.toImmutableList());
     }
 
     /* TODO do we need collection-specific path parameters? The API definitions would need to be adapted for this, too
-    ImmutableSet<OgcApiPathParameter> getPathParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
+    ImmutableList<OgcApiPathParameter> getPathParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
         return extensionRegistry.getExtensionsForType(OgcApiPathParameter.class)
                 .stream()
                 .filter(param -> param.isApplicable(apiData, definitionPath, collectionId))
                 .collect(ImmutableSet.toImmutableSet());
     }
     */
-
 }

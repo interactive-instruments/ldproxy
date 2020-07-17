@@ -136,8 +136,8 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA_MANAGER);
             String path = "/styles/{styleId}/metadata";
             HttpMethods method = HttpMethods.PUT;
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
             String operationSummary = "update the metadata document of a style";
             Optional<String> operationDescription = Optional.of("Update the style metadata for the style with the id `styleId`. " +
                     "This operation updates the complete metadata document.");

@@ -16,6 +16,7 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.features.processing.ProcessDocumentation;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableOgcApiQueryInputObservationProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
@@ -88,8 +89,8 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                     .forEach(chain -> {
                         final String subSubPath = chain.getSubSubPath();
                         final String path = "/collections/{collectionId}" + subSubPath;
-                        final Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-                        final Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+                        final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+                        final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
                         final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
                         if (!optCollectionIdParam.isPresent()) {
                             LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
@@ -108,100 +109,133 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                             // resources do not apply for this collection
                                             return;
                                     }
+
+                                    FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
+                                    Map<String, ProcessDocumentation> configDoc = this.getExtensionConfiguration(apiData, featureType, ObservationProcessingConfiguration.class)
+                                            .orElse(this.getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class)
+                                                        .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration.")))
+                                            .getDocumentation();
                                     String operationSummary = chain.getOperationSummary();
                                     Optional<String> operationDescription = chain.getOperationDescription();
                                     Optional<String> responseDescription = chain.getResponseDescription();
+                                    Optional<OgcApiExternalDocumentation> externalDocs = Optional.empty();
                                     List<String> tags;
-                                    switch (subSubPath) {
-                                        case "/"+DAPA_PATH_ELEMENT+"/position":
-                                            operationSummary = "retrieve information about observations at a position";
-                                            operationDescription = Optional.of("A point observation feature with a point geometry at the selected location (`coord`) " +
-                                                    "at the selected time or for each time step in the selected time interval (`datetime`). " +
-                                                    "The feature contains a property for each selected variable (`variables`) for which " +
-                                                    "a value can be interpolated. " +
-                                                    "The time steps are determined from the information in the original data.");
+                                    String processId = subSubPath.substring(DAPA_PATH_ELEMENT.length()+2);
+                                    switch (processId) {
+                                        case "position":
+                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                    configDoc.get(processId).getSummary().get() :
+                                                    "retrieve time series for a position";
+                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                    configDoc.get(processId).getDescription() :
+                                                    Optional.of("Returns a time series at the selected location (parameter `coord` or `coordRef`) " +
+                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                            "The time series contains values for each selected variable (parameter `variables`) for which " +
+                                                            "a value can be interpolated.\n\n" +
+                                                            "The time steps are determined from the information in the original data.");
+                                            externalDocs = configDoc.containsKey(processId) ? configDoc.get(processId).getExternalDocs() : Optional.empty();
                                             break;
 
-                                        case "/"+DAPA_PATH_ELEMENT+"/position:aggregate-time":
-                                            operationSummary = "retrieve information about observations at a position and compute values aggregated over time";
-                                            operationDescription = Optional.of("A point observation feature with a point geometry at the selected location (`coord`). " +
-                                                        "The feature includes a property for each combination of variables (`variables`) for which " +
-                                                        "a value can be interpolated and the statistical functions (`functions`). " +
-                                                        "The property value is the function applied to the interpolated values for each time step " +
-                                                        "in the selected time interval (`datetime`).");
+                                        case "position:aggregate-time":
+                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                    configDoc.get(processId).getSummary().get() :
+                                                    "retrieve aggregated observation values for a position (aggregated over time)";
+                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                    configDoc.get(processId).getDescription() :
+                                                    Optional.of("Returns observation values at the selected location (parameter `coord` or `coordRef`) " +
+                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                            "All values in the time interval for each requested variable (parameter `variables`) are aggregated " +
+                                                            "and each of the requested statistical functions (parameter `functions`) is applied to " +
+                                                            "the aggregated values.");
                                             break;
 
-                                        case "/"+DAPA_PATH_ELEMENT+"/area":
-                                            operationSummary = "retrieve information about observations in an area";
-                                            operationDescription = Optional.of("A collection of point features, one for each location in the " +
-                                                "selected area (`coord` or `bbox`), at the selected time or for each time step in the " +
-                                                "selected time interval (`datetime`). " +
-                                                "The time steps are determined from the information in the original data. " +
-                                                "The feature contains a property for each selected variable (`variables`) for which " +
-                                                "an observation is available.");
+                                        case "area":
+                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                    configDoc.get(processId).getSummary().get() :
+                                                    "retrieve time series for each station in an area";
+                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                    configDoc.get(processId).getDescription() :
+                                                    Optional.of("Returns a time series for each station in an area (parameter `box`, `coord` or `coordRef`) " +
+                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                            "Each time series contains values for each selected variable (parameter `variables`) for which " +
+                                                            "a value has been observed at the station during the time interval.\n\n" +
+                                                            "The time steps are determined from the information in the original data.");
                                             break;
 
-                                        case "/"+DAPA_PATH_ELEMENT+"/area:aggregate-time":
-                                            operationSummary = "retrieve information about observations in an area and compute values aggregated over time";
-                                            operationDescription = Optional.of("A collection of point features, one for each location in the " +
-                                                "selected area (`coord` or `bbox`). " +
-                                                "Each feature includes a property for each combination of variables (`variables`) for which " +
-                                                "a value can be interpolated and the statistical functions (`functions`). " +
-                                                "The property value is the function applied to the observed values at the location " +
-                                                "for each time step in the selected time interval (`datetime`).");
+                                        case "area:aggregate-time":
+                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                    configDoc.get(processId).getSummary().get() :
+                                                    "retrieve aggregated observation values for each station in an area (aggregated over time)";
+                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                    configDoc.get(processId).getDescription() :
+                                                    Optional.of("Returns observation values for each station in an area (parameter `box`, `coord` or `coordRef`) " +
+                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                            "All values of each station in the time interval for each requested variable (parameter `variables`) are aggregated " +
+                                                            "and each of the requested statistical functions (parameter `functions`) is applied to " +
+                                                            "the aggregated values.");
                                             break;
 
-                                        case "/"+DAPA_PATH_ELEMENT+"/area:aggregate-space":
-                                            operationSummary = "retrieve information about observations in an area and compute values aggregated over space";
-                                            operationDescription = Optional.of("A feature with the (multi-)polygon geometry of the selected area (`coord` or `bbox`) " +
-                                                "at the selected time or for each time step in the selected time interval (`datetime`). " +
-                                                "The time steps are determined from the information in the original data. " +
-                                                "Each feature includes a property for each combination of variables (`variables`) for which " +
-                                                "a value can be interpolated and the statistical functions (`functions`). " +
-                                                "The property value is the function applied to all observed values in the area " +
-                                                "for each time step.");
+                                        case "area:aggregate-space":
+                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                    configDoc.get(processId).getSummary().get() :
+                                                    "retrieve time series for an area (aggregated over all stations in the area)";
+                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                    configDoc.get(processId).getDescription() :
+                                                    Optional.of("Returns a time series for an area (parameter `bbox`, `coord` or `coordRef`) " +
+                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                            "All values in the area for each requested variable (parameter `variables`) are aggregated " +
+                                                            "for each time step and each of the requested statistical functions (parameter `functions`) " +
+                                                            "is applied to the aggregated values.");
                                             break;
 
-                                        case "/"+DAPA_PATH_ELEMENT+"/area:aggregate-space-time":
-                                            operationSummary = "retrieve information about observations in an area and compute values aggregated over space and time";
-                                            operationDescription = Optional.of("A feature with the (multi-)polygon geometry of the selected area (`coord` or `bbox`). " +
-                                                "Each feature includes a property for each combination of variables (`variables`) for which " +
-                                                "a value can be interpolated and the statistical functions (`functions`). " +
-                                                "The property value is the function applied to all observed values in the area " +
-                                                "over all time steps.");
+                                        case "area:aggregate-space-time":
+                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                    configDoc.get(processId).getSummary().get() :
+                                                    "retrieve aggregated observation values for an area (aggregated over space and time)";
+                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                    configDoc.get(processId).getDescription() :
+                                                    Optional.of("Returns observation values for an area (parameter `bbox`, `coord` or `coordRef`) " +
+                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                            "All values for each requested variable (parameter `variables`) are aggregated " +
+                                                            "and each of the requested statistical functions (parameter `functions`) is applied to " +
+                                                            "the aggregated values.");
                                             break;
 
-                                        case "/"+DAPA_PATH_ELEMENT+"/resample-to-grid":
-                                            operationSummary = "retrieve information about observations in an area, resampled to a regular grid";
-                                            operationDescription = Optional.of("A collection of point features in a rectangular area (`bbox`), at the " +
-                                                "selected time or for each time step in the selected time interval (`datetime`). " +
-                                                "The time steps are determined from the information in the original data. " +
-                                                "The result of the parent resource is taken and resampled to a grid and each point feature " +
-                                                "represents a cell of the grid. " +
-                                                "The grid size is determined by the parameters `width` and `height`. If only `width` " +
-                                                "is provided, the value of `height` is derived from the area." +
-                                                "Each feature contains a property for each selected variable (`variables`) for which " +
-                                                "a value can be interpolated.");
+                                        case "resample-to-grid":
+                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                    configDoc.get(processId).getSummary().get() :
+                                                    "retrieve observations in a spatio-temporal cube";
+                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                    configDoc.get(processId).getDescription() :
+                                                    Optional.of("Retrieves observation values for each cell in a spatio-temporal cube consisting of a rectangular " +
+                                                            "spatial grid (parameter `box` or `coordRef`) and the time steps in a time interval (parameter `datetime`). " +
+                                                            "The time steps are determined from the information in the original data.\n\n" +
+                                                            "The cells of the spatial grid are determined by the parameters `width` and `height`. If only `width` " +
+                                                            "is provided, the value of `height` is derived from the area.\n\n" +
+                                                            "Each cell contains values for each selected variable (parameter `variables`) for which " +
+                                                            "a value could be interpolated from the observations.");
                                             break;
 
-                                        case "/"+DAPA_PATH_ELEMENT+"/resample-to-grid:aggregate-time":
-                                            operationSummary = "retrieve information about observations in an area, resampled to a regular grid and aggregated over time";
-                                            operationDescription = Optional.of("A collection of point features in a rectangular area (`bbox`). " +
-                                                "The result of the parent resource is taken and resampled to a grid and each point feature " +
-                                                "represents a cell of the grid. " +
-                                                "The grid size is determined by the parameters `width` and `height`. If only `width` " +
-                                                "is provided, the value of `height` is derived from the area." +
-                                                "Each feature includes a property for each combination of variables (`variables`) for which " +
-                                                "a value can be interpolated and the statistical functions (`functions`). " +
-                                                "The property value is the function applied to the interpolated values " +
-                                                "for each time step in the selected time interval (`datetime`).");
+                                        case "resample-to-grid:aggregate-time":
+                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                    configDoc.get(processId).getSummary().get() :
+                                                    "retrieve observations in a spatial grid (aggregated over time)";
+                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                    configDoc.get(processId).getDescription() :
+                                                    Optional.of("Retrieves observation values for each cell in a rectangular spatial grid (parameter `box` or `coordRef`) " +
+                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                            "The cells of the spatial grid are determined by the parameters `width` and `height`. If only `width` " +
+                                                            "is provided, the value of `height` is derived from the area.\n\n" +
+                                                            "For each cell, all values in the time interval for each requested variable (parameter `variables`) are aggregated " +
+                                                            "and each of the requested statistical functions (parameter `functions`) is applied to " +
+                                                            "the aggregated values.");
                                             break;
                                     }
                                     String resourcePath = "/collections/" + collectionId + subSubPath;
                                     ImmutableOgcApiResourceProcess.Builder resourceBuilder = new ImmutableOgcApiResourceProcess.Builder()
                                             .path(resourcePath)
                                             .pathParameters(pathParameters);
-                                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, TAGS);
                                     if (operation!=null)
                                         resourceBuilder.putOperations("GET", operation);
                                     definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -216,7 +250,6 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
 
     @GET
     @Path("/{collectionId}/"+DAPA_PATH_ELEMENT+"/{processIds}")
-    @Produces("application/geo+json")
     public Response getProcessResult(@Auth Optional<User> optionalUser,
                                      @Context OgcApiApi api,
                                      @Context OgcApiRequestContext requestContext,
@@ -230,12 +263,12 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                 .orElseThrow(() -> new NotFoundException());
         final String path = "/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/"+processIds;
         checkPathParameter(extensionRegistry, api.getData(), path, "collectionId", collectionId);
-        final Set<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), path, collectionId);
+        final List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), path, collectionId);
         return getResponse(optionalUser, api.getData(), requestContext, uriInfo, collectionId, allowedParameters, processChain);
     }
 
     Response getResponse(Optional<User> optionalUser, OgcApiApiDataV2 apiData, OgcApiRequestContext requestContext,
-                         UriInfo uriInfo, String collectionId, Set<OgcApiQueryParameter> allowedParameters, FeatureProcessChain processChain) {
+                         UriInfo uriInfo, String collectionId, List<OgcApiQueryParameter> allowedParameters, FeatureProcessChain processChain) {
 
         // TODO check that the request is not considered to be too demanding
 

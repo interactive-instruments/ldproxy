@@ -23,17 +23,20 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCoordPosition extends GeometryHelper implements OgcApiQueryParameter {
+public class QueryParameterCoordPosition implements OgcApiQueryParameter {
 
     static final double BUFFER = 75.0; // buffer in km
-    static final double R = 6378.1f; // earth radius in km
+    static final double R = 6378.1; // earth radius in km
 
     private final Schema baseSchema;
+    private final GeometryHelperWKT geometryHelper;
     final FeatureProcessInfo featureProcessInfo;
 
-    public QueryParameterCoordPosition(@Requires FeatureProcessInfo featureProcessInfo) {
+    public QueryParameterCoordPosition(@Requires GeometryHelperWKT geometryHelper,
+                                       @Requires FeatureProcessInfo featureProcessInfo) {
+        this.geometryHelper = geometryHelper;
         this.featureProcessInfo = featureProcessInfo;
-        baseSchema = new StringSchema().pattern("^\\s*POINT\\s*" + POINT_REGEX + "\\s*$");
+        baseSchema = new StringSchema().pattern(geometryHelper.getPointRegex());
     }
 
     @Override
@@ -53,7 +56,7 @@ public class QueryParameterCoordPosition extends GeometryHelper implements OgcAp
 
     @Override
     public String getDescription() {
-        return "A Well Known Text representation of a POINT or POINTZ geometry as defined in Simple Feature Access - Part 1: Common Architecture.";
+        return "A Well Known Text representation of a POINT geometry as defined in Simple Feature Access - Part 1: Common Architecture.";
     }
 
     @Override
@@ -102,22 +105,32 @@ public class QueryParameterCoordPosition extends GeometryHelper implements OgcAp
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
                                                    OgcApiApiDataV2 apiData) {
-        String coord = parameters.get(getName());
-        if (coord==null) {
-            coord = getDefault(apiData, Optional.of(featureType.getId())).orElse(null);
-            if (coord == null)
-                throw new BadRequestException(String.format("The required parameter '%s' has no value.", getName()));
+        if (parameters.containsKey("coordRef") || parameters.containsKey("bbox")) {
+            // ignore coord, if coordRef is provided; the parameter may be processed already, so check bbox, too
+            parameters.remove(getName());
+
+        } else {
+            String coord = parameters.get(getName());
+            if (coord == null) {
+                if (parameters.get("coordRef") != null)
+                    return parameters;
+
+                coord = getDefault(apiData, Optional.of(featureType.getId())).orElse(null);
+                if (coord == null && parameters.get("coordRef") == null)
+                    throw new IllegalArgumentException("One of the 'coord' or 'coordRef' has to be provided.");
+            }
+
+            // TODO support other CRS
+            // add bbox and remove coord
+            List<Double> point = geometryHelper.extractPosition(coord);
+            double lonBuffer = BUFFER / (R * Math.cos(point.get(1) / 180.0 * Math.PI) * Math.PI / 180.0);
+            double latBuffer = BUFFER / (R * Math.PI / 180.0);
+            String bbox = (point.get(0) - lonBuffer) + "," + (point.get(1) - latBuffer) + "," +
+                    (point.get(0) + lonBuffer) + "," + (point.get(1) + latBuffer);
+            parameters.put("bbox", bbox);
+            parameters.remove(getName());
         }
 
-        // TODO support other CRS
-        // add bbox and remove coord
-        List<Float> point = extractPosition(coord);
-        double lonBuffer = BUFFER / (R * Math.cos(point.get(1) / 180.0 * Math.PI) * Math.PI / 180.0);
-        double latBuffer = BUFFER / (R * Math.PI / 180.0);
-        String bbox = (point.get(0) - lonBuffer) + "," + (point.get(1) - latBuffer) + "," +
-                      (point.get(0) + lonBuffer) + "," + (point.get(1) + latBuffer);
-        parameters.put("bbox",bbox);
-        parameters.remove(getName());
         return parameters;
     }
 
@@ -126,6 +139,10 @@ public class QueryParameterCoordPosition extends GeometryHelper implements OgcAp
                                                 Map<String, Object> context,
                                                 Map<String, String> parameters,
                                                 OgcApiApiDataV2 apiData) {
+        if (parameters.containsKey("coordRef"))
+            // ignore coord
+            return context;
+
         String coord = parameters.get(getName());
         if (coord==null) {
             coord = getDefault(apiData, Optional.of(featureType.getId())).orElse(null);
@@ -133,7 +150,7 @@ public class QueryParameterCoordPosition extends GeometryHelper implements OgcAp
                 throw new BadRequestException(String.format("The required parameter '%s' has no value.", getName()));
         }
 
-        context.put("point",new GeometryPoint(extractPosition(coord)));
+        context.put("point",new GeometryPoint(geometryHelper.extractPosition(coord)));
         return context;
     }
 

@@ -7,19 +7,16 @@
  */
 package de.ii.ldproxy.ogcapi.observation_processing.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.observation_processing.application.*;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
+import de.ii.ldproxy.ogcapi.observation_processing.application.OutputFormatGeoJson;
 import de.ii.ldproxy.ogcapi.observation_processing.data.*;
 import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
 import de.ii.xtraplatform.akka.http.HttpClient;
@@ -37,9 +34,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
+import java.time.LocalDate;
 import java.time.temporal.Temporal;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -47,7 +46,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerObservationProcessing.class);
 
-    private OutputStreamWriter outputStreamWriter;
+    private OutputStream outputStream;
 
     private final boolean isFeatureCollection;
     private final ViewRenderer mustacheRenderer;
@@ -61,6 +60,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     private final ObservationProcessingConfiguration configuration;
     private final FeatureProcessChain processes;
     private final Map<String, Object> processingParameters;
+    private final ObservationProcessingOutputFormat outputFormat;
     private final TemporalInterval interval;
 
     private ImmutableCoordinatesTransformer.Builder coordinatesTransformerBuilder;
@@ -86,7 +86,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     private String currentLocationName;
 
     public FeatureTransformerObservationProcessing(FeatureTransformationContextObservationProcessing transformationContext, HttpClient httpClient) {
-        this.outputStreamWriter = new OutputStreamWriter(transformationContext.getOutputStream());
+        this.outputStream = transformationContext.getOutputStream();
         this.isFeatureCollection = transformationContext.isFeatureCollection();
         this.pageSize = transformationContext.getLimit();
         this.crsTransformer = transformationContext.getCrsTransformer()
@@ -98,6 +98,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
         this.transformationContext = transformationContext;
         this.processes = transformationContext.getProcesses();
         this.processingParameters = transformationContext.getProcessingParameters();
+        this.outputFormat = transformationContext.getOutputFormat();
         this.interval = (TemporalInterval) processingParameters.get("interval");
 
         FeatureTypeConfigurationOgcApi featureType = transformationContext.getApiData()
@@ -142,133 +143,104 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     }
 
     @Override
-    public void onEnd() {
+    public void onEnd() throws IOException {
 
         LOGGER.debug(observationCount + " observations received.");
 
-        ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-        ObjectNode featureCollection = mapper.createObjectNode();
-        featureCollection.put("type", "FeatureCollection");
-        ArrayNode features = featureCollection.putArray("features");
-
-        Object data = observations;
-        for (FeatureProcess process : processes.asList()) {
-            data = process.execute(data, processingParameters);
-        }
-
-        if (data!=null) {
-            if (data instanceof ObservationCollectionPointTimeSeries) {
-                ObservationCollectionPointTimeSeries result = (ObservationCollectionPointTimeSeries) data;
-                result.getValues().entrySet().stream().forEach(entry ->
-                        addFeature(features.addObject(), result.getCode(), result.getName(), result.getGeometry(),
-                                   entry.getKey(), entry.getKey(), entry.getValue()));
-            } else if (data instanceof ObservationCollectionPointTimeSeriesList) {
-                ObservationCollectionPointTimeSeriesList result = (ObservationCollectionPointTimeSeriesList) data;
-                result.stream().forEach(pos -> pos.getValues().entrySet().stream().forEach(entry ->
-                        addFeature(features.addObject(), pos.getCode(), pos.getName(), pos.getGeometry(),
-                                   entry.getKey(), entry.getKey(), entry.getValue())));
-            } else if (data instanceof ObservationCollectionAreaTimeSeries) {
-                ObservationCollectionAreaTimeSeries result = (ObservationCollectionAreaTimeSeries) data;
-                result.getValues().entrySet().stream().forEach(entry ->
-                        addFeature(features.addObject(), Optional.empty(), Optional.empty(), result.getGeometry(),
-                                entry.getKey(), entry.getKey(), entry.getValue()));
-            } else if (data instanceof ObservationCollectionPoint) {
-                ObservationCollectionPoint result = (ObservationCollectionPoint) data;
-                addFeature(features.addObject(), result.getCode(), result.getName(), result.getGeometry(),
-                        result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
-            } else if (data instanceof ObservationCollectionPointList) {
-                ObservationCollectionPointList result = (ObservationCollectionPointList) data;
-                result.stream().forEach(pos -> addFeature(features.addObject(), pos.getCode(), pos.getName(), pos.getGeometry(),
-                                                          pos.getInterval().getBegin(), pos.getInterval().getEnd(), pos.getValues()));
-            } else if (data instanceof ObservationCollectionArea) {
-                ObservationCollectionArea result = (ObservationCollectionArea) data;
-                addFeature(features.addObject(), Optional.empty(), Optional.empty(), result.getGeometry(),
-                           result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
-            } else if (data instanceof DataArrayXyt) {
-                DataArrayXyt result = (DataArrayXyt) data;
-                Vector<String> vars = result.getVars();
-                for (int i0=0; i0<result.getWidth(); i0++)
-                    for (int i1=0; i1<result.getHeight(); i1++)
-                        for (int i2=0; i2<result.getSteps(); i2++) {
-                            Map<String, Number> map = new HashMap<>();
-                            for (int i3 = 0; i3 < vars.size(); i3++)
-                                if (!Float.isNaN(result.array[i2][i1][i0][i3]))
-                                    map.put(vars.get(i3), result.array[i2][i1][i0][i3]);
-                            if (!map.isEmpty())
-                                addFeature(features.addObject(), Optional.empty(), Optional.empty(),
-                                            new GeometryPoint(result.lon(i0), result.lat(i1)),
-                                            result.date(i2), result.date(i2), map);
-                        }
-            } else if (data instanceof DataArrayXy) {
-                DataArrayXy result = (DataArrayXy) data;
-                Vector<String> vars = result.getVars();
-                for (int i0=0; i0<result.getWidth(); i0++)
-                    for (int i1=0; i1<result.getHeight(); i1++) {
-                        Map<String, Number> map = new HashMap<>();
-                        for (int i3 = 0; i3 < vars.size(); i3++)
-                            if (!Float.isNaN(result.array[i1][i0][i3]))
-                                map.put(vars.get(i3), result.array[i1][i0][i3]);
-                        if (!map.isEmpty())
-                            addFeature(features.addObject(), Optional.empty(), Optional.empty(),
-                                    new GeometryPoint(result.lon(i0), result.lat(i1)),
-                                    result.getInterval().getBegin(), result.getInterval().getEnd(), map);
-                    }
-            }
-        }
-
         try {
-            mapper.writeValue(outputStreamWriter, featureCollection);
+            Object entity = outputFormat.initializeResult(processes, processingParameters, outputStream);
+
+            Object data = observations;
+            for (FeatureProcess process : processes.asList()) {
+                data = process.execute(data, processingParameters);
+            }
+
+            if (data!=null) {
+                if (data instanceof ObservationCollectionPointTimeSeries) {
+                    ObservationCollectionPointTimeSeries result = (ObservationCollectionPointTimeSeries) data;
+                    for (Map.Entry<Temporal, ConcurrentMap<String, Number>> entry : result.getValues().entrySet()) {
+                        outputFormat.addFeature(entity, result.getCode(), result.getName(), result.getGeometry(),
+                                entry.getKey(), entry.getKey(), entry.getValue());
+                    }
+                } else if (data instanceof ObservationCollectionPointTimeSeriesList) {
+                    ObservationCollectionPointTimeSeriesList result = (ObservationCollectionPointTimeSeriesList) data;
+                    for (ObservationCollectionPointTimeSeries pos : result) {
+                        for (Map.Entry<Temporal, ConcurrentMap<String, Number>> entry : pos.getValues().entrySet()) {
+                            outputFormat.addFeature(entity, pos.getCode(), pos.getName(), pos.getGeometry(),
+                                    entry.getKey(), entry.getKey(), entry.getValue());
+                        }
+                    }
+                } else if (data instanceof ObservationCollectionAreaTimeSeries) {
+                    ObservationCollectionAreaTimeSeries result = (ObservationCollectionAreaTimeSeries) data;
+                    for (Map.Entry<Temporal, ConcurrentMap<String, Number>> entry : result.getValues().entrySet()) {
+                        outputFormat.addFeature(entity, Optional.empty(), Optional.empty(), result.getGeometry(),
+                                entry.getKey(), entry.getKey(), entry.getValue());
+                    }
+                } else if (data instanceof ObservationCollectionPoint) {
+                    ObservationCollectionPoint result = (ObservationCollectionPoint) data;
+                    outputFormat.addFeature(entity, result.getCode(), result.getName(), result.getGeometry(),
+                            result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
+                } else if (data instanceof ObservationCollectionPointList) {
+                    ObservationCollectionPointList result = (ObservationCollectionPointList) data;
+                    for (ObservationCollectionPoint pos : result) {
+                        outputFormat.addFeature(entity, pos.getCode(), pos.getName(), pos.getGeometry(),
+                                pos.getInterval().getBegin(), pos.getInterval().getEnd(), pos.getValues());
+                    }
+                } else if (data instanceof ObservationCollectionArea) {
+                    ObservationCollectionArea result = (ObservationCollectionArea) data;
+                    outputFormat.addFeature(entity, Optional.empty(), Optional.empty(), result.getGeometry(),
+                               result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
+                } else if (data instanceof DataArrayXyt) {
+                    DataArrayXyt result = (DataArrayXyt) data;
+                    boolean formatAcceptsDataArray = outputFormat.addDataArray(entity, result);
+                    if (!formatAcceptsDataArray) {
+                        Vector<String> vars = result.getVars();
+                        for (int i0 = 0; i0 < result.getWidth(); i0++)
+                            for (int i1 = 0; i1 < result.getHeight(); i1++)
+                                for (int i2 = 0; i2 < result.getSteps(); i2++) {
+                                    Map<String, Number> map = new HashMap<>();
+                                    for (int i3 = 0; i3 < vars.size(); i3++)
+                                        if (!Float.isNaN(result.array[i2][i1][i0][i3]))
+                                            map.put(vars.get(i3), result.array[i2][i1][i0][i3]);
+                                    LocalDate date = result.date(i2);
+                                    if (!map.isEmpty())
+                                        outputFormat.addFeature(entity, Optional.empty(), Optional.empty(),
+                                                new GeometryPoint(result.lon(i0), result.lat(i1)),
+                                                date, date, map);
+                                }
+                    }
+                } else if (data instanceof DataArrayXy) {
+                    DataArrayXy result = (DataArrayXy) data;
+                    boolean formatAcceptsDataArray = outputFormat.addDataArray(entity, result);
+                    if (!formatAcceptsDataArray) {
+                        Vector<String> vars = result.getVars();
+                        for (int i0=0; i0<result.getWidth(); i0++)
+                            for (int i1=0; i1<result.getHeight(); i1++) {
+                                Map<String, Number> map = new HashMap<>();
+                                for (int i3 = 0; i3 < vars.size(); i3++)
+                                    if (!Float.isNaN(result.array[i1][i0][i3]))
+                                        map.put(vars.get(i3), result.array[i1][i0][i3]);
+                                if (!map.isEmpty())
+                                    outputFormat.addFeature(entity, Optional.empty(), Optional.empty(),
+                                            new GeometryPoint(result.lon(i0), result.lat(i1)),
+                                            result.getInterval().getBegin(), result.getInterval().getEnd(), map);
+                            }
+                    }
+                }
+            }
+
+            outputFormat.finalizeResult(entity);
+            LOGGER.debug("OgcApiResponse written.");
         } catch (IOException e) {
-            // TODO
             LOGGER.error("Error writing observations.");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stacktrace: ", e);
+            }
+            throw e;
         }
 
-        LOGGER.debug("OgcApiResponse written.");
     }
 
-    private void addFeature(ObjectNode feature, Optional<String> locationCode, Optional<String> locationName, Geometry geometry, Temporal timeBegin, Temporal timeEnd, Map<String, Number> values) {
-        feature.put("type", "Feature");
-        addGeometry(feature, geometry);
-        ObjectNode properties = feature.putObject("properties");
-        if (locationCode.isPresent())
-            properties.put("locationCode", locationCode.get());
-        if (locationName.isPresent())
-            properties.put("locationName", locationName.get());
-        if (timeBegin==timeEnd)
-            properties.put("phenomenonTime", timeBegin.toString());
-        else
-            properties.put("phenomenonTime", timeBegin.toString()+"/"+timeEnd.toString());
-        values.entrySet().parallelStream()
-                .forEach(entry -> {
-                    String variable = entry.getKey();
-                    Number val = entry.getValue();
-                    if (val instanceof Integer)
-                        properties.put(variable, val.intValue());
-                    else
-                        properties.put(variable, val.floatValue());
-                });
-    }
-
-    private void addGeometry(ObjectNode feature, Geometry geometry) {
-        ArrayNode coord = feature.putObject("geometry")
-                .put("type", geometry instanceof GeometryPoint ? "Point" : ((GeometryMultiPolygon) geometry).size()==1 ? "Polygon" : "MultiPolygon" )
-                .putArray("coordinates");
-        if (geometry instanceof GeometryPoint) {
-            ((GeometryPoint) geometry).asList().stream().forEachOrdered(ord -> coord.add(ord));
-        } else {
-            GeometryMultiPolygon multiPolygon = (GeometryMultiPolygon) geometry;
-            multiPolygon.asList().stream().forEachOrdered(polygon -> {
-                ArrayNode coordPoly = multiPolygon.size()==1 ? coord : coord.addArray();
-                polygon.stream().forEachOrdered(ring -> {
-                    ArrayNode coordRing = coordPoly.addArray();
-                    ring.stream().forEachOrdered(pos -> {
-                        ArrayNode coordPos = coordRing.addArray();
-                        pos.stream().forEach(ord -> coordPos.add(ord));
-                    });
-                });
-            });
-        }
-    }
 
     @Override
     public void onFeatureStart(FeatureType featureType) {

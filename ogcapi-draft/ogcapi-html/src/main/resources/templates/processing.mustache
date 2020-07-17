@@ -1,0 +1,35 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+    <br/>
+
+    {{#processes}}
+    <div class="row my-3">
+        <div class="col-md-{{#idCols}}{{.}}{{/idCols}}{{^idCols}}3{{/idCols}} font-weight-bold">{{id}}</div>
+        <div class="col-md-{{#descCols}}{{.}}{{/descCols}}{{^descCols}}9{{/descCols}}">
+            <ul class="list-unstyled">
+                <li>{{title}}</li>
+                {{#description}}
+                    <li class="list-group-item pt-0 pb-2 small text-secondary" style="border: none">{{{.}}}</li>
+                {{/description}}
+                <li>{{mediaTypesTitle}}:
+                    <ul class="list-styled">
+                        {{#mediaTypes}}<li class="small">{{.}}</li>{{/mediaTypes}}
+                    </ul>
+                </li>
+                <li class="pt-2"><a href="{{descriptionUri}}" target="_blank">{{linkToApiDefinitionTitle}}</a></li>
+                {{#externalDocs}}<li class="pt-2"><a href="{{url}}" target="_blank">{{#description}}{{{.}}}{{/description}}{{^description}}{{url}}{{/description}}</a></li>{{/externalDocs}}
+            </ul>
+        </div>
+    </div>
+    {{/processes}}
+    {{^processes}}
+        <div>{{none}}</div>
+    {{/processes}}
+</div>
+
+{{> footer}}
+

@@ -100,8 +100,8 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_TILE);
             final String path = "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}";
             final OgcApiContext.HttpMethods method = OgcApiContext.HttpMethods.GET;
-            final Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            final Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+            final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             String operationSummary = "fetch a tile with multiple layers, one per collection";
             Optional<String> operationDescription = Optional.of("The tile in the requested tiling scheme ('{tileMatrixSetId}'), " +
                     "on the requested zoom level ('{tileMatrix}'), with the requested grid coordinates ('{tileRow}', '{tileCol}') is returned. " +
@@ -138,7 +138,7 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
         checkPathParameter(extensionRegistry, apiData, definitionPath, "tileMatrix", tileMatrix);
         checkPathParameter(extensionRegistry, apiData, definitionPath, "tileRow", tileRow);
         checkPathParameter(extensionRegistry, apiData, definitionPath, "tileCol", tileCol);
-        final Set<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), definitionPath);
+        final List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), definitionPath);
 
         // check, if the cache can be used (no query parameters except f)
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());

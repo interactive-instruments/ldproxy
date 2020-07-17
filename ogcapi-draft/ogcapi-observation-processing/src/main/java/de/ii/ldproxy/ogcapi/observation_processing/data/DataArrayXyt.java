@@ -6,20 +6,23 @@ import java.util.Vector;
 
 public class DataArrayXyt {
     public float[][][][] array;
-    private final float minLon;
-    private final float minLat;
-    private final float minTime;
-    private final float maxLon;
-    private final float maxLat;
-    private final float maxTime;
+    private final double minLon;
+    private final double minLat;
+    private final double minTime;
+    private final double maxLon;
+    private final double maxLat;
+    private final double maxTime;
     private final int width;
     private final int height;
     private final int steps;
+    private final double diffLon;
+    private final double diffLat;
+    private final double diffTime;
     private final Vector<String> vars;
 
     DataArrayXyt(int width, int height, int steps, Vector<String> vars,
-                 float minLon, float minLat, float minTime,
-                 float maxLon, float maxLat, float maxTime) {
+                 double minLon, double minLat, double minTime,
+                 double maxLon, double maxLat, double maxTime) {
         this.minLon = minLon;
         this.minLat = minLat;
         this.minTime = minTime;
@@ -29,6 +32,9 @@ public class DataArrayXyt {
         this.width = width;
         this.height = height;
         this.steps = steps;
+        this.diffLon = width>0 ? (maxLon-minLon)/width : 0.0f;
+        this.diffLat = height>0 ? (maxLat-minLat)/height : 0.0f;
+        this.diffTime = steps>0 ? (maxTime-minTime)/steps : 0.0f;
         this.vars = vars;
         this.array = new float[steps][height][width][vars.size()];
     }
@@ -49,16 +55,12 @@ public class DataArrayXyt {
         return vars;
     }
 
-    public float lon(int i) {
-        return width>1 ? minLon + (maxLon-minLon)*i/(width-1) : minLon;
-    }
+    public double lon(int i) { return minLon + diffLon*i; }
 
-    public float lat(int i) {
-        return height>1 ? minLat + (maxLat-minLat)*i/height : minLat;
-    }
+    public double lat(int i) { return maxLat - diffLat*i; }
 
-    public float time(int i) {
-        return steps>1 ? minTime + (maxTime-minTime)*i/steps : minTime;
+    public double time(int i) {
+        return minTime + diffTime*i;
     }
 
     public LocalDate date(int i) {

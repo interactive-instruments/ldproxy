@@ -122,7 +122,7 @@ public class TileFormatMVT implements TileFormatExtension {
 
     @Override
     public FeatureQuery getQuery(Tile tile,
-                                 Set<OgcApiQueryParameter> allowedParameters,
+                                 List<OgcApiQueryParameter> allowedParameters,
                                  Map<String, String> queryParameters,
                                  TilesConfiguration tilesConfiguration,
                                  URICustomizer uriCustomizer) {

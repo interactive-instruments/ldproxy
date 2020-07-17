@@ -81,7 +81,7 @@ public class OgcApiQueryablesEndpoint extends OgcApiEndpointSubCollection implem
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_QUERYABLES);
             String subSubPath = "/queryables";
             String path = "/collections/{collectionId}" + subSubPath;
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
@@ -92,7 +92,7 @@ public class OgcApiQueryablesEndpoint extends OgcApiEndpointSubCollection implem
                         collectionIdParam.getValues(apiData) :
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    final Set<OgcApiQueryParameter> queryParameters = explode ?
+                    final List<OgcApiQueryParameter> queryParameters = explode ?
                             getQueryParameters(extensionRegistry, apiData, path, collectionId) :
                             getQueryParameters(extensionRegistry, apiData, path);
                     final String operationSummary = "retrieve the queryables of the feature collection '" + collectionId + "'";

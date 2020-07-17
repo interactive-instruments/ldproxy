@@ -89,7 +89,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         }
 
         Set<String> parameters = requestContext.getUriInfo().getQueryParameters().keySet();
-        Set<OgcApiQueryParameter> knownParameters = ogcApiEndpoint.getParameters(service.getData(), subPath);
+        List<OgcApiQueryParameter> knownParameters = ogcApiEndpoint.getParameters(service.getData(), subPath);
         Set<String> unknownParameters = parameters.stream()
                 .filter(parameter -> !knownParameters.stream().filter(param -> param.getName().equalsIgnoreCase(parameter)).findAny().isPresent())
                 .collect(Collectors.toSet());
@@ -129,23 +129,6 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                 .language(selectedLanguage)
                 .api(service)
                 .build();
-
-        /* TODO delete
-        // validate generic parameters
-        String f = requestContext.getUriInfo().getQueryParameters().getFirst("f");
-        if (f!=null) {
-            boolean found = supportedMediaTypes.stream()
-                    .map(mediaType -> mediaType.parameter())
-                    .anyMatch(value -> value != null && value.equalsIgnoreCase(f));
-            if (!found) {
-                Set<String> validValues = supportedMediaTypes.stream()
-                        .map(mediaType -> mediaType.parameter())
-                        .filter(value -> value != null && !value.isEmpty())
-                        .collect(Collectors.toSet());
-                throw new BadRequestException("Invalid value for parameter 'f': " + f + ". Valid values: " + String.join(", ",validValues)+".");
-            }
-        }
-         */
 
         // validate request
         OgcApiEndpointDefinition apiDef = ogcApiEndpoint.getDefinition(service.getData());

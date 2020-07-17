@@ -96,8 +96,8 @@ public class EndpointStyle extends OgcApiEndpoint {
                     .apiEntrypoint("styles")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLESHEET);
             String path = "/styles/{styleId}";
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             if (!pathParameters.stream().filter(param -> param.getName().equals("styleId")).findAny().isPresent()) {
                 LOGGER.error("Path parameter 'styleId' missing for resource at path '" + path + "'. The GET method will not be available.");
             } else {

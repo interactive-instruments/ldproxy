@@ -14,20 +14,19 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.features.processing.ImmutableProcessing;
 import de.ii.ldproxy.ogcapi.features.processing.Processing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.*;
+import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.features.domain.*;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.*;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
@@ -51,18 +50,25 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
-    private CodelistRegistry codelistRegistry;
+    private final CodelistRegistry codelistRegistry;
+    private final OgcApiFeatureCoreProviders providers;
+    private final Http http;
+
 
     public ObservationProcessingQueriesHandlerImpl(@Requires I18n i18n,
                                                    @Requires CrsTransformerFactory crsTransformerFactory,
                                                    @Requires Dropwizard dropwizard,
-                                                   @Requires CodelistRegistry codelistRegistry) {
+                                                   @Requires CodelistRegistry codelistRegistry,
+                                                   @Requires OgcApiFeatureCoreProviders providers,
+                                                   @Requires Http http) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.codelistRegistry = codelistRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
+        this.providers = providers;
+        this.http = http;
 
         this.queryHandlers = ImmutableMap.of(
                 Query.PROCESS,
@@ -186,9 +192,11 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         // TODO add links
         List<OgcApiLink> links = ImmutableList.of();
 
-        // TODO update
         ImmutableFeatureTransformationContextObservationProcessing.Builder transformationContext = new ImmutableFeatureTransformationContextObservationProcessing.Builder()
                 .apiData(api.getData())
+                .i18n(i18n)
+                .language(requestContext.getLanguage())
+                .codelists(codelistRegistry.getCodelists())
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
@@ -200,6 +208,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                 .isPropertyOnly(query.propertyOnly())
                 .processes(queryInput.getProcesses())
                 .processingParameters(queryInput.getProcessingParameters())
+                .outputFormat(outputFormat)
                 .fields(query.getFields())
                 .limit(query.getLimit())
                 .offset(query.getOffset())
@@ -213,8 +222,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
             FeatureStream2 featureStream = featureProvider.queries()
                     .getFeatureStream2(query);
 
-            streamingOutput = stream(featureStream, outputStream -> outputFormat.getFeatureTransformer(transformationContext.outputStream(outputStream)
-                    .build(), requestContext.getLanguage())
+            streamingOutput = stream(featureStream, outputStream -> outputFormat.getFeatureTransformer(transformationContext.outputStream(outputStream).build(), providers, http)
                     .get());
         } else {
             throw new NotAcceptableException();

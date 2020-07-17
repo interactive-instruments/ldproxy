@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class QueryParameterF implements OgcApiQueryParameter {
 
-    private final OgcApiExtensionRegistry extensionRegistry;
+    protected final OgcApiExtensionRegistry extensionRegistry;
 
     protected QueryParameterF(OgcApiExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;

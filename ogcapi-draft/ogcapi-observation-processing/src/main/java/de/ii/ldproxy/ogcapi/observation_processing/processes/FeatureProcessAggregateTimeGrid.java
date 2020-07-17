@@ -72,7 +72,7 @@ public class FeatureProcessAggregateTimeGrid implements ObservationProcess {
         }
 
         DataArrayXy newArray = new DataArrayXy(array.getWidth(), array.getHeight(), newVars,
-                array.lon(0), array.lat(0), array.lon(array.getWidth()-1), array.lat(array.getHeight()-1),
+                array.lon(0), array.lat(array.getHeight()), array.lon(array.getWidth()), array.lat(0),
                 interval);
 
         for (int i0=0; i0<array.getWidth(); i0++)

@@ -74,8 +74,8 @@ public class EndpointTileSetMultiCollection extends OgcApiEndpoint {
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_TILE_SET);
             String path = "/tiles/{tileMatrixSetId}";
             OgcApiContext.HttpMethods method = OgcApiContext.HttpMethods.GET;
-            Set<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             String operationSummary = "retrieve information about a tile set";
             Optional<String> operationDescription = Optional.of("This operation fetches information about a tile set.");
             ImmutableOgcApiResourceAuxiliary.Builder resourceBuilderSet = new ImmutableOgcApiResourceAuxiliary.Builder()

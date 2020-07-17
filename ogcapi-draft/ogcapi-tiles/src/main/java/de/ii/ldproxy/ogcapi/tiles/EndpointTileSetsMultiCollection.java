@@ -79,7 +79,7 @@ public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements C
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_TILE_SETS);
             String path = "/tiles";
             OgcApiContext.HttpMethods method = OgcApiContext.HttpMethods.GET;
-            Set<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             String operationSummary = "retrieve a list of the available tile sets";
             Optional<String> operationDescription = Optional.of("This operation fetches the list of multi-layer tile sets supported by this API.");
             ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()

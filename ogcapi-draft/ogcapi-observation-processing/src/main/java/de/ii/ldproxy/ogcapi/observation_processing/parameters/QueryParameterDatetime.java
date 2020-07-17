@@ -28,15 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterCoordPosition.BUFFER;
+import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterCoordPosition.R;
+
 @Component
 @Provides
 @Instantiate
 public class QueryParameterDatetime implements OgcApiQueryParameter {
 
-    // TODO centralize to avoid duplication in different parameters
-    static final double BUFFER = 75.0; // buffer in km
-    static final double R = 6378.1f; // earth radius in km
-    public static final float ANI = 3; // TODO document
+    public static final double ANI = 3; // TODO document
 
     private static final String OPEN_REGEX = "(?:\\.\\.)?";
     private static final String LOCAL_DATE_REGEX = "(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])";

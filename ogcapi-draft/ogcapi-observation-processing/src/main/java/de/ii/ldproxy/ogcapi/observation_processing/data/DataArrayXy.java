@@ -6,18 +6,20 @@ import java.util.Vector;
 
 public class DataArrayXy {
     public float[][][] array;
-    private final float minLon;
-    private final float minLat;
-    private final float maxLon;
-    private final float maxLat;
+    private final double minLon;
+    private final double minLat;
+    private final double maxLon;
+    private final double maxLat;
     private final int width;
     private final int height;
+    private final double diffLon;
+    private final double diffLat;
     private final Vector<String> vars;
     private final TemporalInterval interval;
 
     public DataArrayXy(int width, int height, Vector<String> vars,
-                       float minLon, float minLat,
-                       float maxLon, float maxLat,
+                       double minLon, double minLat,
+                       double maxLon, double maxLat,
                        TemporalInterval interval) {
         this.minLon = minLon;
         this.minLat = minLat;
@@ -25,6 +27,8 @@ public class DataArrayXy {
         this.maxLat = maxLat;
         this.width = width;
         this.height = height;
+        this.diffLon = width>0 ? (maxLon-minLon)/width : 0.0f;
+        this.diffLat = height>0 ? (maxLat-minLat)/height : 0.0f;
         this.vars = vars;
         this.interval = interval;
         this.array = new float[height][width][vars.size()];
@@ -44,11 +48,7 @@ public class DataArrayXy {
 
     public TemporalInterval getInterval() { return interval; }
 
-    public float lon(int i) {
-        return width>1 ? minLon + (maxLon-minLon)*i/(width-1) : minLon;
-    }
+    public double lon(int i) { return minLon + diffLon*i; }
 
-    public float lat(int i) {
-        return height>1 ? minLat + (maxLat-minLat)*i/height : minLat;
-    }
+    public double lat(int i) { return maxLat - diffLat*i; }
 }

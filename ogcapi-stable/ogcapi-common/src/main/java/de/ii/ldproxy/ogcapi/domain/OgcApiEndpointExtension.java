@@ -14,9 +14,10 @@ import de.ii.xtraplatform.auth.api.User;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import static de.ii.ldproxy.ogcapi.domain.OgcApiEndpointDefinition.SORT_PRIORITY_DUMMY;
 
@@ -56,10 +57,10 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
         throw new ServerErrorException("Invalid sub path: "+requestSubPath, 500);
     }
 
-    default Set<OgcApiQueryParameter> getParameters(OgcApiApiDataV2 apiData, String requestSubPath) {
+    default List<OgcApiQueryParameter> getParameters(OgcApiApiDataV2 apiData, String requestSubPath) {
         OgcApiEndpointDefinition apiDef = getDefinition(apiData);
         if (apiDef.getResources().isEmpty())
-            return ImmutableSet.of();
+            return ImmutableList.of();
 
         OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath))
                 .orElse(null);
@@ -69,25 +70,27 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
                 return operation.getQueryParameters();
             }
         }
-        return ImmutableSet.of();
+        return ImmutableList.of();
     }
 
-    default ImmutableSet<OgcApiPathParameter> getPathParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath) {
+    default ImmutableList<OgcApiPathParameter> getPathParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath) {
         return extensionRegistry.getExtensionsForType(OgcApiPathParameter.class)
                 .stream()
                 .filter(param -> param.isApplicable(apiData, definitionPath))
-                .collect(ImmutableSet.toImmutableSet());
+                .sorted(Comparator.comparing(OgcApiParameter::getName))
+                .collect(ImmutableList.toImmutableList());
     }
 
-    default ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath) {
+    default ImmutableList<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath) {
         return getQueryParameters(extensionRegistry, apiData, definitionPath, OgcApiContext.HttpMethods.GET);
     }
 
-    default ImmutableSet<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    default ImmutableList<OgcApiQueryParameter> getQueryParameters(OgcApiExtensionRegistry extensionRegistry, OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
         return extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class)
                 .stream()
                 .filter(param -> param.isApplicable(apiData, definitionPath, method))
-                .collect(ImmutableSet.toImmutableSet());
+                .sorted(Comparator.comparing(OgcApiParameter::getName))
+                .collect(ImmutableList.toImmutableList());
     }
 
     default void checkAuthorization(OgcApiApiDataV2 apiData, Optional<User> optionalUser) {
