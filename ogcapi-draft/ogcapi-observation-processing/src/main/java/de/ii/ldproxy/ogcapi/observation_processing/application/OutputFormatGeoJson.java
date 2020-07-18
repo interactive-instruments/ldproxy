@@ -62,7 +62,7 @@ public class OutputFormatGeoJson implements ObservationProcessingOutputFormat {
     }
 
     @Override
-    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStream outputStream) {
+    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream) {
         Result result = new Result(processes.getSubSubPath(), processingParameters, outputStream);
         result.featureCollection.put("type", "FeatureCollection");
         ArrayNode features = result.featureCollection.putArray("features");

@@ -61,7 +61,7 @@ public class OutputFormatCsv implements ObservationProcessingOutputFormat {
     }
 
     @Override
-    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStream outputStream) throws IOException {
+    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream) throws IOException {
         Result result = new Result(processes.getSubSubPath(), processingParameters, outputStream);
         switch (result.processName.substring(DAPA_PATH_ELEMENT.length()+2)) {
             case "position":

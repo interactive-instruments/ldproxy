@@ -17,6 +17,7 @@ import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.application.OutputFormatGeoJson;
+import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
 import de.ii.ldproxy.ogcapi.observation_processing.data.*;
 import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
 import de.ii.xtraplatform.akka.http.HttpClient;
@@ -60,6 +61,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     private final ObservationProcessingConfiguration configuration;
     private final FeatureProcessChain processes;
     private final Map<String, Object> processingParameters;
+    private final List<Variable> variables;
     private final ObservationProcessingOutputFormat outputFormat;
     private final TemporalInterval interval;
 
@@ -98,6 +100,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
         this.transformationContext = transformationContext;
         this.processes = transformationContext.getProcesses();
         this.processingParameters = transformationContext.getProcessingParameters();
+        this.variables = transformationContext.getVariables();
         this.outputFormat = transformationContext.getOutputFormat();
         this.interval = (TemporalInterval) processingParameters.get("interval");
 
@@ -148,7 +151,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
         LOGGER.debug(observationCount + " observations received.");
 
         try {
-            Object entity = outputFormat.initializeResult(processes, processingParameters, outputStream);
+            Object entity = outputFormat.initializeResult(processes, processingParameters, variables, outputStream);
 
             Object data = observations;
             for (FeatureProcess process : processes.asList()) {

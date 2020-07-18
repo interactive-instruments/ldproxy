@@ -208,6 +208,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                 .isPropertyOnly(query.propertyOnly())
                 .processes(queryInput.getProcesses())
                 .processingParameters(queryInput.getProcessingParameters())
+                .variables(queryInput.getVariables())
                 .outputFormat(outputFormat)
                 .fields(query.getFields())
                 .limit(query.getLimit())
