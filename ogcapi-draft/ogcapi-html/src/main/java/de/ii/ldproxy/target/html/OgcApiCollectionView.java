@@ -16,7 +16,6 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfigur
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -151,7 +150,7 @@ public class OgcApiCollectionView extends OgcApiView {
     public List<OgcApiLink> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|home|describedby|license|enclosure)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|home|describedby|license|enclosure|ogc-dapa)$"))
                 .collect(Collectors.toList());
     }
 
@@ -192,6 +191,13 @@ public class OgcApiCollectionView extends OgcApiView {
         return links
                 .stream()
                 .filter(link -> Objects.equals(link.getRel(), "tiles"))
+                .findFirst();
+    }
+
+    public Optional<OgcApiLink> getDapa() {
+        return links
+                .stream()
+                .filter(link -> Objects.equals(link.getRel(), "ogc-dapa"))
                 .findFirst();
     }
 

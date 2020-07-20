@@ -11,10 +11,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExternalDocumentation;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.auth.api.AuthConfig;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Yaml;
+import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.License;
@@ -115,6 +117,14 @@ public class ExtendableOpenApiDefinition {
                     // version is required
                     openAPI.getInfo()
                             .version("1.0.0");
+                }
+
+                if (apiData.getExternalDocs().isPresent()) {
+                    OgcApiExternalDocumentation externalDocs = apiData.getExternalDocs().get();
+                    ExternalDocumentation docs = new ExternalDocumentation().url(externalDocs.getUrl());
+                    if (externalDocs.getDescription().isPresent())
+                        docs.description(externalDocs.getDescription().get());
+                    openAPI.externalDocs(docs);
                 }
             }
 

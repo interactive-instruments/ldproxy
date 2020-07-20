@@ -19,23 +19,32 @@
     {{/styles}}
     <br/>
 
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{apiDocumentationTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#apiDefinition}}
+                    <li>
+                        <a href="{{href}}" target="_blank">{{title}}</a>
+                    </li>
+                {{/apiDefinition}}
+                {{#apiDocumentation}}
+                    <li>
+                        <a href="{{href}}" target="_blank">{{title}}</a>
+                    </li>
+                {{/apiDocumentation}}
+            </ul>
+        </div>
+    </div>
+
+    {{#externalDocs}}
         <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">{{apiDocumentationTitle}}</div>
+            <div class="col-md-2 font-weight-bold">{{externalDocsTitle}}</div>
             <div class="col-md-10">
-                <ul class="list-unstyled">
-                    {{#apiDefinition}}
-                        <li>
-                            <a href="{{href}}" target="_blank">{{title}}</a>
-                        </li>
-                    {{/apiDefinition}}
-                    {{#apiDocumentation}}
-                        <li>
-                            <a href="{{href}}" target="_blank">{{title}}</a>
-                        </li>
-                    {{/apiDocumentation}}
-                </ul>
+                <span><a href="{{url}}">{{#description}}{{{.}}}{{/description}}{{^description}}{{url}}{{/description}}</a></span>
             </div>
         </div>
+    {{/externalDocs}}
 
     {{#metadata}}
         <div class="row my-3">

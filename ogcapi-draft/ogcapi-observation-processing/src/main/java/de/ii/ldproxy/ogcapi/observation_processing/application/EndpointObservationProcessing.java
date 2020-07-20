@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
@@ -111,14 +112,15 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                     }
 
                                     FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-                                    Map<String, ProcessDocumentation> configDoc = this.getExtensionConfiguration(apiData, featureType, ObservationProcessingConfiguration.class)
+                                    ObservationProcessingConfiguration config = this.getExtensionConfiguration(apiData, featureType, ObservationProcessingConfiguration.class)
                                             .orElse(this.getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class)
-                                                        .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration.")))
-                                            .getDocumentation();
+                                                    .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration.")));
+                                    Map<String, ProcessDocumentation> configDoc = config.getDocumentation();
                                     String operationSummary = chain.getOperationSummary();
                                     Optional<String> operationDescription = chain.getOperationDescription();
                                     Optional<String> responseDescription = chain.getResponseDescription();
                                     Optional<OgcApiExternalDocumentation> externalDocs = Optional.empty();
+                                    Map<String, Object> example = ImmutableMap.of();
                                     List<String> tags;
                                     String processId = subSubPath.substring(DAPA_PATH_ELEMENT.length()+2);
                                     switch (processId) {
@@ -133,7 +135,6 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                                             "The time series contains values for each selected variable (parameter `variables`) for which " +
                                                             "a value can be interpolated.\n\n" +
                                                             "The time steps are determined from the information in the original data.");
-                                            externalDocs = configDoc.containsKey(processId) ? configDoc.get(processId).getExternalDocs() : Optional.empty();
                                             break;
 
                                         case "position:aggregate-time":
@@ -231,11 +232,13 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                                             "the aggregated values.");
                                             break;
                                     }
+                                    externalDocs = configDoc.containsKey(processId) ? configDoc.get(processId).getExternalDocs() : Optional.empty();
+                                    example = configDoc.containsKey(processId) ? configDoc.get(processId).getExample() : ImmutableMap.of();
                                     String resourcePath = "/collections/" + collectionId + subSubPath;
                                     ImmutableOgcApiResourceProcess.Builder resourceBuilder = new ImmutableOgcApiResourceProcess.Builder()
                                             .path(resourcePath)
                                             .pathParameters(pathParameters);
-                                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, TAGS);
+                                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, example, TAGS);
                                     if (operation!=null)
                                         resourceBuilder.putOperations("GET", operation);
                                     definitionBuilder.putResources(resourcePath, resourceBuilder.build());

@@ -43,7 +43,7 @@ public class ObservationProcessingLinksGenerator {
                                 .removeParameters("f")
                                 .toString()
                         )
-                        .rel("ogc-dapa-endpoints")
+                        .rel("ogc-dapa")
                         .title(i18n.get("dapaEndpointsLink", language))
                         .build())
                 .add(new ImmutableOgcApiLink.Builder()

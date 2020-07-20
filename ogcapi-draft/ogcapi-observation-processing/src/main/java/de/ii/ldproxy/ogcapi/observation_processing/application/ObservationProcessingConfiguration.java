@@ -40,6 +40,7 @@ public abstract class ObservationProcessingConfiguration implements ExtensionCon
     public abstract Optional<String> getDefaultDatetime();
     public abstract OptionalInt getDefaultWidth();
     public abstract Map<String, ProcessDocumentation> getDocumentation();
+    public abstract Map<String, Object> getExample();
 
     @Override
     public <T extends ExtensionConfiguration> T mergeDefaults(T extensionConfigurationDefault) {

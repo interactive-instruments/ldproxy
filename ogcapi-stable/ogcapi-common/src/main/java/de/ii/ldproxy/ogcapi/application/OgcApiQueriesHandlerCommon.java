@@ -86,6 +86,7 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         ImmutableLandingPage.Builder apiLandingPage = new ImmutableLandingPage.Builder()
                 .title(apiData.getLabel())
                 .description(apiData.getDescription().orElse(""))
+                .externalDocs(apiData.getExternalDocs())
                 .extent(Optional.ofNullable(spatialExtent))
                 .links(ogcApiLinks);
 

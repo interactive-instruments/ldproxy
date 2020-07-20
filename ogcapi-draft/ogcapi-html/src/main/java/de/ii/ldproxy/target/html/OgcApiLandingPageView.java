@@ -11,13 +11,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.LandingPage;
-import de.ii.ldproxy.ogcapi.domain.Metadata;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.util.Comparator;
@@ -50,6 +44,7 @@ public class OgcApiLandingPageView extends OgcApiView {
     public String dataSourceTitle;
     public String additionalLinksTitle;
     public String expertInformationTitle;
+    public String externalDocsTitle;
     public String none;
     public boolean isLandingPage = true;
 
@@ -128,6 +123,7 @@ public class OgcApiLandingPageView extends OgcApiView {
         this.dataSourceTitle = i18n.get("dataSourceTitle", language);
         this.additionalLinksTitle = i18n.get("additionalLinksTitle", language);
         this.expertInformationTitle = i18n.get ("expertInformationTitle", language);
+        this.externalDocsTitle = i18n.get ("externalDocsTitle", language);
         this.none = i18n.get ("none", language);
     }
 
@@ -186,6 +182,10 @@ public class OgcApiLandingPageView extends OgcApiView {
                         .rel("start")
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public Optional<OgcApiExternalDocumentation> getExternalDocs() {
+        return apiLandingPage.getExternalDocs();
     }
 
     public String getDistributionsAsString() {

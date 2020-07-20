@@ -18,6 +18,7 @@ public abstract class ProcessDocumentation {
     public abstract Optional<String> getSummary();
     public abstract Optional<String> getDescription();
     public abstract Optional<OgcApiExternalDocumentation> getExternalDocs();
+    public abstract Map<String, Object> getExample();
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();

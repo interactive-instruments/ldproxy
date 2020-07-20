@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.features.processing.Processing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableOgcApiQueryInputProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormatProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -37,9 +38,9 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class EndpointProcessing extends OgcApiEndpointSubCollection {
+public class EndpointDapa extends OgcApiEndpointSubCollection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointProcessing.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDapa.class);
     private static final String DAPA_PATH_ELEMENT = "dapa";
     private static final List<String> TAGS = ImmutableList.of("DAPA");
 
@@ -48,8 +49,8 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
 
     private final ObservationProcessingQueriesHandler queryHandler;
 
-    public EndpointProcessing(@Requires OgcApiExtensionRegistry extensionRegistry,
-                              @Requires ObservationProcessingQueriesHandler queryHandler) {
+    public EndpointDapa(@Requires OgcApiExtensionRegistry extensionRegistry,
+                        @Requires ObservationProcessingQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }
@@ -131,10 +132,21 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
         if (definition==null)
             throw new ServerErrorException("Definition of '/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"' could not be retrieved.", 500);
 
-        URICustomizer uriCustomizer = requestContext.getUriCustomizer()
+        final URICustomizer uriCustomizer = requestContext.getUriCustomizer()
                 .copy()
                 .removeLastPathSegments(3)
                 .clearParameters();
+
+        final List<Variable> variables = getExtensionConfiguration(api.getData(), ObservationProcessingConfiguration.class)
+                .map(ObservationProcessingConfiguration::getVariables)
+                .orElse(ImmutableList.of());
+
+        final List<String> functions = extensionRegistry.getExtensionsForType(ObservationProcessingStatisticalFunction.class)
+                .stream()
+                .filter(function -> function.isEnabledForApi(api.getData()))
+                .map(function -> function.getName())
+                .collect(ImmutableList.toImmutableList());
+
         Processing processList = ImmutableProcessing.builder()
                 .title(i18n.get("processingTitle", requestContext.getLanguage()))
                 .description(i18n.get("processingDescription", requestContext.getLanguage()))
@@ -185,6 +197,8 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
                         })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
+                .putExtensions("variables", variables)
+                .putExtensions("functions", functions)
                 .build();
 
         final String path = "/collections/{collectionId}/"+DAPA_PATH_ELEMENT;

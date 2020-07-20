@@ -37,7 +37,7 @@ public class ObservationProcessingProcessingView extends OgcApiView {
                                                URICustomizer uriCustomizer,
                                                I18n i18n,
                                                Optional<Locale> language) {
-        super("processing.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
+        super("dapa.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
                 processing.getLinks(),
                 processing.getTitle().orElse(i18n.get("processingTitle", language)),
                 processing.getDescription().orElse(i18n.get("processingDescription", language)));
