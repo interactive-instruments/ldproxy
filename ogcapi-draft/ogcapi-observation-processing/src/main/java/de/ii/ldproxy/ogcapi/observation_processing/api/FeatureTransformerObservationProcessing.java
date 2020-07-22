@@ -86,6 +86,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     private Integer currentVarIdx;
     private String currentLocationCode;
     private String currentLocationName;
+    private String currentId;
 
     public FeatureTransformerObservationProcessing(FeatureTransformationContextObservationProcessing transformationContext, HttpClient httpClient) {
         this.outputStream = transformationContext.getOutputStream();
@@ -123,23 +124,15 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     @Override
     public void onStart(OptionalLong numberReturned, OptionalLong numberMatched) {
 
-        LOGGER.debug("START");
-
         if (numberReturned.isPresent()) {
             long returned = numberReturned.getAsLong();
             long matched = numberMatched.orElse(-1);
             LOGGER.debug("numberMatched {}", matched);
             LOGGER.debug("numberReturned {}", returned);
             observations = new Observations((int) returned);
-            /* TODO
-            transformationContext.getState().setObservations(observations);
-             */
         } else {
             // TODO if numberReturned not present, abort or use the page size as default?
             observations = new Observations(pageSize);
-            /* TODO
-            transformationContext.getState().setObservations(observations);
-             */
         }
 
         // TODO if numberMatched is the page size, abort?
@@ -148,7 +141,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     @Override
     public void onEnd() throws IOException {
 
-        LOGGER.debug(observationCount + " observations received.");
+        LOGGER.debug("{} observations received.", observationCount);
 
         try {
             Object entity = outputFormat.initializeResult(processes, processingParameters, variables, outputStream);
@@ -156,6 +149,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
             Object data = observations;
             for (FeatureProcess process : processes.asList()) {
                 data = process.execute(data, processingParameters);
+                LOGGER.debug("Process '{}' completed.", process.getName());
             }
 
             if (data!=null) {
@@ -233,7 +227,6 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
             }
 
             outputFormat.finalizeResult(entity);
-            LOGGER.debug("OgcApiResponse written.");
         } catch (IOException e) {
             LOGGER.error("Error writing observations.");
             if (LOGGER.isDebugEnabled()) {
@@ -248,7 +241,6 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     @Override
     public void onFeatureStart(FeatureType featureType) {
 
-        // TODO prepare feature object
         currentFeature = null;
         currentResult = null;
         currentLon = null;
@@ -259,6 +251,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
         currentVarIdx = null;
         currentLocationCode = null;
         currentLocationName = null;
+        currentId = null;
         currentFeatureProperties = new ArrayList<>(featureType.getProperties().values());
     }
 
@@ -268,9 +261,8 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
         if (Objects.nonNull(currentLon) && Objects.nonNull(currentLat) &&
             Objects.nonNull(currentTime) && Objects.nonNull(currentVarIdx) &&
             Objects.nonNull(currentResult)) {
-            // TODO post-execute feature
 
-            boolean added = observations.addValue(currentLon, currentLat, currentTime, currentVarIdx, currentResult,
+            boolean added = observations.addValue(currentId, currentLon, currentLat, currentTime, currentVarIdx, currentResult,
                     currentLocationCode, currentLocationName);
             if (added)
                 observationCount++;
@@ -286,7 +278,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     @Override
     public void onPropertyStart(FeatureProperty featureProperty, List<Integer> multiplicities) {
         // TODO current assumptions: no arrays, no object values,
-        //      properties "observedProperty", "phenomenonTime", "result", "locationCode", "locationName";
+        //      properties "observedProperty", "phenomenonTime", "result", "locationCode", "locationName", "id";
         //      other properties are ignored
 
         FeatureProperty processedFeatureProperty = featureProperty;
@@ -296,15 +288,6 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
             for (FeaturePropertySchemaTransformer schemaTransformer : schemaTransformations) {
                 processedFeatureProperty = schemaTransformer.transform(processedFeatureProperty);
             }
-
-            /* TODO
-            if (Objects.nonNull(processedFeatureProperty)) {
-                transformationContext.getState()
-                        .setCurrentFeatureProperty(Optional.ofNullable(processedFeatureProperty));
-                transformationContext.getState()
-                        .setCurrentMultiplicity(multiplicities);
-            }
-             */
         }
 
         switch (processedFeatureProperty.getName()) {
@@ -316,6 +299,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
             case "result":
             case "locationCode":
             case "locationName":
+            case "id":
                 currentProperty = processedFeatureProperty;
         }
     }
@@ -353,25 +337,14 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
                     case "locationName":
                         currentLocationName = value;
                         break;
+                    case "id":
+                        currentId = value;
+                        break;
                 }
-
-                /* TODO
-                transformationContext.getState()
-                        .setCurrentValue(value);
-
-                transformationContext.getState()
-                        .setEvent(FeatureTransformationContext.Event.PROPERTY);
-                 */
             }
             currentValueBuilder.setLength(0);
         }
 
-        /* TODO
-        transformationContext.getState()
-                .setCurrentFeatureProperty(Optional.empty());
-        transformationContext.getState()
-                .setCurrentValue(Optional.empty());
-         */
         this.currentProperty = null;
 
         // reset

@@ -79,11 +79,11 @@ public class Observations {
         return idx;
     }
 
-    public boolean addValue(double lon, double lat, Temporal time, int varIdx, float result, String locationCode, String locationName) {
+    public boolean addValue(String currentId, double lon, double lat, Temporal time, int varIdx, float result, String locationCode, String locationName) {
         double convertedTime = temporalToDouble(time);
         long hash = hash(lon, lat, convertedTime, varIdx);
         if (hashes.contains(hash)) {
-            LOGGER.warn("Duplicate observation detected. Location code '{}', coordinates '{}'/'{}', time '{}', variable '{}'.", locationCode, lon, lat, time, index2variable.get(varIdx));
+            LOGGER.debug("Duplicate observation detected and skipped. Coordinates '{}'/'{}', time '{}', variable '{}', result {}.", lon, lat, time, index2variable.get(varIdx), result);
             return false;
         }
 
@@ -320,18 +320,19 @@ public class Observations {
                 });
 
         DataArrayXyt array = new DataArrayXyt(lons.size(), lats.size(), times.size(), new Vector<>(vars), bbox[0], bbox[1], tbegin, bbox[2], bbox[3], tend);
-        obsMap.entrySet().parallelStream()
-                .forEach(entry -> {
-                    int var = entry.getKey();
-                    Observations obsVar = entry.getValue();
-                    int i3 = vars.indexOf(index2variable.get(var));
+        new ArrayList<>(obsMap.keySet()).parallelStream()
+                .forEach(var -> {
+                    Observations obsVar = obsMap.get(var);
+                    LOGGER.debug("Resampling variable {}.", index2variable.get(var));
+
+                    final int i3 = vars.indexOf(index2variable.get(var));
                     int i0 = 0;
                     for (double lon : lons) {
                         int i1 = 0;
                         for (double lat : lats) {
                             int i2 = 0;
                             for (double time : times) {
-                                float val = obsVar.xytInterpolate(lon+diffx/2, lat-diffy/2, time);
+                                final float val = obsVar.xytInterpolate(lon+diffx/2, lat-diffy/2, time);
                                 if (val == Observations.NULL)
                                     array.array[i2][i1][i0][i3] = NaN;
                                 else
@@ -342,7 +343,10 @@ public class Observations {
                         }
                         i0++;
                     }
+
+                    LOGGER.debug("Variable {} finished.", index2variable.get(var));
                 });
+
         return array;
     }
 }

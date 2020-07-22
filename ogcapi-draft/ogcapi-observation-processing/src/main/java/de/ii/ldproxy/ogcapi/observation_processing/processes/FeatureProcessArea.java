@@ -63,7 +63,7 @@ public class FeatureProcessArea implements ObservationProcess {
         TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");
 
         ObservationCollectionPointTimeSeriesList positions = observations.interpolate(interval);
-        LOGGER.debug("Number of distinct locations: "+ positions.size());
+        LOGGER.debug("{} distinct locations.", positions.size());
 
         return positions;
     }
