@@ -69,13 +69,8 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), TilesConfiguration.class);
+    protected Class getConfigurationClass() {
+        return TilesConfiguration.class;
     }
 
     @Override

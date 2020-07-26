@@ -46,13 +46,8 @@ public class OgcApiEndpointCollection extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, OgcApiCommonConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), OgcApiCommonConfiguration.class);
+    protected Class getConfigurationClass() {
+        return OgcApiCommonConfiguration.class;
     }
 
     @Override

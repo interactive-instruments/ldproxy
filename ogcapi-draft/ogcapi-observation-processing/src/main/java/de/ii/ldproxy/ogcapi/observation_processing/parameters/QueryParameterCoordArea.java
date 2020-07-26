@@ -65,7 +65,14 @@ public class QueryParameterCoordArea implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+                apiData.getCollections()
+                        .values()
+                        .stream()
+                        .filter(featureType -> featureType.getEnabled())
+                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
+                        .findAny()
+                        .isPresent();
     }
 
     @Override

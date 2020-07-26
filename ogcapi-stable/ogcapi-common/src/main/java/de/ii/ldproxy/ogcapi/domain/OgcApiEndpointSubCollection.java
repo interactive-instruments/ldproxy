@@ -26,6 +26,26 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
         super(extensionRegistry);
     }
 
+    protected abstract Class getConfigurationClass();
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+        return isExtensionEnabled(apiData, getConfigurationClass()) ||
+                apiData.getCollections()
+                        .values()
+                        .stream()
+                        .filter(featureType -> featureType.getEnabled())
+                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
+                        .findAny()
+                        .isPresent();
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), getConfigurationClass());
+    }
+
+
     protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
                                                     List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                     String operationSummary, Optional<String> operationDescription, List<String> tags) {
@@ -42,14 +62,14 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
     protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
                                                     List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                     String operationSummary, Optional<String> operationDescription,
-                                                    Optional<OgcApiExternalDocumentation> externalDocs, Map<String, Object> example, List<String> tags) {
-        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, example, tags, false);
+                                                    Optional<OgcApiExternalDocumentation> externalDocs, Map<String, List<OgcApiExample>> examples, List<String> tags) {
+        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, tags, false);
     }
 
     protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
                                                     List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                     String operationSummary, Optional<String> operationDescription,
-                                                    Optional<OgcApiExternalDocumentation> externalDocs, Map<String, Object> example, List<String> tags,
+                                                    Optional<OgcApiExternalDocumentation> externalDocs, Map<String, List<OgcApiExample>> examples, List<String> tags,
                                                     boolean hide) {
         final String path = "/collections/"+collectionId+subSubPath;
         OgcApiRequestBody body = null;
@@ -73,15 +93,16 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
             LOGGER.error("No media type supported for the resource at path '" + path + "'. The GET method will not be available.");
             return null;
         }
-        if (!example.isEmpty()) {
+        if (!examples.isEmpty()) {
             responseContent.entrySet().stream()
                     .forEach(entry -> {
-                        Object ex = example.get(entry.getKey().toString());
-                        if (ex!=null)
+                        List<OgcApiExample> exs = examples.get(entry.getKey().toString());
+                        if (!exs.isEmpty()) {
                             entry.setValue(new ImmutableOgcApiMediaTypeContent.Builder()
-                                                                              .from(entry.getValue())
-                                                                              .example(ex)
-                                                                              .build());
+                                    .from(entry.getValue())
+                                    .examples(exs)
+                                    .build());
+                        }
                     });
         }
         ImmutableOgcApiResponse.Builder responseBuilder = new ImmutableOgcApiResponse.Builder()

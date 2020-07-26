@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.parameters.PathParameterCollectionIdProcess;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -56,12 +55,10 @@ public class ObservationProcessingCollectionExtension implements OgcApiCollectio
             return collection;
 
         // get endpoints
-        // TODO check that the collection meets the requirements
-        // TODO add links to processing resources
         if (isExtensionEnabled(apiData, featureType, ObservationProcessingConfiguration.class) &&
             params.get(0).getValues(apiData).contains(featureType.getId())) {
             final ObservationProcessingLinksGenerator linkGenerator = new ObservationProcessingLinksGenerator();
-            collection.addAllLinks(linkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
+            collection.addAllLinks(linkGenerator.generateCollectionLinks(featureType, uriCustomizer, i18n, language));
         }
 
         return collection;

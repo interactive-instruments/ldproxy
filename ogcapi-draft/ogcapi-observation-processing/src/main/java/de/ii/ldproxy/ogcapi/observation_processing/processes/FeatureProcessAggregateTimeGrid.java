@@ -6,7 +6,6 @@ import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
-import de.ii.ldproxy.ogcapi.observation_processing.application.*;
 import de.ii.ldproxy.ogcapi.observation_processing.data.DataArrayXy;
 import de.ii.ldproxy.ogcapi.observation_processing.data.DataArrayXyt;
 import org.apache.felix.ipojo.annotations.Component;
@@ -15,7 +14,10 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.ServerErrorException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -118,10 +120,5 @@ public class FeatureProcessAggregateTimeGrid implements ObservationProcess {
                 "a value can be interpolated and a statistical function (`functions`), separated by an underscore. " +
                 "The property value is the function applied to the interpolated values for each time step " +
                 "in the selected time interval (`datetime`).");
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
     }
 }

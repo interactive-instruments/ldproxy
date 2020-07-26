@@ -2,22 +2,31 @@
 
 <div>
     <h1>{{title}}</h1>
-    <span>{{{description}}}</span>
+    <div class="row my-1">
+        <div class="col-md-12">{{{description}}}</div>
+    </div>
     <br/>
-    <br/>
+
+    <h2>{{mainLinksTitle}}</h2>
+
     {{#items}}
-        <span><big><a href="{{href}}">{{title}}</a></big></span>
-        <br/>
+        <div class="row my-1">
+            <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
+        </div>
     {{/items}}
     {{#tiles}}
-        <span><big><a href="{{href}}">{{title}}</a></big></span>
-        <br/>
+        <div class="row my-1">
+            <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
+        </div>
     {{/tiles}}
     {{#dapa}}
-        <span><big><a href="{{href}}">{{title}}</a></big></span>
-        <br/>
+        <div class="row my-1">
+            <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
+        </div>
     {{/dapa}}
     <br/>
+
+    <h2>{{collectionInformationTitle}}</h2>
 
     {{#bbox2}}
     <div class="row my-3">

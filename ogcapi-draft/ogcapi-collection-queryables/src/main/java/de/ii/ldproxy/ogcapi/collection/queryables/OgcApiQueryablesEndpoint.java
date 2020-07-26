@@ -53,13 +53,8 @@ public class OgcApiQueryablesEndpoint extends OgcApiEndpointSubCollection implem
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, QueryablesConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), QueryablesConfiguration.class);
+    protected Class getConfigurationClass() {
+        return QueryablesConfiguration.class;
     }
 
     @Override

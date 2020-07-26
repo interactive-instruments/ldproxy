@@ -2,22 +2,33 @@
 
 <div>
     <h1>{{title}}</h1>
-    <span>{{{description}}}</span>
+    <div>{{{description}}}</div>
     <br/>
-    <br/>
+    <h2>{{mainLinksTitle}}</h2>
+
     {{#data}}
-    <span><big><a href="{{href}}">{{title}}</a></big></span>
-    <br/>
+    <div class="row my-1">
+        <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
+    </div>
     {{/data}}
     {{#tiles}}
-    <span><big><a href="{{href}}">{{title}}</a></big></span>
-    <br/>
+    <div class="row my-1">
+        <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
+    </div>
     {{/tiles}}
     {{#styles}}
-        <span><big><a href="{{href}}">{{title}}</a></big></span>
-        <br/>
+    <div class="row my-1">
+        <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
+    </div>
     {{/styles}}
+    {{#dapa}}
+    <div class="row my-1">
+        <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
+    </div>
+    {{/dapa}}
     <br/>
+
+    <h2>{{apiInformationTitle}}</h2>
 
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">{{apiDocumentationTitle}}</div>

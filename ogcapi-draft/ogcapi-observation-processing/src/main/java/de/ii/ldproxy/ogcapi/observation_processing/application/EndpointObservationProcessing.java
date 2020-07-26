@@ -65,8 +65,8 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+    protected Class getConfigurationClass() {
+        return ObservationProcessingConfiguration.class;
     }
 
     public List<? extends FormatExtension> getFormats() {
@@ -113,21 +113,20 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
 
                                     FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
                                     ObservationProcessingConfiguration config = this.getExtensionConfiguration(apiData, featureType, ObservationProcessingConfiguration.class)
-                                            .orElse(this.getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class)
-                                                    .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration.")));
+                                                    .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration."));
                                     Map<String, ProcessDocumentation> configDoc = config.getDocumentation();
                                     String operationSummary = chain.getOperationSummary();
                                     Optional<String> operationDescription = chain.getOperationDescription();
                                     Optional<String> responseDescription = chain.getResponseDescription();
                                     Optional<OgcApiExternalDocumentation> externalDocs = Optional.empty();
-                                    Map<String, Object> example = ImmutableMap.of();
+                                    Map<String, List<OgcApiExample>> examples = ImmutableMap.of();
                                     List<String> tags;
                                     String processId = subSubPath.substring(DAPA_PATH_ELEMENT.length()+2);
                                     switch (processId) {
                                         case "position":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
-                                                    "retrieve time series for a position";
+                                                    "retrieve a time series for a position";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
                                                     Optional.of("Returns a time series at the selected location (parameter `coord` or `coordRef`) " +
@@ -140,7 +139,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                         case "position:aggregate-time":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
-                                                    "retrieve aggregated observation values for a position (aggregated over time)";
+                                                    "retrieve aggregated observation values for a position, aggregated over time";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
                                                     Optional.of("Returns observation values at the selected location (parameter `coord` or `coordRef`) " +
@@ -153,7 +152,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                         case "area":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
-                                                    "retrieve time series for each station in an area";
+                                                    "retrieve a time series for each station in an area";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
                                                     Optional.of("Returns a time series for each station in an area (parameter `box`, `coord` or `coordRef`) " +
@@ -166,7 +165,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                         case "area:aggregate-time":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
-                                                    "retrieve aggregated observation values for each station in an area (aggregated over time)";
+                                                    "retrieve aggregated observation values for each station in an area, aggregated over time";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
                                                     Optional.of("Returns observation values for each station in an area (parameter `box`, `coord` or `coordRef`) " +
@@ -179,7 +178,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                         case "area:aggregate-space":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
-                                                    "retrieve time series for an area (aggregated over all stations in the area)";
+                                                    "retrieve a time series for an area, aggregated over all stations in the area";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
                                                     Optional.of("Returns a time series for an area (parameter `bbox`, `coord` or `coordRef`) " +
@@ -192,7 +191,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                         case "area:aggregate-space-time":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
-                                                    "retrieve aggregated observation values for an area (aggregated over space and time)";
+                                                    "retrieve aggregated observation values for an area, aggregated over space and time";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
                                                     Optional.of("Returns observation values for an area (parameter `bbox`, `coord` or `coordRef`) " +
@@ -220,7 +219,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                         case "resample-to-grid:aggregate-time":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
-                                                    "retrieve observations in a spatial grid (aggregated over time)";
+                                                    "retrieve aggregated observations in a spatial grid, aggregated over time";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
                                                     Optional.of("Retrieves observation values for each cell in a rectangular spatial grid (parameter `box` or `coordRef`) " +
@@ -233,12 +232,12 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                             break;
                                     }
                                     externalDocs = configDoc.containsKey(processId) ? configDoc.get(processId).getExternalDocs() : Optional.empty();
-                                    example = configDoc.containsKey(processId) ? configDoc.get(processId).getExample() : ImmutableMap.of();
+                                    examples = configDoc.containsKey(processId) ? configDoc.get(processId).getExamples() : ImmutableMap.of();
                                     String resourcePath = "/collections/" + collectionId + subSubPath;
                                     ImmutableOgcApiResourceProcess.Builder resourceBuilder = new ImmutableOgcApiResourceProcess.Builder()
                                             .path(resourcePath)
                                             .pathParameters(pathParameters);
-                                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, example, TAGS);
+                                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, TAGS);
                                     if (operation!=null)
                                         resourceBuilder.putOperations("GET", operation);
                                     definitionBuilder.putResources(resourcePath, resourceBuilder.build());

@@ -17,6 +17,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Provides
@@ -42,6 +43,14 @@ public class OgcApiFeaturesLandingPageExtension implements OgcApiLandingPageExte
             return landingPageBuilder;
         }
 
+        List<String> collectionNames = apiData.getCollections()
+                .values()
+                .stream()
+                .filter(featureType -> featureType.getEnabled())
+                .map(featureType -> featureType.getLabel())
+                .collect(Collectors.toList());
+        String suffix = (collectionNames.size()<=4) ? " ("+String.join(", ", collectionNames)+")" : "";
+
         landingPageBuilder.addLinks(new ImmutableOgcApiLink.Builder()
                         .href(uriCustomizer.copy()
                                 .ensureNoTrailingSlash()
@@ -49,7 +58,7 @@ public class OgcApiFeaturesLandingPageExtension implements OgcApiLandingPageExte
                                 .removeParameters("f")
                                 .toString())
                         .rel("data")
-                        .title(i18n.get("dataLink",language))
+                        .title(i18n.get("dataLink",language) + suffix)
                         .build());
 
         Optional<OgcApiFeaturesCoreConfiguration> config = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class);

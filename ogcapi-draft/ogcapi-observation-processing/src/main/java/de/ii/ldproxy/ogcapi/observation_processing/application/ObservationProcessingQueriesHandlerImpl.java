@@ -141,9 +141,9 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
 
         ensureCollectionIdExists(api.getData(), collectionId);
 
-        List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
-        List<OgcApiLink> links =
-                new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
+        final ObservationProcessingLinksGenerator linkGenerator = new ObservationProcessingLinksGenerator();
+        List<OgcApiLink> links = linkGenerator.generateDapaLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(),
+                requestContext.getAlternateMediaTypes(), i18n, requestContext.getLanguage());
 
         Processing processing = ImmutableProcessing.builder()
                 .from(queryInput.getProcessing())

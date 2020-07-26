@@ -29,7 +29,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -58,13 +57,18 @@ public class Wfs3EndpointTransactional extends OgcApiEndpointSubCollection {
     }
 
     @Override
+    protected Class getConfigurationClass() {
+        return TransactionalConfiguration.class;
+    }
+
+    @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TransactionalConfiguration.class) && providers.getFeatureProvider(apiData).supportsTransactions();
+        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData).supportsTransactions();
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), TransactionalConfiguration.class) && providers.getFeatureProvider(apiData).supportsTransactions();
+        return super.isEnabledForApi(apiData, collectionId) && providers.getFeatureProvider(apiData).supportsTransactions();
     }
 
     @Override

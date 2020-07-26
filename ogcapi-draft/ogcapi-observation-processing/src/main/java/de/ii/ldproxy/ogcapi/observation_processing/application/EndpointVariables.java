@@ -56,13 +56,8 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    protected Class getConfigurationClass() {
+        return ObservationProcessingConfiguration.class;
     }
 
     @Override

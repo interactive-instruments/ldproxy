@@ -62,13 +62,8 @@ public class EndpointDapa extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    protected Class getConfigurationClass() {
+        return ObservationProcessingConfiguration.class;
     }
 
     @Override
@@ -147,6 +142,8 @@ public class EndpointDapa extends OgcApiEndpointSubCollection {
                 .map(function -> function.getName())
                 .collect(ImmutableList.toImmutableList());
 
+        final Optional<Locale> language = requestContext.getLanguage();
+
         Processing processList = ImmutableProcessing.builder()
                 .title(i18n.get("processingTitle", requestContext.getLanguage()))
                 .description(i18n.get("processingDescription", requestContext.getLanguage()))
@@ -172,23 +169,32 @@ public class EndpointDapa extends OgcApiEndpointSubCollection {
                                         .title(op.getSummary())
                                         .description(op.getDescription())
                                         .inputCollectionId(collectionId)
-                                        .descriptionUri(uriCustomizer.copy()
-                                                .ensureLastPathSegment("api")
-                                                .addParameter("f","html")
-                                                .toString()
-                                                + "#/"+TAGS.get(0)+"/get" + path.replaceAll("[/\\-:]","_"))
-                                        .definitionUri(uriCustomizer.copy()
-                                                .ensureLastPathSegment("api")
-                                                .addParameter("f","json")
-                                                .toString()
-                                                + "#/paths/" + path.replace("/","~1"))
                                         .addLinks(new ImmutableOgcApiLink.Builder()
                                                 .href(requestContext.getUriCustomizer()
                                                         .copy()
                                                         .ensureLastPathSegment(id)
                                                         .clearParameters()
                                                         .toString())
+                                                .title(i18n.get("dapaEndpointLink", language))
                                                 .rel("ogc-dapa-endpoint")
+                                                .build())
+                                        .addLinks(new ImmutableOgcApiLink.Builder()
+                                                .href(uriCustomizer.copy()
+                                                        .ensureLastPathSegment("api")
+                                                        .addParameter("f","json")
+                                                        .toString()
+                                                        + "#/paths/" + path.replace("/","~1"))
+                                                .title(i18n.get("dapaEndpointDefinitionLink", language))
+                                                .rel("ogc-dapa-endpoint-definition")
+                                                .build())
+                                        .addLinks(new ImmutableOgcApiLink.Builder()
+                                                .href(uriCustomizer.copy()
+                                                        .ensureLastPathSegment("api")
+                                                        .addParameter("f","html")
+                                                        .toString()
+                                                        + "#/"+TAGS.get(0)+"/get" + path.replaceAll("[/\\-:]","_"))
+                                                .title(i18n.get("dapaEndpointDocumentationLink", language))
+                                                .rel("ogc-dapa-endpoint-documentation")
                                                 .build())
                                         .mediaTypes(mediaTypes)
                                         .externalDocs(op.getExternalDocs())

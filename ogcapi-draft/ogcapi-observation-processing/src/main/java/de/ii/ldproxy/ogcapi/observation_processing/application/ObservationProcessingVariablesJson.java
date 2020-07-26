@@ -85,12 +85,11 @@ public class ObservationProcessingVariablesJson implements ObservationProcessing
             json = mapper.convertValue(example, ObjectNode.class);
         }
 
-
         return new ImmutableOgcApiMediaTypeContent.Builder()
                 .schema(schema)
                 .schemaRef(schemaRef)
                 .ogcApiMediaType(MEDIA_TYPE)
-                .example(Optional.ofNullable(json))
+                .addExamples(new ImmutableOgcApiExample.Builder().value(Optional.ofNullable(json)).build())
                 .build();
     }
 

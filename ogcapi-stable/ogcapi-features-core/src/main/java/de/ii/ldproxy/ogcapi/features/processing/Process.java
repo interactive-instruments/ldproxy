@@ -19,8 +19,6 @@ public abstract class Process extends PageRepresentation {
 
     public abstract String getId();
     public abstract String getInputCollectionId();
-    public abstract String getDefinitionUri();
-    public abstract String getDescriptionUri();
     public abstract List<String> getMediaTypes();
     public abstract Optional<OgcApiExternalDocumentation> getExternalDocs();
 

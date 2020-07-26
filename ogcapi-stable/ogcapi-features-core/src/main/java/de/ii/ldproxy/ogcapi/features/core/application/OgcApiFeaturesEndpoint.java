@@ -56,8 +56,8 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
+    protected Class getConfigurationClass() {
+        return OgcApiFeaturesCoreConfiguration.class;
     }
 
     @Override

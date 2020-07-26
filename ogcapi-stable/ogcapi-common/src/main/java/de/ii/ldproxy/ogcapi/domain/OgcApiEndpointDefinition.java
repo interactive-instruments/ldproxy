@@ -24,6 +24,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.immutables.value.Value;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -337,9 +338,7 @@ public abstract class OgcApiEndpointDefinition {
                                             if (!openAPI.getComponents().getSchemas().containsKey(schemaId))
                                                 openAPI.getComponents().getSchemas().put(schemaId, entry.getValue().getSchema());
                                         }
-                                        Optional<Object> example = entry.getValue().getExample();
-                                        if (example.isPresent())
-                                            contentForMediaType.example(example.get());
+                                        addExamples(entry.getValue().getExamples(), contentForMediaType);
                                         content.addMediaType(entry.getKey().toString(),contentForMediaType);
                                     });
                             body.content(content);
@@ -368,9 +367,7 @@ public abstract class OgcApiEndpointDefinition {
                                         if (!openAPI.getComponents().getSchemas().containsKey(schemaId))
                                             openAPI.getComponents().getSchemas().put(schemaId, entry.getValue().getSchema());
                                     }
-                                    Optional<Object> example = entry.getValue().getExample();
-                                    if (example.isPresent())
-                                        contentForMediaType.example(example.get());
+                                    addExamples(entry.getValue().getExamples(), contentForMediaType);
                                     content.addMediaType(entry.getKey().toString(),contentForMediaType);
                                 });
                         response.content(content);
@@ -410,6 +407,36 @@ public abstract class OgcApiEndpointDefinition {
                 });
 
         return openAPI;
+    }
+
+    private void addExamples(List<OgcApiExample> examples, MediaType mediaType) {
+        examples.stream()
+                .filter(example -> example.getValue().isPresent())
+                .findFirst()
+                .ifPresent(example -> mediaType.setExample(example.getValue().get()));
+
+        /* Just set "example" as Swagger UI does not show "examples"
+        int i = 1;
+        boolean exSet = false;
+        for (OgcApiExample example : examples) {
+            Example ex = new Example();
+            if (example.getSummary().isPresent())
+                ex.setSummary(example.getSummary().get());
+            if (example.getDescription().isPresent())
+                ex.setDescription(example.getDescription().get());
+            if (example.getValue().isPresent()) {
+                ex.setValue(example.getValue().get());
+                // we also have to set the separate example as only this is visible in the Swagger HTML
+                if (!exSet) {
+                    mediaType.setExample(example.getValue().get());
+                    exSet = true;
+                }
+            }
+            if (example.getExternalValue().isPresent())
+                ex.setExternalValue(example.getExternalValue().get());
+            mediaType.addExamples(String.valueOf(i++), ex);
+        }
+         */
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

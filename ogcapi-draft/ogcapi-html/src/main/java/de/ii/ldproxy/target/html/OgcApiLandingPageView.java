@@ -26,6 +26,8 @@ import static de.ii.xtraplatform.api.functional.LambdaWithException.mayThrow;
 
 public class OgcApiLandingPageView extends OgcApiView {
     private final LandingPage apiLandingPage;
+    public final String mainLinksTitle;
+    public final String apiInformationTitle;
     public String dataSourceUrl;
     public String keywords;
     public String keywordsWithQuotes;
@@ -123,6 +125,8 @@ public class OgcApiLandingPageView extends OgcApiView {
         this.dataSourceTitle = i18n.get("dataSourceTitle", language);
         this.additionalLinksTitle = i18n.get("additionalLinksTitle", language);
         this.expertInformationTitle = i18n.get ("expertInformationTitle", language);
+        this.apiInformationTitle = i18n.get ("apiInformationTitle", language);
+        this.mainLinksTitle = i18n.get ("mainLinksTitle", language);
         this.externalDocsTitle = i18n.get ("externalDocsTitle", language);
         this.none = i18n.get ("none", language);
     }
@@ -130,7 +134,7 @@ public class OgcApiLandingPageView extends OgcApiView {
     public List<OgcApiLink> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|data|tiles|styles|service-desc|service-doc)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|data|tiles|styles|service-desc|service-doc|ogc-dapa)$"))
                 .collect(Collectors.toList());
     }
 
@@ -152,6 +156,13 @@ public class OgcApiLandingPageView extends OgcApiView {
         return links
                 .stream()
                 .filter(link -> Objects.equals(link.getRel(), "styles"))
+                .findFirst();
+    }
+
+    public Optional<OgcApiLink> getDapa() {
+        return links
+                .stream()
+                .filter(link -> Objects.equals(link.getRel(), "ogc-dapa"))
                 .findFirst();
     }
 

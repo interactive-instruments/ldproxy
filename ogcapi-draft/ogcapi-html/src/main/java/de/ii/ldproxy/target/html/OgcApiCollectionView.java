@@ -37,19 +37,21 @@ public class OgcApiCollectionView extends OgcApiView {
     private List<StyleEntry> styleEntries;
     public String defaultStyle;
     public boolean withStyleInfos;
-    public String itemTypeTitle;
-    public String dataTitle;
-    public String metadataTitle;
-    public String licenseTitle;
-    public String downloadTitle;
-    public String spatialExtentTitle;
-    public String temporalExtentTitle;
-    public String supportedCrsTitle;
-    public String storageCrsTitle;
-    public String additionalLinksTitle;
-    public String expertInformationTitle;
-    public String defaultStyleTitle;
-    public String styleInfosTitle;
+    public final String itemTypeTitle;
+    public final String dataTitle;
+    public final String metadataTitle;
+    public final String licenseTitle;
+    public final String downloadTitle;
+    public final String spatialExtentTitle;
+    public final String temporalExtentTitle;
+    public final String supportedCrsTitle;
+    public final String storageCrsTitle;
+    public final String additionalLinksTitle;
+    public final String expertInformationTitle;
+    public final String defaultStyleTitle;
+    public final String styleInfosTitle;
+    public final String collectionInformationTitle;
+    public final String mainLinksTitle;
 
     public String none;
 
@@ -143,6 +145,8 @@ public class OgcApiCollectionView extends OgcApiView {
         this.expertInformationTitle = i18n.get ("expertInformationTitle", language);
         this.defaultStyleTitle = i18n.get ("defaultStyleTitle", language);
         this.styleInfosTitle = i18n.get ("styleInfosTitle", language);
+        this.mainLinksTitle = i18n.get ("mainLinksTitle", language);
+        this.collectionInformationTitle = i18n.get ("collectionInformationTitle", language);
 
         this.none = i18n.get ("none", language);
     }

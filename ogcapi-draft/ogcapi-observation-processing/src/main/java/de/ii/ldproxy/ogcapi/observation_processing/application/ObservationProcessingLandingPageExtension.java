@@ -10,7 +10,9 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.parameters.PathParameterCollectionIdProcess;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -24,16 +26,19 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class ObservationProcessingCollectionExtension implements OgcApiCollectionExtension {
+public class ObservationProcessingLandingPageExtension implements OgcApiLandingPageExtension {
 
     @Requires
     I18n i18n;
 
     private final OgcApiExtensionRegistry extensionRegistry;
+    private final FeatureProcessInfo featureProcessInfo;
 
-    public ObservationProcessingCollectionExtension(@Requires OgcApiExtensionRegistry extensionRegistry,
-                                                    @Requires OgcApiFeatureCoreProviders providers) {
+    public ObservationProcessingLandingPageExtension(@Requires OgcApiExtensionRegistry extensionRegistry,
+                                                     @Requires OgcApiFeatureCoreProviders providers,
+                                                     @Requires FeatureProcessInfo featureProcessInfo) {
         this.extensionRegistry = extensionRegistry;
+        this.featureProcessInfo = featureProcessInfo;
     }
 
     @Override
@@ -42,28 +47,31 @@ public class ObservationProcessingCollectionExtension implements OgcApiCollectio
     }
 
     @Override
-    public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
-                                                     FeatureTypeConfigurationOgcApi featureType,
-                                                     OgcApiApiDataV2 apiData, URICustomizer uriCustomizer,
-                                                     boolean isNested, OgcApiMediaType mediaType,
-                                                     List<OgcApiMediaType> alternateMediaTypes,
-                                                     Optional<Locale> language) {
-        if (isNested)
-            return collection;
+    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
+                                                OgcApiApiDataV2 apiData, URICustomizer uriCustomizer,
+                                                OgcApiMediaType mediaType, List<OgcApiMediaType> alternateMediaTypes,
+                                                Optional<Locale> language) {
 
         List<PathParameterCollectionIdProcess> params = extensionRegistry.getExtensionsForType(PathParameterCollectionIdProcess.class);
         if (params.size()!=1)
-            return collection;
+            return landingPageBuilder;
 
-        // get endpoints
-        // TODO check that the collection meets the requirements
-        // TODO add links to processing resources
-        if (isExtensionEnabled(apiData, featureType, ObservationProcessingConfiguration.class) &&
-            params.get(0).getValues(apiData).contains(featureType.getId())) {
-            final ObservationProcessingLinksGenerator linkGenerator = new ObservationProcessingLinksGenerator();
-            collection.addAllLinks(linkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
-        }
+        final ObservationProcessingLinksGenerator linkGenerator = new ObservationProcessingLinksGenerator();
+        List<FeatureProcessChain> chains = featureProcessInfo.getProcessingChains(apiData, ObservationProcess.class);
 
-        return collection;
+        apiData.getCollections()
+                .values()
+                .stream()
+                .filter(featureType -> featureType.getEnabled())
+                .filter(featureType -> chains.stream()
+                                             .filter(chain -> chain.asList().get(0).getSupportedCollections(apiData).contains(featureType.getId()))
+                                             .findAny()
+                                             .isPresent())
+                .forEach(featureType -> {
+                    landingPageBuilder.addAllLinks(linkGenerator.generateLandingPageLinks(featureType, uriCustomizer, i18n, language));
+
+                });
+
+        return landingPageBuilder;
     }
 }

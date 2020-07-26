@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -59,9 +58,8 @@ public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class) &&
-                isExtensionEnabled(apiData, GeoJsonConfiguration.class);
+    protected Class getConfigurationClass() {
+        return GeoJsonConfiguration.class;
     }
 
     @Path("/{collectionId}/context")
