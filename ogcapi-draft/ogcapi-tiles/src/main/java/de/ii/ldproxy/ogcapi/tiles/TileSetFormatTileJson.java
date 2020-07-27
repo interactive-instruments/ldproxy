@@ -29,9 +29,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -89,7 +87,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new IllegalArgumentException("Unexpected path: " + path);
     }
 
     @Override
@@ -237,7 +235,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                 .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
                 .findFirst()
                 .map(link -> link.getHref())
-                .orElseThrow(() -> new ServerErrorException(500))
+                .orElseThrow(() -> new RuntimeException())
                 .replace("{tileMatrixSetId}", tileMatrixSet.getId())
                 .replace("{tileMatrix}", "{z}")
                 .replace("{tileRow}", "{y}")

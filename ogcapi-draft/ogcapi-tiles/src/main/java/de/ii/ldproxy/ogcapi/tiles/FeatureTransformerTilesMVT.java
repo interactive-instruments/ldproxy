@@ -32,7 +32,6 @@ import org.locationtech.jts.geom.util.AffineTransformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ServerErrorException;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -169,7 +168,7 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
                 FileUtils.writeByteArrayToFile(tileFile, mvt);
             }
         } catch (IOException e) {
-            throw new ServerErrorException("Error writing output stream.", 500);
+            throw new RuntimeException("Error writing output stream.");
         }
 
         LOGGER.trace("Response written.");

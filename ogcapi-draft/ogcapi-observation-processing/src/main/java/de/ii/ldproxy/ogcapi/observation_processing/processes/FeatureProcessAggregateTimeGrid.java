@@ -14,7 +14,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
@@ -38,14 +37,14 @@ public class FeatureProcessAggregateTimeGrid implements ObservationProcess {
     }
 
     @Override
-    public void validateProcessingParameters(Map<String, Object> processingParameters) throws ServerErrorException {
+    public void validateProcessingParameters(Map<String, Object> processingParameters) {
         Object obj = processingParameters.get("functions");
         if (obj==null || !(obj instanceof List) ||((List)obj).isEmpty() || !(((List)obj).get(0) instanceof ObservationProcessingStatisticalFunction)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No statistical functions for the aggregation has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No statistical functions for the aggregation has been provided.");
         }
         obj = processingParameters.get("interval");
         if (obj==null || !(obj instanceof TemporalInterval)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No time interval has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No time interval has been provided.");
         }
     }
 
@@ -53,7 +52,7 @@ public class FeatureProcessAggregateTimeGrid implements ObservationProcess {
     public Object execute(Object data, Map<String, Object> processingParameters) {
         validateProcessingParameters(processingParameters);
         if (!(data instanceof DataArrayXyt)) {
-            throw new ServerErrorException("Missing information for executing '" + getName() + "': No grid data has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No grid data has been provided.");
         }
         DataArrayXyt array = (DataArrayXyt) data;
         TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");

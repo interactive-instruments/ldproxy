@@ -15,7 +15,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.BadRequestException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -147,7 +146,7 @@ public class QueryParameterCoordPosition implements OgcApiQueryParameter {
         if (coord==null) {
             coord = getDefault(apiData, Optional.of(featureType.getId())).orElse(null);
             if (coord == null)
-                throw new BadRequestException(String.format("The required parameter '%s' has no value.", getName()));
+                throw new IllegalStateException(String.format("The required parameter '%s' has no value.", getName()));
         }
 
         context.put("point",new GeometryPoint(geometryHelper.extractPosition(coord)));

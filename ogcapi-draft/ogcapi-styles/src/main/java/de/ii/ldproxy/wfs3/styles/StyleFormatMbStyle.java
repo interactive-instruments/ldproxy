@@ -13,7 +13,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.infra.json.SchemaGeneratorImpl;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -22,7 +21,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -124,7 +122,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             parsedContent = mapper.readValue(content, MbStyleStylesheet.class);
         } catch (IOException e) {
             LOGGER.error("Stylesheet in the styles store is invalid: " + stylesheet.getAbsolutePath());
-            throw new ServerErrorException("An error occurred while processing style '"+stylesheet.getName()+"'.", 500);
+            throw new RuntimeException("An error occurred while processing style '" + stylesheet.getName() + "'.");
         }
 
         return Response.ok()

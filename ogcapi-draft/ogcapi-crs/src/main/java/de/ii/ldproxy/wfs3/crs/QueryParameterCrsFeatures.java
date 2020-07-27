@@ -14,7 +14,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.BadRequestException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -92,10 +91,10 @@ public class QueryParameterCrsFeatures implements OgcApiQueryParameter {
             try {
                 targetCrs = EpsgCrs.fromString(parameters.get(CRS));
             } catch (Throwable e) {
-                throw new BadRequestException(String.format("The parameter '%s' is invalid: %s", CRS, e.getMessage()));
+                throw new RuntimeException(String.format("The parameter '%s' is invalid: %s", CRS, e.getMessage()));
             }
             if (!crsSupport.isSupported(apiData, featureTypeConfiguration, targetCrs)) {
-                throw new BadRequestException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", CRS, targetCrs.toUriString()));
+                throw new RuntimeException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", CRS, targetCrs.toUriString()));
             }
 
             queryBuilder.crs(targetCrs);

@@ -18,7 +18,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.BadRequestException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -137,7 +136,7 @@ public class QueryParameterDatetime implements OgcApiQueryParameter {
         if (datetime==null) {
             datetime = getDefault(apiData, Optional.of(featureType.getId())).orElse(null);
             if (datetime == null)
-                throw new BadRequestException(String.format("The required parameter '%s' has no value.", getName()));
+                throw new RuntimeException(String.format("The required parameter '%s' has no value.", getName()));
         }
 
         // update datetime, with buffer for the feature query
@@ -179,10 +178,10 @@ public class QueryParameterDatetime implements OgcApiQueryParameter {
                     newDatetime = (start==null?"..":start.toString()) + "/" + (end==null?"..":end.toString());
                     break;
                 default:
-                    throw new BadRequestException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
+                    throw new RuntimeException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
             }            
         } catch (DateTimeException e) {
-            throw new BadRequestException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
+            throw new RuntimeException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
         }
         parameters.put(getName(),newDatetime);
         return parameters;
@@ -197,7 +196,7 @@ public class QueryParameterDatetime implements OgcApiQueryParameter {
         if (datetime==null) {
             datetime = getDefault(apiData, Optional.of(featureType.getId())).orElse(null);
             if (datetime == null)
-                throw new BadRequestException(String.format("The required parameter '%s' has no value.", getName()));
+                throw new RuntimeException(String.format("The required parameter '%s' has no value.", getName()));
         }
 
         // no buffer for the transformation context
@@ -235,10 +234,10 @@ public class QueryParameterDatetime implements OgcApiQueryParameter {
                                     OffsetDateTime.from(DateTimeFormatter.ISO_DATE.parse(s)));
                     break;
                 default:
-                    throw new BadRequestException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
+                    throw new RuntimeException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
             }
         } catch (DateTimeException e) {
-            throw new BadRequestException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
+            throw new RuntimeException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
         }
 
         // TODO configure step length

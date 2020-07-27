@@ -24,7 +24,6 @@ import org.locationtech.jts.io.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.BadRequestException;
 import java.util.Map;
 
 import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterCoordPosition.BUFFER;
@@ -134,7 +133,7 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
             // not a valid reference
         }
         if (geometry==null || geometry.isEmpty()) {
-            throw new BadRequestException("The value of the parameter 'coordRef' ("+coordRef+") is not a URI that resolves to a GeoJSON feature.");
+            throw new IllegalStateException("The value of the parameter 'coordRef' (" + coordRef + ") is not a URI that resolves to a GeoJSON feature.");
         }
 
         if (geometry instanceof Polygon || geometry instanceof MultiPolygon)

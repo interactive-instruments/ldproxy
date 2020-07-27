@@ -16,7 +16,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,14 +41,14 @@ public class FeatureProcessArea implements ObservationProcess {
     }
 
     @Override
-    public void validateProcessingParameters(Map<String, Object> processingParameters) throws ServerErrorException {
+    public void validateProcessingParameters(Map<String, Object> processingParameters) {
         Object obj = processingParameters.get("area");
         if (obj==null || !(obj instanceof GeometryMultiPolygon)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No area has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No area has been provided.");
         }
         obj = processingParameters.get("interval");
         if (obj==null || !(obj instanceof TemporalInterval)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No time interval has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No time interval has been provided.");
         }
     }
 
@@ -57,7 +56,7 @@ public class FeatureProcessArea implements ObservationProcess {
     public Object execute(Object data, Map<String, Object> processingParameters) {
         validateProcessingParameters(processingParameters);
         if (!(data instanceof Observations)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No observation data has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No observation data has been provided.");
         }
         Observations observations = (Observations) data;
         TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");

@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
 public interface ApiDefinitionFormatExtension extends FormatExtension {
@@ -22,6 +21,6 @@ public interface ApiDefinitionFormatExtension extends FormatExtension {
     default Response getApiDefinitionFile(OgcApiApiDataV2 apiData,
                                           OgcApiRequestContext wfs3Request,
                                           String file) {
-        throw new NotFoundException();
+        throw new RuntimeException();
     }
 }

@@ -16,7 +16,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -42,14 +41,14 @@ public class FeatureProcessAggregateTime implements ObservationProcess {
     }
 
     @Override
-    public void validateProcessingParameters(Map<String, Object> processingParameters) throws ServerErrorException {
+    public void validateProcessingParameters(Map<String, Object> processingParameters) {
         Object obj = processingParameters.get("interval");
         if (obj==null || !(obj instanceof TemporalInterval)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No time interval has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No time interval has been provided.");
         }
         obj = processingParameters.get("functions");
         if (obj==null || !(obj instanceof List) ||((List)obj).isEmpty() || !(((List)obj).get(0) instanceof ObservationProcessingStatisticalFunction)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No statistical functions for the aggregation has been provided.", 500);
+            throw new RuntimeException("Missing information for executing ' "+ getName() + "': No statistical functions for the aggregation has been provided.");
         }
     }
 
@@ -57,7 +56,7 @@ public class FeatureProcessAggregateTime implements ObservationProcess {
     public Object execute(Object data, Map<String, Object> processingParameters) {
         validateProcessingParameters(processingParameters);
         if (!(data instanceof ObservationCollectionPointTimeSeriesList || data instanceof ObservationCollectionPointTimeSeries)) {
-            throw new ServerErrorException("Missing information for executing '" + getName() + "': No time series data has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No time series data has been provided.");
         }
         ObservationCollectionPointTimeSeriesList timeSeriesPoints;
         if (data instanceof ObservationCollectionPointTimeSeriesList)

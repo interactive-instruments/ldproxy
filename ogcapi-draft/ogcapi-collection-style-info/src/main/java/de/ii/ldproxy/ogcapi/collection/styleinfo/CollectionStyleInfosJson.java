@@ -13,8 +13,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -77,7 +75,7 @@ public class CollectionStyleInfosJson implements CollectionStyleInfoFormatExtens
                     .writeValueAsBytes(updatedContent); // TODO: remove pretty print
             putStylesInfoDocument(styleInfosStore, api.getId(), collectionId, updatedContentString);
         } catch (IOException e) {
-            throw new BadRequestException(e.getMessage());
+            throw new RuntimeException(e);
         }
 
         return Response.noContent()
@@ -99,7 +97,7 @@ public class CollectionStyleInfosJson implements CollectionStyleInfoFormatExtens
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new IllegalArgumentException("Unexpected path: " + path);
     }
 
     @Override
@@ -113,7 +111,7 @@ public class CollectionStyleInfosJson implements CollectionStyleInfoFormatExtens
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path/method "+path+"/"+method,500);
+        throw new IllegalArgumentException(String.format("Unexpected path/method. Path: %s. Method: %s", path, method));
     }
 
     private boolean isNewStyleInfo(File styleInfosStore, String apiId, String collectionId) {
@@ -134,7 +132,7 @@ public class CollectionStyleInfosJson implements CollectionStyleInfoFormatExtens
         try {
             Files.write(styleFile.toPath(), payload);
         } catch (IOException e) {
-            throw new ServerErrorException("could not PATCH style information: "+collectionId, 500);
+            throw new RuntimeException("Could not PATCH style information: " + collectionId);
         }
     }
 }

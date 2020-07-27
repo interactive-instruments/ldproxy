@@ -30,7 +30,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -69,19 +68,19 @@ public class OutputFormatGeoTiff implements ObservationProcessingOutputFormat {
     }
 
     @Override
-    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStream outputStream) throws IOException {
+    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStream outputStream) {
         Result result = new Result(processes.getSubSubPath(), processingParameters, outputStream);
         switch (result.processName.substring(DAPA_PATH_ELEMENT.length()+2)) {
             case "resample-to-grid":
                 TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");
                 Comparable<Temporal> c1 = (Comparable<Temporal>) interval.getBegin();
                 if (c1.compareTo(interval.getEnd())!=0)
-                    throw new NotSupportedException("GeoTIFF is only supported for 'resample-to-grid', if 'datetime' is an instant, but an interval was provided.");
+                    throw new IllegalStateException("GeoTIFF is only supported for 'resample-to-grid', if 'datetime' is an instant, but an interval was provided.");
                 break;
             case "resample-to-grid:aggregate-time":
                 break;
             case "default":
-                throw new NotSupportedException("GeoTIFF is only supported for 'resample-to-grid:aggregate-time'.");
+                throw new IllegalStateException("GeoTIFF is only supported for 'resample-to-grid:aggregate-time'.");
         }
         return result;
     }
