@@ -26,7 +26,7 @@ import java.util.Optional;
 public class QueryParameterCoordPosition implements OgcApiQueryParameter {
 
     static final double BUFFER = 75.0; // buffer in km
-    static final double R = 6378.1; // earth radius in km
+    static public final double R = 6378.1; // earth radius in km
 
     private final Schema baseSchema;
     private final GeometryHelperWKT geometryHelper;

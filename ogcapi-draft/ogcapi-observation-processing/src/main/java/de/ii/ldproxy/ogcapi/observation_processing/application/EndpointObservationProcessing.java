@@ -286,6 +286,8 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
 
         // first execute the information that is passed as processing parameters
         Map<String, Object> processingParameters = new HashMap<>();
+        processingParameters.put("apiData", apiData);
+        processingParameters.put("collectionId", collectionId);
         for (OgcApiQueryParameter parameter : allowedParameters) {
             processingParameters = parameter.transformContext(collectionData, processingParameters, queryParams, apiData);
         }

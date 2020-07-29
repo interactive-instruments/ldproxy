@@ -2,8 +2,11 @@ package de.ii.ldproxy.ogcapi.observation_processing.data;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
-import edu.mines.jtk.interp.CubicInterpolator;
-import edu.mines.jtk.interp.SibsonInterpolator3;
+import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.function.Constant;
+import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
+import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +51,8 @@ public class Observations {
     ConcurrentMap<Integer, String> index2variable;
     ConcurrentMap<Integer, String> index2stationId;
     ConcurrentMap<Integer, String> index2stationName;
-    CubicInterpolator tInterpolator;
-    SibsonInterpolator3 xytInterpolator;
-    Set<Long> hashes;
+    UnivariateFunction tInterpolator;
+    XytInterpolator xytInterpolator;
     int count;
 
     public Observations(int count) {
@@ -58,8 +60,7 @@ public class Observations {
         variableIndex = new int[count];
         stationIndex = new int[count];
         variable = null;
-        hashes = new TreeSet<>();
-        count = 0;
+        this.count = 0;
         variable2index = new ConcurrentHashMap<>();
         index2variable = new ConcurrentHashMap<>();
         stationId2index = new ConcurrentHashMap<>();
@@ -81,11 +82,6 @@ public class Observations {
 
     public boolean addValue(String currentId, double lon, double lat, Temporal time, int varIdx, float result, String locationCode, String locationName) {
         double convertedTime = temporalToDouble(time);
-        long hash = hash(lon, lat, convertedTime, varIdx);
-        if (hashes.contains(hash)) {
-            LOGGER.debug("Duplicate observation detected and skipped. Coordinates '{}'/'{}', time '{}', variable '{}', result {}.", lon, lat, time, index2variable.get(varIdx), result);
-            return false;
-        }
 
         cells[0][count] = (float) lon;
         cells[1][count] = (float) lat;
@@ -106,17 +102,8 @@ public class Observations {
             stationIndex[count] = -1;
         }
 
-        hashes.add(hash);
         count++;
         return true;
-    }
-
-    private long hash(double lon, double lat, double time, int varIdx) {
-        long r1 = ((long) (lon * 100000))<<40;
-        long r2 = ((long) (lat * 100000))<<24;
-        long r3 = ((long) (time * 100))<<3;
-        long r4 = varIdx;
-        return r1+r2+r3+r4;
     }
 
     Observations getObservations(int varIdx) {
@@ -129,7 +116,8 @@ public class Observations {
 
         Observations newObs = new Observations(count);
         newObs.count = count;
-        newObs.variable = variable;
+        newObs.index2variable = index2variable;
+        newObs.variable = index2variable.get(varIdx);
         newObs.index2stationId = index2stationId;
         newObs.index2stationName = index2stationName;
         newObs.stationId2index = stationId2index;
@@ -158,6 +146,7 @@ public class Observations {
                 .count();
         Observations newObs = new Observations(posCount);
         newObs.count = posCount;
+        newObs.index2variable = index2variable;
         newObs.index2stationId = index2stationId;
         newObs.index2stationName = index2stationName;
         newObs.stationId2index = stationId2index;
@@ -187,27 +176,73 @@ public class Observations {
         return positions;
     }
 
-    void createXytInterpolator() {
+    private class XytInterpolator {
+        final KdTree kdtree;
+        final float p;
+        final int n;
+        final float maxDistance;
+
+        public XytInterpolator(float[][] cells, int idwCount, double idwDistanceKm, double idwPower) {
+            kdtree = new KdTree(3);
+            for (int i = 0; i < cells[0].length; i++) {
+                kdtree.add(new NdPoint(cells[0][i], cells[1][i], cells[2][i], cells[3][i]));
+            }
+            this.p = (float) idwPower;
+            this.n = idwCount;
+            this.maxDistance = (float) idwDistanceKm;
+        }
+
+        float interpolate(float x, float y, float t) {
+            NdPoint location = new NdPoint(x, y, t, 0);
+            Collection<NdPoint> observations = kdtree.nearestNeighbourSearch(n, maxDistance, location);
+
+            // compute IDW
+            float a = 0;
+            float b = 0;
+            for (NdPoint obs : observations) {
+                double distance = obs.distance(location);
+                double c = Math.pow(1 / distance, p);
+                b += c;
+                a += c * obs.val[3];
+            }
+            return a/b;
+        }
+    }
+
+    void createXytInterpolator(int idwCount, double idwDistanceKm, double idwPower) {
         if (Objects.isNull(xytInterpolator)) {
-            xytInterpolator = new SibsonInterpolator3(cells[3], cells[0], cells[1], cells[2]);
-            xytInterpolator.setNullValue(NULL);
+            xytInterpolator = new XytInterpolator(cells, idwCount, idwDistanceKm, idwPower);
         }
     }
 
     void createTInterpolator() {
         if (Objects.isNull(tInterpolator)) {
-            tInterpolator = new CubicInterpolator(cells[2], cells[3]);
+            int len = cells[2].length;
+            if (len<2) {
+                tInterpolator = len==1 ? new Constant(cells[3][0]) : new Constant(NULL);
+                return;
+            }
+            double[] times = new double[len];
+            IntStream.range(0, len)
+                    .parallel()
+                    .forEach(i -> times[i] = (double) cells[2][i]);
+            double[] values = new double[len];
+            IntStream.range(0, len)
+                    .parallel()
+                    .forEach(i -> values[i] = (double) cells[3][i]);
+
+            tInterpolator = len==2 ? new LinearInterpolator().interpolate(times, values) : new SplineInterpolator().interpolate(times, values);
         }
     }
 
-    public ObservationCollectionPointTimeSeries interpolate(GeometryPoint point, TemporalInterval interval) {
+    public ObservationCollectionPointTimeSeries interpolate(GeometryPoint point, TemporalInterval interval, int idwCount, double idwDistanceKm, double idwPower) {
         ObservationCollectionPointTimeSeries timeSeriesPoint = new ObservationCollectionPointTimeSeries(point, null, null);
         interval.parallelStream()
                 .forEach(time -> timeSeriesPoint.addTimeStep(time));
         IntStream.range(0, variable2index.size()).parallel()
                 .forEach(var -> {
                     Observations obsVar = getObservations(var);
-                    obsVar.createXytInterpolator();
+                    obsVar.createXytInterpolator(idwCount, idwDistanceKm, idwPower);
                     if (obsVar.count > 0) {
                         interval.stream()
                                 .forEach(time -> {
@@ -257,7 +292,7 @@ public class Observations {
             }
         }
 
-        return ttime < cells[2][0] ? cells[3][0] : ttime > cells[2][count-1] ? cells[3][count-1] : tInterpolator.interpolate((float) ttime);
+        return ttime < cells[2][0] ? cells[3][0] : ttime > cells[2][count-1] ? cells[3][count-1] : tInterpolator.value(ttime);
     }
 
     float interpolateAll(double tlon, double tlat, double ttime) {
@@ -276,7 +311,7 @@ public class Observations {
         return xytInterpolator.interpolate((float) tlon, (float) tlat, (float) ttime);
     }
 
-    public DataArrayXyt resampleToGrid(double[] bbox, TemporalInterval interval, OptionalInt gridWidth, OptionalInt gridHeight, OptionalInt gridSteps) {
+    public DataArrayXyt resampleToGrid(double[] bbox, TemporalInterval interval, OptionalInt gridWidth, OptionalInt gridHeight, OptionalInt gridSteps, int idwCount, double idwDistanceKm, double idwPower) {
         double widthLon = bbox[2] - bbox[0];
         double heightLat = bbox[3] - bbox[1];
         long width = gridWidth.orElse(0);
@@ -315,7 +350,7 @@ public class Observations {
                     if (obsVar.variableIndex.length > 0) {
                         vars.add(index2variable.get(var));
                         obsMap.put(var,obsVar);
-                        obsVar.createXytInterpolator();
+                        obsVar.createXytInterpolator(idwCount, idwDistanceKm, idwPower);
                     }
                 });
 
@@ -326,23 +361,25 @@ public class Observations {
                     LOGGER.debug("Resampling variable {}.", index2variable.get(var));
 
                     final int i3 = vars.indexOf(index2variable.get(var));
-                    int i0 = 0;
-                    for (double lon : lons) {
-                        int i1 = 0;
-                        for (double lat : lats) {
-                            int i2 = 0;
-                            for (double time : times) {
-                                final float val = obsVar.xytInterpolate(lon+diffx/2, lat-diffy/2, time);
-                                if (val == Observations.NULL)
-                                    array.array[i2][i1][i0][i3] = NaN;
-                                else
-                                    array.array[i2][i1][i0][i3] = val;
-                                i2++;
-                            }
-                            i1++;
-                        }
-                        i0++;
-                    }
+
+                    IntStream.range(0, lons.size())
+                            .parallel()
+                            .forEach(i0 -> {
+                                double lon = lons.get(i0);
+                                int i1 = 0;
+                                for (double lat : lats) {
+                                    int i2 = 0;
+                                    for (double time : times) {
+                                        final float val = obsVar.xytInterpolate(lon+diffx/2, lat-diffy/2, time);
+                                        if (val == Observations.NULL)
+                                            array.array[i2][i1][i0][i3] = NaN;
+                                        else
+                                            array.array[i2][i1][i0][i3] = val;
+                                        i2++;
+                                    }
+                                    i1++;
+                                }
+                            });
 
                     LOGGER.debug("Variable {} finished.", index2variable.get(var));
                 });

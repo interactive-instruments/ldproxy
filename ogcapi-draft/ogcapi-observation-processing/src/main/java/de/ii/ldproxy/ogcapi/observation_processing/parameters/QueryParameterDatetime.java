@@ -36,7 +36,7 @@ import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParame
 @Instantiate
 public class QueryParameterDatetime implements OgcApiQueryParameter {
 
-    public static final double ANI = 3; // TODO document
+    public static final double ANI = 2; // TODO document
 
     private static final String OPEN_REGEX = "(?:\\.\\.)?";
     private static final String LOCAL_DATE_REGEX = "(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])";

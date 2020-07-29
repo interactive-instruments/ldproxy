@@ -4,6 +4,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
+import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryPoint;
 import de.ii.ldproxy.ogcapi.observation_processing.data.ObservationCollectionPointTimeSeries;
 import de.ii.ldproxy.ogcapi.observation_processing.data.Observations;
@@ -48,6 +49,12 @@ public class FeatureProcessPosition implements ObservationProcess {
         if (obj==null || !(obj instanceof TemporalInterval)) {
             throw new ServerErrorException("Missing information for executing '"+getName()+"': No time interval has been provided.", 500);
         }
+        obj = processingParameters.get("apiData");
+        if (obj==null || !(obj instanceof OgcApiApiDataV2))
+            throw new ServerErrorException("Missing information for executing '"+getName()+"': No API information has been provided.", 500);
+        obj = processingParameters.get("collectionId");
+        if (obj==null || !(obj instanceof String))
+            throw new ServerErrorException("Missing information for executing '"+getName()+"': No collection identifier has been provided.", 500);
     }
 
     @Override
@@ -59,8 +66,15 @@ public class FeatureProcessPosition implements ObservationProcess {
         Observations observations = (Observations) data;
         GeometryPoint point = (GeometryPoint) processingParameters.get("point");
         TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");
+        OgcApiApiDataV2 apiData = (OgcApiApiDataV2) processingParameters.get("apiData");
+        String collectionId = (String) processingParameters.get("collectionId");
 
-        ObservationCollectionPointTimeSeries position = observations.interpolate(point, interval);
+        ObservationProcessingConfiguration config =
+                getExtensionConfiguration(apiData, apiData.getCollections().get(collectionId),
+                                          ObservationProcessingConfiguration.class).get();
+
+        ObservationCollectionPointTimeSeries position = observations.interpolate(point, interval,
+                config.getIdwCount(), config.getIdwDistanceKm(), config.getIdwPower());
 
         return position;
     }

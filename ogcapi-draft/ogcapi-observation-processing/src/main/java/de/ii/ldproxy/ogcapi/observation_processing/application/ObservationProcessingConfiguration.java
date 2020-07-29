@@ -40,7 +40,13 @@ public abstract class ObservationProcessingConfiguration implements ExtensionCon
     public abstract Optional<String> getDefaultDatetime();
     public abstract OptionalInt getDefaultWidth();
     public abstract Map<String, ProcessDocumentation> getDocumentation();
-    // TODO public abstract Map<String, List<OgcApiExample>> getExamples();
+    @Value.Default
+    public double getIdwPower() { return 3.0; }
+    @Value.Default
+    public int getIdwCount() { return 8; }
+    @Value.Default
+    public double getIdwDistanceKm() { return 300.0; }
+
 
     @Override
     public <T extends ExtensionConfiguration> T mergeDefaults(T extensionConfigurationDefault) {
