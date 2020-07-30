@@ -210,7 +210,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
             Optional<TilesConfiguration> tilesConfiguration = featureType!=null ?
                     this.getExtensionConfiguration(apiData, featureType, TilesConfiguration.class) :
                     this.getExtensionConfiguration(apiData, TilesConfiguration.class);
-            if (!tilesConfiguration.isPresent())
+            if (!tilesConfiguration.map(TilesConfiguration::getEnabled).filter(enabled -> enabled == true).isPresent())
                 continue;
             Map<String, MinMax> seedingConfig = collectionEntry.getValue();
             for (TileFormatExtension outputFormat : outputFormats) {
@@ -298,13 +298,13 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                 .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
                 .filter(collection -> {
                     Optional<TilesConfiguration> config = getExtensionConfiguration(apiData, collection, TilesConfiguration.class);
-                    return config.isPresent() && config.get().getEnabled();
+                    return config.map(TilesConfiguration::getEnabled).filter(enabled -> enabled == true).isPresent();
                 })
                 .map(collection -> collection.getId())
                 .collect(Collectors.toList());
 
         for (TileFormatExtension outputFormat : outputFormats) {
-            if (!outputFormat.canMultiLayer() && collectionIds.size()>1)
+            if (!outputFormat.canMultiLayer() || collectionIds.isEmpty())
                 continue;
             for (Map.Entry<String, MinMax> entry : multiLayerTilesSeeding.entrySet()) {
                 TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
