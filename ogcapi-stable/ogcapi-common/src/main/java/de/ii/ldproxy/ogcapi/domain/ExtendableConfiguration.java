@@ -8,16 +8,17 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonMerge;
-import com.fasterxml.jackson.annotation.OptBoolean;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public interface ExtendableConfiguration {
 
-    @JsonMerge(value = OptBoolean.FALSE)
+    //@JsonMerge(value = OptBoolean.FALSE)
     @JsonAlias(value = "capabilities")
     List<ExtensionConfiguration> getExtensions();
 
@@ -27,5 +28,34 @@ public interface ExtendableConfiguration {
                               .filter(extensionConfiguration -> extensionConfiguration!=null)
                               .findFirst()
                               .map(extensionConfiguration -> (T) extensionConfiguration);
+    }
+
+    default boolean hasRedundantExtensions() {
+        return getExtensions().stream()
+                              .map(ExtensionConfiguration::getBuildingBlock)
+                              .distinct()
+                              .count() < getExtensions().size();
+    }
+
+    default List<ExtensionConfiguration> getMergedExtensions() {
+        Map<String, ExtensionConfiguration> mergedExtensions = new LinkedHashMap<>();
+
+        getExtensions().forEach(extensionConfiguration -> {
+            String buildingBlock = extensionConfiguration.getBuildingBlock();
+            if (mergedExtensions.containsKey(buildingBlock)) {
+                mergedExtensions.put(buildingBlock, extensionConfiguration.mergeInto(mergedExtensions.get(buildingBlock)));
+            } else {
+                mergedExtensions.put(buildingBlock, extensionConfiguration);
+            }
+        });
+
+        return mergedExtensions.values()
+                               .stream()
+                               .map(extensionConfiguration -> extensionConfiguration.getDefaultValues()
+                                                                                    .isPresent()
+                                       ? extensionConfiguration.mergeInto(extensionConfiguration.getDefaultValues()
+                                                                                                .get())
+                                       : extensionConfiguration)
+                               .collect(Collectors.toList());
     }
 }

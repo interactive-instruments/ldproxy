@@ -10,7 +10,23 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceProcess;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointSubCollection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExample;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExternalDocumentation;
+import de.ii.ldproxy.ogcapi.domain.OgcApiOperation;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
@@ -32,11 +48,18 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Provides
@@ -278,7 +301,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
         final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, collectionData, OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
         final int minimumPageSize = coreConfiguration.getMinimumPageSize();
         final int defaultPageSize = coreConfiguration.getDefaultPageSize();
-        final int maxPageSize = coreConfiguration.getMaxPageSize();
+        final int maxPageSize = coreConfiguration.getMaximumPageSize();
         final boolean includeLinkHeader = getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
                                                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                                                 .orElse(false);

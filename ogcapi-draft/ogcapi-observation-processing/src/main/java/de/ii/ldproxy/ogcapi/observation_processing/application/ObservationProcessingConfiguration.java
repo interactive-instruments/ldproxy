@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.processing.ProcessDocumentation;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,38 +22,51 @@ import java.util.OptionalInt;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableObservationProcessingConfiguration.Builder.class)
-public abstract class ObservationProcessingConfiguration implements ExtensionConfiguration, FeatureTransformations {
+public interface ObservationProcessingConfiguration extends ExtensionConfiguration, FeatureTransformations {
 
     // TODO this module belongs to ogcapi-experimental, not ogcapi-draft, but it is part of ogcapi-draft due
     //      to the HTML module dependency issues
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return false;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    public abstract List<Variable> getVariables();
+    List<Variable> getVariables();
 
-    public abstract List<Double> getDefaultBbox();
-    public abstract Optional<String> getDefaultCoordPosition();
-    public abstract Optional<String> getDefaultCoordArea();
-    public abstract Optional<String> getDefaultDatetime();
-    public abstract OptionalInt getDefaultWidth();
-    public abstract Map<String, ProcessDocumentation> getDocumentation();
-    @Value.Default
-    public double getIdwPower() { return 3.0; }
-    @Value.Default
-    public int getIdwCount() { return 8; }
-    @Value.Default
-    public double getIdwDistanceKm() { return 300.0; }
+    List<Double> getDefaultBbox();
 
+    Optional<String> getDefaultCoordPosition();
+
+    Optional<String> getDefaultCoordArea();
+
+    Optional<String> getDefaultDatetime();
+
+    OptionalInt getDefaultWidth();
+
+    Map<String, ProcessDocumentation> getDocumentation();
+
+    @Nullable
+    Double getIdwPower();
+
+    @Nullable
+    Integer getIdwCount();
+
+    @Nullable
+    Double getIdwDistanceKm();
 
     @Override
-    public <T extends ExtensionConfiguration> T mergeDefaults(T extensionConfigurationDefault) {
-
-        return (T) new ImmutableObservationProcessingConfiguration.Builder().from(extensionConfigurationDefault)
-                                                                         .from(this)
-                                                                         .build();
+    default Builder getBuilder() {
+        return new ImmutableObservationProcessingConfiguration.Builder();
     }
+
+    //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
+    // try to find a better solution that also enables deep merges
+    @Override
+    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+        return ((ImmutableObservationProcessingConfiguration.Builder) source.getBuilder())
+                .from(source)
+                .from(this)
+                .documentation(getDocumentation())
+                .build();
+    }
+
 }

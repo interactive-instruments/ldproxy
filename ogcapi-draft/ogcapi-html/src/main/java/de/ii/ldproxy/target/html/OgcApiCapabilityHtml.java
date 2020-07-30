@@ -8,8 +8,7 @@
 package de.ii.ldproxy.target.html;
 
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCapabilityExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiBuildingBlock;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -20,18 +19,21 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Component
 @Provides
 @Instantiate
-public class OgcApiCapabilityHtml implements OgcApiCapabilityExtension {
+public class OgcApiCapabilityHtml implements OgcApiBuildingBlock {
+
     @Override
-    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
-        ImmutableHtmlConfiguration.Builder config = new ImmutableHtmlConfiguration.Builder();
-
-        switch (preset) {
-            case OGCAPI:
-            case GSFS:
-                config.enabled(true);
-                break;
-        }
-
-        return config.build();
+    public ExtensionConfiguration.Builder getConfigurationBuilder() {
+        return new ImmutableHtmlConfiguration.Builder();
     }
+
+    @Override
+    public ExtensionConfiguration getDefaultConfiguration() {
+        return new ImmutableHtmlConfiguration.Builder().enabled(true)
+                                                       .noIndexEnabled(true)
+                                                       .schemaOrgEnabled(true)
+                                                       .collectionDescriptionsInOverview(false)
+                                                       .layout(HtmlConfiguration.LAYOUT.CLASSIC)
+                                                       .build();
+    }
+
 }

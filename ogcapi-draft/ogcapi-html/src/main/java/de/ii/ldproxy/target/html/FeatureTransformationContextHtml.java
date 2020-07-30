@@ -47,7 +47,7 @@ public abstract class FeatureTransformationContextHtml implements FeatureTransfo
             if (Objects.isNull(htmlConfiguration)) {
                 htmlConfiguration = baseHtmlConfiguration.get();
             } else {
-                htmlConfiguration = htmlConfiguration.mergeDefaults(baseHtmlConfiguration.get());
+                htmlConfiguration = (HtmlConfiguration)htmlConfiguration.mergeInto(baseHtmlConfiguration.get());
             }
         }
 

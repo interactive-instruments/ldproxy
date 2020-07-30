@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -23,24 +24,20 @@ import java.util.OptionalDouble;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableNearbyConfiguration.Builder.class)
-public abstract class NearbyConfiguration implements ExtensionConfiguration {
+public interface NearbyConfiguration extends ExtensionConfiguration {
 
     // TODO migrate existing AROUND_RELATIONS configs
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return false;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
     @JsonMerge(value = OptBoolean.FALSE)
-    @Value.Default
-    public List<Relation> getRelations() { return ImmutableList.of(); };
+    List<Relation> getRelations();
 
     @Value.Immutable
     @Value.Modifiable
     @JsonDeserialize(as = ModifiableRelation.class)
-    public static abstract class Relation {
+    abstract class Relation {
 
         public abstract String getId();
 
@@ -54,10 +51,8 @@ public abstract class NearbyConfiguration implements ExtensionConfiguration {
     }
 
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return new ImmutableNearbyConfiguration.Builder()
-                                                    .from(extensionConfigurationDefault)
-                                                    .from(this)
-                                                    .build();
+    default Builder getBuilder() {
+        return new ImmutableNearbyConfiguration.Builder();
     }
+
 }

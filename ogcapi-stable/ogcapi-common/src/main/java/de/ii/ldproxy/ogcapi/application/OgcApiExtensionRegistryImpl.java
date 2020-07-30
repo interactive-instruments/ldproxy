@@ -78,8 +78,8 @@ public class OgcApiExtensionRegistryImpl implements OgcApiExtensionRegistry {
                 LOGGER.debug("RESOURCE CONTENT {} (class {})", contentExtension.getResourceName(), contentExtension.getClass().getName());
             }
 
-            if (extension instanceof OgcApiCapabilityExtension) {
-                final OgcApiCapabilityExtension capabilityExtension = (OgcApiCapabilityExtension) extension;
+            if (extension instanceof OgcApiBuildingBlock) {
+                final OgcApiBuildingBlock capabilityExtension = (OgcApiBuildingBlock) extension;
 
                 LOGGER.debug("CAPABILITY {}", capabilityExtension.getClass().getSimpleName());
             }

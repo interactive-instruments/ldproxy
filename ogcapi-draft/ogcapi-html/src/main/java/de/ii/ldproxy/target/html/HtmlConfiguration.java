@@ -7,14 +7,17 @@
  */
 package de.ii.ldproxy.target.html;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import de.ii.xtraplatform.codelists.Codelist;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,46 +26,32 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(builder = "new", attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableHtmlConfiguration.Builder.class)
-public abstract class HtmlConfiguration implements ExtensionConfiguration, FeatureTransformations {
+public interface HtmlConfiguration extends ExtensionConfiguration, FeatureTransformations {
 
-    enum LAYOUT { CLASSIC, COMPLEX_OBJECTS }
-
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return true;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    @Value.Default
-    public boolean getNoIndexEnabled() {
-        return true;
-    }
+    enum LAYOUT {CLASSIC, COMPLEX_OBJECTS}
 
-    @Deprecated
-    @Value.Derived
-    public boolean getMicrodataEnabled() {
-        return getSchemaOrgEnabled();
-    }
+    @Nullable
+    Boolean getNoIndexEnabled();
 
-    @Value.Default
-    public boolean getSchemaOrgEnabled() {
-        return true;
-    }
+    @JsonAlias(value = "microdataEnabled")
+    @Nullable
+    Boolean getSchemaOrgEnabled();
 
-    @Value.Default
-    public boolean getCollectionDescriptionsInOverview() {
-        return false;
-    }
+    @Nullable
+    Boolean getCollectionDescriptionsInOverview();
 
-    @Value.Default
-    public LAYOUT getLayout() { return LAYOUT.CLASSIC; }
+    @Nullable
+    LAYOUT getLayout();
 
-    public abstract Optional<String> getItemLabelFormat();
+    Optional<String> getItemLabelFormat();
 
     @Override
-    public abstract Map<String, FeatureTypeMapping2> getTransformations();
+    Map<String, FeatureTypeMapping2> getTransformations();
 
-    public Map<String, HtmlPropertyTransformations> getTransformations(
+    default Map<String, HtmlPropertyTransformations> getTransformations(
             Optional<FeatureTransformations> baseTransformations,
             Map<String, Codelist> codelists,
             String serviceUrl, boolean isOverview) {
@@ -106,7 +95,7 @@ public abstract class HtmlConfiguration implements ExtensionConfiguration, Featu
     }
 
     @Override
-    public <T extends ExtensionConfiguration> T mergeDefaults(T baseConfiguration) {
-        return (T) new ImmutableHtmlConfiguration.Builder().from(baseConfiguration).from(this).build();
+    default Builder getBuilder() {
+        return new ImmutableHtmlConfiguration.Builder();
     }
 }

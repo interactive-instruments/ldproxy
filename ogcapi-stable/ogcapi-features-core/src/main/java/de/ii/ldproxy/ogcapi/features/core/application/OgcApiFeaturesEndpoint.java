@@ -203,7 +203,7 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
 
         int minimumPageSize = coreConfiguration.getMinimumPageSize();
         int defaultPageSize = coreConfiguration.getDefaultPageSize();
-        int maxPageSize = coreConfiguration.getMaxPageSize();
+        int maxPageSize = coreConfiguration.getMaximumPageSize();
         boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
         boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)

@@ -8,18 +8,32 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.crs.domain.*;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -33,17 +47,21 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     public static final String SERVICE_TYPE = "OGC_API";
 
     static abstract class Builder implements EntityDataBuilder<OgcApiApiDataV2> {
+
+        // jackson should append to instead of replacing extensions
+        @JsonIgnore
+        public abstract Builder extensions(Iterable<? extends ExtensionConfiguration> elements);
+
+        @JsonProperty("api")
+        public abstract Builder addAllExtensions(Iterable<? extends ExtensionConfiguration> elements);
+
+
     }
 
     @Value.Derived
     @Override
     public long getEntitySchemaVersion() {
         return 2;
-    }
-
-    @Override
-    public Optional<String> getEntitySubType() {
-        return Optional.of(SERVICE_TYPE);
     }
 
     @Value.Default
@@ -57,6 +75,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     public abstract Optional<OgcApiExternalDocumentation> getExternalDocs();
 
     @JsonProperty(value = "api")
+    @JsonMerge
     @Override
     public abstract List<ExtensionConfiguration> getExtensions();
 
@@ -85,7 +104,25 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
                 && Objects.nonNull(getFeatureProvider().getMappingStatus().getErrorMessage());*/
     }
 
-    @Value.Derived
+    @Value.Check
+    public OgcApiApiDataV2 mergeBuildingBlocks() {
+        // this is true at least once because of OgcApiApiDataV2Defaults
+        if (hasRedundantExtensions()) {
+            Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>();
+
+            getCollections().values().forEach(featureTypeConfigurationOgcApi -> {
+                mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.mergeBuildingBlocksInto(getExtensions()));
+            });
+
+            return new ImmutableOgcApiApiDataV2.Builder().from(this)
+                                                         .extensions(getMergedExtensions())
+                                                         .collections(mergedCollections)
+                                                         .build();
+        }
+
+        return this;
+    }
+
     public boolean isCollectionEnabled(final String collectionId) {
         return getCollections().containsKey(collectionId) && getCollections().get(collectionId).getEnabled();
     }
@@ -123,7 +160,6 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
      * @param targetCrs the target CRS
      * @return the bounding box
      */
-    @Value.Derived
     public BoundingBox getSpatialExtent(CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         BoundingBox spatialExtent = getSpatialExtent();
 
@@ -135,7 +171,6 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
      * @param collectionId the name of the feature type
      * @return the bounding box in the default CRS
      */
-    @Value.Derived
     public BoundingBox getSpatialExtent(String collectionId) {
         return getCollections().values()
                                .stream()
@@ -157,14 +192,12 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
      * @param targetCrs the target CRS
      * @return the bounding box in the target CRS
      */
-    @Value.Derived
     public BoundingBox getSpatialExtent(String collectionId, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         BoundingBox spatialExtent = getSpatialExtent(collectionId);
 
         return transformSpatialExtent(spatialExtent, crsTransformerFactory, targetCrs);
     }
 
-    @Value.Derived
     private BoundingBox transformSpatialExtent(BoundingBox spatialExtent, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
 

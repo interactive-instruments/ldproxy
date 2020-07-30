@@ -38,20 +38,18 @@ public interface OgcApiExtension {
         } else if (!defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
             return extensionConfiguration;
         } else if (defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
-            return Optional.ofNullable(extensionConfiguration.get().mergeDefaults(defaultExtensionConfiguration.get()));
+            return Optional.of((T)extensionConfiguration.get().mergeInto(defaultExtensionConfiguration.get()));
         }
 
         return Optional.empty();
     }
 
-    default boolean isExtensionEnabled(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {
+    default <T extends ExtensionConfiguration> boolean isExtensionEnabled(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
 
-        return extendableConfiguration!=null ?
-                getExtensionConfiguration(defaultExtendableConfiguration, extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent() :
-                getExtensionConfiguration(defaultExtendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
+        return getExtensionConfiguration(defaultExtendableConfiguration, extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
     }
 
-    default boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {
+    default <T extends ExtensionConfiguration> boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
 
         return getExtensionConfiguration(extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
     }

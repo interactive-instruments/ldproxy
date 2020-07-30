@@ -50,7 +50,7 @@ public abstract class FeatureTransformationContextObservationProcessing implemen
             if (Objects.isNull(configuration)) {
                 configuration = baseConfiguration.get();
             } else {
-                configuration = configuration.mergeDefaults(baseConfiguration.get());
+                configuration = (ObservationProcessingConfiguration) configuration.mergeInto(baseConfiguration.get());
             }
         }
 

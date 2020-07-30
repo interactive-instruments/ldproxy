@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -18,14 +19,25 @@ import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableFeatureTypeConfigurationOgcApi.Builder.class)
 public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration, ExtendableConfiguration, ValueInstance {
 
-    abstract class Builder implements ValueBuilder<FeatureTypeConfigurationOgcApi> {}
+    abstract class Builder implements ValueBuilder<FeatureTypeConfigurationOgcApi> {
+
+        // jackson should append to instead of replacing extensions
+        @JsonIgnore
+        public abstract Builder extensions(Iterable<? extends ExtensionConfiguration> elements);
+
+        @JsonProperty("api")
+        public abstract Builder addAllExtensions(Iterable<? extends ExtensionConfiguration> elements);
+
+    }
 
     @Override
     default ImmutableFeatureTypeConfigurationOgcApi.Builder toBuilder() {
@@ -55,7 +67,9 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
         Optional<BoundingBox> getSpatial();
 
         @Value.Default
-        default boolean getSpatialComputed(){return false;}
+        default boolean getSpatialComputed() {
+            return false;
+        }
 
     }
 
@@ -76,6 +90,39 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
         }
 
         // TODO: temporal: support computed temporal extent
+    }
+
+    @Value.Check
+    default FeatureTypeConfigurationOgcApi mergeBuildingBlocks() {
+        if (hasRedundantExtensions()) {
+            return toBuilder().extensions(getMergedExtensions())
+                              .build();
+        }
+
+        return this;
+    }
+
+    default FeatureTypeConfigurationOgcApi mergeBuildingBlocksInto(List<ExtensionConfiguration> parentBuildingBlocks) {
+        List<ExtensionConfiguration> mergedExtensions = getExtensions().stream()
+                                                              .map(extensionConfiguration -> {
+                                                                  Optional<ExtensionConfiguration> parent = parentBuildingBlocks.stream()
+                                                                                                                               .filter(parentBuildingBlock -> Objects.equals(parentBuildingBlock.getBuildingBlock(), extensionConfiguration.getBuildingBlock()))
+                                                                                                                               .findFirst();
+                                                                  ExtensionConfiguration merged = extensionConfiguration;
+
+                                                                  if (parent.isPresent()) {
+                                                                      merged = merged.mergeInto(parent.get());
+                                                                  }
+
+                                                                  if (merged.getDefaultValues().isPresent()) {
+                                                                      merged = merged.mergeInto(merged.getDefaultValues().get());
+                                                                  }
+
+                                                                  return merged;
+                                                              })
+                                                              .collect(Collectors.toList());
+
+        return toBuilder().extensions(mergedExtensions).build();
     }
 
 }

@@ -42,13 +42,13 @@ public class OgcApiOpenApiCore implements OpenApiExtension {
         if (apiData != null) {
 
             extensionRegistry.getExtensionsForType(OgcApiEndpointExtension.class)
-                    .stream()
+                       .stream()
                     .filter(endpoint -> endpoint.isEnabledForApi(apiData))
                     .map(endpoint -> endpoint.getDefinition(apiData))
                     .sorted(Comparator.comparing(OgcApiEndpointDefinition::getSortPriority))
                     .forEachOrdered(ogcApiEndpointDefinition -> {
                         ogcApiEndpointDefinition.updateOpenApiDefinition(apiData, openAPI);
-                    });
+                                           });
 
             // TODO apply rename transformers for filter properties and values
 

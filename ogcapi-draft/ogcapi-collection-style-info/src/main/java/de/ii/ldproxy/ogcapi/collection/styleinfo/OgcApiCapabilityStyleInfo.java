@@ -8,8 +8,7 @@
 package de.ii.ldproxy.ogcapi.collection.styleinfo;
 
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCapabilityExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiBuildingBlock;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -18,21 +17,17 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Component
 @Provides
 @Instantiate
-public class OgcApiCapabilityStyleInfo implements OgcApiCapabilityExtension {
+public class OgcApiCapabilityStyleInfo implements OgcApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
-        ImmutableStyleInfoConfiguration.Builder config = new ImmutableStyleInfoConfiguration.Builder();
-
-        switch (preset) {
-            case OGCAPI:
-                config.enabled(true);
-                break;
-            case GSFS:
-                config.enabled(false);
-                break;
-        }
-
-        return config.build();
+    public ExtensionConfiguration.Builder getConfigurationBuilder() {
+        return new ImmutableStyleInfoConfiguration.Builder();
     }
+
+    @Override
+    public ExtensionConfiguration getDefaultConfiguration() {
+        return new ImmutableStyleInfoConfiguration.Builder().enabled(true)
+                                                            .build();
+    }
+
 }

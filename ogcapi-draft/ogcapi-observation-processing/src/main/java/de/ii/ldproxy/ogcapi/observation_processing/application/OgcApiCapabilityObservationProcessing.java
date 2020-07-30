@@ -8,9 +8,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCapabilityExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
-import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiBuildingBlock;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -18,21 +16,20 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Component
 @Provides
 @Instantiate
-public class OgcApiCapabilityObservationProcessing implements OgcApiCapabilityExtension {
+public class OgcApiCapabilityObservationProcessing implements OgcApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
-        ImmutableObservationProcessingConfiguration.Builder config = new ImmutableObservationProcessingConfiguration.Builder();
-
-        switch (preset) {
-            case OGCAPI:
-                config.enabled(true);
-                break;
-            case GSFS:
-                config.enabled(false);
-                break;
-        }
-
-        return config.build();
+    public ExtensionConfiguration.Builder getConfigurationBuilder() {
+        return new ImmutableObservationProcessingConfiguration.Builder();
     }
+
+    @Override
+    public ExtensionConfiguration getDefaultConfiguration() {
+        return new ImmutableObservationProcessingConfiguration.Builder().enabled(true)
+                                                                        .idwPower(3.0)
+                                                                        .idwCount(8)
+                                                                        .idwDistanceKm(300.0)
+                                                                        .build();
+    }
+
 }
