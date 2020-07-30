@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,18 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, FeatureTra
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
+
+    @Nullable
+    FeatureTransformerGeoJson.NESTED_OBJECTS getNestedObjectStrategy();
+
+    @Nullable
+    FeatureTransformerGeoJson.MULTIPLICITY getMultiplicityStrategy();
+
+    @Nullable
+    Boolean getUseFormattedJsonOutput();
+
+    @Nullable
+    String getSeparator();
 
     Optional<JsonLdOptions> getJsonLd();
 

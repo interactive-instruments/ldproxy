@@ -121,8 +121,12 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
                                                                   return merged;
                                                               })
                                                               .collect(Collectors.toList());
+        List<ExtensionConfiguration> otherExtensions = parentBuildingBlocks.stream()
+                                                                   .filter(parent -> mergedExtensions.stream()
+                                                                                                     .noneMatch(merged -> Objects.equals(parent.getBuildingBlock(), merged.getBuildingBlock())))
+                                                                   .collect(Collectors.toList());
 
-        return toBuilder().extensions(mergedExtensions).build();
+        return toBuilder().extensions(mergedExtensions).addAllExtensions(otherExtensions).build();
     }
 
 }

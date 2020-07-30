@@ -59,9 +59,6 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
     SchemaGeneratorFeatureCollection schemaGeneratorFeatureCollection;
 
     @Requires
-    GeoJsonConfig geoJsonConfig;
-
-    @Requires
     GeoJsonWriterRegistry geoJsonWriterRegistry;
 
     @Override
@@ -146,7 +143,7 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
 
         return Optional.of(new FeatureTransformerGeoJson(ImmutableFeatureTransformationContextGeoJson.builder()
                                                                                                      .from(transformationContext)
-                                                                                                     .geoJsonConfig(geoJsonConfig)
+                                                                                                     .geoJsonConfig(transformationContext.getApiData().getCollections().get(transformationContext.getCollectionId()).getExtension(GeoJsonConfiguration.class).get())
                                                                                                      .prettify(Optional.ofNullable(transformationContext.getOgcApiRequest()
                                                                                                                                                         .getParameters()
                                                                                                                                                         .get("pretty"))

@@ -29,6 +29,10 @@ public class OgcApiCapabilityGeoJson implements OgcApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableGeoJsonConfiguration.Builder().enabled(true)
+                                                          .nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST)
+                                                          .multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY)
+                                                          .useFormattedJsonOutput(false)
+                                                          .separator(".")
                                                           .build();
     }
 
