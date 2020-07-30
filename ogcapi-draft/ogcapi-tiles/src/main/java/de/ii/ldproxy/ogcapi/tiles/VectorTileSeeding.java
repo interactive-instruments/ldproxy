@@ -11,7 +11,14 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContentExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiStartupTask;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
@@ -22,10 +29,10 @@ import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import de.ii.xtraplatform.server.CoreServerConfig;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -62,7 +69,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     private final OgcApiExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TilesCache tilesCache;
-    private final CoreServerConfig coreServerConfig;
+    private final XtraPlatform xtraPlatform;
     private final OgcApiFeaturesQuery queryParser;
     private final OgcApiFeatureCoreProviders providers;
     private final TilesQueriesHandler queryHandler;
@@ -74,7 +81,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                              @Requires OgcApiExtensionRegistry extensionRegistry,
                              @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                              @Requires TilesCache tilesCache,
-                             @Requires CoreServerConfig coreServerConfig,
+                             @Requires XtraPlatform xtraPlatform,
                              @Requires OgcApiFeaturesQuery queryParser,
                              @Requires OgcApiFeatureCoreProviders providers,
                              @Requires TilesQueriesHandler queryHandler) {
@@ -87,7 +94,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
         this.extensionRegistry = extensionRegistry;
         this.limitsGenerator = limitsGenerator;
         this.tilesCache = tilesCache;
-        this.coreServerConfig = coreServerConfig;
+        this.xtraPlatform = xtraPlatform;
         this.queryParser = queryParser;
         this.providers = providers;
         this.queryHandler = queryHandler;
@@ -239,8 +246,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                     continue;
 
                                 URI uri;
-                                String uriString = coreServerConfig.getExternalUrl() + "/collections/" + collectionId + "/tiles/" +
-                                        String.join("/", tileMatrixSet.getId(), String.valueOf(level), String.valueOf(row), String.valueOf(col));
+                                String uriString = String.format("%s/%s/collections/%s/tiles/%s/%s/%s/%s", xtraPlatform.getServicesUri(), apiData.getId(), collectionId, tileMatrixSet.getId(), level, row, col);
                                 try {
                                     uri = new URI(uriString);
                                 } catch (URISyntaxException e) {
@@ -331,8 +337,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                 continue;
 
                             URI uri;
-                            String uriString = coreServerConfig.getExternalUrl() + "/tiles/" +
-                                    String.join("/", tileMatrixSet.getId(), String.valueOf(level), String.valueOf(row), String.valueOf(col));
+                            String uriString = String.format("%s/%s/tiles/%s/%s/%s/%s", xtraPlatform.getServicesUri(), apiData.getId(), tileMatrixSet.getId(), level, row, col);
                             try {
                                 uri = new URI(uriString);
                             } catch (URISyntaxException e) {

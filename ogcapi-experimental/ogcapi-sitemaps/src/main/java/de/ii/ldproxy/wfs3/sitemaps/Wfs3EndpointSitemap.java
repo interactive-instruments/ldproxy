@@ -20,11 +20,11 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreQueriesHandlerImpl;
 import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureStream2;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import de.ii.xtraplatform.server.CoreServerConfig;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -64,12 +64,12 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     );
 
 
-    private final CoreServerConfig coreServerConfig;
+    private final XtraPlatform xtraPlatform;
     private final OgcApiFeatureCoreProviders providers;
 
-    public Wfs3EndpointSitemap(@Requires CoreServerConfig coreServerConfig,
+    public Wfs3EndpointSitemap(@Requires XtraPlatform xtraPlatform,
                                @Requires OgcApiFeatureCoreProviders providers) {
-        this.coreServerConfig = coreServerConfig;
+        this.xtraPlatform = xtraPlatform;
         this.providers = providers;
     }
 
@@ -104,11 +104,11 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
 
         List<Site> sites = new ArrayList<>();
 
-        String baseUrlItems = String.format("%s/%s/collections/%s/items?f=html", coreServerConfig.getExternalUrl(), service.getId(), id);
+        String baseUrlItems = String.format("%s/%s/collections/%s/items?f=html", xtraPlatform.getServicesUri(), service.getId(), id);
         List<Site> itemsSites = SitemapComputation.getSites(baseUrlItems, from, to);
         sites.addAll(itemsSites);
 
-        String baseUrlItem = String.format("%s/%s/collections/%s/items", coreServerConfig.getExternalUrl(), service.getId(), id);
+        String baseUrlItem = String.format("%s/%s/collections/%s/items", xtraPlatform.getServicesUri(), service.getId(), id);
         ItemSitesReader itemSitesReader = new ItemSitesReader(baseUrlItem);
         FeatureQuery featureQuery = ImmutableFeatureQuery.builder()
                                                          .type(id)

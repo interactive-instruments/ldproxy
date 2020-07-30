@@ -10,10 +10,14 @@ package de.ii.ldproxy.target.html;
 import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.service.api.ServiceData;
 import de.ii.xtraplatform.service.api.ServiceListingProvider;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Context;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.NotFoundException;
@@ -41,6 +45,9 @@ public class OgcApiListingProvider implements ServiceListingProvider {
     private BundleContext bundleContext;
 
     @Requires
+    private XtraPlatform xtraPlatform;
+
+    @Requires
     private HtmlConfig htmlConfig;
 
     @Requires
@@ -49,18 +56,8 @@ public class OgcApiListingProvider implements ServiceListingProvider {
     // TODO: move externalUri handling to XtraplatformRequestContext in ServicesResource
     // TODO: derive Wfs3Request from injected XtraplatformRequest
 
-    private Optional<URI> externalUri = Optional.empty();
-
-    @Bind
-    void setCore(CoreServerConfig coreServerConfig) {
-        URI externalUri = null;
-        try {
-            externalUri = new URI(coreServerConfig.getExternalUrl());
-        } catch (URISyntaxException e) {
-            // ignore
-        }
-
-        this.externalUri = Optional.ofNullable(externalUri);
+    private Optional<URI> getExternalUri() {
+        return Optional.ofNullable(xtraPlatform.getServicesUri());
     }
 
     @Override
@@ -69,20 +66,20 @@ public class OgcApiListingProvider implements ServiceListingProvider {
     }
 
     private void customizeUri(final URICustomizer uriCustomizer) {
-        if (externalUri.isPresent()) {
-            uriCustomizer.setScheme(externalUri.get()
+        if (getExternalUri().isPresent()) {
+            uriCustomizer.setScheme(getExternalUri().get()
                                                .getScheme());
-            uriCustomizer.replaceInPath("/rest/services", externalUri.get()
+            uriCustomizer.replaceInPath("/rest/services", getExternalUri().get()
                                                                      .getPath());
             uriCustomizer.ensureTrailingSlash();
         }
     }
 
     private String getStaticUrlPrefix(final URICustomizer uriCustomizer) {
-        if (externalUri.isPresent()) {
+        if (getExternalUri().isPresent()) {
             return uriCustomizer.copy()
                                 .cutPathAfterSegments("rest", "services")
-                                .replaceInPath("/rest/services", externalUri.get()
+                                .replaceInPath("/rest/services", getExternalUri().get()
                                                                             .getPath())
                                 .ensureLastPathSegment("___static___")
                                 .ensureTrailingSlash()

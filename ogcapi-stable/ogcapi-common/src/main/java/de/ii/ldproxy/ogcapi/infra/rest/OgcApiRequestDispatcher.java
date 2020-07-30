@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.service.api.ServiceResource;
 import org.apache.felix.ipojo.annotations.*;
 import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
@@ -49,15 +49,15 @@ public class OgcApiRequestDispatcher implements ServiceResource {
 
     private final OgcApiExtensionRegistry extensionRegistry;
     private final OgcApiRequestInjectableContext ogcApiInjectableContext;
-    private final CoreServerConfig coreServerConfig;
+    private final XtraPlatform xtraPlatform;
     private final OgcApiContentNegotiation ogcApiContentNegotiation;
 
     OgcApiRequestDispatcher(@Requires OgcApiExtensionRegistry extensionRegistry,
                             @Requires OgcApiRequestInjectableContext ogcApiInjectableContext,
-                            @Requires CoreServerConfig coreServerConfig) {
+                            @Requires XtraPlatform xtraPlatform) {
         this.extensionRegistry = extensionRegistry;
         this.ogcApiInjectableContext = ogcApiInjectableContext;
-        this.coreServerConfig = coreServerConfig;
+        this.xtraPlatform = xtraPlatform;
         this.ogcApiContentNegotiation = new OgcApiContentNegotiation();
     }
 
@@ -248,13 +248,6 @@ public class OgcApiRequestDispatcher implements ServiceResource {
     }
 
     private Optional<URI> getExternalUri() {
-        URI externalUri = null;
-        try {
-            externalUri = new URI(coreServerConfig.getExternalUrl());
-        } catch (URISyntaxException e) {
-            // return null
-        }
-
-        return Optional.ofNullable(externalUri);
+        return Optional.ofNullable(xtraPlatform.getServicesUri());
     }
 }
