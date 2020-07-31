@@ -18,6 +18,7 @@ import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -43,6 +44,12 @@ public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration
 
     @Nullable
     Boolean getEnabled();
+
+    @JsonIgnore
+    @Value.Derived
+    default boolean isEnabled() {
+        return Objects.equals(getEnabled(), true);
+    }
 
     //TODO: is this really optional, or should we throw an exception when missing?
     @JsonIgnore

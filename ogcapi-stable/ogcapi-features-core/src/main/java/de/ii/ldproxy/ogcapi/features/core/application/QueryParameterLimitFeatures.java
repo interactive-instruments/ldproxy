@@ -48,17 +48,17 @@ public class QueryParameterLimitFeatures implements OgcApiQueryParameter {
         if (schema==null) {
             schema = new IntegerSchema();
 
-            Optional<Integer> minimumPageSize = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class)
+            Optional<Integer> minimumPageSize = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class)
                     .map(OgcApiFeaturesCoreConfiguration::getMinimumPageSize);
             if (minimumPageSize.isPresent())
                 schema.minimum(BigDecimal.valueOf(minimumPageSize.get()));
 
-            Optional<Integer> defaultPageSize = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class)
+            Optional<Integer> defaultPageSize = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class)
                     .map(OgcApiFeaturesCoreConfiguration::getDefaultPageSize);
             if (defaultPageSize.isPresent())
                 schema.setDefault(BigDecimal.valueOf(defaultPageSize.get()));
 
-            Optional<Integer> maxPageSize = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class)
+            Optional<Integer> maxPageSize = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class)
                     .map(OgcApiFeaturesCoreConfiguration::getMaximumPageSize);
             if (maxPageSize.isPresent())
                 schema.maximum(BigDecimal.valueOf(maxPageSize.get()));

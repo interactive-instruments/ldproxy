@@ -62,7 +62,7 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
         if (stylesExtension.isPresent() && stylesExtension.get()
                                                           .getResourceManagerEnabled()) {
@@ -96,7 +96,7 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+            Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
                     .apiEntrypoint("resources")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);

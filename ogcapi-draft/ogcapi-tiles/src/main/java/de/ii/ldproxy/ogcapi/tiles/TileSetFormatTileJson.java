@@ -81,10 +81,10 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .isPresent();
     }
 

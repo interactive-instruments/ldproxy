@@ -59,11 +59,11 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), HtmlConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
     }
 
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+        return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
     }

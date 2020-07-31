@@ -81,7 +81,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
 
         Optional<TilesConfiguration> collectionConfig = apiData.getCollections().get(collectionId).getExtension(TilesConfiguration.class);
         if (collectionConfig.isPresent())
-            return collectionConfig.get().getEnabled();
+            return collectionConfig.get().isEnabled();
 
         return true;
     }

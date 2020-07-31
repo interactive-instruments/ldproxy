@@ -90,7 +90,7 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     @Override

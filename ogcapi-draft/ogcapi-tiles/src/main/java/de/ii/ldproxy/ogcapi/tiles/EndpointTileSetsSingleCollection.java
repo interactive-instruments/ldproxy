@@ -139,12 +139,12 @@ public class EndpointTileSetsSingleCollection extends OgcApiEndpointSubCollectio
     }
 
     private double[] getCenter(OgcApiApiDataV2 data) {
-        TilesConfiguration tilesConfiguration = getExtensionConfiguration(data, TilesConfiguration.class).get();
+        TilesConfiguration tilesConfiguration = data.getExtension(TilesConfiguration.class).get();
         return tilesConfiguration.getCenter();
     }
 
     private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data, String collectionId) {
-        TilesConfiguration tilesConfiguration = getExtensionConfiguration(data, data.getCollections().get(collectionId), TilesConfiguration.class).get();
+        TilesConfiguration tilesConfiguration = data.getCollections().get(collectionId).getExtension(TilesConfiguration.class).get();
         return tilesConfiguration.getZoomLevels();
     }
 }

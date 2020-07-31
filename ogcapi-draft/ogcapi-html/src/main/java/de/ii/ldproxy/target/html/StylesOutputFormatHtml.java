@@ -64,7 +64,7 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
     }
 
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+        return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
     }

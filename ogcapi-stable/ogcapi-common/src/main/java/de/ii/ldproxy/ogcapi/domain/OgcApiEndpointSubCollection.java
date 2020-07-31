@@ -42,7 +42,7 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), getConfigurationClass());
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), getConfigurationClass());
     }
 
 

@@ -45,7 +45,7 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), OgcApiFeaturesCoreConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), OgcApiFeaturesCoreConfiguration.class);
     }
 
     @Override
@@ -107,14 +107,14 @@ public class OgcApiFeaturesCollectionExtension implements OgcApiCollectionExtens
                     .build());
         }
 
-        Optional<OgcApiFeaturesCoreConfiguration> config = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class);
+        Optional<OgcApiFeaturesCoreConfiguration> config = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class);
         if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/collections/"+featureType.getId())) {
             List<OgcApiLink> additionalLinks = config.get().getAdditionalLinks().get("/collections/"+featureType.getId());
             additionalLinks.stream().forEach(link -> collection.addLinks(link));
         }
 
         // only add extents for cases where we can filter using spatial / temporal predicates
-        Optional<OgcApiFeaturesCollectionQueryables> queryables = getExtensionConfiguration(featureType, OgcApiFeaturesCoreConfiguration.class).flatMap(OgcApiFeaturesCoreConfiguration::getQueryables);
+        Optional<OgcApiFeaturesCollectionQueryables> queryables = featureType.getExtension(OgcApiFeaturesCoreConfiguration.class).flatMap(OgcApiFeaturesCoreConfiguration::getQueryables);
         boolean hasSpatialQueryable = queryables.map(OgcApiFeaturesCollectionQueryables::getSpatial)
                                                 .filter(spatial -> !spatial.isEmpty())
                                                 .isPresent();

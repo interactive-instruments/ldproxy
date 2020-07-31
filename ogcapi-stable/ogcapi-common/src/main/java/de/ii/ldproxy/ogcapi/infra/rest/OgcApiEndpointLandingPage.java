@@ -90,7 +90,7 @@ public class OgcApiEndpointLandingPage extends OgcApiEndpoint {
                                    @Context OgcApiRequestContext requestContext) {
         checkAuthorization(api.getData(), optionalUser);
 
-        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 

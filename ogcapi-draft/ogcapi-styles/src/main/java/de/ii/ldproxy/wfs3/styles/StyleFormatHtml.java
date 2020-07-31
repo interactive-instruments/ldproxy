@@ -65,7 +65,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, StylesConfiguration.class)
+        return apiData.getExtension(StylesConfiguration.class)
                 .filter(StylesConfiguration::getMbStyleEnabled)
                 .map(StylesConfiguration::getMapsEnabled)
                 .orElse(false);

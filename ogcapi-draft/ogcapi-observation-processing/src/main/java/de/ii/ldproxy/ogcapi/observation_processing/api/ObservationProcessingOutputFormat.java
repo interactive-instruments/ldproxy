@@ -46,14 +46,12 @@ public interface ObservationProcessingOutputFormat extends FormatExtension {
                 apiData.getCollections()
                         .values()
                         .stream()
-                        .filter(featureType -> featureType.getEnabled())
-                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
-                        .findAny()
-                        .isPresent();
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
     }
 
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     default boolean canTransformFeatures() {

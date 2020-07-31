@@ -70,7 +70,7 @@ public class QueryParameterProperties implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ProjectionsConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ProjectionsConfiguration.class);
     }
 
     @Override

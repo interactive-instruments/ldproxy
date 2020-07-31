@@ -94,19 +94,19 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<StylesConfiguration> extension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+        Optional<StylesConfiguration> extension = apiData.getExtension(StylesConfiguration.class);
 
         return extension
-                .filter(StylesConfiguration::getEnabled)
+                .filter(StylesConfiguration::isEnabled)
                 .filter(StylesConfiguration::getManagerEnabled)
                 .isPresent();
     }
 
     private boolean isValidationEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<StylesConfiguration> extension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+        Optional<StylesConfiguration> extension = apiData.getExtension(StylesConfiguration.class);
 
         return extension
-                .filter(StylesConfiguration::getEnabled)
+                .filter(StylesConfiguration::isEnabled)
                 .filter(StylesConfiguration::getManagerEnabled)
                 .filter(StylesConfiguration::getValidationEnabled)
                 .isPresent();
@@ -137,7 +137,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+            Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
             ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
                     .apiEntrypoint("styles")
                     .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLES_MANAGER);

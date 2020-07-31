@@ -132,7 +132,7 @@ public class EndpointDapa extends OgcApiEndpointSubCollection {
                 .removeLastPathSegments(3)
                 .clearParameters();
 
-        final List<Variable> variables = getExtensionConfiguration(api.getData(), ObservationProcessingConfiguration.class)
+        final List<Variable> variables = api.getData().getExtension(ObservationProcessingConfiguration.class)
                 .map(ObservationProcessingConfiguration::getVariables)
                 .orElse(ImmutableList.of());
 
@@ -210,12 +210,10 @@ public class EndpointDapa extends OgcApiEndpointSubCollection {
         final String path = "/collections/{collectionId}/"+DAPA_PATH_ELEMENT;
         checkPathParameter(extensionRegistry, api.getData(), path, "collectionId", collectionId);
 
-        final FeatureTypeConfigurationOgcApi collectionData = api.getData().getCollections().get(collectionId);
-        final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(api.getData(), collectionData, OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
-        final boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        final boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        final boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        final boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 

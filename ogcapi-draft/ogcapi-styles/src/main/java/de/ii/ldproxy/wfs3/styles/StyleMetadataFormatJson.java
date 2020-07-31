@@ -46,7 +46,7 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
 
     @Override
     public Response getStyleMetadataResponse(StyleMetadata metadata, OgcApiApi api, OgcApiRequestContext requestContext) {
-        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 

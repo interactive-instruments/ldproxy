@@ -11,6 +11,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
@@ -30,6 +31,7 @@ import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
@@ -46,6 +48,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -105,10 +108,10 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .filter(config -> !config.getSeeding().isEmpty())
                 .isPresent();
     }
@@ -117,20 +120,20 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
         Optional<TilesConfiguration> extension = featureType!=null ?
-                this.getExtensionConfiguration(apiData, featureType, TilesConfiguration.class) :
-                this.getExtensionConfiguration(apiData, TilesConfiguration.class);
+                featureType.getExtension(TilesConfiguration.class) :
+                apiData.getExtension(TilesConfiguration.class);
 
         return extension
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .filter(config -> !config.getSeeding().isEmpty())
                 .isPresent();
     }
 
     private boolean isEnabledForApiMultiCollection(OgcApiApiDataV2 apiData) {
-        Optional<TilesConfiguration> extension = this.getExtensionConfiguration(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::getMultiCollectionEnabled)
                 .filter(config -> !config.getSeeding().isEmpty())
                 .isPresent();
@@ -195,9 +198,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
         Map<String, Map<String, MinMax>> minMaxMap = new HashMap<>();
         for (FeatureTypeConfigurationOgcApi featureType : apiData.getCollections().values()) {
-            final Optional<TilesConfiguration> tilesConfiguration = featureType==null ?
-                    getExtensionConfiguration(apiData, TilesConfiguration.class) :
-                    getExtensionConfiguration(apiData, featureType, TilesConfiguration.class);
+            final Optional<TilesConfiguration> tilesConfiguration = featureType!=null ?
+                    featureType.getExtension(TilesConfiguration.class) :
+                    apiData.getExtension(TilesConfiguration.class);
             if (tilesConfiguration.isPresent()) {
                 Map<String, MinMax> seedingConfig = tilesConfiguration.get().getSeeding();
                 if (seedingConfig != null && !seedingConfig.isEmpty())
@@ -215,9 +218,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
             String collectionId = collectionEntry.getKey();
             FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
             Optional<TilesConfiguration> tilesConfiguration = featureType!=null ?
-                    this.getExtensionConfiguration(apiData, featureType, TilesConfiguration.class) :
-                    this.getExtensionConfiguration(apiData, TilesConfiguration.class);
-            if (!tilesConfiguration.map(TilesConfiguration::getEnabled).filter(enabled -> enabled == true).isPresent())
+                    featureType.getExtension(TilesConfiguration.class) :
+                    apiData.getExtension(TilesConfiguration.class);
+            if (!tilesConfiguration.filter(TilesConfiguration::isEnabled).isPresent())
                 continue;
             Map<String, MinMax> seedingConfig = collectionEntry.getValue();
             for (TileFormatExtension outputFormat : outputFormats) {
@@ -264,7 +267,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                 // generate a query template for an arbitrary collection
                                 FeatureQuery query = outputFormat.getQuery(tile, ImmutableList.of(), ImmutableMap.of(), tilesConfiguration.get(), uriCustomizer);
 
-                                OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class).get();
+                                OgcApiFeaturesCoreConfiguration coreConfiguration = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class).get();
 
                                 TilesQueriesHandler.OgcApiQueryInputTileSingleLayer queryInput = new ImmutableOgcApiQueryInputTileSingleLayer.Builder()
                                         .tile(tile)
@@ -291,7 +294,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
         OgcApiApiDataV2 apiData = api.getData();
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         Map<String, MinMax> multiLayerTilesSeeding = ImmutableMap.of();
-        Optional<TilesConfiguration> tilesConfiguration = getExtensionConfiguration(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> tilesConfiguration = apiData.getExtension(TilesConfiguration.class);
         if (tilesConfiguration.isPresent()) {
             Map<String, MinMax> seedingConfig = tilesConfiguration.get().getSeeding();
             if (seedingConfig != null && !seedingConfig.isEmpty())
@@ -302,11 +305,8 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                 .values()
                 .stream()
                 .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
-                .filter(collection -> {
-                    Optional<TilesConfiguration> config = getExtensionConfiguration(apiData, collection, TilesConfiguration.class);
-                    return config.map(TilesConfiguration::getEnabled).filter(enabled -> enabled == true).isPresent();
-                })
-                .map(collection -> collection.getId())
+                .filter(collection -> collection.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
+                .map(FeatureTypeConfiguration::getId)
                 .collect(Collectors.toList());
 
         for (TileFormatExtension outputFormat : outputFormats) {
@@ -367,7 +367,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                             .type(collectionId)
                                             .build()));
 
-                            OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class).get();
+                            OgcApiFeaturesCoreConfiguration coreConfiguration = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class).get();
 
                             TilesQueriesHandler.OgcApiQueryInputTileMultiLayer queryInput = new ImmutableOgcApiQueryInputTileMultiLayer.Builder()
                                     .tile(multiLayerTile)

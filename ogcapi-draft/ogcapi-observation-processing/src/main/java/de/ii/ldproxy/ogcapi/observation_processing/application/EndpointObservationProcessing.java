@@ -135,8 +135,8 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                     }
 
                                     FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-                                    ObservationProcessingConfiguration config = this.getExtensionConfiguration(apiData, featureType, ObservationProcessingConfiguration.class)
-                                                    .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration."));
+                                    ObservationProcessingConfiguration config = featureType.getExtension(ObservationProcessingConfiguration.class)
+                                                                                           .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration."));
                                     Map<String, ProcessDocumentation> configDoc = config.getDocumentation();
                                     String operationSummary = chain.getOperationSummary();
                                     Optional<String> operationDescription = chain.getOperationDescription();
@@ -298,11 +298,12 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
         // TODO check that the request is not considered to be too demanding
 
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, collectionData, OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
+        final OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
+                                                                                .orElseThrow(NotFoundException::new);
         final int minimumPageSize = coreConfiguration.getMinimumPageSize();
         final int defaultPageSize = coreConfiguration.getDefaultPageSize();
         final int maxPageSize = coreConfiguration.getMaximumPageSize();
-        final boolean includeLinkHeader = getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
+        final boolean includeLinkHeader = apiData.getExtension(OgcApiCommonConfiguration.class)
                                                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                                                 .orElse(false);
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
@@ -323,7 +324,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
         queryParams.put("limit", String.valueOf(maxPageSize));
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(apiData, collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, queryParams, allowedParameters);
 
-        List<Variable> variables = getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class)
+        List<Variable> variables = apiData.getExtension(ObservationProcessingConfiguration.class)
                 .map(ObservationProcessingConfiguration::getVariables)
                 .orElse(ImmutableList.of());
 

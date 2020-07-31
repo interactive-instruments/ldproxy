@@ -88,19 +88,19 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<StylesConfiguration> extension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+        Optional<StylesConfiguration> extension = apiData.getExtension(StylesConfiguration.class);
 
         return extension
-                .filter(StylesConfiguration::getEnabled)
+                .filter(StylesConfiguration::isEnabled)
                 .filter(StylesConfiguration::getManagerEnabled)
                 .isPresent();
     }
 
     private boolean isValidationEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<StylesConfiguration> extension = getExtensionConfiguration(apiData, StylesConfiguration.class);
+        Optional<StylesConfiguration> extension = apiData.getExtension(StylesConfiguration.class);
 
         return extension
-                .filter(StylesConfiguration::getEnabled)
+                .filter(StylesConfiguration::isEnabled)
                 .filter(StylesConfiguration::getManagerEnabled)
                 .filter(StylesConfiguration::getValidationEnabled)
                 .isPresent();

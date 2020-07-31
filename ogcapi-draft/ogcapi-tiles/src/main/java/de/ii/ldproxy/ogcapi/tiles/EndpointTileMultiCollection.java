@@ -19,6 +19,7 @@ import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
@@ -73,10 +74,10 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::getMultiCollectionEnabled)
                 .isPresent();
     }
@@ -155,7 +156,7 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
             throw new ServerErrorException("Could not convert tile coordinates that have been validated to integers", 500);
         }
 
-        TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, TilesConfiguration.class).get();
+        TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
         MinMax zoomLevels = tilesConfiguration.getZoomLevels().get(tileMatrixSetId);
         if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
@@ -194,11 +195,8 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
                         .values()
                         .stream()
                         .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
-                        .filter(collection -> {
-                            Optional<TilesConfiguration> config = getExtensionConfiguration(apiData, collection, TilesConfiguration.class);
-                            return config.isPresent() && config.get().getEnabled();
-                        })
-                        .map(collection -> collection.getId())
+                        .filter(collection -> collection.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
+                        .map(FeatureTypeConfiguration::getId)
                         .collect(Collectors.toList());
 
         if (!outputFormat.canMultiLayer() && collections.size() > 1)
@@ -261,7 +259,7 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
                         .type(collectionId)
                         .build()));
 
-        OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class).get();
+        OgcApiFeaturesCoreConfiguration coreConfiguration = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class).get();
 
         TilesQueriesHandler.OgcApiQueryInputTileMultiLayer queryInput = new ImmutableOgcApiQueryInputTileMultiLayer.Builder()
                 .from(getGenericQueryInput(api.getData()))

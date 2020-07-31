@@ -133,7 +133,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
             apiDir.mkdirs();
         }
 
-        Optional<StylesConfiguration> stylesExtension = getExtensionConfiguration(api.getData(), StylesConfiguration.class);
+        Optional<StylesConfiguration> stylesExtension = api.getData().getExtension(StylesConfiguration.class);
         Styles styles = ImmutableStyles.builder()
                 .styles(
                         Arrays.stream(apiDir.listFiles())

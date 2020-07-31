@@ -41,7 +41,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, StylesConfiguration.class).map(StylesConfiguration::getSld11Enabled)
+        return apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::getSld11Enabled)
                                                                                 .orElse(false);
     }
 

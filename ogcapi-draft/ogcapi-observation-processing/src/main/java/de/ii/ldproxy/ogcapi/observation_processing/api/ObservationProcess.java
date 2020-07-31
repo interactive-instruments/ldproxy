@@ -1,5 +1,6 @@
 package de.ii.ldproxy.ogcapi.observation_processing.api;
 
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
@@ -12,15 +13,13 @@ public interface ObservationProcess extends FeatureProcess {
                 apiData.getCollections()
                         .values()
                         .stream()
-                        .filter(featureType -> featureType.getEnabled())
-                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
-                        .findAny()
-                        .isPresent();
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
     }
 
     @Override
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
 }

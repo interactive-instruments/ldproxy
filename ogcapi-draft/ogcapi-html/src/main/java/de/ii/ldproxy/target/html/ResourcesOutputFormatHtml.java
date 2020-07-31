@@ -66,7 +66,7 @@ public class ResourcesOutputFormatHtml implements ResourcesFormatExtension {
     }
 
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+        return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
     }

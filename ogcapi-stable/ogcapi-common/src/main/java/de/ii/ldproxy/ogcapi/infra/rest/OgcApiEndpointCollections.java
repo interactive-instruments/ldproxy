@@ -102,10 +102,10 @@ public class OgcApiEndpointCollections extends OgcApiEndpoint {
                                    @Context OgcApiRequestContext requestContext) {
         checkAuthorization(api.getData(), optionalUser);
 
-        boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 

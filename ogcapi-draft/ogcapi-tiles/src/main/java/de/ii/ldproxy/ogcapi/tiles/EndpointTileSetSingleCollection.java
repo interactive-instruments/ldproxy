@@ -122,7 +122,7 @@ public class EndpointTileSetSingleCollection extends OgcApiEndpointSubCollection
         checkPathParameter(extensionRegistry, apiData, path, "tileMatrixSetId", tileMatrixSetId);
 
         FeatureTypeConfigurationOgcApi featureType = requestContext.getApi().getData().getCollections().get(collectionId);
-        TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, featureType, TilesConfiguration.class).get();
+        TilesConfiguration tilesConfiguration = featureType.getExtension(TilesConfiguration.class).get();
 
         TilesQueriesHandler.OgcApiQueryInputTileSet queryInput = new ImmutableOgcApiQueryInputTileSet.Builder()
                 .from(getGenericQueryInput(api.getData()))
