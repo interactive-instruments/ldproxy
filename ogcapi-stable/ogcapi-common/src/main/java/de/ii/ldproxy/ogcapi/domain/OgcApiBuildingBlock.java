@@ -7,11 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
-
 public interface OgcApiBuildingBlock extends OgcApiExtension {
-
-    // TODO: document the relevance of these extensions
 
     @Override
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
