@@ -9,7 +9,13 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.tiles.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.TileSetsFormatExtension;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -31,9 +37,6 @@ public class TilesOutputFormatHtml implements TileSetsFormatExtension {
             .type(MediaType.TEXT_HTML_TYPE)
             .parameter("html")
             .build();
-
-    @Requires
-    private HtmlConfig htmlConfig;
 
     @Requires
     private I18n i18n;
@@ -105,6 +108,12 @@ public class TilesOutputFormatHtml implements TileSetsFormatExtension {
                                         .toString()))
                         .add(new NavigationDTO(tilesTitle))
                         .build();
+
+        HtmlConfiguration htmlConfig = api.getData()
+                                                 .getCollections()
+                                                 .get(collectionId)
+                                                 .getExtension(HtmlConfiguration.class)
+                                                 .orElse(null);
 
         TilesView tilesView = new TilesView(api.getData(), tiles, collectionId, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 

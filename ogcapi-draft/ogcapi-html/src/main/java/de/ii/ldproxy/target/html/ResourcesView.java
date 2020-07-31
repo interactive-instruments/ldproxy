@@ -26,7 +26,7 @@ public class ResourcesView extends OgcApiView {
                          Resources resources,
                          List<NavigationDTO> breadCrumbs,
                          String staticUrlPrefix,
-                         HtmlConfig htmlConfig,
+                         HtmlConfiguration htmlConfig,
                          boolean noIndex,
                          URICustomizer uriCustomizer,
                          I18n i18n,

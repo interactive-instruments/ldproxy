@@ -23,14 +23,14 @@ public abstract class OgcApiView extends View {
     protected final OgcApiApiDataV2 apiData;
     protected final List<NavigationDTO> breadCrumbs;
     protected final List<OgcApiLink> links;
-    protected final HtmlConfig htmlConfig;
+    protected final HtmlConfiguration htmlConfig;
     protected final String urlPrefix;
     protected final String title;
     protected final String description;
     protected final boolean noIndex;
 
     protected OgcApiView(String templateName, @Nullable Charset charset, @Nullable OgcApiApiDataV2 apiData,
-                         List<NavigationDTO> breadCrumbs, HtmlConfig htmlConfig, boolean noIndex, String urlPrefix,
+                         List<NavigationDTO> breadCrumbs, HtmlConfiguration htmlConfig, boolean noIndex, String urlPrefix,
                          @Nullable List<OgcApiLink> links, @Nullable String title, @Nullable String description) {
         super(String.format("/templates/%s", templateName), charset);
         this.apiData = apiData;

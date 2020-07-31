@@ -34,7 +34,7 @@ public class OgcApiTileMatrixSetView extends OgcApiView {
                                    TileMatrixSetData tileMatrixSet,
                                    List<NavigationDTO> breadCrumbs,
                                    String staticUrlPrefix,
-                                   HtmlConfig htmlConfig,
+                                   HtmlConfiguration htmlConfig,
                                    boolean noIndex,
                                    URICustomizer uriCustomizer,
                                    I18n i18n,

@@ -10,13 +10,24 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.Metadata;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtentSpatial;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtentTemporal;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class OgcApiCollectionView extends OgcApiView {
@@ -56,7 +67,7 @@ public class OgcApiCollectionView extends OgcApiView {
     public String none;
 
     public OgcApiCollectionView(OgcApiApiDataV2 apiData, OgcApiCollection collection,
-                                final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig,
+                                final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfiguration htmlConfig,
                                 boolean noIndex, I18n i18n, Optional<Locale> language) {
         super("collection.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
                 collection.getLinks(),

@@ -15,6 +15,7 @@ import de.ii.xtraplatform.service.api.ServiceData;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,8 +26,8 @@ public class ServiceOverviewView extends DatasetView {
     public URI uri;
     public boolean isApiCatalog = true;
 
-    public ServiceOverviewView(URI uri, List<ServiceData> data, String urlPrefix, HtmlConfig htmlConfig, I18n i18n, Optional<Locale> language) {
-        super("services", uri, data, urlPrefix, htmlConfig, htmlConfig.isNoIndex());
+    public ServiceOverviewView(URI uri, List<ServiceData> data, String urlPrefix, HtmlConfiguration htmlConfig, I18n i18n, Optional<Locale> language) {
+        super("services", uri, data, urlPrefix, htmlConfig, Objects.equals(htmlConfig.getNoIndexEnabled(), true));
         this.uri = uri;
         this.title = i18n.get("rootTitle", language);
         this.description = i18n.get("rootDescription", language);

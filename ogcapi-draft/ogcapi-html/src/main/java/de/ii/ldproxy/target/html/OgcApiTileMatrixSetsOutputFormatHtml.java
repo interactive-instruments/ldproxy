@@ -33,9 +33,6 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
             .build();
 
     @Requires
-    private HtmlConfig htmlConfig;
-
-    @Requires
     private I18n i18n;
 
     @Override
@@ -93,6 +90,10 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
                 .add(new NavigationDTO(tileMatrixSetsTitle))
                 .build();
 
+        HtmlConfiguration htmlConfig = api.getData()
+                                                 .getExtension(HtmlConfiguration.class)
+                                                 .orElse(null);
+
         OgcApiTileMatrixSetsView tileMatrixSetsView = new OgcApiTileMatrixSetsView(api.getData(), tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return tileMatrixSetsView;
@@ -123,6 +124,10 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
                                 .toString()))
                 .add(new NavigationDTO(title))
                 .build();
+
+        HtmlConfiguration htmlConfig = api.getData()
+                                          .getExtension(HtmlConfiguration.class)
+                                          .orElse(null);
 
         OgcApiTileMatrixSetView tileMatrixSetView = new OgcApiTileMatrixSetView(api.getData(), tileMatrixSet, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 

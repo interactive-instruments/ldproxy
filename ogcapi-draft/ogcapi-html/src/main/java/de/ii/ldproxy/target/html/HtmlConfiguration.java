@@ -9,6 +9,7 @@ package de.ii.ldproxy.target.html;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
@@ -47,6 +48,39 @@ public interface HtmlConfiguration extends ExtensionConfiguration, FeatureTransf
     LAYOUT getLayout();
 
     Optional<String> getItemLabelFormat();
+
+    @Nullable
+    String getLegalName();
+
+    @Nullable
+    String getLegalUrl();
+
+    @Nullable
+    String getPrivacyName();
+
+    @Nullable
+    String getPrivacyUrl();
+
+    @Nullable
+    String getLeafletUrl();
+
+    @Nullable
+    String getLeafletAttribution();
+
+    @Nullable
+    String getOpenLayersUrl();
+
+    @Nullable
+    String getOpenLayersAttribution();
+
+    @Nullable
+    String getFooterText();
+
+    @Nullable
+    String getDatasetLabel();
+
+    @Nullable
+    String getDatasetDescription();
 
     @Override
     Map<String, FeatureTypeMapping2> getTransformations();

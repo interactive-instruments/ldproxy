@@ -31,7 +31,7 @@ public class ObservationProcessingVariablesView extends OgcApiView {
                                               Variables variables,
                                               List<NavigationDTO> breadCrumbs,
                                               String staticUrlPrefix,
-                                              HtmlConfig htmlConfig,
+                                              HtmlConfiguration htmlConfig,
                                               boolean noIndex,
                                               URICustomizer uriCustomizer,
                                               I18n i18n,
