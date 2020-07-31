@@ -2,7 +2,6 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-geojson'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
