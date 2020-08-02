@@ -1,7 +1,7 @@
 
 dependencies {
     if(JavaVersion.current().isJava9Compatible()) {
-        feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.3.0'
+        feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.3.1'
     } else {
         feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.2.4'
     }
