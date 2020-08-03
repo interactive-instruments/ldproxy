@@ -25,7 +25,7 @@ public class OgcApiCapabilityObservationProcessing implements OgcApiBuildingBloc
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableObservationProcessingConfiguration.Builder().enabled(true)
+        return new ImmutableObservationProcessingConfiguration.Builder().enabled(false)
                                                                         .idwPower(3.0)
                                                                         .idwCount(8)
                                                                         .idwDistanceKm(300.0)

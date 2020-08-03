@@ -214,13 +214,13 @@ public class OgcApiRequestDispatcher implements ServiceResource {
         }
 
         return getEndpoints().stream()
+                             .filter(endpoint -> endpoint.isEnabledForApi(dataset))
                              .filter(endpoint -> {
                                  OgcApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
                                  if (apiDef!=null && apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY)
                                      return apiDef.matches("/"+entrypoint+subPath, method);
                                  return false;
                              })
-                             .filter(endpoint -> endpoint.isEnabledForApi(dataset))
                              .findFirst();
     }
 
