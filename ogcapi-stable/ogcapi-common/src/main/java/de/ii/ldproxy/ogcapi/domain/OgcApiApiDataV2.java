@@ -11,8 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -21,10 +19,6 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
-import de.ii.xtraplatform.features.domain.FeatureProperty;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -106,16 +100,22 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
 
     @Value.Check
     public OgcApiApiDataV2 mergeBuildingBlocks() {
-        // this is true at least once because of OgcApiApiDataV2Defaults
-        if (hasRedundantExtensions()) {
+        boolean collectionsHaveMissingParentExtensions = getCollections().values()
+                                                                         .stream()
+                                                                         .anyMatch(collection -> collection.getParentExtensions()
+                                                                                                           .size() < getExtensions().size());
+
+        if (collectionsHaveMissingParentExtensions) {
             Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>();
 
-            getCollections().values().forEach(featureTypeConfigurationOgcApi -> {
-                mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.mergeBuildingBlocksInto(getExtensions()));
-            });
+            getCollections().values()
+                            .forEach(featureTypeConfigurationOgcApi -> {
+                                mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.toBuilder()
+                                                                                                                            .parentExtensions(getExtensions())
+                                                                                                                            .build());
+                            });
 
             return new ImmutableOgcApiApiDataV2.Builder().from(this)
-                                                         .extensions(getMergedExtensions())
                                                          .collections(mergedCollections)
                                                          .build();
         }
@@ -124,7 +124,8 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     }
 
     public boolean isCollectionEnabled(final String collectionId) {
-        return getCollections().containsKey(collectionId) && getCollections().get(collectionId).getEnabled();
+        return getCollections().containsKey(collectionId) && getCollections().get(collectionId)
+                                                                             .getEnabled();
     }
 
     /**
@@ -145,10 +146,10 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
                                        .map(Optional::get)
                                        .map(BoundingBox::getCoords)
                                        .reduce((doubles, doubles2) -> new double[]{
-                                                Math.min(doubles[0], doubles2[0]),
-                                                Math.min(doubles[1], doubles2[1]),
-                                                Math.max(doubles[2], doubles2[2]),
-                                                Math.max(doubles[3], doubles2[3])})
+                                               Math.min(doubles[0], doubles2[0]),
+                                               Math.min(doubles[1], doubles2[1]),
+                                               Math.max(doubles[2], doubles2[2]),
+                                               Math.max(doubles[3], doubles2[3])})
                                        .orElse(null);
 
         return Objects.nonNull(val) ? new BoundingBox(val[0], val[1], val[2], val[3], OgcCrs.CRS84) : null;
@@ -174,7 +175,8 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     public BoundingBox getSpatialExtent(String collectionId) {
         return getCollections().values()
                                .stream()
-                               .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
+                               .filter(featureTypeConfiguration -> featureTypeConfiguration.getId()
+                                                                                           .equals(collectionId))
                                .map(FeatureTypeConfigurationOgcApi::getExtent)
                                .filter(Optional::isPresent)
                                .map(Optional::get)
@@ -202,7 +204,8 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
         Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
 
         if (Objects.nonNull(spatialExtent) && crsTransformer.isPresent()) {
-            return crsTransformer.get().transformBoundingBox(spatialExtent);
+            return crsTransformer.get()
+                                 .transformBoundingBox(spatialExtent);
         }
 
         return spatialExtent;

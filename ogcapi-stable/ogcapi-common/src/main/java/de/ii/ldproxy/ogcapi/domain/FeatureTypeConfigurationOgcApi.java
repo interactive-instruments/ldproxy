@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilder;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueInstance;
@@ -18,6 +20,7 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -92,42 +95,15 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
         // TODO: temporal: support computed temporal extent
     }
 
-    @Value.Check
-    default FeatureTypeConfigurationOgcApi mergeBuildingBlocks() {
-        if (hasRedundantExtensions()) {
-            return toBuilder().extensions(getMergedExtensions())
-                              .build();
-        }
+    @JsonIgnore
+    List<ExtensionConfiguration> getParentExtensions();
 
-        return this;
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    @Override
+    default List<ExtensionConfiguration> getMergedExtensions() {
+        return getMergedExtensions(Lists.newArrayList(Iterables.concat(getParentExtensions(), getExtensions())));
     }
-
-    default FeatureTypeConfigurationOgcApi mergeBuildingBlocksInto(List<ExtensionConfiguration> parentBuildingBlocks) {
-        List<ExtensionConfiguration> mergedExtensions = getExtensions().stream()
-                                                              .map(extensionConfiguration -> {
-                                                                  Optional<ExtensionConfiguration> parent = parentBuildingBlocks.stream()
-                                                                                                                               .filter(parentBuildingBlock -> Objects.equals(parentBuildingBlock.getBuildingBlock(), extensionConfiguration.getBuildingBlock()))
-                                                                                                                               .findFirst();
-                                                                  ExtensionConfiguration merged = extensionConfiguration;
-
-                                                                  if (parent.isPresent()) {
-                                                                      merged = merged.mergeInto(parent.get());
-                                                                  }
-
-                                                                  if (merged.getDefaultValues().isPresent()) {
-                                                                      merged = merged.mergeInto(merged.getDefaultValues().get());
-                                                                  }
-
-                                                                  return merged;
-                                                              })
-                                                              .collect(Collectors.toList());
-        List<ExtensionConfiguration> otherExtensions = parentBuildingBlocks.stream()
-                                                                   .filter(parent -> mergedExtensions.stream()
-                                                                                                     .noneMatch(merged -> Objects.equals(parent.getBuildingBlock(), merged.getBuildingBlock())))
-                                                                   .collect(Collectors.toList());
-
-        return toBuilder().extensions(mergedExtensions).addAllExtensions(otherExtensions).build();
-    }
-
 }
 

@@ -8,7 +8,10 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.immutables.value.Value;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,29 +21,27 @@ import java.util.stream.Collectors;
 
 public interface ExtendableConfiguration {
 
-    //@JsonMerge(value = OptBoolean.FALSE)
     @JsonAlias(value = "capabilities")
     List<ExtensionConfiguration> getExtensions();
 
     default <T extends ExtensionConfiguration> Optional<T> getExtension(Class<T> clazz) {
-        return getExtensions().stream()
+        return getMergedExtensions().stream()
                               .filter(extensionConfiguration -> Objects.equals(extensionConfiguration.getBuildingBlock(), ExtensionConfiguration.getBuildingBlockIdentifier(clazz)))
-                              .filter(extensionConfiguration -> extensionConfiguration!=null)
                               .findFirst()
                               .map(extensionConfiguration -> (T) extensionConfiguration);
     }
 
-    default boolean hasRedundantExtensions() {
-        return getExtensions().stream()
-                              .map(ExtensionConfiguration::getBuildingBlock)
-                              .distinct()
-                              .count() < getExtensions().size();
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default List<ExtensionConfiguration> getMergedExtensions() {
+        return getMergedExtensions(getExtensions());
     }
 
-    default List<ExtensionConfiguration> getMergedExtensions() {
+    default List<ExtensionConfiguration> getMergedExtensions(List<ExtensionConfiguration> extensions) {
         Map<String, ExtensionConfiguration> mergedExtensions = new LinkedHashMap<>();
 
-        getExtensions().forEach(extensionConfiguration -> {
+        extensions.forEach(extensionConfiguration -> {
             String buildingBlock = extensionConfiguration.getBuildingBlock();
             if (mergedExtensions.containsKey(buildingBlock)) {
                 mergedExtensions.put(buildingBlock, extensionConfiguration.mergeInto(mergedExtensions.get(buildingBlock)));
