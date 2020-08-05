@@ -14,7 +14,6 @@ dependencies {
     }
     embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.16.1')
     embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.16.1')
-    //embedded group: 'xml-apis', name: 'xml-apis', version: '1.4.01'
 
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }
@@ -22,5 +21,12 @@ dependencies {
 repositories {
     maven {
         url "https://maven.ecc.no/releases"
+    }
+}
+
+jar {
+    manifest {
+        instruction 'Embed-Import', 'false'
+        instruction 'Embed-Export', 'false'
     }
 }
