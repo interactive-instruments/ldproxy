@@ -15,7 +15,10 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
 
     //  use an old version, because of the Jackson dependency
-    embeddedFlat group: 'com.networknt', name: 'json-schema-validator', version: '1.0.24'
+    embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.24') {
+        exclude module: 'jackson-databind'
+        exclude module: 'slf4j-api'
+    }
 
     testImplementation project(':ogcapi-features-core')
 }
