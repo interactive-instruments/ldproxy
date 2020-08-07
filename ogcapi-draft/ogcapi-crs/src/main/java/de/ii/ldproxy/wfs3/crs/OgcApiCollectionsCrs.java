@@ -45,7 +45,7 @@ public class OgcApiCollectionsCrs implements OgcApiCollectionsExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), CrsConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), CrsConfiguration.class);
     }
 
     @Override

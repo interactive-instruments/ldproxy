@@ -63,7 +63,7 @@ public class OgcApiOutputFormatJson implements CollectionsFormatExtension, Commo
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), GeoJsonConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), GeoJsonConfiguration.class);
     }
 
     @Override

@@ -30,6 +30,6 @@ public interface CollectionStyleInfoFormatExtension extends FormatExtension {
 
     @Override
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), StyleInfoConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), StyleInfoConfiguration.class);
     }
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,11 +9,21 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
+import de.ii.xtraplatform.event.store.EntityDataBuilder;
+import de.ii.xtraplatform.event.store.EntityDataDefaultsStore;
+import de.ii.xtraplatform.event.store.Identifier;
+import de.ii.xtraplatform.service.api.Service;
 import de.ii.xtraplatform.service.api.ServiceData;
 import de.ii.xtraplatform.service.api.ServiceListingProvider;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Context;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.NotFoundException;
@@ -37,30 +47,36 @@ import java.util.stream.Collectors;
 @Instantiate
 public class OgcApiListingProvider implements ServiceListingProvider {
 
-    @Context
-    private BundleContext bundleContext;
 
-    @Requires
-    private HtmlConfig htmlConfig;
+    private final BundleContext bundleContext;
+    private final XtraPlatform xtraPlatform;
+    private final I18n i18n;
+    private final EntityDataDefaultsStore defaultsStore;
 
-    @Requires
-    private I18n i18n;
+    public OgcApiListingProvider(@Context BundleContext bundleContext, @Requires XtraPlatform xtraPlatform, @Requires I18n i18n, @Requires EntityDataDefaultsStore defaultsStore) {
+        this.bundleContext = bundleContext;
+        this.xtraPlatform = xtraPlatform;
+        this.i18n = i18n;
+        this.defaultsStore = defaultsStore;
+    }
+
+    private HtmlConfiguration getHtmlConfig() {
+        //TODO: encapsulate in entities/defaults layer
+        EntityDataBuilder<?> builder = defaultsStore.getBuilder(Identifier.from(EntityDataDefaultsStore.EVENT_TYPE, Service.TYPE, OgcApiApiDataV2.SERVICE_TYPE.toLowerCase()));
+        if (builder instanceof ImmutableOgcApiApiDataV2.Builder) {
+            ImmutableOgcApiApiDataV2 defaults = ((ImmutableOgcApiApiDataV2.Builder) builder).id("NOT_SET")
+                                                                                           .build();
+            return defaults.getExtension(HtmlConfiguration.class)
+                           .orElse(null);
+        }
+        return null;
+    }
 
     // TODO: move externalUri handling to XtraplatformRequestContext in ServicesResource
     // TODO: derive Wfs3Request from injected XtraplatformRequest
 
-    private Optional<URI> externalUri = Optional.empty();
-
-    @Bind
-    void setCore(CoreServerConfig coreServerConfig) {
-        URI externalUri = null;
-        try {
-            externalUri = new URI(coreServerConfig.getExternalUrl());
-        } catch (URISyntaxException e) {
-            // ignore
-        }
-
-        this.externalUri = Optional.ofNullable(externalUri);
+    private Optional<URI> getExternalUri() {
+        return Optional.ofNullable(xtraPlatform.getServicesUri());
     }
 
     @Override
@@ -69,21 +85,21 @@ public class OgcApiListingProvider implements ServiceListingProvider {
     }
 
     private void customizeUri(final URICustomizer uriCustomizer) {
-        if (externalUri.isPresent()) {
-            uriCustomizer.setScheme(externalUri.get()
-                                               .getScheme());
-            uriCustomizer.replaceInPath("/rest/services", externalUri.get()
-                                                                     .getPath());
+        if (getExternalUri().isPresent()) {
+            uriCustomizer.setScheme(getExternalUri().get()
+                                                    .getScheme());
+            uriCustomizer.replaceInPath("/rest/services", getExternalUri().get()
+                                                                          .getPath());
             uriCustomizer.ensureTrailingSlash();
         }
     }
 
     private String getStaticUrlPrefix(final URICustomizer uriCustomizer) {
-        if (externalUri.isPresent()) {
+        if (getExternalUri().isPresent()) {
             return uriCustomizer.copy()
                                 .cutPathAfterSegments("rest", "services")
-                                .replaceInPath("/rest/services", externalUri.get()
-                                                                            .getPath())
+                                .replaceInPath("/rest/services", getExternalUri().get()
+                                                                                 .getPath())
                                 .ensureLastPathSegment("___static___")
                                 .ensureTrailingSlash()
                                 .getPath();
@@ -109,8 +125,11 @@ public class OgcApiListingProvider implements ServiceListingProvider {
         }
         // TODO: map in caller
         return Response.ok()
-                .entity(new ServiceOverviewView(uri, services.stream().sorted(Comparator.comparingLong(ServiceData::getCreatedAt).reversed()).collect(Collectors.toList()), urlPrefix, htmlConfig, i18n, language))
-                .build();
+                       .entity(new ServiceOverviewView(uri, services.stream()
+                                                                    .sorted(Comparator.comparingLong(ServiceData::getCreatedAt)
+                                                                                      .reversed())
+                                                                    .collect(Collectors.toList()), urlPrefix, getHtmlConfig(), i18n, language))
+                       .build();
     }
 
     @Override

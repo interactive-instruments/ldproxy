@@ -54,8 +54,8 @@ public class ObservationProcessingVariablesJson implements ObservationProcessing
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class)
-                .map(ObservationProcessingConfiguration::getEnabled)
+        return apiData.getExtension(ObservationProcessingConfiguration.class)
+                .map(ObservationProcessingConfiguration::isEnabled)
                 .orElse(false);
     }
 
@@ -64,11 +64,13 @@ public class ObservationProcessingVariablesJson implements ObservationProcessing
         // get the collectionId from the path, [0] is empty, [1] is "collections"
         String collectionId = path.split("/", 4)[2];
 
+        Optional<FeatureTypeConfigurationOgcApi> collectionData = Optional.ofNullable(apiData.getCollections()
+                                                                                             .get(collectionId));
+
         // get the variables from the API
-        List<Variable> variables = (collectionId.equals("{collectionId}") ?
-                getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class) :
-                getExtensionConfiguration(apiData, apiData.getCollections().get(collectionId),
-                        ObservationProcessingConfiguration.class))
+        List<Variable> variables = (collectionData.isPresent() ?
+                collectionData.get().getExtension(ObservationProcessingConfiguration.class) :
+                apiData.getExtension(ObservationProcessingConfiguration.class))
                 .map(ObservationProcessingConfiguration::getVariables)
                 .orElse(ImmutableList.of());
         ObjectNode json = null;

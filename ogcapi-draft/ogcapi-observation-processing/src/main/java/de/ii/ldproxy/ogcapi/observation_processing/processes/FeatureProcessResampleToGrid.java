@@ -75,8 +75,7 @@ public class FeatureProcessResampleToGrid implements ObservationProcess {
         String collectionId = (String) processingParameters.get("collectionId");
 
         ObservationProcessingConfiguration config =
-                getExtensionConfiguration(apiData, apiData.getCollections().get(collectionId),
-                        ObservationProcessingConfiguration.class).get();
+                apiData.getCollections().get(collectionId).getExtension(ObservationProcessingConfiguration.class).get();
 
         DataArrayXyt dataArray = observations.resampleToGrid(area.getBbox(), interval, gridWidth, gridHeight, OptionalInt.empty(),
                 config.getIdwCount(), config.getIdwDistanceKm(), config.getIdwPower());
@@ -122,7 +121,7 @@ public class FeatureProcessResampleToGrid implements ObservationProcess {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     private float[] getMultiPolygonBbox(List<List<List<List<Float>>>> multiPolygon) {

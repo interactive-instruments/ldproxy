@@ -10,7 +10,9 @@ dependencies {
 
     embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.16.1')
     embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.16.1')
-    embedded (group: 'org.locationtech.geotrellis', name: 'geotrellis-raster_2.12', version: '3.3.0')
+    embedded (group: 'org.locationtech.geotrellis', name: 'geotrellis-raster_2.12', version: '3.3.0') {
+        exclude module: 'slf4j-api'
+    }
 }
 
 jar {

@@ -52,10 +52,10 @@ public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements C
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::getMultiCollectionEnabled)
                 .isPresent();
     }
@@ -104,7 +104,7 @@ public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements C
         if (!isEnabledForApi(apiData))
             throw new NotFoundException();
 
-        TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, TilesConfiguration.class).get();
+        TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
         TilesQueriesHandler.OgcApiQueryInputTileSets queryInput = new ImmutableOgcApiQueryInputTileSets.Builder()
                 .from(getGenericQueryInput(api.getData()))

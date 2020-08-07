@@ -117,26 +117,26 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         List<OgcApiMediaType> tileSetFormats = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class)
                 .stream()
-                .filter(format -> format.isEnabledForApi(api.getData(),collectionId))
+                .filter(format -> collectionId.isPresent() ? format.isEnabledForApi(api.getData(), collectionId.get()) : format.isEnabledForApi(api.getData()))
                 .filter(format -> {
                     Optional<TilesConfiguration> config = collectionId.isPresent() ?
-                            format.getExtensionConfiguration(api.getData(), api.getData().getCollections().get(collectionId.get()), TilesConfiguration.class) :
-                            format.getExtensionConfiguration(api.getData(), TilesConfiguration.class);
+                            api.getData().getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
+                            api.getData().getExtension(TilesConfiguration.class);
                     return config.isPresent() && (config.get().getFormats()==null || (config.get().getFormats().isEmpty() || config.get().getFormats().contains(format.getMediaType().type().toString())));
                 })
-                .map(format -> format.getMediaType())
+                .map(FormatExtension::getMediaType)
                 .collect(Collectors.toList());
 
         List<OgcApiMediaType> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                 .stream()
-                .filter(format -> format.isEnabledForApi(api.getData(),collectionId))
+                .filter(format -> collectionId.isPresent() ? format.isEnabledForApi(api.getData(), collectionId.get()) : format.isEnabledForApi(api.getData()))
                 .filter(format -> {
                     Optional<TilesConfiguration> config = collectionId.isPresent() ?
-                            format.getExtensionConfiguration(api.getData(), api.getData().getCollections().get(collectionId.get()), TilesConfiguration.class) :
-                            format.getExtensionConfiguration(api.getData(), TilesConfiguration.class);
+                            api.getData().getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
+                            api.getData().getExtension(TilesConfiguration.class);
                     return config.isPresent() && (config.get().getFormats()==null || (config.get().getFormats().isEmpty() || config.get().getFormats().contains(format.getMediaType().type().toString())));
                 })
-                .map(format -> format.getMediaType())
+                .map(FormatExtension::getMediaType)
                 .collect(Collectors.toList());
 
         List<OgcApiLink> links = vectorTilesLinkGenerator.generateTilesLinks(
@@ -202,14 +202,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         List<OgcApiMediaType> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                 .stream()
-                .filter(format -> format.isEnabledForApi(api.getData(), collectionId))
+                .filter(format -> collectionId.isPresent() ? format.isEnabledForApi(api.getData(), collectionId.get()) : format.isEnabledForApi(api.getData()))
                 .filter(format -> {
                     Optional<TilesConfiguration> config = collectionId.isPresent() ?
-                            format.getExtensionConfiguration(api.getData(), api.getData().getCollections().get(collectionId.get()), TilesConfiguration.class) :
-                            format.getExtensionConfiguration(api.getData(), TilesConfiguration.class);
+                            api.getData().getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
+                            api.getData().getExtension(TilesConfiguration.class);
                     return config.isPresent() && (config.get().getFormats()==null || (config.get().getFormats().isEmpty() || config.get().getFormats().contains(format.getMediaType().type().toString())));
                 })
-                .map(format -> format.getMediaType())
+                .map(FormatExtension::getMediaType)
                 .collect(Collectors.toList());
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();

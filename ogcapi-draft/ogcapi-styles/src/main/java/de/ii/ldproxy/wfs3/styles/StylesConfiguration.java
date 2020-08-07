@@ -9,74 +9,52 @@ package de.ii.ldproxy.wfs3.styles;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
+
+import javax.annotation.Nullable;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableStylesConfiguration.Builder.class)
-public abstract class StylesConfiguration implements ExtensionConfiguration {
+public interface StylesConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return false;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    @Value.Default
-    public boolean getManagerEnabled() {
-        return false;
-    }
+    @Nullable
+    Boolean getManagerEnabled();
 
-    @Value.Default
-    public boolean getMapsEnabled() {
-        return false;
-    }
+    @Nullable
+    Boolean getMapsEnabled();
 
-    @Value.Default
-    public boolean getValidationEnabled() {
-        return false;
-    }
+    @Nullable
+    Boolean getValidationEnabled();
 
-    @Value.Default
-    public boolean getResourcesEnabled() {
-        return false;
-    }
+    @Nullable
+    Boolean getResourcesEnabled();
 
-    @Value.Default
-    public boolean getResourceManagerEnabled() {
-        return false;
-    }
+    @Nullable
+    Boolean getResourceManagerEnabled();
 
-    @Value.Default
-    public boolean getHtmlEnabled() {
-        return false;
-    }
+    @Nullable
+    Boolean getHtmlEnabled();
 
-    @Value.Default
-    public boolean getMbStyleEnabled() {
-        return false;
-    }
+    @Nullable
+    Boolean getMbStyleEnabled();
 
-    @Value.Default
-    public boolean getSld10Enabled() {
-        return false;
-    }
+    @Nullable
+    Boolean getSld10Enabled();
 
-    @Value.Default
-    public boolean getSld11Enabled() {
-        return false;
-    }
+    @Nullable
+    Boolean getSld11Enabled();
 
-    @Value.Default
-    public boolean getUseFormattedJsonOutput() {
-        return false;
-    }
+    @Nullable
+    Boolean getUseFormattedJsonOutput();
 
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return new ImmutableStylesConfiguration.Builder()
-                .from(extensionConfigurationDefault)
-                .from(this)
-                .build();
+    default Builder getBuilder() {
+        return new ImmutableStylesConfiguration.Builder();
     }
+
 }

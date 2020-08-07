@@ -7,14 +7,15 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-public interface OgcApiCapabilityExtension extends OgcApiExtension {
-
-    // TODO: document the relevance of these extensions
+public interface OgcApiBuildingBlock extends OgcApiExtension {
 
     @Override
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return true;
     }
 
-    ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset);
+    ExtensionConfiguration.Builder getConfigurationBuilder();
+
+    ExtensionConfiguration getDefaultConfiguration();
+
 }

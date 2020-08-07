@@ -7,10 +7,17 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
-import de.ii.xtraplatform.server.CoreServerConfig;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -38,7 +45,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
     @Requires
     private KeyValueStore keyValueStore;
     @Requires
-    private CoreServerConfig coreServerConfig;
+    private XtraPlatform xtraPlatform;
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatHtml.class);
@@ -58,7 +65,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, StylesConfiguration.class)
+        return apiData.getExtension(StylesConfiguration.class)
                 .filter(StylesConfiguration::getMbStyleEnabled)
                 .map(StylesConfiguration::getMapsEnabled)
                 .orElse(false);
@@ -101,9 +108,8 @@ public class StyleFormatHtml implements StyleFormatExtension {
     @Override
     public Response getStyleResponse(String styleId, File stylesheet, List<OgcApiLink> links, OgcApiApi api, OgcApiRequestContext requestContext) throws IOException {
 
-        String prefix = coreServerConfig.getExternalUrl();
-        String styleUri = prefix + "/" + api.getData()
-                .getId() + "/" + "styles" + "/" + styleId + "?f=mbs";
+        String styleUri = String.format("%s/%s/styles/%s?f=mbs", xtraPlatform.getServicesUri(), api.getData()
+                                                                            .getId(), styleId);
         StyleView styleView = new StyleView(styleUri, api, styleId);
 
         return Response.ok()

@@ -38,7 +38,7 @@ public class OgcApiCollectionQueryables implements OgcApiCollectionExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), QueryablesConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), QueryablesConfiguration.class);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class OgcApiCollectionQueryables implements OgcApiCollectionExtension {
                                                      OgcApiMediaType mediaType,
                                                      List<OgcApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
-        if (isExtensionEnabled(apiData, featureTypeConfiguration, QueryablesConfiguration.class) && !isNested) {
+        if (isExtensionEnabled(featureTypeConfiguration, QueryablesConfiguration.class) && !isNested) {
             final QueryablesLinkGenerator linkGenerator = new QueryablesLinkGenerator();
             collection.addAllLinks(linkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
         }

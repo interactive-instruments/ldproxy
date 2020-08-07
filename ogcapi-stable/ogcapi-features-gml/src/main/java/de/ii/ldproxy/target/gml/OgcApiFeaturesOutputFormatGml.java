@@ -47,21 +47,10 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
             .parameter("xml")
             .build();
 
-    private final GmlConfig gmlConfig;
     private final OgcApiFeatureCoreProviders providers;
 
-    @ServiceController(value = false)
-    private boolean enable;
-
-    public OgcApiFeaturesOutputFormatGml(@Requires GmlConfig gmlConfig,
-                                         @Requires OgcApiFeatureCoreProviders providers) {
-        this.gmlConfig = gmlConfig;
+    public OgcApiFeaturesOutputFormatGml(@Requires OgcApiFeatureCoreProviders providers) {
         this.providers = providers;
-    }
-
-    @Validate
-    private void onStart() {
-        this.enable = gmlConfig.isEnabled();
     }
 
     @Override

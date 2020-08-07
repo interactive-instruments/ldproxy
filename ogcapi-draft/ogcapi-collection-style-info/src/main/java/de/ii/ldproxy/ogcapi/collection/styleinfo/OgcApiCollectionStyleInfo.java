@@ -60,7 +60,7 @@ public class OgcApiCollectionStyleInfo implements OgcApiCollectionExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), StyleInfoConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), StyleInfoConfiguration.class);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class OgcApiCollectionStyleInfo implements OgcApiCollectionExtension {
                                                      OgcApiMediaType mediaType,
                                                      List<OgcApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
-        if (isExtensionEnabled(apiData, featureTypeConfiguration, StyleInfoConfiguration.class) && !isNested) {
+        if (isExtensionEnabled(featureTypeConfiguration, StyleInfoConfiguration.class) && !isNested) {
             final String collectionId = featureTypeConfiguration.getId();
 
             final String apiId = apiData.getId();

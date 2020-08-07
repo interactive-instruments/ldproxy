@@ -156,7 +156,7 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
 
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
         Optional<OgcApiFeaturesCoreConfiguration> coreConfiguration = featureType==null ?
-                getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class) :
+                apiData.getExtension(OgcApiFeaturesCoreConfiguration.class) :
                 featureType.getExtension(OgcApiFeaturesCoreConfiguration.class);
 
         final Map<String, String> filterableFields = coreConfiguration.map(OgcApiFeaturesCoreConfiguration::getOtherFilterParameters)
@@ -199,16 +199,16 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
                                                        .getCollections()
                                                        .get(collectionId);
 
-        OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(api.getData(), collectionData, OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
+        OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
 
         int minimumPageSize = coreConfiguration.getMinimumPageSize();
         int defaultPageSize = coreConfiguration.getDefaultPageSize();
-        int maxPageSize = coreConfiguration.getMaxPageSize();
+        int maxPageSize = coreConfiguration.getMaximumPageSize();
         boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
-        boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
@@ -244,12 +244,12 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
                                                            .getCollections()
                                                            .get(collectionId);
 
-        OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(api.getData(), collectionData, OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
+        OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
 
-        boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 

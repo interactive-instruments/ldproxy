@@ -70,8 +70,7 @@ public class FeatureProcessPosition implements ObservationProcess {
         String collectionId = (String) processingParameters.get("collectionId");
 
         ObservationProcessingConfiguration config =
-                getExtensionConfiguration(apiData, apiData.getCollections().get(collectionId),
-                                          ObservationProcessingConfiguration.class).get();
+                apiData.getCollections().get(collectionId).getExtension(ObservationProcessingConfiguration.class).get();
 
         ObservationCollectionPointTimeSeries position = observations.interpolate(point, interval,
                 config.getIdwCount(), config.getIdwDistanceKm(), config.getIdwPower());

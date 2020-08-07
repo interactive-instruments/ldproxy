@@ -18,6 +18,7 @@ import de.ii.xtraplatform.entity.api.EntityComponent;
 import de.ii.xtraplatform.entity.api.handler.Entity;
 import de.ii.xtraplatform.service.api.AbstractService;
 import de.ii.xtraplatform.service.api.Service;
+import de.ii.xtraplatform.service.api.ServiceData;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,12 @@ import java.util.stream.Collectors;
 
 
 @EntityComponent
-@Entity(type = Service.TYPE,subType = OgcApiApiDataV2.SERVICE_TYPE, dataClass = OgcApiApiDataV2.class)
+@Entity(
+        type = Service.TYPE,
+        subType = OgcApiApiDataV2.SERVICE_TYPE,
+        dataClass = ServiceData.class,
+        dataSubClass = OgcApiApiDataV2.class
+)
 public class OgcApiApiEntity extends AbstractService<OgcApiApiDataV2> implements OgcApiApi {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiEntity.class);

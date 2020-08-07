@@ -15,7 +15,7 @@ apply from: 'xtraplatform.gradle'
 
 dependencies {
     // features to include in this application
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.2.3'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.2.4'
     featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '2.2.1'
 
     feature group: 'de.interactive_instruments', name: 'ogcapi-stable'

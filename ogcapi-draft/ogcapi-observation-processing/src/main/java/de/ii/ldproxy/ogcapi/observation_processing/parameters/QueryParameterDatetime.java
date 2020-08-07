@@ -133,7 +133,7 @@ public class QueryParameterDatetime implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     @Override
@@ -260,8 +260,8 @@ public class QueryParameterDatetime implements OgcApiQueryParameter {
     private Optional<String> getDefault(OgcApiApiDataV2 apiData, Optional<String> collectionId) {
         FeatureTypeConfigurationOgcApi featureType = collectionId.isPresent() ? apiData.getCollections().get(collectionId.get()) : null;
         Optional<ObservationProcessingConfiguration> config = featureType!=null ?
-                this.getExtensionConfiguration(apiData, featureType, ObservationProcessingConfiguration.class) :
-                this.getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class);
+                featureType.getExtension(ObservationProcessingConfiguration.class) :
+                apiData.getExtension(ObservationProcessingConfiguration.class);
         if (config.isPresent()) {
             return config.get().getDefaultDatetime();
         }

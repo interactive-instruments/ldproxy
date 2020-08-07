@@ -10,8 +10,7 @@ package de.ii.ldproxy.ogcapi.infra.persistence;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCapabilityExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
+import de.ii.ldproxy.ogcapi.domain.OgcApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.xtraplatform.entity.api.handler.Entity;
@@ -70,11 +69,11 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiApiDataV2> {
         if (data.isAuto() && data.getExtensions()
                                   .isEmpty()) {
 
-            List<ExtensionConfiguration> buildingBlocks = extensionRegistry.getExtensionsForType(OgcApiCapabilityExtension.class)
+            List<ExtensionConfiguration> buildingBlocks = extensionRegistry.getExtensionsForType(OgcApiBuildingBlock.class)
                                                                            .stream()
                                                                            .sorted(Comparator.comparing(buildingBlock -> buildingBlock.getClass()
                                                                                                                                       .getSimpleName()))
-                                                                           .map(buildingBlock -> buildingBlock.getDefaultConfiguration(OgcApiConfigPreset.OGCAPI))
+                                                                           .map(OgcApiBuildingBlock::getDefaultConfiguration)
                                                                            .collect(Collectors.toList());
 
             return new ImmutableOgcApiApiDataV2.Builder().from(data)

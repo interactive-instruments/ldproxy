@@ -54,6 +54,6 @@ public class QueryParameterPrettyFeaturesGeoJson implements OgcApiQueryParameter
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), GeoJsonConfiguration.class) && allowDebug;
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), GeoJsonConfiguration.class) && allowDebug;
     }
 }

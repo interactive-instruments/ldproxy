@@ -165,7 +165,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
         }
 
         FeatureTypeConfigurationOgcApi featureType = requestContext.getApi().getData().getCollections().get(collectionId);
-        TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, featureType, TilesConfiguration.class).get();
+        TilesConfiguration tilesConfiguration = featureType.getExtension(TilesConfiguration.class).get();
 
         MinMax zoomLevels = tilesConfiguration.getZoomLevels().get(tileMatrixSetId);
         if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
@@ -232,7 +232,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
 
         FeatureQuery query = outputFormat.getQuery(tile, allowedParameters, queryParams, tilesConfiguration, requestContext.getUriCustomizer());
 
-        OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, featureType, OgcApiFeaturesCoreConfiguration.class).get();
+        OgcApiFeaturesCoreConfiguration coreConfiguration = featureType.getExtension(OgcApiFeaturesCoreConfiguration.class).get();
 
         // TODO add caching information
         TilesQueriesHandler.OgcApiQueryInputTileSingleLayer queryInput = new ImmutableOgcApiQueryInputTileSingleLayer.Builder()

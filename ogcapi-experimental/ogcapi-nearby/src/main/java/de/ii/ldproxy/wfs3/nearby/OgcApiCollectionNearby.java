@@ -33,7 +33,7 @@ public class OgcApiCollectionNearby implements OgcApiCollectionExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), NearbyConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), NearbyConfiguration.class);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class OgcApiCollectionNearby implements OgcApiCollectionExtension {
                                                      List<OgcApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
         final Optional<NearbyConfiguration> nearbyConfiguration = featureTypeConfiguration.getExtension(NearbyConfiguration.class);
-        if (nearbyConfiguration.isPresent() && !isNested && nearbyConfiguration.get().getEnabled()) {
+        if (nearbyConfiguration.isPresent() && !isNested && nearbyConfiguration.get().isEnabled()) {
             if (!nearbyConfiguration.get()
                                             .getRelations()
                                             .isEmpty()) {

@@ -53,7 +53,7 @@ public class QueryParameterLimitTile extends QueryParameterLimitFeatures {
         if (!schemaMap.containsKey(key)) {
             Schema schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
 
-            Optional<Integer> limit = getExtensionConfiguration(apiData, TilesConfiguration.class)
+            Optional<Integer> limit = apiData.getExtension(TilesConfiguration.class)
                     .map(TilesConfiguration::getLimit);
             if (limit.isPresent())
                 schema.setDefault(BigDecimal.valueOf(limit.get()));
@@ -70,7 +70,7 @@ public class QueryParameterLimitTile extends QueryParameterLimitFeatures {
             Schema schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
 
             FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-            Optional<Integer> limit = getExtensionConfiguration(apiData, featureType, TilesConfiguration.class)
+            Optional<Integer> limit = featureType.getExtension(TilesConfiguration.class)
                     .map(TilesConfiguration::getLimit);
             if (limit.isPresent())
                 schema.setDefault(BigDecimal.valueOf(limit.get()));
@@ -87,7 +87,7 @@ public class QueryParameterLimitTile extends QueryParameterLimitFeatures {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), TilesConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), TilesConfiguration.class);
     }
 
     @Override

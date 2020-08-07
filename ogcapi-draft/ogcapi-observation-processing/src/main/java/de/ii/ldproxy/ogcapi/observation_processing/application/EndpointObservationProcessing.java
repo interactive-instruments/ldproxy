@@ -10,7 +10,23 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceProcess;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointSubCollection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExample;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExternalDocumentation;
+import de.ii.ldproxy.ogcapi.domain.OgcApiOperation;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
@@ -32,11 +48,18 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Provides
@@ -112,8 +135,8 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                     }
 
                                     FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-                                    ObservationProcessingConfiguration config = this.getExtensionConfiguration(apiData, featureType, ObservationProcessingConfiguration.class)
-                                                    .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration."));
+                                    ObservationProcessingConfiguration config = featureType.getExtension(ObservationProcessingConfiguration.class)
+                                                                                           .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration."));
                                     Map<String, ProcessDocumentation> configDoc = config.getDocumentation();
                                     String operationSummary = chain.getOperationSummary();
                                     Optional<String> operationDescription = chain.getOperationDescription();
@@ -275,11 +298,12 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
         // TODO check that the request is not considered to be too demanding
 
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, collectionData, OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
+        final OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
+                                                                                .orElseThrow(NotFoundException::new);
         final int minimumPageSize = coreConfiguration.getMinimumPageSize();
         final int defaultPageSize = coreConfiguration.getDefaultPageSize();
-        final int maxPageSize = coreConfiguration.getMaxPageSize();
-        final boolean includeLinkHeader = getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
+        final int maxPageSize = coreConfiguration.getMaximumPageSize();
+        final boolean includeLinkHeader = apiData.getExtension(OgcApiCommonConfiguration.class)
                                                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                                                 .orElse(false);
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
@@ -300,7 +324,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
         queryParams.put("limit", String.valueOf(maxPageSize));
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(apiData, collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, queryParams, allowedParameters);
 
-        List<Variable> variables = getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class)
+        List<Variable> variables = apiData.getExtension(ObservationProcessingConfiguration.class)
                 .map(ObservationProcessingConfiguration::getVariables)
                 .orElse(ImmutableList.of());
 

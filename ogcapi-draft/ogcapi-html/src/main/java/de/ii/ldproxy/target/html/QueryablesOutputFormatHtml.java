@@ -11,7 +11,13 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.collection.queryables.OgcApiQueryablesFormatExtension;
 import de.ii.ldproxy.ogcapi.collection.queryables.Queryables;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -30,9 +36,6 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
             .type(MediaType.TEXT_HTML_TYPE)
             .parameter("html")
             .build();
-
-    @Requires
-    private HtmlConfig htmlConfig;
 
     @Requires
     private I18n i18n;
@@ -54,7 +57,7 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), HtmlConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
     }
 
     @Override
@@ -67,7 +70,7 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
     }
 
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+        return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
     }
@@ -99,6 +102,12 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
                                                                                                                   .toString()))
                 .add(new NavigationDTO(queryablesTitle))
                 .build();
+
+        HtmlConfiguration htmlConfig = api.getData()
+                                                 .getCollections()
+                                                 .get(collectionId)
+                                                 .getExtension(HtmlConfiguration.class)
+                                                 .orElse(null);
 
         return new QueryablesView(api.getData(), queryables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }

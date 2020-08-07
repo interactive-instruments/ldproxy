@@ -61,7 +61,7 @@ public class OgcApiFeaturesLandingPageExtension implements OgcApiLandingPageExte
                         .title(i18n.get("dataLink",language) + suffix)
                         .build());
 
-        Optional<OgcApiFeaturesCoreConfiguration> config = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class);
+        Optional<OgcApiFeaturesCoreConfiguration> config = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class);
         if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/")) {
             List<OgcApiLink> additionalLinks = config.get().getAdditionalLinks().get("/");
             additionalLinks.stream().forEach(link -> landingPageBuilder.addLinks(link));

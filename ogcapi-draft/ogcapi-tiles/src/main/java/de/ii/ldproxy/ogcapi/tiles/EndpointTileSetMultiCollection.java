@@ -47,10 +47,10 @@ public class EndpointTileSetMultiCollection extends OgcApiEndpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::getMultiCollectionEnabled)
                 .isPresent();
     }
@@ -107,7 +107,7 @@ public class EndpointTileSetMultiCollection extends OgcApiEndpoint {
         String path = "/tiles/{tileMatrixSetId}";
         checkPathParameter(extensionRegistry, apiData, path, "tileMatrixSetId", tileMatrixSetId);
 
-        TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, TilesConfiguration.class).get();
+        TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
         TilesQueriesHandler.OgcApiQueryInputTileSet queryInput = new ImmutableOgcApiQueryInputTileSet.Builder()
                 .from(getGenericQueryInput(api.getData()))

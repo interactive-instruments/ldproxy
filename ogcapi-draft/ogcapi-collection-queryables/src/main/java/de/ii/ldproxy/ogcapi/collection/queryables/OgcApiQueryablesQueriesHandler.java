@@ -11,11 +11,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueriesHandler;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryIdentifier;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.target.geojson.GeoJsonConfig;
 import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -28,7 +36,12 @@ import org.immutables.value.Value;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @Instantiate
@@ -51,16 +64,12 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
     private final I18n i18n;
     private final OgcApiFeatureCoreProviders providers;
-    private final GeoJsonConfig geoJsonConfig;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
 
     public OgcApiQueryablesQueriesHandler(@Requires I18n i18n,
-                                          @Requires OgcApiFeatureCoreProviders providers,
-                                          @Requires GeoJsonConfig geoJsonConfig) {
+                                          @Requires OgcApiFeatureCoreProviders providers) {
         this.i18n = i18n;
         this.providers = providers;
-        this.geoJsonConfig = geoJsonConfig;
-
         this.queryHandlers = ImmutableMap.of(
                 Query.QUERYABLES, OgcApiQueryHandler.with(OgcApiQueryInputQueryables.class, this::getQueryablesResponse),
                 Query.SCHEMA, OgcApiQueryHandler.with(OgcApiQueryInputQueryables.class, this::getSchemaResponse)

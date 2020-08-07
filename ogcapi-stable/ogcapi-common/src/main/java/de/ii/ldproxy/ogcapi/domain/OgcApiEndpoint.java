@@ -141,10 +141,10 @@ public abstract class OgcApiEndpoint implements OgcApiEndpointExtension {
     }
 
     protected OgcApiQueryInput getGenericQueryInput(OgcApiApiDataV2 apiData) {
-        final boolean includeHomeLink = getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
+        final boolean includeHomeLink = apiData.getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        final boolean includeLinkHeader = getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
+        final boolean includeLinkHeader = apiData.getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 

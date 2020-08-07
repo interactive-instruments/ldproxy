@@ -55,7 +55,7 @@ public class ObservationProcessingCollectionExtension implements OgcApiCollectio
             return collection;
 
         // get endpoints
-        if (isExtensionEnabled(apiData, featureType, ObservationProcessingConfiguration.class) &&
+        if (isExtensionEnabled(featureType, ObservationProcessingConfiguration.class) &&
             params.get(0).getValues(apiData).contains(featureType.getId())) {
             final ObservationProcessingLinksGenerator linkGenerator = new ObservationProcessingLinksGenerator();
             collection.addAllLinks(linkGenerator.generateCollectionLinks(featureType, uriCustomizer, i18n, language));

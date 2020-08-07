@@ -11,7 +11,14 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.LandingPage;
+import de.ii.ldproxy.ogcapi.domain.Metadata;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExternalDocumentation;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.util.Comparator;
@@ -51,7 +58,7 @@ public class OgcApiLandingPageView extends OgcApiView {
     public boolean isLandingPage = true;
 
     public OgcApiLandingPageView(OgcApiApiDataV2 apiData, LandingPage apiLandingPage,
-                                 final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig,
+                                 final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfiguration htmlConfig,
                                  boolean noIndex, URICustomizer uriCustomizer, I18n i18n, Optional<Locale> language) {
         super("landingPage.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
                 apiLandingPage.getLinks(),

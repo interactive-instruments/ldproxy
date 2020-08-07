@@ -17,42 +17,13 @@ public interface OgcApiExtension {
         return isEnabledForApi(apiData);
     }
 
-    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, Optional<String> collectionId) {
-        return collectionId.isPresent() ? isEnabledForApi(apiData, collectionId.get()) : isEnabledForApi(apiData);
+    //TODO: use this to centralize isEnabledForApi implementations
+    default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return null;
     }
 
-    default <T extends ExtensionConfiguration> Optional<T> getExtensionConfiguration(
-            ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
+    default <T extends ExtensionConfiguration> boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
 
-        return extendableConfiguration.getExtension(clazz);
-    }
-
-    default <T extends ExtensionConfiguration> Optional<T> getExtensionConfiguration(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
-
-        Optional<T> defaultExtensionConfiguration = defaultExtendableConfiguration.getExtension(clazz);
-
-        Optional<T> extensionConfiguration = extendableConfiguration.getExtension(clazz);
-
-        if (defaultExtensionConfiguration.isPresent() && !extensionConfiguration.isPresent()) {
-            return defaultExtensionConfiguration;
-        } else if (!defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
-            return extensionConfiguration;
-        } else if (defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
-            return Optional.ofNullable(extensionConfiguration.get().mergeDefaults(defaultExtensionConfiguration.get()));
-        }
-
-        return Optional.empty();
-    }
-
-    default boolean isExtensionEnabled(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {
-
-        return extendableConfiguration!=null ?
-                getExtensionConfiguration(defaultExtendableConfiguration, extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent() :
-                getExtensionConfiguration(defaultExtendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
-    }
-
-    default boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {
-
-        return getExtensionConfiguration(extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
+        return extendableConfiguration.getExtension(clazz).filter(ExtensionConfiguration::isEnabled).isPresent();
     }
 }

@@ -21,7 +21,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,7 +58,7 @@ public class FeatureCollectionView extends DatasetView {
     public boolean complexObjects;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String description,
-                                 String urlPrefix, HtmlConfig htmlConfig, String persistentUri, boolean noIndex,
+                                 String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
                                  I18n i18n, Locale language, HtmlConfiguration.LAYOUT layout) {
         super(template, uri, name, title, description, urlPrefix, htmlConfig, noIndex);
         this.features = new ArrayList<>();
