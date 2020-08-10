@@ -9,67 +9,52 @@ package de.ii.ldproxy.wfs3.styles;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
+
+import javax.annotation.Nullable;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableStylesConfiguration.Builder.class)
-public abstract class StylesConfiguration implements ExtensionConfiguration {
+public interface StylesConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
+    abstract class Builder extends ExtensionConfiguration.Builder {
+    }
+
+    @Nullable
+    Boolean getManagerEnabled();
+
+    @Nullable
+    Boolean getMapsEnabled();
+
+    @Nullable
+    Boolean getValidationEnabled();
+
+    @Nullable
+    Boolean getResourcesEnabled();
+
+    @Nullable
+    Boolean getResourceManagerEnabled();
+
+    @Nullable
+    Boolean getHtmlEnabled();
+
+    @Nullable
+    Boolean getMbStyleEnabled();
+
+    @Nullable
+    Boolean getSld10Enabled();
+
+    @Nullable
+    Boolean getSld11Enabled();
+
+    @Nullable
+    Boolean getUseFormattedJsonOutput();
+
     @Override
-    public boolean getEnabled() {
-        return false;
-    }
-
-    @Value.Default
-    public boolean getManagerEnabled() {
-        return false;
-    }
-
-    @Value.Default
-    public boolean getMapsEnabled() {
-        return false;
-    }
-
-    @Value.Default
-    public boolean getValidationEnabled() {
-        return false;
-    }
-
-    @Value.Default
-    public boolean getResourcesEnabled() {
-        return false;
-    }
-
-    @Value.Default
-    public boolean getResourceManagerEnabled() {
-        return false;
-    }
-
-    @Value.Default
-    public boolean getHtmlEnabled() {
-        return false;
-    }
-
-    @Value.Default
-    public boolean getMbStyleEnabled() {
-        return false;
-    }
-
-    @Value.Default
-    public boolean getSld10Enabled() {
-        return false;
-    }
-
-    @Value.Default
-    public boolean getSld11Enabled() {
-        return false;
-    }
-
-    @Value.Default
-    public boolean getUseFormattedJsonOutput() {
-        return false;
+    default Builder getBuilder() {
+        return new ImmutableStylesConfiguration.Builder();
     }
 
 }

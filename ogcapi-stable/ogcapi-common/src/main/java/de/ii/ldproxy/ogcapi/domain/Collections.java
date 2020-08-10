@@ -19,6 +19,8 @@ import java.util.Map;
 @JsonDeserialize(builder = ImmutableCollections.Builder.class)
 public abstract class Collections extends PageRepresentation {
 
+    // restrict to information in ogcapi-stable, everything else goes into the extensions map
+
     public abstract List<String> getCrs();
 
     public abstract List<OgcApiCollection> getCollections();

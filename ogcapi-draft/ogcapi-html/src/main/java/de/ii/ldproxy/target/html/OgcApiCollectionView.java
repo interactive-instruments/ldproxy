@@ -10,14 +10,24 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.Metadata;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtentSpatial;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtentTemporal;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class OgcApiCollectionView extends OgcApiView {
@@ -38,24 +48,26 @@ public class OgcApiCollectionView extends OgcApiView {
     private List<StyleEntry> styleEntries;
     public String defaultStyle;
     public boolean withStyleInfos;
-    public String itemTypeTitle;
-    public String dataTitle;
-    public String metadataTitle;
-    public String licenseTitle;
-    public String downloadTitle;
-    public String spatialExtentTitle;
-    public String temporalExtentTitle;
-    public String supportedCrsTitle;
-    public String storageCrsTitle;
-    public String additionalLinksTitle;
-    public String expertInformationTitle;
-    public String defaultStyleTitle;
-    public String styleInfosTitle;
+    public final String itemTypeTitle;
+    public final String dataTitle;
+    public final String metadataTitle;
+    public final String licenseTitle;
+    public final String downloadTitle;
+    public final String spatialExtentTitle;
+    public final String temporalExtentTitle;
+    public final String supportedCrsTitle;
+    public final String storageCrsTitle;
+    public final String additionalLinksTitle;
+    public final String expertInformationTitle;
+    public final String defaultStyleTitle;
+    public final String styleInfosTitle;
+    public final String collectionInformationTitle;
+    public final String mainLinksTitle;
 
     public String none;
 
     public OgcApiCollectionView(OgcApiApiDataV2 apiData, OgcApiCollection collection,
-                                final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfig htmlConfig,
+                                final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfiguration htmlConfig,
                                 boolean noIndex, I18n i18n, Optional<Locale> language) {
         super("collection.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
                 collection.getLinks(),
@@ -95,7 +107,8 @@ public class OgcApiCollectionView extends OgcApiView {
         Optional<OgcApiExtent> extent = collection.getExtent();
         if (extent.isPresent()) {
             OgcApiExtentSpatial spatialExtent = extent.get()
-                    .getSpatial();
+                    .getSpatial()
+                    .orElse(null);
             if (Objects.nonNull(spatialExtent)) {
                 double[] boundingBox = spatialExtent.getBbox()[0]; // TODO just the first bbox and it is assumed to be in CRS84
                 this.bbox2 = ImmutableMap.of(
@@ -105,7 +118,8 @@ public class OgcApiCollectionView extends OgcApiView {
                         "maxLat", Double.toString(boundingBox[3]));
             }
             OgcApiExtentTemporal temporalExtent = extent.get()
-                    .getTemporal();
+                    .getTemporal()
+                    .orElse(null);
             if (Objects.nonNull(temporalExtent)) {
                 String[] interval = temporalExtent.getInterval()[0]; // TODO just the first interval and it is assumed to be in Gregorian calendar
                 if (interval==null)
@@ -142,6 +156,8 @@ public class OgcApiCollectionView extends OgcApiView {
         this.expertInformationTitle = i18n.get ("expertInformationTitle", language);
         this.defaultStyleTitle = i18n.get ("defaultStyleTitle", language);
         this.styleInfosTitle = i18n.get ("styleInfosTitle", language);
+        this.mainLinksTitle = i18n.get ("mainLinksTitle", language);
+        this.collectionInformationTitle = i18n.get ("collectionInformationTitle", language);
 
         this.none = i18n.get ("none", language);
     }
@@ -149,7 +165,7 @@ public class OgcApiCollectionView extends OgcApiView {
     public List<OgcApiLink> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|home|describedby|license|enclosure)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|home|describedby|license|enclosure|ogc-dapa)$"))
                 .collect(Collectors.toList());
     }
 
@@ -190,6 +206,13 @@ public class OgcApiCollectionView extends OgcApiView {
         return links
                 .stream()
                 .filter(link -> Objects.equals(link.getRel(), "tiles"))
+                .findFirst();
+    }
+
+    public Optional<OgcApiLink> getDapa() {
+        return links
+                .stream()
+                .filter(link -> Objects.equals(link.getRel(), "ogc-dapa"))
                 .findFirst();
     }
 

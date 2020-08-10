@@ -7,11 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.ImmutableOgcApiQueryInputApiDefinition;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.OgcApiQueryInputApiDefinition;
+import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
@@ -27,42 +27,70 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Provides
 @Instantiate
-public class OgcApiEndpointApiDefinition implements OgcApiEndpointExtension {
+public class OgcApiEndpointApiDefinition extends OgcApiEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEndpointApiDefinition.class);
-
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint("api")
-            .addMethods(OgcApiContext.HttpMethods.GET, OgcApiContext.HttpMethods.HEAD)
-            .subPathPattern("^(?:/[^/]*)?$")
-            .build();
-
-    private final OgcApiExtensionRegistry extensionRegistry;
 
     @Requires
     private OgcApiQueriesHandlerCommon queryHandler;
 
     public OgcApiEndpointApiDefinition(@Requires OgcApiExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+        super(extensionRegistry);
     }
 
     @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+        return isExtensionEnabled(apiData, OgcApiCommonConfiguration.class);
     }
 
     @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
-        return extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class)
-                                .stream()
-                                .filter(formatExtension -> ("/api"+subPath).matches(formatExtension.getPathPattern()))
-                                .map(ApiDefinitionFormatExtension::getMediaType)
-                                .collect(ImmutableSet.toImmutableSet());
+    public List<? extends FormatExtension> getFormats() {
+        if (formats==null)
+            formats = extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class);
+        return formats;
+    }
+
+    @Override
+    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+        if (!isEnabledForApi(apiData))
+            return super.getDefinition(apiData);
+
+        String apiId = apiData.getId();
+        if (!apiDefinitions.containsKey(apiId)) {
+            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+                    .apiEntrypoint("api")
+                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_API_DEFINITION);
+            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/api");
+            String operationSummary = "API definition";
+            String path = "/api";
+            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                    .path(path);
+            OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, Optional.empty(), ImmutableList.of());
+            if (operation!=null)
+                resourceBuilder.putOperations("GET", operation);
+            definitionBuilder.putResources(path, resourceBuilder.build());
+            operationSummary = "support files for the API definition in HTML";
+            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, "/api/{resource}");
+            path = "/api/{resource}";
+            resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                    .path(path)
+                    .pathParameters(pathParameters);
+            operation = addOperation(apiData, queryParameters, path, operationSummary, Optional.empty(), ImmutableList.of());
+            if (operation!=null)
+                resourceBuilder.putOperations("GET", operation);
+            definitionBuilder.putResources(path, resourceBuilder.build());
+
+            apiDefinitions.put(apiId, definitionBuilder.build());
+        }
+
+        return apiDefinitions.get(apiId);
     }
 
     @GET

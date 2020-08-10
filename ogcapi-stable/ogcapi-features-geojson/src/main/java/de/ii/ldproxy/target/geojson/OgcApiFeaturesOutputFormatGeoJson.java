@@ -10,6 +10,7 @@ package de.ii.ldproxy.target.geojson;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
@@ -20,6 +21,8 @@ import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -50,11 +53,13 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
             .build();
 
     @Requires
-    private GeoJsonConfig geoJsonConfig;
+    SchemaGeneratorFeature schemaGeneratorFeature;
 
     @Requires
-    private GeoJsonWriterRegistry geoJsonWriterRegistry;
+    SchemaGeneratorFeatureCollection schemaGeneratorFeatureCollection;
 
+    @Requires
+    GeoJsonWriterRegistry geoJsonWriterRegistry;
 
     @Override
     public List<String> getConformanceClassUris() {
@@ -67,8 +72,53 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), GeoJsonConfiguration.class);
+    }
+
+    @Override
+    public boolean canSupportTransactions() {
+        return true;
+    }
+
+    @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        String schemaRef = "#/components/schemas/anyObject";
+        Schema schema = new ObjectSchema();
+        String collectionId = path.split("/", 4)[2];
+        if (path.matches("/collections/[^//]+/items/?")) {
+            schemaRef = schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi(collectionId);
+            schema = schemaGeneratorFeatureCollection.getSchemaOpenApi(apiData, collectionId);
+        } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
+            schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId);
+            schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId);
+        }
+        // TODO example
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(schema)
+                .schemaRef(schemaRef)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
+        String collectionId = path.split("/", 4)[2];
+        if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method== OgcApiContext.HttpMethods.PUT) ||
+            (path.matches("/collections/[^//]+/items/?") && method== OgcApiContext.HttpMethods.POST)) {
+            return new ImmutableOgcApiMediaTypeContent.Builder()
+                    .schema(schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId))
+                    .schemaRef(schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId))
+                    .ogcApiMediaType(MEDIA_TYPE)
+                    .build();
+        }
+
+        return null;
     }
 
     @Override
@@ -93,7 +143,7 @@ public class OgcApiFeaturesOutputFormatGeoJson implements ConformanceClass, OgcA
 
         return Optional.of(new FeatureTransformerGeoJson(ImmutableFeatureTransformationContextGeoJson.builder()
                                                                                                      .from(transformationContext)
-                                                                                                     .geoJsonConfig(geoJsonConfig)
+                                                                                                     .geoJsonConfig(transformationContext.getApiData().getCollections().get(transformationContext.getCollectionId()).getExtension(GeoJsonConfiguration.class).get())
                                                                                                      .prettify(Optional.ofNullable(transformationContext.getOgcApiRequest()
                                                                                                                                                         .getParameters()
                                                                                                                                                         .get("pretty"))

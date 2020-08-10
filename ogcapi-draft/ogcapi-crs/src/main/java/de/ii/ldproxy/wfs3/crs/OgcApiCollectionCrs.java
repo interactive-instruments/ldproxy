@@ -51,6 +51,11 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), CrsConfiguration.class);
+    }
+
+    @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                      OgcApiApiDataV2 apiData,
@@ -64,7 +69,7 @@ public class OgcApiCollectionCrs implements OgcApiCollectionExtension {
                 .map(OgcApiFeaturesCollectionQueryables::getSpatial)
                 .filter(spatial -> !spatial.isEmpty())
                 .isPresent();
-        if (isExtensionEnabled(apiData, featureTypeConfiguration, CrsConfiguration.class) && hasGeometry) {
+        if (isExtensionEnabled(featureTypeConfiguration, CrsConfiguration.class) && hasGeometry) {
             List<String> crsList;
             if (isNested) {
                 // just reference the default list of coordinate reference systems

@@ -11,13 +11,12 @@ import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 
-import javax.ws.rs.core.Response;
-
 public interface OgcApiQueryablesFormatExtension extends FormatExtension {
 
     default String getPathPattern() {
         return "^\\/?collections\\/[^\\/]+\\/queryables/?$";
     }
 
-    Response getResponse(Queryables queryables, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
+    Object getEntity(Queryables queryables, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
+
 }

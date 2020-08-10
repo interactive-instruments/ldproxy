@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.tiles.TileCollections;
+import de.ii.ldproxy.ogcapi.tiles.TileSets;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.util.Comparator;
@@ -41,11 +41,11 @@ public class TilesView extends OgcApiView {
     public Map<String, String> temporalExtent;
 
     public TilesView(OgcApiApiDataV2 apiData,
-                     TileCollections tiles,
+                     TileSets tiles,
                      Optional<String> collectionId,
                      List<NavigationDTO> breadCrumbs,
                      String urlPrefix,
-                     HtmlConfig htmlConfig,
+                     HtmlConfiguration htmlConfig,
                      boolean noIndex,
                      URICustomizer uriCustomizer,
                      I18n i18n,

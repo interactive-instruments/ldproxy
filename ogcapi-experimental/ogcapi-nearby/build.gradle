@@ -1,0 +1,26 @@
+
+dependencies {
+
+    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-geojson'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
+
+    //TODO: might come from xtraplatform-geotools
+    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.16.1')
+
+    testImplementation group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
+    testImplementation group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
+}
+
+
+jar {
+    manifest {
+        instruction 'Embed-Import', 'false'
+        instruction 'Embed-Export', 'false'
+    }
+}

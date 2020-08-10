@@ -8,26 +8,31 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
+
+import javax.annotation.Nullable;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableOgcApiCommonConfiguration.Builder.class)
-public abstract class OgcApiCommonConfiguration implements ExtensionConfiguration {
+public interface OgcApiCommonConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return true;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    @Value.Default
-    public boolean getIncludeHomeLink() { return false; }
+    @Nullable
+    Boolean getIncludeHomeLink();
 
-    @Value.Default
-    public boolean getUseLangParameter() { return false; }
+    @Nullable
+    Boolean getUseLangParameter();
 
-    @Value.Default
-    public boolean getIncludeLinkHeader() { return false; }
+    @Nullable
+    Boolean getIncludeLinkHeader();
+
+    @Override
+    default Builder getBuilder() {
+        return new ImmutableOgcApiCommonConfiguration.Builder();
+    }
 
 }

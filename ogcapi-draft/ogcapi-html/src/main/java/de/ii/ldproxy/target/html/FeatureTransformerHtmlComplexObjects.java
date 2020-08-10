@@ -22,6 +22,7 @@ import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFly;
 import de.ii.xtraplatform.feature.transformer.api.OnTheFlyMapping;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
@@ -37,13 +38,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
 
 /**
  * @author zahnen
@@ -77,8 +72,9 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
     private final FeatureTransformationContextHtml transformationContext;
     private final int offset;
     private final HtmlConfiguration htmlConfiguration;
+    private final Optional<FeatureSchema> featureSchema;
     private final Map<String, HtmlPropertyTransformations> transformations;
-    private final boolean isMicrodataEnabled;
+    private final boolean isSchemaOrgEnabled;
 
     private StringBuilder currentValueBuilder = new StringBuilder();
     private Map<String,Integer> pathMap = new HashMap<>();
@@ -88,10 +84,30 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
     private boolean combineCurrentPropertyValues;
 
     private ValueDTO getValue(FeatureProperty baseProperty, FeatureProperty htmlProperty, List<Integer> index) {
-        String htmlName = htmlProperty.getName();
-        List<String> htmlNameSections = Splitter.on('|').splitToList(htmlName);
         String baseName = baseProperty.getName();
         List<String> baseNameSections = Splitter.on('.').splitToList(baseName);
+        String htmlName = htmlProperty.getName();
+        List<String> htmlNameSections;
+        if (htmlName.equals(baseName) && featureSchema.isPresent()) {
+            htmlNameSections = new ArrayList<>();
+            FeatureSchema schema = featureSchema.get();
+            for (String section: baseNameSections) {
+                String propertyName = section.replace("[]", "");
+                schema = schema.getProperties()
+                        .stream()
+                        .filter(prop -> prop.getName().equals(propertyName))
+                        .findAny()
+                        .orElse(null);
+                if (schema!=null) {
+                    htmlNameSections.add(schema.getLabel().orElse(schema.getName()));
+                } else {
+                    htmlNameSections.add(propertyName);
+                }
+            }
+        } else {
+            htmlNameSections = Splitter.on('|').splitToList(htmlName);
+        }
+
         Map<String, String> addInfo = baseProperty.getAdditionalInfo();
         boolean linkTitle = false;
         boolean linkHref = false;
@@ -182,6 +198,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
         this.mustacheRenderer = transformationContext.getMustacheRenderer();
         this.transformationContext = transformationContext;
         this.htmlConfiguration = transformationContext.getHtmlConfiguration();
+        this.featureSchema = transformationContext.getFeatureSchema();
 
         FeatureTypeConfigurationOgcApi featureTypeConfiguration = transformationContext.getApiData()
                                                                                        .getCollections()
@@ -196,8 +213,8 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                 .map(htmlConfiguration -> htmlConfiguration.getTransformations(baseTransformations, transformationContext.getCodelists(), transformationContext.getServiceUrl(), isFeatureCollection))
                 .orElse(ImmutableMap.of());
 
-        this.isMicrodataEnabled = transformationContext.getHtmlConfiguration()
-                                                       .getMicrodataEnabled();
+        this.isSchemaOrgEnabled = transformationContext.getHtmlConfiguration()
+                                                       .getSchemaOrgEnabled();
     }
 
     @Override
@@ -316,7 +333,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
             currentFeature.name = itemLabelFormat.get();
         }
 
-        if (isMicrodataEnabled) {
+        if (isSchemaOrgEnabled) {
             currentFeature.itemType = "http://schema.org/Place";
         }
     }
@@ -469,7 +486,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
 
         dataset.hideMap = false;
 
-        if (!isMicrodataEnabled) return;
+        if (!isSchemaOrgEnabled) return;
 
         if (transformations.containsKey(featureProperty.getName())) {
 

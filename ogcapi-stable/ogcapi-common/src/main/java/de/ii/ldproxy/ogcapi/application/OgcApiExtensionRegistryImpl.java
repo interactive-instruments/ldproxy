@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -79,16 +78,16 @@ public class OgcApiExtensionRegistryImpl implements OgcApiExtensionRegistry {
                 LOGGER.debug("RESOURCE CONTENT {} (class {})", contentExtension.getResourceName(), contentExtension.getClass().getName());
             }
 
-            if (extension instanceof OgcApiCapabilityExtension) {
-                final OgcApiCapabilityExtension capabilityExtension = (OgcApiCapabilityExtension) extension;
+            if (extension instanceof OgcApiBuildingBlock) {
+                final OgcApiBuildingBlock capabilityExtension = (OgcApiBuildingBlock) extension;
 
-                LOGGER.debug("CAPABILITY {}", capabilityExtension.getClass().getName());
+                LOGGER.debug("CAPABILITY {}", capabilityExtension.getClass().getSimpleName());
             }
 
             if (extension instanceof OgcApiEndpointExtension) {
-                final OgcApiEndpointExtension wfs3Endpoint = (OgcApiEndpointExtension) extension;
+                final OgcApiEndpointExtension endpoint = (OgcApiEndpointExtension) extension;
 
-                LOGGER.debug("ENDPOINT {}", wfs3Endpoint.getApiContext());
+                LOGGER.debug("ENDPOINT {}", endpoint.getClass().getSimpleName());
             }
 
             if (extension instanceof OgcApiStartupTask) {
@@ -97,11 +96,18 @@ public class OgcApiExtensionRegistryImpl implements OgcApiExtensionRegistry {
                 LOGGER.debug("STARTUP TASK {}", extension.getClass().getSimpleName());
            }
 
-            if (extension instanceof OgcApiParameterExtension) {
-                final OgcApiParameterExtension wfs3Parameter = (OgcApiParameterExtension) extension;
+            if (extension instanceof OgcApiParameter) {
+                final OgcApiParameter parameter = (OgcApiParameter) extension;
 
                 LOGGER.debug("PARAMETER {}", extension.getClass().getSimpleName());
             }
+
+            if (extension instanceof OgcApiProcessExtension) {
+                final OgcApiProcessExtension process = (OgcApiProcessExtension) extension;
+
+                LOGGER.debug("PROCESS {}", process.getName());
+            }
+
         } catch (Throwable e) {
             LOGGER.error("E", e);
         }

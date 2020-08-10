@@ -31,26 +31,20 @@ public abstract class FeatureTransformationContextHtml implements FeatureTransfo
 
     @Value.Derived
     public HtmlConfiguration getHtmlConfiguration() {
-        HtmlConfiguration htmlConfiguration = null;
-
-        Optional<HtmlConfiguration> baseHtmlConfiguration = getApiData().getExtension(HtmlConfiguration.class);
-
         Optional<HtmlConfiguration> collectionHtmlConfiguration = Optional.ofNullable(getApiData().getCollections()
                                                                                                   .get(getCollectionId()))
                                                                           .flatMap(featureTypeConfiguration -> featureTypeConfiguration.getExtension(HtmlConfiguration.class));
 
         if (collectionHtmlConfiguration.isPresent()) {
-            htmlConfiguration = collectionHtmlConfiguration.get();
+            return collectionHtmlConfiguration.get();
         }
+
+        Optional<HtmlConfiguration> baseHtmlConfiguration = getApiData().getExtension(HtmlConfiguration.class);
 
         if (baseHtmlConfiguration.isPresent()) {
-            if (Objects.isNull(htmlConfiguration)) {
-                htmlConfiguration = baseHtmlConfiguration.get();
-            } else {
-                htmlConfiguration = htmlConfiguration.mergeDefaults(baseHtmlConfiguration.get());
-            }
+            return baseHtmlConfiguration.get();
         }
 
-        return htmlConfiguration;
+        return null;
     }
 }

@@ -9,15 +9,17 @@ package de.ii.ldproxy.wfs3.styles;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.*;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @Component
@@ -39,8 +41,31 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension 
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, StylesConfiguration.class).map(StylesConfiguration::getSld10Enabled)
+        return apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::getSld10Enabled)
                                                                                 .orElse(false);
+    }
+
+    @Override
+    public boolean canSupportTransactions() {
+        return true;
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new ObjectSchema())
+                .schemaRef("#/components/schemas/anyObject")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new ObjectSchema())
+                .schemaRef("#/components/schemas/anyObject")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
     }
 
     @Override
@@ -63,15 +88,16 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension 
         return "1.0";
     }
 
-    /**
-     * returns the title of a style, if a SLD 1.0 stylesheet is available at /{serviceId}/styles/{styleId}
-     *
-     * @param datasetData information about the service {serviceId}
-     * @param styleId     the id of the style
-     * @return true, if the conformance class is enabled and a stylesheet is available
-     */
     @Override
-    public String getTitle(OgcApiApiDataV2 datasetData, String styleId) {
-        return "TODO";
+    public Response getStyleResponse(String styleId, File stylesheet, List<OgcApiLink> links, OgcApiApi api, OgcApiRequestContext requestContext) throws IOException {
+        final byte[] content = java.nio.file.Files.readAllBytes(stylesheet.toPath());
+
+        // TODO
+
+        return Response.ok()
+                .entity(content)
+                .type(MEDIA_TYPE.type())
+                .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(Link[]::new))
+                .build();
     }
 }

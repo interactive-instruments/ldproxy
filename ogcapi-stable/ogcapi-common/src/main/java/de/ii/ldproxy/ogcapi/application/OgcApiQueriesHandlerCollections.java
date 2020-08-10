@@ -20,7 +20,6 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -105,23 +104,11 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                 .orElseThrow(NotAcceptableException::new);
 
         ImmutableCollections responseObject = collections.build();
-        Response collectionsResponse = outputFormatExtension.getCollectionsResponse(responseObject,
-                requestContext.getApi(),
-                requestContext);
 
-        Response.ResponseBuilder response = Response.ok()
-                .entity(collectionsResponse.getEntity())
-                .type(requestContext.getMediaType()
-                        .type());
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null)
+                .entity(outputFormatExtension.getCollectionsEntity(responseObject, requestContext.getApi(), requestContext))
+                .build();
 
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (queryInput.getIncludeLinkHeader())
-            addLinks(response, responseObject.getLinks());
-
-        return response.build();
     }
 
     private Response getCollectionResponse(OgcApiQueryInputFeatureCollection queryInput,
@@ -170,21 +157,9 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
         }
 
         ImmutableOgcApiCollection responseObject = ogcApiCollection.build();
-        Response collectionResponse = outputFormatExtension.getCollectionResponse(ogcApiCollection.build(), api, requestContext);
-
-        Response.ResponseBuilder response = Response.ok()
-                .entity(collectionResponse.getEntity())
-                .type(requestContext.getMediaType()
-                        .type());
-
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (queryInput.getIncludeLinkHeader())
-            addLinks(response, responseObject.getLinks());
-
-        return response.build();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null)
+                .entity(outputFormatExtension.getCollectionEntity(ogcApiCollection.build(), api, requestContext))
+                .build();
     }
 
     private List<OgcApiCollectionExtension> getCollectionExtenders() {

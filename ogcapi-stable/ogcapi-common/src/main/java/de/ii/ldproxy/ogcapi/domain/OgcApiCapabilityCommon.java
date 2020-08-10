@@ -14,21 +14,20 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Component
 @Provides
 @Instantiate
-public class OgcApiCapabilityCommon implements OgcApiCapabilityExtension {
+public class OgcApiCapabilityCommon implements OgcApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
-        ImmutableOgcApiCommonConfiguration.Builder config = new ImmutableOgcApiCommonConfiguration.Builder();
-
-        switch (preset) {
-            case OGCAPI:
-                config.enabled(true);
-                break;
-            case GSFS:
-                config.enabled(false);
-                break;
-        }
-
-        return config.build();
+    public ExtensionConfiguration.Builder getConfigurationBuilder() {
+        return new ImmutableOgcApiCommonConfiguration.Builder();
     }
+
+    @Override
+    public ExtensionConfiguration getDefaultConfiguration() {
+        return new ImmutableOgcApiCommonConfiguration.Builder().enabled(true)
+                                                               .includeHomeLink(false)
+                                                               .includeLinkHeader(true)
+                                                               .useLangParameter(false)
+                                                               .build();
+    }
+
 }

@@ -1,25 +1,18 @@
-
-repositories {
-    maven {
-        url "https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases"
-    }
-}
-
 dependencies {
     provided project(":ogcapi-styles")
     provided project(":ogcapi-resources")
     provided project(":ogcapi-collection-queryables")
     provided project(":ogcapi-tiles")
+    provided project(":ogcapi-observation-processing")
 
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
     provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-around-relations'
+    provided group: 'de.interactive_instruments', name: 'ogcapi-nearby'
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-string-templates'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-codelists'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'

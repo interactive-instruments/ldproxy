@@ -10,16 +10,16 @@ package de.ii.ldproxy.target.html;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.tiles.TileMatrixSetData;
-import de.ii.ldproxy.ogcapi.tiles.TileMatrixSets;
-import de.ii.ldproxy.ogcapi.tiles.TileMatrixSetsFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetData;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSets;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetsFormatExtension;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Component
@@ -31,9 +31,6 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
             .type(MediaType.TEXT_HTML_TYPE)
             .parameter("html")
             .build();
-
-    @Requires
-    private HtmlConfig htmlConfig;
 
     @Requires
     private I18n i18n;
@@ -53,16 +50,30 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
         return isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new StringSchema().example("<html>...</html>"))
+                .schemaRef("#/components/schemas/htmlSchema")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+    }
+
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+        return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
     }
 
     @Override
-    public Response getTileMatrixSetsResponse(TileMatrixSets tileMatrixSets,
-                                              OgcApiApi api,
-                                              OgcApiRequestContext requestContext) {
+    public Object getTileMatrixSetsEntity(TileMatrixSets tileMatrixSets,
+                                          OgcApiApi api,
+                                          OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
 
@@ -79,18 +90,19 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
                 .add(new NavigationDTO(tileMatrixSetsTitle))
                 .build();
 
+        HtmlConfiguration htmlConfig = api.getData()
+                                                 .getExtension(HtmlConfiguration.class)
+                                                 .orElse(null);
+
         OgcApiTileMatrixSetsView tileMatrixSetsView = new OgcApiTileMatrixSetsView(api.getData(), tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
-        return Response.ok()
-                .type(getMediaType().type())
-                .entity(tileMatrixSetsView)
-                .build();
+        return tileMatrixSetsView;
     }
 
     @Override
-    public Response getTileMatrixSetResponse(TileMatrixSetData tileMatrixSet,
-                                             OgcApiApi api,
-                                             OgcApiRequestContext requestContext) {
+    public Object getTileMatrixSetEntity(TileMatrixSetData tileMatrixSet,
+                                         OgcApiApi api,
+                                         OgcApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
         String title = tileMatrixSet.getTitle().orElse(tileMatrixSet.getIdentifier());
@@ -113,11 +125,12 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
                 .add(new NavigationDTO(title))
                 .build();
 
+        HtmlConfiguration htmlConfig = api.getData()
+                                          .getExtension(HtmlConfiguration.class)
+                                          .orElse(null);
+
         OgcApiTileMatrixSetView tileMatrixSetView = new OgcApiTileMatrixSetView(api.getData(), tileMatrixSet, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
-        return Response.ok()
-                .type(getMediaType().type())
-                .entity(tileMatrixSetView)
-                .build();
+        return tileMatrixSetView;
     }
 }

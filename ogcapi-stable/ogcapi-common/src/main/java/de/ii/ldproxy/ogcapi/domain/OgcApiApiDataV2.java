@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Splitter;
@@ -30,8 +31,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 
 @Value.Immutable
@@ -43,6 +47,15 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     public static final String SERVICE_TYPE = "OGC_API";
 
     static abstract class Builder implements EntityDataBuilder<OgcApiApiDataV2> {
+
+        // jackson should append to instead of replacing extensions
+        @JsonIgnore
+        public abstract Builder extensions(Iterable<? extends ExtensionConfiguration> elements);
+
+        @JsonProperty("api")
+        public abstract Builder addAllExtensions(Iterable<? extends ExtensionConfiguration> elements);
+
+
     }
 
     @Value.Derived
@@ -64,7 +77,10 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
 
     public abstract Optional<Metadata> getMetadata();
 
+    public abstract Optional<OgcApiExternalDocumentation> getExternalDocs();
+
     @JsonProperty(value = "api")
+    @JsonMerge
     @Override
     public abstract List<ExtensionConfiguration> getExtensions();
 
@@ -93,8 +109,34 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
                 && Objects.nonNull(getFeatureProvider().getMappingStatus().getErrorMessage());*/
     }
 
+    @Value.Check
+    public OgcApiApiDataV2 mergeBuildingBlocks() {
+        boolean collectionsHaveMissingParentExtensions = getCollections().values()
+                                                                         .stream()
+                                                                         .anyMatch(collection -> collection.getParentExtensions()
+                                                                                                           .size() < getExtensions().size());
+
+        if (collectionsHaveMissingParentExtensions) {
+            Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>();
+
+            getCollections().values()
+                            .forEach(featureTypeConfigurationOgcApi -> {
+                                mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.toBuilder()
+                                                                                                                            .parentExtensions(getExtensions())
+                                                                                                                            .build());
+                            });
+
+            return new ImmutableOgcApiApiDataV2.Builder().from(this)
+                                                         .collections(mergedCollections)
+                                                         .build();
+        }
+
+        return this;
+    }
+
     public boolean isCollectionEnabled(final String collectionId) {
-        return getCollections().containsKey(collectionId) && getCollections().get(collectionId).getEnabled();
+        return getCollections().containsKey(collectionId) && getCollections().get(collectionId)
+                                                                             .getEnabled();
     }
 
     /**
@@ -115,10 +157,10 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
                                        .map(Optional::get)
                                        .map(BoundingBox::getCoords)
                                        .reduce((doubles, doubles2) -> new double[]{
-                                                Math.min(doubles[0], doubles2[0]),
-                                                Math.min(doubles[1], doubles2[1]),
-                                                Math.max(doubles[2], doubles2[2]),
-                                                Math.max(doubles[3], doubles2[3])})
+                                               Math.min(doubles[0], doubles2[0]),
+                                               Math.min(doubles[1], doubles2[1]),
+                                               Math.max(doubles[2], doubles2[2]),
+                                               Math.max(doubles[3], doubles2[3])})
                                        .orElse(null);
 
         return Objects.nonNull(val) ? new BoundingBox(val[0], val[1], val[2], val[3], OgcCrs.CRS84) : null;
@@ -144,7 +186,8 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     public BoundingBox getSpatialExtent(String collectionId) {
         return getCollections().values()
                                .stream()
-                               .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
+                               .filter(featureTypeConfiguration -> featureTypeConfiguration.getId()
+                                                                                           .equals(collectionId))
                                .map(FeatureTypeConfigurationOgcApi::getExtent)
                                .filter(Optional::isPresent)
                                .map(Optional::get)
@@ -172,7 +215,8 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
         Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
 
         if (Objects.nonNull(spatialExtent) && crsTransformer.isPresent()) {
-            return crsTransformer.get().transformBoundingBox(spatialExtent);
+            return crsTransformer.get()
+                                 .transformBoundingBox(spatialExtent);
         }
 
         return spatialExtent;

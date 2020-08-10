@@ -7,35 +7,50 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import com.codahale.metrics.MetricRegistry;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContentExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiStartupTask;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
-import de.ii.ldproxy.target.geojson.OgcApiFeaturesOutputFormatGeoJson;
+import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimits;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.codelists.CodelistRegistry;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.dropwizard.api.Dropwizard;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
-
-import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * This class is responsible for a automatic generation of the Tiles.
@@ -47,41 +62,79 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Instantiate
 public class VectorTileSeeding implements OgcApiStartupTask {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(VectorTileSeeding.class);
-    private final VectorTilesCache cache;
     private Thread t = null;
     private Map<Thread, String> threadMap = new HashMap<>();
 
-    @Requires
-    I18n i18n;
-
-    @Requires
-    private CrsTransformerFactory crsTransformerFactory;
-
-    @Requires
-    private CoreServerConfig coreServerConfig;
-
-    @Requires
-    private OgcApiExtensionRegistry extensionRegistry;
-
-    @Requires
-    private OgcApiFeaturesQuery queryParser;
-
-    @Requires
-    private OgcApiFeatureCoreProviders providers;
-
-    @Requires
+    private final I18n i18n;
+    private final CrsTransformerFactory crsTransformerFactory;
+    private final MetricRegistry metricRegistry;
     private CodelistRegistry codelistRegistry;
+    private final OgcApiExtensionRegistry extensionRegistry;
+    private final TileMatrixSetLimitsGenerator limitsGenerator;
+    private final TilesCache tilesCache;
+    private final XtraPlatform xtraPlatform;
+    private final OgcApiFeaturesQuery queryParser;
+    private final OgcApiFeatureCoreProviders providers;
+    private final TilesQueriesHandler queryHandler;
 
-    private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
+    public VectorTileSeeding(@Requires I18n i18n,
+                             @Requires CrsTransformerFactory crsTransformerFactory,
+                             @Requires Dropwizard dropwizard,
+                             @Requires CodelistRegistry codelistRegistry,
+                             @Requires OgcApiExtensionRegistry extensionRegistry,
+                             @Requires TileMatrixSetLimitsGenerator limitsGenerator,
+                             @Requires TilesCache tilesCache,
+                             @Requires XtraPlatform xtraPlatform,
+                             @Requires OgcApiFeaturesQuery queryParser,
+                             @Requires OgcApiFeatureCoreProviders providers,
+                             @Requires TilesQueriesHandler queryHandler) {
+        this.i18n = i18n;
+        this.crsTransformerFactory = crsTransformerFactory;
+        this.codelistRegistry = codelistRegistry;
 
-    public VectorTileSeeding(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
-        String dataDirectory = bundleContext.getProperty(DATA_DIR_KEY);
-        cache = new VectorTilesCache(dataDirectory);
+        this.metricRegistry = dropwizard.getEnvironment()
+                .metrics();
+        this.extensionRegistry = extensionRegistry;
+        this.limitsGenerator = limitsGenerator;
+        this.tilesCache = tilesCache;
+        this.xtraPlatform = xtraPlatform;
+        this.queryParser = queryParser;
+        this.providers = providers;
+        this.queryHandler = queryHandler;
     }
+
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::isEnabled)
+                .filter(config -> !config.getSeeding().isEmpty())
+                .isPresent();
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
+        Optional<TilesConfiguration> extension = featureType!=null ?
+                featureType.getExtension(TilesConfiguration.class) :
+                apiData.getExtension(TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::isEnabled)
+                .filter(config -> !config.getSeeding().isEmpty())
+                .isPresent();
+    }
+
+    private boolean isEnabledForApiMultiCollection(OgcApiApiDataV2 apiData) {
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::isEnabled)
+                .filter(TilesConfiguration::getMultiCollectionEnabled)
+                .filter(config -> !config.getSeeding().isEmpty())
+                .isPresent();
     }
 
     /**
@@ -93,54 +146,21 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     @Override
     public Runnable getTask(OgcApiApi api) {
 
-        Optional<OgcApiFeatureFormatExtension> wfs3OutputFormatGeoJson = getOutputFormatForType(OgcApiFeaturesOutputFormatGeoJson.MEDIA_TYPE);
         OgcApiApiDataV2 apiData = api.getData();
 
-        //TODO: might be different per collection
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
-
-        if (!wfs3OutputFormatGeoJson.isPresent()) {
+        List<TileFormatExtension> outputFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class);
+        if (outputFormats.isEmpty()) {
             return () -> {
             };
         }
 
         Runnable startSeeding = () -> {
 
-            Set<String> collectionIdsDataset = Wfs3EndpointTiles.getCollectionIdsDataset(vectorTileMapGenerator.getAllCollectionIdsWithTileExtension(apiData), vectorTileMapGenerator.getEnabledMap(apiData),
-                    vectorTileMapGenerator.getFormatsMap(apiData), vectorTileMapGenerator.getMinMaxMap(apiData, true), false, false, true);
-            try {
-                boolean tilesDatasetEnabled = false;
-                boolean seedingDatasetEnabled = false;
+            // first seed the multi-layer tiles, which also generates the necessary single-layer tiles
+            seedMultiLayerTiles(api, outputFormats);
 
-                if (!collectionIdsDataset.isEmpty())
-                    tilesDatasetEnabled = true;
-
-
-                if (tilesDatasetEnabled) {
-                    for (String collectionId : collectionIdsDataset) {
-                        if (isExtensionEnabled(apiData, apiData.getCollections()
-                                                                       .get(collectionId), TilesConfiguration.class)) {
-
-                            final TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, apiData.getCollections()
-                                                                                                                            .get(collectionId), TilesConfiguration.class).get();
-
-                            Map<String, MinMax> seedingCollection = tilesConfiguration.getSeeding();
-
-                            if (seedingCollection != null) {
-                                seedingDatasetEnabled = true;
-                                break;
-                            }
-                        }
-
-                    }
-                }
-
-                if (tilesDatasetEnabled && seedingDatasetEnabled) {
-                    seedingDataset(collectionIdsDataset, api, crsTransformerFactory, cache, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson.get(), Optional.of(Locale.ENGLISH));
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
+            // add any additional single-layer tiles
+            seedSingleLayerTiles(api, outputFormats);
 
         };
         t = new Thread(startSeeding);
@@ -168,74 +188,97 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     }
 
     /**
-     * Computes the minimum and maximum row and col values.
-     * <p>
-     * Generates all JSON Tiles and MVT (if the format is enabled) for each collection (MVT support has to be enabled)
-     * for every tile matrix set in the specified seeding range
-     *
-     * @param collectionIdsDataset all ids of feature Types which have the tiles support and seeding enabled
-     * @param service              the Wfs3 service
-     * @param crsTransformerFactory    the coordinate reference system transformation object to transform coordinates
-     * @param cache                the vector tile cache
-     * @param featureProvider      the feature Provider
-     * @param coreServerConfig     the core server config with the external url
-     * @throws FileNotFoundException
+     * checks if the tiles extension is available and returns a Map with entrys for each collection and their zoomLevel or seeding
+     * @param apiData       the service data of the Wfs3 Service
+     * @return a map with all collectionIds and the seeding configuration
      */
-    private void seedingDataset(Set<String> collectionIdsDataset, OgcApiApi service,
-                                CrsTransformerFactory crsTransformerFactory, VectorTilesCache cache,
-                                FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
-                                OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language)
-            throws FileNotFoundException {
+    private Map<String, Map<String, MinMax>> getMinMaxMap(OgcApiApiDataV2 apiData) {
 
-        Set<String> tileMatrixSetIdsCollection = null;
-        OgcApiApiDataV2 datasetData = service.getData();
-        Map<String, Map<String, MinMax>> seedingMap = vectorTileMapGenerator.getMinMaxMap(datasetData, true);
+        Map<String, Map<String, MinMax>> minMaxMap = new HashMap<>();
+        for (FeatureTypeConfigurationOgcApi featureType : apiData.getCollections().values()) {
+            final Optional<TilesConfiguration> tilesConfiguration = featureType!=null ?
+                    featureType.getExtension(TilesConfiguration.class) :
+                    apiData.getExtension(TilesConfiguration.class);
+            if (tilesConfiguration.isPresent()) {
+                Map<String, MinMax> seedingConfig = tilesConfiguration.get().getSeeding();
+                if (seedingConfig != null && !seedingConfig.isEmpty())
+                    minMaxMap.put(featureType.getId(), seedingConfig);
+            }
+        }
+        return minMaxMap;
+    }
 
-        Map<String,Map<String,File>> fileMap = new HashMap<>();
-        // first generate GeoJSON/MVT tiles for all the collections and tiling schemes
-        for (String collectionId : collectionIdsDataset) {
-            if (!Objects.isNull(seedingMap) && seedingMap.containsKey(collectionId)) {
-                Map<String, MinMax> seeding = seedingMap.get(collectionId);
-                tileMatrixSetIdsCollection = seeding.keySet();
-                for (String tileMatrixSetId : tileMatrixSetIdsCollection) {
-                    TileMatrixSet tileMatrixSet = getTileMatrixSetById(tileMatrixSetId);
-                    if (seeding.size() != 0) {
-                        int maxZoom = seeding.get(tileMatrixSetId)
-                                .getMax();
-                        int minZoom = seeding.get(tileMatrixSetId)
-                                .getMin();
-                        for (int level = minZoom; level <= maxZoom; level++) {
-                            BoundingBox bbox = null;
-                            try {
-                                bbox = datasetData.getSpatialExtent(collectionId, crsTransformerFactory, tileMatrixSet.getCrs());
-                                TileMatrixSetLimits limits = tileMatrixSet.getLimits(level, bbox);
-                                int rowMin = limits.getMinTileRow();
-                                int rowMax = limits.getMaxTileRow();
-                                int colMin = limits.getMinTileCol();
-                                int colMax = limits.getMaxTileCol();
+    private void seedSingleLayerTiles(OgcApiApi api, List<TileFormatExtension> outputFormats) {
+        OgcApiApiDataV2 apiData = api.getData();
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        Map<String, Map<String, MinMax>> seedingMap = getMinMaxMap(apiData);
+        for (Map.Entry<String, Map<String, MinMax>> collectionEntry : seedingMap.entrySet()) {
+            String collectionId = collectionEntry.getKey();
+            FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
+            Optional<TilesConfiguration> tilesConfiguration = featureType!=null ?
+                    featureType.getExtension(TilesConfiguration.class) :
+                    apiData.getExtension(TilesConfiguration.class);
+            if (!tilesConfiguration.filter(TilesConfiguration::isEnabled).isPresent())
+                continue;
+            Map<String, MinMax> seedingConfig = collectionEntry.getValue();
+            for (TileFormatExtension outputFormat : outputFormats) {
+                for (Map.Entry<String, MinMax> entry : seedingConfig.entrySet()) {
+                    TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
+                    MinMax zoomLevels = entry.getValue();
+                    List<TileMatrixSetLimits> allLimits = limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId, tileMatrixSet, zoomLevels, crsTransformerFactory);
+                    for (TileMatrixSetLimits limits : allLimits) {
+                        int level = Integer.parseInt(limits.getTileMatrix());
+                        for (int row = limits.getMinTileRow(); row <= limits.getMaxTileRow(); row++) {
+                            for (int col = limits.getMinTileCol(); col <= limits.getMaxTileCol(); col++) {
+                                Tile tile = new ImmutableTile.Builder()
+                                        .collectionIds(ImmutableList.of(collectionId))
+                                        .tileMatrixSet(tileMatrixSet)
+                                        .tileLevel(level)
+                                        .tileRow(row)
+                                        .tileCol(col)
+                                        .api(api)
+                                        .temporary(false)
+                                        .featureProvider(featureProvider)
+                                        .outputFormat(outputFormat)
+                                        .build();
+                                File tileFile = tilesCache.getFile(tile);
+                                if (tileFile.exists())
+                                    // already there, nothing to create
+                                    continue;
 
-                                for (int row = rowMin; row <= rowMax; row++) {
-                                    for (int col = colMin; col <= colMax; col++) {
-
-                                        String tileKey = String.format("%s;%s;%s;%s", tileMatrixSetId, Integer.toString(level), Integer.toString(row), Integer.toString(col));
-                                        if (!fileMap.containsKey(tileKey)) {
-                                            fileMap.put(tileKey, new HashMap<String, File>());
-                                        }
-
-                                        // generates both GeoJSON and MVT files
-                                        generateMVT(service, collectionId, tileMatrixSetId, level, row, col, cache, crsTransformerFactory, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
-
-                                        VectorTile tile = new VectorTile(collectionId, tileMatrixSet, Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
-                                        File tileFileJson = tile.getFile(cache, "json");
-                                        if (tileFileJson!=null) {
-                                            Map<String,File> layers = fileMap.get(tileKey);
-                                            layers.put(collectionId, tileFileJson);
-                                        }
-                                    }
+                                URI uri;
+                                String uriString = String.format("%s/%s/collections/%s/tiles/%s/%s/%s/%s", xtraPlatform.getServicesUri(), apiData.getId(), collectionId, tileMatrixSet.getId(), level, row, col);
+                                try {
+                                    uri = new URI(uriString);
+                                } catch (URISyntaxException e) {
+                                    LOGGER.error("Stopping seeding. Invalid request URI during seeding: " + uriString);
+                                    return;
                                 }
-                            } catch (CrsTransformationException e) {
-                                // skip tiles and report them in the log
-                                LOGGER.error(String.format("Could not seed tiles due to a CRS transformation error: scheme=%s level=%s", tileMatrixSetId, Integer.toString(level)));
+
+                                URICustomizer uriCustomizer = new URICustomizer(uri);
+                                OgcApiRequestContext requestContext = new ImmutableOgcApiRequestContext.Builder()
+                                        .api(api)
+                                        .requestUri(uri)
+                                        .mediaType(outputFormat.getMediaType())
+                                        .build();
+
+                                // generate a query template for an arbitrary collection
+                                FeatureQuery query = outputFormat.getQuery(tile, ImmutableList.of(), ImmutableMap.of(), tilesConfiguration.get(), uriCustomizer);
+
+                                OgcApiFeaturesCoreConfiguration coreConfiguration = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class).get();
+
+                                TilesQueriesHandler.OgcApiQueryInputTileSingleLayer queryInput = new ImmutableOgcApiQueryInputTileSingleLayer.Builder()
+                                        .tile(tile)
+                                        .query(query)
+                                        .outputStream(new ByteArrayOutputStream())
+                                        .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
+                                        .build();
+
+                                String msg = "Seed single-layer tile {}/{}/{}/{} in API '{}', collection '{}', format '{}'.";
+                                LOGGER.debug(msg, tileMatrixSet.getId(), level, row, col, api.getId(), collectionId, outputFormat.getExtension());
+
+
+                                queryHandler.handle(TilesQueriesHandler.Query.SINGLE_LAYER_TILE, queryInput, requestContext);
                             }
                         }
                     }
@@ -243,134 +286,105 @@ public class VectorTileSeeding implements OgcApiStartupTask {
             }
         }
 
-        // now generate the multi-collection tiles
-        for (Map.Entry<String, Map<String, File>> entry : fileMap.entrySet()) {
-            String tileKey = entry.getKey();
-            String[] keys = tileKey.split(";");
-            String tileMatrixSetId = keys[0];
-            int level = Integer.parseInt(keys[1]);
-            int row = Integer.parseInt(keys[2]);
-            int col = Integer.parseInt(keys[3]);
-
-            Map<String, File> layers = entry.getValue();
-            VectorTile tile = new VectorTile(null, getTileMatrixSetById(tileMatrixSetId), Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
-            File tileFileMvt = tile.getFile(cache, "pbf");
-            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformerFactory, tile, true);
-            if (!success) {
-                // skip tiles and report them in the log
-                String msg = "Internal server error: could not generate protocol buffer for a tile.";
-                LOGGER.error(msg);
-            }
-        }
     }
 
-    /**
-     * generates the GeoJSON and MVT files for the specified parameters
-     *
-     * @param service           the service data of the Wfs3 Service
-     * @param collectionId      the id of the collection of the tile
-     * @param tileMatrixSetId   the id of the tile matrix set of the tile
-     * @param level             the zoom level of the tile
-     * @param row               the row of the tile
-     * @param col               the col of the tile
-     * @param cache             the vector tile cache
-     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
-     * @param featureProvider   the feature Provider
-     * @param coreServerConfig  the core server config with the external url
-     * @return the Json File. If the mvt already exists, return null
-     */
-    private File generateMVT(OgcApiApi service, String collectionId, String tileMatrixSetId, int level, int row,
-                             int col, VectorTilesCache cache, CrsTransformerFactory crsTransformerFactory,
-                             FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
-                             OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
-
-        VectorTile tile = new VectorTile(collectionId, getTileMatrixSetById(tileMatrixSetId), Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
-        File tileFileMvt = tile.getFile(cache, "pbf");
-        if (!tileFileMvt.exists()) {
-            LOGGER.debug("seeding - " + collectionId + " | " + tileMatrixSetId + " | level: " + level + " | row: " + row + " | col: " + col + " | format: MVT");
-            File tileFileJson = generateJSON(service, collectionId, tileMatrixSetId, level, row, col, cache, crsTransformerFactory, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson, language);
-            Map<String, File> layers = new HashMap<>();
-            layers.put(collectionId, tileFileJson);
-            boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformerFactory, tile, true);
-            if (!success) {
-                // skip the tile and report error in the log
-                String msg = "Internal server error: could not generate protocol buffers for a tile.";
-                LOGGER.error(msg);
-            }
-            return tileFileJson;
+    private void seedMultiLayerTiles(OgcApiApi api, List<TileFormatExtension> outputFormats) {
+        OgcApiApiDataV2 apiData = api.getData();
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        Map<String, MinMax> multiLayerTilesSeeding = ImmutableMap.of();
+        Optional<TilesConfiguration> tilesConfiguration = apiData.getExtension(TilesConfiguration.class);
+        if (tilesConfiguration.isPresent()) {
+            Map<String, MinMax> seedingConfig = tilesConfiguration.get().getSeeding();
+            if (seedingConfig != null && !seedingConfig.isEmpty())
+                multiLayerTilesSeeding = seedingConfig;
         }
 
-        return null;
-    }
+        List<String> collectionIds = apiData.getCollections()
+                .values()
+                .stream()
+                .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
+                .filter(collection -> collection.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
+                .map(FeatureTypeConfiguration::getId)
+                .collect(Collectors.toList());
 
-    /**
-     * generates the JSON Tile for the specified parameters
-     *
-     * @param service           the service data of the Wfs3 Service
-     * @param collectionId      the id of the collection of the tile
-     * @param tileMatrixSetId   the id of the tile matrix set of the tile
-     * @param level             the zoom level of the tile
-     * @param row               the row of the tile
-     * @param col               the col of the tile
-     * @param cache             the vector tile cache
-     * @param crsTransformerFactory the coordinate reference system transformation object to transform coordinates
-     * @param featureProvider   the feature Provider
-     * @param coreServerConfig  the core server config with the external url
-     * @return the json File, if it already exists return null
-     */
-    private File generateJSON(OgcApiApi service, String collectionId, String tileMatrixSetId, int level, int row,
-                              int col, VectorTilesCache cache, CrsTransformerFactory crsTransformerFactory,
-                              FeatureProvider2 featureProvider, CoreServerConfig coreServerConfig,
-                              OgcApiFeatureFormatExtension wfs3OutputFormatGeoJson, Optional<Locale> language) {
+        for (TileFormatExtension outputFormat : outputFormats) {
+            if (!outputFormat.canMultiLayer() || collectionIds.isEmpty())
+                continue;
+            for (Map.Entry<String, MinMax> entry : multiLayerTilesSeeding.entrySet()) {
+                TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
+                MinMax zoomLevels = entry.getValue();
+                List<TileMatrixSetLimits> allLimits = limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels, crsTransformerFactory);
+                for (TileMatrixSetLimits limits : allLimits) {
+                    int level = Integer.parseInt(limits.getTileMatrix());
+                    for (int row = limits.getMinTileRow(); row <= limits.getMaxTileRow(); row++) {
+                        for (int col = limits.getMinTileCol(); col <= limits.getMaxTileCol(); col++) {
+                            Tile multiLayerTile = new ImmutableTile.Builder()
+                                    .collectionIds(collectionIds)
+                                    .tileMatrixSet(tileMatrixSet)
+                                    .tileLevel(level)
+                                    .tileRow(row)
+                                    .tileCol(col)
+                                    .api(api)
+                                    .temporary(false)
+                                    .featureProvider(featureProvider)
+                                    .outputFormat(outputFormat)
+                                    .build();
+                            File tileFile = tilesCache.getFile(multiLayerTile);
+                            if (tileFile.exists())
+                                // already there, nothing to create
+                                continue;
 
-        Map<String, String> filterableFields = service.getData()
-                                                         .getCollections()
-                                                         .get(collectionId)
-                                                         .getExtension(OgcApiFeaturesCoreConfiguration.class)
-                                                         .get()
-                                                         .getAllFilterParameters();
+                            URI uri;
+                            String uriString = String.format("%s/%s/tiles/%s/%s/%s/%s", xtraPlatform.getServicesUri(), apiData.getId(), tileMatrixSet.getId(), level, row, col);
+                            try {
+                                uri = new URI(uriString);
+                            } catch (URISyntaxException e) {
+                                LOGGER.error("Stopping seeding. Invalid request URI during seeding: " + uriString);
+                                return;
+                            }
 
-        TilesConfiguration tilesConfiguration = service.getData()
-                .getCollections()
-                .get(collectionId)
-                .getExtension(TilesConfiguration.class)
-                .orElse(null);
+                            URICustomizer uriCustomizer = new URICustomizer(uri);
+                            OgcApiRequestContext requestContext = new ImmutableOgcApiRequestContext.Builder()
+                                    .api(api)
+                                    .requestUri(uri)
+                                    .mediaType(outputFormat.getMediaType())
+                                    .build();
 
-        Map<String, List<PredefinedFilter>> predefFilters = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getFilters() : ImmutableMap.of();
-        
-        VectorTile tile = new VectorTile(collectionId, getTileMatrixSetById(tileMatrixSetId), Integer.toString(level), Integer.toString(row), Integer.toString(col), service, false, cache, featureProvider, wfs3OutputFormatGeoJson);
-        File tileFileJson = tile.getFile(cache, "json");
+                            Map<String, Tile> singleLayerTileMap = collectionIds.stream()
+                                    .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> new ImmutableTile.Builder()
+                                            .from(multiLayerTile)
+                                            .collectionIds(ImmutableList.of(collectionId))
+                                            .build()));
 
-        if (!tileFileJson.exists()) {
-            LOGGER.debug("seeding - " + collectionId + " | " + tileMatrixSetId + " | level: " + level + " | row: " + row + " | col: " + col + " | format: JSON");
-            String prefix = coreServerConfig.getExternalUrl();
-            String uriString = prefix + "/" + service.getData().getId() + "/" + "collections" + "/"
-                    + collectionId + "/tiles/" + tileMatrixSetId + "/" + level + "/" + row + "/" + col;
+                            // generate a query template for an arbitrary collection
+                            FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collectionIds.get(0)), ImmutableList.of(), ImmutableMap.of(), tilesConfiguration.get(), uriCustomizer);
 
-            URI uri = null;
-            try {
-                uri = new URI(uriString);
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
+                            Map<String, FeatureQuery> queryMap = collectionIds.stream()
+                                    .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> ImmutableFeatureQuery.builder()
+                                            .from(query)
+                                            .type(collectionId)
+                                            .build()));
+
+                            OgcApiFeaturesCoreConfiguration coreConfiguration = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class).get();
+
+                            TilesQueriesHandler.OgcApiQueryInputTileMultiLayer queryInput = new ImmutableOgcApiQueryInputTileMultiLayer.Builder()
+                                    .tile(multiLayerTile)
+                                    .singleLayerTileMap(singleLayerTileMap)
+                                    .queryMap(queryMap)
+                                    .outputStream(new ByteArrayOutputStream())
+                                    .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
+                                    .build();
+
+                            String msg = "Seed multi-layer tile {}/{}/{}/{} in API '{}', format '{}'.";
+                            LOGGER.debug(msg, tileMatrixSet.getId(), level, row, col, api.getId(), outputFormat.getExtension());
+
+
+                            queryHandler.handle(TilesQueriesHandler.Query.MULTI_LAYER_TILE, queryInput, requestContext);
+                        }
+                    }
+                }
             }
-            URICustomizer uriCustomizer = new URICustomizer(uri);
-
-            OgcApiMediaType mediaType;
-            mediaType = new ImmutableOgcApiMediaType.Builder()
-                    .type(new MediaType("application", "json"))
-                    .label("JSON")
-                    .build();
-            TileGeneratorJson.generateTileJson(tileFileJson, crsTransformerFactory, null, predefFilters, null, filterableFields, uriCustomizer, mediaType, true, tile, i18n, language, queryParser, codelistRegistry.getCodelists());
         }
-        return tileFileJson;
-    }
-
-    private Optional<OgcApiFeatureFormatExtension> getOutputFormatForType(OgcApiMediaType mediaType) {
-        return extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
-                                .stream()
-                                .filter(wfs3OutputFormatExtension -> wfs3OutputFormatExtension.getMediaType()
-                                                                                              .equals(mediaType))
-                                .findFirst();
     }
 
     private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {

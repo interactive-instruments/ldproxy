@@ -20,6 +20,8 @@ public abstract class LandingPage extends PageRepresentation {
 
     public abstract Optional<OgcApiExtent> getExtent();
 
+    public abstract Optional<OgcApiExternalDocumentation> getExternalDocs();
+
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
 }

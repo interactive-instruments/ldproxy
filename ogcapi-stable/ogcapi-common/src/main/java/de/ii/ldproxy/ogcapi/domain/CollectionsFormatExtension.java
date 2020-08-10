@@ -7,8 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import javax.ws.rs.core.Response;
-
 public interface CollectionsFormatExtension extends FormatExtension {
 
     @Override
@@ -16,11 +14,11 @@ public interface CollectionsFormatExtension extends FormatExtension {
         return "^/collections(?:/[\\w\\-]+)?/?$";
     }
 
-    Response getCollectionsResponse(Collections collections,
+    Object getCollectionsEntity(Collections collections,
                                     OgcApiApi api,
                                     OgcApiRequestContext requestContext);
 
-    Response getCollectionResponse(OgcApiCollection ogcApiCollection,
+    Object getCollectionEntity(OgcApiCollection ogcApiCollection,
                                    OgcApiApi api,
                                    OgcApiRequestContext requestContext);
 

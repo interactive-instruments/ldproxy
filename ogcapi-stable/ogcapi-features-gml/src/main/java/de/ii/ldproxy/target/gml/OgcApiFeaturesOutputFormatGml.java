@@ -9,16 +9,14 @@ package de.ii.ldproxy.target.gml;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.feature.provider.wfs.domain.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -49,21 +47,10 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
             .parameter("xml")
             .build();
 
-    private final GmlConfig gmlConfig;
     private final OgcApiFeatureCoreProviders providers;
 
-    @ServiceController(value = false)
-    private boolean enable;
-
-    public OgcApiFeaturesOutputFormatGml(@Requires GmlConfig gmlConfig,
-                                         @Requires OgcApiFeatureCoreProviders providers) {
-        this.gmlConfig = gmlConfig;
+    public OgcApiFeaturesOutputFormatGml(@Requires OgcApiFeatureCoreProviders providers) {
         this.providers = providers;
-    }
-
-    @Validate
-    private void onStart() {
-        this.enable = gmlConfig.isEnabled();
     }
 
     @Override
@@ -74,6 +61,15 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
     @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new ObjectSchema())
+                .schemaRef("#/components/schemas/anyObject")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
     }
 
     @Override

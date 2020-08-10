@@ -7,6 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import org.immutables.value.Value;
+
 public interface OgcApiQueryInput {
 
+    // general output options
+    @Value.Default
+    default boolean getIncludeLinkHeader() { return false; }
+
+    @Value.Default
+    default boolean getIncludeHomeLink() { return false; }
 }

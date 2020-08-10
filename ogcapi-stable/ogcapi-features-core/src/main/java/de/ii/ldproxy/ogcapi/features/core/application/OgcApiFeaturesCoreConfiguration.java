@@ -22,6 +22,7 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,79 +30,63 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableOgcApiFeaturesCoreConfiguration.Builder.class)
-public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfiguration, FeatureTransformations {
+public interface OgcApiFeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations {
+
+    abstract class Builder extends ExtensionConfiguration.Builder {
+    }
 
     enum DefaultCrs {CRS84, CRS84h}
 
-    static final int MINIMUM_PAGE_SIZE = 1;
-    static final int DEFAULT_PAGE_SIZE = 10;
-    static final int MAX_PAGE_SIZE = 10000;
-    static final String PARAMETER_BBOX = "bbox";
-    static final String PARAMETER_DATETIME = "datetime";
-    static final String DATETIME_INTERVAL_SEPARATOR = "/";
+    int MINIMUM_PAGE_SIZE = 1;
+    int DEFAULT_PAGE_SIZE = 10;
+    int MAX_PAGE_SIZE = 10000;
+    String PARAMETER_BBOX = "bbox";
+    String PARAMETER_DATETIME = "datetime";
+    String DATETIME_INTERVAL_SEPARATOR = "/";
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return true;
-    }
+    Optional<String> getFeatureProvider();
 
-    public abstract Optional<String> getFeatureProvider();
-
-    public abstract Optional<String> getFeatureType();
+    Optional<String> getFeatureType();
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Value.Default
-    public List<String> getFeatureTypes() {
+    default List<String> getFeatureTypes() {
         return getFeatureType().isPresent() ? ImmutableList.of(getFeatureType().get()) : ImmutableList.of();
     }
 
-    @Value.Default
-    public DefaultCrs getDefaultCrs() {
-        return DefaultCrs.CRS84;
-    }
+    @Nullable
+    DefaultCrs getDefaultCrs();
 
-    @Value.Default
-    public int getMinimumPageSize() {
-        return MINIMUM_PAGE_SIZE;
-    }
+    @Nullable
+    Integer getMinimumPageSize();
 
-    @Value.Default
-    public int getDefaultPageSize() {
-        return DEFAULT_PAGE_SIZE;
-    }
+    @Nullable
+    Integer getDefaultPageSize();
 
-    @Value.Default
-    public int getMaxPageSize() {
-        return MAX_PAGE_SIZE;
-    }
+    @Nullable
+    Integer getMaximumPageSize();
 
-    @Value.Default
-    public boolean getShowsFeatureSelfLink() {
-        return false;
-    }
+    @Nullable
+    Boolean getShowsFeatureSelfLink();
 
-    @Value.Default
-    public Map<String,List<OgcApiLink>> getAdditionalLinks() {
-        return ImmutableMap.of();
-    }
+    Map<String, List<OgcApiLink>> getAdditionalLinks();
 
-    public abstract Optional<OgcApiFeaturesCollectionQueryables> getQueryables();
+    Optional<OgcApiFeaturesCollectionQueryables> getQueryables();
 
     @Override
-    public abstract Map<String, FeatureTypeMapping2> getTransformations();
+    Map<String, FeatureTypeMapping2> getTransformations();
 
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    public EpsgCrs getDefaultEpsgCrs() {
+    default EpsgCrs getDefaultEpsgCrs() {
         return getDefaultCrs() == DefaultCrs.CRS84h ? OgcCrs.CRS84h : OgcCrs.CRS84;
     }
 
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    public Map<String, String> getAllFilterParameters() {
+    default Map<String, String> getAllFilterParameters() {
         if (getQueryables().isPresent()) {
             OgcApiFeaturesCollectionQueryables queryables = getQueryables().get();
             ImmutableMap.Builder<String, String> builder = new ImmutableMap.Builder<>();
@@ -115,12 +100,14 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
             }
 
             if (queryables.getTemporal()
-                           .size() > 1) {
-                builder.put(PARAMETER_DATETIME, String.format("%s%s%s", queryables.getTemporal().get(0), DATETIME_INTERVAL_SEPARATOR, queryables.getTemporal().get(1)));
+                          .size() > 1) {
+                builder.put(PARAMETER_DATETIME, String.format("%s%s%s", queryables.getTemporal()
+                                                                                  .get(0), DATETIME_INTERVAL_SEPARATOR, queryables.getTemporal()
+                                                                                                                                  .get(1)));
             } else if (!queryables.getTemporal()
                                   .isEmpty()) {
                 builder.put(PARAMETER_DATETIME, queryables.getTemporal()
-                                                  .get(0));
+                                                          .get(0));
             } else {
                 builder.put(PARAMETER_DATETIME, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
             }
@@ -144,7 +131,7 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    public Map<String, String> getOtherFilterParameters() {
+    default Map<String, String> getOtherFilterParameters() {
         if (getQueryables().isPresent()) {
             OgcApiFeaturesCollectionQueryables queryables = getQueryables().get();
             ImmutableMap.Builder<String, String> builder = new ImmutableMap.Builder<>();
@@ -159,14 +146,8 @@ public abstract class OgcApiFeaturesCoreConfiguration implements ExtensionConfig
     }
 
     @Override
-    public <T extends ExtensionConfiguration> T mergeDefaults(T extensionConfigurationDefault) {
-        DefaultCrs collectionDefaultCrs = this.getDefaultCrs();
-        DefaultCrs apiDefaultCrs = ((OgcApiFeaturesCoreConfiguration)extensionConfigurationDefault).getDefaultCrs();
-        DefaultCrs mergedDefaultCrs = (collectionDefaultCrs == DefaultCrs.CRS84h || apiDefaultCrs == DefaultCrs.CRS84h) ? DefaultCrs.CRS84h : DefaultCrs.CRS84;
-
-        return (T) new ImmutableOgcApiFeaturesCoreConfiguration.Builder().from(extensionConfigurationDefault)
-                                                                         .from(this)
-                                                                         .defaultCrs(mergedDefaultCrs)
-                                                                         .build();
+    default Builder getBuilder() {
+        return new ImmutableOgcApiFeaturesCoreConfiguration.Builder();
     }
+
 }

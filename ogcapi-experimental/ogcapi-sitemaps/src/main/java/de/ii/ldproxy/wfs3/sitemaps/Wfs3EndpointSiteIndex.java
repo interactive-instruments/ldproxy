@@ -10,15 +10,15 @@ package de.ii.ldproxy.wfs3.sitemaps;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.auth.api.User;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -46,6 +46,8 @@ import java.util.Set;
 @Instantiate
 public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
 
+    // TODO change to new style for endpoints
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EndpointSiteIndex.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("sitemap_index.xml")
@@ -59,16 +61,15 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
     );
 
 
-    private final CoreServerConfig coreServerConfig;
+    private final XtraPlatform xtraPlatform;
     private final OgcApiFeatureCoreProviders providers;
 
-    public Wfs3EndpointSiteIndex(@Requires CoreServerConfig coreServerConfig,
+    public Wfs3EndpointSiteIndex(@Requires XtraPlatform xtraPlatform,
                                  @Requires OgcApiFeatureCoreProviders providers) {
-        this.coreServerConfig = coreServerConfig;
+        this.xtraPlatform = xtraPlatform;
         this.providers = providers;
     }
 
-    @Override
     public OgcApiContext getApiContext() {
         return API_CONTEXT;
     }
@@ -107,7 +108,7 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
         }
 
         List<Site> sitemaps = new ArrayList<>();
-        String landingPageUrl = String.format("%s/%s/sitemap_landingPage.xml", coreServerConfig.getExternalUrl(), service.getId(), service.getId());
+        String landingPageUrl = String.format("%s/%s/sitemap_landingPage.xml", xtraPlatform.getServicesUri(), service.getId(), service.getId());
         sitemaps.add(new Site(landingPageUrl));
 
         //TODO duration with big blocks is too long, therefore the block length is dynamically generated
@@ -117,7 +118,7 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
 
         SitemapComputation.getCollectionIdStream(service.getData())
                           .forEach(collectionId -> {
-                              String baseUrl = String.format("%s/%s/collections/%s", coreServerConfig.getExternalUrl(), service.getId(), collectionId);
+                              String baseUrl = String.format("%s/%s/collections/%s", xtraPlatform.getServicesUri(), service.getId(), collectionId);
 
                               List<Site> sitemapsBlock = SitemapComputation.getSitemaps(baseUrl, featureCounts.get(collectionId), blockLengths.get(collectionId));
 

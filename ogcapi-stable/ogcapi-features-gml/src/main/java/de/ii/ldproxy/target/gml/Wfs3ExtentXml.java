@@ -25,8 +25,8 @@ public class Wfs3ExtentXml {
     private final OgcApiExtentTemporal temporal;
 
     public Wfs3ExtentXml(OgcApiExtent extent) {
-        this.spatial = extent.getSpatial();
-        this.temporal = extent.getTemporal();
+        this.spatial = extent.getSpatial().orElse(null);
+        this.temporal = extent.getTemporal().orElse(null);
     }
 
     @XmlElement(name = "Spatial")

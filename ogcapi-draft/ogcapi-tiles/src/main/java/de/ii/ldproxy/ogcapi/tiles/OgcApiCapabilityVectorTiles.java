@@ -9,36 +9,41 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCapabilityExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiBuildingBlock;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-/**
- * @author zahnen
- */
 @Component
 @Provides
 @Instantiate
-public class OgcApiCapabilityVectorTiles implements OgcApiCapabilityExtension {
+public class OgcApiCapabilityVectorTiles implements OgcApiBuildingBlock {
+
+    private static final int LIMIT_DEFAULT = 100000;
+    private static final int MAX_POLYGON_PER_TILE_DEFAULT = 10000;
+    private static final int MAX_LINE_STRING_PER_TILE_DEFAULT = 10000;
+    private static final int MAX_POINT_PER_TILE_DEFAULT = 10000;
+
     @Override
-    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
-
-        ImmutableTilesConfiguration.Builder config = new ImmutableTilesConfiguration.Builder();
-
-        switch (preset) {
-            case OGCAPI:
-            case GSFS:
-                config.enabled(false);
-                break;
-        }
-
-        config.zoomLevels(ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder()
-                .min(0)
-                .max(23)
-                .build()));
-
-        return config.build();
+    public ExtensionConfiguration.Builder getConfigurationBuilder() {
+        return new ImmutableTilesConfiguration.Builder();
     }
+
+    @Override
+    public ExtensionConfiguration getDefaultConfiguration() {
+
+        return new ImmutableTilesConfiguration.Builder().enabled(false)
+                                                        .limit(LIMIT_DEFAULT)
+                                                        .maxPolygonPerTileDefault(MAX_POLYGON_PER_TILE_DEFAULT)
+                                                        .maxLineStringPerTileDefault(MAX_LINE_STRING_PER_TILE_DEFAULT)
+                                                        .maxPointPerTileDefault(MAX_POINT_PER_TILE_DEFAULT)
+                                                        .multiCollectionEnabled(false)
+                                                        //TODO: is this still correct?
+                                                        .zoomLevels(ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder()
+                                                                .min(0)
+                                                                .max(23)
+                                                                .build()))
+                                                        .build();
+    }
+
 }

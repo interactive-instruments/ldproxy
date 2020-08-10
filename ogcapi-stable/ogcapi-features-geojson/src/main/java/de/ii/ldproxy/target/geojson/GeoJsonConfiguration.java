@@ -10,27 +10,38 @@ package de.ii.ldproxy.target.geojson;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
-public abstract class GeoJsonConfiguration implements ExtensionConfiguration, FeatureTransformations {
+public interface GeoJsonConfiguration extends ExtensionConfiguration, FeatureTransformations {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return false;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    public abstract Optional<JsonLdOptions> getJsonLd();
+    @Nullable
+    FeatureTransformerGeoJson.NESTED_OBJECTS getNestedObjectStrategy();
+
+    @Nullable
+    FeatureTransformerGeoJson.MULTIPLICITY getMultiplicityStrategy();
+
+    @Nullable
+    Boolean getUseFormattedJsonOutput();
+
+    @Nullable
+    String getSeparator();
+
+    Optional<JsonLdOptions> getJsonLd();
 
     @Value.Immutable
     @JsonDeserialize(builder = ImmutableJsonLdOptions.Builder.class)
-    public interface JsonLdOptions {
+    interface JsonLdOptions {
 
         String getContext();
 
@@ -39,4 +50,8 @@ public abstract class GeoJsonConfiguration implements ExtensionConfiguration, Fe
         Optional<String> getIdTemplate();
     }
 
+    @Override
+    default Builder getBuilder() {
+        return new ImmutableGeoJsonConfiguration.Builder();
+    }
 }

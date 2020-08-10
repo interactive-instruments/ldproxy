@@ -11,12 +11,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueriesHandler;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryIdentifier;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
-import de.ii.ldproxy.target.geojson.GeoJsonConfig;
 import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -29,7 +36,12 @@ import org.immutables.value.Value;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @Instantiate
@@ -52,16 +64,12 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
     private final I18n i18n;
     private final OgcApiFeatureCoreProviders providers;
-    private final GeoJsonConfig geoJsonConfig;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
 
     public OgcApiQueryablesQueriesHandler(@Requires I18n i18n,
-                                          @Requires OgcApiFeatureCoreProviders providers,
-                                          @Requires GeoJsonConfig geoJsonConfig) {
+                                          @Requires OgcApiFeatureCoreProviders providers) {
         this.i18n = i18n;
         this.providers = providers;
-        this.geoJsonConfig = geoJsonConfig;
-
         this.queryHandlers = ImmutableMap.of(
                 Query.QUERYABLES, OgcApiQueryHandler.with(OgcApiQueryInputQueryables.class, this::getQueryablesResponse),
                 Query.SCHEMA, OgcApiQueryHandler.with(OgcApiQueryInputQueryables.class, this::getSchemaResponse)
@@ -224,23 +232,9 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
         queryables.links(links);
 
-        Response queryablesResponse = outputFormat.getResponse(queryables.build(), collectionId, api, requestContext);
-
-        Response.ResponseBuilder response = Response.ok()
-                .entity(queryablesResponse.getEntity())
-                .type(requestContext
-                        .getMediaType()
-                        .type());
-
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (queryInput.getIncludeLinkHeader() && links != null)
-            links.stream()
-                    .forEach(link -> response.links(link.getLink()));
-
-        return response.build();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+                .entity(outputFormat.getEntity(queryables.build(), collectionId, api, requestContext))
+                .build();
     }
 
     private Response getSchemaResponse(OgcApiQueryInputQueryables queryInput, OgcApiRequestContext requestContext) {
@@ -273,27 +267,11 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
                 requestContext.getMediaType(),
                 "/collections/"+collectionId+"/schema");
 
-        if (outputFormatExtension.isPresent()) {
-            Response schemaResponse = outputFormatExtension.get()
-                    .getResponse(jsonSchema, collectionId, api, requestContext);
+        if (!outputFormatExtension.isPresent())
+            throw new NotAcceptableException();
 
-            Response.ResponseBuilder response = Response.ok()
-                    .entity(schemaResponse.getEntity())
-                    .type(requestContext
-                            .getMediaType()
-                            .type());
-
-            Optional<Locale> language = requestContext.getLanguage();
-            if (language.isPresent())
-                response.language(language.get());
-
-            if (queryInput.getIncludeLinkHeader() && links != null)
-                links.stream()
-                        .forEach(link -> response.links(link.getLink()));
-
-            return response.build();
-        }
-
-        throw new NotAcceptableException();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+                .entity(outputFormatExtension.get().getEntity(jsonSchema, collectionId, api, requestContext))
+                .build();
     }
 }

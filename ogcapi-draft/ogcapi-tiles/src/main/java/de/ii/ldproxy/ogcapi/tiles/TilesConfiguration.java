@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -22,63 +23,60 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
-public abstract class TilesConfiguration implements ExtensionConfiguration {
+public interface TilesConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return false;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    public abstract Optional<String> getFeatureProvider();
+    Optional<String> getFeatureProvider();
 
-    @Value.Default
-    public boolean getMultiTilesEnabled() {
-        return false;
-    }
+    @Nullable
+    Integer getLimit();
 
-    @Value.Default
-    public boolean getMultiCollectionEnabled() {
-        return false;
-    }
+    @Nullable
+    Integer getMaxPointPerTileDefault();
+
+    @Nullable
+    Integer getMaxLineStringPerTileDefault();
+
+    @Nullable
+    Integer getMaxPolygonPerTileDefault();
+
+    @Nullable
+    Boolean getMultiCollectionEnabled();
 
     @JsonMerge(value = OptBoolean.FALSE)
     @Nullable
-    public abstract List<String> getFormats();
+    List<String> getFormats();
 
     @Nullable
-    public abstract Map<String, MinMax> getSeeding();
+    Map<String, MinMax> getSeeding();
 
     @Nullable
-    public abstract Map<String, MinMax> getZoomLevels();
+    Map<String, MinMax> getZoomLevels();
 
     @Nullable
-    public abstract Map<String, List<PredefinedFilter>> getFilters();
+    Map<String, List<PredefinedFilter>> getFilters();
 
     @Nullable
-    public abstract double[] getCenter();
+    double[] getCenter();
 
     @Override
-    public <T extends ExtensionConfiguration> T mergeDefaults(T baseConfiguration) {
-        boolean enabled = this.getEnabled();
-        Map<String, MinMax> seeding = this.getSeeding();
-        Map<String, MinMax> zoomLevels = this.getZoomLevels();
-        Map<String, List<PredefinedFilter>> predefFilters = this.getFilters();
-        double[] center = this.getCenter();
-        ImmutableTilesConfiguration.Builder configBuilder = new ImmutableTilesConfiguration.Builder().from(baseConfiguration);
+    default Builder getBuilder() {
+        return new ImmutableTilesConfiguration.Builder();
+    }
 
-        if (Objects.nonNull(enabled))
-            configBuilder.enabled(enabled);
-        if (Objects.nonNull(seeding))
-            configBuilder.seeding(seeding);
-        if (Objects.nonNull(zoomLevels))
-            configBuilder.zoomLevels(zoomLevels);
-        if (Objects.nonNull(predefFilters))
-            configBuilder.filters(predefFilters);
-        if (Objects.nonNull(center))
-            configBuilder.center(center);
-
-        return (T) configBuilder.build();
+    //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
+    // try to find a better solution that also enables deep merges
+    @Override
+    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+        return ((ImmutableTilesConfiguration.Builder)source.getBuilder())
+                     .from(source)
+                     .from(this)
+                     .seeding(getSeeding())
+                     .zoomLevels(getZoomLevels())
+                     .filters(getFilters())
+                     .build();
     }
 
 }

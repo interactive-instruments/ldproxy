@@ -7,57 +7,59 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import java.util.Optional;
+
 public class OgcApiExtent {
-    private OgcApiExtentSpatial spatial;
-    private OgcApiExtentTemporal temporal;
+    private Optional<OgcApiExtentSpatial> spatial;
+    private Optional<OgcApiExtentTemporal> temporal;
 
     public OgcApiExtent() {
-        this.spatial = null;
-        this.temporal = null;
+        this.spatial = Optional.empty();
+        this.temporal = Optional.empty();
     }
 
     public OgcApiExtent(String xmin, String ymin, String xmax, String ymax) {
-        this.spatial = new OgcApiExtentSpatial(xmin, ymin, xmax, ymax);
-        this.temporal = null;
+        this.spatial = Optional.of(new OgcApiExtentSpatial(xmin, ymin, xmax, ymax));
+        this.temporal = Optional.empty();
     }
 
     public OgcApiExtent(double xmin, double ymin, double xmax, double ymax) {
-        this.spatial = new OgcApiExtentSpatial(xmin, ymin, xmax, ymax);
-        this.temporal = null;
+        this.spatial = Optional.of(new OgcApiExtentSpatial(xmin, ymin, xmax, ymax));
+        this.temporal = Optional.empty();
     }
 
     public OgcApiExtent(String begin, String end) {
-        this.spatial = null;
-        this.temporal = new OgcApiExtentTemporal(begin, end);
+        this.spatial = Optional.empty();
+        this.temporal = Optional.of(new OgcApiExtentTemporal(begin, end));
     }
 
     public OgcApiExtent(Long begin, Long end) {
-        this.spatial = null;
-        this.temporal = new OgcApiExtentTemporal(begin, end);
+        this.spatial = Optional.empty();
+        this.temporal = Optional.of(new OgcApiExtentTemporal(begin, end));
     }
 
     public OgcApiExtent(Long begin, Long end, double xmin, double ymin, double xmax, double ymax) {
-        this.spatial = new OgcApiExtentSpatial(xmin, ymin, xmax, ymax);
-        this.temporal = new OgcApiExtentTemporal(begin, end);
+        this.spatial = Optional.of(new OgcApiExtentSpatial(xmin, ymin, xmax, ymax));
+        this.temporal = Optional.of(new OgcApiExtentTemporal(begin, end));
     }
 
     public OgcApiExtent(String begin, String end, String xmin, String ymin, String xmax, String ymax) {
-        this.spatial = new OgcApiExtentSpatial(xmin, ymin, xmax, ymax);
-        this.temporal = new OgcApiExtentTemporal(begin, end);
+        this.spatial = Optional.of(new OgcApiExtentSpatial(xmin, ymin, xmax, ymax));
+        this.temporal = Optional.of(new OgcApiExtentTemporal(begin, end));
     }
-    public OgcApiExtentSpatial getSpatial() {
+    public Optional<OgcApiExtentSpatial> getSpatial() {
         return spatial;
     }
 
     public void setSpatial(OgcApiExtentSpatial spatial) {
-        this.spatial = spatial;
+        this.spatial = Optional.ofNullable(spatial);
     }
 
-    public OgcApiExtentTemporal getTemporal() {
+    public Optional<OgcApiExtentTemporal> getTemporal() {
         return temporal;
     }
 
     public void setTemporal(OgcApiExtentTemporal temporal) {
-        this.temporal = temporal;
+        this.temporal = Optional.ofNullable(temporal);
     }
 }

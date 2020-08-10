@@ -10,6 +10,7 @@ package de.ii.ldproxy.wfs3.crs;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -17,14 +18,16 @@ import java.util.List;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableCrsConfiguration.Builder.class)
-public abstract class CrsConfiguration implements ExtensionConfiguration {
+public interface CrsConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return true;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
     //TODO: migrate
-    public abstract List<EpsgCrs> getAdditionalCrs();
+    List<EpsgCrs> getAdditionalCrs();
+
+    @Override
+    default Builder getBuilder() {
+        return new ImmutableCrsConfiguration.Builder();
+    }
 }

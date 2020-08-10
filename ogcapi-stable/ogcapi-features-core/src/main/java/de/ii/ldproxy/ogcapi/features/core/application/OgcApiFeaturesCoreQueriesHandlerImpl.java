@@ -29,12 +29,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.features.domain.FeatureConsumer;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureSourceStream;
-import de.ii.xtraplatform.features.domain.FeatureStream2;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.*;
 import de.ii.xtraplatform.stringtemplates.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -51,7 +46,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
@@ -70,7 +64,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
-    private CodelistRegistry codelistRegistry;
+    private final CodelistRegistry codelistRegistry;
 
     public OgcApiFeaturesCoreQueriesHandlerImpl(@Requires I18n i18n,
                                                 @Requires CrsTransformerFactory crsTransformerFactory,
@@ -192,6 +186,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
         ImmutableFeatureTransformationContextGeneric.Builder transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
                 .apiData(api.getData())
+                .featureSchema(featureProvider.getData().getTypes().get(collectionId))
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
@@ -235,48 +230,18 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
         // TODO For now remove the "next" links from the headers since at this point we don't know, whether there will be a next page
 
-        return response(streamingOutput,
-                requestContext.getMediaType(),
-                requestContext.getLanguage(),
-                includeLinkHeader
-                        ? links.stream()
-                               .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
-                               .collect(ImmutableList.toImmutableList())
-                        : ImmutableList.of(),
-                targetCrs);
-    }
-
-    private Response response(Object entity, OgcApiMediaType mediaType, Optional<Locale> language,
-                              List<OgcApiLink> links, EpsgCrs crs) {
-        Response.ResponseBuilder response = Response.ok()
-                                                    .entity(entity);
-
-        if (mediaType != null) {
-            response.type(mediaType.type()
-                                   .toString());
-        }
-
-        if (language.isPresent()) {
-            response.language(language.get());
-        }
-
-        if (links != null) {
-            links.forEach(link -> response.links(link.getLink()));
-        }
-
-        if (crs != null) {
-            response.header("Content-Crs", crs.toUriString());
-        }
-
-        return response.build();
+        return prepareSuccessResponse(api, requestContext, includeLinkHeader ? links.stream()
+                                                                                    .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
+                                                                                    .collect(ImmutableList.toImmutableList()) :
+                                                                                null, targetCrs)
+                .entity(streamingOutput)
+                .build();
     }
 
     private StreamingOutput stream(FeatureStream2 featureTransformStream, boolean failIfEmpty,
                                    final Function<OutputStream, FeatureTransformer2> featureTransformer) {
         Timer.Context timer = metricRegistry.timer(name(OgcApiFeaturesCoreQueriesHandlerImpl.class, "stream"))
                                             .time();
-        Timer.Context timer2 = metricRegistry.timer(name(OgcApiFeaturesCoreQueriesHandlerImpl.class, "wait"))
-                                             .time();
 
         return outputStream -> {
             try {

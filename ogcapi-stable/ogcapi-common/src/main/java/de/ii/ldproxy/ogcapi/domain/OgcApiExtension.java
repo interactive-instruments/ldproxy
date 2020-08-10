@@ -13,36 +13,17 @@ public interface OgcApiExtension {
 
     boolean isEnabledForApi(OgcApiApiDataV2 apiData);
 
-    default <T extends ExtensionConfiguration> Optional<T> getExtensionConfiguration(
-            ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
-
-        return extendableConfiguration.getExtension(clazz);
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isEnabledForApi(apiData);
     }
 
-    default <T extends ExtensionConfiguration> Optional<T> getExtensionConfiguration(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
-
-        Optional<T> defaultExtensionConfiguration = defaultExtendableConfiguration.getExtension(clazz);
-
-        Optional<T> extensionConfiguration = extendableConfiguration.getExtension(clazz);
-
-        if (defaultExtensionConfiguration.isPresent() && !extensionConfiguration.isPresent()) {
-            return defaultExtensionConfiguration;
-        } else if (!defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
-            return extensionConfiguration;
-        } else if (defaultExtensionConfiguration.isPresent() && extensionConfiguration.isPresent()) {
-            return Optional.of(extensionConfiguration.get().mergeDefaults(defaultExtensionConfiguration.get()));
-        }
-
-        return Optional.empty();
+    //TODO: use this to centralize isEnabledForApi implementations
+    default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return null;
     }
 
-    default boolean isExtensionEnabled(ExtendableConfiguration defaultExtendableConfiguration, ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {
+    default <T extends ExtensionConfiguration> boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
 
-        return getExtensionConfiguration(defaultExtendableConfiguration, extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
-    }
-
-    default boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<? extends ExtensionConfiguration> clazz) {
-
-        return getExtensionConfiguration(extendableConfiguration, clazz).filter(ExtensionConfiguration::getEnabled).isPresent();
+        return extendableConfiguration.getExtension(clazz).filter(ExtensionConfiguration::isEnabled).isPresent();
     }
 }

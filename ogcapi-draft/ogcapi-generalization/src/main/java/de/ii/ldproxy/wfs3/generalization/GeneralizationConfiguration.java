@@ -14,11 +14,14 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableGeneralizationConfiguration.Builder.class)
-public abstract class GeneralizationConfiguration implements ExtensionConfiguration {
+public interface GeneralizationConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return false;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
+
+    @Override
+    default Builder getBuilder() {
+        return new ImmutableGeneralizationConfiguration.Builder();
+    }
+
 }

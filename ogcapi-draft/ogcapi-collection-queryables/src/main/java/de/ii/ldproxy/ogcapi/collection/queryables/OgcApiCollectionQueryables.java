@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.collection.queryables;
 
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -36,6 +37,11 @@ public class OgcApiCollectionQueryables implements OgcApiCollectionExtension {
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), QueryablesConfiguration.class);
+    }
+
+    @Override
     public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                      OgcApiApiDataV2 apiData,
@@ -44,7 +50,7 @@ public class OgcApiCollectionQueryables implements OgcApiCollectionExtension {
                                                      OgcApiMediaType mediaType,
                                                      List<OgcApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
-        if (isExtensionEnabled(apiData, featureTypeConfiguration, QueryablesConfiguration.class) && !isNested) {
+        if (isExtensionEnabled(featureTypeConfiguration, QueryablesConfiguration.class) && !isNested) {
             final QueryablesLinkGenerator linkGenerator = new QueryablesLinkGenerator();
             collection.addAllLinks(linkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
         }

@@ -8,30 +8,34 @@
 package de.ii.ldproxy.ogcapi.features.core.application;
 
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCapabilityExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiBuildingBlock;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
+import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.DEFAULT_PAGE_SIZE;
+import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.MAX_PAGE_SIZE;
+import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.MINIMUM_PAGE_SIZE;
+
 @Component
 @Provides
 @Instantiate
-public class OgcApiCapabilityWfsCore implements OgcApiCapabilityExtension {
+public class OgcApiCapabilityWfsCore implements OgcApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
-        ImmutableOgcApiFeaturesCoreConfiguration.Builder config = new ImmutableOgcApiFeaturesCoreConfiguration.Builder();
-
-        switch (preset) {
-            case OGCAPI:
-                config.enabled(true);
-                break;
-            case GSFS:
-                config.enabled(false);
-                break;
-        }
-
-        return config.build();
+    public ExtensionConfiguration.Builder getConfigurationBuilder() {
+        return new ImmutableOgcApiFeaturesCoreConfiguration.Builder();
     }
+
+    @Override
+    public ExtensionConfiguration getDefaultConfiguration() {
+        return new ImmutableOgcApiFeaturesCoreConfiguration.Builder().enabled(true)
+                                                                     .defaultCrs(OgcApiFeaturesCoreConfiguration.DefaultCrs.CRS84)
+                                                                     .minimumPageSize(MINIMUM_PAGE_SIZE)
+                                                                     .defaultPageSize(DEFAULT_PAGE_SIZE)
+                                                                     .maximumPageSize(MAX_PAGE_SIZE)
+                                                                     .showsFeatureSelfLink(false)
+                                                                     .build();
+    }
+
 }

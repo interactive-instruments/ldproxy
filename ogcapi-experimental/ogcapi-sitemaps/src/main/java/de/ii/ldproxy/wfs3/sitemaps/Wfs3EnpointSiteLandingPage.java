@@ -10,14 +10,14 @@ package de.ii.ldproxy.wfs3.sitemaps;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.auth.api.User;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -40,6 +40,8 @@ import java.util.Optional;
 @Instantiate
 public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
 
+    // TODO change to new style for endpoints
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3EnpointSiteLandingPage.class);
     private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
             .apiEntrypoint("sitemap_landingPage.xml")
@@ -48,9 +50,8 @@ public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
             .build();
 
     @Requires
-    private CoreServerConfig coreServerConfig;
+    private XtraPlatform xtraPlatform;
 
-    @Override
     public OgcApiContext getApiContext() {
         return API_CONTEXT;
     }
@@ -77,7 +78,7 @@ public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
                                           @Context OgcApiRequestContext wfs3Request) {
 
         List<Site> sites = new ArrayList<>();
-        sites.add(new Site(String.format("%s/%s?f=html", coreServerConfig.getExternalUrl(), service.getId())));
+        sites.add(new Site(String.format("%s/%s?f=html", xtraPlatform.getServicesUri(), service.getId())));
         Sitemap sitemap = new Sitemap(sites);
 
         return Response.ok()

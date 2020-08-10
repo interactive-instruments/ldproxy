@@ -7,9 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+
 import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
 
@@ -29,6 +30,42 @@ public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
         }
 
         return queryHandler.handle(queryInput, requestContext);
+    }
+
+    default Response.ResponseBuilder prepareSuccessResponse(OgcApiApi api,
+                                                            OgcApiRequestContext requestContext) {
+        return prepareSuccessResponse(api, requestContext, null);
+    }
+
+    default Response.ResponseBuilder prepareSuccessResponse(OgcApiApi api,
+                                                            OgcApiRequestContext requestContext,
+                                                            List<OgcApiLink> links) {
+        return prepareSuccessResponse(api, requestContext, null, null);
+    }
+
+    default Response.ResponseBuilder prepareSuccessResponse(OgcApiApi api,
+                                                            OgcApiRequestContext requestContext,
+                                                            List<OgcApiLink> links,
+                                                            EpsgCrs crs) {
+        Response.ResponseBuilder response = Response.ok()
+                                                    .type(requestContext
+                                                        .getMediaType()
+                                                        .type());
+
+        Optional<Locale> language = requestContext.getLanguage();
+        if (language.isPresent())
+            response.language(language.get());
+
+        if (links != null)
+            // skip URI templates in the header as these are not RFC 8288 links
+            links.stream()
+                    .filter(link -> link.getTemplated()==null || !link.getTemplated())
+                    .forEach(link -> response.links(link.getLink()));
+
+        if (crs != null)
+            response.header("Content-Crs", "<" + crs.toUriString() + ">");
+
+        return response;
     }
 
 }

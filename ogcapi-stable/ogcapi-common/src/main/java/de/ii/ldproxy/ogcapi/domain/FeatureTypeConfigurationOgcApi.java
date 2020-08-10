@@ -8,8 +8,11 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilder;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueInstance;
@@ -17,15 +20,27 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableFeatureTypeConfigurationOgcApi.Builder.class)
 public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration, ExtendableConfiguration, ValueInstance {
 
-    abstract class Builder implements ValueBuilder<FeatureTypeConfigurationOgcApi> {}
+    abstract class Builder implements ValueBuilder<FeatureTypeConfigurationOgcApi> {
+
+        // jackson should append to instead of replacing extensions
+        @JsonIgnore
+        public abstract Builder extensions(Iterable<? extends ExtensionConfiguration> elements);
+
+        @JsonProperty("api")
+        public abstract Builder addAllExtensions(Iterable<? extends ExtensionConfiguration> elements);
+
+    }
 
     @Override
     default ImmutableFeatureTypeConfigurationOgcApi.Builder toBuilder() {
@@ -55,7 +70,9 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
         Optional<BoundingBox> getSpatial();
 
         @Value.Default
-        default boolean getSpatialComputed(){return false;}
+        default boolean getSpatialComputed() {
+            return false;
+        }
 
     }
 
@@ -78,5 +95,15 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
         // TODO: temporal: support computed temporal extent
     }
 
+    @JsonIgnore
+    List<ExtensionConfiguration> getParentExtensions();
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    @Override
+    default List<ExtensionConfiguration> getMergedExtensions() {
+        return getMergedExtensions(Lists.newArrayList(Iterables.concat(getParentExtensions(), getExtensions())));
+    }
 }
 

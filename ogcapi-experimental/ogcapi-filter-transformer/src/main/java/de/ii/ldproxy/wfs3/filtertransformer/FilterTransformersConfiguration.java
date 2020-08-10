@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.filtertransformer;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -20,22 +21,15 @@ import java.util.List;
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFilterTransformersConfiguration.Builder.class)
 
-//TODO: also allow on global level (could we just use the same configuration there?)
-public abstract class FilterTransformersConfiguration implements ExtensionConfiguration {
+public interface FilterTransformersConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return true;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    public abstract List<FilterTransformerConfiguration> getTransformers();
+    List<FilterTransformerConfiguration> getTransformers();
 
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return new ImmutableFilterTransformersConfiguration.Builder()
-                                                       .from(extensionConfigurationDefault)
-                                                       .from(this)
-                                                       .build(); //TODO
+    default Builder getBuilder() {
+        return new ImmutableFilterTransformersConfiguration.Builder();
     }
 }

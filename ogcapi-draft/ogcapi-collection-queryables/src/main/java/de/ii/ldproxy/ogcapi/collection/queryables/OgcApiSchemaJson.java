@@ -8,12 +8,12 @@
 package de.ii.ldproxy.ogcapi.collection.queryables;
 
 import de.ii.ldproxy.ogcapi.domain.*;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Map;
 
 @Component
@@ -34,15 +34,25 @@ public class OgcApiSchemaJson implements OgcApiSchemaFormatExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, QueryablesConfiguration.class)
-                .map(QueryablesConfiguration::getEnabled)
-                .orElse(false);
+        return isExtensionEnabled(apiData, QueryablesConfiguration.class);
     }
 
     @Override
-    public Response getResponse(Map<String,Object> schema, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
-        return Response.ok()
-                .entity(schema)
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), QueryablesConfiguration.class);
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new ObjectSchema())
+                .schemaRef("#/components/schemas/anyObject")
+                .ogcApiMediaType(MEDIA_TYPE)
                 .build();
+    }
+
+    @Override
+    public Object getEntity(Map<String,Object> schema, String collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
+        return schema;
     }
 }

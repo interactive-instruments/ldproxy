@@ -9,6 +9,7 @@ package de.ii.ldproxy.wfs3.oas30;
 
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.openapi.OpenApiViewerResource;
+import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -48,8 +49,20 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
     }
 
     @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        if (path.equals("/api"))
+            return null;
+
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new Schema())
+                .schemaRef("#/components/schemas/any")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+    }
+
+    @Override
     public String getPathPattern() {
-        return "^/api/[^\\/]+$";
+        return "^/api/[^/]+$";
     }
 
     @Override

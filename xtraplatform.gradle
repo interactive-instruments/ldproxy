@@ -1,13 +1,13 @@
 
 dependencies {
     if(JavaVersion.current().isJava9Compatible()) {
-        feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.3.0'
+        feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.3.2'
     } else {
-        feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.2.3'
+        feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.2.4'
     }
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.2.10'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.2.3'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '3.3.2'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.2.13'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.2.4'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '3.3.6'
 }
 
 allprojects {
@@ -16,7 +16,7 @@ allprojects {
             url "https://repo.osgeo.org/repository/release"
         }
         maven {
-            url "http://maven.geomajas.org"
+            url "https://maven.ecc.no/releases"
         }
     }
 }

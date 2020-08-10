@@ -7,11 +7,26 @@
  */
 package de.ii.ldproxy.target.gml;
 
-import de.ii.ldproxy.ogcapi.domain.*;
-import org.apache.felix.ipojo.annotations.*;
+import de.ii.ldproxy.ogcapi.domain.Collections;
+import de.ii.ldproxy.ogcapi.domain.CollectionsFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.CommonFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.ConformanceDeclaration;
+import de.ii.ldproxy.ogcapi.domain.ImmutableCollections;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.LandingPage;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * @author zahnen
@@ -26,20 +41,6 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
             .label("XML")
             .parameter("xml")
             .build();
-
-    private final GmlConfig gmlConfig;
-
-    @ServiceController(value = false)
-    private boolean enable;
-
-    public Wfs3OutputFormatXml(@Requires GmlConfig gmlConfig) {
-        this.gmlConfig = gmlConfig;
-    }
-
-    @Validate
-    private void onStart() {
-        this.enable = gmlConfig.isEnabled();
-    }
 
     @Override
     public String getPathPattern() {
@@ -57,42 +58,37 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
     }
 
     @Override
-    public Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+        return new ImmutableOgcApiMediaTypeContent.Builder()
+                .schema(new ObjectSchema())
+                .schemaRef("#/components/schemas/anyObject")
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+    }
+
+    @Override
+    public Object getLandingPageEntity(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
         String title = requestContext.getApi().getData().getLabel();
         String description = requestContext.getApi().getData().getDescription().orElse(null);
-        return response(new LandingPageXml(apiLandingPage.getLinks(), title, description));
+        return new LandingPageXml(apiLandingPage.getLinks(), title, description);
     }
 
     @Override
-    public Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration,
+    public Object getConformanceEntity(ConformanceDeclaration conformanceDeclaration,
                                            OgcApiApi api, OgcApiRequestContext requestContext) {
-        return response(new Wfs3ConformanceClassesXml(conformanceDeclaration));
+        return new Wfs3ConformanceClassesXml(conformanceDeclaration);
     }
 
     @Override
-    public Response getCollectionsResponse(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
-        return response(new Wfs3CollectionsXml(collections));
+    public Object getCollectionsEntity(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
+        return new Wfs3CollectionsXml(collections);
     }
 
     @Override
-    public Response getCollectionResponse(OgcApiCollection ogcApiCollection,
+    public Object getCollectionEntity(OgcApiCollection ogcApiCollection,
                                           OgcApiApi api, OgcApiRequestContext requestContext) {
-        return response(new Wfs3CollectionsXml(new ImmutableCollections.Builder()
+        return new Wfs3CollectionsXml(new ImmutableCollections.Builder()
                 .addCollections(ogcApiCollection)
-                .build()));
-    }
-
-    private Response response(Object entity) {
-        return response(entity, null);
-    }
-
-    private Response response(Object entity, String type) {
-        Response.ResponseBuilder response = Response.ok()
-                                                    .entity(entity);
-        if (type != null) {
-            response.type(type);
-        }
-
-        return response.build();
+                .build());
     }
 }

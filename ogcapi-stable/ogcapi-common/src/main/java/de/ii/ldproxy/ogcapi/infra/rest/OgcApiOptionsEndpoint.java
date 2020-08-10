@@ -40,12 +40,6 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiOptionsEndpoint.class);
 
-    private static final OgcApiContext API_CONTEXT = new ImmutableOgcApiContext.Builder()
-            .apiEntrypoint(".*")
-            .addMethods(OgcApiContext.HttpMethods.OPTIONS)
-            .subPathPattern(".*")
-            .build();
-
     private final OgcApiExtensionRegistry extensionRegistry;
 
     @Requires
@@ -56,12 +50,7 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
     }
 
     @Override
-    public OgcApiContext getApiContext() {
-        return API_CONTEXT;
-    }
-
-    @Override
-    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath) {
+    public ImmutableSet<OgcApiMediaType> getMediaTypes(OgcApiApiDataV2 dataset, String subPath, String method) {
         return ImmutableSet.<OgcApiMediaType>builder().add(new ImmutableOgcApiMediaType.Builder()
                 .type(MediaType.TEXT_PLAIN_TYPE)
                 .build()).build();
@@ -121,17 +110,17 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
                 .header("Access-Control-Allow-Origin","*") // TODO * not allowed with credentials
                 .header("Access-Control-Allow-Credentials","true")
                 .header("Access-Control-Allow-Methods", String.join(", ", supportedMethods))
-                .header("Access-Control-Allow-Headers", "Accept, Accept-Language, Origin, Content-Type, Content-Language, Authorization")
+                .header("Access-Control-Allow-Headers", "Accept, Accept-Language, Origin, Content-Type, Content-Language, Content-Crs, Authorization")
                 .build();
     }
 
-    private Optional<OgcApiEndpointExtension> findEndpoint(OgcApiApiDataV2 api,
+    private Optional<OgcApiEndpointExtension> findEndpoint(OgcApiApiDataV2 apiData,
                                                            String entrypoint,
-                                                           String subPath, String method) {
+                                                           String subPath,
+                                                           String method) {
         return getEndpoints().stream()
-                .filter(wfs3Endpoint -> wfs3Endpoint.getApiContext()
-                        .matches(entrypoint, subPath, method))
-                .filter(wfs3Endpoint -> wfs3Endpoint.isEnabledForApi(api))
+                .filter(endpoint -> endpoint.getDefinition(apiData).matches("/"+entrypoint+subPath, method))
+                .filter(endpoint -> endpoint.isEnabledForApi(apiData))
                 .findFirst();
     }
 

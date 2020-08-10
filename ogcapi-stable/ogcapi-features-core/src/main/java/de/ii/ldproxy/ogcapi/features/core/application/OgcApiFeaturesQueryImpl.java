@@ -12,10 +12,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.cql.app.CqlPropertyChecker;
 import de.ii.xtraplatform.cql.domain.And;
@@ -101,11 +98,11 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     @Override
     public FeatureQuery requestToFeatureQuery(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
                                               OgcApiFeaturesCoreConfiguration coreConfiguration,
-                                              Map<String, String> parameters,
+                                              Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
                                               String featureId) {
 
-        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            parameters = parameterExtension.transformParameters(collectionData, parameters, apiData);
+        for (OgcApiQueryParameter parameter : allowedParameters) {
+            parameters = parameter.transformParameters(collectionData, parameters, apiData);
         }
 
         final CqlFilter filter = CqlFilter.of(In.of(ScalarLiteral.of(urldecode(featureId))));
@@ -115,8 +112,8 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                                                 .filter(filter)
                                                                                 .crs(coreConfiguration.getDefaultEpsgCrs());
 
-        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            parameterExtension.transformQuery(collectionData, queryBuilder, parameters, apiData);
+        for (OgcApiQueryParameter parameter : allowedParameters) {
+            parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
         }
 
         return queryBuilder.build();
@@ -126,16 +123,16 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
     public FeatureQuery requestToFeatureQuery(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
                                               OgcApiFeaturesCoreConfiguration coreConfiguration,
                                               int minimumPageSize,
-                                              int defaultPageSize, int maxPageSize, Map<String, String> parameters) {
+                                              int defaultPageSize, int maxPageSize, Map<String, String> parameters,
+                                              List<OgcApiQueryParameter> allowedParameters) {
         final Map<String, String> filterableFields = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
                                                                    .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
                                                                    .orElse(ImmutableMap.of());
 
         Set<String> filterParameters = ImmutableSet.of();
-        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            filterParameters = parameterExtension.getFilterParameters(filterParameters, apiData);
-
-            parameters = parameterExtension.transformParameters(collectionData, parameters, apiData);
+        for (OgcApiQueryParameter parameter : allowedParameters) {
+            filterParameters = parameter.getFilterParameters(filterParameters, apiData, collectionData.getId());
+            parameters = parameter.transformParameters(collectionData, parameters, apiData);
         }
 
         final Map<String, String> filters = getFiltersFromQuery(parameters, filterableFields, filterParameters);
@@ -156,6 +153,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
          *   it is unclear how much value it brings. Probably consistent with this: I have not seen much of range headers
          *   in Web APIs for paging.
          */
+        // TODO detailed checks should no longer be necessary
         final int limit = parseLimit(minimumPageSize, defaultPageSize, maxPageSize, parameters.get("limit"));
         final int offset = parseOffset(parameters.get("offset"));
 
@@ -166,10 +164,9 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                                                 .offset(offset)
                                                                                 .hitsOnly(hitsOnly);
 
-        for (OgcApiParameterExtension parameterExtension : wfs3ExtensionRegistry.getExtensionsForType(OgcApiParameterExtension.class)) {
-            parameterExtension.transformQuery(collectionData, queryBuilder, parameters, apiData);
+        for (OgcApiQueryParameter parameter : allowedParameters) {
+            parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
         }
-
 
         if (!filters.isEmpty()) {
             Cql.Format cqlFormat = Cql.Format.TEXT;

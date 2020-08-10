@@ -1,9 +1,7 @@
-
 dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-geojson'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
@@ -16,5 +14,18 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-crs'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
 
+    //  use an old version, because of the Jackson dependency
+    embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.24') {
+        exclude module: 'jackson-databind'
+        exclude module: 'slf4j-api'
+    }
+
     testImplementation project(':ogcapi-features-core')
+}
+
+jar {
+    manifest {
+        instruction 'Embed-Import', 'false'
+        instruction 'Embed-Export', 'false'
+    }
 }

@@ -9,17 +9,20 @@ package de.ii.ldproxy.ogcapi.filter;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFilterConfiguration.Builder.class)
-public abstract class FilterConfiguration implements ExtensionConfiguration {
+public interface FilterConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
+    abstract class Builder extends ExtensionConfiguration.Builder {
+    }
+
     @Override
-    public boolean getEnabled() {
-        return false;
+    default Builder getBuilder() {
+        return new ImmutableFilterConfiguration.Builder();
     }
 
 }

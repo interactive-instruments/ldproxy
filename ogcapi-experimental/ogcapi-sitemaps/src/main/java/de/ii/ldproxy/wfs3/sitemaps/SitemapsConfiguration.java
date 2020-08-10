@@ -9,16 +9,20 @@ package de.ii.ldproxy.wfs3.sitemaps;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableSitemapsConfiguration.Builder.class)
-public abstract class SitemapsConfiguration implements ExtensionConfiguration {
+public interface SitemapsConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return false;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
+
+    @Override
+    default Builder getBuilder() {
+        return new ImmutableSitemapsConfiguration.Builder();
+    }
+
 }

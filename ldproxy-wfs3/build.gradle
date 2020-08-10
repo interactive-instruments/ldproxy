@@ -5,7 +5,6 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'

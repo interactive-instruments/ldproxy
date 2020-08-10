@@ -1,0 +1,70 @@
+package de.ii.ldproxy.resources;
+
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
+import de.ii.ldproxy.wfs3.styles.StyleMetadata;
+import de.ii.ldproxy.wfs3.styles.Styles;
+import de.ii.ldproxy.wfs3.styles.StylesFormatExtension;
+import io.swagger.v3.oas.models.media.Schema;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.Link;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+@Component
+@Provides
+@Instantiate
+public class ResourcesFormatJson implements ResourcesFormatExtension {
+
+    @Requires
+    SchemaGenerator schemaGenerator;
+
+    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+            .type(new MediaType("application", "json"))
+            .label("JSON")
+            .parameter("json")
+            .build();
+
+    private final Schema schemaResources;
+    public final static String SCHEMA_REF_RESOURCES = "#/components/schemas/Resources";
+
+    public ResourcesFormatJson() {
+        schemaResources = schemaGenerator.getSchema(Resources.class);
+    }
+
+    @Override
+    public OgcApiMediaType getMediaType() {
+        return MEDIA_TYPE;
+    }
+
+    @Override
+    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+
+        // TODO add examples
+        if (path.equals("/resources"))
+            return new ImmutableOgcApiMediaTypeContent.Builder()
+                    .schema(schemaResources)
+                    .schemaRef(SCHEMA_REF_RESOURCES)
+                    .ogcApiMediaType(MEDIA_TYPE)
+                    .build();
+
+        throw new ServerErrorException("Unexpected path "+path,500);
+    }
+
+    @Override
+    public Response getResourcesResponse(Resources resources, OgcApiApi api, OgcApiRequestContext requestContext) {
+        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
+                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+                .orElse(false);
+
+        return Response.ok(resources)
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .links(includeLinkHeader ? resources.getLinks().stream().map(link -> link.getLink()).toArray(Link[]::new) : null)
+                .build();
+    }
+}

@@ -10,7 +10,6 @@ package de.ii.ldproxy.wfs3.filtertransformer;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiParameterExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.akka.http.Http;
@@ -32,8 +31,9 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class OgcApiParameterFilterTransformer implements OgcApiParameterExtension {
+public class OgcApiParameterFilterTransformer /* implements OgcApiParameterExtension TODO needs to be updated to the new logic */  {
 
+    /*
     private final HttpClient httpClient;
 
     public OgcApiParameterFilterTransformer(@Requires Http http) {
@@ -110,4 +110,5 @@ public class OgcApiParameterFilterTransformer implements OgcApiParameterExtensio
         }
         return parameters;
     }
+     */
 }
