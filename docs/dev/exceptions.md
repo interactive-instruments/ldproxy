@@ -43,6 +43,11 @@
 
    For now, create a simple plain HTML page with all the information in the JSON response. (In the future, we could support exception format extension classes.)
    
+## Mapping scenarios
+   * Invalid data in URI queries: unknown or unsupported parameters, incorrect query arguments -> IllegalArgumentException. IllegalArgumentException is mapped to the HTTP response status code 400 Bad Request.
+   * When requested media type entity is not supported (e.g. OutputFormatGeoTiff::initializeResult), it causes UnsupportedOperationException. UnsupportedOperationException is mapped to the HTTP response status code 415 Unsupported Media Type
+   * Internal errors are mapped to the common RuntimeException, which in turn mapped to the HTTP response status code 500 Internal Server Error
+   
    
    
 
