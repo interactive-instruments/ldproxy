@@ -109,9 +109,13 @@ public class TilesOutputFormatHtml implements TileSetsFormatExtension {
                         .add(new NavigationDTO(tilesTitle))
                         .build();
 
-        HtmlConfiguration htmlConfig = api.getData()
+        HtmlConfiguration htmlConfig = collectionId.isPresent() ?
+                                            api.getData()
                                                  .getCollections()
-                                                 .get(collectionId)
+                                                 .get(collectionId.get())
+                                                 .getExtension(HtmlConfiguration.class)
+                                                 .orElse(null) :
+                                            api.getData()
                                                  .getExtension(HtmlConfiguration.class)
                                                  .orElse(null);
 
