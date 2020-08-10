@@ -134,7 +134,7 @@ public class QueryParameterBbox implements OgcApiQueryParameter {
         if (bboxParam==null) {
             bbox = getDefault(apiData, Optional.of(featureType.getId()));
             if (bbox==null)
-                throw new RuntimeException("Missing parameter 'bbox', no bounding box has been provided.");
+                throw new IllegalArgumentException("Missing parameter 'bbox', no bounding box has been provided.");
         } else if (bboxParam!=null) {
             bbox = Splitter.on(",").splitToList(bboxParam)
                     .stream()

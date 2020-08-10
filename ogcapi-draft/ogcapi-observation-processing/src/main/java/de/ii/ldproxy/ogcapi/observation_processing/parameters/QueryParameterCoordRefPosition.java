@@ -119,7 +119,7 @@ public class QueryParameterCoordRefPosition implements OgcApiQueryParameter {
             // not a valid reference
         }
         if (geometry==null || geometry.isEmpty()) {
-            throw new IllegalStateException("The value of the parameter 'coordRef' (" + coordRef + ") is not a URI that resolves to a GeoJSON feature.");
+            throw new IllegalArgumentException("The value of the parameter 'coordRef' (" + coordRef + ") is not a URI that resolves to a GeoJSON feature.");
         }
 
         return geometry.getCentroid();

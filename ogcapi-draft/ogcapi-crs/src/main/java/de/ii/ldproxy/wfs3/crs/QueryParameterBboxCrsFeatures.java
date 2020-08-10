@@ -95,10 +95,10 @@ public class QueryParameterBboxCrsFeatures implements OgcApiQueryParameter {
             try {
                 bboxCrs = EpsgCrs.fromString(parameters.get(BBOX_CRS));
             } catch (Throwable e) {
-                throw new RuntimeException(String.format("The parameter '%s' is invalid: %s", BBOX_CRS, e.getMessage()));
+                throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: %s", BBOX_CRS, e.getMessage()));
             }
             if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, bboxCrs)) {
-                throw new RuntimeException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", BBOX_CRS, bboxCrs.toUriString()));
+                throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", BBOX_CRS, bboxCrs.toUriString()));
             }
 
             Map<String, String> newParameters = new HashMap<>(parameters);

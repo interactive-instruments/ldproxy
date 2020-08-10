@@ -46,10 +46,10 @@ public class FeatureProcessResampleToGrid implements ObservationProcess {
             throw new RuntimeException("Missing information for executing '" + getName() + "': No time interval has been provided.");
         obj = processingParameters.get("width");
         if (obj==null && obj instanceof OptionalInt && ((OptionalInt) obj).isPresent())
-            throw new RuntimeException("No grid width has been provided.");
+            throw new IllegalArgumentException("No grid width has been provided.");
         obj = processingParameters.get("height");
         if (obj==null && obj instanceof OptionalInt && ((OptionalInt) obj).isPresent())
-            throw new RuntimeException("No grid height has been provided.");
+            throw new IllegalArgumentException("No grid height has been provided.");
     }
 
     @Override

@@ -146,7 +146,7 @@ public class QueryParameterCoordPosition implements OgcApiQueryParameter {
         if (coord==null) {
             coord = getDefault(apiData, Optional.of(featureType.getId())).orElse(null);
             if (coord == null)
-                throw new IllegalStateException(String.format("The required parameter '%s' has no value.", getName()));
+                throw new IllegalArgumentException(String.format("The required parameter '%s' has no value.", getName()));
         }
 
         context.put("point",new GeometryPoint(geometryHelper.extractPosition(coord)));

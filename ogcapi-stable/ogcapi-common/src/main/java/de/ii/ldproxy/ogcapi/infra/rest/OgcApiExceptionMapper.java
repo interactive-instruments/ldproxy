@@ -7,10 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.dropwizard.api.Jackson;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
-import io.dropwizard.views.View;
-import io.dropwizard.views.mustache.MustacheViewRenderer;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -23,17 +22,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
+
 
 /**
  * @author zahnen
@@ -43,7 +37,7 @@ import java.util.Objects;
 @Instantiate
 @Provider
 @Produces({MediaType.WILDCARD})
-public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> implements MessageBodyWriter<OgcApiErrorMessage> {
+public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiExceptionMapper.class);
 
@@ -53,6 +47,9 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> imp
     @Context
     private UriInfo uriInfo;
 
+    @Context
+    private OgcApiRequestContext requestContext;
+
     @Validate
     void onStart() {
         LOGGER.debug("OGC API EXCEPTION WRITER");
@@ -60,6 +57,7 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> imp
 
     @Override
     public Response toResponse(Throwable exception) {
+        Response.Status responseStatus;
         String mediaType = getResponseMediaType();
         if (exception instanceof WebApplicationException) {
             final Response response = ((WebApplicationException) exception).getResponse();
@@ -75,41 +73,45 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> imp
                                 exception.getMessage(),
                                 uriInfo.getRequestUri().toString()))
                         .build();
+            } else if (family.equals(Response.Status.Family.SERVER_ERROR)) {
+                long id = logException(exception.getCause());
+                return Response.serverError()
+                        .type(mediaType)
+                        .entity(new OgcApiErrorMessage(response.getStatus(),
+                                response.getStatusInfo().getReasonPhrase(),
+                                String.format("There was an error processing your request, it has been logged. Error ID: %d", id),
+                                uriInfo.getAbsolutePath().toString()))
+                        .build();
             }
+        } else if (exception instanceof IllegalArgumentException) {
+            responseStatus = Response.Status.BAD_REQUEST;
+            return Response.status(responseStatus)
+                    .type(mediaType)
+                    .entity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
+                            responseStatus.getReasonPhrase(),
+                            exception.getMessage(),
+                            uriInfo.getAbsolutePath().toString()))
+                    .build();
+        } else if (exception instanceof UnsupportedOperationException) {
+            responseStatus = Response.Status.UNSUPPORTED_MEDIA_TYPE;
+            return Response.status(responseStatus)
+                    .type(mediaType)
+                    .entity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
+                            responseStatus.getReasonPhrase(),
+                            exception.getMessage(),
+                            uriInfo.getAbsolutePath().toString()))
+                    .build();
         }
+
         long id = logException(exception);
-        int status = 500;
+        responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
         return Response.serverError()
                 .type(mediaType)
-                .entity(new OgcApiErrorMessage(status,
-                        Response.Status.fromStatusCode(status).getReasonPhrase(),
+                .entity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
+                        responseStatus.getReasonPhrase(),
                         String.format("There was an error processing your request, it has been logged. Error ID: %d", id),
                         uriInfo.getAbsolutePath().toString()))
                 .build();
-    }
-
-    @Override
-    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return type.equals(OgcApiErrorMessage.class);
-    }
-
-    @Override
-    public long getSize(OgcApiErrorMessage e, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return -1;
-    }
-
-    @Override
-    public void writeTo(OgcApiErrorMessage e, Class<?> type, Type genericType, Annotation[] annotations,
-                        MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
-            throws IOException, WebApplicationException {
-        if (MediaType.TEXT_HTML.equals(mediaType.toString())) {
-            View view = new OgcApiErrorView(e.getMessage(), e.getCode(), e.getDetails(), e.getInstance());
-            MustacheViewRenderer renderer = new MustacheViewRenderer();
-            renderer.render(view, null, entityStream);
-        } else {
-            jackson.getDefaultObjectMapper()
-                    .writeValue(entityStream, e);
-        }
     }
 
     private String getResponseMediaType() {

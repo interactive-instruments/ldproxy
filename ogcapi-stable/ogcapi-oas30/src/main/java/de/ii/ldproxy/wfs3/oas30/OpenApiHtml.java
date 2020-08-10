@@ -17,8 +17,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URISyntaxException;
@@ -77,12 +75,12 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
                                 .build())
                         .build();
             } catch (URISyntaxException ex) {
-                throw new ServerErrorException("Invalid URI: "+ex.getMessage(), 500);
+                throw new RuntimeException("Invalid URI: " + ex.getMessage(), ex);
             }
         }
 
         if (openApiViewerResource == null) {
-            throw new NotFoundException();
+            throw new NullPointerException();
         }
 
         return openApiViewerResource.getFile("index.html");

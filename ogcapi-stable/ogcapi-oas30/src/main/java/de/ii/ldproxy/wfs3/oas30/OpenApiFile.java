@@ -17,8 +17,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -68,7 +66,7 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
     @Override
     public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
                                              OgcApiRequestContext wfs3Request) {
-        throw new NotAcceptableException();
+        throw new IllegalStateException();
     }
 
     @Override
@@ -78,7 +76,7 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
         LOGGER.debug("FILE {}", file);
 
         if (openApiViewerResource == null) {
-            throw new NotFoundException();
+            throw new NullPointerException();
         }
 
         // TODO: this also returns a 200 with an entity for non-existing files,  but there is no way to identify it here to throw a NotFoundException()

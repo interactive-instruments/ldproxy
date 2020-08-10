@@ -84,7 +84,7 @@ public class QueryParameterCoordArea implements OgcApiQueryParameter {
             // TODO support other CRS
             String coord = parameters.get(getName());
             if (!coord.matches(geometryHelper.getMultiPolygonRegex()) && !coord.matches(geometryHelper.getPolygonRegex())) {
-                throw new RuntimeException(String.format("The parameter '%s' has an invalid value '%s'.", "coord", coord));
+                throw new IllegalArgumentException(String.format("The parameter '%s' has an invalid value '%s'.", "coord", coord));
             }
 
             String spatialPropertyName = getSpatialProperty(apiData, featureType.getId());

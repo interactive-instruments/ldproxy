@@ -18,6 +18,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -162,10 +163,21 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                                          "/api"+(subPath.isEmpty() ? "" : subPath.startsWith("/") ? subPath : "/"+subPath ))
                               .orElseThrow(NotAcceptableException::new);
 
-        if (subPath.matches("/?[^/]+"))
-            return outputFormatExtension.getApiDefinitionFile(requestContext.getApi().getData(), requestContext, subPath);
+        if (subPath.matches("/?[^/]+")) {
+            try {
+                return outputFormatExtension.getApiDefinitionFile(requestContext.getApi().getData(), requestContext, subPath);
+            } catch (NullPointerException e) {
+                throw new NotFoundException(e);
+            }
+        }
 
-        return outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(), requestContext);
+        try {
+            return outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(), requestContext);
+        } catch (NullPointerException e) {
+            throw new NotFoundException();
+        } catch (IllegalStateException e) {
+            throw new NotAcceptableException();
+        }
     }
 
     private List<OgcApiLandingPageExtension> getDatasetExtenders() {

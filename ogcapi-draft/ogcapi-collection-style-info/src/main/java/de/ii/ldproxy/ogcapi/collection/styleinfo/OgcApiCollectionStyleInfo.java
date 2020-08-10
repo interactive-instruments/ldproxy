@@ -106,9 +106,6 @@ public class OgcApiCollectionStyleInfo implements OgcApiCollectionExtension {
     }
 
     private Optional<StyleInfos> getStyleInfos(File styleInfosFile) {
-        if (!styleInfosFile.exists()) {
-            throw new RuntimeException();
-        }
 
         try {
             final byte[] content = java.nio.file.Files.readAllBytes(styleInfosFile.toPath());

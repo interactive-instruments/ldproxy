@@ -23,14 +23,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -139,7 +142,11 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
                 .findAny()
                 .orElseThrow(() -> new NotAcceptableException());
 
-        outputFormat.patchStyleInfos(requestBody, styleInfosStore, dataset, collectionId);
+        try {
+            outputFormat.patchStyleInfos(requestBody, styleInfosStore, dataset, collectionId);
+        } catch (IOException e) {
+            throw new BadRequestException(e);
+        }
 
         return Response.noContent()
                        .build();

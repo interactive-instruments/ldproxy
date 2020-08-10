@@ -58,7 +58,7 @@ public class CommandHandlerTransactional {
 
 
         if (ids.isEmpty()) {
-            throw new RuntimeException("No features found in input");
+            throw new IllegalArgumentException("No features found in input");
         }
         URI firstFeature = null;
         try {

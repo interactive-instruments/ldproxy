@@ -75,12 +75,12 @@ public class OutputFormatGeoTiff implements ObservationProcessingOutputFormat {
                 TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");
                 Comparable<Temporal> c1 = (Comparable<Temporal>) interval.getBegin();
                 if (c1.compareTo(interval.getEnd())!=0)
-                    throw new IllegalStateException("GeoTIFF is only supported for 'resample-to-grid', if 'datetime' is an instant, but an interval was provided.");
+                    throw new UnsupportedOperationException("GeoTIFF is only supported for 'resample-to-grid', if 'datetime' is an instant, but an interval was provided.");
                 break;
             case "resample-to-grid:aggregate-time":
                 break;
             case "default":
-                throw new IllegalStateException("GeoTIFF is only supported for 'resample-to-grid:aggregate-time'.");
+                throw new UnsupportedOperationException("GeoTIFF is only supported for 'resample-to-grid:aggregate-time'.");
         }
         return result;
     }

@@ -140,8 +140,7 @@ public class ExtendableOpenApiDefinition {
                         .build();
             }
         } catch (IOException e) {
-            LOGGER.error("OpenAPI document could not be created: " + e.getMessage());
-            throw new ServerErrorException("OpenAPI document could not be created", 500);
+            throw new RuntimeException("OpenAPI document could not be created", e);
         }
     }
 

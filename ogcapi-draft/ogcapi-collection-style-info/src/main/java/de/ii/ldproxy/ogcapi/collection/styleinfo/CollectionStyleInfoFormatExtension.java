@@ -11,6 +11,7 @@ import de.ii.ldproxy.ogcapi.domain.*;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
 
 public interface CollectionStyleInfoFormatExtension extends FormatExtension {
 
@@ -19,7 +20,7 @@ public interface CollectionStyleInfoFormatExtension extends FormatExtension {
         return "^/collections(?:/[\\w\\-]+)?/?$";
     }
 
-    Response patchStyleInfos(byte[] requestBody, File styleInfosStore, OgcApiApi api, String collectionId);
+    Response patchStyleInfos(byte[] requestBody, File styleInfosStore, OgcApiApi api, String collectionId) throws IOException;
 
     default boolean canSupportTransactions() { return true; }
 

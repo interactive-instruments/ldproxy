@@ -10,11 +10,11 @@ public class OgcApiErrorView extends View {
     public String detail;
     public String instance;
 
-    protected OgcApiErrorView(String title, Integer status, String detail, String instance) {
+    protected OgcApiErrorView(OgcApiErrorMessage errorMessage) {
         super("exception.mustache", Charsets.UTF_8);
-        this.title = title;
-        this.status = status;
-        this.detail = detail;
-        this.instance = instance;
+        this.status = errorMessage.getCode();
+        this.title = errorMessage.getMessage();
+        this.detail = errorMessage.getDetails();
+        this.instance = errorMessage.getInstance();
     }
 }
