@@ -19,7 +19,6 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import org.immutables.value.Value;
 

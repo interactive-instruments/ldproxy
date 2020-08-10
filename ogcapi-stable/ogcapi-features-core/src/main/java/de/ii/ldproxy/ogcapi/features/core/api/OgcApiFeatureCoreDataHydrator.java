@@ -69,7 +69,6 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
 
         if (data.isAuto() && data.getCollections()
                                   .isEmpty()) {
-
             data = new ImmutableOgcApiApiDataV2.Builder()
                     .from(data)
                     .collections(generateCollections(featureProvider))
@@ -77,7 +76,6 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
         }
 
         if (hasMissingBboxes(data.getCollections())) {
-
             data = new ImmutableOgcApiApiDataV2.Builder()
                     .from(data)
                     .collections(computeMissingBboxes(data))

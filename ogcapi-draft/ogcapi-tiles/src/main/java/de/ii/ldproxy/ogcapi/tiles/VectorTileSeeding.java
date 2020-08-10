@@ -104,8 +104,6 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     }
 
 
-    // TODO private final VectorTileMapGenerator vectorTileMapGenerator = new VectorTileMapGenerator();
-
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);

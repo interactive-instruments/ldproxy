@@ -88,7 +88,6 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
     }
 
     // TODO consolidate code
-
     private Response getQueryablesResponse(OgcApiQueryInputQueryables queryInput, OgcApiRequestContext requestContext) {
 
         OgcApiApi api = requestContext.getApi();
