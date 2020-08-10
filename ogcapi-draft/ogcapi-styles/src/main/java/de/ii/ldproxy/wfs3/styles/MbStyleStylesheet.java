@@ -7,10 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.styles;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -19,7 +17,6 @@ import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableMbStyleStylesheet.class)
 public abstract class MbStyleStylesheet {
 
@@ -29,7 +26,7 @@ public abstract class MbStyleStylesheet {
     public enum LayerType { background, fill, line, symbol, raster, circle, fillExtrusion, heatmap, hillshade }
     public enum Visibility { visible, none }
 
-    public final String getVersion() { return "8"; }
+    public final int getVersion() { return 8; }
     public abstract Optional<String> getName();
     public abstract Optional<Object> getMetadata();
     public abstract Optional<List<Double>> getCenter();
