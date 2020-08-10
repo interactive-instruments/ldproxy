@@ -272,6 +272,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         ImmutableFeatureTransformationContextTiles.Builder transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
                 .apiData(api.getData())
+                .featureSchema(featureProvider.getData().getTypes().get(collectionId))
                 .tile(tile)
                 .tileFile(tilesCache.getFile(tile))
                 .collectionId(collectionId)
@@ -404,6 +405,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             FeatureQuery query = queryMap.get(collectionId);
             ImmutableFeatureTransformationContextTiles transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
                     .apiData(api.getData())
+                    .featureSchema(featureProvider.getData().getTypes().get(collectionId))
                     .tile(tile)
                     .tileFile(tilesCache.getFile(tile))
                     .collectionId(collectionId)

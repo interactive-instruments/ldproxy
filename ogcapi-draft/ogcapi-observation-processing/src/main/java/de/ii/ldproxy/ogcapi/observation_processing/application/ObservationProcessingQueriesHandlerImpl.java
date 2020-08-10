@@ -194,6 +194,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
 
         ImmutableFeatureTransformationContextObservationProcessing.Builder transformationContext = new ImmutableFeatureTransformationContextObservationProcessing.Builder()
                 .apiData(api.getData())
+                .featureSchema(featureProvider.getData().getTypes().get(collectionId))
                 .i18n(i18n)
                 .language(requestContext.getLanguage())
                 .codelists(codelistRegistry.getCodelists())

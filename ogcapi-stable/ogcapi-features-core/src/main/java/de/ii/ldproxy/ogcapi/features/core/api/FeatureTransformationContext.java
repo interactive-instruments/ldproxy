@@ -16,6 +16,7 @@ import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import org.immutables.value.Value;
 
@@ -40,6 +41,8 @@ public interface FeatureTransformationContext {
     OgcApiApiDataV2 getApiData();
 
     String getCollectionId();
+
+    Optional<FeatureSchema> getFeatureSchema();
 
     OutputStream getOutputStream();
 
