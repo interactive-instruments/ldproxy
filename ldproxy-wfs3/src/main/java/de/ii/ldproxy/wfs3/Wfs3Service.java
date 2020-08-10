@@ -201,7 +201,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
 
     public Response postItemsResponse(Wfs3MediaType mediaType, URICustomizer uriCustomizer, String collectionName, InputStream requestBody) {
         List<String> ids = getFeatureProvider()
-                .addFeaturesFromStream(collectionName, defaultReverseTransformer, getFeatureTransformStream(mediaType, collectionName, requestBody));
+                .addFeaturesFromStream(collectionName, null, getFeatureTransformStream(mediaType, collectionName, requestBody));
 
         if (ids.isEmpty()) {
             throw new BadRequestException("No features found in input");
@@ -220,7 +220,7 @@ public class Wfs3Service extends AbstractService<Wfs3ServiceData> implements Fea
     }
 
     public Response putItemResponse(Wfs3MediaType mediaType, String collectionName, String featureId, InputStream requestBody) {
-        getFeatureProvider().updateFeatureFromStream(collectionName, featureId, defaultReverseTransformer, getFeatureTransformStream(mediaType, collectionName, requestBody));
+        getFeatureProvider().updateFeatureFromStream(collectionName, featureId, null, getFeatureTransformStream(mediaType, collectionName, requestBody));
 
         return Response.noContent()
                        .build();
