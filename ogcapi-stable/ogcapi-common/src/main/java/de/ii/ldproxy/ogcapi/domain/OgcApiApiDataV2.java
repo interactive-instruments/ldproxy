@@ -11,20 +11,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
-import de.ii.xtraplatform.event.store.EntityDataBuilder;
-import de.ii.xtraplatform.features.domain.FeatureProperty;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.FeatureType;
+import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
+import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableMap;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
@@ -87,7 +81,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
     //behaves exactly like Map<String, FeatureTypeConfigurationOgcApi>, but supports mergeable builder deserialization
     //(immutables attributeBuilder does not work with maps yet)
     //@JsonMerge
-    public abstract ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getCollections();
+    public abstract BuildableMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getCollections();
 
     @Override
     @Value.Derived
@@ -121,7 +115,7 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
 
             getCollections().values()
                             .forEach(featureTypeConfigurationOgcApi -> {
-                                mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.toBuilder()
+                                mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.getBuilder()
                                                                                                                             .parentExtensions(getExtensions())
                                                                                                                             .build());
                             });

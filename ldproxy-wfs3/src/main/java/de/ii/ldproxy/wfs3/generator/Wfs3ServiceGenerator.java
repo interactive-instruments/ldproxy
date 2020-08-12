@@ -9,15 +9,13 @@ package de.ii.ldproxy.wfs3.generator;
 
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.xtraplatform.entity.api.EntityData;
-import de.ii.xtraplatform.entity.api.handler.Entity;
-import de.ii.xtraplatform.event.store.EntityDataStore;
+import de.ii.xtraplatform.entities.domain.EntityData;
+import de.ii.xtraplatform.entities.domain.EntityDataStore;
 import de.ii.xtraplatform.scheduler.api.Scheduler;
 import de.ii.xtraplatform.scheduler.api.TaskQueue;
 import de.ii.xtraplatform.scheduler.api.TaskStatus;
 import de.ii.xtraplatform.service.api.Service;
 import de.ii.xtraplatform.service.api.ServiceBackgroundTasks;
-import de.ii.xtraplatform.service.api.ServiceGenerator;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -45,7 +43,7 @@ import java.util.Optional;
         onArrival = "onArrival",
         onDeparture = "onDeparture",
         onModification = "onModification")
-public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiApiDataV2>, ServiceBackgroundTasks {
+public class Wfs3ServiceGenerator implements ServiceBackgroundTasks {
 
     // TODO split into ProviderGenerator + ServiceGenerator
 
@@ -78,13 +76,13 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiApiDataV2>, 
                                                    .getSimpleName());
     }
 
-    @Override
+    //@Override
     public Class<OgcApiApiDataV2> getType() {
         return OgcApiApiDataV2.class;
     }
 
     //TODO: depends on provider, this is for WFS based services
-    @Override
+    //@Override
     public OgcApiApiDataV2 generate(Map<String, String> partialData) {
 /*
         if (Objects.isNull(partialData) || !partialData.containsKey("id") || !partialData.containsKey("url")) {

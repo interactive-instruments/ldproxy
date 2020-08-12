@@ -13,8 +13,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.google.common.base.CaseFormat;
 import de.ii.xtraplatform.dropwizard.cfg.JacksonProvider;
-import de.ii.xtraplatform.entity.api.maptobuilder.Buildable;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
+import de.ii.xtraplatform.entities.domain.maptobuilder.Buildable;
+import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

@@ -10,8 +10,8 @@ package de.ii.ldproxy.ogcapi.domain;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
-import de.ii.xtraplatform.event.store.EntityDataBuilder;
+import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
+import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableMap;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerServiceData;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
@@ -49,7 +49,7 @@ public abstract class OgcApiApiDataV1 extends FeatureTransformerServiceData<Feat
     //(immutables attributeBuilder does not work with maps yet)
     @JsonMerge
     @Override
-    public abstract ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getFeatureTypes();
+    public abstract BuildableMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getFeatureTypes();
 
     public abstract List<EpsgCrs> getAdditionalCrs();
 

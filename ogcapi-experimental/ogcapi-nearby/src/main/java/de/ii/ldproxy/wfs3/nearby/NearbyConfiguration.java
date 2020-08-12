@@ -10,9 +10,7 @@ package de.ii.ldproxy.wfs3.nearby;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import java.util.List;

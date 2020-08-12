@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
@@ -26,7 +25,6 @@ import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
 import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
 import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -130,7 +128,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
         int defaultZoomLevel = zoomLevels.getDefault().orElse(minMaxZoom.get(0) + (minMaxZoom.get(1)-minMaxZoom.get(0))/2);
         tileJsonBuilder.center(ImmutableList.of(centerLon, centerLat, defaultZoomLevel));
 
-        ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> featureTypesApi = apiData.getCollections();
+        Map<String, FeatureTypeConfigurationOgcApi> featureTypesApi = apiData.getCollections();
         List<ImmutableVectorLayer> layers = featureTypesApi.values()
                 .stream()
                 .filter(featureTypeApi -> !collectionId.isPresent() || featureTypeApi.getId().equals(collectionId.get()))

@@ -8,14 +8,14 @@
 package de.ii.ldproxy.ogcapi.domain.test;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilder;
-import de.ii.xtraplatform.entity.api.maptobuilder.ValueInstance;
+import de.ii.xtraplatform.entities.domain.maptobuilder.Buildable;
+import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableTest.Builder.class)
-public interface Test extends ValueInstance {
-    abstract class Builder implements ValueBuilder<Test> {}
+public interface Test extends Buildable<Test> {
+    abstract class Builder implements BuildableBuilder<Test> {}
 
     String getId();
 
@@ -24,7 +24,7 @@ public interface Test extends ValueInstance {
     String getDescription();
 
     @Override
-    default ImmutableTest.Builder toBuilder() {
+    default ImmutableTest.Builder getBuilder() {
         return new ImmutableTest.Builder().from(this);
     }
 }

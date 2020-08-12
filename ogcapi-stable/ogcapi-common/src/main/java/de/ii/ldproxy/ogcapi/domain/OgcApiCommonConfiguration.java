@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

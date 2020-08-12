@@ -9,13 +9,11 @@ package de.ii.ldproxy.target.html;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import de.ii.xtraplatform.codelists.Codelist;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

@@ -10,8 +10,8 @@ package de.ii.ldproxy.admin.rest;
 import de.ii.xtraplatform.api.exceptions.BadRequest;
 import de.ii.xtraplatform.codelists.CodelistData;
 import de.ii.xtraplatform.codelists.CodelistImporter;
-import de.ii.xtraplatform.entity.api.EntityData;
-import de.ii.xtraplatform.event.store.EntityDataStore;
+import de.ii.xtraplatform.entities.domain.EntityData;
+import de.ii.xtraplatform.entities.domain.EntityDataStore;
 import de.ii.xtraplatform.web.api.Endpoint;
 import io.dropwizard.jersey.caching.CacheControl;
 import org.apache.felix.ipojo.annotations.Component;
@@ -78,7 +78,7 @@ public class CodelistEndpoint implements Endpoint {
 
         CodelistData codelistData;
         try {
-            codelistData = codelistImporter.generate(request);
+            codelistData = null;//TODO codelistImporter.generate(request);
         } catch (IllegalArgumentException e) {
             throw new BadRequest();
         }

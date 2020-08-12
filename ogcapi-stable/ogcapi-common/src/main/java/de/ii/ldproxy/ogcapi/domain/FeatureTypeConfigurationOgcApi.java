@@ -14,24 +14,21 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilder;
-import de.ii.xtraplatform.entity.api.maptobuilder.ValueInstance;
+import de.ii.xtraplatform.entities.domain.maptobuilder.Buildable;
+import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableBuilder;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableFeatureTypeConfigurationOgcApi.Builder.class)
-public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration, ExtendableConfiguration, ValueInstance {
+public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration, ExtendableConfiguration, Buildable<FeatureTypeConfigurationOgcApi> {
 
-    abstract class Builder implements ValueBuilder<FeatureTypeConfigurationOgcApi> {
+    abstract class Builder implements BuildableBuilder<FeatureTypeConfigurationOgcApi> {
 
         // jackson should append to instead of replacing extensions
         @JsonIgnore
@@ -43,7 +40,7 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
     }
 
     @Override
-    default ImmutableFeatureTypeConfigurationOgcApi.Builder toBuilder() {
+    default ImmutableFeatureTypeConfigurationOgcApi.Builder getBuilder() {
         return new ImmutableFeatureTypeConfigurationOgcApi.Builder().from(this);
     }
 

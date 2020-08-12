@@ -3,7 +3,7 @@ dependencies {
     api project(":ogcapi-common")
 
     api group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
-    api group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
+    api group: 'de.interactive_instruments', name: 'xtraplatform-entities'
     api group: 'de.interactive_instruments', name: 'xtraplatform-service-api'
     api group: 'de.interactive_instruments', name: 'xtraplatform-geometries'
     api group: 'de.interactive_instruments', name: 'xtraplatform-crs'

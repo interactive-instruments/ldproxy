@@ -10,7 +10,6 @@ package de.ii.ldproxy.target.geojson;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

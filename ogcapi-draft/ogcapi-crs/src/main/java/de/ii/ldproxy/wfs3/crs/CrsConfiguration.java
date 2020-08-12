@@ -10,7 +10,6 @@ package de.ii.ldproxy.wfs3.crs;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import java.util.List;

@@ -9,7 +9,6 @@ package de.ii.ldproxy.wfs3.transactional;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 @Value.Immutable

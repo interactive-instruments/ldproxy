@@ -12,5 +12,5 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api' // TODO why?
     provided group: 'de.interactive_instruments', name: 'xtraplatform-service-api' // TODO why?
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api' // TODO why?
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-entities' // TODO why?
 }
