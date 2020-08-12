@@ -12,6 +12,20 @@
 </style>
 </head>
 <body>
+{{#popup}}
+<style>
+.mapboxgl-popup {
+min-width: 600px;
+font: 12px/20px Arial, Helvetica, sans-serif;
+}
+td {
+max-width: 300px;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+</style>
+{{/popup}}
 <div id='map'></div>
 <script>
  var map = new mapboxgl.Map({
@@ -19,6 +33,38 @@
  style: '{{{styleUrl}}}'
  });
  map.addControl(new mapboxgl.NavigationControl());
+{{#popup}}
+ map.on('load', function() {
+   var popup = new mapboxgl.Popup({
+   closeButton: false,
+   closeOnClick: true
+   });
+
+   map.on('click', function(e) {
+   let features = map.queryRenderedFeatures(e.point);
+   if (features.length) {
+    var properties = features[0].properties;
+    var atts = '';
+    Object.keys(properties).sort().forEach(function(key) {
+    atts += '<tr><td>'+key+'</td><td>'+properties[key]+'</td></tr>';
+    });
+    popup
+    .setLngLat(e.lngLat)
+    .setHTML('<table>'+atts+'</table')
+    .addTo(map);
+   }
+   });
+
+   map.on('mousemove', function(e) {
+   if (map.queryRenderedFeatures(e.point).length) {
+    map.getCanvas().style.cursor = 'pointer';
+   } else {
+    map.getCanvas().style.cursor = '';
+    popup.remove();
+   }
+   });
+ });
+{{/popup}}
 </script>
 </body>
 </html>
