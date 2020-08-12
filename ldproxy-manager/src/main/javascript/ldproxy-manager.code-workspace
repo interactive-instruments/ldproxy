@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"name": "ldproxy-manager",
+			"path": "."
+		},
+		{
+			"name": "@xtraplatform/core",
+			"path": "../../../../../xtraplatform/xtraplatform-admin/xtraplatform-manager/src/main/javascript"
+		},
+		{
+			"name": "@xtraplatform/services",
+			"path": "../../../../../xtraplatform/xtraplatform-store/xtraplatform-service-api/src/main/javascript"
+		},
+		{
+			"name": "old-ldproxy-manager",
+			"path": "../../../../../ldproxy-t15/ldproxy-manager/src/main/javascript"
+		},
+		{
+			"name": "xtraplatform-manager",
+			"path": "../../../../../xtraplatform-manager"
+		},
+		{
+			"name": "xtraplatform-manager-wfs-proxy",
+			"path": "../../../../../xtraplatform-manager-wfs-proxy"
+		}
+	],
+	"settings": {}
+}

@@ -1,44 +1,6 @@
-/*
- * Copyright 2018 interactive instruments GmbH
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-const resolve = require('path').resolve;
-const webpackMerge = require('webpack-merge');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
+// Whilst the configuration object can be modified here, the recommended way of making
+// changes is via the presets' options or Neutrino's API in `.neutrinorc.js` instead.
+// Neutrino's inspect feature can be used to view/export the generated configuration.
+const neutrino = require('neutrino');
 
-module.exports = function(env) {
-//console.log(env)
-const config = require('xtraplatform-manager/webpack.config.' + (env || 'development'));
-
-let newConfig = webpackMerge(config(env), {
-    context: resolve(__dirname),
-    output: {
-        path: resolve('../resources/manager')
-    },
-    resolve: {
-        alias: {
-            react: resolve('./node_modules/react'),
-        },
-    },
-})
-
-if (env === 'production') {
-    newConfig = webpackMerge(newConfig, {
-        plugins: [
-            new CleanWebpackPlugin({cleanOnceBeforeBuildPatterns: [resolve('../resources/manager')], dangerouslyAllowCleanPatternsOutsideProject: true, dry: false}),
-            new CopyPlugin([
-                { from: 'assets', to: './' },
-            ]),
-        ]
-    })
-}
-
-//console.log(newConfig)
-return newConfig
-
-}
-
+module.exports = neutrino().webpack();
