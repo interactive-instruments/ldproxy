@@ -13,9 +13,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
 
 @Component
 @Provides
@@ -25,7 +23,7 @@ public class OgcApiExceptionFormatJson extends ErrorEntityWriter<OgcApiErrorMess
     @Requires
     SchemaGenerator schemaGenerator;
 
-    private final Schema schemaExceptions;
+    private final Schema schema;
 
     public static final String SCHEMA_REF_EXCEPTIONS = "#/components/schemas/Exceptions";
 
@@ -33,10 +31,9 @@ public class OgcApiExceptionFormatJson extends ErrorEntityWriter<OgcApiErrorMess
             .type(MediaType.valueOf("application/problem+json"))
             .build();
 
-    public OgcApiExceptionFormatJson(MediaType contentType, Class<OgcApiErrorMessage> representation) {
+    public OgcApiExceptionFormatJson() {
         super(MEDIA_TYPE.type(), OgcApiErrorMessage.class);
-        schemaExceptions = schemaGenerator.getSchema(OgcApiErrorMessage.class);
-
+        schema = schemaGenerator.getSchema(OgcApiErrorMessage.class);
     }
 
     @Override
@@ -47,7 +44,7 @@ public class OgcApiExceptionFormatJson extends ErrorEntityWriter<OgcApiErrorMess
     @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         return new ImmutableOgcApiMediaTypeContent.Builder()
-                .schema(schemaExceptions)
+                .schema(schema)
                 .schemaRef(SCHEMA_REF_EXCEPTIONS)
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();

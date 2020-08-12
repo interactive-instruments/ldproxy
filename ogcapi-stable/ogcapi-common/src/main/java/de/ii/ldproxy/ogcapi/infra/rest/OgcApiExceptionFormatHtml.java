@@ -11,9 +11,7 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
 
 @Component
 @Provides
@@ -25,7 +23,7 @@ public class OgcApiExceptionFormatHtml extends ErrorEntityWriter<OgcApiErrorMess
             .build();
 
 
-    public OgcApiExceptionFormatHtml(MediaType contentType, Class<OgcApiErrorView> representation) {
+    public OgcApiExceptionFormatHtml() {
         super(MediaType.TEXT_HTML_TYPE, OgcApiErrorView.class);
     }
 

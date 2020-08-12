@@ -18,7 +18,6 @@ import org.apache.felix.ipojo.annotations.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -36,7 +35,6 @@ import java.util.Objects;
 @Provides
 @Instantiate
 @Provider
-@Produces({MediaType.WILDCARD})
 public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiExceptionMapper.class);
@@ -58,7 +56,9 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> {
     @Override
     public Response toResponse(Throwable exception) {
         Response.Status responseStatus;
-        String mediaType = getResponseMediaType();
+        MediaType mediaType = getResponseMediaType();
+        OgcApiExceptionFormatExtension exceptionFormat = getExceptionFormat(mediaType);
+
         if (exception instanceof WebApplicationException) {
             final Response response = ((WebApplicationException) exception).getResponse();
             Response.Status.Family family = response.getStatusInfo().getFamily();
@@ -68,38 +68,38 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> {
                 }
                 return Response.fromResponse(response)
                         .type(mediaType)
-                        .entity(new OgcApiErrorMessage(response.getStatus(),
+                        .entity(exceptionFormat.getExceptionEntity(new OgcApiErrorMessage(response.getStatus(),
                                 response.getStatusInfo().getReasonPhrase(),
                                 exception.getMessage(),
-                                uriInfo.getRequestUri().toString()))
+                                uriInfo.getRequestUri().toString())))
                         .build();
             } else if (family.equals(Response.Status.Family.SERVER_ERROR)) {
                 long id = logException(exception.getCause());
                 return Response.serverError()
                         .type(mediaType)
-                        .entity(new OgcApiErrorMessage(response.getStatus(),
+                        .entity(exceptionFormat.getExceptionEntity(new OgcApiErrorMessage(response.getStatus(),
                                 response.getStatusInfo().getReasonPhrase(),
                                 String.format("There was an error processing your request, it has been logged. Error ID: %d", id),
-                                uriInfo.getAbsolutePath().toString()))
+                                uriInfo.getAbsolutePath().toString())))
                         .build();
             }
         } else if (exception instanceof IllegalArgumentException) {
             responseStatus = Response.Status.BAD_REQUEST;
             return Response.status(responseStatus)
                     .type(mediaType)
-                    .entity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
+                    .entity(exceptionFormat.getExceptionEntity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
                             responseStatus.getReasonPhrase(),
                             exception.getMessage(),
-                            uriInfo.getAbsolutePath().toString()))
+                            uriInfo.getAbsolutePath().toString())))
                     .build();
         } else if (exception instanceof UnsupportedOperationException) {
             responseStatus = Response.Status.UNSUPPORTED_MEDIA_TYPE;
             return Response.status(responseStatus)
                     .type(mediaType)
-                    .entity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
+                    .entity(exceptionFormat.getExceptionEntity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
                             responseStatus.getReasonPhrase(),
                             exception.getMessage(),
-                            uriInfo.getAbsolutePath().toString()))
+                            uriInfo.getAbsolutePath().toString())))
                     .build();
         }
 
@@ -107,20 +107,27 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> {
         responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
         return Response.serverError()
                 .type(mediaType)
-                .entity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
+                .entity(exceptionFormat.getExceptionEntity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
                         responseStatus.getReasonPhrase(),
                         String.format("There was an error processing your request, it has been logged. Error ID: %d", id),
-                        uriInfo.getAbsolutePath().toString()))
+                        uriInfo.getAbsolutePath().toString())))
                 .build();
     }
 
-    private String getResponseMediaType() {
-        String responseType = "application/problem+json";
+    private MediaType getResponseMediaType() {
+        MediaType responseType = MediaType.valueOf("application/problem+json");
         List<String> typeParameter = uriInfo.getQueryParameters().get("f");
         if (Objects.nonNull(typeParameter) && !typeParameter.isEmpty() && "html".equals(typeParameter.get(0))) {
-            responseType = "text/html";
+            responseType = MediaType.TEXT_HTML_TYPE;
         }
         return responseType;
+    }
+
+    private OgcApiExceptionFormatExtension getExceptionFormat(MediaType mediaType) {
+        if (mediaType == MediaType.TEXT_HTML_TYPE) {
+            return new OgcApiExceptionFormatHtml();
+        }
+        return new OgcApiExceptionFormatJson();
     }
 
 }
