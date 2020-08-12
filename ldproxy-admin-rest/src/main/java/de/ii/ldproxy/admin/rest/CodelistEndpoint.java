@@ -15,7 +15,6 @@ import de.ii.xtraplatform.entities.domain.EntityDataStore;
 import de.ii.xtraplatform.web.api.Endpoint;
 import io.dropwizard.jersey.caching.CacheControl;
 import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
@@ -38,9 +37,10 @@ import java.util.concurrent.ExecutionException;
 /**
  * @author zahnen
  */
+//TODO: move to xtraplatform, adjust to auto mode
 @Component
 @Provides
-@Instantiate
+//@Instantiate
 @Path("/admin/codelists/")
 @Produces(MediaType.APPLICATION_JSON)
 public class CodelistEndpoint implements Endpoint {
@@ -78,7 +78,7 @@ public class CodelistEndpoint implements Endpoint {
 
         CodelistData codelistData;
         try {
-            codelistData = null;//TODO codelistImporter.generate(request);
+            codelistData = null;//codelistImporter.generate(request);
         } catch (IllegalArgumentException e) {
             throw new BadRequest();
         }
