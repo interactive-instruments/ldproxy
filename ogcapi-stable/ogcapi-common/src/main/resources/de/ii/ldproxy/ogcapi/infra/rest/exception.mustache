@@ -1,7 +1,7 @@
 <html>
     <body>
         <h2>HTTP Error {{status}}: {{title}}</h2>
-        <p>Details: {{detail}}</p>
-        <p>URI: {{instance}}</p>
+        {{#instance}}<p>Request: {{.}}</p>{{/instance}}
+        <p>{{{detail}}}</p>
     </body>
 </html>
