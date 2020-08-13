@@ -1,27 +1,22 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.domain.*;
 import io.dropwizard.jersey.errors.ErrorEntityWriter;
+import io.swagger.v3.oas.models.media.IntegerSchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
+import java.math.BigDecimal;
 
 @Component
 @Provides
 @Instantiate
 public class OgcApiExceptionFormatJson extends ErrorEntityWriter<OgcApiErrorMessage, OgcApiErrorMessage> implements OgcApiExceptionFormatExtension {
-
-    @Requires
-    SchemaGenerator schemaGenerator;
 
     private final Schema schema;
 
@@ -33,7 +28,11 @@ public class OgcApiExceptionFormatJson extends ErrorEntityWriter<OgcApiErrorMess
 
     public OgcApiExceptionFormatJson() {
         super(MEDIA_TYPE.type(), OgcApiErrorMessage.class);
-        schema = schemaGenerator.getSchema(OgcApiErrorMessage.class);
+        // cannot yet use SchemaGenerator to generate the schema from the OgcApiErrorMessage class, so we generate the schema manually
+        schema = new ObjectSchema().addProperties("title", new StringSchema())
+                                   .addProperties("detail", new StringSchema())
+                                   .addProperties("status", new IntegerSchema().minimum(BigDecimal.valueOf(100)))
+                                   .addProperties("instance", new StringSchema().format("uri"));
     }
 
     @Override
