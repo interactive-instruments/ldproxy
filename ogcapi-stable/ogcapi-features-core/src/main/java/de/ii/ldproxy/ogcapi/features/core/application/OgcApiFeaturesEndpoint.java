@@ -201,7 +201,7 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
                                                        .get(collectionId);
 
         OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(api.getData(), collectionData, OgcApiFeaturesCoreConfiguration.class)
-                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API '{0}', collection '{1}'.", api.getId(), collectionId)));
+                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
 
         int minimumPageSize = coreConfiguration.getMinimumPageSize();
         int defaultPageSize = coreConfiguration.getDefaultPageSize();

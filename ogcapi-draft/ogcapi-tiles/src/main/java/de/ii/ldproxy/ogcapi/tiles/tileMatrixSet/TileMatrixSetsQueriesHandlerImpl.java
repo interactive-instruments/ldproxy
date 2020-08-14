@@ -58,7 +58,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
         String path = "/tileMatrixSets";
 
         TileMatrixSetsFormatExtension outputFormat = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
@@ -99,7 +99,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
         String path = "/tileMatrixSets/"+tileMatrixSetId;
 
         TileMatrixSetsFormatExtension outputFormat = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 

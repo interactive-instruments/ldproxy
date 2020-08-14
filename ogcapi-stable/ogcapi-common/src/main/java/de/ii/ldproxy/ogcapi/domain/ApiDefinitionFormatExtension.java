@@ -21,6 +21,6 @@ public interface ApiDefinitionFormatExtension extends FormatExtension {
     default Response getApiDefinitionFile(OgcApiApiDataV2 apiData,
                                           OgcApiRequestContext wfs3Request,
                                           String file) {
-        throw new RuntimeException();
+        throw new RuntimeException("Access to an auxiliary API definition file was requested for a format that does not support auxiliary files.");
     }
 }

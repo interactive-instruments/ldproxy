@@ -113,7 +113,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
 
         } else {
             selectedMediaType = ogcApiContentNegotiation.negotiate(requestContext, supportedMediaTypes)
-                    .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                    .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
             alternateMediaTypes = getAlternateMediaTypes(selectedMediaType, supportedMediaTypes);
 
         }

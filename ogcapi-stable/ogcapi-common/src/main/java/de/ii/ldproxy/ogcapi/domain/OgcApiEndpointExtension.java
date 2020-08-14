@@ -14,7 +14,6 @@ import de.ii.xtraplatform.auth.api.User;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
-import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -108,7 +107,7 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
                 .filter(Objects::nonNull)
                 .anyMatch(message -> {
                     // unknown value, return 404
-                    throw new NotFoundException(MessageFormat.format("The value '{0}' for path parameter '{1}' in the request is not a resource in this API.", parameterValue, parameterName));
+                    throw new NotFoundException(message);
                 });
     }
 

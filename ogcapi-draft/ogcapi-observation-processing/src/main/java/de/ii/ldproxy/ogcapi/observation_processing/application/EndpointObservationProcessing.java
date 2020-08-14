@@ -275,7 +275,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
 
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
         final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, collectionData, OgcApiFeaturesCoreConfiguration.class)
-                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API '{0}', collection '{1}'.", apiData.getId(), collectionId)));
+                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", apiData.getId(), collectionId)));
         final int minimumPageSize = coreConfiguration.getMinimumPageSize();
         final int defaultPageSize = coreConfiguration.getDefaultPageSize();
         final int maxPageSize = coreConfiguration.getMaxPageSize();

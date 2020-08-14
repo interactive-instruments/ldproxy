@@ -29,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -135,7 +136,7 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
                 .filter(format -> format.getMediaType().matches(ogcApiRequest.getMediaType().type()))
                 .map(CollectionStyleInfoFormatExtension.class::cast)
                 .findAny()
-                .orElseThrow(() -> new NotAcceptableException());
+                .orElseThrow(() -> new NotSupportedException(MessageFormat.format("The provided media type ''{0}'' is not supported for this resource.", ogcApiRequest.getMediaType())));
 
         try {
             outputFormat.patchStyleInfos(requestBody, styleInfosStore, dataset, collectionId);

@@ -8,6 +8,7 @@
 package de.ii.ldproxy.wfs3.oas30;
 
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.infra.rest.OgcApiFormatNotSupportedException;
 import de.ii.xtraplatform.openapi.OpenApiViewerResource;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
 
 @Component
 @Provides
@@ -65,8 +67,8 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
 
     @Override
     public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
-                                             OgcApiRequestContext wfs3Request) {
-        throw new IllegalStateException();
+                                             OgcApiRequestContext requestContext) {
+        throw new OgcApiFormatNotSupportedException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type()));
     }
 
     @Override
@@ -76,10 +78,10 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
         LOGGER.debug("FILE {}", file);
 
         if (openApiViewerResource == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("The object to retrieve auxiliary files for the HTML API documentation is null, but should not be null.");
         }
 
-        // TODO: this also returns a 200 with an entity for non-existing files,  but there is no way to identify it here to throw a NotFoundException()
+        // TODO: this also returns a 200 with an entity for non-existing files, but there is no way to identify it here to throw a NotFoundException()
         Response response = openApiViewerResource.getFile(file);
         return response;
     }

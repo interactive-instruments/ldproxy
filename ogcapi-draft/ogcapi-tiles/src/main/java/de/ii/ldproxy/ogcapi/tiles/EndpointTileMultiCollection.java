@@ -189,7 +189,7 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
                 .replace("{tileCol}", tileCol);
 
         TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         List<String> collections = queryParams.containsKey("collections") ?
                 Splitter.on(",")
@@ -281,7 +281,7 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
 
     private void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
         if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("feature provider does not support queries");
+            throw new IllegalStateException("Feature provider does not support queries.");
         }
     }
 }

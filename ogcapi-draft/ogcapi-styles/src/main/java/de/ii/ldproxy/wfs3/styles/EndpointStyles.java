@@ -160,7 +160,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
                 .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
                 .findAny()
                 .map(StylesFormatExtension.class::cast)
-                .orElseThrow(() -> new NotAcceptableException())
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())))
                 .getStylesResponse(styles, api, requestContext);
     }
 
@@ -170,7 +170,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
         File metadataFile = new File( stylesStore + File.separator + apiId + File.separator + styleId + ".metadata");
 
         if (!metadataFile.exists()) {
-            throw new NotFoundException(MessageFormat.format("The style '{0}' does not exist in this API.", styleId));
+            throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
         }
 
         try {

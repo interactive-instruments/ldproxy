@@ -88,13 +88,13 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
 
     public static void ensureCollectionIdExists(OgcApiApiDataV2 apiData, String collectionId) {
         if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException(MessageFormat.format("The collection '{0}' does not exist in this API.", collectionId));
+            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
         }
     }
 
     private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
         if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("feature provider does not support queries");
+            throw new IllegalStateException("Feature provider does not support queries.");
         }
     }
 
@@ -103,13 +103,13 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         OgcApiApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         if (!apiData.isCollectionEnabled(collectionId))
-            throw new NotFoundException(MessageFormat.format("The collection '{0}' does not exist in this API.", collectionId));
+            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
 
         ObservationProcessingOutputFormatVariables outputFormat = api.getOutputFormat(
                 ObservationProcessingOutputFormatVariables.class,
                 requestContext.getMediaType(),
                 "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/variables")
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ensureCollectionIdExists(api.getData(), collectionId);
 
@@ -132,13 +132,13 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         OgcApiApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         if (!apiData.isCollectionEnabled(collectionId))
-            throw new NotFoundException(MessageFormat.format("The collection '{0}' does not exist in this API.", collectionId));
+            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
 
         ObservationProcessingOutputFormatProcessing outputFormat = api.getOutputFormat(
                 ObservationProcessingOutputFormatProcessing.class,
                 requestContext.getMediaType(),
                 "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT)
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ensureCollectionIdExists(api.getData(), collectionId);
 
@@ -171,7 +171,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                 ObservationProcessingOutputFormat.class,
                 requestContext.getMediaType(),
                 "/collections/" + collectionId + processes.getSubSubPath())
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ensureCollectionIdExists(api.getData(), collectionId);
         ensureFeatureProviderSupportsQueries(featureProvider);
@@ -226,7 +226,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
             streamingOutput = stream(featureStream, outputStream -> outputFormat.getFeatureTransformer(transformationContext.outputStream(outputStream).build(), providers, http)
                     .get());
         } else {
-            throw new NotAcceptableException();
+            throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
         return prepareSuccessResponse(api, requestContext, includeLinkHeader ? links : null, targetCrs)
@@ -248,7 +248,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
                 }
-                throw new IllegalStateException("Feature stream error", e.getCause());
+                throw new IllegalStateException("Feature stream error.", e.getCause());
             }
         };
     }

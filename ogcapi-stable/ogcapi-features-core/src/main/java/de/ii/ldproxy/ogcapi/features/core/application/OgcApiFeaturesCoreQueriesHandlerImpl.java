@@ -81,13 +81,13 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
     public static void ensureCollectionIdExists(OgcApiApiDataV2 apiData, String collectionId) {
         if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException(MessageFormat.format("The collection '{0}' does not exist in this API.", collectionId));
+            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
         }
     }
 
     private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
         if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("feature provider does not support queries");
+            throw new IllegalStateException("Feature provider does not support queries.");
         }
     }
 
@@ -104,7 +104,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
                 "/collections/" + collectionId + "/items")
-                                                       .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                                                       .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
                 queryInput.getIncludeHomeLink(), queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
@@ -123,7 +123,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
                 "/collections/" + collectionId + "/items/" + featureId)
-                                                       .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                                                       .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         String persistentUri = null;
         Optional<String> template = api.getData()
@@ -214,7 +214,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                                                                                                                                            .build(), requestContext.getLanguage())
                                                                                                .get());
         } else {
-            throw new NotAcceptableException();
+            throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
@@ -253,7 +253,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
                 }
-                throw new IllegalStateException("Feature stream error", e.getCause());
+                throw new IllegalStateException("Feature stream error.", e.getCause());
             }
         };
     }
@@ -278,7 +278,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
                 }
-                throw new IllegalStateException("Feature stream error", e.getCause());
+                throw new IllegalStateException("Feature stream error.", e.getCause());
             }
         };
     }

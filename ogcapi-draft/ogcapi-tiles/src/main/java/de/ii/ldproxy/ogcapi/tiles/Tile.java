@@ -20,6 +20,7 @@ import org.immutables.value.Value;
 import org.locationtech.jts.geom.util.AffineTransformation;
 
 import javax.annotation.Nullable;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -118,11 +119,11 @@ public abstract class Tile {
     @Value.Auxiliary
     public void check() {
         if (getTileLevel() > getTileMatrixSet().getMaxLevel() || getTileLevel() < getTileMatrixSet().getMinLevel())
-            throw new IllegalStateException();
+            throw new IllegalStateException(MessageFormat.format("Tile is not valid in tiling scheme {0}, zoom level {1} is outside of the range {2}..{3}.", getTileMatrixSet().getId(), getTileLevel(), getTileLevel() < getTileMatrixSet().getMinLevel(), getTileMatrixSet().getMaxLevel()));
         if (!getTileMatrixSet().validateRow(getTileLevel(), getTileRow()))
-            throw new IllegalStateException();
+            throw new IllegalStateException(MessageFormat.format("Tile is not valid in tiling scheme {0}, row {1} is outside of the range for zoom level {2}.", getTileMatrixSet().getId(), getTileRow(), getTileLevel()));
         if (!getTileMatrixSet().validateCol(getTileLevel(), getTileCol()))
-            throw new IllegalStateException();
+            throw new IllegalStateException(MessageFormat.format("Tile is not valid in tiling scheme {0}, column {1} is outside of the range for zoom level {2}.", getTileMatrixSet().getId(), getTileCol(), getTileLevel()));
     }
 
     /**

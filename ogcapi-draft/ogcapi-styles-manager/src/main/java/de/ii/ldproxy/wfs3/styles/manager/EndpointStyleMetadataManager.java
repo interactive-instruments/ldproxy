@@ -240,7 +240,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
 
         boolean newStyle = isNewStyle(dataset.getId(), styleId);
         if (newStyle) {
-            throw new NotFoundException(MessageFormat.format("The style '{0}' does not exist in this API.", styleId));
+            throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
         }
 
         // prepare Jackson mapper for deserialization
@@ -276,7 +276,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
 
         boolean newStyle = isNewStyle(dataset.getId(), styleId);
         if (newStyle) {
-            throw new NotFoundException(MessageFormat.format("The style '{0}' does not exist in this API.", styleId));
+            throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
         }
 
         // prepare Jackson mapper for deserialization

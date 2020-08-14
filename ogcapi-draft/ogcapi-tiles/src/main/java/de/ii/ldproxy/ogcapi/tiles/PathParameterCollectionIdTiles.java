@@ -73,7 +73,7 @@ public class PathParameterCollectionIdTiles extends PathParameterCollectionIdFea
     public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
         final TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, collectionData, TilesConfiguration.class)
-                .orElseThrow(() -> new RuntimeException(MessageFormat.format("Could not access tiles configuration for API '{0}' and collection '{1}'.", apiData.getId(), collectionId)));
+                .orElseThrow(() -> new RuntimeException(MessageFormat.format("Could not access tiles configuration for API ''{0}'' and collection ''{1}''.", apiData.getId(), collectionId)));
 
         return tilesConfiguration.getEnabled() &&
                definitionPath.startsWith("/collections/{collectionId}/tiles");

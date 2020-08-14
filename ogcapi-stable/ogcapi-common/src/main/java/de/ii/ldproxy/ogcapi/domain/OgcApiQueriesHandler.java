@@ -23,7 +23,7 @@ public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
         OgcApiQueryHandler<? extends OgcApiQueryInput> queryHandler = getQueryHandlers().get(queryIdentifier);
 
        if (Objects.isNull(queryHandler)) {
-           throw new IllegalStateException("No query handler found for " + queryIdentifier);
+           throw new IllegalStateException("No query handler found for " + queryIdentifier +".");
        }
 
         if (!queryHandler.isValidInput(queryInput)) {

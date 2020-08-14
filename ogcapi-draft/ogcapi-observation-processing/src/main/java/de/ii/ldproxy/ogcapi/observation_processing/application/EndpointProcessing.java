@@ -193,7 +193,7 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
 
         final FeatureTypeConfigurationOgcApi collectionData = api.getData().getCollections().get(collectionId);
         final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(api.getData(), collectionData, OgcApiFeaturesCoreConfiguration.class)
-                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API '{0}', collection '{1}'.", api.getId(), collectionId)));
+                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
         final boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);

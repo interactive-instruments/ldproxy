@@ -235,7 +235,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                 .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
                 .findFirst()
                 .map(link -> link.getHref())
-                .orElseThrow(() -> new RuntimeException())
+                .orElseThrow(() -> new RuntimeException("No tile URI template with link relation type 'item' found for Mapbox Vector Tiles."))
                 .replace("{tileMatrixSetId}", tileMatrixSet.getId())
                 .replace("{tileMatrix}", "{z}")
                 .replace("{tileRow}", "{y}")

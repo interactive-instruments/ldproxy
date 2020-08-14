@@ -201,7 +201,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
                 .replace("{tileRow}", tileRow)
                 .replace("{tileCol}", tileCol);
         TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         Tile tile = new ImmutableTile.Builder()
                 .collectionIds(ImmutableList.of(collectionId))
@@ -254,7 +254,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
 
     private void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
         if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("feature provider does not support queries");
+            throw new IllegalStateException("Feature provider does not support queries.");
         }
     }
 }

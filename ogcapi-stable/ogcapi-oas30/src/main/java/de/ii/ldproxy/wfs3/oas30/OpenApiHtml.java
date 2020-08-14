@@ -80,7 +80,7 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
         }
 
         if (openApiViewerResource == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("The object to retrieve auxiliary files for the HTML API documentation is null, but should not be null.");
         }
 
         return openApiViewerResource.getFile("index.html");

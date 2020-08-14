@@ -135,7 +135,7 @@ public class EndpointStyle extends OgcApiEndpoint {
                                                                                                           .matches(ogcApiRequest.getMediaType()
                                                                                                                                 .type()))
                                                                                   .findFirst()
-                                                                                  .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", ogcApiRequest.getMediaType())));
+                                                                                  .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", ogcApiRequest.getMediaType())));
 
         MediaType mediaType = styleFormat.getMediaType().type();
         String key = styleId + "." + styleFormat.getFileExtension();
@@ -144,9 +144,9 @@ public class EndpointStyle extends OgcApiEndpoint {
         File metadata = new File( stylesStore + File.separator + datasetId + File.separator + styleId + ".metadata");
         if (!stylesheet.exists()) {
             if (metadata.exists()) {
-                throw new NotAcceptableException(MessageFormat.format("The style '{0}' is not available in the requested format.", styleId));
+                throw new NotAcceptableException(MessageFormat.format("The style ''{0}'' is not available in the requested format.", styleId));
             } else {
-                throw new NotFoundException(MessageFormat.format("The style '{0}' does not exist in this API.", styleId));
+                throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
             }
         }
 

@@ -124,14 +124,14 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
                                      @Context OgcApiRequestContext requestContext) {
 
         StyleMetadata metadata = getMetadata(styleId, requestContext)
-                .orElseThrow(() -> new InternalServerErrorException(MessageFormat.format("Style metadata could not be retrieved for style '{0}' in API '{1}'.", styleId, api.getId())));
+                .orElseThrow(() -> new InternalServerErrorException(MessageFormat.format("Style metadata could not be retrieved for style ''{0}'' in API ''{1}''.", styleId, api.getId())));
 
         return getFormats().stream()
                 .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
                 .findAny()
                 .map(StyleMetadataFormatExtension.class::cast)
                 .orElseThrow(() -> new NotAcceptableException(
-                        MessageFormat.format("The requested media type '{0}' is not supported, the following media types are available: {1}",
+                        MessageFormat.format("The requested media type ''{0}'' is not supported, the following media types are available: {1}",
                                 requestContext.getMediaType(),
                                 String.join(", ",getFormats().stream().map(f -> f.getMediaType().type().toString()).collect(Collectors.toList())))))
                 .getStyleMetadataResponse(metadata, api, requestContext);
@@ -143,7 +143,7 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
         File metadataFile = new File( stylesStore + File.separator + apiId + File.separator + styleId + ".metadata");
 
         if (!metadataFile.exists()) {
-            throw new NotFoundException(MessageFormat.format("The style '{0}' does not exist in this API.", styleId));
+            throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
         }
 
         try {

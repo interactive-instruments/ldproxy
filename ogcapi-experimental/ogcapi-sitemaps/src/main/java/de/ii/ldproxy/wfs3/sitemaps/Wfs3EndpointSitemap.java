@@ -99,7 +99,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
 
         FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData());
         if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Feature provider does not support queries.");
         }
 
         List<Site> sites = new ArrayList<>();

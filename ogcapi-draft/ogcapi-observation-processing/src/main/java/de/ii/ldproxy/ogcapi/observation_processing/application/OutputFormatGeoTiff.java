@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.infra.rest.OgcApiFormatNotSupportedException;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
@@ -75,12 +76,12 @@ public class OutputFormatGeoTiff implements ObservationProcessingOutputFormat {
                 TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");
                 Comparable<Temporal> c1 = (Comparable<Temporal>) interval.getBegin();
                 if (c1.compareTo(interval.getEnd())!=0)
-                    throw new UnsupportedOperationException("GeoTIFF is only supported for 'resample-to-grid', if 'datetime' is an instant, but an interval was provided.");
+                    throw new OgcApiFormatNotSupportedException("GeoTIFF is only supported for 'resample-to-grid', if 'datetime' is an instant, but an interval was provided.");
                 break;
             case "resample-to-grid:aggregate-time":
                 break;
             case "default":
-                throw new UnsupportedOperationException("GeoTIFF is only supported for 'resample-to-grid:aggregate-time'.");
+                throw new OgcApiFormatNotSupportedException("GeoTIFF is only supported for 'resample-to-grid:aggregate-time'.");
         }
         return result;
     }

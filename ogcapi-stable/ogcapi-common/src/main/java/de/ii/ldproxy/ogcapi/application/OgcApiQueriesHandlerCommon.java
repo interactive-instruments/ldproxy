@@ -18,10 +18,12 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -103,7 +105,7 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
 
         CommonFormatExtension outputFormatExtension = api.getOutputFormat(CommonFormatExtension.class,
                                                                           requestContext.getMediaType(),"/")
-                .orElseThrow(() -> new NotAcceptableException());
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? ogcApiLinks : null)
                 .entity(outputFormatExtension.getLandingPageEntity(apiLandingPage.build(),
@@ -127,7 +129,7 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                 requestContext.getLanguage());
 
         CommonFormatExtension outputFormatExtension = requestContext.getApi().getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), "/conformance")
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ImmutableConformanceDeclaration.Builder conformanceDeclaration = new ImmutableConformanceDeclaration.Builder()
                 .links(ogcApiLinks)
@@ -162,23 +164,13 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                               .getOutputFormat(ApiDefinitionFormatExtension.class,
                                                requestContext.getMediaType(),
                                          "/api"+(subPath.isEmpty() ? "" : subPath.startsWith("/") ? subPath : "/"+subPath ))
-                              .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                              .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         if (subPath.matches("/?[^/]+")) {
-            try {
-                return outputFormatExtension.getApiDefinitionFile(requestContext.getApi().getData(), requestContext, subPath);
-            } catch (NullPointerException e) {
-                throw new NotFoundException("The requested API definition file could not be found.");
-            }
+            return outputFormatExtension.getApiDefinitionFile(requestContext.getApi().getData(), requestContext, subPath);
         }
 
-        try {
-            return outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(), requestContext);
-        } catch (NullPointerException e) {
-            throw new NotFoundException("The requested API definition file could not be found.");
-        } catch (IllegalStateException e) {
-            throw new NotAcceptableException();
-        }
+        return outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(), requestContext);
     }
 
     private List<OgcApiLandingPageExtension> getDatasetExtenders() {

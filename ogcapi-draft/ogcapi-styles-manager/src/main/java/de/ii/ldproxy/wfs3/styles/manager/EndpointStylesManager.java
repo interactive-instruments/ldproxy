@@ -414,7 +414,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
             }
         }
         if (!styleFound) {
-            throw new NotFoundException(MessageFormat.format("The style '{0}' does not exist in this API.", styleId));
+            throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
         }
     }
 

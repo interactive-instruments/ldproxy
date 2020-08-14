@@ -106,7 +106,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 "/tiles";
 
         TileSetsFormatExtension outputFormat = api.getOutputFormat(TileSetsFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
@@ -199,7 +199,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 "/tiles/"+tileMatrixSetId;
 
         TileSetFormatExtension outputFormat = api.getOutputFormat(TileSetFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         List<OgcApiMediaType> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                 .stream()
@@ -306,17 +306,17 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                 .toCompletableFuture()
                                 .join();
                     } else {
-                        throw new IllegalStateException("Could not acquire FeatureTransformer");
+                        throw new IllegalStateException("Could not acquire FeatureTransformer.");
                     }
 
                 } catch (CompletionException e) {
                     if (e.getCause() instanceof WebApplicationException) {
                         throw (WebApplicationException) e.getCause();
                     }
-                    throw new IllegalStateException("Feature stream error", e.getCause());
+                    throw new IllegalStateException("Feature stream error.", e.getCause());
                 }
             } else {
-                throw new NotAcceptableException();
+                throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
             }
 
             return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
@@ -336,7 +336,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                             requestContext.getLanguage())
                             .get());
         } else {
-            throw new NotAcceptableException();
+            throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
@@ -435,17 +435,17 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                 .toCompletableFuture()
                                 .join();
                     } else {
-                        throw new IllegalStateException("Could not acquire FeatureTransformer");
+                        throw new IllegalStateException("Could not acquire FeatureTransformer.");
                     }
 
                 } catch (CompletionException e) {
                     if (e.getCause() instanceof WebApplicationException) {
                         throw (WebApplicationException) e.getCause();
                     }
-                    throw new IllegalStateException("Feature stream error", e.getCause());
+                    throw new IllegalStateException("Feature stream error.", e.getCause());
                 }
             } else {
-                throw new NotAcceptableException();
+                throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
             }
         }
 
@@ -525,7 +525,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
                 }
-                throw new IllegalStateException("Feature stream error", e.getCause());
+                throw new IllegalStateException("Feature stream error.", e.getCause());
             }
         };
     }
