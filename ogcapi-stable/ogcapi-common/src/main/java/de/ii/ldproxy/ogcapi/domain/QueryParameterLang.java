@@ -53,7 +53,7 @@ public class QueryParameterLang implements OgcApiQueryParameter {
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, OgcApiCommonConfiguration.class) &&
-                getExtensionConfiguration(apiData, OgcApiCommonConfiguration.class)
+                apiData.getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getUseLangParameter)
                 .orElse(false);
     }

@@ -36,9 +36,6 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
     private final static String schemaRef = "#/components/schemas/htmlSchema";
 
     @Requires
-    private HtmlConfig htmlConfig;
-
-    @Requires
     private I18n i18n;
 
     @Override
@@ -62,11 +59,11 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), HtmlConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
     }
 
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+        return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
     }
@@ -103,7 +100,13 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
                 .add(new NavigationDTO(variablesTitle))
                 .build();
 
-        return new ObservationProcessingVariablesView(api.getData(), variables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        HtmlConfiguration htmlConfiguration = api.getData()
+                                                 .getCollections()
+                                                 .get(collectionId)
+                                                 .getExtension(HtmlConfiguration.class)
+                                                 .orElse(null);
+
+        return new ObservationProcessingVariablesView(api.getData(), variables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfiguration, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 
 }

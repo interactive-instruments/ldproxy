@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '2.3.2'
+    id 'de.interactive_instruments.xtraplatform-application' version '2.3.4'
     id 'com.jfrog.bintray' version '1.8.4' apply false
     id 'com.github.hierynomus.license-report' version '0.15.0' apply false
     id 'com.bmuschko.docker-java-application' version '3.1.0' apply false
@@ -9,13 +9,13 @@ allprojects {
     group = 'de.interactive_instruments'
 }
 
-version = '2.0.0-beta2'
+version = '2.0.0-beta3'
 
 apply from: 'xtraplatform.gradle'
 
 dependencies {
     // features to include in this application
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.2.3'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.2.4'
     featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '2.2.1'
 
     feature group: 'de.interactive_instruments', name: 'ogcapi-stable'

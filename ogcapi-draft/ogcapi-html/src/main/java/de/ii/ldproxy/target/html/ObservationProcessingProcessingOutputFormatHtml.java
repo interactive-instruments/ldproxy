@@ -9,7 +9,13 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.processing.Processing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormatProcessing;
 import io.swagger.v3.oas.models.media.Schema;
@@ -36,9 +42,6 @@ public class ObservationProcessingProcessingOutputFormatHtml implements Observat
     private final static String schemaRef = "#/components/schemas/htmlSchema";
 
     @Requires
-    private HtmlConfig htmlConfig;
-
-    @Requires
     private I18n i18n;
 
     @Override
@@ -62,11 +65,11 @@ public class ObservationProcessingProcessingOutputFormatHtml implements Observat
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), HtmlConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
     }
 
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+        return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
     }
@@ -99,7 +102,13 @@ public class ObservationProcessingProcessingOutputFormatHtml implements Observat
                 .add(new NavigationDTO(processingTitle))
                 .build();
 
-        return new ObservationProcessingProcessingView(api.getData(), processing, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        HtmlConfiguration htmlConfiguration = api.getData()
+                                                 .getCollections()
+                                                 .get(collectionId)
+                                                 .getExtension(HtmlConfiguration.class)
+                                                 .orElse(null);
+
+        return new ObservationProcessingProcessingView(api.getData(), processing, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfiguration, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 
 }

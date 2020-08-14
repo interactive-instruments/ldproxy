@@ -11,13 +11,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.processing.ImmutableProcess;
 import de.ii.ldproxy.ogcapi.features.processing.ImmutableProcessing;
 import de.ii.ldproxy.ogcapi.features.processing.Processing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableOgcApiQueryInputProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormatProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -27,20 +27,22 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 @Provides
 @Instantiate
-public class EndpointProcessing extends OgcApiEndpointSubCollection {
+public class EndpointDapa extends OgcApiEndpointSubCollection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointProcessing.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDapa.class);
     private static final String DAPA_PATH_ELEMENT = "dapa";
     private static final List<String> TAGS = ImmutableList.of("DAPA");
 
@@ -49,8 +51,8 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
 
     private final ObservationProcessingQueriesHandler queryHandler;
 
-    public EndpointProcessing(@Requires OgcApiExtensionRegistry extensionRegistry,
-                              @Requires ObservationProcessingQueriesHandler queryHandler) {
+    public EndpointDapa(@Requires OgcApiExtensionRegistry extensionRegistry,
+                        @Requires ObservationProcessingQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }
@@ -62,13 +64,8 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    protected Class getConfigurationClass() {
+        return ObservationProcessingConfiguration.class;
     }
 
     @Override
@@ -132,10 +129,23 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
         if (definition==null)
             throw new ServerErrorException("Definition of '/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"' could not be retrieved.", 500);
 
-        URICustomizer uriCustomizer = requestContext.getUriCustomizer()
+        final URICustomizer uriCustomizer = requestContext.getUriCustomizer()
                 .copy()
                 .removeLastPathSegments(3)
                 .clearParameters();
+
+        final List<Variable> variables = api.getData().getExtension(ObservationProcessingConfiguration.class)
+                .map(ObservationProcessingConfiguration::getVariables)
+                .orElse(ImmutableList.of());
+
+        final List<String> functions = extensionRegistry.getExtensionsForType(ObservationProcessingStatisticalFunction.class)
+                .stream()
+                .filter(function -> function.isEnabledForApi(api.getData()))
+                .map(function -> function.getName())
+                .collect(ImmutableList.toImmutableList());
+
+        final Optional<Locale> language = requestContext.getLanguage();
+
         Processing processList = ImmutableProcessing.builder()
                 .title(i18n.get("processingTitle", requestContext.getLanguage()))
                 .description(i18n.get("processingDescription", requestContext.getLanguage()))
@@ -161,23 +171,32 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
                                         .title(op.getSummary())
                                         .description(op.getDescription())
                                         .inputCollectionId(collectionId)
-                                        .descriptionUri(uriCustomizer.copy()
-                                                .ensureLastPathSegment("api")
-                                                .addParameter("f","html")
-                                                .toString()
-                                                + "#/"+TAGS.get(0)+"/get" + path.replaceAll("[/\\-:]","_"))
-                                        .definitionUri(uriCustomizer.copy()
-                                                .ensureLastPathSegment("api")
-                                                .addParameter("f","json")
-                                                .toString()
-                                                + "#/paths/" + path.replace("/","~1"))
                                         .addLinks(new ImmutableOgcApiLink.Builder()
                                                 .href(requestContext.getUriCustomizer()
                                                         .copy()
                                                         .ensureLastPathSegment(id)
                                                         .clearParameters()
                                                         .toString())
+                                                .title(i18n.get("dapaEndpointLink", language))
                                                 .rel("ogc-dapa-endpoint")
+                                                .build())
+                                        .addLinks(new ImmutableOgcApiLink.Builder()
+                                                .href(uriCustomizer.copy()
+                                                        .ensureLastPathSegment("api")
+                                                        .addParameter("f","json")
+                                                        .toString()
+                                                        + "#/paths/" + path.replace("/","~1"))
+                                                .title(i18n.get("dapaEndpointDefinitionLink", language))
+                                                .rel("ogc-dapa-endpoint-definition")
+                                                .build())
+                                        .addLinks(new ImmutableOgcApiLink.Builder()
+                                                .href(uriCustomizer.copy()
+                                                        .ensureLastPathSegment("api")
+                                                        .addParameter("f","html")
+                                                        .toString()
+                                                        + "#/"+TAGS.get(0)+"/get" + path.replaceAll("[/\\-:]","_"))
+                                                .title(i18n.get("dapaEndpointDocumentationLink", language))
+                                                .rel("ogc-dapa-endpoint-documentation")
                                                 .build())
                                         .mediaTypes(mediaTypes)
                                         .externalDocs(op.getExternalDocs())
@@ -186,18 +205,17 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
                         })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
+                .putExtensions("variables", variables)
+                .putExtensions("functions", functions)
                 .build();
 
         final String path = "/collections/{collectionId}/"+DAPA_PATH_ELEMENT;
         checkPathParameter(extensionRegistry, api.getData(), path, "collectionId", collectionId);
 
-        final FeatureTypeConfigurationOgcApi collectionData = api.getData().getCollections().get(collectionId);
-        final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(api.getData(), collectionData, OgcApiFeaturesCoreConfiguration.class)
-                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
-        final boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        final boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        final boolean includeLinkHeader = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
+        final boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 

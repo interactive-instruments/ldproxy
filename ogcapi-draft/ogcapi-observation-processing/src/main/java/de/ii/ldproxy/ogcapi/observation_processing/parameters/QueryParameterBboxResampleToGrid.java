@@ -101,12 +101,19 @@ public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+                apiData.getCollections()
+                        .values()
+                        .stream()
+                        .filter(featureType -> featureType.getEnabled())
+                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
+                        .findAny()
+                        .isPresent();
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     @Override
@@ -130,7 +137,7 @@ public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
         double lonBuffer = BUFFER / (R * Math.cos(bbox.get(1) / 180.0 * Math.PI) * Math.PI / 180.0);
         double latBuffer = BUFFER / (R * Math.PI / 180.0);
         bboxParam = String.valueOf(bbox.get(0) - lonBuffer) + "," + String.valueOf(bbox.get(1) - latBuffer) + "," +
-                String.valueOf(bbox.get(2) + lonBuffer) + "," + String.valueOf(bbox.get(3) + latBuffer);
+                    String.valueOf(bbox.get(2) + lonBuffer) + "," + String.valueOf(bbox.get(3) + latBuffer);
         parameters.put(getName(),bboxParam);
 
         return parameters;
@@ -165,8 +172,8 @@ public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
     private List<Double> getDefault(OgcApiApiDataV2 apiData, Optional<String> collectionId) {
         FeatureTypeConfigurationOgcApi featureType = collectionId.isPresent() ? apiData.getCollections().get(collectionId.get()) : null;
         Optional<ObservationProcessingConfiguration> config = featureType!=null ?
-                this.getExtensionConfiguration(apiData, featureType, ObservationProcessingConfiguration.class) :
-                this.getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class);
+                featureType.getExtension(ObservationProcessingConfiguration.class) :
+                apiData.getExtension(ObservationProcessingConfiguration.class);
         if (config.isPresent()) {
             return config.get().getDefaultBbox();
         }

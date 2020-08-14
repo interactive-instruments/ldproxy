@@ -8,9 +8,8 @@ apply plugin: 'com.bmuschko.docker-java-application'
 docker {
 //    url = 'unix:///var/run/docker.sock'
     javaApplication {
-        baseImage = 'openjdk:8-jre-alpine'
+        baseImage = 'openjdk:11-jre-slim'
         port = 7080
-        tag = "iide/${project.name}:sdotw"
     }
 }
 

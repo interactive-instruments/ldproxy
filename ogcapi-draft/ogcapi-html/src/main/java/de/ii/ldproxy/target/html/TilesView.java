@@ -45,7 +45,7 @@ public class TilesView extends OgcApiView {
                      Optional<String> collectionId,
                      List<NavigationDTO> breadCrumbs,
                      String urlPrefix,
-                     HtmlConfig htmlConfig,
+                     HtmlConfiguration htmlConfig,
                      boolean noIndex,
                      URICustomizer uriCustomizer,
                      I18n i18n,

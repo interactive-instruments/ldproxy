@@ -9,8 +9,13 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.wfs3.styles.StyleMetadata;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.wfs3.styles.Styles;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.ldproxy.wfs3.styles.StylesFormatExtension;
@@ -36,9 +41,6 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
             .build();
 
     @Requires
-    private HtmlConfig htmlConfig;
-
-    @Requires
     private I18n i18n;
 
     @Override
@@ -62,7 +64,7 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
     }
 
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, HtmlConfiguration.class)
+        return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
                 .orElse(true);
     }
@@ -86,6 +88,10 @@ public class StylesOutputFormatHtml implements StylesFormatExtension {
                                 .toString()))
                 .add(new NavigationDTO(stylesTitle))
                 .build();
+
+        HtmlConfiguration htmlConfig = api.getData()
+                                                 .getExtension(HtmlConfiguration.class)
+                                                 .orElse(null);
 
         StylesView stylesView = new StylesView(api.getData(), styles, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 

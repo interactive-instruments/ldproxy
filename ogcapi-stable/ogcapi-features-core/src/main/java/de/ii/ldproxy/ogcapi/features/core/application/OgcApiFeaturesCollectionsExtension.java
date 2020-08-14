@@ -46,7 +46,7 @@ public class OgcApiFeaturesCollectionsExtension implements OgcApiCollectionsExte
             return collectionsBuilder;
         }
 
-        Optional<OgcApiFeaturesCoreConfiguration> config = getExtensionConfiguration(apiData, OgcApiFeaturesCoreConfiguration.class);
+        Optional<OgcApiFeaturesCoreConfiguration> config = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class);
         if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/collections")) {
             List<OgcApiLink> additionalLinks = config.get().getAdditionalLinks().get("/collections");
             additionalLinks.stream().forEach(link -> collectionsBuilder.addLinks(link));

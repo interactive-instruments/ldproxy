@@ -7,13 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.observation_processing.api;
 
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
+import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
 import de.ii.xtraplatform.codelists.Codelist;
 import org.immutables.value.Value;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -21,6 +25,7 @@ public abstract class FeatureTransformationContextObservationProcessing implemen
 
     public abstract Map<String, Codelist> getCodelists();
 
+    public abstract List<Variable> getVariables();
     public abstract FeatureProcessChain getProcesses();
     public abstract Map<String, Object> getProcessingParameters();
     public abstract ObservationProcessingOutputFormat getOutputFormat();
@@ -45,7 +50,7 @@ public abstract class FeatureTransformationContextObservationProcessing implemen
             if (Objects.isNull(configuration)) {
                 configuration = baseConfiguration.get();
             } else {
-                configuration = configuration.mergeDefaults(baseConfiguration.get());
+                configuration = (ObservationProcessingConfiguration) configuration.mergeInto(baseConfiguration.get());
             }
         }
 

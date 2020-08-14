@@ -16,6 +16,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
+import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
 import de.ii.ldproxy.ogcapi.observation_processing.data.DataArrayXy;
 import de.ii.ldproxy.ogcapi.observation_processing.data.DataArrayXyt;
 import de.ii.ldproxy.ogcapi.observation_processing.data.Geometry;
@@ -26,6 +27,7 @@ import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.temporal.Temporal;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,11 +42,16 @@ public interface ObservationProcessingOutputFormat extends FormatExtension {
     }
 
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+                apiData.getCollections()
+                        .values()
+                        .stream()
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
     }
 
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     default boolean canTransformFeatures() {
@@ -82,7 +89,7 @@ public interface ObservationProcessingOutputFormat extends FormatExtension {
         return Optional.of(transformer);
     }
 
-    Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, OutputStream outputStream) throws IOException;
+    Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream) throws IOException;
     default boolean addDataArray(Object result, DataArrayXyt array) throws IOException { return false; }
     default boolean addDataArray(Object result, DataArrayXy array) throws IOException { return false; }
     void addFeature(Object result, Optional<String> locationCode, Optional<String> locationName, Geometry geometry, Temporal timeBegin, Temporal timeEnd, Map<String, Number> values) throws IOException;

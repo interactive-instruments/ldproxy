@@ -9,24 +9,19 @@ package de.ii.ldproxy.ogcapi.collection.queryables;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableQueryablesConfiguration.Builder.class)
-public abstract class QueryablesConfiguration implements ExtensionConfiguration {
+public interface QueryablesConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return false;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return new ImmutableQueryablesConfiguration.Builder()
-                .from(extensionConfigurationDefault)
-                .from(this)
-                .build();
+    default Builder getBuilder() {
+        return new ImmutableQueryablesConfiguration.Builder();
     }
 }

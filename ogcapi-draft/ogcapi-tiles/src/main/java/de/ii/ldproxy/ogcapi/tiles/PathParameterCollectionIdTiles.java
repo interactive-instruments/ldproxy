@@ -2,10 +2,12 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.PathParameterCollectionIdFeatures;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -21,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 
 @Component
 @Provides
@@ -42,11 +43,8 @@ public class PathParameterCollectionIdTiles extends PathParameterCollectionIdFea
             apiCollectionMap.put(apiData.getId(), apiData.getCollections().values()
                     .stream()
                     .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
-                    .filter(collection -> {
-                        Optional<TilesConfiguration> config = getExtensionConfiguration(apiData, collection, TilesConfiguration.class);
-                        return config.isPresent() && config.get().getEnabled();
-                    })
-                    .map(collection -> collection.getId())
+                    .filter(collection -> collection.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
+                    .map(FeatureTypeConfiguration::getId)
                     .collect(Collectors.toSet()));
         }
 
@@ -72,10 +70,10 @@ public class PathParameterCollectionIdTiles extends PathParameterCollectionIdFea
     @Override
     public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        final TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, collectionData, TilesConfiguration.class)
+        final TilesConfiguration tilesConfiguration = collectionData.getExtension(TilesConfiguration.class)
                 .orElseThrow(() -> new RuntimeException(MessageFormat.format("Could not access tiles configuration for API ''{0}'' and collection ''{1}''.", apiData.getId(), collectionId)));
 
-        return tilesConfiguration.getEnabled() &&
+        return tilesConfiguration.isEnabled() &&
                definitionPath.startsWith("/collections/{collectionId}/tiles");
     }
 

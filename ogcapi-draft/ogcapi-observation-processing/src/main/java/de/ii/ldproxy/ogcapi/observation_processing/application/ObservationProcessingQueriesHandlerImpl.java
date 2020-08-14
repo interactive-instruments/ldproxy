@@ -142,9 +142,9 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
 
         ensureCollectionIdExists(api.getData(), collectionId);
 
-        List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
-        List<OgcApiLink> links =
-                new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
+        final ObservationProcessingLinksGenerator linkGenerator = new ObservationProcessingLinksGenerator();
+        List<OgcApiLink> links = linkGenerator.generateDapaLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(),
+                requestContext.getAlternateMediaTypes(), i18n, requestContext.getLanguage());
 
         Processing processing = ImmutableProcessing.builder()
                 .from(queryInput.getProcessing())
@@ -195,6 +195,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
 
         ImmutableFeatureTransformationContextObservationProcessing.Builder transformationContext = new ImmutableFeatureTransformationContextObservationProcessing.Builder()
                 .apiData(api.getData())
+                .featureSchema(featureProvider.getData().getTypes().get(collectionId))
                 .i18n(i18n)
                 .language(requestContext.getLanguage())
                 .codelists(codelistRegistry.getCodelists())
@@ -209,6 +210,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                 .isPropertyOnly(query.propertyOnly())
                 .processes(queryInput.getProcesses())
                 .processingParameters(queryInput.getProcessingParameters())
+                .variables(queryInput.getVariables())
                 .outputFormat(outputFormat)
                 .fields(query.getFields())
                 .limit(query.getLimit())

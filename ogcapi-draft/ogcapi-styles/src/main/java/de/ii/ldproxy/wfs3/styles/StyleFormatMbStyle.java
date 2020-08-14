@@ -59,7 +59,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return getExtensionConfiguration(apiData, StylesConfiguration.class)
+        return apiData.getExtension(StylesConfiguration.class)
                 .map(StylesConfiguration::getMbStyleEnabled)
                 .orElse(false);
     }

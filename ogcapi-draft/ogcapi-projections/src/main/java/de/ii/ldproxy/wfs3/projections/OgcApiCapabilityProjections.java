@@ -8,8 +8,7 @@
 package de.ii.ldproxy.wfs3.projections;
 
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCapabilityExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiBuildingBlock;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -20,18 +19,17 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Component
 @Provides
 @Instantiate
-public class OgcApiCapabilityProjections implements OgcApiCapabilityExtension {
+public class OgcApiCapabilityProjections implements OgcApiBuildingBlock {
+
     @Override
-    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
-        ImmutableProjectionsConfiguration.Builder config = new ImmutableProjectionsConfiguration.Builder();
-
-        switch (preset) {
-            case OGCAPI:
-            case GSFS:
-                config.enabled(false);
-                break;
-        }
-
-        return config.build();
+    public ExtensionConfiguration.Builder getConfigurationBuilder() {
+        return new ImmutableProjectionsConfiguration.Builder();
     }
+
+    @Override
+    public ExtensionConfiguration getDefaultConfiguration() {
+        return new ImmutableProjectionsConfiguration.Builder().enabled(false)
+                                                              .build();
+    }
+
 }

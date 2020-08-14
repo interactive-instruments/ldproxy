@@ -8,20 +8,20 @@
 package de.ii.ldproxy.target.html;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.processing.Process;
 import de.ii.ldproxy.ogcapi.features.processing.Processing;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ObservationProcessingProcessingView extends OgcApiView {
-    public List<Process> processes;
-    public String linkToApiDefinitionTitle;
+    private List<Process> processes;
+    public final String linkToApiDefinitionTitle;
+    public final String linkToDapaEndpointTitle;
     public String mediaTypesTitle;
     public String none;
     // sum must be 12 for bootstrap
@@ -32,12 +32,12 @@ public class ObservationProcessingProcessingView extends OgcApiView {
                                                Processing processing,
                                                List<NavigationDTO> breadCrumbs,
                                                String staticUrlPrefix,
-                                               HtmlConfig htmlConfig,
+                                               HtmlConfiguration htmlConfig,
                                                boolean noIndex,
                                                URICustomizer uriCustomizer,
                                                I18n i18n,
                                                Optional<Locale> language) {
-        super("processing.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
+        super("dapa.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
                 processing.getLinks(),
                 processing.getTitle().orElse(i18n.get("processingTitle", language)),
                 processing.getDescription().orElse(i18n.get("processingDescription", language)));
@@ -52,8 +52,35 @@ public class ObservationProcessingProcessingView extends OgcApiView {
                 .orElse(0);
         idCols = Math.min(Math.max(1, 1 + maxIdLength/12),4);
         descCols = 12 - idCols;
+        this.linkToDapaEndpointTitle = i18n.get("linkToDapaEndpointTitle", language);
         this.linkToApiDefinitionTitle = i18n.get("linkToApiDefinitionTitle", language);
         this.mediaTypesTitle = i18n.get("mediaTypesTitle", language);
         this.none = i18n.get ("none", language);
+    }
+
+    public List<Map<String, Object>> getProcesses() {
+
+        Comparator<Process> byId = Comparator.comparing(process -> process.getId());
+
+        return processes.stream()
+                .sorted(byId)
+                .map(process -> new ImmutableMap.Builder<String, Object>()
+                        .put("title", process.getTitle().orElse(process.getId()))
+                        .put("description", process.getDescription().orElse(""))
+                        .put("id", process.getId())
+                        .put("mediaTypes", String.join(", ", process.getMediaTypes()))
+                        .put("externalDocs", process.getExternalDocs())
+                        .put("descriptionLink", process.getLinks()
+                                .stream()
+                                .filter(link -> link.getRel().equalsIgnoreCase("ogc-dapa-endpoint-documentation"))
+                                .findFirst()
+                                .orElse(null))
+                        .put("dapaEndpointLink", process.getLinks()
+                                .stream()
+                                .filter(link -> link.getRel().equalsIgnoreCase("ogc-dapa-endpoint"))
+                                .findFirst()
+                                .orElse(null))
+                        .build())
+                .collect(Collectors.toList());
     }
 }

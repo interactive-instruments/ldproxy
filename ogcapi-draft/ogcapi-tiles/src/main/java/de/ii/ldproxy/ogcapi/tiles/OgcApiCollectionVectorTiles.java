@@ -49,7 +49,7 @@ public class OgcApiCollectionVectorTiles implements OgcApiCollectionExtension {
         // The hrefs are URI templates and not URIs, so the templates should not be percent encoded!
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        if (!isNested && isExtensionEnabled(apiData, featureTypeConfiguration, TilesConfiguration.class)) {
+        if (!isNested && isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class)) {
             collection.addAllLinks(vectorTilesLinkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
         }
 

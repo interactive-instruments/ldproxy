@@ -41,9 +41,6 @@ public class SchemaGeneratorFeature {
     @Requires
     OgcApiFeatureCoreProviders providers;
 
-    @Requires
-    GeoJsonConfig geoJsonConfig;
-
     public String getSchemaReferenceOpenApi() {
         return "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/featureGeoJSON";
     }
@@ -66,8 +63,10 @@ public class SchemaGeneratorFeature {
                     .getTypes()
                     .get(collectionId);
 
-            boolean flatten = geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
-                    geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX;
+            Optional<GeoJsonConfiguration> geoJsonConfiguration = collectionData.getExtension(GeoJsonConfiguration.class);
+            boolean flatten = geoJsonConfiguration.filter(geoJsonConfig -> geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
+                    geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
+                                                  .isPresent();
 
             ContextOpenApi featureContext = processPropertiesOpenApi(featureType, true, flatten);
             schemaMapOpenApi.put(key, new ObjectSchema()
@@ -337,8 +336,10 @@ public class SchemaGeneratorFeature {
                     .getTypes()
                     .get(collectionId);
 
-            boolean flatten = geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
-                    geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX;
+            Optional<GeoJsonConfiguration> geoJsonConfiguration = collectionData.getExtension(GeoJsonConfiguration.class);
+            boolean flatten = geoJsonConfiguration.filter(geoJsonConfig -> geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
+                                                                    geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
+                                            .isPresent();
 
             ContextJsonSchema featureContext = processPropertiesJsonSchema(featureType, true, flatten);
 

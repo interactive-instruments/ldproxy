@@ -12,9 +12,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
-import de.ii.xtraplatform.geometries.domain.CoordinatesWriterType;
+import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import org.immutables.value.Value;
 
@@ -35,7 +34,7 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
         return ModifiableStateGeoJson.create();
     }
 
-    public abstract GeoJsonConfig getGeoJsonConfig();
+    public abstract GeoJsonConfiguration getGeoJsonConfig();
 
     @Value.Default
     protected JsonGenerator getJsonGenerator() {
@@ -47,7 +46,7 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
         }
 
         json.setCodec(new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL));
-        if (getGeoJsonConfig().getUseFormattedJsonOutput() || getPrettify()) {
+        if (getPrettify()) {
             json.useDefaultPrettyPrinter();
         }
         if (getDebugJson()) {
@@ -65,7 +64,7 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
 
     @Value.Default
     public boolean getPrettify() {
-        return false;
+        return getGeoJsonConfig().getUseFormattedJsonOutput() == true;
     }
 
     //TODO: to state
@@ -78,7 +77,7 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     private TokenBuffer createJsonBuffer() {
         TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
 
-        if (getGeoJsonConfig().getUseFormattedJsonOutput()) {
+        if (getPrettify()) {
             json.useDefaultPrettyPrinter();
         }
         return json;

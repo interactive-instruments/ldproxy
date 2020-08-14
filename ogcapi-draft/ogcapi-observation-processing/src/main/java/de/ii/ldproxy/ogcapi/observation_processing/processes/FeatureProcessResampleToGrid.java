@@ -50,6 +50,12 @@ public class FeatureProcessResampleToGrid implements ObservationProcess {
         obj = processingParameters.get("height");
         if (obj==null && obj instanceof OptionalInt && ((OptionalInt) obj).isPresent())
             throw new IllegalArgumentException("No grid height has been provided.");
+        obj = processingParameters.get("apiData");
+        if (obj==null || !(obj instanceof OgcApiApiDataV2))
+            throw new IllegalArgumentException("Missing information for executing '"+getName()+"': No API information has been provided.");
+        obj = processingParameters.get("collectionId");
+        if (obj==null || !(obj instanceof String))
+            throw new IllegalArgumentException("Missing information for executing '"+getName()+"': No collection identifier has been provided.");
     }
 
     @Override
@@ -63,8 +69,14 @@ public class FeatureProcessResampleToGrid implements ObservationProcess {
         TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");
         OptionalInt gridWidth = (OptionalInt) processingParameters.get("width");
         OptionalInt gridHeight = (OptionalInt) processingParameters.get("height");
+        OgcApiApiDataV2 apiData = (OgcApiApiDataV2) processingParameters.get("apiData");
+        String collectionId = (String) processingParameters.get("collectionId");
 
-        DataArrayXyt dataArray = observations.resampleToGrid(area.getBbox(), interval, gridWidth, gridHeight, OptionalInt.empty());
+        ObservationProcessingConfiguration config =
+                apiData.getCollections().get(collectionId).getExtension(ObservationProcessingConfiguration.class).get();
+
+        DataArrayXyt dataArray = observations.resampleToGrid(area.getBbox(), interval, gridWidth, gridHeight, OptionalInt.empty(),
+                config.getIdwCount(), config.getIdwDistanceKm(), config.getIdwPower());
         return dataArray;
     }
 
@@ -95,7 +107,19 @@ public class FeatureProcessResampleToGrid implements ObservationProcess {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+                apiData.getCollections()
+                        .values()
+                        .stream()
+                        .filter(featureType -> featureType.getEnabled())
+                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
+                        .findAny()
+                        .isPresent();
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     private float[] getMultiPolygonBbox(List<List<List<List<Float>>>> multiPolygon) {

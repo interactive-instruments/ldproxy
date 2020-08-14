@@ -47,13 +47,8 @@ public class EndpointTileSetSingleCollection extends OgcApiEndpointSubCollection
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), TilesConfiguration.class);
+    protected Class getConfigurationClass() {
+        return TilesConfiguration.class;
     }
 
     @Override
@@ -127,7 +122,7 @@ public class EndpointTileSetSingleCollection extends OgcApiEndpointSubCollection
         checkPathParameter(extensionRegistry, apiData, path, "tileMatrixSetId", tileMatrixSetId);
 
         FeatureTypeConfigurationOgcApi featureType = requestContext.getApi().getData().getCollections().get(collectionId);
-        TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, featureType, TilesConfiguration.class).get();
+        TilesConfiguration tilesConfiguration = featureType.getExtension(TilesConfiguration.class).get();
 
         TilesQueriesHandler.OgcApiQueryInputTileSet queryInput = new ImmutableOgcApiQueryInputTileSet.Builder()
                 .from(getGenericQueryInput(api.getData()))

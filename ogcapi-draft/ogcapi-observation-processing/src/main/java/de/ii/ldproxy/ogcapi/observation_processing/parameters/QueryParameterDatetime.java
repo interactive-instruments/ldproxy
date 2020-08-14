@@ -35,7 +35,7 @@ import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParame
 @Instantiate
 public class QueryParameterDatetime implements OgcApiQueryParameter {
 
-    public static final double ANI = 3; // TODO document
+    public static final double ANI = 2; // TODO document
 
     private static final String OPEN_REGEX = "(?:\\.\\.)?";
     private static final String LOCAL_DATE_REGEX = "(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])";
@@ -120,12 +120,19 @@ public class QueryParameterDatetime implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+                apiData.getCollections()
+                        .values()
+                        .stream()
+                        .filter(featureType -> featureType.getEnabled())
+                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
+                        .findAny()
+                        .isPresent();
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     @Override
@@ -252,8 +259,8 @@ public class QueryParameterDatetime implements OgcApiQueryParameter {
     private Optional<String> getDefault(OgcApiApiDataV2 apiData, Optional<String> collectionId) {
         FeatureTypeConfigurationOgcApi featureType = collectionId.isPresent() ? apiData.getCollections().get(collectionId.get()) : null;
         Optional<ObservationProcessingConfiguration> config = featureType!=null ?
-                this.getExtensionConfiguration(apiData, featureType, ObservationProcessingConfiguration.class) :
-                this.getExtensionConfiguration(apiData, ObservationProcessingConfiguration.class);
+                featureType.getExtension(ObservationProcessingConfiguration.class) :
+                apiData.getExtension(ObservationProcessingConfiguration.class);
         if (config.isPresent()) {
             return config.get().getDefaultDatetime();
         }

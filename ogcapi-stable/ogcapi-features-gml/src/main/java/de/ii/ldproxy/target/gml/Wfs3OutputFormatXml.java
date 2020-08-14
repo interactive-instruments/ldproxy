@@ -7,9 +7,24 @@
  */
 package de.ii.ldproxy.target.gml;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.Collections;
+import de.ii.ldproxy.ogcapi.domain.CollectionsFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.CommonFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.ConformanceDeclaration;
+import de.ii.ldproxy.ogcapi.domain.ImmutableCollections;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.LandingPage;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import io.swagger.v3.oas.models.media.ObjectSchema;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
 
@@ -26,20 +41,6 @@ public class Wfs3OutputFormatXml implements CollectionsFormatExtension, CommonFo
             .label("XML")
             .parameter("xml")
             .build();
-
-    private final GmlConfig gmlConfig;
-
-    @ServiceController(value = false)
-    private boolean enable;
-
-    public Wfs3OutputFormatXml(@Requires GmlConfig gmlConfig) {
-        this.gmlConfig = gmlConfig;
-    }
-
-    @Validate
-    private void onStart() {
-        this.enable = gmlConfig.isEnabled();
-    }
 
     @Override
     public String getPathPattern() {

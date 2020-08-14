@@ -1,6 +1,7 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.slf4j.Logger;
@@ -26,30 +27,50 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
         super(extensionRegistry);
     }
 
+    protected abstract Class getConfigurationClass();
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+        return isExtensionEnabled(apiData, getConfigurationClass()) ||
+                apiData.getCollections()
+                        .values()
+                        .stream()
+                        .filter(featureType -> featureType.getEnabled())
+                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
+                        .findAny()
+                        .isPresent();
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), getConfigurationClass());
+    }
+
+
     protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
                                                     List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                     String operationSummary, Optional<String> operationDescription, List<String> tags) {
-        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), tags, false);
+        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, false);
     }
 
     protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
                                                     List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                     String operationSummary, Optional<String> operationDescription, List<String> tags,
                                                     boolean hide) {
-        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), tags, hide);
+        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, hide);
     }
 
     protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
                                                     List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                     String operationSummary, Optional<String> operationDescription,
-                                                    Optional<OgcApiExternalDocumentation> externalDocs, List<String> tags) {
-        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, tags, false);
+                                                    Optional<OgcApiExternalDocumentation> externalDocs, Map<String, List<OgcApiExample>> examples, List<String> tags) {
+        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, tags, false);
     }
 
     protected ImmutableOgcApiOperation addOperation(OgcApiApiDataV2 apiData, OgcApiContext.HttpMethods method,
                                                     List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                     String operationSummary, Optional<String> operationDescription,
-                                                    Optional<OgcApiExternalDocumentation> externalDocs, List<String> tags,
+                                                    Optional<OgcApiExternalDocumentation> externalDocs, Map<String, List<OgcApiExample>> examples, List<String> tags,
                                                     boolean hide) {
         final String path = "/collections/"+collectionId+subSubPath;
         OgcApiRequestBody body = null;
@@ -72,6 +93,18 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
         if (method==OgcApiContext.HttpMethods.GET && responseContent.isEmpty()) {
             LOGGER.error("No media type supported for the resource at path '" + path + "'. The GET method will not be available.");
             return null;
+        }
+        if (!examples.isEmpty()) {
+            responseContent.entrySet().stream()
+                    .forEach(entry -> {
+                        List<OgcApiExample> exs = examples.get(entry.getKey().toString());
+                        if (!exs.isEmpty()) {
+                            entry.setValue(new ImmutableOgcApiMediaTypeContent.Builder()
+                                    .from(entry.getValue())
+                                    .examples(exs)
+                                    .build());
+                        }
+                    });
         }
         ImmutableOgcApiResponse.Builder responseBuilder = new ImmutableOgcApiResponse.Builder()
                 .statusCode(SUCCESS_STATUS.get(method))

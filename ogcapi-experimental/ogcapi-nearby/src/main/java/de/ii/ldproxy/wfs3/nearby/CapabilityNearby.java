@@ -8,8 +8,7 @@
 package de.ii.ldproxy.wfs3.nearby;
 
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiConfigPreset;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCapabilityExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiBuildingBlock;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -17,19 +16,16 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Component
 @Provides
 @Instantiate
-public class CapabilityNearby implements OgcApiCapabilityExtension {
+public class CapabilityNearby implements OgcApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration getDefaultConfiguration(OgcApiConfigPreset preset) {
-        ImmutableNearbyConfiguration.Builder config = new ImmutableNearbyConfiguration.Builder();
+    public ExtensionConfiguration.Builder getConfigurationBuilder() {
+        return new ImmutableNearbyConfiguration.Builder();
+    }
 
-        switch (preset) {
-            case OGCAPI:
-            case GSFS:
-                config.enabled(false);
-                break;
-        }
-
-        return config.build();
+    @Override
+    public ExtensionConfiguration getDefaultConfiguration() {
+        return new ImmutableNearbyConfiguration.Builder().enabled(false)
+                .build();
     }
 }

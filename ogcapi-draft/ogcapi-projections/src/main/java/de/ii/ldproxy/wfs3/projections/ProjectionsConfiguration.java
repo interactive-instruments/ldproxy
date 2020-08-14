@@ -9,25 +9,19 @@ package de.ii.ldproxy.wfs3.projections;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiCommonConfiguration;
+import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableProjectionsConfiguration.Builder.class)
-public abstract class ProjectionsConfiguration implements ExtensionConfiguration {
+public interface ProjectionsConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return false;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
     @Override
-    public ExtensionConfiguration mergeDefaults(ExtensionConfiguration extensionConfigurationDefault) {
-        return new ImmutableProjectionsConfiguration.Builder()
-                .from(extensionConfigurationDefault)
-                .from(this)
-                .build();
+    default Builder getBuilder() {
+        return new ImmutableProjectionsConfiguration.Builder();
     }
 }

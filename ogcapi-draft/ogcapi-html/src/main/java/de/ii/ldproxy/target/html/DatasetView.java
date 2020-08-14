@@ -40,13 +40,13 @@ public class DatasetView extends GenericView {
     public List<NavigationDTO> breadCrumbs;
     public List<NavigationDTO> formats;
     public String urlPrefix;
-    public HtmlConfig htmlConfig;
+    public HtmlConfiguration htmlConfig;
 
-    public DatasetView(String template, URI uri, String urlPrefix, HtmlConfig htmlConfig, boolean noIndex) {
+    public DatasetView(String template, URI uri, String urlPrefix, HtmlConfiguration htmlConfig, boolean noIndex) {
         this(template, uri, null, urlPrefix, htmlConfig, noIndex);
     }
 
-    public DatasetView(String template, URI uri, Object data, String urlPrefix, HtmlConfig htmlConfig, boolean noIndex) {
+    public DatasetView(String template, URI uri, Object data, String urlPrefix, HtmlConfiguration htmlConfig, boolean noIndex) {
         super(String.format("/templates/%s", template), uri, data);
         this.keywords = new ArrayList<>();
         this.featureTypes = new ArrayList<>();
@@ -55,13 +55,13 @@ public class DatasetView extends GenericView {
         this.noIndex = noIndex;
     }
 
-    public DatasetView(String template, URI uri, String name, String title, String urlPrefix, HtmlConfig htmlConfig, boolean noIndex) {
+    public DatasetView(String template, URI uri, String name, String title, String urlPrefix, HtmlConfiguration htmlConfig, boolean noIndex) {
         this(template, uri, urlPrefix, htmlConfig, noIndex);
         this.name = name;
         this.title = title;
     }
 
-    public DatasetView(String template, URI uri, String name, String title, String description, String urlPrefix, HtmlConfig htmlConfig, boolean noIndex) {
+    public DatasetView(String template, URI uri, String name, String title, String description, String urlPrefix, HtmlConfiguration htmlConfig, boolean noIndex) {
         this(template, uri, urlPrefix, htmlConfig, noIndex);
         this.name = name;
         this.title = title;

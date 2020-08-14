@@ -46,7 +46,7 @@ public abstract class FeatureTransformationContextTiles implements FeatureTransf
             if (Objects.isNull(configuration)) {
                 configuration = baseConfiguration.get();
             } else {
-                configuration = configuration.mergeDefaults(baseConfiguration.get());
+                configuration = (TilesConfiguration) configuration.mergeInto(baseConfiguration.get());
             }
         }
 

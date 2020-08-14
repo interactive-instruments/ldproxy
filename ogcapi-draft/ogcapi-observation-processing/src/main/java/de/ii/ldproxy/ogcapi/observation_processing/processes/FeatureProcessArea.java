@@ -4,7 +4,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
-import de.ii.ldproxy.ogcapi.observation_processing.application.*;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryMultiPolygon;
 import de.ii.ldproxy.ogcapi.observation_processing.data.ObservationCollectionPointTimeSeriesList;
 import de.ii.ldproxy.ogcapi.observation_processing.data.Observations;
@@ -16,7 +15,10 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import javax.ws.rs.ServerErrorException;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -62,7 +64,7 @@ public class FeatureProcessArea implements ObservationProcess {
         TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");
 
         ObservationCollectionPointTimeSeriesList positions = observations.interpolate(interval);
-        LOGGER.debug("Number of distinct locations: "+ positions.size());
+        LOGGER.debug("{} distinct locations.", positions.size());
 
         return positions;
     }
@@ -88,15 +90,6 @@ public class FeatureProcessArea implements ObservationProcess {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
-    }
-
     public Class<?> getOutputType() {
         return ObservationCollectionPointTimeSeriesList.class;
     }

@@ -57,7 +57,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
             return ImmutableList.of();
         }
 
-        EpsgCrs sourceCrs = bbox.get().getEpsgCrs();
+        EpsgCrs sourceCrs = OgcCrs.CRS84;
         EpsgCrs targetCrs = tileMatrixSet.getCrs();
         if (!(targetCrs.toSimpleString().equalsIgnoreCase(sourceCrs.toSimpleString()) && targetCrs.getForceAxisOrder().equals(sourceCrs.getForceAxisOrder()))) {
             Optional<CrsTransformer> transformer = crsTransformation.getTransformer(sourceCrs, targetCrs);

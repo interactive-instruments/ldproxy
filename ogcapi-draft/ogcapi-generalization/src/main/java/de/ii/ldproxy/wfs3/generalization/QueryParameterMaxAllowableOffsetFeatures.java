@@ -52,7 +52,7 @@ public class QueryParameterMaxAllowableOffsetFeatures implements OgcApiQueryPara
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), GeneralizationConfiguration.class);
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), GeneralizationConfiguration.class);
     }
 
     @Override

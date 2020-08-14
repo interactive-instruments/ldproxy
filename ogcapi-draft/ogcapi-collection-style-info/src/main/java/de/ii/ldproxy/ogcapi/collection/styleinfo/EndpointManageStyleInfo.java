@@ -66,13 +66,8 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StyleInfoConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData, apiData.getCollections().get(collectionId), StyleInfoConfiguration.class);
+    protected Class getConfigurationClass() {
+        return StyleInfoConfiguration.class;
     }
 
     @Override

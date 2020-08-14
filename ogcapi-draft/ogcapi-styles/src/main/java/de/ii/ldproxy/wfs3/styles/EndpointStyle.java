@@ -152,7 +152,7 @@ public class EndpointStyle extends OgcApiEndpoint {
 
         // collect self/alternate links, but only, if we need to return them in the headers
         List<OgcApiLink> links = null;
-        boolean includeLinkHeader = getExtensionConfiguration(dataset.getData(), OgcApiCommonConfiguration.class)
+        boolean includeLinkHeader = dataset.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
         if (includeLinkHeader) {

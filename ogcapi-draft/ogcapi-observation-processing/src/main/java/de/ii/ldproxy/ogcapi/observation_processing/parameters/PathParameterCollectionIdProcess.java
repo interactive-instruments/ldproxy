@@ -70,7 +70,19 @@ public class PathParameterCollectionIdProcess extends PathParameterCollectionIdF
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+                apiData.getCollections()
+                        .values()
+                        .stream()
+                        .filter(featureType -> featureType.getEnabled())
+                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
+                        .findAny()
+                        .isPresent();
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     private Set<String> returnObservationCollections(OgcApiApiDataV2 apiData) {
@@ -86,7 +98,7 @@ public class PathParameterCollectionIdProcess extends PathParameterCollectionIdF
                                     .getExtension(ObservationProcessingConfiguration.class)
                                     .map(Optional::of)
                                     .orElse(apiData.getExtension(ObservationProcessingConfiguration.class))
-                                    .map(ObservationProcessingConfiguration::getEnabled)
+                                    .map(ObservationProcessingConfiguration::isEnabled)
                                     .orElse(false)) {
                         return;
                     }

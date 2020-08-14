@@ -57,11 +57,11 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
     }
 
     private List<String> getValues(OgcApiApiDataV2 apiData, String collectionId) {
-        FeatureTypeConfigurationOgcApi collectionData = apiData
+        Optional<FeatureTypeConfigurationOgcApi> collectionData = Optional.ofNullable(apiData
                 .getCollections()
-                .get(collectionId);
+                .get(collectionId));
 
-        return getExtensionConfiguration(apiData, collectionData, ObservationProcessingConfiguration.class)
+        return collectionData.flatMap(data -> data.getExtension(ObservationProcessingConfiguration.class))
                 .map(ObservationProcessingConfiguration::getVariables)
                 .orElse(ImmutableList.of())
                 .stream()
@@ -85,7 +85,19 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class);
+        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+                apiData.getCollections()
+                        .values()
+                        .stream()
+                        .filter(featureType -> featureType.getEnabled())
+                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
+                        .findAny()
+                        .isPresent();
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     @Override

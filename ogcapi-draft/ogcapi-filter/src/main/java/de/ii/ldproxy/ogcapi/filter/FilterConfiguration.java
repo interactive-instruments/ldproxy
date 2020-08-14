@@ -11,27 +11,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
-import java.util.Objects;
-
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFilterConfiguration.Builder.class)
-public abstract class FilterConfiguration implements ExtensionConfiguration {
+public interface FilterConfiguration extends ExtensionConfiguration {
 
-    @Value.Default
-    @Override
-    public boolean getEnabled() {
-        return false;
+    abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
     @Override
-    public <T extends ExtensionConfiguration> T mergeDefaults(T extensionConfigurationDefault) {
-        boolean enabled = this.getEnabled();
-        ImmutableFilterConfiguration.Builder configBuilder = new ImmutableFilterConfiguration.Builder().from(extensionConfigurationDefault);
-
-        if (Objects.nonNull(enabled))
-            configBuilder.enabled(enabled);
-
-        return (T) configBuilder.build();
+    default Builder getBuilder() {
+        return new ImmutableFilterConfiguration.Builder();
     }
 }

@@ -2,10 +2,12 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -51,11 +53,8 @@ public class QueryParameterCollections implements OgcApiQueryParameter {
                     .values()
                     .stream()
                     .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
-                    .filter(collection -> {
-                        Optional<TilesConfiguration> config = getExtensionConfiguration(apiData, collection, TilesConfiguration.class);
-                        return config.isPresent() && config.get().getEnabled();
-                    })
-                    .map(collection -> collection.getId())
+                    .filter(collection -> collection.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
+                    .map(FeatureTypeConfiguration::getId)
                     .collect(Collectors.toList()));
         }
         return collectionsMap.get(key);
@@ -72,10 +71,10 @@ public class QueryParameterCollections implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<TilesConfiguration> extension = getExtensionConfiguration(apiData, TilesConfiguration.class);
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::getMultiCollectionEnabled)
                 .isPresent();
     }
