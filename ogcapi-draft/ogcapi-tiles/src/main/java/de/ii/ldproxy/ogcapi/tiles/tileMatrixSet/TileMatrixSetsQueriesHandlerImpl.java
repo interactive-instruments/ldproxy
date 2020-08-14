@@ -7,13 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
-import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.tiles.VectorTilesLinkGenerator;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -23,10 +20,10 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.codahale.metrics.MetricRegistry.name;
 
 @Component
 @Instantiate
@@ -61,7 +58,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
         String path = "/tileMatrixSets";
 
         TileMatrixSetsFormatExtension outputFormat = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
@@ -102,7 +99,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
         String path = "/tileMatrixSets/"+tileMatrixSetId;
 
         TileMatrixSetsFormatExtension outputFormat = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 

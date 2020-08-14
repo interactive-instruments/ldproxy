@@ -15,6 +15,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -71,7 +72,8 @@ public class PathParameterCollectionIdTiles extends PathParameterCollectionIdFea
     @Override
     public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        final TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, collectionData, TilesConfiguration.class).orElseThrow(RuntimeException::new);
+        final TilesConfiguration tilesConfiguration = getExtensionConfiguration(apiData, collectionData, TilesConfiguration.class)
+                .orElseThrow(() -> new RuntimeException(MessageFormat.format("Could not access tiles configuration for API '{0}' and collection '{1}'.", apiData.getId(), collectionId)));
 
         return tilesConfiguration.getEnabled() &&
                definitionPath.startsWith("/collections/{collectionId}/tiles");

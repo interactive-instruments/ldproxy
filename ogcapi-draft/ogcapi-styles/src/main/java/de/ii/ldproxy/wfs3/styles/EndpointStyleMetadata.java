@@ -12,9 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.io.Files;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
@@ -31,10 +28,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
@@ -127,13 +123,17 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
                                      @Context OgcApiApi api,
                                      @Context OgcApiRequestContext requestContext) {
 
-        StyleMetadata metadata = getMetadata(styleId, requestContext).orElseThrow(InternalServerErrorException::new);
+        StyleMetadata metadata = getMetadata(styleId, requestContext)
+                .orElseThrow(() -> new InternalServerErrorException(MessageFormat.format("Style metadata could not be retrieved for style '{0}' in API '{1}'.", styleId, api.getId())));
 
         return getFormats().stream()
                 .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
                 .findAny()
                 .map(StyleMetadataFormatExtension.class::cast)
-                .orElseThrow(() -> new NotAcceptableException())
+                .orElseThrow(() -> new NotAcceptableException(
+                        MessageFormat.format("The requested media type '{0}' is not supported, the following media types are available: {1}",
+                                requestContext.getMediaType(),
+                                String.join(", ",getFormats().stream().map(f -> f.getMediaType().type().toString()).collect(Collectors.toList())))))
                 .getStyleMetadataResponse(metadata, api, requestContext);
     }
 
@@ -143,7 +143,7 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
         File metadataFile = new File( stylesStore + File.separator + apiId + File.separator + styleId + ".metadata");
 
         if (!metadataFile.exists()) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The style '{0}' does not exist in this API.", styleId));
         }
 
         try {

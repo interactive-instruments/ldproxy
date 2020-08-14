@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.text.MessageFormat;
 import java.util.*;
 
 /**
@@ -174,7 +175,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
 
         MinMax zoomLevels = tilesConfiguration.getZoomLevels().get(tileMatrixSetId);
         if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
-            throw new NotFoundException();
+            throw new NotFoundException("The requested tile is outside the zoom levels for this tile set.");
 
         TileMatrixSet tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
                 .filter(tms -> tms.getId().equals(tileMatrixSetId))
@@ -191,7 +192,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
             if (tileLimits.getMaxTileCol()<col || tileLimits.getMinTileCol()>col ||
                     tileLimits.getMaxTileRow()<row || tileLimits.getMinTileRow()>row)
                 // return 404, if outside the range
-                throw new NotFoundException();
+                throw new NotFoundException("The requested tile is outside of the limits for this zoom level and tile set.");
         }
 
         String path = definitionPath.replace("{collectionId}", collectionId)
@@ -200,7 +201,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
                 .replace("{tileRow}", tileRow)
                 .replace("{tileCol}", tileCol);
         TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         Tile tile = new ImmutableTile.Builder()
                 .collectionIds(ImmutableList.of(collectionId))

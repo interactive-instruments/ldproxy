@@ -35,6 +35,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -80,7 +81,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
     public static void ensureCollectionIdExists(OgcApiApiDataV2 apiData, String collectionId) {
         if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The collection '{0}' does not exist in this API.", collectionId));
         }
     }
 
@@ -103,7 +104,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
                 "/collections/" + collectionId + "/items")
-                                                       .orElseThrow(NotAcceptableException::new);
+                                                       .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
                 queryInput.getIncludeHomeLink(), queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
@@ -122,7 +123,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
                 "/collections/" + collectionId + "/items/" + featureId)
-                                                       .orElseThrow(NotAcceptableException::new);
+                                                       .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         String persistentUri = null;
         Optional<String> template = api.getData()
@@ -241,14 +242,11 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
                 if (result.getError()
                           .isPresent()) {
-                    LOGGER.error("Feature stream error", result.getError()
-                                                               .get());
-
-                    throw new InternalServerErrorException("There was an error processing your request. It has been logged.");
+                    throw new InternalServerErrorException(result.getError().get().getMessage());
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
-                    throw new NotFoundException();
+                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
                 }
 
             } catch (CompletionException e) {
@@ -270,14 +268,11 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
                 if (result.getError()
                           .isPresent()) {
-                    LOGGER.error("Feature stream error", result.getError()
-                                                               .get());
-
-                    throw new InternalServerErrorException("There was an error processing your request. It has been logged.");
+                    throw new InternalServerErrorException(result.getError().get().getMessage());
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
-                    throw new NotFoundException();
+                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
                 }
             } catch (CompletionException e) {
                 if (e.getCause() instanceof WebApplicationException) {

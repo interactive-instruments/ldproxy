@@ -26,9 +26,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -135,7 +135,7 @@ public class EndpointStyle extends OgcApiEndpoint {
                                                                                                           .matches(ogcApiRequest.getMediaType()
                                                                                                                                 .type()))
                                                                                   .findFirst()
-                                                                                  .orElseThrow(NotAcceptableException::new);
+                                                                                  .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", ogcApiRequest.getMediaType())));
 
         MediaType mediaType = styleFormat.getMediaType().type();
         String key = styleId + "." + styleFormat.getFileExtension();
@@ -144,9 +144,9 @@ public class EndpointStyle extends OgcApiEndpoint {
         File metadata = new File( stylesStore + File.separator + datasetId + File.separator + styleId + ".metadata");
         if (!stylesheet.exists()) {
             if (metadata.exists()) {
-                throw new NotAcceptableException();
+                throw new NotAcceptableException(MessageFormat.format("The style '{0}' is not available in the requested format.", styleId));
             } else {
-                throw new NotFoundException();
+                throw new NotFoundException(MessageFormat.format("The style '{0}' does not exist in this API.", styleId));
             }
         }
 

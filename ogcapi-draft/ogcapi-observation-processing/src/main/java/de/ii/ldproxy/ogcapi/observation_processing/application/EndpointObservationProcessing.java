@@ -35,6 +35,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.text.MessageFormat;
 import java.util.*;
 
 @Component
@@ -260,7 +261,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
         FeatureProcessChain processChain = featureProcessInfo.getProcessingChains(api.getData(), collectionId, ObservationProcess.class).stream()
                 .filter(chain -> chain.getSubSubPath().equals("/"+DAPA_PATH_ELEMENT+"/"+processIds))
                 .findAny()
-                .orElseThrow(() -> new NotFoundException());
+                .orElseThrow(() -> new NotFoundException("The requested path is not a resource in this API."));
         final String path = "/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/"+processIds;
         checkPathParameter(extensionRegistry, api.getData(), path, "collectionId", collectionId);
         final List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), path, collectionId);
@@ -273,7 +274,8 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
         // TODO check that the request is not considered to be too demanding
 
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, collectionData, OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
+        final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(apiData, collectionData, OgcApiFeaturesCoreConfiguration.class)
+                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API '{0}', collection '{1}'.", apiData.getId(), collectionId)));
         final int minimumPageSize = coreConfiguration.getMinimumPageSize();
         final int defaultPageSize = coreConfiguration.getDefaultPageSize();
         final int maxPageSize = coreConfiguration.getMaxPageSize();

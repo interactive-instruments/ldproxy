@@ -19,6 +19,7 @@ import org.immutables.value.Value;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -101,7 +102,7 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
         CollectionsFormatExtension outputFormatExtension = api.getOutputFormat(CollectionsFormatExtension.class,
                                                                                requestContext.getMediaType(),
                                                                          "/collections")
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         ImmutableCollections responseObject = collections.build();
 
@@ -119,7 +120,7 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
         String collectionId = queryInput.getCollectionId();
 
         if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The collection '{0}' does not exist in this API.", collectionId));
         }
 
         Optional<String> licenseUrl = apiData.getMetadata().flatMap(Metadata::getLicenseUrl);
@@ -136,7 +137,7 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                 requestContext.getLanguage());
 
         CollectionsFormatExtension outputFormatExtension = api.getOutputFormat(CollectionsFormatExtension.class, requestContext.getMediaType(), "/collections/"+collectionId)
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         ImmutableOgcApiCollection.Builder ogcApiCollection = ImmutableOgcApiCollection.builder()
                 .id(collectionId)

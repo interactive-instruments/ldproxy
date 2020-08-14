@@ -43,7 +43,7 @@ public class ResourceFormatAny implements ResourceFormatExtension {
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new IllegalArgumentException("Unexpected path: " + path);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class ResourceFormatAny implements ResourceFormatExtension {
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new IllegalArgumentException("Unexpected path: " + path);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override

@@ -10,19 +10,17 @@ package de.ii.ldproxy.wfs3.styles.manager;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.io.ByteSource;
-import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
-import de.ii.ldproxy.wfs3.styles.*;
+import de.ii.ldproxy.wfs3.styles.StyleMetadata;
+import de.ii.ldproxy.wfs3.styles.StyleMetadataFormatExtension;
+import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -33,30 +31,19 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.XMLConstants;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -253,7 +240,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
 
         boolean newStyle = isNewStyle(dataset.getId(), styleId);
         if (newStyle) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The style '{0}' does not exist in this API.", styleId));
         }
 
         // prepare Jackson mapper for deserialization
@@ -265,7 +252,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
             mapper.readValue(requestBody, StyleMetadata.class);
             putStyleDocument(dataset.getId(), styleId, "metadata", requestBody);
         } catch (IOException e) {
-            throw new BadRequestException(e.getMessage());
+            throw new BadRequestException(e);
         }
 
         return Response.noContent()
@@ -289,7 +276,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
 
         boolean newStyle = isNewStyle(dataset.getId(), styleId);
         if (newStyle) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The style '{0}' does not exist in this API.", styleId));
         }
 
         // prepare Jackson mapper for deserialization
@@ -311,7 +298,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
                                                  .writeValueAsBytes(updatedMetadata); // TODO: remove pretty print
             putStyleDocument(dataset.getId(), styleId, "metadata", updatedMetadataString);
         } catch (IOException e) {
-            throw new BadRequestException(e.getMessage());
+            throw new BadRequestException(e);
         }
 
         return Response.noContent()

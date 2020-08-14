@@ -28,6 +28,7 @@ import org.immutables.value.Value;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
 import java.util.*;
 
 @Component
@@ -74,7 +75,7 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
 
     public static void checkCollectionId(OgcApiApiDataV2 apiData, String collectionId) {
         if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The collection '{0}' does not exist in this API.", collectionId));
         }
     }
 
@@ -86,13 +87,13 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         OgcApiApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         if (!apiData.isCollectionEnabled(collectionId))
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The collection '{0}' does not exist in this API.", collectionId));
 
         OgcApiQueryablesFormatExtension outputFormat = api.getOutputFormat(
                     OgcApiQueryablesFormatExtension.class,
                     requestContext.getMediaType(),
                     "/collections/"+collectionId+"/queryables")
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         checkCollectionId(api.getData(), collectionId);
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
@@ -235,13 +236,13 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         OgcApiApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         if (!apiData.isCollectionEnabled(collectionId))
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The collection '{0}' does not exist in this API.", collectionId));
 
         OgcApiSchemaFormatExtension outputFormat = api.getOutputFormat(
                 OgcApiSchemaFormatExtension.class,
                 requestContext.getMediaType(),
                 "/collections/"+collectionId+"/schema")
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         checkCollectionId(api.getData(), collectionId);
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();

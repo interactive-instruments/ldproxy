@@ -39,6 +39,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -105,7 +106,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 "/tiles";
 
         TileSetsFormatExtension outputFormat = api.getOutputFormat(TileSetsFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
@@ -198,7 +199,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 "/tiles/"+tileMatrixSetId;
 
         TileSetFormatExtension outputFormat = api.getOutputFormat(TileSetFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type '{0}' is not supported for this resource.", requestContext.getMediaType())));
 
         List<OgcApiMediaType> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                 .stream()
@@ -513,14 +514,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
                 if (result.getError()
                           .isPresent()) {
-                    LOGGER.error("Feature stream error", result.getError()
-                                                               .get());
-
-                    throw new InternalServerErrorException("There was an error processing your request. It has been logged.");
+                    throw new InternalServerErrorException(result.getError().get().getMessage());
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
-                    throw new NotFoundException();
+                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
                 }
 
             } catch (CompletionException e) {

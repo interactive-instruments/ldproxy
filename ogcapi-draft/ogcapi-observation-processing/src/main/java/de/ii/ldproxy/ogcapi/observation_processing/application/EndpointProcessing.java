@@ -31,6 +31,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -191,7 +192,8 @@ public class EndpointProcessing extends OgcApiEndpointSubCollection {
         checkPathParameter(extensionRegistry, api.getData(), path, "collectionId", collectionId);
 
         final FeatureTypeConfigurationOgcApi collectionData = api.getData().getCollections().get(collectionId);
-        final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(api.getData(), collectionData, OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
+        final OgcApiFeaturesCoreConfiguration coreConfiguration = getExtensionConfiguration(api.getData(), collectionData, OgcApiFeaturesCoreConfiguration.class)
+                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API '{0}', collection '{1}'.", api.getId(), collectionId)));
         final boolean includeHomeLink = getExtensionConfiguration(api.getData(), OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
