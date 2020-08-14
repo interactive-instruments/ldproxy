@@ -1,7 +1,27 @@
+<!DOCTYPE html>
 <html>
-    <body>
-        <h2>HTTP Error {{status}}: {{title}}</h2>
-        {{#instance}}<p>Request: {{.}}</p>{{/instance}}
-        <p>{{{detail}}}</p>
-    </body>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex" />
+    <title>Exception</title>
+    <link rel="shortcut icon" type="image/x-icon" href="{{urlPrefix}}/app/img/favicon.ico">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{urlPrefix}}/app/css/app4.css"/>
+</head>
+<body>
+
+<div class="container py-4">
+    <h2>HTTP Error {{status}}: {{title}}</h2>
+    <br>
+    <div>{{{detail}}}</div>
+    <br>
+    {{#instance}}<div><em>Request: {{.}}</em></div>{{/instance}}
+</div>
+
+</body>
 </html>
+
+
+
