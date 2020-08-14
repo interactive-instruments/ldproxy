@@ -109,7 +109,7 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> {
                             uriInfo.getAbsolutePath().toString())))
                     .build();
         } else if (exception instanceof OgcApiFormatNotSupportedException) {
-            responseStatus = Response.Status.UNSUPPORTED_MEDIA_TYPE;
+            responseStatus = Response.Status.NOT_ACCEPTABLE;
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", responseStatus.getStatusCode(), uriInfo.getRequestUri().toString(), exception.getMessage());
             }
