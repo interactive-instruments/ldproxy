@@ -19,6 +19,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Provider;
+import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 @Component
@@ -64,16 +66,18 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> {
         OgcApiMediaType mediaType = ogcApiContentNegotiation.negotiate(request, httpHeaders, uriInfo, supportedMediaTypes).orElse(OgcApiExceptionFormatJson.MEDIA_TYPE);
         OgcApiExceptionFormatExtension exceptionFormat = extensionRegistry.getExtensionsForType(OgcApiExceptionFormatExtension.class)
                 .stream()
-                .filter(format -> mediaType==format.getMediaType())
+                .filter(format -> mediaType == format.getMediaType())
                 .findFirst()
                 .orElse(extensionRegistry.getExtensionsForType(OgcApiExceptionFormatExtension.class).get(0));
 
         if (exception instanceof WebApplicationException) {
             final Response response = ((WebApplicationException) exception).getResponse();
             Response.Status.Family family = response.getStatusInfo().getFamily();
-            if (family.equals(Response.Status.Family.CLIENT_ERROR)) {
+            if (family.equals(Response.Status.Family.REDIRECTION)) {
+                return response;
+            } else if (family.equals(Response.Status.Family.CLIENT_ERROR)) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Exception stacktrace:", exception);
+                    LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", response.getStatus(), uriInfo.getRequestUri().toString(), exception.getMessage());
                 }
                 return Response.fromResponse(response)
                         .type(mediaType.type())
@@ -83,17 +87,20 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> {
                                 uriInfo.getRequestUri().toString())))
                         .build();
             } else if (family.equals(Response.Status.Family.SERVER_ERROR)) {
-                long id = logException(exception.getCause());
+                long id = logException(Objects.nonNull(exception.getCause()) ? exception.getCause() : exception);
                 return Response.serverError()
                         .type(mediaType.type())
                         .entity(exceptionFormat.getExceptionEntity(new OgcApiErrorMessage(response.getStatus(),
                                 response.getStatusInfo().getReasonPhrase(),
-                                String.format("There was an error processing your request, it has been logged. Error ID: %d", id),
+                                String.format("There was an error processing your request, it has been logged. Error ID: %016x", id),
                                 uriInfo.getAbsolutePath().toString())))
                         .build();
             }
         } else if (exception instanceof IllegalArgumentException) {
             responseStatus = Response.Status.BAD_REQUEST;
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", responseStatus.getStatusCode(), uriInfo.getRequestUri().toString(), exception.getMessage());
+            }
             return Response.status(responseStatus)
                     .type(mediaType.type())
                     .entity(exceptionFormat.getExceptionEntity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
@@ -103,6 +110,9 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> {
                     .build();
         } else if (exception instanceof OgcApiFormatNotSupportedException) {
             responseStatus = Response.Status.UNSUPPORTED_MEDIA_TYPE;
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", responseStatus.getStatusCode(), uriInfo.getRequestUri().toString(), exception.getMessage());
+            }
             return Response.status(responseStatus)
                     .type(mediaType.type())
                     .entity(exceptionFormat.getExceptionEntity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
@@ -118,8 +128,17 @@ public class OgcApiExceptionMapper extends LoggingExceptionMapper<Throwable> {
                 .type(mediaType.type())
                 .entity(exceptionFormat.getExceptionEntity(new OgcApiErrorMessage(responseStatus.getStatusCode(),
                         responseStatus.getReasonPhrase(),
-                        String.format("There was an error processing your request, it has been logged. Error ID: %d", id),
+                        String.format("There was an error processing your request, it has been logged. Error ID: %016x", id),
                         uriInfo.getAbsolutePath().toString())))
                 .build();
+    }
+
+    protected long logException(Throwable exception) {
+        final long id = ThreadLocalRandom.current().nextLong();
+        LOGGER.error(String.format("Server Error with ID %016x: {}", id), exception.getMessage());
+        if(LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Stacktrace:", exception);
+        }
+        return id;
     }
 }

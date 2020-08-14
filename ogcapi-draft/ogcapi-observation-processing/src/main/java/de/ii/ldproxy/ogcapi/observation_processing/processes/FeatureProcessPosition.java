@@ -14,7 +14,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;

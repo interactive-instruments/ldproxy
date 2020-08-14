@@ -276,8 +276,10 @@ public class TileFormatMVT implements TileFormatExtension {
         try {
             maxAllowableOffsetCrs84 = tile.getTileMatrixSet().getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), OgcCrs.CRS84, crsTransformerFactory);
         } catch (CrsTransformationException e) {
-            LOGGER.error("CRS transformation error: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("CRS transformation error while computing maxAllowableOffsetCrs84: {}.", e.getMessage());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stacktrace:", e);
+            }
         }
 
         return maxAllowableOffsetCrs84;

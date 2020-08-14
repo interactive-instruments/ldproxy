@@ -173,9 +173,7 @@ public class EndpointStyle extends OgcApiEndpoint {
         try {
             return styleFormat.getStyleResponse(styleId, stylesheet, links, dataset, ogcApiRequest);
         } catch (IOException e) {
-            LOGGER.error("Stylesheet in the styles store could not be read: " + styleId);
+            throw new ServerErrorException("Stylesheet in the styles store could not be read: " + styleId, 500, e);
         }
-
-        throw new ServerErrorException("Error fetching stylesheet: "+styleId, 500);
     }
 }

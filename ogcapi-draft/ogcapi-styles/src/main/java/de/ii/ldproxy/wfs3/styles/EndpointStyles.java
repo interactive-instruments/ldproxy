@@ -188,10 +188,10 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
                 // TODO add standard links to preview?
                 return Optional.of(metadata);
             } catch (IOException e) {
-                LOGGER.error("Style metadata file in styles store is invalid: "+metadataFile.getAbsolutePath());
+                LOGGER.error("Cannot determine style title. Style metadata file in styles store is invalid: "+metadataFile.getAbsolutePath());
             }
         } catch (IOException e) {
-            LOGGER.error("Style metadata could not be read: "+styleId);
+            LOGGER.error("Cannot determine style title. Style metadata could not be read: "+styleId);
         }
         return Optional.empty();
     }

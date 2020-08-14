@@ -89,7 +89,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         try {
             return URLDecoder.decode(segment, Charsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {
-            LOGGER.error(String.format("Exception while decoding feature id '%s' for querying.", segment));
+            LOGGER.error(String.format("Exception while decoding feature id '%s' for querying. Trying with the undecoded id.", segment));
             return segment;
         }
     }

@@ -11,7 +11,6 @@ package de.ii.ldproxy.ogcapi.collection.styleinfo;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
@@ -121,7 +120,7 @@ public class OgcApiCollectionStyleInfo implements OgcApiCollectionExtension {
 
                 return Optional.of(styleInfos);
             } catch (IOException e) {
-                LOGGER.error("File in styleInfo store is invalid: "+styleInfosFile.getAbsolutePath());
+                LOGGER.error("File in styleInfo store is invalid and is skipped: "+styleInfosFile.getAbsolutePath());
             }
         } catch (IOException e) {
             LOGGER.error("Style info could not be read: "+styleInfosFile.getAbsolutePath());

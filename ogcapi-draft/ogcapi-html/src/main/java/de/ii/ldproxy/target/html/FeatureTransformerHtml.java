@@ -199,8 +199,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
             this.dataset.metaPagination = metaPagination.build();
 
         } else if (isFeatureCollection) {
-            //analyzeFailed(ex);
-            LOGGER.error("Pagination not supported by feature provider");
+            LOGGER.error("Pagination not supported by feature provider, the number of matched items was not provided.");
         }
     }
 

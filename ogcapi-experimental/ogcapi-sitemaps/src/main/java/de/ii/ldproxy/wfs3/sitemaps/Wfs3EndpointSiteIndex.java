@@ -104,7 +104,7 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
 
         long limit = 2250000000L;
         if (totalFeatureCount > limit) {
-            LOGGER.error("Warning: Limit for maximum features reached");
+            LOGGER.warn("Limit for maximum features reached ({}).", totalFeatureCount);
         }
 
         List<Site> sitemaps = new ArrayList<>();

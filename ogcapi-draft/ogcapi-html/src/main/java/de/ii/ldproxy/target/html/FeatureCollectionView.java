@@ -113,7 +113,7 @@ public class FeatureCollectionView extends DatasetView {
         try {
             return URLEncoder.encode(segment, Charsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {
-            LOGGER.error(String.format("Exception while encoding feature id '%s' for use in a URI.",segment));
+            LOGGER.warn(String.format("Exception while encoding feature id '%s' for use in a URI. Trying with the unencoded id.",segment));
             return segment;
         }
     }

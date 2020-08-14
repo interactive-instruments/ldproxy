@@ -43,7 +43,7 @@ public class OgcApiContentNegotiation {
 
         Optional<OgcApiMediaType> ogcApiMediaType = negotiateMediaType(supportedMediaTypes, requestContext.getRequest());
 
-        LOGGER.debug("contentType {}", ogcApiMediaType);
+        LOGGER.debug("content-type {}", ogcApiMediaType);
 
         return ogcApiMediaType;
     }
@@ -57,7 +57,7 @@ public class OgcApiContentNegotiation {
 
         Optional<OgcApiMediaType> ogcApiMediaType = negotiateMediaType(supportedMediaTypes, request);
 
-        LOGGER.debug("contentType {}", ogcApiMediaType);
+        LOGGER.debug("content-type {}", ogcApiMediaType);
 
         return ogcApiMediaType;
     }

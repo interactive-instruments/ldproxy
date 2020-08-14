@@ -121,8 +121,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             // parse input
             parsedContent = mapper.readValue(content, MbStyleStylesheet.class);
         } catch (IOException e) {
-            LOGGER.error("Stylesheet in the styles store is invalid: " + stylesheet.getAbsolutePath());
-            throw new RuntimeException("An error occurred while processing style '" + stylesheet.getName() + "'.");
+            throw new RuntimeException("Stylesheet in the styles store is invalid. Path: " + stylesheet.getAbsolutePath() + ".", e);
         }
 
         return Response.ok()

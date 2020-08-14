@@ -54,7 +54,7 @@ public class OgcApiExtensionRegistryImpl implements OgcApiExtensionRegistry {
             final OgcApiExtension extension = bundleContext.getService(ref);
 
             if (extension==null) {
-                LOGGER.error("An extension could not be registered");
+                LOGGER.error("An extension could not be registered: {}.", ref.getClass());
                 return;
             }
 
@@ -109,7 +109,10 @@ public class OgcApiExtensionRegistryImpl implements OgcApiExtensionRegistry {
             }
 
         } catch (Throwable e) {
-            LOGGER.error("E", e);
+            LOGGER.error("Error during registration of an extension: {}.", ref.getClass());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stacktrace:", e);
+            }
         }
     }
 

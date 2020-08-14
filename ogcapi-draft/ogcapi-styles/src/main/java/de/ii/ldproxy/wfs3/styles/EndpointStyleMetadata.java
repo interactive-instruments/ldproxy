@@ -123,8 +123,7 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
                                      @Context OgcApiApi api,
                                      @Context OgcApiRequestContext requestContext) {
 
-        StyleMetadata metadata = getMetadata(styleId, requestContext)
-                .orElseThrow(() -> new InternalServerErrorException(MessageFormat.format("Style metadata could not be retrieved for style ''{0}'' in API ''{1}''.", styleId, api.getId())));
+        StyleMetadata metadata = getMetadata(api, styleId, requestContext);
 
         return getFormats().stream()
                 .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
@@ -137,8 +136,7 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
                 .getStyleMetadataResponse(metadata, api, requestContext);
     }
 
-    private Optional<StyleMetadata> getMetadata(String styleId, OgcApiRequestContext requestContext) {
-        String key = styleId + ".metadata";
+    private StyleMetadata getMetadata(OgcApiApi api, String styleId, OgcApiRequestContext requestContext) {
         String apiId = requestContext.getApi().getId();
         File metadataFile = new File( stylesStore + File.separator + apiId + File.separator + styleId + ".metadata");
 
@@ -159,13 +157,14 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
                 StyleMetadata metadata = mapper.readValue(metadataContent, StyleMetadata.class);
 
                 // TODO add standard links to preview?
-                return Optional.of(metadata);
+                return metadata;
             } catch (IOException e) {
                 LOGGER.error("Style metadata file in styles store is invalid: "+metadataFile.getAbsolutePath());
+                throw new InternalServerErrorException(MessageFormat.format("Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.", styleId, api.getId()), e);
             }
         } catch (IOException e) {
             LOGGER.error("Style metadata could not be read: "+styleId);
+            throw new InternalServerErrorException(MessageFormat.format("Style metadata could not be read for style ''{0}'' in API ''{1}''.", styleId, api.getId()), e);
         }
-        return Optional.empty();
     }
 }
