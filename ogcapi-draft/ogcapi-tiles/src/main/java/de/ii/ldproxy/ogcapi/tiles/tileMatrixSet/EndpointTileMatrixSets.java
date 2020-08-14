@@ -10,7 +10,8 @@ package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.tiles.*;
+
+import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -19,13 +20,14 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * fetch tiling schemes / tile matrix sets that have been configured for an API
@@ -124,7 +126,7 @@ public class EndpointTileMatrixSets extends OgcApiEndpoint implements Conformanc
     public Response getTileMatrixSets(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
 
         if (!isEnabledForApi(api.getData()))
-            throw new NotFoundException();
+            throw new NotFoundException("Tile matrix sets are not available in this API.");
 
         TileMatrixSetsQueriesHandler.OgcApiQueryInputTileMatrixSets queryInput = new ImmutableOgcApiQueryInputTileMatrixSets.Builder()
                 .from(getGenericQueryInput(api.getData()))

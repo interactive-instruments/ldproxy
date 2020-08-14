@@ -23,5 +23,4 @@ public interface GeneralizationConfiguration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableGeneralizationConfiguration.Builder();
     }
-
 }

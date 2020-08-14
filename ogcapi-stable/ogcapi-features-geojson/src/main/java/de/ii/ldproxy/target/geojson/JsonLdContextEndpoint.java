@@ -71,7 +71,7 @@ public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
         java.nio.file.Path context = contextDirectory.resolve(collectionId);
 
         if (!Files.isRegularFile(context)) {
-            throw new NotFoundException();
+            throw new NotFoundException("The JSON-LD context was not found.");
         }
 
         return Response.ok(Files.newInputStream(context),"application/ld+json")

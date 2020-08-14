@@ -68,5 +68,4 @@ public interface ObservationProcessingConfiguration extends ExtensionConfigurati
                 .documentation(getDocumentation())
                 .build();
     }
-
 }

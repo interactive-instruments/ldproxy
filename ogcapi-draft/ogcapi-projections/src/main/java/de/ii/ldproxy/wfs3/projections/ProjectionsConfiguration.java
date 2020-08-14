@@ -24,5 +24,4 @@ public interface ProjectionsConfiguration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableProjectionsConfiguration.Builder();
     }
-
 }

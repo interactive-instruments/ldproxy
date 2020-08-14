@@ -23,7 +23,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Handle responses under '/tiles'.
@@ -102,7 +101,7 @@ public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements C
 
         OgcApiApiDataV2 apiData = api.getData();
         if (!isEnabledForApi(apiData))
-            throw new NotFoundException();
+            throw new NotFoundException("Multi-collection tiles are not available in this API.");
 
         TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 

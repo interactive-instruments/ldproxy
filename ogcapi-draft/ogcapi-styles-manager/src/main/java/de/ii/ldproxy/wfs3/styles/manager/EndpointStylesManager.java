@@ -7,16 +7,12 @@
  */
 package de.ii.ldproxy.wfs3.styles.manager;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.application.I18n;
@@ -26,8 +22,6 @@ import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.wfs3.styles.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
-import io.dropwizard.jersey.PATCH;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -53,12 +47,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -421,7 +415,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
             }
         }
         if (!styleFound) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
         }
     }
 
@@ -525,7 +519,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
                 validateRequestBody(requestBodyNode);
             }
         } catch (Exception e) {
-            throw new BadRequestException(e.getMessage());
+            throw new BadRequestException(e);
         }
 
         return requestBodyNode;
@@ -577,7 +571,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
                 Validator validator = schema.newValidator();
                 validator.validate(new StreamSource(ByteSource.wrap(requestBody).openStream()));
             } catch (IOException | SAXException e) {
-                throw new BadRequestException(e.getMessage());
+                throw new BadRequestException(e);
             }
         }
     }

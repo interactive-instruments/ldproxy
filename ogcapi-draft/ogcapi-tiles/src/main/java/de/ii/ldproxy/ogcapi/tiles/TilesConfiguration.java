@@ -78,5 +78,4 @@ public interface TilesConfiguration extends ExtensionConfiguration {
                      .filters(getFilters())
                      .build();
     }
-
 }

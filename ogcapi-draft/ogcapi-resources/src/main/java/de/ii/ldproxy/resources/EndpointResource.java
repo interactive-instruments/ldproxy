@@ -26,9 +26,9 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -130,7 +130,7 @@ public class EndpointResource extends OgcApiEndpoint {
         File resourceFile = new File(apiDir + File.separator + resourceId);
 
         if (!resourceFile.exists()) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The file ''{0}'' does not exist.", resourceId));
         }
 
         try {
@@ -140,7 +140,7 @@ public class EndpointResource extends OgcApiEndpoint {
                     .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
                     .findAny()
                     .map(ResourceFormatExtension.class::cast)
-                    .orElseThrow(() -> new NotAcceptableException())
+                    .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())))
                     .getResourceResponse(resource, resourceId, api, requestContext);
         } catch (IOException e) {
             throw new ServerErrorException("resource could not be read: "+resourceId, 500);

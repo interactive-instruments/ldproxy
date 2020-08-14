@@ -12,13 +12,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -29,17 +26,15 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 
@@ -165,7 +160,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
                 .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
                 .findAny()
                 .map(StylesFormatExtension.class::cast)
-                .orElseThrow(() -> new NotAcceptableException())
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())))
                 .getStylesResponse(styles, api, requestContext);
     }
 
@@ -175,7 +170,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
         File metadataFile = new File( stylesStore + File.separator + apiId + File.separator + styleId + ".metadata");
 
         if (!metadataFile.exists()) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
         }
 
         try {
@@ -193,10 +188,10 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
                 // TODO add standard links to preview?
                 return Optional.of(metadata);
             } catch (IOException e) {
-                LOGGER.error("Style metadata file in styles store is invalid: "+metadataFile.getAbsolutePath());
+                LOGGER.error("Cannot determine style title. Style metadata file in styles store is invalid: "+metadataFile.getAbsolutePath());
             }
         } catch (IOException e) {
-            LOGGER.error("Style metadata could not be read: "+styleId);
+            LOGGER.error("Cannot determine style title. Style metadata could not be read: "+styleId);
         }
         return Optional.empty();
     }

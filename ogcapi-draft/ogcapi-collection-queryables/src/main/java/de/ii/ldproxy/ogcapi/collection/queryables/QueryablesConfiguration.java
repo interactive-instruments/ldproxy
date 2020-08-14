@@ -24,5 +24,4 @@ public interface QueryablesConfiguration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableQueryablesConfiguration.Builder();
     }
-
 }

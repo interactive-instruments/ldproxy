@@ -24,5 +24,4 @@ public interface Oas30Configuration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableOas30Configuration.Builder();
     }
-
 }

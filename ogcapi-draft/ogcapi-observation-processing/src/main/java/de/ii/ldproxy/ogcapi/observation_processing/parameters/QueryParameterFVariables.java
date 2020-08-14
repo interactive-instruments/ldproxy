@@ -51,5 +51,4 @@ public class QueryParameterFVariables extends QueryParameterF {
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
         return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
-
 }

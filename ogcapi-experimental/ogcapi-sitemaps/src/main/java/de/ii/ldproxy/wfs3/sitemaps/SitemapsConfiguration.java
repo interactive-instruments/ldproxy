@@ -24,5 +24,4 @@ public interface SitemapsConfiguration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableSitemapsConfiguration.Builder();
     }
-
 }

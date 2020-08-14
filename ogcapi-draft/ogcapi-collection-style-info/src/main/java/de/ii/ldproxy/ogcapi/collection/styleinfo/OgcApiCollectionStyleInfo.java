@@ -11,7 +11,6 @@ package de.ii.ldproxy.ogcapi.collection.styleinfo;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
@@ -22,7 +21,6 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.NotFoundException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -108,9 +106,6 @@ public class OgcApiCollectionStyleInfo implements OgcApiCollectionExtension {
     }
 
     private Optional<StyleInfos> getStyleInfos(File styleInfosFile) {
-        if (!styleInfosFile.exists()) {
-            throw new NotFoundException();
-        }
 
         try {
             final byte[] content = java.nio.file.Files.readAllBytes(styleInfosFile.toPath());
@@ -125,7 +120,7 @@ public class OgcApiCollectionStyleInfo implements OgcApiCollectionExtension {
 
                 return Optional.of(styleInfos);
             } catch (IOException e) {
-                LOGGER.error("File in styleInfo store is invalid: "+styleInfosFile.getAbsolutePath());
+                LOGGER.error("File in styleInfo store is invalid and is skipped: "+styleInfosFile.getAbsolutePath());
             }
         } catch (IOException e) {
             LOGGER.error("Style info could not be read: "+styleInfosFile.getAbsolutePath());

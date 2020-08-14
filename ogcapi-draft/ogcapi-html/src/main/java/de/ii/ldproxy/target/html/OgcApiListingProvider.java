@@ -26,7 +26,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
 
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -134,7 +133,7 @@ public class OgcApiListingProvider implements ServiceListingProvider {
 
     @Override
     public Response getStaticAsset(String path) {
-        try {
+
             final URL url = path.endsWith("favicon.ico") ? bundleContext.getBundle()
                                                                         .getResource("img/favicon.ico") : bundleContext.getBundle()
                                                                                                                        .getResource(path);
@@ -145,8 +144,6 @@ public class OgcApiListingProvider implements ServiceListingProvider {
                                                                     .copyTo(output))
                            .type(mediaType)
                            .build();
-        } catch (Throwable e) {
-            throw new NotFoundException();
-        }
+
     }
 }

@@ -11,6 +11,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -163,7 +164,7 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
     protected void checkCollectionExists(@Context OgcApiApiDataV2 apiData,
                                @PathParam("collectionId") String collectionId) {
         if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
         }
     }
 

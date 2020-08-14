@@ -100,7 +100,7 @@ public class OgcApiOutputFormatJson implements CollectionsFormatExtension, Commo
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override
