@@ -8,9 +8,9 @@
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-
 import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -28,6 +28,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * fetch tiling schemes / tile matrix sets that have been configured for an API
@@ -128,9 +129,23 @@ public class EndpointTileMatrixSets extends OgcApiEndpoint implements Conformanc
         if (!isEnabledForApi(api.getData()))
             throw new NotFoundException("Tile matrix sets are not available in this API.");
 
+        ImmutableSet<TileMatrixSet> tmsSet = getPathParameters(extensionRegistry, api.getData(), "/tileMatrixSets/{tileMatrixSetId}").stream()
+                .filter(param -> param.getName().equalsIgnoreCase("tileMatrixSetId"))
+                .findAny()
+                .map(param -> param.getValues(api.getData()))
+                .stream()
+                .flatMap(Set::stream)
+                .map(tileMatrixSetId -> extensionRegistry.getExtensionsForType(TileMatrixSet.class)
+                                                         .stream()
+                                                         .filter(tms -> tileMatrixSetId.equals(tms.getId()))
+                                                         .findAny())
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(ImmutableSet.toImmutableSet());
+
         TileMatrixSetsQueriesHandler.OgcApiQueryInputTileMatrixSets queryInput = new ImmutableOgcApiQueryInputTileMatrixSets.Builder()
                 .from(getGenericQueryInput(api.getData()))
-                .tileMatrixSets(extensionRegistry.getExtensionsForType(TileMatrixSet.class))
+                .tileMatrixSets(tmsSet)
                 .build();
 
         return queryHandler.handle(TileMatrixSetsQueriesHandler.Query.TILE_MATRIX_SETS, queryInput, requestContext);
