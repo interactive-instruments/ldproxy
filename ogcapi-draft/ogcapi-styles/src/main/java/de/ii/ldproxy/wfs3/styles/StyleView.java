@@ -19,6 +19,7 @@ public class StyleView extends GenericView {
     public String styleUrl;
     public String apiId;
     public String styleId;
+    public boolean popup = true;
     public Map<String, String> bbox;
     private OgcApiApiDataV2 apiData;
 

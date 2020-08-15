@@ -81,7 +81,7 @@ public class StyleMetadataOutputFormatHtml implements StyleMetadataFormatExtensi
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(4)
+                                .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 5 : 4)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()

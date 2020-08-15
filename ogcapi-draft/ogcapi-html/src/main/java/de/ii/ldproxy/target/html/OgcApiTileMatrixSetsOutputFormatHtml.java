@@ -80,7 +80,7 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(2)
+                                .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 3 : 2)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()
@@ -110,7 +110,7 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(3)
+                                .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 4 : 3)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()

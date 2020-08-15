@@ -109,8 +109,9 @@ public class StyleFormatHtml implements StyleFormatExtension {
     @Override
     public Response getStyleResponse(String styleId, File stylesheet, List<OgcApiLink> links, OgcApiApi api, OgcApiRequestContext requestContext) throws IOException {
 
-        String styleUri = String.format("%s/%s/styles/%s?f=mbs", xtraPlatform.getServicesUri(), api.getData()
-                                                                            .getId(), styleId);
+        String optionalApiVersion = api.getData().getApiVersion().isPresent() ? "v"+api.getData().getApiVersion().get()+"/" : "";
+        String styleUri = String.format("%s/%s/%sstyles/%s?f=mbs", xtraPlatform.getServicesUri(), api.getData()
+                                                                            .getId(), optionalApiVersion, styleId);
         StyleView styleView = new StyleView(styleUri, api, styleId);
 
         return Response.ok()
