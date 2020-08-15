@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -35,6 +36,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     private final OgcApiExtensionRegistry extensionRegistry;
     final OgcApiFeatureCoreProviders providers;
     final FeatureProcessInfo featureProcessInfo;
+    protected Map<String, Schema> schemaMap = new ConcurrentHashMap<>();
 
     public PathParameterTileMatrixSetId(@Requires OgcApiExtensionRegistry extensionRegistry,
                                         @Requires OgcApiFeatureCoreProviders providers,
@@ -76,15 +78,13 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
                                                                           .collect(Collectors.toSet());
     }
 
-    private Schema schema = null;
-
     @Override
     public Schema getSchema(OgcApiApiDataV2 apiData) {
-        if (schema==null) {
-            schema = new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData)));
+        if (!schemaMap.containsKey(apiData.getId())) {
+            schemaMap.put(apiData.getId(),new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData))));
         }
 
-        return schema;
+        return schemaMap.get(apiData.getId());
     }
 
     @Override
