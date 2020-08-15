@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.admin.rest;
 
-import de.ii.xtraplatform.api.exceptions.BadRequest;
 import de.ii.xtraplatform.codelists.CodelistData;
 import de.ii.xtraplatform.codelists.CodelistImporter;
 import de.ii.xtraplatform.entity.api.EntityData;
@@ -21,14 +20,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.List;
@@ -80,12 +72,12 @@ public class CodelistEndpoint implements Endpoint {
         try {
             codelistData = codelistImporter.generate(request);
         } catch (IllegalArgumentException e) {
-            throw new BadRequest();
+            throw new BadRequestException("The codelist has an invalid source type.");
         }
 
 
         if (codelistRepository.has(codelistData.getId())) {
-            throw new BadRequest("A codelist with id '" + codelistData.getId() + "' already exists");
+            throw new BadRequestException("A codelist with id '" + codelistData.getId() + "' already exists.");
         }
 
         try {
@@ -94,7 +86,7 @@ public class CodelistEndpoint implements Endpoint {
 
             return added;
         } catch (InterruptedException | ExecutionException e) {
-            throw new InternalServerErrorException();
+            throw new InternalServerErrorException(e.getMessage());
         }
     }
 

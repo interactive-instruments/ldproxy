@@ -44,6 +44,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
 
     @Requires
     private KeyValueStore keyValueStore;
+
     @Requires
     private XtraPlatform xtraPlatform;
 

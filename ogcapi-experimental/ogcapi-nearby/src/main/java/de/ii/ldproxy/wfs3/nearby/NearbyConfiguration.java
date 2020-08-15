@@ -54,5 +54,4 @@ public interface NearbyConfiguration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableNearbyConfiguration.Builder();
     }
-
 }

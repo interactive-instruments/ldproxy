@@ -115,7 +115,7 @@ public class Wfs3ServiceMigrate {
                                 }*/
 
                             } catch (Throwable e) {
-                                LOGGER.error("ERROR", e);
+                                throw new RuntimeException(e);
                             }
 
 

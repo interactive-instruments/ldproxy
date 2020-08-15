@@ -16,7 +16,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.BadRequestException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -92,7 +91,7 @@ public class QueryParameterCoordArea implements OgcApiQueryParameter {
             // TODO support other CRS
             String coord = parameters.get(getName());
             if (!coord.matches(geometryHelper.getMultiPolygonRegex()) && !coord.matches(geometryHelper.getPolygonRegex())) {
-                throw new BadRequestException(String.format("The parameter '%s' has an invalid value '%s'.", "coord", coord));
+                throw new IllegalArgumentException(String.format("The parameter '%s' has an invalid value '%s'.", "coord", coord));
             }
 
             String spatialPropertyName = getSpatialProperty(apiData, featureType.getId());

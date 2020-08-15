@@ -13,8 +13,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -43,7 +41,7 @@ public class CollectionStyleInfosJson implements CollectionStyleInfoFormatExtens
     }
 
     @Override
-    public Response patchStyleInfos(byte[] requestBody, File styleInfosStore, OgcApiApi api, String collectionId) {
+    public Response patchStyleInfos(byte[] requestBody, File styleInfosStore, OgcApiApi api, String collectionId) throws IOException {
 
         final String apiId = api.getData().getId();
         File apiDir = new File(styleInfosStore + File.separator + apiId);
@@ -57,28 +55,25 @@ public class CollectionStyleInfosJson implements CollectionStyleInfoFormatExtens
         mapper.registerModule(new Jdk8Module());
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        try {
-            ObjectReader objectReader;
-            StyleInfos updatedContent;
-            if (newStyleInfos) {
-                updatedContent = mapper.readValue(requestBody, StyleInfos.class);
-            } else {
-                /* TODO currently treat it like a put, change to proper PATCH
-                mapper.readValue(requestBody, StyleInfos.class);
-                File metadataFile = new File( styleInfosStore + File.separator + dataset.getId() + File.separator + collectionId);
-                StyleInfos currentContent = mapper.readValue(metadataFile, StyleInfos.class);
-                objectReader = mapper.readerForUpdating(currentContent);
-                updatedContent = objectReader.readValue(requestBody);
-                 */
-                updatedContent = mapper.readValue(requestBody, StyleInfos.class);
-            }
-            // parse input for validation
-            byte[] updatedContentString = mapper.writerWithDefaultPrettyPrinter()
-                    .writeValueAsBytes(updatedContent); // TODO: remove pretty print
-            putStylesInfoDocument(styleInfosStore, api.getId(), collectionId, updatedContentString);
-        } catch (IOException e) {
-            throw new BadRequestException(e.getMessage());
+
+        ObjectReader objectReader;
+        StyleInfos updatedContent;
+        if (newStyleInfos) {
+            updatedContent = mapper.readValue(requestBody, StyleInfos.class);
+        } else {
+            /* TODO currently treat it like a put, change to proper PATCH
+            mapper.readValue(requestBody, StyleInfos.class);
+            File metadataFile = new File( styleInfosStore + File.separator + dataset.getId() + File.separator + collectionId);
+            StyleInfos currentContent = mapper.readValue(metadataFile, StyleInfos.class);
+            objectReader = mapper.readerForUpdating(currentContent);
+            updatedContent = objectReader.readValue(requestBody);
+             */
+            updatedContent = mapper.readValue(requestBody, StyleInfos.class);
         }
+        // parse input for validation
+        byte[] updatedContentString = mapper.writerWithDefaultPrettyPrinter()
+                .writeValueAsBytes(updatedContent); // TODO: remove pretty print
+        putStylesInfoDocument(styleInfosStore, api.getId(), collectionId, updatedContentString);
 
         return Response.noContent()
                 .build();
@@ -99,7 +94,7 @@ public class CollectionStyleInfosJson implements CollectionStyleInfoFormatExtens
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override
@@ -113,7 +108,7 @@ public class CollectionStyleInfosJson implements CollectionStyleInfoFormatExtens
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path/method "+path+"/"+method,500);
+        throw new RuntimeException(String.format("Unexpected path/method. Path: %s. Method: %s", path, method));
     }
 
     private boolean isNewStyleInfo(File styleInfosStore, String apiId, String collectionId) {
@@ -134,7 +129,7 @@ public class CollectionStyleInfosJson implements CollectionStyleInfoFormatExtens
         try {
             Files.write(styleFile.toPath(), payload);
         } catch (IOException e) {
-            throw new ServerErrorException("could not PATCH style information: "+collectionId, 500);
+            throw new RuntimeException("Could not PATCH style information: " + collectionId);
         }
     }
 }

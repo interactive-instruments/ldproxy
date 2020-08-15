@@ -143,98 +143,89 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
 
         LOGGER.debug("{} observations received.", observationCount);
 
-        try {
-            Object entity = outputFormat.initializeResult(processes, processingParameters, variables, outputStream);
+        Object entity = outputFormat.initializeResult(processes, processingParameters, variables, outputStream);
 
-            Object data = observations;
-            for (FeatureProcess process : processes.asList()) {
-                data = process.execute(data, processingParameters);
-                LOGGER.debug("Process '{}' completed.", process.getName());
-            }
+        Object data = observations;
+        for (FeatureProcess process : processes.asList()) {
+            data = process.execute(data, processingParameters);
+            LOGGER.debug("Process '{}' completed.", process.getName());
+        }
 
-            if (data!=null) {
-                if (data instanceof ObservationCollectionPointTimeSeries) {
-                    ObservationCollectionPointTimeSeries result = (ObservationCollectionPointTimeSeries) data;
-                    for (Map.Entry<Temporal, ConcurrentMap<String, Number>> entry : result.getValues().entrySet()) {
-                        outputFormat.addFeature(entity, result.getCode(), result.getName(), result.getGeometry(),
-                                entry.getKey(), entry.getKey(), entry.getValue());
-                    }
-                } else if (data instanceof ObservationCollectionPointTimeSeriesList) {
-                    ObservationCollectionPointTimeSeriesList result = (ObservationCollectionPointTimeSeriesList) data;
-                    for (ObservationCollectionPointTimeSeries pos : result) {
-                        for (Map.Entry<Temporal, ConcurrentMap<String, Number>> entry : pos.getValues().entrySet()) {
-                            outputFormat.addFeature(entity, pos.getCode(), pos.getName(), pos.getGeometry(),
-                                    entry.getKey(), entry.getKey(), entry.getValue());
-                        }
-                    }
-                } else if (data instanceof ObservationCollectionAreaTimeSeries) {
-                    ObservationCollectionAreaTimeSeries result = (ObservationCollectionAreaTimeSeries) data;
-                    for (Map.Entry<Temporal, ConcurrentMap<String, Number>> entry : result.getValues().entrySet()) {
-                        outputFormat.addFeature(entity, Optional.empty(), Optional.empty(), result.getGeometry(),
-                                entry.getKey(), entry.getKey(), entry.getValue());
-                    }
-                } else if (data instanceof ObservationCollectionPoint) {
-                    ObservationCollectionPoint result = (ObservationCollectionPoint) data;
+        if (data!=null) {
+            if (data instanceof ObservationCollectionPointTimeSeries) {
+                ObservationCollectionPointTimeSeries result = (ObservationCollectionPointTimeSeries) data;
+                for (Map.Entry<Temporal, ConcurrentMap<String, Number>> entry : result.getValues().entrySet()) {
                     outputFormat.addFeature(entity, result.getCode(), result.getName(), result.getGeometry(),
-                            result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
-                } else if (data instanceof ObservationCollectionPointList) {
-                    ObservationCollectionPointList result = (ObservationCollectionPointList) data;
-                    for (ObservationCollectionPoint pos : result) {
+                            entry.getKey(), entry.getKey(), entry.getValue());
+                }
+            } else if (data instanceof ObservationCollectionPointTimeSeriesList) {
+                ObservationCollectionPointTimeSeriesList result = (ObservationCollectionPointTimeSeriesList) data;
+                for (ObservationCollectionPointTimeSeries pos : result) {
+                    for (Map.Entry<Temporal, ConcurrentMap<String, Number>> entry : pos.getValues().entrySet()) {
                         outputFormat.addFeature(entity, pos.getCode(), pos.getName(), pos.getGeometry(),
-                                pos.getInterval().getBegin(), pos.getInterval().getEnd(), pos.getValues());
+                                entry.getKey(), entry.getKey(), entry.getValue());
                     }
-                } else if (data instanceof ObservationCollectionArea) {
-                    ObservationCollectionArea result = (ObservationCollectionArea) data;
+                }
+            } else if (data instanceof ObservationCollectionAreaTimeSeries) {
+                ObservationCollectionAreaTimeSeries result = (ObservationCollectionAreaTimeSeries) data;
+                for (Map.Entry<Temporal, ConcurrentMap<String, Number>> entry : result.getValues().entrySet()) {
                     outputFormat.addFeature(entity, Optional.empty(), Optional.empty(), result.getGeometry(),
-                               result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
-                } else if (data instanceof DataArrayXyt) {
-                    DataArrayXyt result = (DataArrayXyt) data;
-                    boolean formatAcceptsDataArray = outputFormat.addDataArray(entity, result);
-                    if (!formatAcceptsDataArray) {
-                        Vector<String> vars = result.getVars();
-                        for (int i0 = 0; i0 < result.getWidth(); i0++)
-                            for (int i1 = 0; i1 < result.getHeight(); i1++)
-                                for (int i2 = 0; i2 < result.getSteps(); i2++) {
-                                    Map<String, Number> map = new HashMap<>();
-                                    for (int i3 = 0; i3 < vars.size(); i3++)
-                                        if (!Float.isNaN(result.array[i2][i1][i0][i3]))
-                                            map.put(vars.get(i3), result.array[i2][i1][i0][i3]);
-                                    LocalDate date = result.date(i2);
-                                    if (!map.isEmpty())
-                                        outputFormat.addFeature(entity, Optional.empty(), Optional.empty(),
-                                                new GeometryPoint(result.lon(i0), result.lat(i1)),
-                                                date, date, map);
-                                }
-                    }
-                } else if (data instanceof DataArrayXy) {
-                    DataArrayXy result = (DataArrayXy) data;
-                    boolean formatAcceptsDataArray = outputFormat.addDataArray(entity, result);
-                    if (!formatAcceptsDataArray) {
-                        Vector<String> vars = result.getVars();
-                        for (int i0=0; i0<result.getWidth(); i0++)
-                            for (int i1=0; i1<result.getHeight(); i1++) {
+                            entry.getKey(), entry.getKey(), entry.getValue());
+                }
+            } else if (data instanceof ObservationCollectionPoint) {
+                ObservationCollectionPoint result = (ObservationCollectionPoint) data;
+                outputFormat.addFeature(entity, result.getCode(), result.getName(), result.getGeometry(),
+                        result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
+            } else if (data instanceof ObservationCollectionPointList) {
+                ObservationCollectionPointList result = (ObservationCollectionPointList) data;
+                for (ObservationCollectionPoint pos : result) {
+                    outputFormat.addFeature(entity, pos.getCode(), pos.getName(), pos.getGeometry(),
+                            pos.getInterval().getBegin(), pos.getInterval().getEnd(), pos.getValues());
+                }
+            } else if (data instanceof ObservationCollectionArea) {
+                ObservationCollectionArea result = (ObservationCollectionArea) data;
+                outputFormat.addFeature(entity, Optional.empty(), Optional.empty(), result.getGeometry(),
+                           result.getInterval().getBegin(), result.getInterval().getEnd(), result.getValues());
+            } else if (data instanceof DataArrayXyt) {
+                DataArrayXyt result = (DataArrayXyt) data;
+                boolean formatAcceptsDataArray = outputFormat.addDataArray(entity, result);
+                if (!formatAcceptsDataArray) {
+                    Vector<String> vars = result.getVars();
+                    for (int i0 = 0; i0 < result.getWidth(); i0++)
+                        for (int i1 = 0; i1 < result.getHeight(); i1++)
+                            for (int i2 = 0; i2 < result.getSteps(); i2++) {
                                 Map<String, Number> map = new HashMap<>();
                                 for (int i3 = 0; i3 < vars.size(); i3++)
-                                    if (!Float.isNaN(result.array[i1][i0][i3]))
-                                        map.put(vars.get(i3), result.array[i1][i0][i3]);
+                                    if (!Float.isNaN(result.array[i2][i1][i0][i3]))
+                                        map.put(vars.get(i3), result.array[i2][i1][i0][i3]);
+                                LocalDate date = result.date(i2);
                                 if (!map.isEmpty())
                                     outputFormat.addFeature(entity, Optional.empty(), Optional.empty(),
                                             new GeometryPoint(result.lon(i0), result.lat(i1)),
-                                            result.getInterval().getBegin(), result.getInterval().getEnd(), map);
+                                            date, date, map);
                             }
-                    }
+                }
+            } else if (data instanceof DataArrayXy) {
+                DataArrayXy result = (DataArrayXy) data;
+                boolean formatAcceptsDataArray = outputFormat.addDataArray(entity, result);
+                if (!formatAcceptsDataArray) {
+                    Vector<String> vars = result.getVars();
+                    for (int i0=0; i0<result.getWidth(); i0++)
+                        for (int i1=0; i1<result.getHeight(); i1++) {
+                            Map<String, Number> map = new HashMap<>();
+                            for (int i3 = 0; i3 < vars.size(); i3++)
+                                if (!Float.isNaN(result.array[i1][i0][i3]))
+                                    map.put(vars.get(i3), result.array[i1][i0][i3]);
+                            if (!map.isEmpty())
+                                outputFormat.addFeature(entity, Optional.empty(), Optional.empty(),
+                                        new GeometryPoint(result.lon(i0), result.lat(i1)),
+                                        result.getInterval().getBegin(), result.getInterval().getEnd(), map);
+                        }
                 }
             }
-
-            outputFormat.finalizeResult(entity);
-        } catch (IOException e) {
-            LOGGER.error("Error writing observations.");
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Stacktrace: ", e);
-            }
-            throw e;
         }
 
+        outputFormat.finalizeResult(entity);
     }
 
 

@@ -26,7 +26,6 @@ public class CapabilityNearby implements OgcApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableNearbyConfiguration.Builder().enabled(false)
-                                                         .build();
+                .build();
     }
-
 }

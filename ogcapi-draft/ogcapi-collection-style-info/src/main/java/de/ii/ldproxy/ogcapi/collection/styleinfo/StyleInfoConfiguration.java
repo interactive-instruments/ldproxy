@@ -24,5 +24,4 @@ public interface StyleInfoConfiguration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableStyleInfoConfiguration.Builder();
     }
-
 }

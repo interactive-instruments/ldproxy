@@ -18,7 +18,6 @@ import akka.stream.javadsl.StreamConverters;
 import akka.util.ByteString;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.feature.transformer.geojson.FeatureDecoderGeoJson;
 import de.ii.xtraplatform.features.domain.FeatureDecoder;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
@@ -27,8 +26,6 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.geojson.GeoJsonStreamParser;
 import de.ii.xtraplatform.feature.transformer.geojson.MappingSwapper;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
@@ -52,7 +49,7 @@ public class CommandHandlerTransactional {
 
         if (result.getError().isPresent()) {
             //TODO: see FeaturesCoreQueryHandler
-            throw new InternalServerErrorException();
+            throw new RuntimeException(result.getError().get());
         }
 
         List<String> ids = result.getIds();
@@ -61,7 +58,7 @@ public class CommandHandlerTransactional {
 
 
         if (ids.isEmpty()) {
-            throw new BadRequestException("No features found in input");
+            throw new IllegalArgumentException("No features found in input");
         }
         URI firstFeature = null;
         try {
@@ -88,7 +85,7 @@ public class CommandHandlerTransactional {
 
         if (result.getError().isPresent()) {
             //TODO: see FeaturesCoreQueryHandler
-            throw new InternalServerErrorException();
+            throw new RuntimeException(result.getError().get());
         }
 
         return Response.noContent()
@@ -103,7 +100,7 @@ public class CommandHandlerTransactional {
 
         if (result.getError().isPresent()) {
             //TODO: see FeaturesCoreQueryHandler
-            throw new InternalServerErrorException();
+            throw new RuntimeException(result.getError().get());
         }
 
         return Response.noContent()

@@ -23,6 +23,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -112,7 +113,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
 
         } else {
             selectedMediaType = ogcApiContentNegotiation.negotiate(requestContext, supportedMediaTypes)
-                    .orElseThrow(NotAcceptableException::new);
+                    .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
             alternateMediaTypes = getAlternateMediaTypes(selectedMediaType, supportedMediaTypes);
 
         }
@@ -136,7 +137,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
             // check that the subPath is valid
             OgcApiResource resource = apiDef.getResource("/" + entrypoint + subPath).orElse(null);
             if (resource==null)
-                throw new NotFoundException();
+                throw new NotFoundException("The requested path is not a resource in this API.");
 
             // no need to check the path parameters here, only the parent path parameters (service, endpoint) are available;
             // path parameters in the sub-path have to be checked later
@@ -181,7 +182,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                     .toArray(String[]::new);
             throw new NotAllowedException(first,more);
         } else
-            throw new NotFoundException();
+            throw new NotFoundException("The requested path is not a resource in this API.");
     }
 
     private Set<OgcApiMediaType> getAlternateMediaTypes(OgcApiMediaType selectedMediaType,
@@ -206,7 +207,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                         return false;
                     });
             if (!resourceExists)
-                throw new NotFoundException();
+                throw new NotFoundException("The requested path is not a resource in this API.");
 
             return getEndpoints().stream()
                     .filter(endpoint -> endpoint.getClass()==OgcApiOptionsEndpoint.class)
@@ -221,6 +222,7 @@ public class OgcApiRequestDispatcher implements ServiceResource {
                                      return apiDef.matches("/"+entrypoint+subPath, method);
                                  return false;
                              })
+                             .filter(endpoint -> endpoint.isEnabledForApi(dataset))
                              .findFirst();
     }
 

@@ -27,6 +27,7 @@ public interface ExtendableConfiguration {
     default <T extends ExtensionConfiguration> Optional<T> getExtension(Class<T> clazz) {
         return getMergedExtensions().stream()
                               .filter(extensionConfiguration -> Objects.equals(extensionConfiguration.getBuildingBlock(), ExtensionConfiguration.getBuildingBlockIdentifier(clazz)))
+                              .filter(extensionConfiguration -> extensionConfiguration!=null)
                               .findFirst()
                               .map(extensionConfiguration -> (T) extensionConfiguration);
     }

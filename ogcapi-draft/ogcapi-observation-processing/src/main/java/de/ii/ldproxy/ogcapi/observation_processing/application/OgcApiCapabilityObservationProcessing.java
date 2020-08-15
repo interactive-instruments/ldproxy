@@ -16,6 +16,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Component
 @Provides
 @Instantiate
+
 public class OgcApiCapabilityObservationProcessing implements OgcApiBuildingBlock {
 
     @Override
@@ -31,5 +32,4 @@ public class OgcApiCapabilityObservationProcessing implements OgcApiBuildingBloc
                                                                         .idwDistanceKm(300.0)
                                                                         .build();
     }
-
 }

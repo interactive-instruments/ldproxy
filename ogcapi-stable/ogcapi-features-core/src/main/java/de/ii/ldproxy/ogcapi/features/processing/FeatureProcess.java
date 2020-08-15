@@ -14,7 +14,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiProcessExtension;
 import io.swagger.v3.oas.models.media.Schema;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import java.util.*;
 
@@ -31,12 +30,12 @@ public interface FeatureProcess extends OgcApiProcessExtension {
     Optional<String> getDescription();
 
     /**
-     * Validates that the required parameters are set for the execute, throws {@code ServerErrorException} for any
+     * Validates that the required parameters are set for the execute, throws {@code RuntimeException} for any
      * errors as these issues should have been checked before processing the request.
      *
      * @param processingParameters the list of execute parameters that are provided with the request
      */
-    void validateProcessingParameters(Map<String, Object> processingParameters) throws ServerErrorException;
+    void validateProcessingParameters(Map<String, Object> processingParameters);
 
     /**
      * Every execute the processes feature data must either accept a collection as an input or another compatible

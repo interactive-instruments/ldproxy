@@ -78,7 +78,7 @@ public abstract class AbstractOgcApiRequestContext implements OgcApiRequestConte
                                  .map(nameValuePair -> new AbstractMap.SimpleImmutableEntry<>(nameValuePair.getName(), nameValuePair.getValue()))
                                  .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> {
                                      // TODO for now ignore multiple parameters with the same name
-                                     LOGGER.error("Duplicate parameter found, the following value is ignored: " + value2);
+                                     LOGGER.warn("Duplicate parameter found, the following value is ignored: " + value2);
                                      return value1;
                                  }));
     }

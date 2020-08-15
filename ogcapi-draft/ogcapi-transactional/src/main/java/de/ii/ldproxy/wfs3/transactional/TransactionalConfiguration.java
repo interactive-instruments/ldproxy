@@ -24,5 +24,4 @@ public interface TransactionalConfiguration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableTransactionalConfiguration.Builder();
     }
-
 }

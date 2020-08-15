@@ -31,7 +31,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
@@ -201,8 +200,8 @@ public class OgcApiFeatureCoreDataHydrator implements OgcApiDataHydratorExtensio
                                                                        .transformBoundingBox(boundingBox);
                                           }
                                       } catch (CrsTransformationException e) {
-                                          throw new ServerErrorException(String.format("Error transforming the bounding box with CRS '%s'", boundingBox.getEpsgCrs()
-                                                                                                                                                       .toUriString()), 500);
+                                          throw new RuntimeException(String.format("Error transforming the bounding box with CRS '%s'", boundingBox.getEpsgCrs()
+                                                                                                                                                       .toUriString()));
                                       }
                                   }
 

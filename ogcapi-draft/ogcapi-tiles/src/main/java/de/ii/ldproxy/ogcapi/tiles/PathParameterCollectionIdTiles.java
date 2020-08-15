@@ -17,14 +17,12 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.NotFoundException;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 
 @Component
 @Provides
@@ -72,7 +70,8 @@ public class PathParameterCollectionIdTiles extends PathParameterCollectionIdFea
     @Override
     public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        final TilesConfiguration tilesConfiguration = collectionData.getExtension(TilesConfiguration.class).orElseThrow(NotFoundException::new);
+        final TilesConfiguration tilesConfiguration = collectionData.getExtension(TilesConfiguration.class)
+                .orElseThrow(() -> new RuntimeException(MessageFormat.format("Could not access tiles configuration for API ''{0}'' and collection ''{1}''.", apiData.getId(), collectionId)));
 
         return tilesConfiguration.isEnabled() &&
                definitionPath.startsWith("/collections/{collectionId}/tiles");

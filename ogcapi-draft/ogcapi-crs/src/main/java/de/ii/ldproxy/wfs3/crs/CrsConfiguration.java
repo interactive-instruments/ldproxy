@@ -14,6 +14,7 @@ import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Objects;
 
 @Value.Immutable
 @Value.Style(builder = "new")

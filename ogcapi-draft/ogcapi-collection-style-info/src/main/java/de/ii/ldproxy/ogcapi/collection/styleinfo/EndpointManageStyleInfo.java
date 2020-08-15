@@ -23,14 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -132,9 +131,13 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
                 .filter(format -> format.getMediaType().matches(ogcApiRequest.getMediaType().type()))
                 .map(CollectionStyleInfoFormatExtension.class::cast)
                 .findAny()
-                .orElseThrow(() -> new NotAcceptableException());
+                .orElseThrow(() -> new NotSupportedException(MessageFormat.format("The provided media type ''{0}'' is not supported for this resource.", ogcApiRequest.getMediaType())));
 
-        outputFormat.patchStyleInfos(requestBody, styleInfosStore, dataset, collectionId);
+        try {
+            outputFormat.patchStyleInfos(requestBody, styleInfosStore, dataset, collectionId);
+        } catch (IOException e) {
+            throw new BadRequestException(e);
+        }
 
         return Response.noContent()
                        .build();

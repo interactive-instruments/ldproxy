@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.filter;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -24,5 +23,4 @@ public interface FilterConfiguration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableFilterConfiguration.Builder();
     }
-
 }

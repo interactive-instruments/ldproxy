@@ -186,7 +186,7 @@ class SitemapComputation {
     static Map<String, Long> getFeatureCounts(Set<String> collectionIds, FeatureProvider2 featureProvider) {
 
         if (!featureProvider.supportsPassThrough()) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Feature provider does not support pass-through mode.");
         }
 
         Map<String, Long> featureCounts = new HashMap<>();

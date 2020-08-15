@@ -24,5 +24,4 @@ public interface GmlConfiguration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableGmlConfiguration.Builder();
     }
-
 }

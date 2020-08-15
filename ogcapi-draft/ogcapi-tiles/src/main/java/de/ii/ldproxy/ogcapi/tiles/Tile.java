@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -19,11 +18,9 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.immutables.value.Value;
 import org.locationtech.jts.geom.util.AffineTransformation;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.NotFoundException;
-import java.io.File;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -116,17 +113,17 @@ public abstract class Tile {
      * Verify that the zoom level is in the valid range for the tile matrix set.
      * Verify that the row number is in the valid range for the tile matrix.
      * Verify that the column number is in the valid range for the tile matrix.
-     * Otherwise throw a 404 exception.
+     * Otherwise throw an IllegalStateException exception.
      */
     @Value.Derived
     @Value.Auxiliary
     public void check() {
         if (getTileLevel() > getTileMatrixSet().getMaxLevel() || getTileLevel() < getTileMatrixSet().getMinLevel())
-            throw new NotFoundException();
+            throw new IllegalStateException(MessageFormat.format("Tile is not valid in tiling scheme {0}, zoom level {1} is outside of the range {2}..{3}.", getTileMatrixSet().getId(), getTileLevel(), getTileLevel() < getTileMatrixSet().getMinLevel(), getTileMatrixSet().getMaxLevel()));
         if (!getTileMatrixSet().validateRow(getTileLevel(), getTileRow()))
-            throw new NotFoundException();
+            throw new IllegalStateException(MessageFormat.format("Tile is not valid in tiling scheme {0}, row {1} is outside of the range for zoom level {2}.", getTileMatrixSet().getId(), getTileRow(), getTileLevel()));
         if (!getTileMatrixSet().validateCol(getTileLevel(), getTileCol()))
-            throw new NotFoundException();
+            throw new IllegalStateException(MessageFormat.format("Tile is not valid in tiling scheme {0}, column {1} is outside of the range for zoom level {2}.", getTileMatrixSet().getId(), getTileCol(), getTileLevel()));
     }
 
     /**
