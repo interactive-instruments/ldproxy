@@ -14,8 +14,6 @@ apply from: '../xtraplatform.gradle'
 
 dependencies {
     feature group: 'de.interactive_instruments', name: 'ogcapi-stable', version: version
-    //TODO: refactor ogcapi-html + remove
-    feature group: 'de.interactive_instruments', name: 'ogcapi-experimental', version: version
 
     // bundles to include in this feature
     bundle subprojects

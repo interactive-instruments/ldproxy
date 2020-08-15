@@ -50,7 +50,8 @@ public class FeatureCollectionView extends DatasetView {
     public URICustomizer uriBuilder;
     public URICustomizer uriBuilderWithFOnly;
     public boolean bare;
-    public List<PropertyDTO> additionalFeatures;
+    // TODO this belongs to the nearby module in the community repo
+    // public List<PropertyDTO> additionalFeatures;
     public boolean isCollection;
     public String persistentUri;
     public boolean spatialSearch;
