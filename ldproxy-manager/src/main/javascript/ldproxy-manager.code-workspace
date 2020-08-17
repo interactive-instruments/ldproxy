@@ -14,7 +14,7 @@
 		},
 		{
 			"name": "old-ldproxy-manager",
-			"path": "../../../../../ldproxy-t15/ldproxy-manager/src/main/javascript"
+			"path": "../../../../../ldproxy-pgis/ldproxy-manager/src/main/javascript"
 		},
 		{
 			"name": "xtraplatform-manager",

@@ -1,9 +1,9 @@
 {
   "name": "ldproxy-manager",
   "version": "2.0.0",
-  "main": "index.js",
   "author": "interactive instruments GmbH",
   "license": "MPL-2.0",
+  "main": "index.js",
   "private": true,
   "scripts": {
     "start": "webpack-dev-server --mode development",
@@ -12,10 +12,11 @@
     "lint": "eslint --cache --format codeframe --ext mjs,jsx,js src test"
   },
   "dependencies": {
-    "@xtraplatform/core": "^2.0.0",
-    "@xtraplatform/services": "^2.0.0",
+    "@xtraplatform/core": "^2.0.0-beta.1",
+    "@xtraplatform/services": "^2.0.0-beta.1",
     "feature-u": "^3.0.0",
-    "grommet": "^2.11.2",
+    "grommet": "^2.14.0",
+    "grommet-icons": "^4.4.0",
     "prop-types": "^15",
     "react": "^16",
     "react-dom": "^16",
@@ -25,20 +26,17 @@
     "styled-components": "^5.0.1"
   },
   "devDependencies": {
-    "@neutrinojs/airbnb": "^9.1.0",
-    "@neutrinojs/mocha": "^9.1.0",
-    "@neutrinojs/react": "^9.1.0",
-    "eslint": "^6",
-    "mocha": "^7",
-    "neutrino": "^9.1.0",
+    "@neutrinojs/airbnb": "^9.3.0",
+    "@neutrinojs/mocha": "^9.3.0",
+    "@neutrinojs/react": "^9.3.0",
+    "@xtraplatform/neutrino": "^2.0.0-beta.2",
+    "eslint": "^7",
+    "eslint-plugin-babel": "*",
+    "mocha": "^8",
+    "neutrino": "^9.3.0",
     "pnp-webpack-plugin": "^1.6.4",
     "webpack": "^4",
     "webpack-cli": "^3",
     "webpack-dev-server": "^3"
-  },
-  "workspaces": [
-    "./",
-    "../../../../../xtraplatform/xtraplatform-admin/xtraplatform-manager/src/main/javascript",
-    "../../../../../xtraplatform/xtraplatform-store/xtraplatform-service-api/src/main/javascript"
-  ]
+  }
 }

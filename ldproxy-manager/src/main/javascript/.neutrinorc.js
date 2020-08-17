@@ -1,7 +1,7 @@
 const airbnb = require('@neutrinojs/airbnb');
 const react = require('@neutrinojs/react');
 const mocha = require('@neutrinojs/mocha');
-const xtraplatform = require('@xtraplatform/core/xtraplatform.neutrino');
+const xtraplatform = require('@xtraplatform/neutrino');
 const package = require('./package.json')
 
 module.exports = {
@@ -9,7 +9,7 @@ module.exports = {
     root: __dirname,
   },
   use: [
-    //    airbnb(),
+    airbnb(),
     react({
       html: {
         title: `${package.name} ${package.version}`
@@ -17,6 +17,7 @@ module.exports = {
     }),
     mocha(),
     xtraplatform({
+      lib: false,
       modulePrefixes: ['ogcapi']
     }),
   ],
