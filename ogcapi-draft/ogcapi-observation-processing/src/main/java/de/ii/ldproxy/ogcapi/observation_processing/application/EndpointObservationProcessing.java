@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiEndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;

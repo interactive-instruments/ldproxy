@@ -10,9 +10,9 @@ package de.ii.ldproxy.wfs3.crs;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCollectionExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;

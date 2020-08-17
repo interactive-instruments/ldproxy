@@ -20,11 +20,8 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Value.Immutable

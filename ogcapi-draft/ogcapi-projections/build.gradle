@@ -1,7 +1,12 @@
 dependencies {
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
+
+    // TODO move SchemaGeneratorFeature somewhere else?
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-geojson'
+    /*
+    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
+
+     */
 }

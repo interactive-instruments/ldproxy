@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.target.gml;
 
-import de.ii.ldproxy.ogcapi.domain.Collections;
+import de.ii.ldproxy.ogcapi.collections.domain.Collections;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 
 import javax.xml.bind.annotation.XmlAttribute;

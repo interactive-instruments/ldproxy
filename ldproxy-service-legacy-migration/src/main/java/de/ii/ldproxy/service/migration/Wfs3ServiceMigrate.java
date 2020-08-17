@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonPropertyMapping;

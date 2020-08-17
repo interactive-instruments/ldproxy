@@ -3,6 +3,7 @@ dependencies {
     provided project(":ogcapi-common")
     provided project(":ogcapi-features-core")
 
+/*
     provided group: 'de.interactive_instruments', name: 'xtraplatform-string-templates'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
@@ -18,4 +19,5 @@ dependencies {
         exclude  group: 'org.reactivestreams', module: 'reactive-streams'
         exclude  group: 'org.slf4j', module: 'slf4j-api'
     }
+ */
 }

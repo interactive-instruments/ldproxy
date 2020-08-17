@@ -8,6 +8,7 @@
 package ii.de.ldproxy.resources.manager;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
 import de.ii.ldproxy.resources.ResourceFormatExtension;

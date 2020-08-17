@@ -1,6 +1,11 @@
 
 dependencies {
     api project(":ogcapi-common")
+    api project(":ogcapi-collections")
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-codelists'
+
+/* TODO
 
     api group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
     api group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
@@ -13,10 +18,10 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-string-templates'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-codelists'
 
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
     testImplementation  group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
     testImplementation  group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
+ */
 }
 

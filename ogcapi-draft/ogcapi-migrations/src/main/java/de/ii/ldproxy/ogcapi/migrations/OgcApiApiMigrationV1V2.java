@@ -16,7 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV1;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV1;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQueryables;

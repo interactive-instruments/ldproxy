@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.target.geojson;
 
+import de.ii.ldproxy.ogcapi.collections.domain.Collections;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
 import io.swagger.v3.oas.models.media.Schema;
@@ -15,7 +18,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 
 /**

@@ -15,7 +15,6 @@ import java.util.Optional;
 
 public interface OgcApiApi extends Service {
 
-    // TODO: move the following 3 methods to OgcApiApi, split generic parts of OgcApiDatasetData to OgcApiApiData (requires a change in xtraplatform)
     @Override
     OgcApiApiDataV2 getData();
 

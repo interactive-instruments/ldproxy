@@ -8,6 +8,9 @@
 package de.ii.ldproxy.ogcapi.features.core.application;
 
 import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;

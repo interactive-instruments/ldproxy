@@ -7,6 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.application;
 
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollections;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionsExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

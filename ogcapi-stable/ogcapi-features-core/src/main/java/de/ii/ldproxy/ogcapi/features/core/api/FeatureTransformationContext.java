@@ -119,7 +119,7 @@ public interface FeatureTransformationContext {
                                  .toString();
     }
 
-    // TODO: to generalization module
+    // TODO: to geometry simplification module
     @Value.Default
     default double getMaxAllowableOffset() {
         return 0;

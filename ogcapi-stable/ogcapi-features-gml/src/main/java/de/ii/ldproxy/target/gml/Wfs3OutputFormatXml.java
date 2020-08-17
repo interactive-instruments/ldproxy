@@ -7,17 +7,17 @@
  */
 package de.ii.ldproxy.target.gml;
 
-import de.ii.ldproxy.ogcapi.domain.Collections;
-import de.ii.ldproxy.ogcapi.domain.CollectionsFormatExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.Collections;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ConformanceDeclaration;
-import de.ii.ldproxy.ogcapi.domain.ImmutableCollections;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollections;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.LandingPage;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
