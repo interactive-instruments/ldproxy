@@ -8,7 +8,7 @@ allprojects {
     group = 'de.interactive_instruments'
 }
 
-version = '2.0.0-beta2'
+version = '2.0.0-beta3'
 
 apply from: '../xtraplatform.gradle'
 
