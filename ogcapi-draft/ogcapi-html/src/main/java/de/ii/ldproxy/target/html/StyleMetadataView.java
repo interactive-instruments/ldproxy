@@ -12,7 +12,7 @@ import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.wfs3.styles.StyleMetadata;
+import de.ii.ldproxy.ogcapi.styles.StyleMetadata;
 
 import java.util.List;
 import java.util.Locale;

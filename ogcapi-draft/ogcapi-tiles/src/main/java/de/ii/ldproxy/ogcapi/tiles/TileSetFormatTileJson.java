@@ -79,15 +79,6 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
-
-        return extension
-                .filter(TilesConfiguration::isEnabled)
-                .isPresent();
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles/{tileMatrixSetId}"))
             return new ImmutableOgcApiMediaTypeContent.Builder()

@@ -28,6 +28,11 @@ public class ResourceFormatAny implements ResourceFormatExtension {
     public final static String SCHEMA_REF_RESOURCE = "#/components/schemas/Resource";
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+        return true;
+    }
+
+    @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }

@@ -14,10 +14,7 @@ import de.ii.ldproxy.ogcapi.features.processing.ProcessDocumentation;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.*;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -44,6 +41,8 @@ public interface ObservationProcessingConfiguration extends ExtensionConfigurati
 
     Map<String, ProcessDocumentation> getDocumentation();
 
+    List<String> getResultEncodings();
+
     @Nullable
     Double getIdwPower();
 
@@ -58,14 +57,19 @@ public interface ObservationProcessingConfiguration extends ExtensionConfigurati
         return new ImmutableObservationProcessingConfiguration.Builder();
     }
 
-    //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
-    // try to find a better solution that also enables deep merges
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        return ((ImmutableObservationProcessingConfiguration.Builder) source.getBuilder())
+        ImmutableObservationProcessingConfiguration.Builder builder = ((ImmutableObservationProcessingConfiguration.Builder) source.getBuilder())
                 .from(source)
-                .from(this)
-                .documentation(getDocumentation())
-                .build();
+                .from(this);
+
+        //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
+        // try to find a better solution that also enables deep merges
+        if (getDocumentation()!=null)
+            builder.documentation(getDocumentation());
+        if (!getResultEncodings().isEmpty())
+            builder.resultEncodings(getResultEncodings());
+
+        return builder.build();
     }
 }

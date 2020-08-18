@@ -43,6 +43,7 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
         return MEDIA_TYPE;
     }
 
+    // always active, if OpenAPI 3.0 is active, since this is needed for the HTML output
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, Oas30Configuration.class);
@@ -73,7 +74,7 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
 
     @Override
     public Response getApiDefinitionFile(OgcApiApiDataV2 apiData,
-                                         OgcApiRequestContext wfs3Request,
+                                         OgcApiRequestContext ogcApiRequestContext,
                                          String file) {
         LOGGER.debug("FILE {}", file);
 

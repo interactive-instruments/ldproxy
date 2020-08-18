@@ -38,15 +38,15 @@ public class OgcApiExtensionRegistryImpl implements OgcApiExtensionRegistry {
     @Context
     private BundleContext bundleContext;
 
-    private final List<OgcApiExtension> wfs3Extensions;
+    private final List<OgcApiExtension> ogcApiExtensions;
 
     OgcApiExtensionRegistryImpl() {
-        this.wfs3Extensions = new ArrayList<>();;
+        this.ogcApiExtensions = new ArrayList<>();;
     }
 
     @Override
     public List<OgcApiExtension> getExtensions() {
-        return wfs3Extensions;
+        return ogcApiExtensions;
     }
 
     private synchronized void onArrival(ServiceReference<OgcApiExtension> ref) {
@@ -58,7 +58,7 @@ public class OgcApiExtensionRegistryImpl implements OgcApiExtensionRegistry {
                 return;
             }
 
-            wfs3Extensions.add(extension);
+            ogcApiExtensions.add(extension);
 
             if (extension instanceof ConformanceClass) {
                 final ConformanceClass conformanceClass = (ConformanceClass) extension;
@@ -121,7 +121,7 @@ public class OgcApiExtensionRegistryImpl implements OgcApiExtensionRegistry {
 
         if (Objects.nonNull(extension)) {
 
-            wfs3Extensions.remove(extension);
+            ogcApiExtensions.remove(extension);
         }
     }
 

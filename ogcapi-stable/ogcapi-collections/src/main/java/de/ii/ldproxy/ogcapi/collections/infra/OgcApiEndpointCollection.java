@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.application.ImmutableOgcApiQueryInputFeatureCollection;
 import de.ii.ldproxy.ogcapi.collections.application.OgcApiQueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiEndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
@@ -49,7 +50,7 @@ public class OgcApiEndpointCollection extends OgcApiEndpointSubCollection {
 
     @Override
     protected Class getConfigurationClass() {
-        return OgcApiCommonConfiguration.class;
+        return OgcApiCollectionsConfiguration.class;
     }
 
     @Override

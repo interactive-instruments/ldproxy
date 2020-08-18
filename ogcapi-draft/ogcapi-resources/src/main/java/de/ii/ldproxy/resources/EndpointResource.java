@@ -10,7 +10,7 @@ package de.ii.ldproxy.resources;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
+import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

@@ -18,11 +18,12 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreQueriesHandlerImpl;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
+import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
+import de.ii.xtraplatform.entity.api.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureStream2;
@@ -64,7 +65,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
-    private CodelistRegistry codelistRegistry;
+    private EntityRegistry entityRegistry;
     private final OgcApiExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TilesCache tilesCache;
@@ -72,13 +73,13 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     public TilesQueriesHandlerImpl(@Requires I18n i18n,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
                                    @Requires Dropwizard dropwizard,
-                                   @Requires CodelistRegistry codelistRegistry,
+                                   @Requires EntityRegistry entityRegistry,
                                    @Requires OgcApiExtensionRegistry extensionRegistry,
                                    @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                    @Requires TilesCache tilesCache) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
-        this.codelistRegistry = codelistRegistry;
+        this.entityRegistry = entityRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
@@ -262,10 +263,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             EpsgCrs sourceCrs = featureProvider.crs()
                                                .getNativeCrs();
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() ?
-                    crsTransformer.get()
-                                  .needsCoordinateSwap() :
-                    query.getCrs().isPresent() && featureProvider.crs().shouldSwapCoordinates(query.getCrs().get());
+            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
+                                                                          .needsCoordinateSwap();
         }
 
         List<OgcApiLink> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
@@ -284,7 +283,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .crsTransformer(crsTransformer)
                 .crsTransformerFactory(crsTransformerFactory)
                 .shouldSwapCoordinates(swapCoordinates)
-                .codelists(codelistRegistry.getCodelists())
+                .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                         .stream()
+                                         .collect(Collectors.toMap(c -> c.getId(), c -> c)))
                 .defaultCrs(queryInput.getDefaultCrs())
                 .links(links)
                 .isFeatureCollection(true)
@@ -372,10 +373,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             EpsgCrs sourceCrs = featureProvider.crs()
                     .getNativeCrs();
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() ?
-                    crsTransformer.get()
-                            .needsCoordinateSwap() :
-                    featureProvider.crs().shouldSwapCoordinates(targetCrs);
+            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
+                                                                          .needsCoordinateSwap();
         }
 
         List<OgcApiLink> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
@@ -417,7 +416,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .crsTransformer(crsTransformer)
                     .crsTransformerFactory(crsTransformerFactory)
                     .shouldSwapCoordinates(swapCoordinates)
-                    .codelists(codelistRegistry.getCodelists())
+                    .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                             .stream()
+                                             .collect(Collectors.toMap(c -> c.getId(), c -> c)))
                     .defaultCrs(queryInput.getDefaultCrs())
                     .links(links)
                     .isFeatureCollection(true)

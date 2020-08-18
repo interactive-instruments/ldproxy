@@ -35,8 +35,8 @@ public class SchemaGeneratorFeature {
 
     final static String DEFINITIONS_TOKEN = "definitions";
 
-    private ConcurrentMap<String, Schema> schemaMapOpenApi = new ConcurrentHashMap<>();
-    private ConcurrentMap<String, Map<String, Object>> schemaMapJson = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Schema> schemaMapOpenApi = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Map<String, Object>> schemaMapJson = new ConcurrentHashMap<>();
 
     @Requires
     OgcApiFeatureCoreProviders providers;
@@ -116,9 +116,7 @@ public class SchemaGeneratorFeature {
         if (property.isObject()) {
             property.getProperties()
                     .stream()
-                    .forEach(subProperty -> {
-                        propertyNames.addAll(getPropertyNames(subProperty,getPropertyName(property, basePath, withArrayBrackets),withArrayBrackets));
-                    });
+                    .forEach(subProperty -> propertyNames.addAll(getPropertyNames(subProperty, getPropertyName(property, basePath, withArrayBrackets), withArrayBrackets)));
         } else {
             propertyNames.add(getPropertyName(property, basePath, withArrayBrackets));
         }

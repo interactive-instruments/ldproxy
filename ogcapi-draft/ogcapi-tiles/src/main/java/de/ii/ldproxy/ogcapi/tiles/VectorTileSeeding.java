@@ -19,7 +19,6 @@ import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
 import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
@@ -59,7 +58,6 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     private final I18n i18n;
     private final CrsTransformerFactory crsTransformerFactory;
     private final MetricRegistry metricRegistry;
-    private CodelistRegistry codelistRegistry;
     private final OgcApiExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TilesCache tilesCache;
@@ -71,7 +69,6 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     public VectorTileSeeding(@Requires I18n i18n,
                              @Requires CrsTransformerFactory crsTransformerFactory,
                              @Requires Dropwizard dropwizard,
-                             @Requires CodelistRegistry codelistRegistry,
                              @Requires OgcApiExtensionRegistry extensionRegistry,
                              @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                              @Requires TilesCache tilesCache,
@@ -81,7 +78,6 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                              @Requires TilesQueriesHandler queryHandler) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
-        this.codelistRegistry = codelistRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                 .metrics();

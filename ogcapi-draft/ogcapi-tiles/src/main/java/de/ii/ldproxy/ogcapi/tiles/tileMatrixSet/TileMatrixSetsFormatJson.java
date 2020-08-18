@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -54,11 +53,6 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
     @Override

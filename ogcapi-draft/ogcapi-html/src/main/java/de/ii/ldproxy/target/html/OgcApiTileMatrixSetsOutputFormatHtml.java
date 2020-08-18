@@ -46,16 +46,6 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, HtmlConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         return new ImmutableOgcApiMediaTypeContent.Builder()
                 .schema(new StringSchema().example("<html>...</html>"))

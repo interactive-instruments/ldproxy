@@ -92,8 +92,7 @@ public interface FeatureTransformationContext {
         return getLimit() > 0 ? (getLimit() + getOffset()) / getLimit() : 0;
     }
 
-    @Value.Default
-    default Optional<Locale> getLanguage() { return getOgcApiRequest().getLanguage(); }
+    Optional<Locale> getLanguage();
 
     Optional<I18n> getI18n();
 

@@ -10,19 +10,16 @@ package de.ii.ldproxy.wfs3.generator;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.xtraplatform.entity.api.EntityData;
-import de.ii.xtraplatform.entity.api.handler.Entity;
 import de.ii.xtraplatform.event.store.EntityDataStore;
 import de.ii.xtraplatform.scheduler.api.Scheduler;
 import de.ii.xtraplatform.scheduler.api.TaskQueue;
 import de.ii.xtraplatform.scheduler.api.TaskStatus;
-import de.ii.xtraplatform.service.api.Service;
 import de.ii.xtraplatform.service.api.ServiceBackgroundTasks;
 import de.ii.xtraplatform.service.api.ServiceGenerator;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.felix.ipojo.annotations.StaticServiceProperty;
 import org.apache.felix.ipojo.whiteboard.Wbp;
 import org.osgi.framework.ServiceReference;
 
@@ -371,7 +368,7 @@ return null;
                                                          .getChildStore(wfs3Service.getData()
                                                                                    .getId());
 
-            for (Wfs3StyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3StyleGeneratorExtension.class)) {
+            for (OgcApiStyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiStyleGeneratorExtension.class)) {
                 int i = 0;
                 for (FeatureTypeConfigurationOgcApi featureTypeConfiguration : updated.getFeatureTypes()
                                                                                       .values()) {
@@ -535,7 +532,7 @@ return null;
                                                                          .getChildStore(wfs3Service.getData()
                                                                                                    .getId());
 
-                            for (Wfs3StyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(Wfs3StyleGeneratorExtension.class)) {
+                            for (OgcApiStyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiStyleGeneratorExtension.class)) {
 
                                 String style = wfs3StyleGeneratorExtension.generateStyle(currentGeometryType[0], i[0]);
 

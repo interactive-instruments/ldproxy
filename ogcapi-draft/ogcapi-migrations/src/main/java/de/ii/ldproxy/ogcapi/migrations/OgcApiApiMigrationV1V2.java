@@ -33,8 +33,8 @@ import de.ii.ldproxy.target.html.HtmlConfiguration;
 import de.ii.ldproxy.target.html.ImmutableHtmlConfiguration;
 import de.ii.ldproxy.target.html.MicrodataMapping;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
-import de.ii.ldproxy.wfs3.crs.CrsConfiguration;
-import de.ii.ldproxy.wfs3.crs.ImmutableCrsConfiguration;
+import de.ii.ldproxy.ogcapi.crs.CrsConfiguration;
+import de.ii.ldproxy.ogcapi.crs.ImmutableCrsConfiguration;
 import de.ii.xtraplatform.entity.api.EntityData;
 import de.ii.xtraplatform.entity.api.handler.Entity;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
@@ -78,6 +78,7 @@ import java.util.stream.Collectors;
         @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiApiDataV2.SERVICE_TYPE)
 })
 @Instantiate
+@SuppressWarnings("deprecation")
 public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, OgcApiApiDataV2> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiMigrationV1V2.class);

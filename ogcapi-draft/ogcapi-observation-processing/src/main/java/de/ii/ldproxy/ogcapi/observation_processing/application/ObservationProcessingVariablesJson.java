@@ -53,13 +53,6 @@ public class ObservationProcessingVariablesJson implements ObservationProcessing
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return apiData.getExtension(ObservationProcessingConfiguration.class)
-                .map(ObservationProcessingConfiguration::isEnabled)
-                .orElse(false);
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         // get the collectionId from the path, [0] is empty, [1] is "collections"
         String collectionId = path.split("/", 4)[2];

@@ -9,16 +9,9 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.wfs3.styles.StyleMetadata;
-import de.ii.ldproxy.wfs3.styles.StyleMetadataFormatExtension;
-import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.styles.StyleMetadata;
+import de.ii.ldproxy.ogcapi.styles.StyleMetadataFormatExtension;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -46,12 +39,6 @@ public class StyleMetadataOutputFormatHtml implements StyleMetadataFormatExtensi
     @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class) &&
-               isExtensionEnabled(apiData, HtmlConfiguration.class);
     }
 
     @Override

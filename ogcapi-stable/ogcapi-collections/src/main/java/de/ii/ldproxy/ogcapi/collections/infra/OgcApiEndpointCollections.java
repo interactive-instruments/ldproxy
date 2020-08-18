@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.application.ImmutableOgcApiQueryInputCollections;
 import de.ii.ldproxy.ogcapi.collections.application.OgcApiQueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
@@ -44,7 +45,7 @@ public class OgcApiEndpointCollections extends OgcApiEndpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, OgcApiCommonConfiguration.class);
+        return isExtensionEnabled(apiData, OgcApiCollectionsConfiguration.class);
     }
 
     @Override

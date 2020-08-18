@@ -8,10 +8,10 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -30,9 +30,23 @@ public interface OgcApiCommonConfiguration extends ExtensionConfiguration {
     @Nullable
     Boolean getIncludeLinkHeader();
 
+    List<String> getEncodings();
+
     @Override
     default Builder getBuilder() {
         return new ImmutableOgcApiCommonConfiguration.Builder();
     }
 
+    @Override
+    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+        ImmutableOgcApiCommonConfiguration.Builder builder = ((ImmutableOgcApiCommonConfiguration.Builder) source.getBuilder())
+                .from(source)
+                .from(this);
+
+        //TODO: this is a work-around for default from behaviour (list is not reset, which leads to duplicates in the list of encodings)
+        if (!getEncodings().isEmpty())
+            builder.encodings(getEncodings());
+
+        return builder.build();
+    }
 }

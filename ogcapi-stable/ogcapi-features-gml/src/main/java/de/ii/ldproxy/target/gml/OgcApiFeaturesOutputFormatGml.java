@@ -13,16 +13,14 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
-import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.feature.provider.wfs.domain.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
+import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.felix.ipojo.annotations.ServiceController;
-import org.apache.felix.ipojo.annotations.Validate;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -80,6 +78,11 @@ public class OgcApiFeaturesOutputFormatGml implements ConformanceClass, OgcApiFe
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, GmlConfiguration.class);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), GmlConfiguration.class);
     }
 
     @Override

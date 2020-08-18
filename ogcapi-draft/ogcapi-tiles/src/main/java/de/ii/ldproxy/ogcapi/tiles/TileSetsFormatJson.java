@@ -46,16 +46,6 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), TilesConfiguration.class);
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles"))
             return new ImmutableOgcApiMediaTypeContent.Builder()

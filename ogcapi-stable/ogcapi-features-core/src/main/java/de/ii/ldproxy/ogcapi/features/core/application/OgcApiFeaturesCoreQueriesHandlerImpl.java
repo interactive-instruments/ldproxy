@@ -12,23 +12,14 @@ import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureLinksGenerator;
-import de.ii.ldproxy.ogcapi.features.core.api.FeaturesLinksGenerator;
-import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationContextGeneric;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreQueriesHandler;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.*;
+import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
+import de.ii.xtraplatform.entity.api.EntityRegistry;
 import de.ii.xtraplatform.features.domain.*;
 import de.ii.xtraplatform.stringtemplates.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
@@ -51,6 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -65,15 +57,15 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
-    private final CodelistRegistry codelistRegistry;
+    private final EntityRegistry entityRegistry;
 
     public OgcApiFeaturesCoreQueriesHandlerImpl(@Requires I18n i18n,
                                                 @Requires CrsTransformerFactory crsTransformerFactory,
                                                 @Requires Dropwizard dropwizard,
-                                                @Requires CodelistRegistry codelistRegistry) {
+                                                @Requires EntityRegistry entityRegistry) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
-        this.codelistRegistry = codelistRegistry;
+        this.entityRegistry = entityRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
@@ -170,11 +162,8 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                                                .getNativeCrs();
             //TODO: warmup on service start
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get()
-                                                                         .needsCoordinateSwap() : query.getCrs()
-                                                                                                       .isPresent() && featureProvider.crs()
-                                                                                                                                      .shouldSwapCoordinates(query.getCrs()
-                                                                                                                                                                  .get());
+            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
+                                                                          .needsCoordinateSwap();
         }
 
 
@@ -191,7 +180,9 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
-                .codelists(codelistRegistry.getCodelists())
+                .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                         .stream()
+                                         .collect(Collectors.toMap(c -> c.getId(), c -> c)))
                 .defaultCrs(defaultCrs)
                 .links(links)
                 .isFeatureCollection(isCollection)

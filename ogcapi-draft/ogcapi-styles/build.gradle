@@ -1,6 +1,6 @@
 
 dependencies {
-    provided project(":ogcapi-collection-queryables")
+    provided project(":ogcapi-collections-queryables")
 
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
 

@@ -66,7 +66,7 @@ public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
     @Path("/{collectionId}/context")
     @GET
     @Produces("application/ld+json")
-    public Response getContext(@Context OgcApiRequestContext wfs3Request, @Context OgcApiApi service,
+    public Response getContext(@Context OgcApiRequestContext ogcApiRequestContext, @Context OgcApiApi service,
                                @PathParam("collectionId") String collectionId) throws IOException {
 
         java.nio.file.Path context = contextDirectory.resolve(collectionId);

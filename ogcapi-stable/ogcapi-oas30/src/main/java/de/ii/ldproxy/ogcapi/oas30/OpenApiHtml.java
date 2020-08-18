@@ -43,6 +43,7 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
         return MEDIA_TYPE;
     }
 
+    // always active, if OpenAPI 3.0 is active, since a service-doc link relation is mandatory
     @Override
     public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
         return isExtensionEnabled(apiData, Oas30Configuration.class);
@@ -62,14 +63,14 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
 
     @Override
     public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
-                                             OgcApiRequestContext wfs3Request) {
-        if (!wfs3Request.getUriCustomizer()
+                                             OgcApiRequestContext ogcApiRequestContext) {
+        if (!ogcApiRequestContext.getUriCustomizer()
                         .getPath()
                         .endsWith("/")) {
             try {
                 return Response
                         .status(Response.Status.MOVED_PERMANENTLY)
-                        .location(wfs3Request.getUriCustomizer()
+                        .location(ogcApiRequestContext.getUriCustomizer()
                                 .copy()
                                 .ensureTrailingSlash()
                                 .build())

@@ -7,9 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.domain;
 
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 
 public interface CollectionsFormatExtension extends FormatExtension {
 

@@ -70,16 +70,16 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFeaturesQueryImpl.class);
 
-    private final OgcApiExtensionRegistry wfs3ExtensionRegistry;
+    private final OgcApiExtensionRegistry extensionRegistry;
     private final CrsTransformerFactory crsTransformerFactory;
     private final OgcApiFeatureCoreProviders providers;
     private final Cql cql;
 
-    public OgcApiFeaturesQueryImpl(@Requires OgcApiExtensionRegistry wfs3ExtensionRegistry,
+    public OgcApiFeaturesQueryImpl(@Requires OgcApiExtensionRegistry extensionRegistry,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
                                    @Requires OgcApiFeatureCoreProviders providers,
                                    @Requires Cql cql) {
-        this.wfs3ExtensionRegistry = wfs3ExtensionRegistry;
+        this.extensionRegistry = extensionRegistry;
         this.crsTransformerFactory = crsTransformerFactory;
         this.providers = providers;
         this.cql = cql;

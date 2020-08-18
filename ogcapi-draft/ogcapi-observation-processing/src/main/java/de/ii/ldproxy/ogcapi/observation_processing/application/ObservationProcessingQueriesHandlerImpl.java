@@ -20,13 +20,20 @@ import de.ii.ldproxy.ogcapi.features.processing.ImmutableProcessing;
 import de.ii.ldproxy.ogcapi.features.processing.Processing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.*;
 import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
+import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.features.domain.*;
-import org.apache.felix.ipojo.annotations.*;
+import de.ii.xtraplatform.entity.api.EntityRegistry;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureStream2;
+import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
@@ -35,9 +42,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -51,7 +61,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
-    private final CodelistRegistry codelistRegistry;
+    private final EntityRegistry entityRegistry;
     private final OgcApiFeatureCoreProviders providers;
     private final Http http;
 
@@ -59,12 +69,12 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
     public ObservationProcessingQueriesHandlerImpl(@Requires I18n i18n,
                                                    @Requires CrsTransformerFactory crsTransformerFactory,
                                                    @Requires Dropwizard dropwizard,
-                                                   @Requires CodelistRegistry codelistRegistry,
+                                                   @Requires EntityRegistry entityRegistry,
                                                    @Requires OgcApiFeatureCoreProviders providers,
                                                    @Requires Http http) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
-        this.codelistRegistry = codelistRegistry;
+        this.entityRegistry = entityRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
@@ -184,8 +194,8 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
             EpsgCrs sourceCrs = featureProvider.crs().getNativeCrs();
             //TODO: warmup on service start
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get()
-                    .needsCoordinateSwap() : query.getCrs().isPresent() && featureProvider.crs().shouldSwapCoordinates(query.getCrs().get());
+            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
+                                                                          .needsCoordinateSwap();
         }
 
         List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
@@ -198,11 +208,12 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                 .featureSchema(featureProvider.getData().getTypes().get(collectionId))
                 .i18n(i18n)
                 .language(requestContext.getLanguage())
-                .codelists(codelistRegistry.getCodelists())
+                .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                         .stream()
+                                         .collect(Collectors.toMap(c -> c.getId(), c -> c)))
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
-                .codelists(codelistRegistry.getCodelists())
                 .defaultCrs(defaultCrs)
                 .links(links)
                 .isFeatureCollection(true)

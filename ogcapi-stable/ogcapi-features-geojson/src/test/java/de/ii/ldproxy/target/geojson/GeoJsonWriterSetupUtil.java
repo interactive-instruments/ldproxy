@@ -34,7 +34,7 @@ public class GeoJsonWriterSetupUtil {
                                                            .defaultCrs(OgcCrs.CRS84)
                                                            .apiData(new ImmutableOgcApiApiDataV2.Builder()
                                                                                                 .id("s")
-                                                                                                .serviceType("WFS3")
+                                                                                                .serviceType("OGC_API")
                                                                                                 /*.featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
                                                                                                         .providerType("WFS")
                                                                                                         .connectorType("HTTP")
@@ -92,7 +92,7 @@ public class GeoJsonWriterSetupUtil {
                                                            .maxAllowableOffset(0)
                                                            .isHitsOnly(false)
                                                            .state(ModifiableStateGeoJson.create())
-                                                           .geoJsonConfig(ImmutableGeoJsonConfig.builder().isEnabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).useFormattedJsonOutput(true).build())
+                                                           .geoJsonConfig(new ImmutableGeoJsonConfiguration.Builder().enabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).useFormattedJsonOutput(true).build())
                                                            .build();
 
     }

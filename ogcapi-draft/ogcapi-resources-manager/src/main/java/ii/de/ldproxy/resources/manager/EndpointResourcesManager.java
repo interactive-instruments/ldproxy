@@ -12,7 +12,7 @@ import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
 import de.ii.ldproxy.resources.ResourceFormatExtension;
-import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
+import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;

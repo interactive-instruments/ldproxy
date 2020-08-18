@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
+import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -32,7 +32,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;

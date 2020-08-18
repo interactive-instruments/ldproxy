@@ -43,7 +43,7 @@ import java.util.TreeSet;
 @Provides(specifications = {ExtendableOpenApiDefinition.class})
 @Instantiate
 @Wbp(
-        filter = "(objectClass=de.ii.ldproxy.wfs3.oas30.OpenApiExtension)",
+        filter = "(objectClass=de.ii.ldproxy.ogcapi.oas30.OpenApiExtension)",
         onArrival = "onArrival",
         onDeparture = "onDeparture")
 public class ExtendableOpenApiDefinition {

@@ -52,11 +52,6 @@ public class ResourcesOutputFormatHtml implements ResourcesFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, HtmlConfiguration.class);
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         return new ImmutableOgcApiMediaTypeContent.Builder()
                 .schema(new StringSchema().example("<html>...</html>"))

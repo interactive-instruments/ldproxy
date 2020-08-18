@@ -52,16 +52,6 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
         return MEDIA_TYPE;
     }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, HtmlConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
-    }
-
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
         return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)

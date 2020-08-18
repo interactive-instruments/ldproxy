@@ -16,7 +16,6 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfigur
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.cql.domain.*;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -56,8 +55,6 @@ public class TileFormatMVT implements TileFormatExtension {
     @Requires
     TilesCache tilesCache;
     @Requires
-    CodelistRegistry codelistRegistry;
-    @Requires
     Http http;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
@@ -74,16 +71,6 @@ public class TileFormatMVT implements TileFormatExtension {
     @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), TilesConfiguration.class);
     }
 
     @Override

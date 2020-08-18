@@ -12,8 +12,4 @@ import java.util.List;
 
 public interface ConformanceClass extends OgcApiExtension {
     List<String> getConformanceClassUris();
-
-    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return true;
-    }
 }

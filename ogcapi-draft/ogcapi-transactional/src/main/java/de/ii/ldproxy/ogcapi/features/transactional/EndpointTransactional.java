@@ -165,7 +165,7 @@ public class EndpointTransactional extends OgcApiEndpointSubCollection {
     @POST
     @Consumes("application/geo+json")
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id,
-                              @Context OgcApiApi service, @Context OgcApiRequestContext wfs3Request,
+                              @Context OgcApiApi service, @Context OgcApiRequestContext ogcApiRequestContext,
                               @Context HttpServletRequest request, InputStream requestBody) {
         FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
 
@@ -174,7 +174,7 @@ public class EndpointTransactional extends OgcApiEndpointSubCollection {
         checkAuthorization(service.getData(), optionalUser);
 
 
-        return commandHandler.postItemsResponse((FeatureTransactions) featureProvider, wfs3Request.getMediaType(), wfs3Request.getUriCustomizer()
+        return commandHandler.postItemsResponse((FeatureTransactions) featureProvider, ogcApiRequestContext.getMediaType(), ogcApiRequestContext.getUriCustomizer()
                                                                                                                      .copy(), id, requestBody);
     }
 
@@ -183,7 +183,7 @@ public class EndpointTransactional extends OgcApiEndpointSubCollection {
     @Consumes("application/geo+json")
     public Response putItem(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                             @PathParam("featureid") final String featureId, @Context OgcApiApi service,
-                            @Context OgcApiRequestContext wfs3Request, @Context HttpServletRequest request,
+                            @Context OgcApiRequestContext ogcApiRequestContext, @Context HttpServletRequest request,
                             InputStream requestBody) {
 
         FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
@@ -192,7 +192,7 @@ public class EndpointTransactional extends OgcApiEndpointSubCollection {
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.putItemResponse((FeatureTransactions) featureProvider, wfs3Request.getMediaType(), id, featureId, requestBody);
+        return commandHandler.putItemResponse((FeatureTransactions) featureProvider, ogcApiRequestContext.getMediaType(), id, featureId, requestBody);
     }
 
     @Path("/{id}/items/{featureid}")

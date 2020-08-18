@@ -132,7 +132,7 @@ public class OgcApiContentNegotiation {
     private Optional<OgcApiMediaType> findMatchingOgcApiMediaType(MediaType mediaType,
                                                                   ImmutableSet<OgcApiMediaType> supportedMediaTypes) {
         return supportedMediaTypes.stream()
-                                  .filter(wfs3MediaType -> wfs3MediaType.matches(mediaType))
+                                  .filter(type -> type.matches(mediaType))
                                   .findFirst();
     }
 
