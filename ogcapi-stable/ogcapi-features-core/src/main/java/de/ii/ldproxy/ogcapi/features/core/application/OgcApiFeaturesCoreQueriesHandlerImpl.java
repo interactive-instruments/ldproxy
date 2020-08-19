@@ -105,7 +105,8 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         OgcApiFeatureFormatExtension outputFormat = api.getOutputFormat(
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + "/items")
+                "/collections/" + collectionId + "/items",
+                Optional.of(collectionId))
                                                        .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
@@ -124,7 +125,8 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         OgcApiFeatureFormatExtension outputFormat = api.getOutputFormat(
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + "/items/" + featureId)
+                "/collections/" + collectionId + "/items/" + featureId,
+                Optional.of(collectionId))
                                                        .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         String persistentUri = null;

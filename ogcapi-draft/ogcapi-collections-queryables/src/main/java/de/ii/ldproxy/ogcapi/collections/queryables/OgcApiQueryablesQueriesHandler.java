@@ -99,7 +99,8 @@ public class OgcApiQueryablesQueriesHandler implements OgcApiQueriesHandler<OgcA
         OgcApiQueryablesFormatExtension outputFormat = api.getOutputFormat(
                     OgcApiQueryablesFormatExtension.class,
                     requestContext.getMediaType(),
-                    "/collections/"+collectionId+"/queryables")
+                    "/collections/"+collectionId+"/queryables",
+                    Optional.of(collectionId))
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         checkCollectionId(api.getData(), collectionId);
