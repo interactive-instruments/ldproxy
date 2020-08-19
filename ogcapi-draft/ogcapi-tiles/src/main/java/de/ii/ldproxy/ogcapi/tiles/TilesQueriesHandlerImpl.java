@@ -307,13 +307,18 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                             requestContext.getLanguage());
 
                     if (featureTransformer.isPresent()) {
-                        featureStream.runWith(featureTransformer.get())
-                                .toCompletableFuture()
-                                .join();
+                        FeatureStream2.Result result = featureStream.runWith(featureTransformer.get())
+                                                                    .toCompletableFuture()
+                                                                    .join();
+                        if (result.getError()
+                                  .isPresent()) {
+                            processStreamError(result.getError().get());
+                            // the connection has been lost, typically the client has cancelled the request, log on debug level
+                            LOGGER.debug("Request cancelled due to lost connection.");
+                        }
                     } else {
                         throw new IllegalStateException("Could not acquire FeatureTransformer.");
                     }
-
                 } catch (CompletionException e) {
                     if (e.getCause() instanceof WebApplicationException) {
                         throw (WebApplicationException) e.getCause();
@@ -437,13 +442,18 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     Optional<FeatureTransformer2> featureTransformer = outputFormat.getFeatureTransformer(transformationContext, requestContext.getLanguage());
 
                     if (featureTransformer.isPresent()) {
-                        featureStream.runWith(featureTransformer.get())
-                                .toCompletableFuture()
-                                .join();
+                        FeatureStream2.Result result = featureStream.runWith(featureTransformer.get())
+                                                                    .toCompletableFuture()
+                                                                    .join();
+                        if (result.getError()
+                                  .isPresent()) {
+                            processStreamError(result.getError().get());
+                            // the connection has been lost, typically the client has cancelled the request, log on debug level
+                            LOGGER.debug("Request cancelled due to lost connection.");
+                        }
                     } else {
                         throw new IllegalStateException("Could not acquire FeatureTransformer.");
                     }
-
                 } catch (CompletionException e) {
                     if (e.getCause() instanceof WebApplicationException) {
                         throw (WebApplicationException) e.getCause();
