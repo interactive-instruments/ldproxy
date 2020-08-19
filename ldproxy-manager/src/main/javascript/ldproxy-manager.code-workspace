@@ -1,29 +1,42 @@
 {
-	"folders": [
-		{
-			"name": "ldproxy-manager",
-			"path": "."
-		},
-		{
-			"name": "@xtraplatform/core",
-			"path": "../../../../../xtraplatform/xtraplatform-admin/xtraplatform-manager/src/main/javascript"
-		},
-		{
-			"name": "@xtraplatform/services",
-			"path": "../../../../../xtraplatform/xtraplatform-store/xtraplatform-service-api/src/main/javascript"
-		},
-		{
-			"name": "old-ldproxy-manager",
-			"path": "../../../../../ldproxy-pgis/ldproxy-manager/src/main/javascript"
-		},
-		{
-			"name": "xtraplatform-manager",
-			"path": "../../../../../xtraplatform-manager"
-		},
-		{
-			"name": "xtraplatform-manager-wfs-proxy",
-			"path": "../../../../../xtraplatform-manager-wfs-proxy"
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "name": "ldproxy-manager",
+      "path": "."
+    },
+    {
+      "name": "@xtraplatform/core",
+      "path": "../../../../../xtraplatform/xtraplatform-admin/xtraplatform-manager/src/main/javascript/packages/core"
+    },
+    {
+      "name": "@xtraplatform/create-module",
+      "path": "../../../../../xtraplatform/xtraplatform-admin/xtraplatform-manager/src/main/javascript/packages/create-module"
+    },
+    {
+      "name": "@xtraplatform/neutrino",
+      "path": "../../../../../xtraplatform/xtraplatform-admin/xtraplatform-manager/src/main/javascript/packages/neutrino"
+    },
+    {
+      "name": "@xtraplatform/services",
+      "path": "../../../../../xtraplatform/xtraplatform-store/xtraplatform-service-api/src/main/javascript"
+    },
+    {
+      "name": "old-ldproxy-manager",
+      "path": "../../../../../ldproxy-pgis/ldproxy-manager/src/main/javascript"
+    },
+    {
+      "name": "xtraplatform-manager",
+      "path": "../../../../../xtraplatform-manager"
+    },
+    {
+      "name": "xtraplatform-manager-wfs-proxy",
+      "path": "../../../../../xtraplatform-manager-wfs-proxy"
+    }
+  ],
+  "settings": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    }
+  }
 }
