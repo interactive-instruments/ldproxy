@@ -39,7 +39,7 @@ import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
 import de.ii.xtraplatform.entities.domain.EntityMigration;
 import de.ii.xtraplatform.entities.domain.handler.Entity;
-import de.ii.xtraplatform.event.store.Identifier;
+import de.ii.xtraplatform.store.domain.Identifier;
 import de.ii.xtraplatform.feature.provider.sql.domain.ConnectionInfoSql;
 import de.ii.xtraplatform.feature.provider.sql.domain.FeatureActionTrigger;
 import de.ii.xtraplatform.feature.provider.sql.domain.ImmutableConnectionInfoSql;

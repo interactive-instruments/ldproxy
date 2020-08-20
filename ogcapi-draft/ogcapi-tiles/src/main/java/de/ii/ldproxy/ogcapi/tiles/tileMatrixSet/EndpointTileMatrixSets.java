@@ -131,17 +131,17 @@ public class EndpointTileMatrixSets extends OgcApiEndpoint implements Conformanc
 
         ImmutableSet<TileMatrixSet> tmsSet = getPathParameters(extensionRegistry, api.getData(), "/tileMatrixSets/{tileMatrixSetId}").stream()
                 .filter(param -> param.getName().equalsIgnoreCase("tileMatrixSetId"))
-                .findAny()
-                .map(param -> param.getValues(api.getData()))
-                .stream()
-                .flatMap(Set::stream)
-                .map(tileMatrixSetId -> extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                         .stream()
-                                                         .filter(tms -> tileMatrixSetId.equals(tms.getId()))
-                                                         .findAny())
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(ImmutableSet.toImmutableSet());
+                .findFirst()
+                .map(param -> param.getValues(api.getData())
+                                   .stream()
+                                   .map(tileMatrixSetId -> extensionRegistry.getExtensionsForType(TileMatrixSet.class)
+                                                                                                              .stream()
+                                                                                                              .filter(tms -> tileMatrixSetId.equals(tms.getId()))
+                                                                                                              .findAny())
+                                   .filter(Optional::isPresent)
+                                   .map(Optional::get)
+                                   .collect(ImmutableSet.toImmutableSet()))
+                .orElse(ImmutableSet.of());
 
         TileMatrixSetsQueriesHandler.OgcApiQueryInputTileMatrixSets queryInput = new ImmutableOgcApiQueryInputTileMatrixSets.Builder()
                 .from(getGenericQueryInput(api.getData()))

@@ -19,7 +19,7 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfigur
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.entity.api.EntityRegistry;
+import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.features.app.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;

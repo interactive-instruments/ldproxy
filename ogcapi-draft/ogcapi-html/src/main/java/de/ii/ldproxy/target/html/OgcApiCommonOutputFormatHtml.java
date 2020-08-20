@@ -16,7 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.entity.api.EntityRegistry;
+import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
