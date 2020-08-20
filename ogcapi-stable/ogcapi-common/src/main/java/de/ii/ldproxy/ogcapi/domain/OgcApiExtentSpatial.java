@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.InternalServerErrorException;
 
 public class OgcApiExtentSpatial {
 
@@ -20,17 +19,12 @@ public class OgcApiExtentSpatial {
     private String crs;
 
     public OgcApiExtentSpatial(String xmin, String ymin, String xmax, String ymax) {
-        try {
-            double[] bbox1 = ImmutableList.of(xmin, ymin, xmax, ymax)
-                    .stream()
-                    .mapToDouble(Double::parseDouble)
-                    .toArray();
-            this.bbox = new double[][]{ bbox1 };
-            this.crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
-        } catch (NumberFormatException e) {
-            LOGGER.error(e.getMessage());
-            throw new InternalServerErrorException();
-        }
+        double[] bbox1 = ImmutableList.of(xmin, ymin, xmax, ymax)
+                .stream()
+                .mapToDouble(Double::parseDouble)
+                .toArray();
+        this.bbox = new double[][]{ bbox1 };
+        this.crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
     }
 
     public OgcApiExtentSpatial(double xmin, double ymin, double xmax, double ymax) {

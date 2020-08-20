@@ -107,7 +107,7 @@ public interface OgcApiEndpointExtension extends OgcApiExtension {
                 .filter(Objects::nonNull)
                 .anyMatch(message -> {
                     // unknown value, return 404
-                    throw new NotFoundException();
+                    throw new NotFoundException(message);
                 });
     }
 

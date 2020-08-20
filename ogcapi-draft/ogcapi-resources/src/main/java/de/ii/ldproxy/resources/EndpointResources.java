@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
+import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -28,10 +28,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
@@ -154,7 +154,7 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
                 .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
                 .findAny()
                 .map(ResourcesFormatExtension.class::cast)
-                .orElseThrow(() -> new NotAcceptableException())
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())))
                 .getResourcesResponse(resources, api, requestContext);
     }
 }

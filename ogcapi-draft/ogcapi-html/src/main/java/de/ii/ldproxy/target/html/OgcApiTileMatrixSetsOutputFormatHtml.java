@@ -46,16 +46,6 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, HtmlConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         return new ImmutableOgcApiMediaTypeContent.Builder()
                 .schema(new StringSchema().example("<html>...</html>"))
@@ -80,7 +70,7 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(2)
+                                .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 3 : 2)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()
@@ -110,7 +100,7 @@ public class OgcApiTileMatrixSetsOutputFormatHtml implements TileMatrixSetsForma
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(3)
+                                .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 4 : 3)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()

@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonPropertyMapping;
@@ -115,7 +115,7 @@ public class Wfs3ServiceMigrate {
                                 }*/
 
                             } catch (Throwable e) {
-                                LOGGER.error("ERROR", e);
+                                throw new RuntimeException(e);
                             }
 
 
@@ -172,25 +172,25 @@ public class Wfs3ServiceMigrate {
                                     Map<String, Object> temporal = (Map<String, Object>) ft.get("temporalExtent");
                                     String fid = ((String) ft.get("name")).toLowerCase();
 
-                                    ImmutableFeatureTypeConfigurationOgcApi.Builder featureTypeConfigurationWfs3 = new ImmutableFeatureTypeConfigurationOgcApi.Builder();
+                                    ImmutableFeatureTypeConfigurationOgcApi.Builder featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder();
 
                                     if (datasetData != null) {
-                                        featureTypeConfigurationWfs3.from(datasetData.getCollections()
+                                        featureTypeConfiguration.from(datasetData.getCollections()
                                                                                      .get(fid));
                                     }
-                                    featureTypeConfigurationWfs3
+                                    featureTypeConfiguration
                                             .id(fid)
                                             .label((String) ft.get("displayName"));
 
                                     if (temporal != null) {
-                                        featureTypeConfigurationWfs3.extent(new ImmutableCollectionExtent.Builder()
+                                        featureTypeConfiguration.extent(new ImmutableCollectionExtent.Builder()
                                                 .temporal(new ImmutableTemporalExtent.Builder().start((Long) temporal.get("start"))
                                                                                                .end((Long) temporal.get("end"))
                                                                                                .build())
                                                 .build());
                                     }
 
-                                    return new AbstractMap.SimpleImmutableEntry<>(fid, featureTypeConfigurationWfs3.build());
+                                    return new AbstractMap.SimpleImmutableEntry<>(fid, featureTypeConfiguration.build());
                                 })
                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
                 )

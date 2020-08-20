@@ -23,10 +23,10 @@ public abstract class TileMatrix {
     public abstract Optional<String> getTitle();
     public abstract Optional<String> getAbstract();
     public abstract List<String> getKeywords();
-    public abstract double getTileWidth();
-    public abstract double getTileHeight();
-    public abstract double getMatrixWidth();
-    public abstract double getMatrixHeight();
+    public abstract long getTileWidth();
+    public abstract long getTileHeight();
+    public abstract long getMatrixWidth();
+    public abstract long getMatrixHeight();
     public abstract double getScaleDenominator();
     public abstract double[] getTopLeftCorner();
 

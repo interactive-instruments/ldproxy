@@ -9,8 +9,8 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.collection.queryables.OgcApiQueryablesFormatExtension;
-import de.ii.ldproxy.ogcapi.collection.queryables.Queryables;
+import de.ii.ldproxy.ogcapi.collections.queryables.OgcApiQueryablesFormatExtension;
+import de.ii.ldproxy.ogcapi.collections.queryables.Queryables;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
@@ -51,16 +51,6 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, HtmlConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         return new ImmutableOgcApiMediaTypeContent.Builder()
                 .schema(new StringSchema().example("<html>...</html>"))
@@ -87,7 +77,7 @@ public class QueryablesOutputFormatHtml implements OgcApiQueryablesFormatExtensi
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(4)
+                                .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 5 : 4)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()

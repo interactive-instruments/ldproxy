@@ -18,11 +18,12 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreQueriesHandlerImpl;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
+import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
+import de.ii.xtraplatform.entity.api.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureStream2;
@@ -35,10 +36,14 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,7 +65,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
-    private CodelistRegistry codelistRegistry;
+    private EntityRegistry entityRegistry;
     private final OgcApiExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TilesCache tilesCache;
@@ -68,13 +73,13 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     public TilesQueriesHandlerImpl(@Requires I18n i18n,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
                                    @Requires Dropwizard dropwizard,
-                                   @Requires CodelistRegistry codelistRegistry,
+                                   @Requires EntityRegistry entityRegistry,
                                    @Requires OgcApiExtensionRegistry extensionRegistry,
                                    @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                    @Requires TilesCache tilesCache) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
-        this.codelistRegistry = codelistRegistry;
+        this.entityRegistry = entityRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
@@ -105,7 +110,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 "/tiles";
 
         TileSetsFormatExtension outputFormat = api.getOutputFormat(TileSetsFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
@@ -198,7 +203,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 "/tiles/"+tileMatrixSetId;
 
         TileSetFormatExtension outputFormat = api.getOutputFormat(TileSetFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         List<OgcApiMediaType> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                 .stream()
@@ -258,10 +263,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             EpsgCrs sourceCrs = featureProvider.crs()
                                                .getNativeCrs();
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() ?
-                    crsTransformer.get()
-                                  .needsCoordinateSwap() :
-                    query.getCrs().isPresent() && featureProvider.crs().shouldSwapCoordinates(query.getCrs().get());
+            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
+                                                                          .needsCoordinateSwap();
         }
 
         List<OgcApiLink> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
@@ -280,7 +283,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .crsTransformer(crsTransformer)
                 .crsTransformerFactory(crsTransformerFactory)
                 .shouldSwapCoordinates(swapCoordinates)
-                .codelists(codelistRegistry.getCodelists())
+                .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                         .stream()
+                                         .collect(Collectors.toMap(c -> c.getId(), c -> c)))
                 .defaultCrs(queryInput.getDefaultCrs())
                 .links(links)
                 .isFeatureCollection(true)
@@ -306,17 +311,17 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                 .toCompletableFuture()
                                 .join();
                     } else {
-                        throw new IllegalStateException("Could not acquire FeatureTransformer");
+                        throw new IllegalStateException("Could not acquire FeatureTransformer.");
                     }
 
                 } catch (CompletionException e) {
                     if (e.getCause() instanceof WebApplicationException) {
                         throw (WebApplicationException) e.getCause();
                     }
-                    throw new IllegalStateException("Feature stream error", e.getCause());
+                    throw new IllegalStateException("Feature stream error.", e.getCause());
                 }
             } else {
-                throw new NotAcceptableException();
+                throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
             }
 
             return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
@@ -336,7 +341,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                             requestContext.getLanguage())
                             .get());
         } else {
-            throw new NotAcceptableException();
+            throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
@@ -368,10 +373,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             EpsgCrs sourceCrs = featureProvider.crs()
                     .getNativeCrs();
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() ?
-                    crsTransformer.get()
-                            .needsCoordinateSwap() :
-                    featureProvider.crs().shouldSwapCoordinates(targetCrs);
+            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
+                                                                          .needsCoordinateSwap();
         }
 
         List<OgcApiLink> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
@@ -413,7 +416,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .crsTransformer(crsTransformer)
                     .crsTransformerFactory(crsTransformerFactory)
                     .shouldSwapCoordinates(swapCoordinates)
-                    .codelists(codelistRegistry.getCodelists())
+                    .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                             .stream()
+                                             .collect(Collectors.toMap(c -> c.getId(), c -> c)))
                     .defaultCrs(queryInput.getDefaultCrs())
                     .links(links)
                     .isFeatureCollection(true)
@@ -436,17 +441,17 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                 .toCompletableFuture()
                                 .join();
                     } else {
-                        throw new IllegalStateException("Could not acquire FeatureTransformer");
+                        throw new IllegalStateException("Could not acquire FeatureTransformer.");
                     }
 
                 } catch (CompletionException e) {
                     if (e.getCause() instanceof WebApplicationException) {
                         throw (WebApplicationException) e.getCause();
                     }
-                    throw new IllegalStateException("Feature stream error", e.getCause());
+                    throw new IllegalStateException("Feature stream error.", e.getCause());
                 }
             } else {
-                throw new NotAcceptableException();
+                throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
             }
         }
 
@@ -515,21 +520,18 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
                 if (result.getError()
                           .isPresent()) {
-                    LOGGER.error("Feature stream error", result.getError()
-                                                               .get());
-
-                    throw new InternalServerErrorException("There was an error processing your request. It has been logged.");
+                    throw new InternalServerErrorException(result.getError().get().getMessage());
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
-                    throw new NotFoundException();
+                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
                 }
 
             } catch (CompletionException e) {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
                 }
-                throw new IllegalStateException("Feature stream error", e.getCause());
+                throw new IllegalStateException("Feature stream error.", e.getCause());
             }
         };
     }

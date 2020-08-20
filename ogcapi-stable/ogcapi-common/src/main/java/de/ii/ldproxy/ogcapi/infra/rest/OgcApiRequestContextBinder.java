@@ -29,19 +29,19 @@ import static de.ii.xtraplatform.rest.ServiceContextBinder.SERVICE_CONTEXT_KEY;
 @Provider
 public class OgcApiRequestContextBinder extends AbstractBinder implements Binder, OgcApiRequestInjectableContext {
 
-    public static final String WFS3_REQUEST_CONTEXT_KEY = "WFS3_REQUEST";
+    public static final String OGCAPI_REQUEST_CONTEXT_KEY = "OGCAPI_REQUEST";
 
     @Override
-    public void inject(ContainerRequestContext containerRequestContext, OgcApiRequestContext wfs3Request) {
-        containerRequestContext.setProperty(WFS3_REQUEST_CONTEXT_KEY, wfs3Request);
+    public void inject(ContainerRequestContext containerRequestContext, OgcApiRequestContext ogcApiRequestContext) {
+        containerRequestContext.setProperty(OGCAPI_REQUEST_CONTEXT_KEY, ogcApiRequestContext);
     }
 
     @Override
     protected void configure() {
-        bindFactory(Wfs3RequestFactory.class).proxy(true)
-                                             .proxyForSameScope(false)
-                                             .to(OgcApiRequestContext.class)
-                                             .in(RequestScoped.class);
+        bindFactory(OgcApiRequestFactory.class).proxy(true)
+                                               .proxyForSameScope(false)
+                                               .to(OgcApiRequestContext.class)
+                                               .in(RequestScoped.class);
 
         bindFactory(OgcApiDatasetFactory.class).proxy(true)
                                                .proxyForSameScope(false)
@@ -49,12 +49,12 @@ public class OgcApiRequestContextBinder extends AbstractBinder implements Binder
                                                .in(RequestScoped.class);
     }
 
-    public static class Wfs3RequestFactory extends AbstractContainerRequestValueFactory<OgcApiRequestContext> {
+    public static class OgcApiRequestFactory extends AbstractContainerRequestValueFactory<OgcApiRequestContext> {
 
         @Override
         @RequestScoped
         public OgcApiRequestContext provide() {
-            return (OgcApiRequestContext) getContainerRequest().getProperty(WFS3_REQUEST_CONTEXT_KEY);
+            return (OgcApiRequestContext) getContainerRequest().getProperty(OGCAPI_REQUEST_CONTEXT_KEY);
         }
     }
 

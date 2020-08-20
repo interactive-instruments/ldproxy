@@ -105,7 +105,6 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
         if(!Objects.isNull(getJsonBuffer())){
             getJsonBuffer().serialize(getJsonGenerator());
             getJsonBuffer().flush();
-
         }
     }
 

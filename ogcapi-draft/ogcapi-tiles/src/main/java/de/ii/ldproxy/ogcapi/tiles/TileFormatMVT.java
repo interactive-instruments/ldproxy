@@ -16,7 +16,6 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfigur
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.cql.domain.*;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -37,7 +36,6 @@ import org.apache.http.NameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -57,8 +55,6 @@ public class TileFormatMVT implements TileFormatExtension {
     @Requires
     TilesCache tilesCache;
     @Requires
-    CodelistRegistry codelistRegistry;
-    @Requires
     Http http;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
@@ -75,16 +71,6 @@ public class TileFormatMVT implements TileFormatExtension {
     @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), TilesConfiguration.class);
     }
 
     @Override
@@ -106,7 +92,7 @@ public class TileFormatMVT implements TileFormatExtension {
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override
@@ -277,8 +263,10 @@ public class TileFormatMVT implements TileFormatExtension {
         try {
             maxAllowableOffsetCrs84 = tile.getTileMatrixSet().getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), OgcCrs.CRS84, crsTransformerFactory);
         } catch (CrsTransformationException e) {
-            LOGGER.error("CRS transformation error: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("CRS transformation error while computing maxAllowableOffsetCrs84: {}.", e.getMessage());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stacktrace:", e);
+            }
         }
 
         return maxAllowableOffsetCrs84;

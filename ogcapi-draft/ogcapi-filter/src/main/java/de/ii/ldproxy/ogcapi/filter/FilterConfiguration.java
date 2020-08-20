@@ -23,5 +23,4 @@ public interface FilterConfiguration extends ExtensionConfiguration {
     default Builder getBuilder() {
         return new ImmutableFilterConfiguration.Builder();
     }
-
 }

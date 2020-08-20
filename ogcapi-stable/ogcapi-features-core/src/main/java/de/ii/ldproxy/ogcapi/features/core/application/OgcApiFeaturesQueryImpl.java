@@ -44,7 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
-import javax.ws.rs.BadRequestException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.LinkedHashMap;
@@ -71,16 +70,16 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFeaturesQueryImpl.class);
 
-    private final OgcApiExtensionRegistry wfs3ExtensionRegistry;
+    private final OgcApiExtensionRegistry extensionRegistry;
     private final CrsTransformerFactory crsTransformerFactory;
     private final OgcApiFeatureCoreProviders providers;
     private final Cql cql;
 
-    public OgcApiFeaturesQueryImpl(@Requires OgcApiExtensionRegistry wfs3ExtensionRegistry,
+    public OgcApiFeaturesQueryImpl(@Requires OgcApiExtensionRegistry extensionRegistry,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
                                    @Requires OgcApiFeatureCoreProviders providers,
                                    @Requires Cql cql) {
-        this.wfs3ExtensionRegistry = wfs3ExtensionRegistry;
+        this.extensionRegistry = extensionRegistry;
         this.crsTransformerFactory = crsTransformerFactory;
         this.providers = providers;
         this.cql = cql;
@@ -90,7 +89,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         try {
             return URLDecoder.decode(segment, Charsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {
-            LOGGER.error(String.format("Exception while decoding feature id '%s' for querying.", segment));
+            LOGGER.error(String.format("Exception while decoding feature id '%s' for querying. Trying with the undecoded id.", segment));
             return segment;
         }
     }
@@ -238,7 +237,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                        try {
                                                            cqlPredicate = cql.read(filter.getValue(), cqlFormat);
                                                        } catch (Throwable e) {
-                                                           throw new BadRequestException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
+                                                           throw new IllegalArgumentException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
                                                        }
 
                                                        CqlPropertyChecker visitor = new CqlPropertyChecker(ImmutableList.copyOf(filterableFields.keySet()));
@@ -247,7 +246,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                                        if (invalidProperties.isEmpty()) {
                                                            return cqlPredicate;
                                                        } else {
-                                                           throw new BadRequestException(String.format("The parameter '%s' is invalid. Unknown or forbidden properties used: %s.", filter.getKey(), String.join(", ", invalidProperties)));
+                                                           throw new IllegalArgumentException(String.format("The parameter '%s' is invalid. Unknown or forbidden properties used: %s.", filter.getKey(), String.join(", ", invalidProperties)));
                                                        }
                                                    }
                                                    if (filter.getValue()
@@ -277,7 +276,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         }
 
         if (values.size() != 4) {
-            throw new BadRequestException(String.format("The parameter 'bbox' is invalid: it must have exactly four values, found %d.", values.size()));
+            throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: it must have exactly four values, found %d.", values.size()));
         }
 
         List<Double> coordinates;
@@ -286,7 +285,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
                                 .map(Double::valueOf)
                                 .collect(Collectors.toList());
         } catch (NumberFormatException e) {
-            throw new BadRequestException(String.format("The parameter 'bbox' is invalid: the coordinates are not valid numbers '%s'", getBboxAsString(values)));
+            throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: the coordinates are not valid numbers '%s'", getBboxAsString(values)));
         }
 
         checkCoordinateRange(coordinates, sourceCrs);
@@ -305,7 +304,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             // check coordinate range of default CRS
             if (val1 < -180 || val1 > 180 || val3 < -180 || val3 > 180 || val2 < -90 || val2 > 90 || val4 < -90 || val4 > 90 || val2 > val4) {
                 // note that val1<val3 does not apply due to bboxes crossing the dateline
-                throw new BadRequestException(String.format("The parameter 'bbox' is invalid: the coordinates of the bounding box '%s' do not form a valid WGS 84 bounding box.", getCoordinatesAsString(coordinates)));
+                throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: the coordinates of the bounding box '%s' do not form a valid WGS 84 bounding box.", getCoordinatesAsString(coordinates)));
             }
         }
     }
@@ -327,7 +326,7 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
         try {
             temporalLiteral = TemporalLiteral.of(timeValue);
         } catch (Throwable e) {
-            throw new BadRequestException("Invalid value for query parameter '" + PARAMETER_DATETIME + "'.", e);
+            throw new IllegalArgumentException("Invalid value for query parameter '" + PARAMETER_DATETIME + "'.", e);
         }
 
         boolean atLeastOneInterval = timeField.contains(DATETIME_INTERVAL_SEPARATOR) || temporalLiteral.getType() == Interval.class;
@@ -353,13 +352,13 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             try {
                 limit = Integer.parseInt(paramLimit);
             } catch (NumberFormatException ex) {
-                throw new BadRequestException("Invalid value for query parameter 'limit'. The value must be an integer. Found: " + paramLimit);
+                throw new IllegalArgumentException("Invalid value for query parameter 'limit'. The value must be an integer. Found: " + paramLimit);
             }
             if (limit < Integer.max(minimumPageSize, 1)) {
-                throw new BadRequestException("Invalid value for query parameter 'limit'. The value must be at least " + minimumPageSize + ". Found: " + paramLimit);
+                throw new IllegalArgumentException("Invalid value for query parameter 'limit'. The value must be at least " + minimumPageSize + ". Found: " + paramLimit);
             }
             if (limit > maxPageSize) {
-                throw new BadRequestException("Invalid value for query parameter 'limit'. The value must be less than " + maxPageSize + ". Found: " + paramLimit);
+                throw new IllegalArgumentException("Invalid value for query parameter 'limit'. The value must be less than " + maxPageSize + ". Found: " + paramLimit);
             }
         }
         return limit;
@@ -371,10 +370,10 @@ public class OgcApiFeaturesQueryImpl implements OgcApiFeaturesQuery {
             try {
                 offset = Integer.parseInt(paramOffset);
             } catch (NumberFormatException ex) {
-                throw new BadRequestException("Invalid value for query parameter 'offset'. The value must be a non-negative integer. Found: " + paramOffset);
+                throw new IllegalArgumentException("Invalid value for query parameter 'offset'. The value must be a non-negative integer. Found: " + paramOffset);
             }
             if (offset < 0) {
-                throw new BadRequestException("Invalid value for query parameter 'offset'. The value must be a non-negative integer. Found: " + paramOffset);
+                throw new IllegalArgumentException("Invalid value for query parameter 'offset'. The value must be a non-negative integer. Found: " + paramOffset);
             }
         }
         return offset;

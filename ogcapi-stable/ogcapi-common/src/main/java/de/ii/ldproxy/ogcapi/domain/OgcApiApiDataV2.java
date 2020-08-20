@@ -21,8 +21,6 @@ import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
 import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableMap;
 import de.ii.xtraplatform.service.api.ServiceData;
 import org.immutables.value.Value;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
@@ -35,8 +33,6 @@ import java.util.Optional;
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiApiDataV2.Builder.class)
 public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfiguration {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiDataV2.class);
 
     public static final String SERVICE_TYPE = "OGC_API";
 
@@ -114,11 +110,9 @@ public abstract class OgcApiApiDataV2 implements ServiceData, ExtendableConfigur
             Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>();
 
             getCollections().values()
-                            .forEach(featureTypeConfigurationOgcApi -> {
-                                mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.getBuilder()
+                            .forEach(featureTypeConfigurationOgcApi -> mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.getBuilder()
                                                                                                                             .parentExtensions(getExtensions())
-                                                                                                                            .build());
-                            });
+                                                                                                                                                               .build()));
 
             return new ImmutableOgcApiApiDataV2.Builder().from(this)
                                                          .collections(mergedCollections)

@@ -2,6 +2,8 @@ package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
@@ -17,8 +19,10 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,6 +36,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     private final OgcApiExtensionRegistry extensionRegistry;
     final OgcApiFeatureCoreProviders providers;
     final FeatureProcessInfo featureProcessInfo;
+    protected Map<String, Schema> schemaMap = new ConcurrentHashMap<>();
 
     public PathParameterTileMatrixSetId(@Requires OgcApiExtensionRegistry extensionRegistry,
                                         @Requires OgcApiFeatureCoreProviders providers,
@@ -48,20 +53,38 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
 
     @Override
     public Set<String> getValues(OgcApiApiDataV2 apiData) {
+        Set<String> tmsSetMultiCollection = apiData.getExtension(TilesConfiguration.class)
+                .filter(TilesConfiguration::isEnabled)
+                .filter(TilesConfiguration::getMultiCollectionEnabled)
+                .map(TilesConfiguration::getZoomLevels)
+                .map(Map::keySet)
+                .orElse(ImmutableSet.of());
+
+        Set<String> tmsSet = apiData.getCollections()
+                .values()
+                .stream()
+                .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
+                .map(collection -> collection.getExtension(TilesConfiguration.class))
+                .filter(config -> config.filter(ExtensionConfiguration::isEnabled).isPresent())
+                .map(config -> config.get().getZoomLevels().keySet())
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet());
+
+        tmsSet.addAll(tmsSetMultiCollection);
+
         return extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
                                                                           .map(tms -> tms.getId())
+                                                                          .filter(tms -> tmsSet.contains(tms))
                                                                           .collect(Collectors.toSet());
     }
 
-    private Schema schema = null;
-
     @Override
     public Schema getSchema(OgcApiApiDataV2 apiData) {
-        if (schema==null) {
-            schema = new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData)));
+        if (!schemaMap.containsKey(apiData.getId())) {
+            schemaMap.put(apiData.getId(),new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData))));
         }
 
-        return schema;
+        return schemaMap.get(apiData.getId());
     }
 
     @Override

@@ -16,7 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV1;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV1;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQueryables;
@@ -33,12 +33,13 @@ import de.ii.ldproxy.target.html.HtmlConfiguration;
 import de.ii.ldproxy.target.html.ImmutableHtmlConfiguration;
 import de.ii.ldproxy.target.html.MicrodataMapping;
 import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
-import de.ii.ldproxy.wfs3.crs.CrsConfiguration;
-import de.ii.ldproxy.wfs3.crs.ImmutableCrsConfiguration;
+import de.ii.ldproxy.ogcapi.crs.CrsConfiguration;
+import de.ii.ldproxy.ogcapi.crs.ImmutableCrsConfiguration;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
 import de.ii.xtraplatform.entities.domain.EntityMigration;
 import de.ii.xtraplatform.entities.domain.handler.Entity;
+import de.ii.xtraplatform.event.store.Identifier;
 import de.ii.xtraplatform.feature.provider.sql.domain.ConnectionInfoSql;
 import de.ii.xtraplatform.feature.provider.sql.domain.FeatureActionTrigger;
 import de.ii.xtraplatform.feature.provider.sql.domain.ImmutableConnectionInfoSql;
@@ -78,6 +79,7 @@ import java.util.stream.Collectors;
         @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiApiDataV2.SERVICE_TYPE)
 })
 @Instantiate
+@SuppressWarnings("deprecation")
 public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, OgcApiApiDataV2> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiMigrationV1V2.class);

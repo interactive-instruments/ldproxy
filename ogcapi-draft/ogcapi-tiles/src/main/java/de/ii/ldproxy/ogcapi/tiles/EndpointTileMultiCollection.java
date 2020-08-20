@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
@@ -37,7 +38,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -160,7 +165,7 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
 
         MinMax zoomLevels = tilesConfiguration.getZoomLevels().get(tileMatrixSetId);
         if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
-            throw new NotFoundException();
+            throw new NotFoundException("The requested tile is outside the zoom levels for this tile set.");
 
         TileMatrixSet tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
                 .filter(tms -> tms.getId().equals(tileMatrixSetId))
@@ -177,7 +182,7 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
             if (tileLimits.getMaxTileCol()<col || tileLimits.getMinTileCol()>col ||
                     tileLimits.getMaxTileRow()<row || tileLimits.getMinTileRow()>row)
                 // return 404, if outside the range
-                throw new NotFoundException();
+                throw new NotFoundException("The requested tile is outside of the limits for this zoom level and tile set.");
         }
 
         String path = definitionPath.replace("{tileMatrixSetId}", tileMatrixSetId)
@@ -186,7 +191,7 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
                 .replace("{tileCol}", tileCol);
 
         TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(NotAcceptableException::new);
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         List<String> collections = queryParams.containsKey("collections") ?
                 Splitter.on(",")
@@ -275,7 +280,7 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
 
     private void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
         if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("feature provider does not support queries");
+            throw new IllegalStateException("Feature provider does not support queries.");
         }
     }
 }

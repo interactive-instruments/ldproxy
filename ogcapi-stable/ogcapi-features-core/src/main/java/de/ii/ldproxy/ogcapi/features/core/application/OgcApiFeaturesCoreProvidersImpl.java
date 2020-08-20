@@ -39,7 +39,7 @@ public class OgcApiFeaturesCoreProvidersImpl implements OgcApiFeatureCoreProvide
             optionalFeatureProvider = entityRegistry.getEntity(FeatureProvider2.class, apiData.getId());
         }
         return optionalFeatureProvider
-                .orElseThrow(() -> new IllegalStateException("no FeatureProvider found"));
+                .orElseThrow(() -> new IllegalStateException("No feature provider found."));
     }
 
     @Override

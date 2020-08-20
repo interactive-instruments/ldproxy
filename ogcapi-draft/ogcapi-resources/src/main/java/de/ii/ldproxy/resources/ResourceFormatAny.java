@@ -2,16 +2,12 @@ package de.ii.ldproxy.resources;
 
 import com.google.common.io.ByteSource;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -32,6 +28,11 @@ public class ResourceFormatAny implements ResourceFormatExtension {
     public final static String SCHEMA_REF_RESOURCE = "#/components/schemas/Resource";
 
     @Override
+    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+        return true;
+    }
+
+    @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
@@ -47,7 +48,7 @@ public class ResourceFormatAny implements ResourceFormatExtension {
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override
@@ -61,7 +62,7 @@ public class ResourceFormatAny implements ResourceFormatExtension {
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override
@@ -100,7 +101,7 @@ public class ResourceFormatAny implements ResourceFormatExtension {
         try {
             Files.write(resourceFile.toPath(), resource);
         } catch (IOException e) {
-            throw new ServerErrorException("could not PUT resource: "+resourceId, 500);
+            throw new RuntimeException("Could not PUT resource: " + resourceId);
         }
 
         return Response.noContent()

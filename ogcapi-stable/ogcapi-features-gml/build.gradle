@@ -2,12 +2,13 @@
 dependencies {
     provided project(":ogcapi-common")
     provided project(":ogcapi-features-core")
-    //provided project(":ldproxy-wfs3")
 
+    /*
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
+     */
 
     testImplementation group: 'com.typesafe.akka', name: 'akka-testkit_2.12', version: '2.5.18'
     testImplementation (group: 'com.lightbend.akka', name: 'akka-stream-alpakka-xml_2.12', version: '0.17') {

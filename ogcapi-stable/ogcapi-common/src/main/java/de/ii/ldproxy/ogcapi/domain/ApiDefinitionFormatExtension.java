@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
 public interface ApiDefinitionFormatExtension extends FormatExtension {
@@ -17,11 +16,11 @@ public interface ApiDefinitionFormatExtension extends FormatExtension {
     }
 
     Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
-                                      OgcApiRequestContext wfs3Request);
+                                      OgcApiRequestContext ogcApiRequestContext);
 
     default Response getApiDefinitionFile(OgcApiApiDataV2 apiData,
-                                          OgcApiRequestContext wfs3Request,
+                                          OgcApiRequestContext ogcApiRequestContext,
                                           String file) {
-        throw new NotFoundException();
+        throw new RuntimeException("Access to an auxiliary API definition file was requested for a format that does not support auxiliary files.");
     }
 }

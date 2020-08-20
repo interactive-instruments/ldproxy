@@ -8,9 +8,10 @@
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.tiles.*;
+import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -19,13 +20,15 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * fetch tiling schemes / tile matrix sets that have been configured for an API
@@ -124,11 +127,25 @@ public class EndpointTileMatrixSets extends OgcApiEndpoint implements Conformanc
     public Response getTileMatrixSets(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
 
         if (!isEnabledForApi(api.getData()))
-            throw new NotFoundException();
+            throw new NotFoundException("Tile matrix sets are not available in this API.");
+
+        ImmutableSet<TileMatrixSet> tmsSet = getPathParameters(extensionRegistry, api.getData(), "/tileMatrixSets/{tileMatrixSetId}").stream()
+                .filter(param -> param.getName().equalsIgnoreCase("tileMatrixSetId"))
+                .findAny()
+                .map(param -> param.getValues(api.getData()))
+                .stream()
+                .flatMap(Set::stream)
+                .map(tileMatrixSetId -> extensionRegistry.getExtensionsForType(TileMatrixSet.class)
+                                                         .stream()
+                                                         .filter(tms -> tileMatrixSetId.equals(tms.getId()))
+                                                         .findAny())
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(ImmutableSet.toImmutableSet());
 
         TileMatrixSetsQueriesHandler.OgcApiQueryInputTileMatrixSets queryInput = new ImmutableOgcApiQueryInputTileMatrixSets.Builder()
                 .from(getGenericQueryInput(api.getData()))
-                .tileMatrixSets(extensionRegistry.getExtensionsForType(TileMatrixSet.class))
+                .tileMatrixSets(tmsSet)
                 .build();
 
         return queryHandler.handle(TileMatrixSetsQueriesHandler.Query.TILE_MATRIX_SETS, queryInput, requestContext);

@@ -14,8 +14,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ServerErrorException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,32 +37,32 @@ public class FeatureProcessResampleToGrid implements ObservationProcess {
     }
 
     @Override
-    public void validateProcessingParameters(Map<String, Object> processingParameters) throws ServerErrorException {
+    public void validateProcessingParameters(Map<String, Object> processingParameters) {
         Object obj = processingParameters.get("area");
         if (obj==null || !(obj instanceof GeometryMultiPolygon))
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No area has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No area has been provided.");
         obj = processingParameters.get("interval");
         if (obj==null || !(obj instanceof TemporalInterval))
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No time interval has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No time interval has been provided.");
         obj = processingParameters.get("width");
         if (obj==null && obj instanceof OptionalInt && ((OptionalInt) obj).isPresent())
-            throw new BadRequestException("No grid width has been provided.");
+            throw new IllegalArgumentException("No grid width has been provided.");
         obj = processingParameters.get("height");
         if (obj==null && obj instanceof OptionalInt && ((OptionalInt) obj).isPresent())
-            throw new BadRequestException("No grid height has been provided.");
+            throw new IllegalArgumentException("No grid height has been provided.");
         obj = processingParameters.get("apiData");
         if (obj==null || !(obj instanceof OgcApiApiDataV2))
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No API information has been provided.", 500);
+            throw new IllegalArgumentException("Missing information for executing '"+getName()+"': No API information has been provided.");
         obj = processingParameters.get("collectionId");
         if (obj==null || !(obj instanceof String))
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No collection identifier has been provided.", 500);
+            throw new IllegalArgumentException("Missing information for executing '"+getName()+"': No collection identifier has been provided.");
     }
 
     @Override
     public Object execute(Object data, Map<String, Object> processingParameters) {
         validateProcessingParameters(processingParameters);
         if (!(data instanceof Observations)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No observation data has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '"+getName()+"': No observation data has been provided.");
         }
         Observations observations = (Observations) data;
         GeometryMultiPolygon area = (GeometryMultiPolygon) processingParameters.get("area");

@@ -35,7 +35,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import java.util.AbstractMap;
 import java.util.List;
@@ -78,15 +77,6 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
-
-        return extension
-                .filter(TilesConfiguration::isEnabled)
-                .isPresent();
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles/{tileMatrixSetId}"))
             return new ImmutableOgcApiMediaTypeContent.Builder()
@@ -95,7 +85,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override
@@ -139,7 +129,6 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                             .get(featureTypeApi.getId());
                     Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = featureTypeApi.getExtension(OgcApiFeaturesCoreConfiguration.class);
                     Optional<GeoJsonConfiguration> geoJsonConfiguration = featureTypeApi.getExtension(GeoJsonConfiguration.class);
-
                     boolean flatten = geoJsonConfiguration.filter(cfg -> cfg.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && cfg.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
                                                     .isPresent();
                     List<FeatureSchema> properties = flatten ? featureType.getAllNestedProperties() : featureType.getProperties();
@@ -244,7 +233,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                 .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
                 .findFirst()
                 .map(link -> link.getHref())
-                .orElseThrow(() -> new ServerErrorException(500))
+                .orElseThrow(() -> new RuntimeException("No tile URI template with link relation type 'item' found for Mapbox Vector Tiles."))
                 .replace("{tileMatrixSetId}", tileMatrixSet.getId())
                 .replace("{tileMatrix}", "{z}")
                 .replace("{tileRow}", "{y}")

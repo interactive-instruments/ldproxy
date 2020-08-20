@@ -1,7 +1,8 @@
 
 dependencies {
-    provided project(":ogcapi-styles")
     provided project(":ogcapi-resources")
+    /*
+    provided project(":ogcapi-styles")
 
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
     provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
@@ -13,4 +14,6 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api' // TODO why?
     provided group: 'de.interactive_instruments', name: 'xtraplatform-service-api' // TODO why?
     provided group: 'de.interactive_instruments', name: 'xtraplatform-entities' // TODO why?
+
+     */
 }

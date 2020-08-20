@@ -7,12 +7,16 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
@@ -23,6 +27,9 @@ public class OgcApiCapabilityVectorTiles implements OgcApiBuildingBlock {
     private static final int MAX_POLYGON_PER_TILE_DEFAULT = 10000;
     private static final int MAX_LINE_STRING_PER_TILE_DEFAULT = 10000;
     private static final int MAX_POINT_PER_TILE_DEFAULT = 10000;
+
+    @Requires
+    OgcApiExtensionRegistry extensionRegistry;
 
     @Override
     public ExtensionConfiguration.Builder getConfigurationBuilder() {
@@ -43,6 +50,11 @@ public class OgcApiCapabilityVectorTiles implements OgcApiBuildingBlock {
                                                                 .min(0)
                                                                 .max(23)
                                                                 .build()))
+                                                        .tileEncodings(extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+                                                                                        .stream()
+                                                                                        .filter(FormatExtension::isEnabledByDefault)
+                                                                                        .map(format -> format.getMediaType().label())
+                                                                                        .collect(ImmutableList.toImmutableList()))
                                                         .build();
     }
 

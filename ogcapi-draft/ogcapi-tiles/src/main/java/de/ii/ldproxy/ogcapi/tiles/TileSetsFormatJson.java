@@ -16,9 +16,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Optional;
 
 @Component
@@ -48,16 +46,6 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), TilesConfiguration.class);
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles"))
             return new ImmutableOgcApiMediaTypeContent.Builder()
@@ -66,7 +54,7 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override

@@ -147,7 +147,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                 } else if (curCount >= idx) {
                     return property.values.get(idx-1);
                 } else {
-                    LOGGER.error("Internal error: access to property {} failed. Index {} could not be mapped.", baseName, idx);
+                    LOGGER.error("Access to property {} failed. Index {} could not be mapped. A null value is used.", baseName, idx);
                     return null;
                 }
             } else {
@@ -170,13 +170,13 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                     valueContext = (ObjectDTO) property.childList.get(idx-1);
                     objectLevel++;
                 } else {
-                    LOGGER.error("Internal error: access to property {} failed at path element {}. Index {} could not be mapped.", baseName, curPath, idx);
+                    LOGGER.error("Access to property {} failed at path element {}. Index {} could not be mapped. A null value is used.", baseName, curPath, idx);
                     return null;
                 }
             }
         }
 
-        LOGGER.error("Internal error: access to property {} failed.", baseName);
+        LOGGER.error("Access to property {} failed. A null value is used.", baseName);
         return null;
     }
 
@@ -306,8 +306,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
             this.dataset.metaPagination = metaPagination.build();
 
         } else if (isFeatureCollection) {
-            //analyzeFailed(ex);
-            LOGGER.error("Pagination not supported by feature provider");
+            LOGGER.error("Pagination not supported by feature provider, the number of matched items was not provided.");
         }
     }
 

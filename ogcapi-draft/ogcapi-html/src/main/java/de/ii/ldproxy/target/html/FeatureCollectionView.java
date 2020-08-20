@@ -50,7 +50,8 @@ public class FeatureCollectionView extends DatasetView {
     public URICustomizer uriBuilder;
     public URICustomizer uriBuilderWithFOnly;
     public boolean bare;
-    public List<PropertyDTO> additionalFeatures;
+    // TODO this belongs to the nearby module in the community repo
+    // public List<PropertyDTO> additionalFeatures;
     public boolean isCollection;
     public String persistentUri;
     public boolean spatialSearch;
@@ -113,7 +114,7 @@ public class FeatureCollectionView extends DatasetView {
         try {
             return URLEncoder.encode(segment, Charsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {
-            LOGGER.error(String.format("Exception while encoding feature id '%s' for use in a URI.",segment));
+            LOGGER.warn(String.format("Exception while encoding feature id '%s' for use in a URI. Trying with the unencoded id.",segment));
             return segment;
         }
     }

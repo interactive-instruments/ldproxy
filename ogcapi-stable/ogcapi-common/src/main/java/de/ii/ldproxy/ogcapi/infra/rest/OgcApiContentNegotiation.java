@@ -15,10 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Variant;
+import javax.ws.rs.core.*;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,7 +43,21 @@ public class OgcApiContentNegotiation {
 
         Optional<OgcApiMediaType> ogcApiMediaType = negotiateMediaType(supportedMediaTypes, requestContext.getRequest());
 
-        LOGGER.debug("accepted {}", ogcApiMediaType);
+        LOGGER.debug("content-type {}", ogcApiMediaType);
+
+        return ogcApiMediaType;
+    }
+
+    public Optional<OgcApiMediaType> negotiate(Request request, HttpHeaders httpHeaders, UriInfo uriInfo,
+                                               ImmutableSet<OgcApiMediaType> supportedMediaTypes) {
+
+        evaluateFormatParameter(supportedMediaTypes, uriInfo.getQueryParameters(), httpHeaders.getRequestHeaders());
+
+        LOGGER.debug("accept {}", httpHeaders.getHeaderString(ACCEPT_HEADER));
+
+        Optional<OgcApiMediaType> ogcApiMediaType = negotiateMediaType(supportedMediaTypes, request);
+
+        LOGGER.debug("content-type {}", ogcApiMediaType);
 
         return ogcApiMediaType;
     }
@@ -62,7 +73,20 @@ public class OgcApiContentNegotiation {
 
         Optional<Locale> locale = negotiateLanguage(requestContext.getRequest());
 
-        LOGGER.debug("accepted {}", locale);
+        LOGGER.debug("content-language {}", locale);
+
+        return locale;
+    }
+
+    public Optional<Locale> negotiate(Request request, HttpHeaders httpHeaders, UriInfo uriInfo) {
+
+        evaluateLanguageParameter(uriInfo.getQueryParameters(), httpHeaders.getRequestHeaders());
+
+        LOGGER.debug("accept-language {}", httpHeaders.getHeaderString(ACCEPT_LANGUAGE_HEADER));
+
+        Optional<Locale> locale = negotiateLanguage(request);
+
+        LOGGER.debug("content-language {}", locale);
 
         return locale;
     }
@@ -108,7 +132,7 @@ public class OgcApiContentNegotiation {
     private Optional<OgcApiMediaType> findMatchingOgcApiMediaType(MediaType mediaType,
                                                                   ImmutableSet<OgcApiMediaType> supportedMediaTypes) {
         return supportedMediaTypes.stream()
-                                  .filter(wfs3MediaType -> wfs3MediaType.matches(mediaType))
+                                  .filter(type -> type.matches(mediaType))
                                   .findFirst();
     }
 

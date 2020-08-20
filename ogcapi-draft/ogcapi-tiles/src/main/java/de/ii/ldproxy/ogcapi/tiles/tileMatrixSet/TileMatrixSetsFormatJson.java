@@ -10,19 +10,13 @@ package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetData;
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSets;
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetsFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 @Component
 @Provides
@@ -62,11 +56,6 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         if (path.equals("/tileMatrixSets"))
             return new ImmutableOgcApiMediaTypeContent.Builder()
@@ -81,7 +70,7 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override

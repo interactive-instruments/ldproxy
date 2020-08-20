@@ -82,7 +82,6 @@ public class Observations {
 
     public boolean addValue(String currentId, double lon, double lat, Temporal time, int varIdx, float result, String locationCode, String locationName) {
         double convertedTime = temporalToDouble(time);
-
         cells[0][count] = (float) lon;
         cells[1][count] = (float) lat;
         cells[2][count] = (float) convertedTime;
@@ -355,6 +354,7 @@ public class Observations {
                 });
 
         DataArrayXyt array = new DataArrayXyt(lons.size(), lats.size(), times.size(), new Vector<>(vars), bbox[0], bbox[1], tbegin, bbox[2], bbox[3], tend);
+
         new ArrayList<>(obsMap.keySet()).parallelStream()
                 .forEach(var -> {
                     Observations obsVar = obsMap.get(var);

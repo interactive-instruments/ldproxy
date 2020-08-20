@@ -10,6 +10,7 @@ package de.ii.ldproxy.target.geojson;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiEndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -65,13 +66,13 @@ public class JsonLdContextEndpoint extends OgcApiEndpointSubCollection {
     @Path("/{collectionId}/context")
     @GET
     @Produces("application/ld+json")
-    public Response getContext(@Context OgcApiRequestContext wfs3Request, @Context OgcApiApi service,
+    public Response getContext(@Context OgcApiRequestContext ogcApiRequestContext, @Context OgcApiApi service,
                                @PathParam("collectionId") String collectionId) throws IOException {
 
         java.nio.file.Path context = contextDirectory.resolve(collectionId);
 
         if (!Files.isRegularFile(context)) {
-            throw new NotFoundException();
+            throw new NotFoundException("The JSON-LD context was not found.");
         }
 
         return Response.ok(Files.newInputStream(context),"application/ld+json")

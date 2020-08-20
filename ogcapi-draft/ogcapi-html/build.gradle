@@ -1,14 +1,17 @@
 dependencies {
-    provided project(":ogcapi-styles")
-    provided project(":ogcapi-resources")
-    provided project(":ogcapi-collection-queryables")
-    provided project(":ogcapi-tiles")
     provided project(":ogcapi-observation-processing")
+    provided project(":ogcapi-resources")
+    provided project(":ogcapi-styles")
+    provided project(":ogcapi-tiles")
 
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
+
+
+    /*
+    provided project(":ogcapi-collection-queryables")
+
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
     provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-nearby'
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-string-templates'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-codelists'
@@ -19,6 +22,8 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-rest'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
+
+     */
 }
 
 jar {

@@ -10,6 +10,9 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiQueryParameterTemplateQueryable;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiEndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.*;
 import de.ii.xtraplatform.auth.api.User;
@@ -30,7 +33,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -199,7 +206,8 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
                                                        .getCollections()
                                                        .get(collectionId);
 
-        OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
+        OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
+                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
 
         int minimumPageSize = coreConfiguration.getMinimumPageSize();
         int defaultPageSize = coreConfiguration.getDefaultPageSize();
@@ -244,7 +252,8 @@ public class OgcApiFeaturesEndpoint extends OgcApiEndpointSubCollection {
                                                            .getCollections()
                                                            .get(collectionId);
 
-        OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class).orElseThrow(NotFoundException::new);
+        OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
+                .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
         boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeHomeLink)

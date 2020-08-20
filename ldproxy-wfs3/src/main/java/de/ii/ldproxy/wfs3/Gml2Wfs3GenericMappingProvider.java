@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.wfs3;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
-import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping.GENERIC_TYPE;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiFeaturesGenericMapping.GENERIC_TYPE;
 import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import org.slf4j.Logger;

@@ -11,30 +11,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.Collections;
-import de.ii.ldproxy.ogcapi.domain.CollectionsFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.CommonFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ConformanceDeclaration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.LandingPage;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
+import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
+import de.ii.xtraplatform.entity.api.EntityRegistry;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.features.app.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -44,30 +29,19 @@ import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import de.ii.xtraplatform.stringtemplates.StringTemplateFilters;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.AbstractMap;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 @Provides
 @Instantiate
-public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, CollectionsFormatExtension, CommonFormatExtension, OgcApiFeatureFormatExtension {
+public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, OgcApiFeatureFormatExtension {
 
     static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
@@ -89,7 +63,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
     private Dropwizard dropwizard;
 
     @Requires
-    private CodelistRegistry codelistRegistry;
+    private EntityRegistry entityRegistry;
 
     @Requires
     private Http http;
@@ -110,7 +84,7 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
 
     @Override
     public String getPathPattern() {
-        return "^/?(?:conformance|collections(?:/[\\w\\-]+(?:/items(?:/[^/\\s]+)?)?)?)?$";
+        return "^/?(?:conformance|collections/[\\w\\-]+/items(?:/[^/\\s]+)?)?$";
     }
 
     @Override
@@ -148,126 +122,10 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .orElse(true);
     }
 
-    private boolean showCollectionDescriptionsInOverview(OgcApiApiDataV2 apiData) {
-        return apiData.getExtension(HtmlConfiguration.class)
-                .map(HtmlConfiguration::getCollectionDescriptionsInOverview)
-                .orElse(false);
-    }
-
     private HtmlConfiguration.LAYOUT getLayout(OgcApiApiDataV2 apiData) {
         return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getLayout)
                 .orElse(HtmlConfiguration.LAYOUT.CLASSIC);
-    }
-
-    @Override
-    public Object getLandingPageEntity(LandingPage apiLandingPage,
-                                           OgcApiApi api,
-                                           OgcApiRequestContext requestContext) {
-
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
-
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 2 : 1)
-                        .toString()))
-                .add(new NavigationDTO(api.getData().getLabel()))
-                .build();
-
-        HtmlConfiguration htmlConfig = api.getData()
-                                          .getExtension(HtmlConfiguration.class)
-                                          .orElse(null);
-
-        OgcApiLandingPageView landingPageView = new OgcApiLandingPageView(api.getData(), apiLandingPage, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
-
-        return landingPageView;
-    }
-
-    @Override
-    public Object getConformanceEntity(ConformanceDeclaration conformanceDeclaration,
-                                           OgcApiApi api, OgcApiRequestContext requestContext)  {
-
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String conformanceDeclarationTitle = i18n.get("conformanceDeclarationTitle", requestContext.getLanguage());
-
-        final URICustomizer uriCustomizer = requestContext.getUriCustomizer();
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle,
-                                       uriCustomizer.copy()
-                                                     .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 3 : 2)
-                                                     .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(),
-                                       uriCustomizer.copy()
-                                                    .removeLastPathSegments(1)
-                                                    .toString()))
-                .add(new NavigationDTO(conformanceDeclarationTitle))
-                .build();
-
-        HtmlConfiguration htmlConfig = api.getData()
-                                          .getExtension(HtmlConfiguration.class)
-                                          .orElse(null);
-
-        OgcApiConformanceDeclarationView ogcApiConformanceDeclarationView =
-                new OgcApiConformanceDeclarationView(conformanceDeclaration, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
-        return ogcApiConformanceDeclarationView;
-    }
-
-    @Override
-    public Object getCollectionsEntity(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
-
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
-
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(api.getData().getApiVersion().isPresent() ?  3 : 2)
-                        .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(1)
-                        .toString()))
-                .add(new NavigationDTO(collectionsTitle))
-                .build();
-
-        HtmlConfiguration htmlConfig = api.getData()
-                                          .getExtension(HtmlConfiguration.class)
-                                          .orElse(null);
-
-        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), showCollectionDescriptionsInOverview(api.getData()), i18n, requestContext.getLanguage(), providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl());
-
-        return collectionsView;
-    }
-
-
-    @Override
-    public Object getCollectionEntity(OgcApiCollection ogcApiCollection,
-                                          OgcApiApi api,
-                                          OgcApiRequestContext requestContext) {
-
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
-
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 4 : 3)
-                        .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(2)
-                        .toString()))
-                .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(1)
-                        .toString()))
-                .add(new NavigationDTO(ogcApiCollection.getTitle().orElse(ogcApiCollection.getId())))
-                .build();
-
-        HtmlConfiguration htmlConfig = api.getData()
-                                                 .getCollections()
-                                                 .get(ogcApiCollection.getId())
-                                                 .getExtension(HtmlConfiguration.class)
-                                                 .orElse(null);
-
-        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
-
-        return collectionView;
     }
 
     @Override
@@ -333,7 +191,9 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
         ImmutableFeatureTransformationContextHtml transformationContextHtml = ImmutableFeatureTransformationContextHtml.builder()
                 .from(transformationContext)
                 .featureTypeDataset(featureTypeDataset)
-                .codelists(codelistRegistry.getCodelists())
+                .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                         .stream()
+                                         .collect(Collectors.toMap(c -> c.getId(), c -> c)))
                 .mustacheRenderer(dropwizard.getMustacheRenderer())
                 .i18n(i18n)
                 .language(language)
@@ -475,10 +335,10 @@ public class OgcApiFeaturesOutputFormatHtml implements ConformanceClass, Collect
                 .build();
 
         featureTypeDataset.formats = links.stream()
-                                          .filter(wfs3Link -> Objects.equals(wfs3Link.getRel(), "alternate"))
+                                          .filter(link -> Objects.equals(link.getRel(), "alternate"))
                                           .sorted(Comparator.comparing(link -> link.getTypeLabel()
                                                                                    .toUpperCase()))
-                                          .map(wfs3Link -> new NavigationDTO(wfs3Link.getTypeLabel(), wfs3Link.getHref()))
+                                          .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
                                           .collect(Collectors.toList());
 
         featureTypeDataset.uriBuilder = uriCustomizer.copy();

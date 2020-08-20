@@ -10,8 +10,11 @@ package de.ii.ldproxy.target.html;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.Collections;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.collections.domain.Collections;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
+import de.ii.ldproxy.ogcapi.domain.Metadata;
+import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -16,6 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.TileSets;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.util.Comparator;
@@ -43,6 +44,7 @@ public class TilesView extends OgcApiView {
     public TilesView(OgcApiApiDataV2 apiData,
                      TileSets tiles,
                      Optional<String> collectionId,
+                     Map<String, TileMatrixSet> tileMatrixSets,
                      List<NavigationDTO> breadCrumbs,
                      String urlPrefix,
                      HtmlConfiguration htmlConfig,
@@ -71,24 +73,33 @@ public class TilesView extends OgcApiView {
         this.tileCollections = spatialExtent==null ? ImmutableList.of() :tiles.getTileMatrixSetLinks()
                 .stream()
                 .filter(tms -> tms.getTileMatrixSet().isPresent())
-                .map(tms -> new ImmutableMap.Builder<String,String>()
-                        .put("tileMatrixSet",tms.getTileMatrixSet().get())
-                        .put("maxLevel",tms.getTileMatrixSetLimits()
-                                .stream()
-                                .map(tmsl -> Integer.parseInt(tmsl.getTileMatrix()))
-                                .max(Comparator.naturalOrder())
-                                .orElse(-1)
-                                .toString())
-                        .put("extent",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "[-180,-90,180,90]" : "[-20037508.3427892,-20037508.3427892,20037508.3427892,20037508.3427892]")
-                        // TODO: The +1 for CRS84 is necessary as OpenLayers seems to change the zoom levels by 1 for this tile grid
-                        // TODO: we should have a better fallback than simply "10"
-                        .put("defaultZoomLevel",Integer.toString(tms.getDefaultZoomLevel().orElse(10) + (tms.getTileMatrixSet().get().equals("WorldCRS84Quad")?1:0)))
-                        .put("defaultCenterLon",this.center.get("lon"))
-                        .put("defaultCenterLat",this.center.get("lat"))
-                        .put("resolutionAt0",Double.toString(tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? 360.0/512 : 2*20037508.3427892/256))
-                        .put("widthAtL0",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "2" : "1")
-                        .put("projection",tms.getTileMatrixSet().get().equals("WorldCRS84Quad") ? "EPSG:4326" : tms.getTileMatrixSet().get().equals("WorldMercatorWGS84Quad") ? "EPSG:3395" : "EPSG:3857")
-                        .build())
+                .map(tms -> {
+                    String tmsId = tms.getTileMatrixSet().get();
+                    TileMatrixSet tileMatrixSet = tileMatrixSets.get(tmsId);
+                    if (tileMatrixSet==null)
+                        return null;
+                    BoundingBox bbox = tileMatrixSet.getBoundingBox();
+                    String extent = "[" + bbox.getXmin() + "," + bbox.getYmin() + "," + bbox.getXmax() + "," + bbox.getYmax() + "]";
+                    long widthAtL0 = tileMatrixSet.getTileMatrix(0).getMatrixWidth();
+                    return new ImmutableMap.Builder<String,String>()
+                            .put("tileMatrixSet",tmsId)
+                            .put("maxLevel",tms.getTileMatrixSetLimits()
+                                    .stream()
+                                    .map(tmsl -> Integer.parseInt(tmsl.getTileMatrix()))
+                                    .max(Comparator.naturalOrder())
+                                    .orElse(-1)
+                                    .toString())
+                            .put("extent",extent)
+                            // TODO: The +1 for CRS84 is necessary as OpenLayers seems to change the zoom levels by 1 for this tile grid
+                            // TODO: we should have a better fallback than simply "10"
+                            .put("defaultZoomLevel",Integer.toString(tms.getDefaultZoomLevel().orElse(10) + (tmsId.equals("WorldCRS84Quad")?1:0)))
+                            .put("defaultCenterLon",this.center.get("lon"))
+                            .put("defaultCenterLat",this.center.get("lat"))
+                            .put("resolutionAt0",Double.toString((bbox.getXmax()- bbox.getXmin())/(widthAtL0*tileMatrixSet.getTileSize())))
+                            .put("widthAtL0",Long.toString(widthAtL0))
+                            .put("projection","EPSG:"+tileMatrixSet.getCrs().getCode())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         this.tilesUrl = links.stream()

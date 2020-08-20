@@ -35,23 +35,26 @@ public interface ObservationProcessingOutputFormat extends FormatExtension {
 
     final static String DAPA_PATH_ELEMENT = "dapa";
 
+    @Override
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+        return apiData.getExtension(ObservationProcessingConfiguration.class)
+                      .filter(config -> config.getResultEncodings().contains(this.getMediaType().label()))
+                      .isPresent();
+    }
+
+    @Override
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return apiData.getCollections()
+                      .get(collectionId)
+                      .getExtension(ObservationProcessingConfiguration.class)
+                      .filter(config -> config.getResultEncodings().contains(this.getMediaType().label()))
+                      .isPresent();
+    }
+
     default String getPathPattern() {
         return "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/position(?:\\:aggregate-time)?/?$)|" +
                 "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/area(?:\\:aggregate-(space|time|space-time))?/?$)|" +
                 "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/resample-to-grid(?:\\:aggregate-time)?/?$)";
-    }
-
-    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
-                apiData.getCollections()
-                        .values()
-                        .stream()
-                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
-                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
-    }
-
-    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     default boolean canTransformFeatures() {

@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.domain;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 
 import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
 import java.util.*;
 
 public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
@@ -22,11 +23,11 @@ public interface OgcApiQueriesHandler<T extends OgcApiQueryIdentifier> {
         OgcApiQueryHandler<? extends OgcApiQueryInput> queryHandler = getQueryHandlers().get(queryIdentifier);
 
        if (Objects.isNull(queryHandler)) {
-           throw new IllegalStateException("No query handler found for " + queryIdentifier);
+           throw new IllegalStateException("No query handler found for " + queryIdentifier +".");
        }
 
         if (!queryHandler.isValidInput(queryInput)) {
-            throw new IllegalArgumentException("Invalid query handler");
+            throw new RuntimeException(MessageFormat.format("Invalid query handler {0} for query input of class {1}.", queryHandler.getClass().getSimpleName(), queryInput.getClass().getSimpleName()));
         }
 
         return queryHandler.handle(queryInput, requestContext);

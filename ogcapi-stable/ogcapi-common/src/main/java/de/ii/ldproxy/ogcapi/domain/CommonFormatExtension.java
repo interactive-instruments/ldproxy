@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.domain;
 
 public interface CommonFormatExtension extends FormatExtension {
 
+    @Override
     default String getPathPattern() {
         return "^/?(?:conformance(?:/)?)?$";
     }

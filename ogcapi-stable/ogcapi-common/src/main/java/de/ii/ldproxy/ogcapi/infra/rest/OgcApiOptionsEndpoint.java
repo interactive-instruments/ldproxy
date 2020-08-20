@@ -99,7 +99,7 @@ public class OgcApiOptionsEndpoint implements OgcApiEndpointExtension {
                 .collect(Collectors.toSet());
 
         if (supportedMethods.isEmpty())
-            throw(new NotFoundException());
+            throw new NotFoundException("The requested path is not a resource in this API.");
 
         // add OPTIONS since this is supported for all paths
         supportedMethods.add("OPTIONS");

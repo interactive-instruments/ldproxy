@@ -21,7 +21,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -110,7 +109,7 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
                     .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
                     .orElse(ImmutableMap.of());
             if (!filterableFields.containsKey("observedProperty")) {
-                throw new ServerErrorException(String.format("The observation collection '%s' has no 'observedProperty' attribute.", featureType.getId()), 500);
+                throw new RuntimeException(String.format("The observation collection '%s' has no 'observedProperty' attribute.", featureType.getId()));
             }
             Set<String> variables = new TreeSet<>();
             List<String> vars = Splitter.on(",")

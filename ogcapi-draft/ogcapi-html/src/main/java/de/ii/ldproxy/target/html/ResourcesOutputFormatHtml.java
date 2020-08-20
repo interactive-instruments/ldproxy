@@ -52,11 +52,6 @@ public class ResourcesOutputFormatHtml implements ResourcesFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, HtmlConfiguration.class);
-    }
-
-    @Override
     public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
         return new ImmutableOgcApiMediaTypeContent.Builder()
                 .schema(new StringSchema().example("<html>...</html>"))
@@ -81,7 +76,7 @@ public class ResourcesOutputFormatHtml implements ResourcesFormatExtension {
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(2)
+                                .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 3 : 2)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()

@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtentSpatial;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtentTemporal;

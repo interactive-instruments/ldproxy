@@ -22,12 +22,32 @@ public interface FormatExtension extends OgcApiExtension {
     String getPathPattern();
 
     /**
+     * By default, encodings with the labels that are enabled in Common Core are enabled. These defaults
+     * should be overloaded for specific resources like features or stylesheets.
      *
      * @param apiData information about the API
      * @return {@code true}, if this format has been enabled in the configuration for this API
      */
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return true;
+        return apiData.getExtension(OgcApiCommonConfiguration.class)
+                      .filter(config -> config.getEncodings().contains(this.getMediaType().label()))
+                      .isPresent();
+    }
+
+    /**
+     * By default, encodings with the labels that are enabled in Common Core are enabled. These defaults
+     * should be overloaded for specific resources like features or stylesheets.
+     *
+     * @param apiData information about the API
+     * @param collectionId identifier of the collection
+     * @return {@code true}, if this format has been enabled in the configuration for this API and collection
+     */
+    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+        return apiData.getCollections()
+                      .get(collectionId)
+                      .getExtension(OgcApiCommonConfiguration.class)
+                      .filter(config -> config.getEncodings().contains(this.getMediaType().label()))
+                      .isPresent();
     }
 
     /**
@@ -80,5 +100,10 @@ public interface FormatExtension extends OgcApiExtension {
      * @return {@code true}, if the format can be used in POST, PUT or PATCH requests
      */
     default boolean canSupportTransactions() { return false; }
+
+    /**
+     * @return {@code true}, if the format should be enabled by default
+     */
+    default boolean isEnabledByDefault() { return true; }
 }
 

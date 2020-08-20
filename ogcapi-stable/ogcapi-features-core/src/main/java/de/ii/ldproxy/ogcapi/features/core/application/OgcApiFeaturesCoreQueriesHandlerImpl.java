@@ -12,23 +12,14 @@ import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureLinksGenerator;
-import de.ii.ldproxy.ogcapi.features.core.api.FeaturesLinksGenerator;
-import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTransformationContextGeneric;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreQueriesHandler;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.*;
+import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Dropwizard;
+import de.ii.xtraplatform.entity.api.EntityRegistry;
 import de.ii.xtraplatform.features.domain.*;
 import de.ii.xtraplatform.stringtemplates.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
@@ -45,11 +36,13 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -64,15 +57,15 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
-    private final CodelistRegistry codelistRegistry;
+    private final EntityRegistry entityRegistry;
 
     public OgcApiFeaturesCoreQueriesHandlerImpl(@Requires I18n i18n,
                                                 @Requires CrsTransformerFactory crsTransformerFactory,
                                                 @Requires Dropwizard dropwizard,
-                                                @Requires CodelistRegistry codelistRegistry) {
+                                                @Requires EntityRegistry entityRegistry) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
-        this.codelistRegistry = codelistRegistry;
+        this.entityRegistry = entityRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
@@ -90,13 +83,13 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
     public static void ensureCollectionIdExists(OgcApiApiDataV2 apiData, String collectionId) {
         if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
         }
     }
 
     private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
         if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("feature provider does not support queries");
+            throw new IllegalStateException("Feature provider does not support queries.");
         }
     }
 
@@ -113,7 +106,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
                 "/collections/" + collectionId + "/items")
-                                                       .orElseThrow(NotAcceptableException::new);
+                                                       .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
                 queryInput.getIncludeHomeLink(), queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
@@ -132,7 +125,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
                 "/collections/" + collectionId + "/items/" + featureId)
-                                                       .orElseThrow(NotAcceptableException::new);
+                                                       .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         String persistentUri = null;
         Optional<String> template = api.getData()
@@ -169,11 +162,8 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                                                .getNativeCrs();
             //TODO: warmup on service start
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get()
-                                                                         .needsCoordinateSwap() : query.getCrs()
-                                                                                                       .isPresent() && featureProvider.crs()
-                                                                                                                                      .shouldSwapCoordinates(query.getCrs()
-                                                                                                                                                                  .get());
+            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
+                                                                          .needsCoordinateSwap();
         }
 
 
@@ -190,7 +180,9 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
-                .codelists(codelistRegistry.getCodelists())
+                .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                         .stream()
+                                         .collect(Collectors.toMap(c -> c.getId(), c -> c)))
                 .defaultCrs(defaultCrs)
                 .links(links)
                 .isFeatureCollection(isCollection)
@@ -224,7 +216,7 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                                                                                                                                            .build(), requestContext.getLanguage())
                                                                                                .get());
         } else {
-            throw new NotAcceptableException();
+            throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
@@ -252,21 +244,18 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
                 if (result.getError()
                           .isPresent()) {
-                    LOGGER.error("Feature stream error", result.getError()
-                                                               .get());
-
-                    throw new InternalServerErrorException("There was an error processing your request. It has been logged.");
+                    throw new InternalServerErrorException(result.getError().get().getMessage());
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
-                    throw new NotFoundException();
+                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
                 }
 
             } catch (CompletionException e) {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
                 }
-                throw new IllegalStateException("Feature stream error", e.getCause());
+                throw new IllegalStateException("Feature stream error.", e.getCause());
             }
         };
     }
@@ -281,20 +270,17 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
                 if (result.getError()
                           .isPresent()) {
-                    LOGGER.error("Feature stream error", result.getError()
-                                                               .get());
-
-                    throw new InternalServerErrorException("There was an error processing your request. It has been logged.");
+                    throw new InternalServerErrorException(result.getError().get().getMessage());
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
-                    throw new NotFoundException();
+                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
                 }
             } catch (CompletionException e) {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
                 }
-                throw new IllegalStateException("Feature stream error", e.getCause());
+                throw new IllegalStateException("Feature stream error.", e.getCause());
             }
         };
     }

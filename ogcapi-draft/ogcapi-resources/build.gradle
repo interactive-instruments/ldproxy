@@ -3,6 +3,8 @@ dependencies {
     provided project(":ogcapi-styles")
 
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
+
+    /*
     provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
@@ -13,6 +15,7 @@ dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-service-api' // TODO why?
     provided group: 'de.interactive_instruments', name: 'xtraplatform-entities' // TODO why?
     // TODO: provided group: 'org.apache.tika', name: 'tika-bundle', version :'1.22'
+     */
 }
 
 /* TODO:

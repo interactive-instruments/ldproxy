@@ -21,7 +21,6 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
-
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "buildingBlock")
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
 public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration> {
@@ -33,8 +32,8 @@ public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration
 
     static String getBuildingBlockIdentifier(Class<? extends ExtensionConfiguration> clazz) {
         return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, clazz.getSimpleName()
-                                                                           .replace("Immutable", "")
-                                                                           .replace("Configuration", ""));
+                .replace("Immutable", "")
+                .replace("Configuration", ""));
     }
 
     @JsonAlias("extensionType")
@@ -58,8 +57,8 @@ public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration
 
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
         return source.getBuilder()
-                     .from(source)
-                     .from(this)
-                     .build();
+                .from(source)
+                .from(this)
+                .build();
     }
 }

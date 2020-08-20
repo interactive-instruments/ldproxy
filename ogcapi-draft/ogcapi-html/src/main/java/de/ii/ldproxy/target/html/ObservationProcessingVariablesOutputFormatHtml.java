@@ -52,16 +52,6 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
         return MEDIA_TYPE;
     }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, HtmlConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
-    }
-
     private boolean isNoIndexEnabledForApi(OgcApiApiDataV2 apiData) {
         return apiData.getExtension(HtmlConfiguration.class)
                 .map(HtmlConfiguration::getNoIndexEnabled)
@@ -81,7 +71,7 @@ public class ObservationProcessingVariablesOutputFormatHtml implements Observati
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(5)
+                                .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 6 : 5)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()

@@ -13,10 +13,6 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
-import de.ii.ldproxy.wfs3.nearby.NearbyConfiguration;
-import de.ii.ldproxy.wfs3.nearby.NearbyQuery;
-import de.ii.ldproxy.wfs3.nearby.NearbyResolver;
-import de.ii.ldproxy.wfs3.nearby.SimpleNearbyResolver;
 import de.ii.xtraplatform.akka.http.HttpClient;
 import de.ii.xtraplatform.crs.domain.CoordinateTuple;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -35,16 +31,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMayThrow;
+import java.util.*;
 
 /**
  * @author zahnen
@@ -61,11 +48,13 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
     private final int offset;
     private final CrsTransformer crsTransformer;
     private final FeatureCollectionView dataset;
-    private NearbyQuery nearbyQuery;
-    private final NearbyResolver nearbyResolver; //TODO inject, multiple implementations
     private final HtmlConfiguration htmlConfiguration;
     private final Map<String, HtmlPropertyTransformations> transformations;
     private final boolean isSchemaOrgEnabled;
+    /* TODO move to nearby module in community repo
+    private NearbyQuery nearbyQuery;
+    private final NearbyResolver nearbyResolver; //TODO inject, multiple implementations
+     */
 
     private ObjectDTO currentFeature;
     private MICRODATA_GEOMETRY_TYPE currentGeometryType;
@@ -89,8 +78,10 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                                    .orElse(null);
         this.dataset = transformationContext.getFeatureTypeDataset();
         this.mustacheRenderer = (FallbackMustacheViewRenderer) transformationContext.getMustacheRenderer();
+        /* TODO move to nearby module in community repo
         this.nearbyQuery = new NearbyQuery(transformationContext);
         this.nearbyResolver = new SimpleNearbyResolver(httpClient);
+         */
         this.htmlConfiguration = transformationContext.getHtmlConfiguration();
 
         FeatureTypeConfigurationOgcApi featureTypeConfiguration = transformationContext.getApiData()
@@ -199,8 +190,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
             this.dataset.metaPagination = metaPagination.build();
 
         } else if (isFeatureCollection) {
-            //analyzeFailed(ex);
-            LOGGER.error("Pagination not supported by feature provider");
+            LOGGER.error("Pagination not supported by feature provider, the number of matched items was not provided.");
         }
     }
 
@@ -227,6 +217,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
             currentFeature.itemType = "http://schema.org/Place";
         }
 
+        /* TODO move to nearby module in community repo
         if (isFeatureCollection && !nearbyQuery.getRelations()
                                                         .isEmpty()) {
             currentFeature.additionalParams = "&relations=" + nearbyQuery.getRelations()
@@ -234,6 +225,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                                                                   .map(NearbyConfiguration.Relation::getId)
                                                                                   .collect(Collectors.joining(",")) + "&resolve=true";
         }
+         */
     }
 
     @Override
@@ -252,7 +244,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
         dataset.features.add(currentFeature);
         currentFeature = null;
 
-        //TODO: move to ogcapi-nearby
+        /* TODO move to nearby module in community repo
         dataset.additionalFeatures = new ArrayList<>();
 
         if (!isFeatureCollection && nearbyQuery.isReady()) {
@@ -305,6 +297,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                                     index[0]++;
                                 }));
         }
+         */
     }
 
     @Override
@@ -383,7 +376,10 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
 
         dataset.hideMap = false;
 
-        if (!isSchemaOrgEnabled && !nearbyQuery.isActive()) return;
+        if (!isSchemaOrgEnabled
+            /* TODO move to nearby in the community repo
+            && !nearbyQuery.isActive()
+            */) return;
 
         if (transformations.containsKey(featureProperty.getName())) {
 
@@ -487,9 +483,11 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
                 break;
         }
 
+        /* TODO move to nearby module in community repo
         if (!isFeatureCollection && nearbyQuery.isActive()) {
             nearbyQuery.addCoordinates(text, coordinatesTransformerBuilder);
         }
+         */
     }
 
     @Override
@@ -505,9 +503,11 @@ public class FeatureTransformerHtml implements FeatureTransformer2, OnTheFly {
             currentGeometryPart.addValue(coordinatesOutput.toString());
         }
 
+        /* TODO move to nearby module in community repo
         if (!isFeatureCollection && nearbyQuery.isActive()) {
             nearbyQuery.computeBbox(currentGeometryType.toSimpleFeatureGeometry());
         }
+         */
 
         currentGeometryType = null;
         currentGeometryWritten = false;

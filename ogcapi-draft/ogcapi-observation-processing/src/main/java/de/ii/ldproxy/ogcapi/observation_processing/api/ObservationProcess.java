@@ -21,5 +21,4 @@ public interface ObservationProcess extends FeatureProcess {
     default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
         return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
-
 }

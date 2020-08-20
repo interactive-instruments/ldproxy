@@ -17,7 +17,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.BadRequestException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -142,7 +141,7 @@ public class QueryParameterBbox implements OgcApiQueryParameter {
         if (bboxParam==null) {
             bbox = getDefault(apiData, Optional.of(featureType.getId()));
             if (bbox==null)
-                throw new BadRequestException("Missing parameter 'bbox', no bounding box has been provided.");
+                throw new IllegalArgumentException("Missing parameter 'bbox', no bounding box has been provided.");
         } else if (bboxParam!=null) {
             bbox = Splitter.on(",").splitToList(bboxParam)
                     .stream()

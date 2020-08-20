@@ -9,15 +9,10 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.tiles.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.TileSetsFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -26,7 +21,9 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Provides
@@ -39,21 +36,14 @@ public class TilesOutputFormatHtml implements TileSetsFormatExtension {
             .build();
 
     @Requires
+    private OgcApiExtensionRegistry extensionRegistry;
+
+    @Requires
     private I18n i18n;
 
     @Override
     public OgcApiMediaType getMediaType() {
         return MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, HtmlConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), HtmlConfiguration.class);
     }
 
     @Override
@@ -83,7 +73,7 @@ public class TilesOutputFormatHtml implements TileSetsFormatExtension {
         final List<NavigationDTO> breadCrumbs = collectionId.isPresent() ?
                 new ImmutableList.Builder<NavigationDTO>()
                         .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(4)
+                                .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 5 : 4)
                                 .toString()))
                         .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
                                 .removeLastPathSegments(3)
@@ -99,7 +89,7 @@ public class TilesOutputFormatHtml implements TileSetsFormatExtension {
                 new ImmutableList.Builder<NavigationDTO>()
                         .add(new NavigationDTO(rootTitle,
                                 requestContext.getUriCustomizer().copy()
-                                        .removeLastPathSegments(2)
+                                        .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 3 : 2)
                                         .toString()))
                         .add(new NavigationDTO(api.getData().getLabel(),
                                 requestContext.getUriCustomizer()
@@ -119,7 +109,11 @@ public class TilesOutputFormatHtml implements TileSetsFormatExtension {
                                                  .getExtension(HtmlConfiguration.class)
                                                  .orElse(null);
 
-        TilesView tilesView = new TilesView(api.getData(), tiles, collectionId, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        Map<String, TileMatrixSet> tileMatrixSets = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
+                .stream()
+                .collect(Collectors.toMap(tms -> tms.getId(), tms -> tms));
+
+        TilesView tilesView = new TilesView(api.getData(), tiles, collectionId, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return tilesView;
     }

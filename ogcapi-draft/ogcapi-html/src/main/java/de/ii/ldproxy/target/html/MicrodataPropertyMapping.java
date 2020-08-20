@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.target.html;
 
-import de.ii.ldproxy.ogcapi.domain.AbstractOgcApiFeaturesGenericMapping;
-import de.ii.ldproxy.ogcapi.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.collections.domain.AbstractOgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiFeaturesGenericMapping;
 import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 
 /**

@@ -50,7 +50,7 @@ if ($('#map').length ) {
         var maxAllowableOffset = extentWidth / mapWidth;
         console.log('maxAllowableOffset', maxAllowableOffset);*/
 
-
+        /* TODO this belongs to the nearby module in the community repo
         if (data.additionalFeatures) {
             var bounds = geoJson.getBounds();
             Object.keys(data.additionalFeatures).forEach(function(ft) {
@@ -76,5 +76,6 @@ if ($('#map').length ) {
                 geoJson2.addTo(map);
             });
         }
+        */
     });
 }
