@@ -1,5 +1,3 @@
 
 dependencies {
-    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-collections'
 }

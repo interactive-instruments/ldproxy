@@ -3,27 +3,6 @@ dependencies {
     provided project(":ogcapi-resources")
     provided project(":ogcapi-styles")
     provided project(":ogcapi-tiles")
-
-    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
-
-
-    /*
-    provided project(":ogcapi-collection-queryables")
-
-    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
-
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-string-templates'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-codelists'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-rest'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
-
-     */
 }
 
 jar {

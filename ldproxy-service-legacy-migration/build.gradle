@@ -1,15 +1,4 @@
 
 dependencies {
     provided project(":ldproxy-wfs3")
-
-    provided group: 'de.interactive_instruments', name: 'ogcapi-html'
-
-    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-features-geojson'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-features-gml'
-
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
 }
