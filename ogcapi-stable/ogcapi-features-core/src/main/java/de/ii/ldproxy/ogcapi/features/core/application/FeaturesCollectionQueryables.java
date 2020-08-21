@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.features.core.application;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeaturesCollectionQueryables;
 import org.immutables.value.Value;
 
 import java.util.List;
