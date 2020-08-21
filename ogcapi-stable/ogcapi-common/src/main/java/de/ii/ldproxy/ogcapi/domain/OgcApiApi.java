@@ -19,7 +19,7 @@ public interface OgcApiApi extends Service {
     OgcApiApiDataV2 getData();
 
     <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType,
-                                                            String path);
+                                                            String path, Optional<String> collectionId);
 
     <T extends FormatExtension> List<T> getAllOutputFormats(Class<T> extensionType, OgcApiMediaType mediaType,
                                                             String path, Optional<T> excludeFormat);

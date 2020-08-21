@@ -24,6 +24,7 @@ import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @Instantiate
@@ -76,7 +77,8 @@ public class OgcApiSchemaQueriesHandler implements OgcApiQueriesHandler<OgcApiSc
         OgcApiSchemaFormatExtension outputFormat = api.getOutputFormat(
                 OgcApiSchemaFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/"+collectionId+"/schema")
+                "/collections/"+collectionId+"/schema",
+                Optional.of(collectionId))
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         checkCollectionId(api.getData(), collectionId);

@@ -93,14 +93,15 @@ public class OgcApiApiEntity extends AbstractService<OgcApiApiDataV2> implements
 
     @Override
     public <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, OgcApiMediaType mediaType,
-                                                                   String path) {
+                                                                   String path, Optional<String> collectionId) {
         return extensionRegistry.getExtensionsForType(extensionType)
                                 .stream()
                                 .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
                                 .filter(outputFormatExtension -> mediaType.type()
                                                                           .isCompatible(outputFormatExtension.getMediaType()
                                                                                                              .type()))
-                                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(getData()))
+                                .filter(outputFormatExtension -> collectionId.isPresent() ? outputFormatExtension.isEnabledForApi(getData(),collectionId.get()) :
+                                                                                            outputFormatExtension.isEnabledForApi(getData()))
                                 .findFirst();
     }
 

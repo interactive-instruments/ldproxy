@@ -136,7 +136,7 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
      */
     protected Map<MediaType, OgcApiMediaTypeContent> getContent(OgcApiApiDataV2 apiData, Optional<String> collectionId, String subSubPath, OgcApiContext.HttpMethods method) {
         return getFormats().stream()
-                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                .filter(outputFormatExtension -> collectionId.isPresent() ? outputFormatExtension.isEnabledForApi(apiData, collectionId.get()) : outputFormatExtension.isEnabledForApi(apiData))
                 .map(f -> f.getContent(apiData, "/collections/"+collectionId.orElse("{collectionId}")+subSubPath, method))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(),c -> c));
@@ -151,7 +151,7 @@ public abstract class OgcApiEndpointSubCollection extends OgcApiEndpoint {
      */
     protected Map<MediaType, OgcApiMediaTypeContent> getRequestContent(OgcApiApiDataV2 apiData, Optional<String> collectionId, String subSubPath, OgcApiContext.HttpMethods method) {
         return getFormats().stream()
-                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                .filter(outputFormatExtension -> collectionId.isPresent() ? outputFormatExtension.isEnabledForApi(apiData, collectionId.get()) : outputFormatExtension.isEnabledForApi(apiData))
                 .map(f -> f.getRequestContent(apiData, "/collections/"+collectionId.orElse("{collectionId}")+subSubPath, method))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(),c -> c));

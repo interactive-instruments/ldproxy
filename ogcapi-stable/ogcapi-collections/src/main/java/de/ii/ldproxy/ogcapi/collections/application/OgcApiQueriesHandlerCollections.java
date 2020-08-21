@@ -103,7 +103,8 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
 
         CollectionsFormatExtension outputFormatExtension = api.getOutputFormat(CollectionsFormatExtension.class,
                                                                                requestContext.getMediaType(),
-                                                                         "/collections")
+                                                                         "/collections",
+                                                                               Optional.empty())
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ImmutableCollections responseObject = collections.build();
@@ -138,7 +139,7 @@ public class OgcApiQueriesHandlerCollections implements OgcApiQueriesHandler<Ogc
                 i18n,
                 requestContext.getLanguage());
 
-        CollectionsFormatExtension outputFormatExtension = api.getOutputFormat(CollectionsFormatExtension.class, requestContext.getMediaType(), "/collections/"+collectionId)
+        CollectionsFormatExtension outputFormatExtension = api.getOutputFormat(CollectionsFormatExtension.class, requestContext.getMediaType(), "/collections/"+collectionId, Optional.of(collectionId))
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ImmutableOgcApiCollection.Builder ogcApiCollection = ImmutableOgcApiCollection.builder()

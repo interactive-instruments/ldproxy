@@ -105,7 +105,8 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         OgcApiFeatureFormatExtension outputFormat = api.getOutputFormat(
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + "/items")
+                "/collections/" + collectionId + "/items",
+                Optional.of(collectionId))
                                                        .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
@@ -124,7 +125,8 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
         OgcApiFeatureFormatExtension outputFormat = api.getOutputFormat(
                 OgcApiFeatureFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + "/items/" + featureId)
+                "/collections/" + collectionId + "/items/" + featureId,
+                Optional.of(collectionId))
                                                        .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         String persistentUri = null;
@@ -244,7 +246,9 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
 
                 if (result.getError()
                           .isPresent()) {
-                    throw new InternalServerErrorException(result.getError().get().getMessage());
+                    processStreamError(result.getError().get());
+                    // the connection has been lost, typically the client has cancelled the request, log on debug level
+                    LOGGER.debug("Request cancelled due to lost connection.");
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
@@ -267,15 +271,17 @@ public class OgcApiFeaturesCoreQueriesHandlerImpl implements OgcApiFeaturesCoreQ
                 FeatureStream2.Result result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
                                                                      .toCompletableFuture()
                                                                      .join();
-
                 if (result.getError()
                           .isPresent()) {
-                    throw new InternalServerErrorException(result.getError().get().getMessage());
+                    processStreamError(result.getError().get());
+                    // the connection has been lost, typically the client has cancelled the request, log on debug level
+                    LOGGER.debug("Request cancelled due to lost connection.");
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
                     throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
                 }
+
             } catch (CompletionException e) {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();

@@ -105,7 +105,8 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
         }
 
         CommonFormatExtension outputFormatExtension = api.getOutputFormat(CommonFormatExtension.class,
-                                                                          requestContext.getMediaType(),"/")
+                                                                          requestContext.getMediaType(),"/",
+                                                                          Optional.empty())
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? ogcApiLinks : null)
@@ -129,7 +130,7 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                 i18n,
                 requestContext.getLanguage());
 
-        CommonFormatExtension outputFormatExtension = requestContext.getApi().getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), "/conformance")
+        CommonFormatExtension outputFormatExtension = requestContext.getApi().getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), "/conformance", Optional.empty())
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ImmutableConformanceDeclaration.Builder conformanceDeclaration = new ImmutableConformanceDeclaration.Builder()
@@ -164,7 +165,8 @@ public class OgcApiQueriesHandlerCommon implements OgcApiQueriesHandler<OgcApiQu
                 requestContext.getApi()
                               .getOutputFormat(ApiDefinitionFormatExtension.class,
                                                requestContext.getMediaType(),
-                                         "/api"+(subPath.isEmpty() ? "" : subPath.startsWith("/") ? subPath : "/"+subPath ))
+                                         "/api"+(subPath.isEmpty() ? "" : subPath.startsWith("/") ? subPath : "/"+subPath ),
+                                               Optional.empty())
                               .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         if (subPath.matches("/?[^/]+")) {

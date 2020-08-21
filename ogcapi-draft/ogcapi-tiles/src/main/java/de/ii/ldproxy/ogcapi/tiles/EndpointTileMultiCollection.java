@@ -190,7 +190,7 @@ public class EndpointTileMultiCollection extends OgcApiEndpoint {
                 .replace("{tileRow}", tileRow)
                 .replace("{tileCol}", tileCol);
 
-        TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path)
+        TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path, Optional.empty())
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         List<String> collections = queryParams.containsKey("collections") ?

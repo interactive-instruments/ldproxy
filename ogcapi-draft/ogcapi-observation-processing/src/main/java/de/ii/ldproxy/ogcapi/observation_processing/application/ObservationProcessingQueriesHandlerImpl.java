@@ -34,6 +34,8 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
@@ -55,6 +57,8 @@ import static com.codahale.metrics.MetricRegistry.name;
 @Instantiate
 @Provides
 public class ObservationProcessingQueriesHandlerImpl implements ObservationProcessingQueriesHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObservationProcessingQueriesHandlerImpl.class);
 
     private static final String DAPA_PATH_ELEMENT = "dapa";
     private final I18n i18n;
@@ -118,7 +122,8 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         ObservationProcessingOutputFormatVariables outputFormat = api.getOutputFormat(
                 ObservationProcessingOutputFormatVariables.class,
                 requestContext.getMediaType(),
-                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/variables")
+                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/variables",
+                Optional.of(collectionId))
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ensureCollectionIdExists(api.getData(), collectionId);
@@ -147,7 +152,8 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         ObservationProcessingOutputFormatProcessing outputFormat = api.getOutputFormat(
                 ObservationProcessingOutputFormatProcessing.class,
                 requestContext.getMediaType(),
-                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT)
+                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT,
+                Optional.of(collectionId))
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ensureCollectionIdExists(api.getData(), collectionId);
@@ -180,7 +186,8 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         ObservationProcessingOutputFormat outputFormat = api.getOutputFormat(
                 ObservationProcessingOutputFormat.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + processes.getSubSubPath())
+                "/collections/" + collectionId + processes.getSubSubPath(),
+                Optional.of(collectionId))
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ensureCollectionIdExists(api.getData(), collectionId);
@@ -253,10 +260,18 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                                             .time();
         return outputStream -> {
             try {
-                featureTransformStream.runWith(featureTransformer.apply(outputStream))
-                                      .toCompletableFuture()
-                                      .join();
+                FeatureStream2.Result result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
+                                                                     .toCompletableFuture()
+                                                                     .join();
                 timer.stop();
+
+                if (result.getError()
+                          .isPresent()) {
+                    processStreamError(result.getError().get());
+                    // the connection has been lost, typically the client has cancelled the request, log on debug level
+                    LOGGER.debug("Request cancelled due to lost connection.");
+                }
+
             } catch (CompletionException e) {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();

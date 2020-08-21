@@ -197,7 +197,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
                 .replace("{tileMatrix}", tileMatrix)
                 .replace("{tileRow}", tileRow)
                 .replace("{tileCol}", tileCol);
-        TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path)
+        TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path, Optional.of(collectionId))
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         Tile tile = new ImmutableTile.Builder()
