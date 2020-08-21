@@ -13,7 +13,7 @@ import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query
 import de.ii.ldproxy.ogcapi.domain.*
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesLandingPageExtension
-import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
+import de.ii.ldproxy.ogcapi.infra.rest.ImmutableRequestContext
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import spock.lang.PendingFeature
 import spock.lang.Specification
@@ -23,9 +23,9 @@ import javax.ws.rs.core.Response
 
 class LandingPageSpec extends Specification {
 
-    static final OgcApiApiDataV2 datasetData = createDatasetData()
-    static OgcApiApiEntity ogcApiApiEntity = createDatasetEntity()
-    static final OgcApiRequestContext requestContext = createRequestContext()
+    static final OgcApiDataV2 datasetData = createDatasetData()
+    static OgcApiEntity ogcApiApiEntity = createDatasetEntity()
+    static final ApiRequestContext requestContext = createRequestContext()
     static OgcApiQueriesHandlerCommon queryHandler = new OgcApiQueriesHandlerCommon(createExtensionRegistry())
 
 
@@ -95,7 +95,7 @@ class LandingPageSpec extends Specification {
     }
 
     static def createDatasetData() {
-        new ImmutableOgcApiApiDataV2.Builder()
+        new ImmutableOgcApiDataV2.Builder()
                 .id('test')
                 .serviceType('WFS3')
                 /*.featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
@@ -125,14 +125,14 @@ class LandingPageSpec extends Specification {
     }
 
     static def createDatasetEntity() {
-        def entity = new OgcApiApiEntity(createExtensionRegistry())
+        def entity = new OgcApiEntity(createExtensionRegistry())
         entity.setData(datasetData)
         return entity
     }
 
     static def createRequestContext(String uri = 'http://example.com') {
-        new ImmutableOgcApiRequestContext.Builder()
-                .mediaType(new ImmutableOgcApiMediaType.Builder()
+        new ImmutableRequestContext.Builder()
+                .mediaType(new ImmutableApiMediaType.Builder()
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build())
                 .api(ogcApiApiEntity)
@@ -142,15 +142,15 @@ class LandingPageSpec extends Specification {
 
 
     static def createExtensionRegistry() {
-        new OgcApiExtensionRegistry() {
+        new ExtensionRegistry() {
 
             @Override
-            List<OgcApiExtension> getExtensions() {
+            List<ApiExtension> getExtensions() {
                 return ImmutableList.of()
             }
 
             @Override
-            <T extends OgcApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
+            <T extends ApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
                 if (extensionType == OgcApiLandingPageExtension.class) {
                     OgcApiFeaturesLandingPageExtension landingPage = new OgcApiFeaturesLandingPageExtension()
                     landingPage.i18n = new I18nDefault()
@@ -160,24 +160,24 @@ class LandingPageSpec extends Specification {
                     return ImmutableList.of((T) new CommonFormatExtension() {
 
                         @Override
-                        Response getLandingPageResponse(LandingPage apiLandingPage, OgcApiApi api, OgcApiRequestContext requestContext) {
+                        Response getLandingPageResponse(LandingPage apiLandingPage, OgcApi api, ApiRequestContext requestContext) {
                             return Response.ok(apiLandingPage).build()
                         }
 
                         @Override
-                        Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration, OgcApiApi api, OgcApiRequestContext requestContext) {
+                        Response getConformanceResponse(ConformanceDeclaration conformanceDeclaration, OgcApi api, ApiRequestContext requestContext) {
                             return Response.ok(conformanceDeclaration).build()
                         }
 
                         @Override
-                        OgcApiMediaType getMediaType() {
-                            return new ImmutableOgcApiMediaType.Builder()
+                        ApiMediaType getMediaType() {
+                            return new ImmutableApiMediaType.Builder()
                                     .type(MediaType.APPLICATION_JSON_TYPE)
                                     .build()
                         }
 
                         @Override
-                        boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+                        boolean isEnabledForApi(OgcApiDataV2 apiData) {
                             return true
                         }
                     })
@@ -191,7 +191,7 @@ class LandingPageSpec extends Specification {
                         }
 
                         @Override
-                        boolean isEnabledForApi(OgcApiApiDataV2 datasetData) {
+                        boolean isEnabledForApi(OgcApiDataV2 datasetData) {
                             return true
                         }
                     })

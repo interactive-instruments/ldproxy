@@ -7,9 +7,9 @@
  */
 package de.ii.ldproxy.resources;
 
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -28,13 +28,13 @@ public interface ResourceFormatExtension extends FormatExtension {
 
     Response getResourceResponse(byte[] resource,
                                  String resourceId,
-                                 OgcApiApi api,
-                                 OgcApiRequestContext requestContext);
+                                 OgcApi api,
+                                 ApiRequestContext requestContext);
 
     Response putResource(File resourcesStore,
                          byte[] resource,
                          String resourceId,
-                         OgcApiApi api,
-                         OgcApiRequestContext requestContext);
+                         OgcApi api,
+                         ApiRequestContext requestContext);
 
 }

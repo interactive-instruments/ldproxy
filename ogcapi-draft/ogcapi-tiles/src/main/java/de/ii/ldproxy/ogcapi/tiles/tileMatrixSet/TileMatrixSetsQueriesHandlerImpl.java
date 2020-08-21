@@ -32,30 +32,30 @@ import java.util.stream.Collectors;
 public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHandler {
 
     private final I18n i18n;
-    private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+    private final ExtensionRegistry extensionRegistry;
 
     public TileMatrixSetsQueriesHandlerImpl(@Requires I18n i18n,
                                             @Requires Dropwizard dropwizard,
-                                            @Requires OgcApiExtensionRegistry extensionRegistry) {
+                                            @Requires ExtensionRegistry extensionRegistry) {
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
 
         this.queryHandlers = ImmutableMap.of(
                 Query.TILE_MATRIX_SETS,
-                OgcApiQueryHandler.with(OgcApiQueryInputTileMatrixSets.class, this::getTileMatrixSetsResponse),
+                QueryHandler.with(QueryInputTileMatrixSets.class, this::getTileMatrixSetsResponse),
                 Query.TILE_MATRIX_SET,
-                OgcApiQueryHandler.with(OgcApiQueryInputTileMatrixSet.class, this::getTileMatrixSetResponse)
+                QueryHandler.with(QueryInputTileMatrixSet.class, this::getTileMatrixSetResponse)
         );
     }
 
     @Override
-    public Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> getQueryHandlers() {
+    public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
         return queryHandlers;
     }
 
-    private Response getTileMatrixSetsResponse(OgcApiQueryInputTileMatrixSets queryInput, OgcApiRequestContext requestContext) {
-        OgcApiApi api = requestContext.getApi();
+    private Response getTileMatrixSetsResponse(QueryInputTileMatrixSets queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
         String path = "/tileMatrixSets";
 
         TileMatrixSetsFormatExtension outputFormat = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), path, Optional.empty())
@@ -63,7 +63,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        List<OgcApiLink> links = new TileMatrixSetsLinksGenerator().generateLinks(
+        List<Link> links = new TileMatrixSetsLinksGenerator().generateLinks(
                 requestContext.getUriCustomizer(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
@@ -94,8 +94,8 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                 .build();
     }
 
-    private Response getTileMatrixSetResponse(OgcApiQueryInputTileMatrixSet queryInput, OgcApiRequestContext requestContext) {
-        OgcApiApi api = requestContext.getApi();
+    private Response getTileMatrixSetResponse(QueryInputTileMatrixSet queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
         String tileMatrixSetId = queryInput.getTileMatrixSetId();
         String path = "/tileMatrixSets/"+tileMatrixSetId;
 
@@ -104,7 +104,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        List<OgcApiLink> links = new TileMatrixSetsLinksGenerator().generateLinks(
+        List<Link> links = new TileMatrixSetsLinksGenerator().generateLinks(
                 requestContext.getUriCustomizer(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),

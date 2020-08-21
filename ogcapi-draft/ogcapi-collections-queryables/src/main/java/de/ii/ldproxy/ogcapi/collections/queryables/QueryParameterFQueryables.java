@@ -1,5 +1,6 @@
 package de.ii.ldproxy.ogcapi.collections.queryables;
 
+import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -11,7 +12,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 @Instantiate
 public class QueryParameterFQueryables extends QueryParameterF {
 
-    public QueryParameterFQueryables(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public QueryParameterFQueryables(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 
@@ -21,19 +22,19 @@ public class QueryParameterFQueryables extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) &&
                 definitionPath.equals("/collections/{collectionId}/queryables");
     }
 
     @Override
     protected Class<? extends FormatExtension> getFormatClass() {
-        return OgcApiQueryablesFormatExtension.class;
+        return QueryablesFormatExtension.class;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, QueryablesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return QueryablesConfiguration.class;
     }
 
 }

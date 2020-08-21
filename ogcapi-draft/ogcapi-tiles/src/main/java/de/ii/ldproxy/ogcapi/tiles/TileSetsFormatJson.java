@@ -27,7 +27,7 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
     @Requires
     SchemaGenerator schemaGenerator;
 
-    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.APPLICATION_JSON_TYPE)
             .label("JSON")
             .parameter("json")
@@ -41,14 +41,14 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
     }
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaTiles)
                     .schemaRef(SCHEMA_REF_TILES)
                     .ogcApiMediaType(MEDIA_TYPE)
@@ -58,7 +58,7 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
     }
 
     @Override
-    public Object getTileSetsEntity(TileSets tiles, Optional<String> collectionId, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Object getTileSetsEntity(TileSets tiles, Optional<String> collectionId, OgcApi api, ApiRequestContext requestContext) {
         return tiles;
     }
 

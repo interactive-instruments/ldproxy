@@ -1,5 +1,6 @@
 package de.ii.ldproxy.ogcapi.collections.schema;
 
+import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -11,7 +12,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 @Instantiate
 public class QueryParameterFSchema extends QueryParameterF {
 
-    public QueryParameterFSchema(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public QueryParameterFSchema(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 
@@ -21,19 +22,19 @@ public class QueryParameterFSchema extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) &&
                 definitionPath.equals("/collections/{collectionId}/schema");
     }
 
     @Override
     protected Class<? extends FormatExtension> getFormatClass() {
-        return OgcApiSchemaFormatExtension.class;
+        return SchemaFormatExtension.class;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, SchemaConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return SchemaConfiguration.class;
     }
 
 }

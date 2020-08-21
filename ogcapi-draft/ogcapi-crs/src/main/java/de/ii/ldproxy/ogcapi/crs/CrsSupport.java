@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.crs;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 
 import java.util.List;
@@ -16,14 +16,14 @@ import java.util.Optional;
 
 public interface CrsSupport {
 
-    List<EpsgCrs> getSupportedCrsList(OgcApiApiDataV2 apiData);
+    List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData);
 
-    List<EpsgCrs> getSupportedCrsList(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureTypeConfiguration);
+    List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureTypeConfiguration);
 
-    boolean isSupported(OgcApiApiDataV2 apiData, EpsgCrs crs);
+    boolean isSupported(OgcApiDataV2 apiData, EpsgCrs crs);
 
-    boolean isSupported(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureTypeConfiguration, EpsgCrs crs);
+    boolean isSupported(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureTypeConfiguration, EpsgCrs crs);
 
-    EpsgCrs getStorageCrs(OgcApiApiDataV2 apiData,
+    EpsgCrs getStorageCrs(OgcApiDataV2 apiData,
                           Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration);
 }

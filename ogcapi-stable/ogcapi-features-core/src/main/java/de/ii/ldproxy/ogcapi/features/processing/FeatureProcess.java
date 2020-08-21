@@ -10,15 +10,15 @@ package de.ii.ldproxy.ogcapi.features.processing;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiProcessExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ProcessExtension;
 import io.swagger.v3.oas.models.media.Schema;
 
 import javax.ws.rs.core.MediaType;
 import java.util.*;
 
 // TODO
-public interface FeatureProcess extends OgcApiProcessExtension {
+public interface FeatureProcess extends ProcessExtension {
     /**
      * @return a brief summary of the execute
      */
@@ -44,7 +44,7 @@ public interface FeatureProcess extends OgcApiProcessExtension {
      * @param apiData the API for which the collections should be identified
      * @return the list of feature collections in the API that this execute supports as input
      */
-    default Set<String> getSupportedCollections(OgcApiApiDataV2 apiData) { return ImmutableSet.of(); }
+    default Set<String> getSupportedCollections(OgcApiDataV2 apiData) { return ImmutableSet.of(); }
 
     /**
      * Every execute the processes feature data must either accept a collection as an input or another compatible
@@ -53,7 +53,7 @@ public interface FeatureProcess extends OgcApiProcessExtension {
      * @param apiData the API for which the processes should be identified
      * @return the list of processes in the API that this execute supports as input
      */
-    default List<FeatureProcess> getSupportedProcesses(OgcApiApiDataV2 apiData) { return ImmutableList.of(); }
+    default List<FeatureProcess> getSupportedProcesses(OgcApiDataV2 apiData) { return ImmutableList.of(); }
 
     /**
      * @return the schema of the output that this execute returns, for each media type that is supported

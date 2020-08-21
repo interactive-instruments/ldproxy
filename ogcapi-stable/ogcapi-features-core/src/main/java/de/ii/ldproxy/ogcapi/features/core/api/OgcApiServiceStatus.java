@@ -5,6 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+/*
 package de.ii.ldproxy.ogcapi.features.core.api;
 
 import de.ii.xtraplatform.service.api.ServiceData;
@@ -15,7 +16,7 @@ import javax.annotation.Nullable;
 
 /**
  * @author zahnen
- */
+ * /
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 public abstract class OgcApiServiceStatus implements ServiceData {
@@ -37,3 +38,5 @@ public abstract class OgcApiServiceStatus implements ServiceData {
     @Nullable
     public abstract String getMessage();
 }
+
+ */

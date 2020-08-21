@@ -2,7 +2,8 @@ package de.ii.ldproxy.ogcapi.styles;
 
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -28,12 +29,12 @@ public class PathParameterStyleId implements OgcApiPathParameter {
     }
 
     @Override
-    public Set<String> getValues(OgcApiApiDataV2 apiData) {
+    public Set<String> getValues(OgcApiDataV2 apiData) {
         return ImmutableSet.of();
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         return new StringSchema().pattern(getPattern());
     }
 
@@ -48,14 +49,14 @@ public class PathParameterStyleId implements OgcApiPathParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
                (definitionPath.equals("/styles/{styleId}") ||
                 definitionPath.equals("/styles/{styleId}/metadata"));
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 }

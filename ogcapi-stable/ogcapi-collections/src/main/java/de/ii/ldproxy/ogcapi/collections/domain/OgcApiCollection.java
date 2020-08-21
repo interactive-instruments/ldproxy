@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.collections.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtent;
+import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
 

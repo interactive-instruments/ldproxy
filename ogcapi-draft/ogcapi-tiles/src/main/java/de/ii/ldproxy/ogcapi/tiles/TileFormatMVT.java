@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
+import de.ii.ldproxy.ogcapi.features.core.application.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.cql.domain.*;
@@ -51,7 +51,7 @@ public class TileFormatMVT implements TileFormatExtension {
     @Requires
     CrsTransformerFactory crsTransformerFactory;
     @Requires
-    OgcApiFeaturesQuery queryParser;
+    FeaturesQuery queryParser;
     @Requires
     TilesCache tilesCache;
     @Requires
@@ -59,7 +59,7 @@ public class TileFormatMVT implements TileFormatExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
 
-    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application","vnd.mapbox-vector-tile"))
             .label("MVT")
             .parameter("mvt")
@@ -69,7 +69,7 @@ public class TileFormatMVT implements TileFormatExtension {
     public final static String SCHEMA_REF_TILE = "#/components/schemas/TileMVT";
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
@@ -84,9 +84,9 @@ public class TileFormatMVT implements TileFormatExtension {
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaTile)
                     .schemaRef(SCHEMA_REF_TILE)
                     .ogcApiMediaType(MEDIA_TYPE)
@@ -132,7 +132,7 @@ public class TileFormatMVT implements TileFormatExtension {
                 ImmutableList.of("*");
         queryBuilder.fields(properties);
 
-        OgcApiApiDataV2 apiData = tile.getApi().getData();
+        OgcApiDataV2 apiData = tile.getApi().getData();
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
 
         final Map<String, String> filterableFields = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
@@ -279,5 +279,10 @@ public class TileFormatMVT implements TileFormatExtension {
      */
     public Object getEmptyTile(Tile tile) {
         return new VectorTileEncoder(tile.getTileMatrixSet().getTileExtent()).encode();
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
     }
 }

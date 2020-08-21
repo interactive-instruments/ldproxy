@@ -18,7 +18,7 @@ import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.styles.*;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
@@ -62,7 +62,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointStylesManager extends OgcApiEndpoint implements ConformanceClass {
+public class EndpointStylesManager extends Endpoint implements ConformanceClass {
 
     @Requires
     I18n i18n;
@@ -73,7 +73,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
     private final File stylesStore;
 
     public EndpointStylesManager(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                 @Requires OgcApiExtensionRegistry extensionRegistry) {
+                                 @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
         this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
         if (!stylesStore.exists()) {
@@ -83,11 +83,11 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/manage-styles");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/manage-styles");
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> extension = apiData.getExtension(StylesConfiguration.class);
 
         return extension
@@ -96,7 +96,12 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
                 .isPresent();
     }
 
-    private boolean isValidationEnabledForApi(OgcApiApiDataV2 apiData) {
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
+    }
+
+    private boolean isValidationEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> extension = apiData.getExtension(StylesConfiguration.class);
 
         return extension
@@ -116,7 +121,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
         return formats;
     }
 
-    private Map<MediaType, OgcApiMediaTypeContent> getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
+    private Map<MediaType, ApiMediaTypeContent> getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
         return getFormats().stream()
                 .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
                 .map(f -> f.getRequestContent(apiData, path, method))
@@ -125,16 +130,16 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
             Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("styles")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLES_MANAGER);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLES_MANAGER);
             String path = "/styles";
             List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.POST);
             String operationSummary = "add a new style";
@@ -159,8 +164,8 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
             Optional<String> operationDescription = Optional.of(description);
             ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                     .path(path);
-            Map<MediaType, OgcApiMediaTypeContent> requestContent = getRequestContent(apiData, path, HttpMethods.POST);
-            OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.POST, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+            Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, HttpMethods.POST);
+            ApiOperation operation = addOperation(apiData, HttpMethods.POST, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilder.putOperations("POST", operation);
             definitionBuilder.putResources(path, resourceBuilder.build());
@@ -185,7 +190,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
                     .path(path)
                     .pathParameters(pathParameters);
             requestContent = getRequestContent(apiData, path, HttpMethods.PUT);
-            operation = addOperation(apiData, OgcApiContext.HttpMethods.PUT, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+            operation = addOperation(apiData, HttpMethods.PUT, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilder.putOperations("PUT", operation);
             queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
@@ -194,7 +199,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
                     "an error is returned. Deleting a style also deletes the subordinate resources, " +
                     "i.e., the style metadata.");
             requestContent = getRequestContent(apiData, path, HttpMethods.DELETE);
-            operation = addOperation(apiData, OgcApiContext.HttpMethods.DELETE, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+            operation = addOperation(apiData, HttpMethods.DELETE, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilder.putOperations("DELETE", operation);
             definitionBuilder.putResources(path, resourceBuilder.build());
@@ -215,8 +220,8 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
     @Consumes({StyleFormatMbStyle.MEDIA_TYPE_STRING,StyleFormatSld10.MEDIA_TYPE_STRING,StyleFormatSld11.MEDIA_TYPE_STRING})
     public Response postStyle(@Auth Optional<User> optionalUser,
                               @QueryParam("validate") String validate,
-                              @Context OgcApiApi api,
-                              @Context OgcApiRequestContext ogcApiRequest,
+                              @Context OgcApi api,
+                              @Context ApiRequestContext ogcApiRequest,
                               @Context HttpServletRequest request,
                               byte[] requestBody) {
 
@@ -290,8 +295,8 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
     public Response putStyle(@Auth Optional<User> optionalUser,
                              @PathParam("styleId") String styleId,
                              @QueryParam("validate") String validate,
-                             @Context OgcApiApi dataset,
-                             @Context OgcApiRequestContext ogcApiRequest,
+                             @Context OgcApi dataset,
+                             @Context ApiRequestContext ogcApiRequest,
                              @Context HttpServletRequest request,
                              byte[] requestBody) {
 
@@ -336,7 +341,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
         return !metadataFile.exists();
     }
 
-    private void writeStylesheet(OgcApiApiDataV2 datasetData, OgcApiRequestContext ogcApiRequest, String styleId,
+    private void writeStylesheet(OgcApiDataV2 datasetData, ApiRequestContext ogcApiRequest, String styleId,
                                  StyleFormatExtension format, byte[] requestBody, boolean newStyle) {
 
         String datasetId = datasetData.getId();
@@ -385,7 +390,7 @@ public class EndpointStylesManager extends OgcApiEndpoint implements Conformance
     @Path("/{styleId}")
     @DELETE
     public Response deleteStyle(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                                @Context OgcApiApi dataset) {
+                                @Context OgcApi dataset) {
 
         checkAuthorization(dataset.getData(), optionalUser);
 

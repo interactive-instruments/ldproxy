@@ -9,8 +9,9 @@ package de.ii.ldproxy.ogcapi.styles;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.common.application.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -40,7 +41,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointStyle extends OgcApiEndpoint {
+public class EndpointStyle extends Endpoint {
 
     @Requires
     I18n i18n;
@@ -52,7 +53,7 @@ public class EndpointStyle extends OgcApiEndpoint {
     private final File stylesStore;
 
     public EndpointStyle(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                         @Requires OgcApiExtensionRegistry extensionRegistry) {
+                         @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
         this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
         if (!stylesStore.exists()) {
@@ -60,13 +61,13 @@ public class EndpointStyle extends OgcApiEndpoint {
         }
     }
 
-    private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiApiDataV2 apiData) {
+    private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
                 .stream()
                 .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(apiData));
     }
 
-    private List<OgcApiMediaType> getStylesheetMediaTypes(OgcApiApiDataV2 apiData, File apiDir, String styleId) {
+    private List<ApiMediaType> getStylesheetMediaTypes(OgcApiDataV2 apiData, File apiDir, String styleId) {
         return getStyleFormatStream(apiData)
                 .filter(styleFormat -> new File(apiDir + File.separator + styleId + "." + styleFormat.getFileExtension()).exists())
                 .map(StyleFormatExtension::getMediaType)
@@ -74,8 +75,8 @@ public class EndpointStyle extends OgcApiEndpoint {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 
     @Override
@@ -86,15 +87,15 @@ public class EndpointStyle extends OgcApiEndpoint {
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("styles")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLESHEET);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLESHEET);
             String path = "/styles/{styleId}";
             List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -108,7 +109,7 @@ public class EndpointStyle extends OgcApiEndpoint {
                 ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
                         .path(path)
                         .pathParameters(pathParameters);
-                OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+                ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
                 if (operation!=null)
                     resourceBuilder.putOperations("GET", operation);
                 definitionBuilder.putResources(path, resourceBuilder.build());
@@ -128,8 +129,8 @@ public class EndpointStyle extends OgcApiEndpoint {
      */
     @Path("/{styleId}")
     @GET
-    public Response getStyle(@PathParam("styleId") String styleId, @Context OgcApiApi dataset,
-                             @Context OgcApiRequestContext ogcApiRequest) {
+    public Response getStyle(@PathParam("styleId") String styleId, @Context OgcApi dataset,
+                             @Context ApiRequestContext ogcApiRequest) {
 
         StyleFormatExtension styleFormat = getStyleFormatStream(dataset.getData()).filter(format -> format.getMediaType()
                                                                                                           .matches(ogcApiRequest.getMediaType()
@@ -151,7 +152,7 @@ public class EndpointStyle extends OgcApiEndpoint {
         }
 
         // collect self/alternate links, but only, if we need to return them in the headers
-        List<OgcApiLink> links = null;
+        List<Link> links = null;
         boolean includeLinkHeader = dataset.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
@@ -164,9 +165,9 @@ public class EndpointStyle extends OgcApiEndpoint {
                 apiDir.mkdirs();
             }
 
-            List<OgcApiMediaType> alternateMediaTypes = getStylesheetMediaTypes(dataset.getData(), apiDir, Files.getNameWithoutExtension(styleId)).stream()
-                    .filter(availableMediaType -> !availableMediaType.matches(styleFormat.getMediaType().type()))
-                    .collect(Collectors.toList());
+            List<ApiMediaType> alternateMediaTypes = getStylesheetMediaTypes(dataset.getData(), apiDir, Files.getNameWithoutExtension(styleId)).stream()
+                                                                                                                                               .filter(availableMediaType -> !availableMediaType.matches(styleFormat.getMediaType().type()))
+                                                                                                                                               .collect(Collectors.toList());
             links = defaultLinkGenerator.generateLinks(ogcApiRequest.getUriCustomizer(), styleFormat.getMediaType(), alternateMediaTypes, i18n, ogcApiRequest.getLanguage());
         }
 

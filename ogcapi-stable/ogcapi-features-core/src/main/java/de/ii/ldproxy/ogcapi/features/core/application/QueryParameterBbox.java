@@ -1,7 +1,8 @@
 package de.ii.ldproxy.ogcapi.features.core.application;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
@@ -50,24 +51,24 @@ public class QueryParameterBbox implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-               method==OgcApiContext.HttpMethods.GET &&
+               method== HttpMethods.GET &&
                definitionPath.equals("/collections/{collectionId}/items");
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         return baseSchema;
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         return baseSchema;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return OgcApiFeaturesCoreConfiguration.class;
     }
 }

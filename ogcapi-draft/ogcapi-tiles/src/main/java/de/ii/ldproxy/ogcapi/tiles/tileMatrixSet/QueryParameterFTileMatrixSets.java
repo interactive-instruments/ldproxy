@@ -1,8 +1,8 @@
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
+import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetsFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -13,7 +13,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 @Instantiate
 public class QueryParameterFTileMatrixSets extends QueryParameterF {
 
-    public QueryParameterFTileMatrixSets(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public QueryParameterFTileMatrixSets(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 
@@ -23,7 +23,7 @@ public class QueryParameterFTileMatrixSets extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) &&
                 (definitionPath.equals("/tileMatrixSets") ||
                  definitionPath.equals("/tileMatrixSets/{tileMatrixSetId}"));
@@ -35,8 +35,8 @@ public class QueryParameterFTileMatrixSets extends QueryParameterF {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
     }
 
 }

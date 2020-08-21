@@ -21,9 +21,6 @@ import java.util.*;
 @JsonDeserialize(builder = ImmutableObservationProcessingConfiguration.Builder.class)
 public interface ObservationProcessingConfiguration extends ExtensionConfiguration, FeatureTransformations {
 
-    // TODO this module belongs to ogcapi-experimental, not ogcapi-draft, but it is part of ogcapi-draft due
-    //      to the HTML module dependency issues
-
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 

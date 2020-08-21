@@ -37,25 +37,30 @@ public class QueryParameterValidateStyle implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-               ((method==OgcApiContext.HttpMethods.PUT && definitionPath.equals("/styles/{styleId}")) ||
-                (method==OgcApiContext.HttpMethods.POST && definitionPath.equals("/styles")));
+               ((method== HttpMethods.PUT && definitionPath.equals("/styles/{styleId}")) ||
+                (method== HttpMethods.POST && definitionPath.equals("/styles")));
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         return schema;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> extension = apiData.getExtension(StylesConfiguration.class);
 
         return extension
                 .filter(StylesConfiguration::isEnabled)
                 .filter(StylesConfiguration::getManagerEnabled)
                 .isPresent();
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 
 }

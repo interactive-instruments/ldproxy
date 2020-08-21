@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -65,7 +65,7 @@ public abstract class Tile {
      *
      * @return the API that produces the tile
      */
-    public abstract OgcApiApi getApi();
+    public abstract OgcApi getApi();
 
     /**
      *

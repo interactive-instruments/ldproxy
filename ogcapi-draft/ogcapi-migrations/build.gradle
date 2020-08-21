@@ -1,5 +1,4 @@
 
 dependencies {
-    provided project(":ogcapi-html")
     provided project(":ogcapi-crs")
 }

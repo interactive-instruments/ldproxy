@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -35,8 +35,8 @@ public class WorldMercatorWGS84Quad extends AbstractTileMatrixSet implements Til
     private static final BoundingBox BBOX = new BoundingBox(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
     }
 
     @Override

@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
@@ -24,15 +24,14 @@ import java.util.Optional;
 public interface TileFormatExtension extends FormatExtension {
 
     @Override
-    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        Optional<TilesConfiguration> dbg = apiData.getExtension(TilesConfiguration.class);
+    default boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(TilesConfiguration.class)
                       .filter(config -> config.getTileEncodings().contains(this.getMediaType().label()))
                       .isPresent();
     }
 
     @Override
-    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+    default boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         return apiData.getCollections()
                       .get(collectionId)
                       .getExtension(TilesConfiguration.class)

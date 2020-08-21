@@ -1,8 +1,8 @@
 package de.ii.ldproxy.ogcapi.collections.queryables;
 
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.PathParameterCollectionIdFeatures;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -19,7 +19,7 @@ public class PathParameterCollectionIdQueryables extends PathParameterCollection
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterCollectionIdQueryables.class);
 
-    public PathParameterCollectionIdQueryables(@Requires OgcApiFeatureCoreProviders providers) {
+    public PathParameterCollectionIdQueryables(@Requires FeaturesCoreProviders providers) {
         super(providers);
     };
 
@@ -29,7 +29,7 @@ public class PathParameterCollectionIdQueryables extends PathParameterCollection
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) && definitionPath.matches("/collections/\\{collectionId\\}/queryables");
     }
 }

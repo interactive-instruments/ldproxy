@@ -1,10 +1,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 import com.google.common.base.Splitter;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
@@ -68,14 +65,14 @@ public class QueryParameterBbox implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-               method==OgcApiContext.HttpMethods.GET &&
+               method== HttpMethods.GET &&
                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area");
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         List<Double> defValue = getDefault(apiData, Optional.empty());
         if (defValue!=null) {
             Schema schema = new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(4);
@@ -86,7 +83,7 @@ public class QueryParameterBbox implements OgcApiQueryParameter {
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         List<Double> defValue = getDefault(apiData, Optional.empty());
         if (defValue!=null) {
             Schema schema = new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(4);
@@ -97,26 +94,24 @@ public class QueryParameterBbox implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
                 apiData.getCollections()
                         .values()
                         .stream()
-                        .filter(featureType -> featureType.getEnabled())
-                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
-                        .findAny()
-                        .isPresent();
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return ObservationProcessingConfiguration.class;
     }
 
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
-                                                   OgcApiApiDataV2 apiData) {
+                                                   OgcApiDataV2 apiData) {
         if (parameters.containsKey("coord") || parameters.containsKey("coordRef") || parameters.getOrDefault("filter", "").contains("INTERSECTS")) {
             // ignore bbox, if coord or coordRef are provided; these parameters may already been processed, so check filter, too
             parameters.remove(getName());
@@ -131,7 +126,7 @@ public class QueryParameterBbox implements OgcApiQueryParameter {
     }
 
     @Override
-    public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType, Map<String, Object> context, Map<String, String> parameters, OgcApiApiDataV2 apiData) {
+    public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType, Map<String, Object> context, Map<String, String> parameters, OgcApiDataV2 apiData) {
         if (parameters.containsKey("coord") || parameters.containsKey("coordRef"))
             // ignore bbox
             return context;
@@ -156,7 +151,7 @@ public class QueryParameterBbox implements OgcApiQueryParameter {
         return context;
     }
 
-    private List<Double> getDefault(OgcApiApiDataV2 apiData, Optional<String> collectionId) {
+    private List<Double> getDefault(OgcApiDataV2 apiData, Optional<String> collectionId) {
         FeatureTypeConfigurationOgcApi featureType = collectionId.isPresent() ? apiData.getCollections().get(collectionId.get()) : null;
         Optional<ObservationProcessingConfiguration> config = featureType!=null ?
                 featureType.getExtension(ObservationProcessingConfiguration.class) :

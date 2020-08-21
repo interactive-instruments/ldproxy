@@ -12,10 +12,10 @@ import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.common.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreQueriesHandlerImpl;
+import de.ii.ldproxy.ogcapi.features.core.application.FeaturesCoreQueriesHandlerImpl;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.codelists.Codelist;
@@ -63,10 +63,10 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     private final I18n i18n;
     private final CrsTransformerFactory crsTransformerFactory;
-    private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
+    private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
     private EntityRegistry entityRegistry;
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TilesCache tilesCache;
 
@@ -74,7 +74,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                    @Requires CrsTransformerFactory crsTransformerFactory,
                                    @Requires Dropwizard dropwizard,
                                    @Requires EntityRegistry entityRegistry,
-                                   @Requires OgcApiExtensionRegistry extensionRegistry,
+                                   @Requires ExtensionRegistry extensionRegistry,
                                    @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                    @Requires TilesCache tilesCache) {
         this.i18n = i18n;
@@ -88,22 +88,22 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         this.tilesCache = tilesCache;
 
         this.queryHandlers = new ImmutableMap.Builder()
-                .put(Query.TILE_SETS, OgcApiQueryHandler.with(OgcApiQueryInputTileSets.class, this::getTileSetsResponse))
-                .put(Query.TILE_SET, OgcApiQueryHandler.with(OgcApiQueryInputTileSet.class, this::getTileSetResponse))
-                .put(Query.SINGLE_LAYER_TILE, OgcApiQueryHandler.with(OgcApiQueryInputTileSingleLayer.class, this::getSingleLayerTileResponse))
-                .put(Query.MULTI_LAYER_TILE, OgcApiQueryHandler.with(OgcApiQueryInputTileMultiLayer.class, this::getMultiLayerTileResponse))
-                .put(Query.EMPTY_TILE, OgcApiQueryHandler.with(OgcApiQueryInputTileEmpty.class, this::getEmptyTileResponse))
-                .put(Query.TILE_FILE, OgcApiQueryHandler.with(OgcApiQueryInputTileFile.class, this::getTileFileResponse))
+                .put(Query.TILE_SETS, QueryHandler.with(QueryInputTileSets.class, this::getTileSetsResponse))
+                .put(Query.TILE_SET, QueryHandler.with(QueryInputTileSet.class, this::getTileSetResponse))
+                .put(Query.SINGLE_LAYER_TILE, QueryHandler.with(QueryInputTileSingleLayer.class, this::getSingleLayerTileResponse))
+                .put(Query.MULTI_LAYER_TILE, QueryHandler.with(QueryInputTileMultiLayer.class, this::getMultiLayerTileResponse))
+                .put(Query.EMPTY_TILE, QueryHandler.with(QueryInputTileEmpty.class, this::getEmptyTileResponse))
+                .put(Query.TILE_FILE, QueryHandler.with(QueryInputTileFile.class, this::getTileFileResponse))
                 .build();
     }
 
     @Override
-    public Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> getQueryHandlers() {
+    public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
         return queryHandlers;
     }
 
-    private Response getTileSetsResponse(OgcApiQueryInputTileSets queryInput, OgcApiRequestContext requestContext) {
-        OgcApiApi api = requestContext.getApi();
+    private Response getTileSetsResponse(QueryInputTileSets queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
         Optional<String> collectionId = queryInput.getCollectionId();
         String path = collectionId.isPresent() ? 
                 "/collections/"+collectionId.get()+"/tiles" :
@@ -120,31 +120,31 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         Map<String, MinMax> tileMatrixSetZoomLevels = queryInput.getTileMatrixSetZoomLevels();
         Optional<double[]> center = Optional.ofNullable(queryInput.getCenter());
 
-        List<OgcApiMediaType> tileSetFormats = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class)
-                .stream()
-                .filter(format -> collectionId.isPresent() ? format.isEnabledForApi(api.getData(), collectionId.get()) : format.isEnabledForApi(api.getData()))
-                .filter(format -> {
+        List<ApiMediaType> tileSetFormats = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class)
+                                                             .stream()
+                                                             .filter(format -> collectionId.isPresent() ? format.isEnabledForApi(api.getData(), collectionId.get()) : format.isEnabledForApi(api.getData()))
+                                                             .filter(format -> {
                     Optional<TilesConfiguration> config = collectionId.isPresent() ?
                             api.getData().getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
                             api.getData().getExtension(TilesConfiguration.class);
                     return config.isPresent() && (config.get().getFormats()==null || (config.get().getFormats().isEmpty() || config.get().getFormats().contains(format.getMediaType().type().toString())));
                 })
-                .map(FormatExtension::getMediaType)
-                .collect(Collectors.toList());
+                                                             .map(FormatExtension::getMediaType)
+                                                             .collect(Collectors.toList());
 
-        List<OgcApiMediaType> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
-                .stream()
-                .filter(format -> collectionId.isPresent() ? format.isEnabledForApi(api.getData(), collectionId.get()) : format.isEnabledForApi(api.getData()))
-                .filter(format -> {
+        List<ApiMediaType> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+                                                          .stream()
+                                                          .filter(format -> collectionId.isPresent() ? format.isEnabledForApi(api.getData(), collectionId.get()) : format.isEnabledForApi(api.getData()))
+                                                          .filter(format -> {
                     Optional<TilesConfiguration> config = collectionId.isPresent() ?
                             api.getData().getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
                             api.getData().getExtension(TilesConfiguration.class);
                     return config.isPresent() && (config.get().getFormats()==null || (config.get().getFormats().isEmpty() || config.get().getFormats().contains(format.getMediaType().type().toString())));
                 })
-                .map(FormatExtension::getMediaType)
-                .collect(Collectors.toList());
+                                                          .map(FormatExtension::getMediaType)
+                                                          .collect(Collectors.toList());
 
-        List<OgcApiLink> links = vectorTilesLinkGenerator.generateTilesLinks(
+        List<Link> links = vectorTilesLinkGenerator.generateTilesLinks(
                 requestContext.getUriCustomizer(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
@@ -194,8 +194,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .build();
     }
 
-    private Response getTileSetResponse(OgcApiQueryInputTileSet queryInput, OgcApiRequestContext requestContext) {
-        OgcApiApi api = requestContext.getApi();
+    private Response getTileSetResponse(QueryInputTileSet queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
         String tileMatrixSetId = queryInput.getTileMatrixSetId();
         Optional<String> collectionId = queryInput.getCollectionId();
         String path = collectionId.isPresent() ?
@@ -205,20 +205,20 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         TileSetFormatExtension outputFormat = api.getOutputFormat(TileSetFormatExtension.class, requestContext.getMediaType(), path, collectionId)
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
-        List<OgcApiMediaType> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
-                .stream()
-                .filter(format -> collectionId.isPresent() ? format.isEnabledForApi(api.getData(), collectionId.get()) : format.isEnabledForApi(api.getData()))
-                .filter(format -> {
+        List<ApiMediaType> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+                                                          .stream()
+                                                          .filter(format -> collectionId.isPresent() ? format.isEnabledForApi(api.getData(), collectionId.get()) : format.isEnabledForApi(api.getData()))
+                                                          .filter(format -> {
                     Optional<TilesConfiguration> config = collectionId.isPresent() ?
                             api.getData().getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
                             api.getData().getExtension(TilesConfiguration.class);
                     return config.isPresent() && (config.get().getFormats()==null || (config.get().getFormats().isEmpty() || config.get().getFormats().contains(format.getMediaType().type().toString())));
                 })
-                .map(FormatExtension::getMediaType)
-                .collect(Collectors.toList());
+                                                          .map(FormatExtension::getMediaType)
+                                                          .collect(Collectors.toList());
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-        List<OgcApiLink> links = vectorTilesLinkGenerator.generateTilesLinks(
+        List<Link> links = vectorTilesLinkGenerator.generateTilesLinks(
                 requestContext.getUriCustomizer(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
@@ -239,8 +239,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .build();
     }
 
-    private Response getSingleLayerTileResponse(OgcApiQueryInputTileSingleLayer queryInput, OgcApiRequestContext requestContext) {
-        OgcApiApi api = requestContext.getApi();
+    private Response getSingleLayerTileResponse(QueryInputTileSingleLayer queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
         Tile tile = queryInput.getTile();
         String collectionId = tile.getCollectionId();
         FeatureProvider2 featureProvider = tile.getFeatureProvider();
@@ -267,11 +267,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                           .needsCoordinateSwap();
         }
 
-        List<OgcApiLink> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(),
-                i18n,
-                requestContext.getLanguage());
+        List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
+                                                                     requestContext.getMediaType(),
+                                                                     requestContext.getAlternateMediaTypes(),
+                                                                     i18n,
+                                                                     requestContext.getLanguage());
 
         ImmutableFeatureTransformationContextTiles.Builder transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
                 .apiData(api.getData())
@@ -354,8 +354,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .build();
     }
 
-    private Response getMultiLayerTileResponse(OgcApiQueryInputTileMultiLayer queryInput, OgcApiRequestContext requestContext) {
-        OgcApiApi api = requestContext.getApi();
+    private Response getMultiLayerTileResponse(QueryInputTileMultiLayer queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
         Tile multiLayerTile = queryInput.getTile();
         List<String> collectionIds = multiLayerTile.getCollectionIds();
         Map<String, FeatureQuery> queryMap = queryInput.getQueryMap();
@@ -382,11 +382,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                           .needsCoordinateSwap();
         }
 
-        List<OgcApiLink> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(),
-                i18n,
-                requestContext.getLanguage());
+        List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
+                                                                     requestContext.getMediaType(),
+                                                                     requestContext.getAlternateMediaTypes(),
+                                                                     i18n,
+                                                                     requestContext.getLanguage());
 
         Map<String, ByteArrayOutputStream> byteArrayMap = collectionIds.stream()
                 .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> new ByteArrayOutputStream()));
@@ -485,30 +485,30 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .build();
     }
 
-    private Response getTileFileResponse(OgcApiQueryInputTileFile queryInput, OgcApiRequestContext requestContext) {
+    private Response getTileFileResponse(QueryInputTileFile queryInput, ApiRequestContext requestContext) {
 
         StreamingOutput streamingOutput = outputStream -> {
             ByteStreams.copy(new FileInputStream(queryInput.getTileFile()), outputStream);
         };
 
-        List<OgcApiLink> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(),
-                i18n,
-                requestContext.getLanguage());
+        List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
+                                                                     requestContext.getMediaType(),
+                                                                     requestContext.getAlternateMediaTypes(),
+                                                                     i18n,
+                                                                     requestContext.getLanguage());
 
         return prepareSuccessResponse(requestContext.getApi(), requestContext, queryInput.getIncludeLinkHeader() ? links : null)
                 .entity(streamingOutput)
                 .build();
     }
 
-    private Response getEmptyTileResponse(OgcApiQueryInputTileEmpty queryInput, OgcApiRequestContext requestContext) {
+    private Response getEmptyTileResponse(QueryInputTileEmpty queryInput, ApiRequestContext requestContext) {
 
-        List<OgcApiLink> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(),
-                i18n,
-                requestContext.getLanguage());
+        List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
+                                                                     requestContext.getMediaType(),
+                                                                     requestContext.getAlternateMediaTypes(),
+                                                                     i18n,
+                                                                     requestContext.getLanguage());
 
         Tile tile = queryInput.getTile();
         return prepareSuccessResponse(requestContext.getApi(), requestContext, queryInput.getIncludeLinkHeader() ? links : null)
@@ -518,7 +518,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     private StreamingOutput stream(FeatureStream2 featureTransformStream, boolean failIfEmpty,
                                    final Function<OutputStream, FeatureTransformer2> featureTransformer) {
-        Timer.Context timer = metricRegistry.timer(name(OgcApiFeaturesCoreQueriesHandlerImpl.class, "stream"))
+        Timer.Context timer = metricRegistry.timer(name(FeaturesCoreQueriesHandlerImpl.class, "stream"))
                                             .time();
 
         return outputStream -> {

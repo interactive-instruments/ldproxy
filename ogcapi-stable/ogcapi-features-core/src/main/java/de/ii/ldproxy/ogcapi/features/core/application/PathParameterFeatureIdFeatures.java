@@ -2,9 +2,10 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -24,9 +25,9 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterFeatureIdFeatures.class);
 
-    final OgcApiFeatureCoreProviders providers;
+    final FeaturesCoreProviders providers;
 
-    public PathParameterFeatureIdFeatures(@Requires OgcApiFeatureCoreProviders providers) {
+    public PathParameterFeatureIdFeatures(@Requires FeaturesCoreProviders providers) {
         this.providers = providers;
     };
 
@@ -36,12 +37,12 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
     }
 
     @Override
-    public Set<String> getValues(OgcApiApiDataV2 apiData) {
+    public Set<String> getValues(OgcApiDataV2 apiData) {
         return ImmutableSet.of();
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         return new StringSchema().pattern(getPattern());
     }
 
@@ -56,13 +57,8 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
                 definitionPath.equals("/collections/{collectionId}/items/{featureId}");
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return true;
     }
 }

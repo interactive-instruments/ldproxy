@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.styles.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.StyleMetadataFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
@@ -54,7 +54,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointStyleMetadataManager extends OgcApiEndpoint {
+public class EndpointStyleMetadataManager extends Endpoint {
 
     @Requires
     I18n i18n;
@@ -65,7 +65,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
     private final File stylesStore;
 
     public EndpointStyleMetadataManager(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                        @Requires OgcApiExtensionRegistry extensionRegistry) {
+                                        @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
         this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
         if (!stylesStore.exists()) {
@@ -75,7 +75,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
 
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> extension = apiData.getExtension(StylesConfiguration.class);
 
         return extension
@@ -84,7 +84,12 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
                 .isPresent();
     }
 
-    private boolean isValidationEnabledForApi(OgcApiApiDataV2 apiData) {
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
+    }
+
+    private boolean isValidationEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> extension = apiData.getExtension(StylesConfiguration.class);
 
         return extension
@@ -104,7 +109,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
         return formats;
     }
 
-    private Map<MediaType, OgcApiMediaTypeContent> getRequestContent(OgcApiApiDataV2 apiData, String path, HttpMethods method) {
+    private Map<MediaType, ApiMediaTypeContent> getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
         return getFormats().stream()
                 .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
                 .map(f -> f.getRequestContent(apiData, path, method))
@@ -113,15 +118,15 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("styles")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA_MANAGER);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA_MANAGER);
             String path = "/styles/{styleId}/metadata";
             HttpMethods method = HttpMethods.PUT;
             List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -132,8 +137,8 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
             ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                     .path(path)
                     .pathParameters(pathParameters);
-            Map<MediaType, OgcApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
-            OgcApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+            Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
+            ApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilder.putOperations(method.name(), operation);
             method = HttpMethods.PATCH;
@@ -234,7 +239,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response putStyleMetadata(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                                     @Context OgcApiApi dataset, @Context OgcApiRequestContext ogcApiRequest,
+                                     @Context OgcApi dataset, @Context ApiRequestContext ogcApiRequest,
                                      @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);
@@ -270,7 +275,7 @@ public class EndpointStyleMetadataManager extends OgcApiEndpoint {
     @PATCH
     @Consumes(MediaType.APPLICATION_JSON)
     public Response patchStyleMetadata(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                                       @Context OgcApiApi dataset, @Context OgcApiRequestContext ogcApiRequest,
+                                       @Context OgcApi dataset, @Context ApiRequestContext ogcApiRequest,
                                        @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);

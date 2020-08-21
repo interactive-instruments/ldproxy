@@ -2,8 +2,8 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 
 
 import de.ii.ldproxy.ogcapi.collections.domain.PathParameterCollectionIdCollections;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -24,9 +24,9 @@ public class PathParameterCollectionIdFeatures extends PathParameterCollectionId
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterCollectionIdFeatures.class);
     Map<String,Set<String>> apiCollectionMap;
 
-    protected final OgcApiFeatureCoreProviders providers;
+    protected final FeaturesCoreProviders providers;
 
-    public PathParameterCollectionIdFeatures(@Requires OgcApiFeatureCoreProviders providers) {
+    public PathParameterCollectionIdFeatures(@Requires FeaturesCoreProviders providers) {
         this.providers = providers;
         apiCollectionMap = new HashMap<>();
     };
@@ -42,7 +42,7 @@ public class PathParameterCollectionIdFeatures extends PathParameterCollectionId
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
                  definitionPath.equals("/collections/{collectionId}/items/{featureId}") ||
@@ -50,7 +50,8 @@ public class PathParameterCollectionIdFeatures extends PathParameterCollectionId
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        boolean dbg = isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
         return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
     }
 }

@@ -1,10 +1,7 @@
 dependencies {
-
-    //  use an old version, because of the Jackson dependency
-    embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.24') {
-        exclude module: 'jackson-databind'
-        exclude module: 'slf4j-api'
-    }
-
-    testImplementation project(':ogcapi-features-core')
+    provided project(":ogcapi-foundation")
+    provided project(":ogcapi-html")
+    provided project(":ogcapi-json")
+    provided project(":ogcapi-xml")
 }
+

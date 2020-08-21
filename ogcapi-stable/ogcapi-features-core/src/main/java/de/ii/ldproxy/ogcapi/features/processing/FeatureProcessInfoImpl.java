@@ -2,8 +2,8 @@ package de.ii.ldproxy.ogcapi.features.processing;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import org.apache.felix.ipojo.annotations.*;
 
 import java.util.List;
@@ -16,13 +16,13 @@ public class FeatureProcessInfoImpl implements FeatureProcessInfo {
     @Requires
     I18n i18n;
 
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
 
-    public FeatureProcessInfoImpl(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public FeatureProcessInfoImpl(@Requires ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 
-    public List<FeatureProcessChain> getProcessingChains(OgcApiApiDataV2 apiData,
+    public List<FeatureProcessChain> getProcessingChains(OgcApiDataV2 apiData,
                                                          Class<? extends FeatureProcess> processType) {
         ImmutableList.Builder<FeatureProcessChain> chainBuilder = new ImmutableList.Builder<FeatureProcessChain>();
         extensionRegistry.getExtensionsForType(processType).stream()
@@ -37,7 +37,7 @@ public class FeatureProcessInfoImpl implements FeatureProcessInfo {
         return chainBuilder.build();
     }
 
-    public List<FeatureProcessChain> getProcessingChains(OgcApiApiDataV2 apiData, String collectionId,
+    public List<FeatureProcessChain> getProcessingChains(OgcApiDataV2 apiData, String collectionId,
                                                          Class<? extends FeatureProcess> processType) {
         ImmutableList.Builder<FeatureProcessChain> chainBuilder = new ImmutableList.Builder<FeatureProcessChain>();
         extensionRegistry.getExtensionsForType(processType).stream()
@@ -52,7 +52,7 @@ public class FeatureProcessInfoImpl implements FeatureProcessInfo {
         return chainBuilder.build();
     }
 
-    private void nextChainElement(OgcApiApiDataV2 apiData, Class<? extends FeatureProcess> processType,
+    private void nextChainElement(OgcApiDataV2 apiData, Class<? extends FeatureProcess> processType,
                                   ImmutableList.Builder<FeatureProcessChain> chainBuilder, FeatureProcess process,
                                   ImmutableList<FeatureProcess> processList) {
         extensionRegistry.getExtensionsForType(FeatureProcess.class).stream()
@@ -68,7 +68,7 @@ public class FeatureProcessInfoImpl implements FeatureProcessInfo {
                 });
     }
 
-    public boolean matches(OgcApiApiDataV2 apiData, Class<? extends FeatureProcess> processType,
+    public boolean matches(OgcApiDataV2 apiData, Class<? extends FeatureProcess> processType,
                            String definitionPath, String... processNames) {
         return getProcessingChains(apiData, processType)
                         .stream()

@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.MinMax;
 import de.ii.xtraplatform.crs.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
@@ -41,9 +41,9 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
      * @param crsTransformation crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiApiDataV2 data, String collectionId,
-                                                                             TileMatrixSet tileMatrixSet, MinMax tileMatrixRange,
-                                                                             CrsTransformerFactory crsTransformation) {
+    public List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiDataV2 data, String collectionId,
+                                                                      TileMatrixSet tileMatrixSet, MinMax tileMatrixRange,
+                                                                      CrsTransformerFactory crsTransformation) {
 
         List<FeatureTypeConfigurationOgcApi> collectionData = data.getCollections()
                 .values()
@@ -83,8 +83,8 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
      * @param crsTransformerFactory crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiApiDataV2 data, TileMatrixSet tileMatrixSet,
-                                                                   MinMax tileMatrixRange, CrsTransformerFactory crsTransformerFactory) {
+    public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDataV2 data, TileMatrixSet tileMatrixSet,
+                                                            MinMax tileMatrixRange, CrsTransformerFactory crsTransformerFactory) {
 
         BoundingBox bbox = data.getSpatialExtent();
         Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());

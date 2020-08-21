@@ -13,7 +13,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.common.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
@@ -44,7 +44,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
+public class EndpointStyles extends Endpoint implements ConformanceClass {
 
     @Requires
     I18n i18n;
@@ -56,7 +56,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
     private final File stylesStore;
 
     public EndpointStyles(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                          @Requires OgcApiExtensionRegistry extensionRegistry) {
+                          @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
         this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
         if (!stylesStore.exists()) {
@@ -66,12 +66,12 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/core");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/core");
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 
     @Override
@@ -82,15 +82,15 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("styles")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLES);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLES);
             List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/styles");
             String operationSummary = "lists the available styles";
             Optional<String> operationDescription = Optional.of("This operation fetches the set of styles available. " +
@@ -100,7 +100,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
             ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
                     .path(path)
                     .subResourceType("Style");
-            OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilderSet.putOperations("GET", operation);
             definitionBuilder.putResources(path, resourceBuilderSet.build());
@@ -119,7 +119,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
     @Path("/")
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
-    public Response getStyles(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
+    public Response getStyles(@Context OgcApi api, @Context ApiRequestContext requestContext) {
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
         final String apiId = api.getId();
@@ -164,7 +164,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
                 .getStylesResponse(styles, api, requestContext);
     }
 
-    private Optional<StyleMetadata> getMetadata(String styleId, OgcApiRequestContext requestContext) {
+    private Optional<StyleMetadata> getMetadata(String styleId, ApiRequestContext requestContext) {
         String key = styleId + ".metadata";
         String apiId = requestContext.getApi().getId();
         File metadataFile = new File( stylesStore + File.separator + apiId + File.separator + styleId + ".metadata");
@@ -196,7 +196,7 @@ public class EndpointStyles extends OgcApiEndpoint implements ConformanceClass {
         return Optional.empty();
     }
 
-    private List<OgcApiMediaType> getStylesheetMediaTypes(OgcApiApiDataV2 apiData, File apiDir, String styleId) {
+    private List<ApiMediaType> getStylesheetMediaTypes(OgcApiDataV2 apiData, File apiDir, String styleId) {
         return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
                 .stream()
                 .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(apiData))

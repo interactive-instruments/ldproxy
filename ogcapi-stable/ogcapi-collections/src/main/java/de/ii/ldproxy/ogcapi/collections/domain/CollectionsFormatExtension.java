@@ -7,9 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.collections.domain;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 
-public interface CollectionsFormatExtension extends FormatExtension {
+public interface CollectionsFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
@@ -17,11 +19,11 @@ public interface CollectionsFormatExtension extends FormatExtension {
     }
 
     Object getCollectionsEntity(Collections collections,
-                                    OgcApiApi api,
-                                    OgcApiRequestContext requestContext);
+                                    OgcApi api,
+                                    ApiRequestContext requestContext);
 
     Object getCollectionEntity(OgcApiCollection ogcApiCollection,
-                                   OgcApiApi api,
-                                   OgcApiRequestContext requestContext);
+                                   OgcApi api,
+                                   ApiRequestContext requestContext);
 
 }

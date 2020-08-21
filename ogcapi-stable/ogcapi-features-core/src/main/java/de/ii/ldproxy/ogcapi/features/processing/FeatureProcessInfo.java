@@ -1,15 +1,15 @@
 package de.ii.ldproxy.ogcapi.features.processing;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 
 import java.util.List;
 
 public interface FeatureProcessInfo {
 
-    List<FeatureProcessChain> getProcessingChains(OgcApiApiDataV2 apiData, String collectionId,
+    List<FeatureProcessChain> getProcessingChains(OgcApiDataV2 apiData, String collectionId,
                                                   Class<? extends FeatureProcess> processType);
-    List<FeatureProcessChain> getProcessingChains(OgcApiApiDataV2 apiData,
+    List<FeatureProcessChain> getProcessingChains(OgcApiDataV2 apiData,
                                                   Class<? extends FeatureProcess> processType);
-    boolean matches(OgcApiApiDataV2 apiData, Class<? extends FeatureProcess> processType,
+    boolean matches(OgcApiDataV2 apiData, Class<? extends FeatureProcess> processType,
                     String definitionPath, String... processNames);
 }

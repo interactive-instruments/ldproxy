@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -46,8 +46,8 @@ public class WebMercatorQuad extends AbstractTileMatrixSet implements TileMatrix
     private TileMatrixSetData data;
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
     }
 
     @Override

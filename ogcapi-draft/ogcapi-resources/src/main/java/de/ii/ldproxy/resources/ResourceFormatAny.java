@@ -20,7 +20,7 @@ import java.nio.file.Files;
 @Instantiate
 public class ResourceFormatAny implements ResourceFormatExtension {
 
-    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.WILDCARD_TYPE)
             .build();
 
@@ -28,21 +28,16 @@ public class ResourceFormatAny implements ResourceFormatExtension {
     public final static String SCHEMA_REF_RESOURCE = "#/components/schemas/Resource";
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return true;
-    }
-
-    @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
 
         // TODO add examples
         if (path.equals("/resources/{resourceId}"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaResource)
                     .schemaRef(SCHEMA_REF_RESOURCE)
                     .ogcApiMediaType(MEDIA_TYPE)
@@ -52,11 +47,11 @@ public class ResourceFormatAny implements ResourceFormatExtension {
     }
 
     @Override
-    public OgcApiMediaTypeContent getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
+    public ApiMediaTypeContent getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
 
         // TODO add examples
         if (path.equals("/resources/{resourceId}"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaResource)
                     .schemaRef(SCHEMA_REF_RESOURCE)
                     .ogcApiMediaType(MEDIA_TYPE)
@@ -66,7 +61,7 @@ public class ResourceFormatAny implements ResourceFormatExtension {
     }
 
     @Override
-    public Response getResourceResponse(byte[] resource, String resourceId, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Response getResourceResponse(byte[] resource, String resourceId, OgcApi api, ApiRequestContext requestContext) {
 
         // TODO: URLConnection content-type guessing doesn't seem to work well, maybe try Apache Tika
         String contentType = URLConnection.guessContentTypeFromName(resourceId);
@@ -88,7 +83,7 @@ public class ResourceFormatAny implements ResourceFormatExtension {
     }
 
     @Override
-    public Response putResource(File resourcesStore, byte[] resource, String resourceId, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Response putResource(File resourcesStore, byte[] resource, String resourceId, OgcApi api, ApiRequestContext requestContext) {
 
         final String datasetId = api.getId();
         File apiDir = new File(resourcesStore + File.separator + datasetId);

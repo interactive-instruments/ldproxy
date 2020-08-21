@@ -1,7 +1,8 @@
 package de.ii.ldproxy.ogcapi.features.core.application;
 
+import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -12,7 +13,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 @Instantiate
 public class QueryParameterFFeatures extends QueryParameterF {
 
-    public QueryParameterFFeatures(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public QueryParameterFFeatures(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 
@@ -22,19 +23,19 @@ public class QueryParameterFFeatures extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) &&
                 definitionPath.matches("/collections/\\{collectionId\\}/items(?:/\\{featureId\\})?");
     }
 
     @Override
     protected Class<? extends FormatExtension> getFormatClass() {
-        return OgcApiFeatureFormatExtension.class;
+        return FeatureFormatExtension.class;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, OgcApiFeaturesCoreConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return OgcApiFeaturesCoreConfiguration.class;
     }
 
 }

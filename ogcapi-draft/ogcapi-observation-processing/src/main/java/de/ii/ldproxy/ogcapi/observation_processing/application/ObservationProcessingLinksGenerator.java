@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.common.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 
@@ -32,10 +32,10 @@ public class ObservationProcessingLinksGenerator extends DefaultLinksGenerator {
      * @param language the requested language (optional)
      * @return a list with links
      */
-    public List<OgcApiLink> generateCollectionLinks(FeatureTypeConfigurationOgcApi featureType, URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
+    public List<Link> generateCollectionLinks(FeatureTypeConfigurationOgcApi featureType, URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
 
-        return ImmutableList.<OgcApiLink>builder()
-                .add(new ImmutableOgcApiLink.Builder()
+        return ImmutableList.<Link>builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
                                 .ensureLastPathSegment(DAPA_PATH_ELEMENT)
@@ -45,7 +45,7 @@ public class ObservationProcessingLinksGenerator extends DefaultLinksGenerator {
                         .rel("ogc-dapa")
                         .title(i18n.get("dapaEndpointsLink", language).replace("{{collection}}", featureType.getLabel()))
                         .build())
-                .add(new ImmutableOgcApiLink.Builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
                                 .ensureLastPathSegments(DAPA_PATH_ELEMENT, "variables")
@@ -66,13 +66,13 @@ public class ObservationProcessingLinksGenerator extends DefaultLinksGenerator {
      * @param language the requested language (optional)
      * @return a list with links
      */
-    public List<OgcApiLink> generateDapaLinks(URICustomizer uriBuilder,
-                                              OgcApiMediaType mediaType, List<OgcApiMediaType> alternateMediaTypes,
-                                              I18n i18n, Optional<Locale> language) {
+    public List<Link> generateDapaLinks(URICustomizer uriBuilder,
+                                        ApiMediaType mediaType, List<ApiMediaType> alternateMediaTypes,
+                                        I18n i18n, Optional<Locale> language) {
 
-        return ImmutableList.<OgcApiLink>builder()
+        return ImmutableList.<Link>builder()
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language))
-                .add(new ImmutableOgcApiLink.Builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
                                 .ensureLastPathSegment("variables")
@@ -94,10 +94,10 @@ public class ObservationProcessingLinksGenerator extends DefaultLinksGenerator {
      * @param language the requested language (optional)
      * @return a list with links
      */
-    public List<OgcApiLink> generateLandingPageLinks(FeatureTypeConfigurationOgcApi featureType, URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
+    public List<Link> generateLandingPageLinks(FeatureTypeConfigurationOgcApi featureType, URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
 
-        return ImmutableList.<OgcApiLink>builder()
-                .add(new ImmutableOgcApiLink.Builder()
+        return ImmutableList.<Link>builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
                                 .ensureLastPathSegments("collections", featureType.getId(), DAPA_PATH_ELEMENT)

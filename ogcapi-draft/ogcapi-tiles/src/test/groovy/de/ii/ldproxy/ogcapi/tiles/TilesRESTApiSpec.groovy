@@ -225,9 +225,7 @@ class TilesRESTApiSpec extends Specification{
         response.responseData.containsKey("conformsTo")
         response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core' }
         response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/collections' }
-        response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tmxs' }
-        response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/multitiles' }
-        response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/cols-multitiles' }
+        response.responseData.get("conformsTo").any { it == 'http://www.opengis.net/spec/ogcapi-tiles-2/1.0/conf/tmxs' }
     }
 
     def 'Landing page request'() {

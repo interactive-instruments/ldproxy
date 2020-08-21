@@ -7,13 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.styles;
 
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 
 import javax.ws.rs.core.Response;
 
-public interface StyleMetadataFormatExtension extends FormatExtension {
+public interface StyleMetadataFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
@@ -21,7 +21,7 @@ public interface StyleMetadataFormatExtension extends FormatExtension {
     }
 
     Response getStyleMetadataResponse(StyleMetadata metadata,
-                                      OgcApiApi api,
-                                      OgcApiRequestContext requestContext);
+                                      OgcApi api,
+                                      ApiRequestContext requestContext);
 
 }

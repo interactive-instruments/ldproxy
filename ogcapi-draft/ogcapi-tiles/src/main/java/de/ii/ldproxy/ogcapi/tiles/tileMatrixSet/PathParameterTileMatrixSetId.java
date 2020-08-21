@@ -3,11 +3,11 @@ package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
@@ -33,13 +33,13 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterTileMatrixSetId.class);
     public static final String TMS_REGEX = "\\w+";
 
-    private final OgcApiExtensionRegistry extensionRegistry;
-    final OgcApiFeatureCoreProviders providers;
+    private final ExtensionRegistry extensionRegistry;
+    final FeaturesCoreProviders providers;
     final FeatureProcessInfo featureProcessInfo;
     protected Map<String, Schema> schemaMap = new ConcurrentHashMap<>();
 
-    public PathParameterTileMatrixSetId(@Requires OgcApiExtensionRegistry extensionRegistry,
-                                        @Requires OgcApiFeatureCoreProviders providers,
+    public PathParameterTileMatrixSetId(@Requires ExtensionRegistry extensionRegistry,
+                                        @Requires FeaturesCoreProviders providers,
                                         @Requires FeatureProcessInfo featureProcessInfo) {
         this.extensionRegistry = extensionRegistry;
         this.providers = providers;
@@ -52,7 +52,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     }
 
     @Override
-    public Set<String> getValues(OgcApiApiDataV2 apiData) {
+    public Set<String> getValues(OgcApiDataV2 apiData) {
         Set<String> tmsSetMultiCollection = apiData.getExtension(TilesConfiguration.class)
                 .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::getMultiCollectionEnabled)
@@ -79,7 +79,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         if (!schemaMap.containsKey(apiData.getId())) {
             schemaMap.put(apiData.getId(),new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData))));
         }
@@ -98,7 +98,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, String collectionId) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId) {
         if (isApplicable(apiData, definitionPath))
             return false;
 
@@ -110,7 +110,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
                 (definitionPath.startsWith("/tileMatrixSets/{tileMatrixSetId}") ||
                  definitionPath.startsWith("/collections/{collectionId}/tiles/{tileMatrixSetId}") ||
@@ -118,7 +118,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
     }
 }

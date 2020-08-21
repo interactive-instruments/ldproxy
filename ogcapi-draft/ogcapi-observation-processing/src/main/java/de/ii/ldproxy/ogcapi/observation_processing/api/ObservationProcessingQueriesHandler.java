@@ -7,10 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.observation_processing.api;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueriesHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryIdentifier;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
+import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.features.processing.Processing;
 import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
@@ -21,15 +21,15 @@ import org.immutables.value.Value;
 
 import java.util.*;
 
-public interface ObservationProcessingQueriesHandler extends OgcApiQueriesHandler<ObservationProcessingQueriesHandler.Query> {
+public interface ObservationProcessingQueriesHandler extends QueriesHandler<ObservationProcessingQueriesHandler.Query> {
 
     @Override
-    Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> getQueryHandlers();
+    Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();
 
-    enum Query implements OgcApiQueryIdentifier {PROCESS, VARIABLES, LIST}
+    enum Query implements QueryIdentifier {PROCESS, VARIABLES, LIST}
 
     @Value.Immutable
-    interface OgcApiQueryInputObservationProcessing extends OgcApiQueryInput {
+    interface QueryInputObservationProcessing extends QueryInput {
 
         // the query
         FeatureProvider2 getFeatureProvider();
@@ -48,7 +48,7 @@ public interface ObservationProcessingQueriesHandler extends OgcApiQueriesHandle
     }
 
     @Value.Immutable
-    interface OgcApiQueryInputVariables extends OgcApiQueryInput {
+    interface QueryInputVariables extends QueryInput {
 
         String getCollectionId();
         boolean getIncludeLinkHeader();
@@ -57,7 +57,7 @@ public interface ObservationProcessingQueriesHandler extends OgcApiQueriesHandle
     }
 
     @Value.Immutable
-    interface OgcApiQueryInputProcessing extends OgcApiQueryInput {
+    interface QueryInputProcessing extends QueryInput {
 
         String getCollectionId();
         boolean getIncludeLinkHeader();

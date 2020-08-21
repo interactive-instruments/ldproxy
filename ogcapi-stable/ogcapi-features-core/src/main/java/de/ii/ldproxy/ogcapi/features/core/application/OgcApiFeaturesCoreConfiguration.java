@@ -13,10 +13,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
@@ -69,9 +68,9 @@ public interface OgcApiFeaturesCoreConfiguration extends ExtensionConfiguration,
     @Nullable
     Boolean getShowsFeatureSelfLink();
 
-    Map<String, List<OgcApiLink>> getAdditionalLinks();
+    Map<String, List<Link>> getAdditionalLinks();
 
-    Optional<OgcApiFeaturesCollectionQueryables> getQueryables();
+    Optional<FeaturesCollectionQueryables> getQueryables();
 
     @Override
     Map<String, FeatureTypeMapping2> getTransformations();
@@ -88,7 +87,7 @@ public interface OgcApiFeaturesCoreConfiguration extends ExtensionConfiguration,
     @Value.Auxiliary
     default Map<String, String> getAllFilterParameters() {
         if (getQueryables().isPresent()) {
-            OgcApiFeaturesCollectionQueryables queryables = getQueryables().get();
+            FeaturesCollectionQueryables queryables = getQueryables().get();
             ImmutableMap.Builder<String, String> builder = new ImmutableMap.Builder<>();
 
             if (!queryables.getSpatial()
@@ -133,7 +132,7 @@ public interface OgcApiFeaturesCoreConfiguration extends ExtensionConfiguration,
     @Value.Auxiliary
     default Map<String, String> getOtherFilterParameters() {
         if (getQueryables().isPresent()) {
-            OgcApiFeaturesCollectionQueryables queryables = getQueryables().get();
+            FeaturesCollectionQueryables queryables = getQueryables().get();
             ImmutableMap.Builder<String, String> builder = new ImmutableMap.Builder<>();
 
             queryables.getOther()

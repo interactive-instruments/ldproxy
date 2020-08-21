@@ -41,7 +41,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointStyleMetadata extends OgcApiEndpoint {
+public class EndpointStyleMetadata extends Endpoint {
 
     @Requires
     I18n i18n;
@@ -53,7 +53,7 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
     private final File stylesStore;
 
     public EndpointStyleMetadata(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                 @Requires OgcApiExtensionRegistry extensionRegistry) {
+                                 @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
         this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
         if (!stylesStore.exists()) {
@@ -62,8 +62,8 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 
     @Override
@@ -74,15 +74,15 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("styles")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA);
             String path = "/styles/{styleId}/metadata";
             ImmutableList<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -98,7 +98,7 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
                 ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
                         .path(path)
                         .pathParameters(pathParameters);
-                OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+                ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
                 if (operation!=null)
                     resourceBuilder.putOperations("GET", operation);
                 definitionBuilder.putResources(path, resourceBuilder.build());
@@ -120,8 +120,8 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getStyleMetadata(@PathParam("styleId") String styleId,
-                                     @Context OgcApiApi api,
-                                     @Context OgcApiRequestContext requestContext) {
+                                     @Context OgcApi api,
+                                     @Context ApiRequestContext requestContext) {
 
         StyleMetadata metadata = getMetadata(api, styleId, requestContext);
 
@@ -136,7 +136,7 @@ public class EndpointStyleMetadata extends OgcApiEndpoint {
                 .getStyleMetadataResponse(metadata, api, requestContext);
     }
 
-    private StyleMetadata getMetadata(OgcApiApi api, String styleId, OgcApiRequestContext requestContext) {
+    private StyleMetadata getMetadata(OgcApi api, String styleId, ApiRequestContext requestContext) {
         String apiId = requestContext.getApi().getId();
         File metadataFile = new File( stylesStore + File.separator + apiId + File.separator + styleId + ".metadata");
 

@@ -1,5 +1,6 @@
 package de.ii.ldproxy.ogcapi.styles;
 
+import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -11,7 +12,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 @Instantiate
 public class QueryParameterFStyle extends QueryParameterF {
 
-    public QueryParameterFStyle(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public QueryParameterFStyle(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 
@@ -21,7 +22,7 @@ public class QueryParameterFStyle extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) &&
                 definitionPath.equals("/styles/{styleId}");
     }
@@ -32,8 +33,8 @@ public class QueryParameterFStyle extends QueryParameterF {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 
 }

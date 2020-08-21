@@ -2,11 +2,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -37,16 +33,16 @@ public class QueryParameterCollections implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-               method==OgcApiContext.HttpMethods.GET &&
+               method== HttpMethods.GET &&
                definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
     }
 
     private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();
     private Map<String,List<String>> collectionsMap = new ConcurrentHashMap<>();
 
-    private List<String> getCollectionIds(OgcApiApiDataV2 apiData) {
+    private List<String> getCollectionIds(OgcApiDataV2 apiData) {
         String key = apiData.getId();
         if (!collectionsMap.containsKey(key)) {
             collectionsMap.put(key, apiData.getCollections()
@@ -61,7 +57,7 @@ public class QueryParameterCollections implements OgcApiQueryParameter {
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         String key = apiData.getId();
         if (!schemaMap.containsKey(key)) {
             schemaMap.put(key, new ArraySchema().items(new StringSchema()._enum(getCollectionIds(apiData))));
@@ -70,7 +66,7 @@ public class QueryParameterCollections implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
@@ -80,10 +76,15 @@ public class QueryParameterCollections implements OgcApiQueryParameter {
     }
 
     @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
+    }
+
+    @Override
     public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType,
                                                 Map<String, Object> context,
                                                 Map<String, String> parameters,
-                                                OgcApiApiDataV2 apiData) {
+                                                OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return context;
 
