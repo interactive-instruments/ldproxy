@@ -1,22 +1,4 @@
 
 dependencies {
     provided project(":ogcapi-styles")
-
-    /*
-    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-collections'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
-
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
-
-    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
-     */
-}
-
-jar {
-    manifest {
-    }
 }

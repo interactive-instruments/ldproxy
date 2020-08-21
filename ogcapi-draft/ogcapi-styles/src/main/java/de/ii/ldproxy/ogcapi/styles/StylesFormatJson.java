@@ -1,5 +1,6 @@
 package de.ii.ldproxy.ogcapi.styles;
 
+import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
 import io.swagger.v3.oas.models.media.Schema;
@@ -20,7 +21,7 @@ public class StylesFormatJson implements StylesFormatExtension {
     @Requires
     SchemaGenerator schemaGenerator;
 
-    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
             .label("JSON")
             .parameter("json")
@@ -34,12 +35,12 @@ public class StylesFormatJson implements StylesFormatExtension {
     }
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public Response getStylesResponse(Styles styles, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Response getStylesResponse(Styles styles, OgcApi api, ApiRequestContext requestContext) {
         boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
@@ -51,11 +52,11 @@ public class StylesFormatJson implements StylesFormatExtension {
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
 
         // TODO add examples
         if (path.equals("/styles"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaStyles)
                     .schemaRef(SCHEMA_REF_STYLES)
                     .ogcApiMediaType(MEDIA_TYPE)

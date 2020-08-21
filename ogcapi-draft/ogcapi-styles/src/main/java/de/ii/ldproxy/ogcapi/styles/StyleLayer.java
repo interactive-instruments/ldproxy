@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.styles;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.collections.queryables.Queryable;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -30,5 +30,5 @@ public abstract class StyleLayer {
 
     public abstract Optional<List<Queryable>> getAttributes();
 
-    public abstract Optional<OgcApiLink> getSampleData();
+    public abstract Optional<Link> getSampleData();
 }

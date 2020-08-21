@@ -9,30 +9,25 @@ package de.ii.ldproxy.ogcapi.migrations;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV1;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV1;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV1;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeatureTypeMapping2;
-import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQueryables;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.features.core.application.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
-import de.ii.ldproxy.target.geojson.GeoJsonConfiguration.JsonLdOptions;
-import de.ii.ldproxy.target.geojson.GeoJsonMapping;
-import de.ii.ldproxy.target.geojson.GeoJsonPropertyMapping;
-import de.ii.ldproxy.target.geojson.ImmutableGeoJsonConfiguration;
-import de.ii.ldproxy.target.geojson.ImmutableJsonLdOptions;
-import de.ii.ldproxy.target.html.HtmlConfiguration;
-import de.ii.ldproxy.target.html.ImmutableHtmlConfiguration;
-import de.ii.ldproxy.target.html.MicrodataMapping;
-import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonConfiguration.JsonLdOptions;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonMapping;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonPropertyMapping;
+import de.ii.ldproxy.ogcapi.features.target.geojson.ImmutableGeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.target.geojson.ImmutableJsonLdOptions;
+import de.ii.ldproxy.ogcapi.features.target.html.FeaturesHtmlConfiguration;
+import de.ii.ldproxy.ogcapi.features.target.html.ImmutableFeaturesHtmlConfiguration;
+import de.ii.ldproxy.ogcapi.features.target.html.MicrodataMapping;
+import de.ii.ldproxy.ogcapi.features.target.html.MicrodataPropertyMapping;
 import de.ii.ldproxy.ogcapi.crs.CrsConfiguration;
 import de.ii.ldproxy.ogcapi.crs.ImmutableCrsConfiguration;
 import de.ii.xtraplatform.entity.api.EntityData;
@@ -75,11 +70,13 @@ import java.util.stream.Collectors;
 @Component
 @Provides(properties = {
         @StaticServiceProperty(name = Entity.TYPE_KEY, type = "java.lang.String", value = Service.TYPE),
-        @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiApiDataV2.SERVICE_TYPE)
+        @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiDataV2.SERVICE_TYPE)
 })
 @Instantiate
 @SuppressWarnings("deprecation")
-public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, OgcApiApiDataV2> {
+public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, OgcApiDataV2> {
+
+    // TODO need to update
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiApiMigrationV1V2.class);
 
@@ -94,12 +91,12 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
     }
 
     @Override
-    public EntityDataBuilder<OgcApiApiDataV1> getDataBuilder() {
-        return new ImmutableOgcApiApiDataV1.Builder();
+    public EntityDataBuilder<OgcApiDataV1> getDataBuilder() {
+        return new ImmutableOgcApiDataV1.Builder();
     }
 
     @Override
-    public OgcApiApiDataV2 migrate(OgcApiApiDataV1 entityData) {
+    public OgcApiDataV2 migrate(OgcApiDataV1 entityData) {
 
         List<ExtensionConfiguration> extensions = entityData.getExtensions()
                                                             .stream()
@@ -147,9 +144,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
 
                                                                                 coreConfiguration.ifPresent(newCoreConfiguration::from);
 
-                                                                                OgcApiFeaturesCollectionQueryables queryables = getQueryables(entityData.getFeatureProvider()
-                                                                                                                                                        .getMappings()
-                                                                                                                                                        .get(collection.getId()));
+                                                                                FeaturesCollectionQueryables queryables = getQueryables(entityData.getFeatureProvider()
+                                                                                                                                                  .getMappings()
+                                                                                                                                                  .get(collection.getId()));
                                                                                 newCoreConfiguration.featureType(collection.getId())
                                                                                                     .queryables(queryables);
 
@@ -173,9 +170,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                                 newGeoJsonConfiguration.jsonLd(jsonLdOptions);
 
 
-                                                                                Optional<HtmlConfiguration> htmlConfiguration = collection.getExtension(HtmlConfiguration.class);
+                                                                                Optional<FeaturesHtmlConfiguration> htmlConfiguration = collection.getExtension(FeaturesHtmlConfiguration.class);
 
-                                                                                ImmutableHtmlConfiguration.Builder newHtmlConfiguration = new ImmutableHtmlConfiguration.Builder();
+                                                                                ImmutableFeaturesHtmlConfiguration.Builder newHtmlConfiguration = new ImmutableFeaturesHtmlConfiguration.Builder();
 
                                                                                 htmlConfiguration.ifPresent(newHtmlConfiguration::from);
 
@@ -218,7 +215,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                                                                                            if (extension instanceof GeoJsonConfiguration) {
                                                                                                                                                return newGeoJsonConfiguration.build();
                                                                                                                                            }
-                                                                                                                                           if (extension instanceof HtmlConfiguration) {
+                                                                                                                                           if (extension instanceof FeaturesHtmlConfiguration) {
                                                                                                                                                return newHtmlConfiguration.build();
                                                                                                                                            }
 
@@ -237,7 +234,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                                     newCollection.addExtensions(newGeoJsonConfiguration.build());
                                                                                 }
                                                                                 if (newExtensions.stream()
-                                                                                                 .noneMatch(extension -> extension instanceof HtmlConfiguration)) {
+                                                                                                 .noneMatch(extension -> extension instanceof FeaturesHtmlConfiguration)) {
                                                                                     newCollection.addExtensions(newHtmlConfiguration.build());
                                                                                 }
 
@@ -245,19 +242,19 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
                                                                             })
                                                                             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        OgcApiApiDataV2 migrated = new ImmutableOgcApiApiDataV2.Builder().from((ServiceData) entityData)
-                                                                         .serviceType("OGC_API")
-                                                                         .entityStorageVersion(getTargetVersion())
-                                                                         .metadata(Optional.ofNullable(entityData.getMetadata()))
-                                                                         .collections(collections)
-                                                                         .extensions(extensions)
-                                                                         .build();
+        OgcApiDataV2 migrated = new ImmutableOgcApiDataV2.Builder().from((ServiceData) entityData)
+                                                                   .serviceType("OGC_API")
+                                                                   .entityStorageVersion(getTargetVersion())
+                                                                   .metadata(Optional.ofNullable(entityData.getMetadata()))
+                                                                   .collections(collections)
+                                                                   .extensions(extensions)
+                                                                   .build();
 
         return migrated;
     }
 
     @Override
-    public Map<Identifier, EntityData> getAdditionalEntities(Identifier identifier, OgcApiApiDataV1 entityData) {
+    public Map<Identifier, EntityData> getAdditionalEntities(Identifier identifier, OgcApiDataV1 entityData) {
 
         FeatureProviderDataTransformer featureProvider = entityData.getFeatureProvider();
         String providerType = featureProvider.getProviderType();
@@ -439,9 +436,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiApiDataV1, 
         return path;
     }
 
-    private OgcApiFeaturesCollectionQueryables getQueryables(
+    private FeaturesCollectionQueryables getQueryables(
             FeatureTypeMapping featureTypeMapping) {
-        ImmutableOgcApiFeaturesCollectionQueryables.Builder builder = new ImmutableOgcApiFeaturesCollectionQueryables.Builder();
+        ImmutableFeaturesCollectionQueryables.Builder builder = new ImmutableFeaturesCollectionQueryables.Builder();
 
         List<OgcApiFeaturesGenericMapping> filterables = featureTypeMapping.getMappings()
                                                                            .values()

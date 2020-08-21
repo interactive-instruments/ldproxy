@@ -8,7 +8,7 @@
 package de.ii.ldproxy.resources;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.common.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
@@ -42,7 +42,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointResources extends OgcApiEndpoint implements ConformanceClass {
+public class EndpointResources extends Endpoint implements ConformanceClass {
 
     @Requires
     I18n i18n;
@@ -53,7 +53,7 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
 
     private final File resourcesStore; // TODO: change to Store
 
-    public EndpointResources(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires OgcApiExtensionRegistry extensionRegistry) {
+    public EndpointResources(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
         this.resourcesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "resources");
         if (!resourcesStore.exists()) {
@@ -63,11 +63,11 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/resources");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/resources");
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
         if (stylesExtension.isPresent() && stylesExtension.get()
@@ -78,6 +78,11 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
     }
 
     @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
+    }
+
+    @Override
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(ResourcesFormatExtension.class);
@@ -85,15 +90,15 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("resources")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_RESOURCES);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES);
             List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/resources");
             String operationSummary = "information about the available file resources";
             Optional<String> operationDescription = Optional.of("This operation fetches the set of file resources that have been " +
@@ -103,7 +108,7 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
             ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
                     .path(path)
                     .subResourceType("File Resource");
-            OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilderSet.putOperations("GET", operation);
             definitionBuilder.putResources(path, resourceBuilderSet.build());
@@ -122,7 +127,7 @@ public class EndpointResources extends OgcApiEndpoint implements ConformanceClas
     @Path("/")
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
-    public Response getResources(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
+    public Response getResources(@Context OgcApi api, @Context ApiRequestContext requestContext) {
         final ResourcesLinkGenerator resourcesLinkGenerator = new ResourcesLinkGenerator();
 
         final String apiId = api.getId();

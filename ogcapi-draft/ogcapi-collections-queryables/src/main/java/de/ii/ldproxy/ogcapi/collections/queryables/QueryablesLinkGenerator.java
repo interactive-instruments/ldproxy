@@ -9,8 +9,8 @@ package de.ii.ldproxy.ogcapi.collections.queryables;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
 import java.util.List;
@@ -30,10 +30,10 @@ public class QueryablesLinkGenerator {
      * @param language the requested language (optional)
      * @return a list with links
      */
-    public List<OgcApiLink> generateCollectionLinks(URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
+    public List<Link> generateCollectionLinks(URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
 
-        return ImmutableList.<OgcApiLink>builder()
-                .add(new ImmutableOgcApiLink.Builder()
+        return ImmutableList.<Link>builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
                                 .ensureLastPathSegment("queryables")

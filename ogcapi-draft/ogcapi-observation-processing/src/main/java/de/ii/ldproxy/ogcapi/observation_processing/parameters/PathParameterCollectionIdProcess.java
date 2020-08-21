@@ -3,9 +3,10 @@ package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.application.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.PathParameterCollectionIdFeatures;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
@@ -35,7 +36,7 @@ public class PathParameterCollectionIdProcess extends PathParameterCollectionIdF
 
     final FeatureProcessInfo featureProcessInfo;
 
-    public PathParameterCollectionIdProcess(@Requires OgcApiFeatureCoreProviders providers,
+    public PathParameterCollectionIdProcess(@Requires FeaturesCoreProviders providers,
                                             @Requires FeatureProcessInfo featureProcessInfo) {
         super(providers);
         this.featureProcessInfo = featureProcessInfo;
@@ -43,7 +44,7 @@ public class PathParameterCollectionIdProcess extends PathParameterCollectionIdF
     };
 
     @Override
-    public Set<String> getValues(OgcApiApiDataV2 apiData) {
+    public Set<String> getValues(OgcApiDataV2 apiData) {
         if (!apiCollectionMap.containsKey(apiData.getId()))
             apiCollectionMap.put(apiData.getId(),returnObservationCollections(apiData));
 
@@ -51,7 +52,7 @@ public class PathParameterCollectionIdProcess extends PathParameterCollectionIdF
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         return new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData)));
     }
 
@@ -61,7 +62,7 @@ public class PathParameterCollectionIdProcess extends PathParameterCollectionIdF
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
                 (featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"*") ||
                  definitionPath.equals("/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/variables") ||
@@ -69,23 +70,21 @@ public class PathParameterCollectionIdProcess extends PathParameterCollectionIdF
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
                 apiData.getCollections()
                         .values()
                         .stream()
-                        .filter(featureType -> featureType.getEnabled())
-                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
-                        .findAny()
-                        .isPresent();
-    }
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+}
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
-    private Set<String> returnObservationCollections(OgcApiApiDataV2 apiData) {
+    private Set<String> returnObservationCollections(OgcApiDataV2 apiData) {
         ImmutableSet.Builder<String> collections = ImmutableSet.builder();
         apiData.getCollections().entrySet().stream()
                 .forEachOrdered(entry -> {
@@ -115,10 +114,10 @@ public class PathParameterCollectionIdProcess extends PathParameterCollectionIdF
                             LOGGER.info("Building block OBSERVATION_PROCESSING deactivated for collection '{}'. Features with a property '{}' are required.", collectionId, requiredProperty);
                             return;
                         }
-                        Optional<OgcApiFeaturesCollectionQueryables> queryables = apiData.getCollections()
-                                .get(collectionId)
-                                .getExtension(OgcApiFeaturesCoreConfiguration.class)
-                                .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables);
+                        Optional<FeaturesCollectionQueryables> queryables = apiData.getCollections()
+                                                                                   .get(collectionId)
+                                                                                   .getExtension(OgcApiFeaturesCoreConfiguration.class)
+                                                                                   .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables);
                         if (queryables.isPresent()) {
                             if (requiredProperty.equals("phenomenonTime")) {
                                 if (queryables.get().getTemporal().stream()
@@ -140,10 +139,8 @@ public class PathParameterCollectionIdProcess extends PathParameterCollectionIdF
                     }
 
                     if (!featureProperties.stream()
-                            .filter(property -> property.isSpatial())
-                            // TODO check that geometry type is point
-                            .findAny()
-                            .isPresent()) {
+                                          // TODO check that geometry type is point
+                                          .anyMatch(property -> property.isSpatial())) {
                         LOGGER.info("Building block OBSERVATION_PROCESSING deactivated for collection '{}'. Features with a point geometry are required, but no spatial property was found.", collectionId);
                         return;
                     }

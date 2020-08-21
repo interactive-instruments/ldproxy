@@ -15,15 +15,20 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Extension for a style encoding at /{serviceId}/styles/{styleId}
+ * ApiExtension for a style encoding at /{serviceId}/styles/{styleId}
  */
 public interface StyleFormatExtension extends FormatExtension {
 
     @Override
-    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    default boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(StylesConfiguration.class)
                       .filter(config -> config.getStyleEncodings().contains(this.getMediaType().label()))
                       .isPresent();
+    }
+
+    @Override
+    default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 
     @Override
@@ -56,7 +61,7 @@ public interface StyleFormatExtension extends FormatExtension {
      * @param styleId the id of the style
      * @return the title of the style, if applicable, or null
      */
-    default String getTitle(OgcApiApiDataV2 datasetData, String styleId) { return styleId; }
+    default String getTitle(OgcApiDataV2 datasetData, String styleId) { return styleId; }
 
     /**
      *
@@ -71,7 +76,7 @@ public interface StyleFormatExtension extends FormatExtension {
      * @param requestContext
      * @return the response
      */
-    Response getStyleResponse(String styleId, File stylesheet, List<OgcApiLink> links,
-                              OgcApiApi api, OgcApiRequestContext requestContext) throws IOException;
+    Response getStyleResponse(String styleId, File stylesheet, List<Link> links,
+                              OgcApi api, ApiRequestContext requestContext) throws IOException;
 
 };

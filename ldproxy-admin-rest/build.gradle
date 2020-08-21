@@ -1,16 +1,22 @@
 
 dependencies {
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-codelists'
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-web-api'
+
+    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-csw-client'
+
+    /*
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
 
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-codelists'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-admin-rest'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-csw-client'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-scheduler-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-service-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-web-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
+
+     */
 }
  

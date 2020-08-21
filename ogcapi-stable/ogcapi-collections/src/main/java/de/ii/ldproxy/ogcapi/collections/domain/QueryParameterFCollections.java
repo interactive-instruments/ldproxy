@@ -1,6 +1,11 @@
 package de.ii.ldproxy.ogcapi.collections.domain;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -11,7 +16,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 @Instantiate
 public class QueryParameterFCollections extends QueryParameterF {
 
-    public QueryParameterFCollections(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public QueryParameterFCollections(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 
@@ -21,19 +26,19 @@ public class QueryParameterFCollections extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) &&
                 definitionPath.matches("^/collections(?:/\\{collectionId\\})?/?$");
     }
 
     @Override
-    protected Class<? extends FormatExtension> getFormatClass() {
+    protected Class<? extends GenericFormatExtension> getFormatClass() {
         return CollectionsFormatExtension.class;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, OgcApiCollectionsConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return OgcApiCollectionsConfiguration.class;
     }
 
 }

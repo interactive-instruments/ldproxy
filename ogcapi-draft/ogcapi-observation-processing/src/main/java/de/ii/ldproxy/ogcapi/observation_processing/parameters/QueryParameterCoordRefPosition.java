@@ -1,10 +1,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
@@ -50,9 +47,9 @@ public class QueryParameterCoordRefPosition implements OgcApiQueryParameter {
     public String getId() { return "coordRef-position"; }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-                method==OgcApiContext.HttpMethods.GET &&
+                method== HttpMethods.GET &&
                 featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position");
     }
 
@@ -67,31 +64,29 @@ public class QueryParameterCoordRefPosition implements OgcApiQueryParameter {
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         return baseSchema;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
                 apiData.getCollections()
                         .values()
                         .stream()
-                        .filter(featureType -> featureType.getEnabled())
-                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
-                        .findAny()
-                        .isPresent();
-    }
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+}
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return ObservationProcessingConfiguration.class;
     }
 
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
-                                                   OgcApiApiDataV2 apiData) {
+                                                   OgcApiDataV2 apiData) {
         if (parameters.containsKey("coord")) {
             if (parameters.containsKey(getName())) {
                 throw new IllegalArgumentException("Only one of the parameters 'coord' and 'coordRef' may be provided.");
@@ -136,7 +131,7 @@ public class QueryParameterCoordRefPosition implements OgcApiQueryParameter {
     public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType,
                                                 Map<String, Object> context,
                                                 Map<String, String> parameters,
-                                                OgcApiApiDataV2 apiData) {
+                                                OgcApiDataV2 apiData) {
         String coordRef = parameters.get(getName());
         if (coordRef==null)
             return context;

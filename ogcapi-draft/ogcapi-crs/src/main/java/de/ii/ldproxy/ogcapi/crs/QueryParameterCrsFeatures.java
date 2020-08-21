@@ -1,10 +1,7 @@
 package de.ii.ldproxy.ogcapi.crs;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.Schema;
@@ -21,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCrsFeatures implements OgcApiQueryParameter {
+public class QueryParameterCrsFeatures implements OgcApiQueryParameter, ConformanceClass {
 
     public static final String CRS = "crs";
     public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
@@ -49,9 +46,9 @@ public class QueryParameterCrsFeatures implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-                method==OgcApiContext.HttpMethods.GET &&
+                method== HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
                  definitionPath.equals("/collections/{collectionId}/items/{featureId}"));
     }
@@ -59,7 +56,7 @@ public class QueryParameterCrsFeatures implements OgcApiQueryParameter {
     private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         String key = apiData.getId()+"__"+collectionId;
         if (!schemaMap.containsKey(key)) {
             List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
@@ -72,19 +69,14 @@ public class QueryParameterCrsFeatures implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, CrsConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), CrsConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return CrsConfiguration.class;
     }
 
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
-                                                        Map<String, String> parameters, OgcApiApiDataV2 apiData) {
+                                                        Map<String, String> parameters, OgcApiDataV2 apiData) {
 
         if (isEnabledForApi(apiData) && parameters.containsKey(CRS)) {
             EpsgCrs targetCrs;
@@ -101,5 +93,10 @@ public class QueryParameterCrsFeatures implements OgcApiQueryParameter {
         }
 
         return queryBuilder;
+    }
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs");
     }
 }

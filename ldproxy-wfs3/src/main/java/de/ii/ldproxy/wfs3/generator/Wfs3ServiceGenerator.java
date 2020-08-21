@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.wfs3.generator;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.entity.api.EntityData;
 import de.ii.xtraplatform.event.store.EntityDataStore;
 import de.ii.xtraplatform.scheduler.api.Scheduler;
@@ -34,7 +34,7 @@ import java.util.Optional;
 @Component
 @Provides(properties = {
 //        @StaticServiceProperty(name = Entity.TYPE_KEY, type = "java.lang.String", value = Service.TYPE),
-//        @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiApiDataV2.SERVICE_TYPE)
+//        @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiDataV2.SERVICE_TYPE)
 })
 @Instantiate
 @Wbp(
@@ -42,7 +42,7 @@ import java.util.Optional;
         onArrival = "onArrival",
         onDeparture = "onDeparture",
         onModification = "onModification")
-public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiApiDataV2>, ServiceBackgroundTasks {
+public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiDataV2>, ServiceBackgroundTasks {
 
     // TODO split into ProviderGenerator + ServiceGenerator
 
@@ -52,7 +52,7 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiApiDataV2>, 
     private BundleContext bundleContext;
 
     @Requires
-    private OgcApiExtensionRegistry wfs3ConformanceClassRegistry;
+    private ExtensionRegistry wfs3ConformanceClassRegistry;
 
     @Requires
     private FeatureProviderRegistry featureProviderRegistry;
@@ -76,13 +76,13 @@ public class Wfs3ServiceGenerator implements ServiceGenerator<OgcApiApiDataV2>, 
     }
 
     @Override
-    public Class<OgcApiApiDataV2> getType() {
-        return OgcApiApiDataV2.class;
+    public Class<OgcApiDataV2> getType() {
+        return OgcApiDataV2.class;
     }
 
     //TODO: depends on provider, this is for WFS based services
     @Override
-    public OgcApiApiDataV2 generate(Map<String, String> partialData) {
+    public OgcApiDataV2 generate(Map<String, String> partialData) {
 /*
         if (Objects.isNull(partialData) || !partialData.containsKey("id") || !partialData.containsKey("url")) {
             throw new BadRequestException();
@@ -167,9 +167,9 @@ return null;
     /*private List<TargetMappingProviderFromGml> getMappingProviders() {
         return Stream.concat(
                 Stream.of(new Gml2Wfs3GenericMappingProvider()),
-                wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
+                wfs3ConformanceClassRegistry.getExtensionsForType(FeatureFormatExtension.class)
                                             .stream()
-                                            .map(OgcApiFeatureFormatExtension::getMappingGenerator)
+                                            .map(FeatureFormatExtension::getMappingGenerator)
                                             .filter(Optional::isPresent)
                                             .map(Optional::get)
         )
@@ -177,15 +177,15 @@ return null;
     }
 
     private List<TargetMappingRefiner> getMappingRefiners() {
-        return wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
+        return wfs3ConformanceClassRegistry.getExtensionsForType(FeatureFormatExtension.class)
                                            .stream()
-                                           .map(OgcApiFeatureFormatExtension::getMappingRefiner)
+                                           .map(FeatureFormatExtension::getMappingRefiner)
                                            .filter(Optional::isPresent)
                                            .map(Optional::get)
                                            .collect(Collectors.toList());
     }*/
 
-    private synchronized void onArrival(ServiceReference<OgcApiApi> ref) {
+    private synchronized void onArrival(ServiceReference<OgcApi> ref) {
         /*try {
             checkGenerateMapping(ref);
             checkRefineMapping(ref);
@@ -194,10 +194,10 @@ return null;
         }*/
     }
 
-    private synchronized void onDeparture(ServiceReference<OgcApiApi> ref) {
+    private synchronized void onDeparture(ServiceReference<OgcApi> ref) {
     }
 
-    private synchronized void onModification(ServiceReference<OgcApiApi> ref) {
+    private synchronized void onModification(ServiceReference<OgcApi> ref) {
         /*try {
             checkGenerateMapping(ref);
             checkRefineMapping(ref);
@@ -368,7 +368,7 @@ return null;
                                                          .getChildStore(wfs3Service.getData()
                                                                                    .getId());
 
-            for (OgcApiStyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiStyleGeneratorExtension.class)) {
+            for (StyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(StyleGeneratorExtension.class)) {
                 int i = 0;
                 for (FeatureTypeConfigurationOgcApi featureTypeConfiguration : updated.getFeatureTypes()
                                                                                       .values()) {
@@ -532,7 +532,7 @@ return null;
                                                                          .getChildStore(wfs3Service.getData()
                                                                                                    .getId());
 
-                            for (OgcApiStyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(OgcApiStyleGeneratorExtension.class)) {
+                            for (StyleGeneratorExtension wfs3StyleGeneratorExtension : wfs3ConformanceClassRegistry.getExtensionsForType(StyleGeneratorExtension.class)) {
 
                                 String style = wfs3StyleGeneratorExtension.generateStyle(currentGeometryType[0], i[0]);
 

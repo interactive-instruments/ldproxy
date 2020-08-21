@@ -8,6 +8,8 @@
 package de.ii.ldproxy.resources;
 
 import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
@@ -30,7 +32,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class ResourcesOnLandingPage implements OgcApiLandingPageExtension {
+public class ResourcesOnLandingPage implements LandingPageExtension {
 
     @Requires
     I18n i18n;
@@ -45,7 +47,7 @@ public class ResourcesOnLandingPage implements OgcApiLandingPageExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
         if (stylesExtension.isPresent() && stylesExtension.get()
@@ -56,11 +58,16 @@ public class ResourcesOnLandingPage implements OgcApiLandingPageExtension {
     }
 
     @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
+    }
+
+    @Override
     public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
-                                                OgcApiApiDataV2 apiData,
+                                                OgcApiDataV2 apiData,
                                                 URICustomizer uriCustomizer,
-                                                OgcApiMediaType mediaType,
-                                                List<OgcApiMediaType> alternateMediaTypes,
+                                                ApiMediaType mediaType,
+                                                List<ApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
 
         if (!isEnabledForApi(apiData)) {
@@ -69,8 +76,8 @@ public class ResourcesOnLandingPage implements OgcApiLandingPageExtension {
 
         final ResourcesLinkGenerator linkGenerator = new ResourcesLinkGenerator();
 
-        List<OgcApiLink> ogcApiLinks = linkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
-        landingPageBuilder.addAllLinks(ogcApiLinks);
+        List<Link> links = linkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
+        landingPageBuilder.addAllLinks(links);
 
         final String datasetId = apiData.getId();
         File apiDir = new File(resourcesStore + File.separator + datasetId);

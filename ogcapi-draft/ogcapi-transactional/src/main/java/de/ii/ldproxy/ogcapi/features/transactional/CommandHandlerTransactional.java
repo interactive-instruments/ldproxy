@@ -16,7 +16,7 @@ import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import akka.stream.javadsl.StreamConverters;
 import akka.util.ByteString;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.feature.transformer.geojson.FeatureDecoderGeoJson;
 import de.ii.xtraplatform.features.domain.FeatureDecoder;
@@ -39,7 +39,7 @@ public class CommandHandlerTransactional {
 
     public Response postItemsResponse(
             FeatureTransactions featureProvider,
-            OgcApiMediaType mediaType, URICustomizer uriCustomizer, String collectionName,
+            ApiMediaType mediaType, URICustomizer uriCustomizer, String collectionName,
             InputStream requestBody) {
 
         FeatureDecoder.WithSource featureSource = getFeatureSource(mediaType, requestBody);
@@ -75,7 +75,7 @@ public class CommandHandlerTransactional {
 
     public Response putItemResponse(
             FeatureTransactions featureProvider,
-            OgcApiMediaType mediaType, String collectionName, String featureId,
+            ApiMediaType mediaType, String collectionName, String featureId,
             InputStream requestBody) {
 
         FeatureDecoder.WithSource featureSource = getFeatureSource(mediaType, requestBody);
@@ -107,7 +107,7 @@ public class CommandHandlerTransactional {
                        .build();
     }
 
-    private FeatureDecoder.WithSource getFeatureSource(OgcApiMediaType mediaType, InputStream requestBody) {
+    private FeatureDecoder.WithSource getFeatureSource(ApiMediaType mediaType, InputStream requestBody) {
 
         //TODO: to inputformat extension, for the time being make it static
         FeatureDecoderGeoJson featureDecoderGeoJson = new FeatureDecoderGeoJson();
@@ -119,7 +119,7 @@ public class CommandHandlerTransactional {
 
     // TODO
     private Function<FeatureTransformer, RunnableGraph<CompletionStage<Done>>> getFeatureTransformStream(
-            OgcApiMediaType mediaType, FeatureTypeMapping featureTypeMapping, InputStream requestBody) {
+            ApiMediaType mediaType, FeatureTypeMapping featureTypeMapping, InputStream requestBody) {
         return featureTransformer -> {
             MappingSwapper mappingSwapper = new MappingSwapper();
             Sink<ByteString, CompletionStage<Done>> transformer = GeoJsonStreamParser.transform(mappingSwapper.swapMapping(featureTypeMapping, "SQL"), featureTransformer);

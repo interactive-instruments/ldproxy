@@ -8,16 +8,6 @@ dependencies {
     embedded (group: 'org.locationtech.geotrellis', name: 'geotrellis-raster_2.12', version: '3.3.0') {
         exclude module: 'slf4j-api'
     }
-
-    /*
-    provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
-
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-ogc-wfs-api'
-
-     */
-
 }
 
 jar {

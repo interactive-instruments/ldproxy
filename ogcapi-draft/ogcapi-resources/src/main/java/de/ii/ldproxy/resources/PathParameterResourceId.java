@@ -2,7 +2,8 @@ package de.ii.ldproxy.resources;
 
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
@@ -30,12 +31,12 @@ public class PathParameterResourceId implements OgcApiPathParameter {
     }
 
     @Override
-    public Set<String> getValues(OgcApiApiDataV2 apiData) {
+    public Set<String> getValues(OgcApiDataV2 apiData) {
         return ImmutableSet.of();
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         return new StringSchema().pattern(getPattern());
     }
 
@@ -50,12 +51,12 @@ public class PathParameterResourceId implements OgcApiPathParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) && definitionPath.equals("/resources/{resourceId}");
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
         if (stylesExtension.isPresent() && stylesExtension.get()
@@ -63,5 +64,10 @@ public class PathParameterResourceId implements OgcApiPathParameter {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 }

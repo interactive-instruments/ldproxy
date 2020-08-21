@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.oas30;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -26,7 +27,7 @@ import javax.ws.rs.core.Response;
 public class OpenApiJson implements ApiDefinitionFormatExtension {
 
     private static Logger LOGGER = LoggerFactory.getLogger(OpenApiJson.class);
-    private static OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    private static ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "vnd.oai.openapi+json", ImmutableMap.of("version", "3.0")))
             .label("JSON")
             .build();
@@ -35,22 +36,22 @@ public class OpenApiJson implements ApiDefinitionFormatExtension {
     private ExtendableOpenApiDefinition openApiDefinition;
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     // always active, if OpenAPI 3.0 is active, since a service-desc link relation is mandatory
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, Oas30Configuration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return Oas30Configuration.class;
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.startsWith("/api/"))
             return null;
 
-        return new ImmutableOgcApiMediaTypeContent.Builder()
+        return new ImmutableApiMediaTypeContent.Builder()
                 .schema(new ObjectSchema())
                 .schemaRef("#/components/schemas/objectSchema")
                 .ogcApiMediaType(MEDIA_TYPE)
@@ -58,8 +59,8 @@ public class OpenApiJson implements ApiDefinitionFormatExtension {
     }
 
     @Override
-    public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
-                                             OgcApiRequestContext ogcApiRequestContext) {
-        return openApiDefinition.getOpenApi("json", ogcApiRequestContext.getUriCustomizer().copy(), apiData);
+    public Response getApiDefinitionResponse(OgcApiDataV2 apiData,
+                                             ApiRequestContext apiRequestContext) {
+        return openApiDefinition.getOpenApi("json", apiRequestContext.getUriCustomizer().copy(), apiData);
     }
 }

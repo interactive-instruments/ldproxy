@@ -16,10 +16,10 @@ import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfigur
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
-import de.ii.ldproxy.ogcapi.observation_processing.application.OutputFormatGeoJson;
+import de.ii.ldproxy.ogcapi.observation_processing.application.ResultFormatExtensionGeoJson;
 import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
 import de.ii.ldproxy.ogcapi.observation_processing.data.*;
-import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonConfiguration;
 import de.ii.xtraplatform.akka.http.HttpClient;
 import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -62,7 +62,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
     private final FeatureProcessChain processes;
     private final Map<String, Object> processingParameters;
     private final List<Variable> variables;
-    private final ObservationProcessingOutputFormat outputFormat;
+    private final DapaResultFormatExtension outputFormat;
     private final TemporalInterval interval;
 
     private ImmutableCoordinatesTransformer.Builder coordinatesTransformerBuilder;
@@ -118,7 +118,7 @@ public class FeatureTransformerObservationProcessing implements FeatureTransform
 
     @Override
     public String getTargetFormat() {
-        return OutputFormatGeoJson.MEDIA_TYPE.toString();
+        return ResultFormatExtensionGeoJson.MEDIA_TYPE.toString();
     }
 
     @Override

@@ -26,7 +26,7 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     @Requires
     SchemaGenerator schemaGenerator;
 
-    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.APPLICATION_JSON_TYPE)
             .label("JSON")
             .parameter("json")
@@ -51,20 +51,20 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     }
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.equals("/tileMatrixSets"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaStyleTileMatrixSets)
                     .schemaRef(SCHEMA_REF_TILE_MATRIX_SETS)
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
         else if (path.equals("/tileMatrixSets/{tileMatrixSetId}"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaStyleTileMatrixSet)
                     .schemaRef(SCHEMA_REF_TILE_MATRIX_SET)
                     .ogcApiMediaType(MEDIA_TYPE)
@@ -74,12 +74,12 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     }
 
     @Override
-    public Object getTileMatrixSetsEntity(TileMatrixSets tileMatrixSets, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Object getTileMatrixSetsEntity(TileMatrixSets tileMatrixSets, OgcApi api, ApiRequestContext requestContext) {
         return tileMatrixSets;
     }
 
     @Override
-    public Object getTileMatrixSetEntity(TileMatrixSetData tileMatrixSet, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Object getTileMatrixSetEntity(TileMatrixSetData tileMatrixSet, OgcApi api, ApiRequestContext requestContext) {
         return tileMatrixSet;
     }
 

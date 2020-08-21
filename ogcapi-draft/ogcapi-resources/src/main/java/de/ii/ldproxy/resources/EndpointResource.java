@@ -38,7 +38,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointResource extends OgcApiEndpoint {
+public class EndpointResource extends Endpoint {
 
     @Requires
     I18n i18n;
@@ -49,7 +49,7 @@ public class EndpointResource extends OgcApiEndpoint {
 
     private final File resourcesStore; // TODO: change to Store
 
-    public EndpointResource(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires OgcApiExtensionRegistry extensionRegistry) {
+    public EndpointResource(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
         this.resourcesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "resources");
         if (!resourcesStore.exists()) {
@@ -58,7 +58,7 @@ public class EndpointResource extends OgcApiEndpoint {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
         if (stylesExtension.isPresent() && stylesExtension.get()
@@ -69,6 +69,11 @@ public class EndpointResource extends OgcApiEndpoint {
     }
 
     @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
+    }
+
+    @Override
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(ResourceFormatExtension.class);
@@ -76,15 +81,15 @@ public class EndpointResource extends OgcApiEndpoint {
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("resources")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_RESOURCE);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCE);
             String path = "/resources/{resourceId}";
             List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -97,7 +102,7 @@ public class EndpointResource extends OgcApiEndpoint {
                 ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
                         .path(path)
                         .pathParameters(pathParameters);
-                OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+                ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
                 if (operation!=null)
                     resourceBuilder.putOperations("GET", operation);
                 definitionBuilder.putResources(path, resourceBuilder.build());
@@ -118,8 +123,8 @@ public class EndpointResource extends OgcApiEndpoint {
     @Path("/{resourceId}")
     @GET
     @Produces(MediaType.WILDCARD)
-    public Response getResource(@PathParam("resourceId") String resourceId, @Context OgcApiApi api,
-                                @Context OgcApiRequestContext requestContext) {
+    public Response getResource(@PathParam("resourceId") String resourceId, @Context OgcApi api,
+                                @Context ApiRequestContext requestContext) {
 
         final String datasetId = api.getId();
         final File apiDir = new File(resourcesStore + File.separator + datasetId);

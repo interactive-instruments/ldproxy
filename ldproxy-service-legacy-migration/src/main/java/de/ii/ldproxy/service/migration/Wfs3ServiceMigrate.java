@@ -9,21 +9,17 @@ package de.ii.ldproxy.service.migration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiFeaturesGenericMapping;
-import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping;
-import de.ii.ldproxy.target.geojson.GeoJsonMapping;
-import de.ii.ldproxy.target.geojson.GeoJsonPropertyMapping;
-import de.ii.ldproxy.target.geojson.Gml2GeoJsonMappingProvider;
-import de.ii.ldproxy.target.html.Gml2MicrodataMappingProvider;
-import de.ii.ldproxy.target.html.MicrodataGeometryMapping;
-import de.ii.ldproxy.target.html.MicrodataMapping;
-import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonGeometryMapping;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonMapping;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonPropertyMapping;
+import de.ii.ldproxy.ogcapi.features.target.geojson.Gml2GeoJsonMappingProvider;
+import de.ii.ldproxy.ogcapi.features.target.html.Gml2MicrodataMappingProvider;
+import de.ii.ldproxy.ogcapi.features.target.html.MicrodataGeometryMapping;
+import de.ii.ldproxy.ogcapi.features.target.html.MicrodataMapping;
+import de.ii.ldproxy.ogcapi.features.target.html.MicrodataPropertyMapping;
 import de.ii.xtraplatform.dropwizard.api.Jackson;
 import de.ii.xtraplatform.entity.api.EntityRepository;
 import de.ii.xtraplatform.entities.domain.legacy.EntityRepositoryForType;
@@ -73,7 +69,7 @@ public class Wfs3ServiceMigrate {
     private void onStart() {
         KeyValueStore serviceStore = rootConfigStore.getChildStore(PATH);
 
-        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, OgcApiApi.TYPE);
+        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, OgcApi.TYPE);
 
         executorService.schedule(() -> {
 
@@ -91,7 +87,7 @@ public class Wfs3ServiceMigrate {
                                                                      .readValue(serviceStore.getValueReader(id), new TypeReference<LinkedHashMap>() {
                                                                      });
 
-                                OgcApiApiDataV2 datasetData = createServiceData(service, null);
+                                OgcApiDataV2 datasetData = createServiceData(service, null);
 
 
                                 try {
@@ -139,15 +135,15 @@ public class Wfs3ServiceMigrate {
         }, 10, TimeUnit.SECONDS);
     }
 
-    private OgcApiApiDataV2 createServiceData(Map<String, Object> service,
-                                              OgcApiApiDataV2 datasetData) throws URISyntaxException {
+    private OgcApiDataV2 createServiceData(Map<String, Object> service,
+                                           OgcApiDataV2 datasetData) throws URISyntaxException {
         Map<String, Object> wfs = (Map<String, Object>) service.get("wfsAdapter");
         Map<String, Object> defaultCrs = (Map<String, Object>) wfs.get("defaultCrs");
         String url = (String) ((Map<String, Object>) ((Map<String, Object>) wfs.get("urls"))
                 .get("GetFeature")).get("GET");
         URI uri = new URI(url);
 
-        ImmutableOgcApiApiDataV2.Builder builder = new ImmutableOgcApiApiDataV2.Builder();
+        ImmutableOgcApiDataV2.Builder builder = new ImmutableOgcApiDataV2.Builder();
 
         if (datasetData != null) {
             builder.from(datasetData);

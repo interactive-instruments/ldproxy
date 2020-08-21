@@ -1,5 +1,6 @@
 package de.ii.ldproxy.resources;
 
+import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
 import io.swagger.v3.oas.models.media.Schema;
@@ -20,7 +21,7 @@ public class ResourcesFormatJson implements ResourcesFormatExtension {
     @Requires
     SchemaGenerator schemaGenerator;
 
-    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
             .label("JSON")
             .parameter("json")
@@ -34,16 +35,16 @@ public class ResourcesFormatJson implements ResourcesFormatExtension {
     }
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
 
         // TODO add examples
         if (path.equals("/resources"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaResources)
                     .schemaRef(SCHEMA_REF_RESOURCES)
                     .ogcApiMediaType(MEDIA_TYPE)
@@ -53,7 +54,7 @@ public class ResourcesFormatJson implements ResourcesFormatExtension {
     }
 
     @Override
-    public Response getResourcesResponse(Resources resources, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Response getResourcesResponse(Resources resources, OgcApi api, ApiRequestContext requestContext) {
         boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);

@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.styles;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.rest.views.GenericView;
 
@@ -21,10 +21,10 @@ public class StyleView extends GenericView {
     public String styleId;
     public boolean popup = true;
     public Map<String, String> bbox;
-    private OgcApiApiDataV2 apiData;
+    private OgcApiDataV2 apiData;
 
-    public StyleView(String styleUrl, OgcApiApi api, String styleId) {
-        super("style", null);
+    public StyleView(String styleUrl, OgcApi api, String styleId) {
+        super("/templates/style", null);
         this.styleUrl = styleUrl;
         this.apiId = apiId;
         this.styleId = styleId;

@@ -1,5 +1,6 @@
 package de.ii.ldproxy.ogcapi.styles;
 
+import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
 import io.swagger.v3.oas.models.media.Schema;
@@ -20,7 +21,7 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
     @Requires
     SchemaGenerator schemaGenerator;
 
-    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
             .label("JSON")
             .parameter("json")
@@ -34,7 +35,7 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
     }
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
@@ -44,7 +45,7 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
     }
 
     @Override
-    public Response getStyleMetadataResponse(StyleMetadata metadata, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Response getStyleMetadataResponse(StyleMetadata metadata, OgcApi api, ApiRequestContext requestContext) {
         boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
                 .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
@@ -57,11 +58,11 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
 
         // TODO add examples
         if (path.equals("/styles/{styleId}/metadata"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaStyleMetadata)
                     .schemaRef(SCHEMA_REF_STYLE_METADATA)
                     .ogcApiMediaType(MEDIA_TYPE)
@@ -71,9 +72,9 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
     }
 
     @Override
-    public OgcApiMediaTypeContent getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
-        if (path.equals("/styles/{styleId}/metadata") && (method==OgcApiContext.HttpMethods.PUT || method==OgcApiContext.HttpMethods.PATCH))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+    public ApiMediaTypeContent getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
+        if (path.equals("/styles/{styleId}/metadata") && (method== HttpMethods.PUT || method== HttpMethods.PATCH))
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaStyleMetadata)
                     .schemaRef(SCHEMA_REF_STYLE_METADATA)
                     .ogcApiMediaType(MEDIA_TYPE)

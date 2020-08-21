@@ -8,9 +8,9 @@
 package de.ii.ldproxy.ogcapi.crs;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -29,19 +29,19 @@ import java.util.stream.Stream;
 @Instantiate
 public class CrsSupportImpl implements CrsSupport {
 
-    private final OgcApiFeatureCoreProviders providers;
+    private final FeaturesCoreProviders providers;
 
-    public CrsSupportImpl(@Requires OgcApiFeatureCoreProviders providers) {
+    public CrsSupportImpl(@Requires FeaturesCoreProviders providers) {
         this.providers = providers;
     }
 
     @Override
-    public List<EpsgCrs> getSupportedCrsList(OgcApiApiDataV2 apiData) {
+    public List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData) {
         return getSupportedCrsList(apiData, null);
     }
 
     @Override
-    public List<EpsgCrs> getSupportedCrsList(OgcApiApiDataV2 apiData,
+    public List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData,
                                              @Nullable FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
         EpsgCrs nativeCrs = getStorageCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
         EpsgCrs defaultCrs = getDefaultCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
@@ -59,19 +59,19 @@ public class CrsSupportImpl implements CrsSupport {
     }
 
     @Override
-    public boolean isSupported(OgcApiApiDataV2 apiData, EpsgCrs crs) {
+    public boolean isSupported(OgcApiDataV2 apiData, EpsgCrs crs) {
         return isSupported(apiData, null, crs);
     }
 
     @Override
-    public boolean isSupported(OgcApiApiDataV2 apiData,
+    public boolean isSupported(OgcApiDataV2 apiData,
                                @Nullable FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                EpsgCrs crs) {
         return getSupportedCrsList(apiData, featureTypeConfiguration).contains(crs);
     }
 
     @Override
-    public EpsgCrs getStorageCrs(OgcApiApiDataV2 apiData,
+    public EpsgCrs getStorageCrs(OgcApiDataV2 apiData,
                                  Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
         FeatureProvider2 provider = featureTypeConfiguration.isPresent() ? providers.getFeatureProvider(apiData, featureTypeConfiguration.get()) : providers.getFeatureProvider(apiData);
 
@@ -82,14 +82,14 @@ public class CrsSupportImpl implements CrsSupport {
         return provider.crs().getNativeCrs();
     }
 
-    private EpsgCrs getDefaultCrs(OgcApiApiDataV2 apiData,
+    private EpsgCrs getDefaultCrs(OgcApiDataV2 apiData,
                                   Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
         return apiData.getExtension(OgcApiFeaturesCoreConfiguration.class)
                       .get()
                       .getDefaultEpsgCrs();
     }
 
-    private List<EpsgCrs> getAdditionalCrs(OgcApiApiDataV2 apiData,
+    private List<EpsgCrs> getAdditionalCrs(OgcApiDataV2 apiData,
                                            Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
         return apiData.getExtension(CrsConfiguration.class)
                       .map(CrsConfiguration::getAdditionalCrs)

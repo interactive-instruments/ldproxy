@@ -9,9 +9,9 @@ package de.ii.ldproxy.resources;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
 
 import java.util.List;
 import java.util.Locale;
@@ -29,9 +29,9 @@ public class ResourcesLinkGenerator {
      * @param resourceId    the ids of the styles
      * @return the link
      */
-    public OgcApiLink generateResourceLink(URICustomizer uriBuilder, String resourceId) {
+    public Link generateResourceLink(URICustomizer uriBuilder, String resourceId) {
 
-        final ImmutableOgcApiLink.Builder builder = new ImmutableOgcApiLink.Builder()
+        final ImmutableLink.Builder builder = new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .removeParameters("f")
                                 .ensureNoTrailingSlash()
@@ -50,12 +50,12 @@ public class ResourcesLinkGenerator {
      * @param uriBuilder the URI, split in host, path and query
      * @return a list with links
      */
-    public List<OgcApiLink> generateLandingPageLinks(URICustomizer uriBuilder,
-                                                     I18n i18n,
-                                                     Optional<Locale> language) {
+    public List<Link> generateLandingPageLinks(URICustomizer uriBuilder,
+                                               I18n i18n,
+                                               Optional<Locale> language) {
 
-        return ImmutableList.<OgcApiLink>builder()
-                .add(new ImmutableOgcApiLink.Builder()
+        return ImmutableList.<Link>builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
                                 .ensureLastPathSegment("resources")

@@ -1,5 +1,6 @@
 package de.ii.ldproxy.resources;
 
+import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
@@ -14,7 +15,7 @@ import java.util.Optional;
 @Instantiate
 public class QueryParameterFResources extends QueryParameterF {
 
-    public QueryParameterFResources(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public QueryParameterFResources(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 
@@ -24,7 +25,7 @@ public class QueryParameterFResources extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) && definitionPath.equals("/resources");
     }
 
@@ -34,7 +35,7 @@ public class QueryParameterFResources extends QueryParameterF {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
         if (stylesExtension.isPresent() && stylesExtension.get()
@@ -42,6 +43,11 @@ public class QueryParameterFResources extends QueryParameterF {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 
 }

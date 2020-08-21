@@ -9,12 +9,11 @@ package de.ii.ldproxy.ogcapi.styles;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
-import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -30,12 +29,12 @@ public class StylesLinkGenerator {
      * @param uriBuilder the URI, split in host, path and query
      * @return a list with links
      */
-    public List<OgcApiLink> generateLandingPageLinks(URICustomizer uriBuilder,
-                                          I18n i18n,
-                                          Optional<Locale> language) {
+    public List<Link> generateLandingPageLinks(URICustomizer uriBuilder,
+                                               I18n i18n,
+                                               Optional<Locale> language) {
 
-        return ImmutableList.<OgcApiLink>builder()
-                .add(new ImmutableOgcApiLink.Builder()
+        return ImmutableList.<Link>builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                         .ensureNoTrailingSlash()
                                         .ensureLastPathSegment("styles")
@@ -54,16 +53,16 @@ public class StylesLinkGenerator {
      * @param styleId    the ids of the styles
      * @return a list with links
      */
-    public List<OgcApiLink> generateStyleLinks(URICustomizer uriBuilder,
-                                               String styleId,
-                                               List<OgcApiMediaType> mediaTypes,
-                                               I18n i18n,
-                                               Optional<Locale> language) {
+    public List<Link> generateStyleLinks(URICustomizer uriBuilder,
+                                         String styleId,
+                                         List<ApiMediaType> mediaTypes,
+                                         I18n i18n,
+                                         Optional<Locale> language) {
 
-        final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>();
+        final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>();
 
-        for (OgcApiMediaType mediaType: mediaTypes) {
-            builder.add(new ImmutableOgcApiLink.Builder()
+        for (ApiMediaType mediaType: mediaTypes) {
+            builder.add(new ImmutableLink.Builder()
                     .href(uriBuilder.copy()
                             .ensureNoTrailingSlash()
                             .ensureLastPathSegment(styleId)
@@ -76,7 +75,7 @@ public class StylesLinkGenerator {
                     .build());
         }
 
-        builder.add(new ImmutableOgcApiLink.Builder()
+        builder.add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
                                 .ensureLastPathSegments("styles", styleId, "metadata")
@@ -90,13 +89,13 @@ public class StylesLinkGenerator {
         return builder.build();
     }
 
-    public OgcApiLink generateStylesheetLink(URICustomizer uriBuilder,
-                                             String styleId,
-                                             OgcApiMediaType mediaType,
-                                             I18n i18n,
-                                             Optional<Locale> language) {
+    public Link generateStylesheetLink(URICustomizer uriBuilder,
+                                       String styleId,
+                                       ApiMediaType mediaType,
+                                       I18n i18n,
+                                       Optional<Locale> language) {
 
-        final ImmutableOgcApiLink.Builder builder = new ImmutableOgcApiLink.Builder()
+        final ImmutableLink.Builder builder = new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
                                 .ensureLastPathSegment(styleId)

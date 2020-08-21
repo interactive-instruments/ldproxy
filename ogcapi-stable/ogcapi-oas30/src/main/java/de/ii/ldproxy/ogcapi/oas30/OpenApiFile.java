@@ -7,8 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.oas30;
 
+import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.infra.rest.OgcApiFormatNotSupportedException;
+import de.ii.ldproxy.ogcapi.infra.rest.FormatNotSupportedException;
 import de.ii.xtraplatform.openapi.OpenApiViewerResource;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -28,7 +29,7 @@ import java.text.MessageFormat;
 public class OpenApiFile implements ApiDefinitionFormatExtension {
 
     private static Logger LOGGER = LoggerFactory.getLogger(OpenApiFile.class);
-    private static OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    private static ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.WILDCARD_TYPE)
             .build();
 
@@ -39,22 +40,22 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
     private OpenApiViewerResource openApiViewerResource;
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     // always active, if OpenAPI 3.0 is active, since this is needed for the HTML output
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, Oas30Configuration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return Oas30Configuration.class;
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.equals("/api"))
             return null;
 
-        return new ImmutableOgcApiMediaTypeContent.Builder()
+        return new ImmutableApiMediaTypeContent.Builder()
                 .schema(new Schema())
                 .schemaRef("#/components/schemas/any")
                 .ogcApiMediaType(MEDIA_TYPE)
@@ -67,14 +68,14 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
     }
 
     @Override
-    public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
-                                             OgcApiRequestContext requestContext) {
-        throw new OgcApiFormatNotSupportedException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type()));
+    public Response getApiDefinitionResponse(OgcApiDataV2 apiData,
+                                             ApiRequestContext requestContext) {
+        throw new FormatNotSupportedException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type()));
     }
 
     @Override
-    public Response getApiDefinitionFile(OgcApiApiDataV2 apiData,
-                                         OgcApiRequestContext ogcApiRequestContext,
+    public Response getApiDefinitionFile(OgcApiDataV2 apiData,
+                                         ApiRequestContext apiRequestContext,
                                          String file) {
         LOGGER.debug("FILE {}", file);
 

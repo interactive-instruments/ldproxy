@@ -10,7 +10,7 @@ package ii.de.ldproxy.resources.manager;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.resources.ResourceFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
 import de.ii.xtraplatform.auth.api.User;
@@ -44,7 +44,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointResourcesManager extends OgcApiEndpoint implements ConformanceClass {
+public class EndpointResourcesManager extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResourcesManager.class);
     private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
@@ -52,7 +52,7 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
     private final File resourcesStore;
 
     public EndpointResourcesManager(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                 @Requires OgcApiExtensionRegistry extensionRegistry) {
+                                 @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
         this.resourcesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "resources");
         if (!resourcesStore.exists()) {
@@ -62,11 +62,11 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/manage-resources");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/manage-resources");
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
         if (stylesExtension.isPresent() && stylesExtension.get()
@@ -74,6 +74,11 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 
     @Override
@@ -86,7 +91,7 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
         return formats;
     }
 
-    private Map<MediaType, OgcApiMediaTypeContent> getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
+    private Map<MediaType, ApiMediaTypeContent> getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
         return getFormats().stream()
                 .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
                 .map(f -> f.getRequestContent(apiData, path, method))
@@ -95,16 +100,16 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
             Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("resources")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
             String path = "/resources/{resourceId}";
             HttpMethods method = HttpMethods.PUT;
             List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -125,8 +130,8 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
             ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                     .path(path)
                     .pathParameters(pathParameters);
-            Map<MediaType, OgcApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
-            OgcApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+            Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
+            ApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilder.putOperations(method.name(), operation);
             method = HttpMethods.DELETE;
@@ -156,7 +161,7 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
     @PUT
     @Consumes(MediaType.WILDCARD)
     public Response putResource(@Auth Optional<User> optionalUser, @PathParam("resourceId") String resourceId,
-                                @Context OgcApiApi api, @Context OgcApiRequestContext requestContext,
+                                @Context OgcApi api, @Context ApiRequestContext requestContext,
                                 @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(api.getData(), optionalUser);
@@ -178,7 +183,7 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
     @Path("/{resourceId}")
     @DELETE
     public Response deleteResource(@Auth Optional<User> optionalUser, @PathParam("resourceId") String resourceId,
-                                @Context OgcApiApi dataset) {
+                                @Context OgcApi dataset) {
 
         checkAuthorization(dataset.getData(), optionalUser);
 

@@ -9,9 +9,9 @@ package de.ii.ldproxy.ogcapi.features.core.api;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -38,7 +38,7 @@ public interface FeatureTransformationContext {
         GEOMETRY_END
     }
 
-    OgcApiApiDataV2 getApiData();
+    OgcApiDataV2 getApiData();
 
     String getCollectionId();
 
@@ -50,7 +50,7 @@ public interface FeatureTransformationContext {
 
     EpsgCrs getDefaultCrs();
 
-    List<OgcApiLink> getLinks();
+    List<Link> getLinks();
 
     boolean isFeatureCollection();
 
@@ -81,7 +81,7 @@ public interface FeatureTransformationContext {
         return ImmutableList.of("*");
     }
 
-    OgcApiRequestContext getOgcApiRequest();
+    ApiRequestContext getOgcApiRequest();
 
     int getLimit();
 

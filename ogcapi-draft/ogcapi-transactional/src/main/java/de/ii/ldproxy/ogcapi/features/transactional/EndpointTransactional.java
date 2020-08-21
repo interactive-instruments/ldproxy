@@ -10,11 +10,11 @@ package de.ii.ldproxy.ogcapi.features.transactional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ldproxy.ogcapi.collections.domain.OgcApiEndpointSubCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension;
 import de.ii.xtraplatform.auth.api.User;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
@@ -43,53 +43,53 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class EndpointTransactional extends OgcApiEndpointSubCollection {
+public class EndpointTransactional extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTransactional.class);
     private static final List<String> TAGS = ImmutableList.of("Mutate data");
 
-    private final OgcApiFeatureCoreProviders providers;
+    private final FeaturesCoreProviders providers;
     private final CommandHandlerTransactional commandHandler;
 
-    public EndpointTransactional(@Requires OgcApiExtensionRegistry extensionRegistry,
-                                 @Requires OgcApiFeatureCoreProviders providers) {
+    public EndpointTransactional(@Requires ExtensionRegistry extensionRegistry,
+                                 @Requires FeaturesCoreProviders providers) {
         super(extensionRegistry);
         this.providers = providers;
         this.commandHandler = new CommandHandlerTransactional();
     }
 
     @Override
-    protected Class getConfigurationClass() {
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return TransactionalConfiguration.class;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData).supportsTransactions();
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         return super.isEnabledForApi(apiData, collectionId) && providers.getFeatureProvider(apiData).supportsTransactions();
     }
 
     @Override
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(OgcApiFeatureFormatExtension.class)
+            formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class)
                     .stream()
-                    .filter(OgcApiFeatureFormatExtension::canSupportTransactions)
+                    .filter(FeatureFormatExtension::canSupportTransactions)
                     .collect(Collectors.toList());
         return formats;
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_FEATURES_TRANSACTION);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES_TRANSACTION);
             String subSubPath = "/items";
             String path = "/collections/{collectionId}" + subSubPath;
             List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -112,7 +112,7 @@ public class EndpointTransactional extends OgcApiEndpointSubCollection {
                     ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                             .path(resourcePath)
                             .pathParameters(pathParameters);
-                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.POST, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                    ApiOperation operation = addOperation(apiData, HttpMethods.POST, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
                     if (operation!=null)
                         resourceBuilder.putOperations("POST", operation);
                     definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -140,7 +140,7 @@ public class EndpointTransactional extends OgcApiEndpointSubCollection {
                     ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                             .path(resourcePath)
                             .pathParameters(pathParameters);
-                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.PUT, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                    ApiOperation operation = addOperation(apiData, HttpMethods.PUT, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
                     if (operation!=null)
                         resourceBuilder.putOperations("PUT", operation);
                     queryParameters = explode ?
@@ -148,7 +148,7 @@ public class EndpointTransactional extends OgcApiEndpointSubCollection {
                             getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
                     operationSummary = "delete a feature in the feature collection '" + collectionId + "'";
                     operationDescription = Optional.of("The feature with id `{featureId}` will be deleted.");
-                    operation = addOperation(apiData, OgcApiContext.HttpMethods.DELETE, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                    operation = addOperation(apiData, HttpMethods.DELETE, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
                     if (operation!=null)
                         resourceBuilder.putOperations("DELETE", operation);
                     definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -165,7 +165,7 @@ public class EndpointTransactional extends OgcApiEndpointSubCollection {
     @POST
     @Consumes("application/geo+json")
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id,
-                              @Context OgcApiApi service, @Context OgcApiRequestContext ogcApiRequestContext,
+                              @Context OgcApi service, @Context ApiRequestContext apiRequestContext,
                               @Context HttpServletRequest request, InputStream requestBody) {
         FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
 
@@ -174,16 +174,16 @@ public class EndpointTransactional extends OgcApiEndpointSubCollection {
         checkAuthorization(service.getData(), optionalUser);
 
 
-        return commandHandler.postItemsResponse((FeatureTransactions) featureProvider, ogcApiRequestContext.getMediaType(), ogcApiRequestContext.getUriCustomizer()
-                                                                                                                     .copy(), id, requestBody);
+        return commandHandler.postItemsResponse((FeatureTransactions) featureProvider, apiRequestContext.getMediaType(), apiRequestContext.getUriCustomizer()
+                                                                                                                                          .copy(), id, requestBody);
     }
 
     @Path("/{id}/items/{featureid}")
     @PUT
     @Consumes("application/geo+json")
     public Response putItem(@Auth Optional<User> optionalUser, @PathParam("id") String id,
-                            @PathParam("featureid") final String featureId, @Context OgcApiApi service,
-                            @Context OgcApiRequestContext ogcApiRequestContext, @Context HttpServletRequest request,
+                            @PathParam("featureid") final String featureId, @Context OgcApi service,
+                            @Context ApiRequestContext apiRequestContext, @Context HttpServletRequest request,
                             InputStream requestBody) {
 
         FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
@@ -192,12 +192,12 @@ public class EndpointTransactional extends OgcApiEndpointSubCollection {
 
         checkAuthorization(service.getData(), optionalUser);
 
-        return commandHandler.putItemResponse((FeatureTransactions) featureProvider, ogcApiRequestContext.getMediaType(), id, featureId, requestBody);
+        return commandHandler.putItemResponse((FeatureTransactions) featureProvider, apiRequestContext.getMediaType(), id, featureId, requestBody);
     }
 
     @Path("/{id}/items/{featureid}")
     @DELETE
-    public Response deleteItem(@Auth Optional<User> optionalUser, @Context OgcApiApi service,
+    public Response deleteItem(@Auth Optional<User> optionalUser, @Context OgcApi service,
                                @PathParam("id") String id, @PathParam("featureid") final String featureId) {
 
         FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));

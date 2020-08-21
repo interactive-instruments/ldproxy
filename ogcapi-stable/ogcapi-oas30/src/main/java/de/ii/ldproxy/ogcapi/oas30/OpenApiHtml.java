@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.oas30;
 
+import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.openapi.OpenApiViewerResource;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -27,7 +28,7 @@ import java.net.URISyntaxException;
 public class OpenApiHtml implements ApiDefinitionFormatExtension {
 
     private static Logger LOGGER = LoggerFactory.getLogger(OpenApiHtml.class);
-    private static OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    private static ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
             .label("HTML")
             .build();
@@ -39,22 +40,22 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
     private OpenApiViewerResource openApiViewerResource;
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     // always active, if OpenAPI 3.0 is active, since a service-doc link relation is mandatory
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, Oas30Configuration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return Oas30Configuration.class;
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.startsWith("/api/"))
             return null;
 
-        return new ImmutableOgcApiMediaTypeContent.Builder()
+        return new ImmutableApiMediaTypeContent.Builder()
                 .schema(new StringSchema().example("<html>...</html>"))
                 .schemaRef("#/components/schemas/htmlSchema")
                 .ogcApiMediaType(MEDIA_TYPE)
@@ -62,18 +63,18 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
     }
 
     @Override
-    public Response getApiDefinitionResponse(OgcApiApiDataV2 apiData,
-                                             OgcApiRequestContext ogcApiRequestContext) {
-        if (!ogcApiRequestContext.getUriCustomizer()
-                        .getPath()
-                        .endsWith("/")) {
+    public Response getApiDefinitionResponse(OgcApiDataV2 apiData,
+                                             ApiRequestContext apiRequestContext) {
+        if (!apiRequestContext.getUriCustomizer()
+                              .getPath()
+                              .endsWith("/")) {
             try {
                 return Response
                         .status(Response.Status.MOVED_PERMANENTLY)
-                        .location(ogcApiRequestContext.getUriCustomizer()
-                                .copy()
-                                .ensureTrailingSlash()
-                                .build())
+                        .location(apiRequestContext.getUriCustomizer()
+                                                   .copy()
+                                                   .ensureTrailingSlash()
+                                                   .build())
                         .build();
             } catch (URISyntaxException ex) {
                 throw new RuntimeException("Invalid URI: " + ex.getMessage(), ex);

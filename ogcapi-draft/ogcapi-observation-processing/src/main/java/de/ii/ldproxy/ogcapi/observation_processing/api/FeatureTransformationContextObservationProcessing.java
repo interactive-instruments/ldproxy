@@ -28,7 +28,7 @@ public abstract class FeatureTransformationContextObservationProcessing implemen
     public abstract List<Variable> getVariables();
     public abstract FeatureProcessChain getProcesses();
     public abstract Map<String, Object> getProcessingParameters();
-    public abstract ObservationProcessingOutputFormat getOutputFormat();
+    public abstract DapaResultFormatExtension getOutputFormat();
 
     // public abstract ViewRenderer getMustacheRenderer();
 

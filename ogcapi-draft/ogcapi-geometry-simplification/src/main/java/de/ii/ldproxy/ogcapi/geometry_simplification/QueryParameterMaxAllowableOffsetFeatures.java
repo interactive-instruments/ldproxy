@@ -1,9 +1,6 @@
 package de.ii.ldproxy.ogcapi.geometry_simplification;
 
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -31,9 +28,9 @@ public class QueryParameterMaxAllowableOffsetFeatures implements OgcApiQueryPara
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-                method==OgcApiContext.HttpMethods.GET &&
+                method== HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
                  definitionPath.equals("/collections/{collectionId}/items/{featureId}"));
     }
@@ -41,24 +38,19 @@ public class QueryParameterMaxAllowableOffsetFeatures implements OgcApiQueryPara
     private final Schema schema = new NumberSchema()._default(BigDecimal.valueOf(0)).example(0.05);
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, GeometrySimplificationConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), GeometrySimplificationConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return GeometrySimplificationConfiguration.class;
     }
 
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
-                                                        Map<String, String> parameters, OgcApiApiDataV2 datasetData) {
+                                                        Map<String, String> parameters, OgcApiDataV2 datasetData) {
         if (!isExtensionEnabled(datasetData, GeometrySimplificationConfiguration.class)) {
             return queryBuilder;
         }

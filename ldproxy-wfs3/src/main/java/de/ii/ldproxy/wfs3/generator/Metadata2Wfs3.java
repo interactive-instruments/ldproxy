@@ -8,11 +8,8 @@
 package de.ii.ldproxy.wfs3.generator;
 
 import com.google.common.base.Strings;
-import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.feature.provider.api.AbstractFeatureProviderMetadataConsumer;
@@ -26,11 +23,11 @@ public class Metadata2Wfs3 extends AbstractFeatureProviderMetadataConsumer {
 
     // TODO review
 
-    private final ImmutableOgcApiApiDataV2.Builder wfs3ServiceData;
+    private final ImmutableOgcApiDataV2.Builder wfs3ServiceData;
     private final ImmutableMetadata.Builder serviceMetadata;
     private ImmutableFeatureTypeConfigurationOgcApi.Builder currentFeatureType;
 
-    public Metadata2Wfs3(ImmutableOgcApiApiDataV2.Builder wfs3ServiceData) {
+    public Metadata2Wfs3(ImmutableOgcApiDataV2.Builder wfs3ServiceData) {
         this.wfs3ServiceData = wfs3ServiceData;
         this.serviceMetadata = wfs3ServiceData.metadataBuilder();
     }

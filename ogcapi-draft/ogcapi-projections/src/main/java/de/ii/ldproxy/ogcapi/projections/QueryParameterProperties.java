@@ -2,11 +2,8 @@ package de.ii.ldproxy.ogcapi.projections;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.target.geojson.SchemaGeneratorFeature;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -44,9 +41,9 @@ public class QueryParameterProperties implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-                method==OgcApiContext.HttpMethods.GET &&
+                method== HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
                  definitionPath.equals("/collections/{collectionId}/items/{featureId}") ||
                  definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
@@ -55,7 +52,7 @@ public class QueryParameterProperties implements OgcApiQueryParameter {
     private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         String key = apiData.getId()+"__"+collectionId;
         if (!schemaMap.containsKey(key)) {
             schemaMap.put(key, new ArraySchema().items(new StringSchema()._enum(schemaGeneratorFeature.getPropertyNames(apiData, collectionId))));
@@ -64,19 +61,14 @@ public class QueryParameterProperties implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ProjectionsConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ProjectionsConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return ProjectionsConfiguration.class;
     }
 
     @Override
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
-                                                        Map<String, String> parameters, OgcApiApiDataV2 datasetData) {
+                                                        Map<String, String> parameters, OgcApiDataV2 datasetData) {
 
         if (!isExtensionEnabled(datasetData, ProjectionsConfiguration.class)) {
             return queryBuilder;

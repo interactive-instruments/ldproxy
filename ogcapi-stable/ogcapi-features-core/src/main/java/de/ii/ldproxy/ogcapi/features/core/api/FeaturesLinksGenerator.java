@@ -8,12 +8,11 @@
 package de.ii.ldproxy.ogcapi.features.core.api;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.common.application.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.domain.Link;
 
 import java.util.List;
 import java.util.Locale;
@@ -21,24 +20,24 @@ import java.util.Optional;
 
 public class FeaturesLinksGenerator extends DefaultLinksGenerator {
 
-    public List<OgcApiLink> generateLinks(URICustomizer uriBuilder,
-                                          int offset,
-                                          int limit,
-                                          int defaultLimit,
-                                          OgcApiMediaType mediaType,
-                                          List<OgcApiMediaType> alternateMediaTypes,
-                                          boolean homeLink,
-                                          I18n i18n,
-                                          Optional<Locale> language)
+    public List<Link> generateLinks(URICustomizer uriBuilder,
+                                    int offset,
+                                    int limit,
+                                    int defaultLimit,
+                                    ApiMediaType mediaType,
+                                    List<ApiMediaType> alternateMediaTypes,
+                                    boolean homeLink,
+                                    I18n i18n,
+                                    Optional<Locale> language)
     {
-        final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
+        final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>()
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
         uriBuilder.removeParameters("lang");
 
         // we have to create a next link here as we do not know numberMatched yet, but it will
         // be removed again in the feature transformer, if we are on the last page
-        builder.add(new ImmutableOgcApiLink.Builder()
+        builder.add(new ImmutableLink.Builder()
                 .href(getUrlWithPageAndCount(uriBuilder.copy(), offset + limit, limit, defaultLimit))
                 .rel("next")
                 .type(mediaType.type()
@@ -46,14 +45,14 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                 .title(i18n.get("nextLink",language))
                 .build());
         if (offset > 0) {
-            builder.add(new ImmutableOgcApiLink.Builder()
+            builder.add(new ImmutableLink.Builder()
                     .href(getUrlWithPageAndCount(uriBuilder.copy(), offset - limit, limit, defaultLimit))
                     .rel("prev")
                     .type(mediaType.type()
                             .toString())
                     .title(i18n.get("prevLink",language))
                     .build());
-            builder.add(new ImmutableOgcApiLink.Builder()
+            builder.add(new ImmutableLink.Builder()
                     .href(getUrlWithPageAndCount(uriBuilder.copy(), 0, limit, defaultLimit))
                     .rel("first")
                     .type(mediaType.type()
@@ -63,7 +62,7 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
         }
 
         if (homeLink)
-            builder.add(new ImmutableOgcApiLink.Builder()
+            builder.add(new ImmutableLink.Builder()
                     .href(uriBuilder
                             .copy()
                             .removeLastPathSegments(3)

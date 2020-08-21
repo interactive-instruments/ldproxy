@@ -1,7 +1,8 @@
 package de.ii.ldproxy.ogcapi.observation_processing.processes;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryMultiPolygon;
@@ -15,7 +16,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -28,14 +28,14 @@ public class FeatureProcessArea implements ObservationProcess {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureProcessArea.class);
 
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
 
-    public FeatureProcessArea(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public FeatureProcessArea(@Requires ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 
     @Override
-    public Set<String> getSupportedCollections(OgcApiApiDataV2 apiData) {
+    public Set<String> getSupportedCollections(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(PathParameterCollectionIdProcess.class).stream()
                 .map(param -> param.getValues(apiData))
                 .flatMap(Set::stream)

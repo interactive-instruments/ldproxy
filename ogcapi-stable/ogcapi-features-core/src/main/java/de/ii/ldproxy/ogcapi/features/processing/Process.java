@@ -3,7 +3,7 @@ package de.ii.ldproxy.ogcapi.features.processing;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExternalDocumentation;
+import de.ii.ldproxy.ogcapi.domain.ExternalDocumentation;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import org.immutables.value.Value;
 
@@ -20,7 +20,7 @@ public abstract class Process extends PageRepresentation {
     public abstract String getId();
     public abstract String getInputCollectionId();
     public abstract List<String> getMediaTypes();
-    public abstract Optional<OgcApiExternalDocumentation> getExternalDocs();
+    public abstract Optional<ExternalDocumentation> getExternalDocs();
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();

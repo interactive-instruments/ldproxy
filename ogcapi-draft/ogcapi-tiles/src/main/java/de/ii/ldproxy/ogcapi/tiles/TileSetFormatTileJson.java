@@ -9,24 +9,15 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.target.geojson.FeatureTransformerGeoJson;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.target.geojson.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
-import de.ii.ldproxy.target.geojson.FeatureTransformerGeoJson;
-import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
-import de.ii.ldproxy.target.geojson.SchemaGeneratorFeature;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -38,11 +29,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -58,9 +45,9 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     SchemaGeneratorFeature schemaGeneratorFeature;
 
     @Requires
-    OgcApiFeatureCoreProviders providers;
+    FeaturesCoreProviders providers;
 
-    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.APPLICATION_JSON_TYPE)
             .label("JSON")
             .parameter("json")
@@ -74,14 +61,14 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     }
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles/{tileMatrixSetId}"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaTileJson)
                     .schemaRef(SCHEMA_REF_TILE_JSON)
                     .ogcApiMediaType(MEDIA_TYPE)
@@ -91,10 +78,10 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     }
 
     @Override
-    public Object getTileSetEntity(OgcApiApiDataV2 apiData, OgcApiRequestContext requestContext,
+    public Object getTileSetEntity(OgcApiDataV2 apiData, ApiRequestContext requestContext,
                                    Optional<String> collectionId,
                                    TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center,
-                                   List<OgcApiLink> links) {
+                                   List<Link> links) {
 
         String tilesUriTemplate = getTilesUriTemplate(links, tileMatrixSet);
 
@@ -120,7 +107,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
         int defaultZoomLevel = zoomLevels.getDefault().orElse(minMaxZoom.get(0) + (minMaxZoom.get(1)-minMaxZoom.get(0))/2);
         tileJsonBuilder.center(ImmutableList.of(centerLon, centerLat, defaultZoomLevel));
 
-        ValueBuilderMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> featureTypesApi = apiData.getCollections();
+        Map<String, FeatureTypeConfigurationOgcApi> featureTypesApi = apiData.getCollections();
         List<ImmutableVectorLayer> layers = featureTypesApi.values()
                 .stream()
                 .filter(featureTypeApi -> !collectionId.isPresent() || featureTypeApi.getId().equals(collectionId.get()))
@@ -230,7 +217,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
         return "unknown";
     }
 
-    private String getTilesUriTemplate(List<OgcApiLink> links, TileMatrixSet tileMatrixSet) {
+    private String getTilesUriTemplate(List<Link> links, TileMatrixSet tileMatrixSet) {
         return links.stream()
                 .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
                 .findFirst()

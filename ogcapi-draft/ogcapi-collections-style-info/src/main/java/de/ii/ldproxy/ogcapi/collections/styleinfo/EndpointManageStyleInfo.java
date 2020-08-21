@@ -10,9 +10,9 @@ package de.ii.ldproxy.ogcapi.collections.styleinfo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ldproxy.ogcapi.collections.domain.OgcApiEndpointSubCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.xtraplatform.auth.api.User;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -45,7 +45,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection implements ConformanceClass {
+public class EndpointManageStyleInfo extends EndpointSubCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointManageStyleInfo.class);
 
@@ -54,7 +54,7 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
     private final File styleInfosStore;
 
     public EndpointManageStyleInfo(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                   @Requires OgcApiExtensionRegistry extensionRegistry) {
+                                   @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
         this.styleInfosStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styleInfos");
         if (!styleInfosStore.exists()) {
@@ -64,21 +64,21 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/style-info");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/style-info");
     }
 
     @Override
-    protected Class getConfigurationClass() {
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return StyleInfoConfiguration.class;
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_STYLE_INFO);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_INFO);
             String path = "/collections/{collectionId}";
             List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
@@ -101,7 +101,7 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
                             .path(resourcePath)
                             .pathParameters(pathParameters);
                     // TODO secure the PATCH operation and remove hide=true
-                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.PATCH, queryParameters, collectionId, "", operationSummary, operationDescription, TAGS, true);
+                    ApiOperation operation = addOperation(apiData, HttpMethods.PATCH, queryParameters, collectionId, "", operationSummary, operationDescription, TAGS, true);
                     if (operation!=null)
                         resourceBuilder.putOperations("PATCH", operation);
                     definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -123,7 +123,7 @@ public class EndpointManageStyleInfo extends OgcApiEndpointSubCollection impleme
     @PATCH
     @Consumes(MediaType.APPLICATION_JSON)
     public Response patchStyleMetadata(@Auth Optional<User> optionalUser, @PathParam("collectionId") String collectionId,
-                                       @Context OgcApiApi dataset, @Context OgcApiRequestContext ogcApiRequest,
+                                       @Context OgcApi dataset, @Context ApiRequestContext ogcApiRequest,
                                        @Context HttpServletRequest request, byte[] requestBody) {
 
         checkAuthorization(dataset.getData(), optionalUser);

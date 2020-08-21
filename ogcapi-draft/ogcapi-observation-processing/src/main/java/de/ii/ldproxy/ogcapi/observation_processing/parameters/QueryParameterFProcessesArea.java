@@ -1,9 +1,10 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
+import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -15,7 +16,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import java.util.ArrayList;
 import java.util.List;
 
-import static de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat.DAPA_PATH_ELEMENT;
+import static de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension.DAPA_PATH_ELEMENT;
 
 @Component
 @Provides
@@ -25,7 +26,7 @@ public class QueryParameterFProcessesArea extends QueryParameterF {
     @Requires
     FeatureProcessInfo featureProcessInfo;
 
-    protected QueryParameterFProcessesArea(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    protected QueryParameterFProcessesArea(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 
@@ -35,35 +36,33 @@ public class QueryParameterFProcessesArea extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) &&
                 featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area");
     }
 
     @Override
     protected Class<? extends FormatExtension> getFormatClass() {
-        return ObservationProcessingOutputFormat.class;
+        return DapaResultFormatExtension.class;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
                 apiData.getCollections()
                         .values()
                         .stream()
-                        .filter(featureType -> featureType.getEnabled())
-                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
-                        .findAny()
-                        .isPresent();
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+}
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return ObservationProcessingConfiguration.class;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
-    }
-
-    @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         String key = apiData.getId()+"_*";
         if (!schemaMap.containsKey(key)) {
             List<String> fEnum = new ArrayList<>();
@@ -79,7 +78,7 @@ public class QueryParameterFProcessesArea extends QueryParameterF {
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         String key = apiData.getId()+"_"+collectionId;
         if (!schemaMap.containsKey(key)) {
             List<String> fEnum = new ArrayList<>();

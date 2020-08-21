@@ -41,6 +41,9 @@ public interface TilesConfiguration extends ExtensionConfiguration {
     Integer getMaxPolygonPerTileDefault();
 
     @Nullable
+    Boolean getSingleCollectionEnabled();
+
+    @Nullable
     Boolean getMultiCollectionEnabled();
 
     @JsonMerge(value = OptBoolean.FALSE)

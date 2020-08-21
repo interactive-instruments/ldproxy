@@ -7,14 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.oas30;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 
-public interface OpenApiExtension extends OgcApiExtension {
+public interface OpenApiExtension extends ApiExtension {
 
     int getSortPriority();
 
-    OpenAPI process(OpenAPI openAPI, OgcApiApiDataV2 apiData);
-
+    OpenAPI process(OpenAPI openAPI, OgcApiDataV2 apiData);
 }

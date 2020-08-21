@@ -1,7 +1,8 @@
 package de.ii.ldproxy.ogcapi.collections.domain;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -39,7 +40,7 @@ public class PathParameterCollectionIdCollections implements OgcApiPathParameter
     }
 
     @Override
-    public Set<String> getValues(OgcApiApiDataV2 apiData) {
+    public Set<String> getValues(OgcApiDataV2 apiData) {
         if (!apiCollectionMap.containsKey(apiData.getId())) {
             apiCollectionMap.put(apiData.getId(), apiData.getCollections().keySet().stream()
                                                          .filter(collectionId -> apiData.isCollectionEnabled(collectionId))
@@ -50,7 +51,7 @@ public class PathParameterCollectionIdCollections implements OgcApiPathParameter
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         return new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData)));
     }
 
@@ -70,13 +71,13 @@ public class PathParameterCollectionIdCollections implements OgcApiPathParameter
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
                 definitionPath.equals("/collections/{collectionId}");
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, OgcApiCollectionsConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return OgcApiCollectionsConfiguration.class;
     }
 }

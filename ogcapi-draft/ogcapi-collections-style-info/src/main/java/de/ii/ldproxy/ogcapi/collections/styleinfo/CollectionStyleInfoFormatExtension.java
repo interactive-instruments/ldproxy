@@ -7,20 +7,21 @@
  */
 package de.ii.ldproxy.ogcapi.collections.styleinfo;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 
-public interface CollectionStyleInfoFormatExtension extends FormatExtension {
+public interface CollectionStyleInfoFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
         return "^/collections(?:/[\\w\\-]+)?/?$";
     }
 
-    Response patchStyleInfos(byte[] requestBody, File styleInfosStore, OgcApiApi api, String collectionId) throws IOException;
+    Response patchStyleInfos(byte[] requestBody, File styleInfosStore, OgcApi api, String collectionId) throws IOException;
 
     default boolean canSupportTransactions() { return true; }
 }

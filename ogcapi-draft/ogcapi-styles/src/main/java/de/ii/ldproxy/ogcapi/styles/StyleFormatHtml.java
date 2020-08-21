@@ -7,14 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.styles;
 
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
 import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
@@ -27,7 +21,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -51,7 +44,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatHtml.class);
     public static final String MEDIA_TYPE_STRING = "application/vnd.mapbox.style+json" ;
-    static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
             .label("HTML")
             .parameter("html")
@@ -65,7 +58,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(StylesConfiguration.class)
                       .filter(config -> config.getStyleEncodings().contains(this.getMediaType().label()) &&
                                         config.getStyleEncodings().contains(StyleFormatMbStyle.MEDIA_TYPE.label()))
@@ -73,8 +66,13 @@ public class StyleFormatHtml implements StyleFormatExtension {
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
-        return new ImmutableOgcApiMediaTypeContent.Builder()
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
+    }
+
+    @Override
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+        return new ImmutableApiMediaTypeContent.Builder()
                 .schema(schemaStyle)
                 .schemaRef(SCHEMA_REF_STYLE)
                 .ogcApiMediaType(MEDIA_TYPE)
@@ -82,7 +80,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
     }
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
@@ -107,7 +105,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
     }
 
     @Override
-    public Response getStyleResponse(String styleId, File stylesheet, List<OgcApiLink> links, OgcApiApi api, OgcApiRequestContext requestContext) throws IOException {
+    public Response getStyleResponse(String styleId, File stylesheet, List<Link> links, OgcApi api, ApiRequestContext requestContext) throws IOException {
 
         String optionalApiVersion = api.getData().getApiVersion().isPresent() ? "v"+api.getData().getApiVersion().get()+"/" : "";
         String styleUri = String.format("%s/%s/%sstyles/%s?f=mbs", xtraPlatform.getServicesUri(), api.getData()
@@ -117,7 +115,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
         return Response.ok()
                 .entity(styleView)
                 .type(MEDIA_TYPE.type())
-                .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(Link[]::new))
+                .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(javax.ws.rs.core.Link[]::new))
                 .build();
     }
 }

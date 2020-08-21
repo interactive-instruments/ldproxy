@@ -8,6 +8,8 @@
 package de.ii.ldproxy.ogcapi.styles;
 
 import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -29,7 +31,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class StylesOnLandingPage implements OgcApiLandingPageExtension {
+public class StylesOnLandingPage implements LandingPageExtension {
 
     @Requires
     I18n i18n;
@@ -44,16 +46,16 @@ public class StylesOnLandingPage implements OgcApiLandingPageExtension {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 
     @Override
     public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
-                                                OgcApiApiDataV2 apiData,
+                                                OgcApiDataV2 apiData,
                                                 URICustomizer uriCustomizer,
-                                                OgcApiMediaType mediaType,
-                                                List<OgcApiMediaType> alternateMediaTypes,
+                                                ApiMediaType mediaType,
+                                                List<ApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
 
         if (!isEnabledForApi(apiData)) {
@@ -62,8 +64,8 @@ public class StylesOnLandingPage implements OgcApiLandingPageExtension {
 
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
-        List<OgcApiLink> ogcApiLinks = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
-        landingPageBuilder.addAllLinks(ogcApiLinks);
+        List<Link> links = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
+        landingPageBuilder.addAllLinks(links);
 
         final String datasetId = apiData.getId();
         File apiDir = new File(stylesStore + File.separator + datasetId);

@@ -15,7 +15,6 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -28,7 +27,7 @@ import java.util.List;
 public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension {
 
     public static final String MEDIA_TYPE_STRING = "application/vnd.ogc.sld+xml;version=1.0" ;
-    static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "vnd.ogc.sld+xml", ImmutableMap.of("version", "1.1")))
             .label("SLD 1.1")
             .parameter("sld11")
@@ -36,7 +35,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/sld-11");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/sld-11");
     }
 
     @Override
@@ -50,8 +49,8 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
-        return new ImmutableOgcApiMediaTypeContent.Builder()
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+        return new ImmutableApiMediaTypeContent.Builder()
                 .schema(new ObjectSchema())
                 .schemaRef("#/components/schemas/anyObject")
                 .ogcApiMediaType(MEDIA_TYPE)
@@ -59,8 +58,8 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
-    public OgcApiMediaTypeContent getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
-        return new ImmutableOgcApiMediaTypeContent.Builder()
+    public ApiMediaTypeContent getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
+        return new ImmutableApiMediaTypeContent.Builder()
                 .schema(new ObjectSchema())
                 .schemaRef("#/components/schemas/anyObject")
                 .ogcApiMediaType(MEDIA_TYPE)
@@ -68,7 +67,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
@@ -88,7 +87,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
-    public Response getStyleResponse(String styleId, File stylesheet, List<OgcApiLink> links, OgcApiApi api, OgcApiRequestContext requestContext) throws IOException {
+    public Response getStyleResponse(String styleId, File stylesheet, List<Link> links, OgcApi api, ApiRequestContext requestContext) throws IOException {
         final byte[] content = java.nio.file.Files.readAllBytes(stylesheet.toPath());
 
         // TODO
@@ -96,7 +95,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
         return Response.ok()
                 .entity(content)
                 .type(MEDIA_TYPE.type())
-                .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(Link[]::new))
+                .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(javax.ws.rs.core.Link[]::new))
                 .build();
     }
 }

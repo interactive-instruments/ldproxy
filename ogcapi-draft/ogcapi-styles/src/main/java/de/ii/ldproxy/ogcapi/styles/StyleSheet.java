@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.styles;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -32,5 +32,5 @@ public abstract class StyleSheet {
 
     public abstract Optional<String> getTileMatrixSet();
 
-    public abstract Optional<OgcApiLink> getLink();
+    public abstract Optional<Link> getLink();
 }
