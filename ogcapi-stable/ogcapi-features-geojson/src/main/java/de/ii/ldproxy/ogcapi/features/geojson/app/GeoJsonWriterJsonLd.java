@@ -8,7 +8,8 @@
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.features.geojson.app.GeoJsonConfiguration.JsonLdOptions;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration.JsonLdOptions;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;

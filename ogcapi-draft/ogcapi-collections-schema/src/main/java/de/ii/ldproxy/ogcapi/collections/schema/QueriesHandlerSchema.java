@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.geojson.app.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

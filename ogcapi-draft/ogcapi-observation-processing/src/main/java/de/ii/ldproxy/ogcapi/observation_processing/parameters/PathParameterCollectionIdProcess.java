@@ -1,21 +1,18 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.app.PathParameterCollectionIdFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -23,24 +20,25 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Provides
 @Instantiate
-public class PathParameterCollectionIdProcess extends PathParameterCollectionIdFeatures {
+public class PathParameterCollectionIdProcess extends AbstractPathParameterCollectionId {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterCollectionIdProcess.class);
     private static final String DAPA_PATH_ELEMENT = "dapa";
-    Map<String,Set<String>> apiCollectionMap;
 
-    final FeatureProcessInfo featureProcessInfo;
+    private final FeaturesCoreProviders providers;
+    private final FeatureProcessInfo featureProcessInfo;
 
     public PathParameterCollectionIdProcess(@Requires FeaturesCoreProviders providers,
                                             @Requires FeatureProcessInfo featureProcessInfo) {
-        super(providers);
+        this.providers = providers;
         this.featureProcessInfo = featureProcessInfo;
-        apiCollectionMap = new HashMap<>();
     };
 
     @Override
@@ -49,11 +47,6 @@ public class PathParameterCollectionIdProcess extends PathParameterCollectionIdF
             apiCollectionMap.put(apiData.getId(),returnObservationCollections(apiData));
 
         return apiCollectionMap.get(apiData.getId());
-    }
-
-    @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
-        return new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData)));
     }
 
     @Override

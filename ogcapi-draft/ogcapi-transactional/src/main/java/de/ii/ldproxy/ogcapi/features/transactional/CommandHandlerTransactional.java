@@ -18,13 +18,13 @@ import akka.stream.javadsl.StreamConverters;
 import akka.util.ByteString;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.feature.transformer.geojson.FeatureDecoderGeoJson;
+import de.ii.xtraplatform.features.geojson.domain.FeatureDecoderGeoJson;
 import de.ii.xtraplatform.features.domain.FeatureDecoder;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import de.ii.xtraplatform.features.domain.FeatureTransformer;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
-import de.ii.xtraplatform.feature.transformer.geojson.GeoJsonStreamParser;
-import de.ii.xtraplatform.feature.transformer.geojson.MappingSwapper;
+import de.ii.xtraplatform.features.geojson.domain.GeoJsonStreamParser;
+import de.ii.xtraplatform.features.geojson.domain.MappingSwapper;
 
 import javax.ws.rs.core.Response;
 import java.io.InputStream;

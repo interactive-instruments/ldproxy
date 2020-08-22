@@ -1,40 +1,23 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 
-import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.app.PathParameterCollectionIdFeatures;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
 @Provides
 @Instantiate
-public class PathParameterCollectionIdTiles extends PathParameterCollectionIdFeatures {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterCollectionIdTiles.class);
-    Map<String,Set<String>> apiCollectionMap;
-
-    public PathParameterCollectionIdTiles(@Requires FeaturesCoreProviders providers) {
-        super(providers);
-        apiCollectionMap = new HashMap<>();
-    };
+public class PathParameterCollectionIdTiles extends AbstractPathParameterCollectionId {
 
     @Override
     public Set<String> getValues(OgcApiDataV2 apiData) {
@@ -48,11 +31,6 @@ public class PathParameterCollectionIdTiles extends PathParameterCollectionIdFea
         }
 
         return apiCollectionMap.get(apiData.getId());
-    }
-
-    @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
-        return new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData)));
     }
 
     @Override

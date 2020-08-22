@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.geojson.app;
 
 import com.google.common.collect.ImmutableList;
 import com.greghaskins.spectrum.Spectrum;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureType;
 import org.junit.runner.RunWith;

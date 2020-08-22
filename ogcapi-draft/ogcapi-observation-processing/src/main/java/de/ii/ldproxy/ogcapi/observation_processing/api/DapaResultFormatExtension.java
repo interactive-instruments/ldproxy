@@ -8,6 +8,11 @@
 package de.ii.ldproxy.ogcapi.observation_processing.api;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
@@ -16,9 +21,9 @@ import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
 import de.ii.ldproxy.ogcapi.observation_processing.data.DataArrayXy;
 import de.ii.ldproxy.ogcapi.observation_processing.data.DataArrayXyt;
 import de.ii.ldproxy.ogcapi.observation_processing.data.Geometry;
-import de.ii.xtraplatform.streams.domain.Http;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.streams.domain.Http;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -70,11 +75,11 @@ public interface DapaResultFormatExtension extends FormatExtension {
         String staticUrlPrefix = transformationContext.getOgcApiRequest()
                 .getStaticUrlPrefix();
         URICustomizer uriCustomizer = transformationContext.getOgcApiRequest()
-                .getUriCustomizer();
+                                                           .getUriCustomizer();
 
         if (transformationContext.isFeatureCollection()) {
             FeatureTypeConfigurationOgcApi collectionData = serviceData.getCollections()
-                    .get(collectionName);
+                                                                       .get(collectionName);
             Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
             Optional<ObservationProcessingConfiguration> obsProcConfiguration = collectionData.getExtension(ObservationProcessingConfiguration.class);
             FeatureProviderDataV2 providerData = providers.getFeatureProvider(serviceData, collectionData)

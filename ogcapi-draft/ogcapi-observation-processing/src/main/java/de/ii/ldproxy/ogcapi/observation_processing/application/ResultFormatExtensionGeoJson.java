@@ -19,7 +19,7 @@ import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStat
 import de.ii.ldproxy.ogcapi.observation_processing.data.Geometry;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryMultiPolygon;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryPoint;
-import de.ii.ldproxy.ogcapi.features.geojson.app.SchemaGeneratorFeatureCollection;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureCollection;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

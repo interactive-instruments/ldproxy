@@ -1,9 +1,9 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.features.core.app.QueryParameterLimitFeatures;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -19,11 +19,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterLimitTile extends QueryParameterLimitFeatures {
+public class QueryParameterLimitTile implements OgcApiQueryParameter {
 
     @Override
     public String getId() {
         return "limitTile";
+    }
+
+    @Override
+    public String getName() {
+        return "limit";
     }
 
     @Override

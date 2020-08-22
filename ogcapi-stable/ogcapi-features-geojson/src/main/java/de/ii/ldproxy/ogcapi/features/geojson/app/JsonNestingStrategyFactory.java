@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
+
 public class JsonNestingStrategyFactory {
 
     public static JsonNestingStrategy getNestingStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS nestedObjects, FeatureTransformerGeoJson.MULTIPLICITY multiplicity, String separator) {
