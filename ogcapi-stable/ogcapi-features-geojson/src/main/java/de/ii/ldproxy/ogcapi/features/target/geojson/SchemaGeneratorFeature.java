@@ -63,6 +63,7 @@ public class SchemaGeneratorFeature {
                     .getTypes()
                     .get(collectionId);
 
+            // TODO we should generalize this and move it to Features Core; this is not just about GeoJSON, but applies to other feature encodings
             Optional<GeoJsonConfiguration> geoJsonConfiguration = collectionData.getExtension(GeoJsonConfiguration.class);
             boolean flatten = geoJsonConfiguration.filter(geoJsonConfig -> geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
                     geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)

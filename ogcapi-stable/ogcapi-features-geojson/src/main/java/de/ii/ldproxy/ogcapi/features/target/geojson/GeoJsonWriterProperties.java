@@ -11,8 +11,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.features.target.geojson.FeatureTransformerGeoJson.MULTIPLICITY;
-import de.ii.ldproxy.ogcapi.features.target.geojson.FeatureTransformerGeoJson.NESTED_OBJECTS;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformerBase.MULTIPLICITY;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformerBase.NESTED_OBJECTS;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -21,11 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**

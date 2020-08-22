@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.features.target.geojson;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformerBase;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -25,10 +26,10 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, FeatureTra
     }
 
     @Nullable
-    FeatureTransformerGeoJson.NESTED_OBJECTS getNestedObjectStrategy();
+    FeatureTransformerBase.NESTED_OBJECTS getNestedObjectStrategy();
 
     @Nullable
-    FeatureTransformerGeoJson.MULTIPLICITY getMultiplicityStrategy();
+    FeatureTransformerBase.MULTIPLICITY getMultiplicityStrategy();
 
     @Nullable
     Boolean getUseFormattedJsonOutput();
