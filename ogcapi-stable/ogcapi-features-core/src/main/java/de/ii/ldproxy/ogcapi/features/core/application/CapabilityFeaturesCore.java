@@ -7,15 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.application;
 
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.DEFAULT_PAGE_SIZE;
-import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.MAX_PAGE_SIZE;
-import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.MINIMUM_PAGE_SIZE;
+import static de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration.DEFAULT_PAGE_SIZE;
+import static de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration.MAX_PAGE_SIZE;
+import static de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration.MINIMUM_PAGE_SIZE;
 
 @Component
 @Provides

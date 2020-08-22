@@ -8,8 +8,8 @@
 package de.ii.ldproxy.resources;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.common.application.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;

@@ -6,8 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 @Value.Style(deepImmutablesDetection = true, attributeBuilderDetection = true, builder = "new")
-@ValueBuilderMapEncodingEnabled
+@BuildableMapEncodingEnabled
 package de.ii.ldproxy.ogcapi.common;
 
-import de.ii.xtraplatform.entity.api.maptobuilder.encoding.ValueBuilderMapEncodingEnabled;
+import de.ii.xtraplatform.store.domain.entities.maptobuilder.encoding.BuildableMapEncodingEnabled;
 import org.immutables.value.Value;

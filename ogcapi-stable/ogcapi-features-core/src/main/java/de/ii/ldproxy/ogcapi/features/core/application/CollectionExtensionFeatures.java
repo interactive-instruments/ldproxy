@@ -7,14 +7,16 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.application;
 
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

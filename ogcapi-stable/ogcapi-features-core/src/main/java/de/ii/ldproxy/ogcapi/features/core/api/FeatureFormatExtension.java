@@ -40,11 +40,4 @@ public interface FeatureFormatExtension extends FormatExtension {
         return Optional.empty();
     }
 
-    default Optional<TargetMappingProviderFromGml> getMappingGenerator() {
-        return Optional.empty();
-    }
-
-    default Optional<TargetMappingRefiner> getMappingRefiner() {
-        return Optional.empty();
-    }
 }

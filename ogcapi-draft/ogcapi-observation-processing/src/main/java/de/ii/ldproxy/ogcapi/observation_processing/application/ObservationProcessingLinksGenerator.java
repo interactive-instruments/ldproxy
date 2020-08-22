@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.common.application.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 
 import java.util.List;

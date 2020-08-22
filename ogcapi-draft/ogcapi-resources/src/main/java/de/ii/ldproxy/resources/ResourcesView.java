@@ -8,12 +8,12 @@
 package de.ii.ldproxy.resources;
 
 import com.google.common.base.Charsets;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.target.html.HtmlConfiguration;
-import de.ii.ldproxy.ogcapi.target.html.NavigationDTO;
-import de.ii.ldproxy.ogcapi.target.html.OgcApiView;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 
 import java.util.List;
 import java.util.Locale;

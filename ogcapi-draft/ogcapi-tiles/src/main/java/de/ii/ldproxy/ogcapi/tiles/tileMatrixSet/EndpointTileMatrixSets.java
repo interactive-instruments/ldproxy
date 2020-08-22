@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
@@ -28,7 +28,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * fetch tiling schemes / tile matrix sets that have been configured for an API

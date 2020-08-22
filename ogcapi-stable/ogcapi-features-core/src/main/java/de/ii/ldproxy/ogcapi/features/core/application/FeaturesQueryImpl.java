@@ -12,9 +12,13 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
-import de.ii.xtraplatform.cql.app.CqlPropertyChecker;
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesQuery;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
@@ -55,9 +59,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
-import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.PARAMETER_BBOX;
-import static de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration.PARAMETER_DATETIME;
+import static de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
+import static de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration.PARAMETER_BBOX;
+import static de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration.PARAMETER_DATETIME;
 
 
 @Component
@@ -240,8 +244,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                            throw new IllegalArgumentException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
                                                        }
 
-                                                       CqlPropertyChecker visitor = new CqlPropertyChecker(ImmutableList.copyOf(filterableFields.keySet()));
-                                                       List<String> invalidProperties = cqlPredicate.accept(visitor);
+                                                       List<String> invalidProperties = cql.findInvalidProperties(cqlPredicate, filterableFields.keySet());
 
                                                        if (invalidProperties.isEmpty()) {
                                                            return cqlPredicate;

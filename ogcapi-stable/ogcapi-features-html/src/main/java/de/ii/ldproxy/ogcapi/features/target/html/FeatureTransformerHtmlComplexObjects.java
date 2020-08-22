@@ -12,20 +12,20 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
-import de.ii.ldproxy.ogcapi.target.html.NavigationDTO;
-import de.ii.xtraplatform.streams.app.HttpClient;
-import de.ii.xtraplatform.codelists.Codelist;
+import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CoordinateTuple;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
-import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
+import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import de.ii.xtraplatform.streams.domain.HttpClient;
 import de.ii.xtraplatform.xml.domain.XMLPathTracker;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
@@ -37,7 +37,13 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalLong;
 
 /**
  * @author zahnen
@@ -218,7 +224,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
 
     @Override
     public String getTargetFormat() {
-        return Gml2MicrodataMappingProvider.MIME_TYPE;
+        return FeaturesFormatHtml.MEDIA_TYPE.type().toString();
     }
 
     @Override
@@ -312,7 +318,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
     @Override
     public void onEnd() throws Exception {
 
-        ((FallbackMustacheViewRenderer) mustacheRenderer).render(dataset, outputStreamWriter);
+        ((MustacheRenderer) mustacheRenderer).render(dataset, outputStreamWriter);
         outputStreamWriter.flush();
     }
 

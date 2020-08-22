@@ -11,18 +11,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
-import de.ii.ldproxy.ogcapi.target.html.NavigationDTO;
-import de.ii.xtraplatform.streams.app.HttpClient;
+import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.crs.domain.CoordinateTuple;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
-import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;
+import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import de.ii.xtraplatform.streams.domain.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +30,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalLong;
 
 /**
  * @author zahnen
@@ -40,7 +44,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerHtml.class);
 
     private final OutputStreamWriter outputStreamWriter;
-    private final FallbackMustacheViewRenderer mustacheRenderer;
+    private final MustacheRenderer mustacheRenderer;
     private final boolean isFeatureCollection;
     private final int page;
     private final int pageSize;
@@ -76,7 +80,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
         this.crsTransformer = transformationContext.getCrsTransformer()
                                                    .orElse(null);
         this.dataset = transformationContext.getFeatureTypeDataset();
-        this.mustacheRenderer = (FallbackMustacheViewRenderer) transformationContext.getMustacheRenderer();
+        this.mustacheRenderer = (MustacheRenderer) transformationContext.getMustacheRenderer();
         /* TODO move to nearby module in community repo
         this.nearbyQuery = new NearbyQuery(transformationContext);
         this.nearbyResolver = new SimpleNearbyResolver(httpClient);
@@ -102,7 +106,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
 
     @Override
     public String getTargetFormat() {
-        return Gml2MicrodataMappingProvider.MIME_TYPE;
+        return FeaturesFormatHtml.MEDIA_TYPE.type().toString();
     }
 
     @Override

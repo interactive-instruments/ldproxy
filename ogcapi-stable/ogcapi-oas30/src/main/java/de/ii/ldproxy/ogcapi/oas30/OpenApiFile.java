@@ -8,7 +8,14 @@
 package de.ii.ldproxy.ogcapi.oas30;
 
 import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
-import de.ii.ldproxy.ogcapi.infra.rest.FormatNotSupportedException;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.FormatNotSupportedException;
 import de.ii.xtraplatform.openapi.domain.OpenApiViewerResource;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;

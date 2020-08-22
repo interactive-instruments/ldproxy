@@ -11,7 +11,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
-import de.ii.xtraplatform.codelists.Codelist;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import org.immutables.value.Value;
 
 import java.util.List;

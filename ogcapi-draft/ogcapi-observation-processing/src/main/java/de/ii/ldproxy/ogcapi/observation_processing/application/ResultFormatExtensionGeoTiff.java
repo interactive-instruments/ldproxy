@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
-import de.ii.ldproxy.ogcapi.infra.rest.FormatNotSupportedException;
+import de.ii.ldproxy.ogcapi.domain.FormatNotSupportedException;
 import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;

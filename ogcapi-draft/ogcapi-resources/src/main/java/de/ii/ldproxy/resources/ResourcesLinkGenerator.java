@@ -8,7 +8,7 @@
 package de.ii.ldproxy.resources;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;

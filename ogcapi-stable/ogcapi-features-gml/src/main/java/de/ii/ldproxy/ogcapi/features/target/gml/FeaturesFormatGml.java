@@ -14,7 +14,6 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
 import de.ii.xtraplatform.feature.provider.wfs.domain.ConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -96,8 +95,4 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
                                                                                                     .build()));
     }
 
-    @Override
-    public Optional<TargetMappingProviderFromGml> getMappingGenerator() {
-        return Optional.empty();
-    }
 }

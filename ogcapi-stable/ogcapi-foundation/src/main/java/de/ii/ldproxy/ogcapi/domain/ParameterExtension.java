@@ -1,7 +1,6 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.google.common.base.Splitter;
-import de.ii.ldproxy.ogcapi.infra.json.SchemaValidator;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaValidatorImpl;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.core.util.Json;

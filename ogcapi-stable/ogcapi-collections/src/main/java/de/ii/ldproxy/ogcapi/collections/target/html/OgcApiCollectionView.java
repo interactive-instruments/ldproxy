@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.collections.target.html;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtentSpatial;
@@ -18,9 +18,9 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.StyleEntry;
-import de.ii.ldproxy.ogcapi.target.html.HtmlConfiguration;
-import de.ii.ldproxy.ogcapi.target.html.NavigationDTO;
-import de.ii.ldproxy.ogcapi.target.html.OgcApiView;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.time.Instant;

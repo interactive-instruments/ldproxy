@@ -1,6 +1,6 @@
 package de.ii.ldproxy.ogcapi.infra.json;
 
-import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import io.swagger.v3.oas.models.media.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

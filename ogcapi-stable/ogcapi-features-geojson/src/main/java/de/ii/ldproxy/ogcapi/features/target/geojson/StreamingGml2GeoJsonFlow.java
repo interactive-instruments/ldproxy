@@ -113,7 +113,7 @@ public class StreamingGml2GeoJsonFlow implements GmlStreamParserFlow.GmlTransfor
 
     @Override
     public String getTargetFormat() {
-        return Gml2GeoJsonMappingProvider.MIME_TYPE;
+        return FeaturesFormatGeoJson.MEDIA_TYPE.type().toString();
     }
 
     @Override

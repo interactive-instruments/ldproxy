@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.styles;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.Link;

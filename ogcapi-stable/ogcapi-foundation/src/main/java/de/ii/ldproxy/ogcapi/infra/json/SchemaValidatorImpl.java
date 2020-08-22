@@ -3,6 +3,7 @@ package de.ii.ldproxy.ogcapi.infra.json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.*;
+import de.ii.ldproxy.ogcapi.domain.SchemaValidator;
 
 import java.io.IOException;
 import java.util.Optional;

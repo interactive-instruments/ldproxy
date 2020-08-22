@@ -8,8 +8,11 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ApiErrorMessage;
+import de.ii.ldproxy.ogcapi.domain.ExceptionFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.FormatNotSupportedException;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;

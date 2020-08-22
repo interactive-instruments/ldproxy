@@ -8,9 +8,9 @@
 package de.ii.ldproxy.ogcapi.common.infra.rest;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.common.application.ImmutableQueryInputConformance;
-import de.ii.ldproxy.ogcapi.common.application.QueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.common.application.QueriesHandlerCommon.Query;
+import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputConformance;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;

@@ -10,17 +10,16 @@ package de.ii.ldproxy.ogcapi.features.target.html;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.target.html.HtmlConfiguration;
-import de.ii.ldproxy.ogcapi.target.html.NavigationDTO;
-import de.ii.xtraplatform.codelists.Codelist;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
-import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.features.domain.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
@@ -201,11 +200,6 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         }
 
         return Optional.of(transformer);
-    }
-
-    @Override
-    public Optional<TargetMappingProviderFromGml> getMappingGenerator() {
-        return Optional.of(new Gml2MicrodataMappingProvider());
     }
 
     private FeatureCollectionView createFeatureCollectionView(FeatureTypeConfigurationOgcApi featureType,

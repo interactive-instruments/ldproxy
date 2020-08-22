@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.target.html;
 
-import de.ii.ldproxy.ogcapi.target.html.SplitDecoratedCollection;
+import de.ii.ldproxy.ogcapi.html.domain.SplitDecoratedCollection;
 
 import java.util.ArrayList;
 import java.util.List;

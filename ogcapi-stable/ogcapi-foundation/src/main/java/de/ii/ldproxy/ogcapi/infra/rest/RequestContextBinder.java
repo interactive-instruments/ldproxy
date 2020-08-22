@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.infra.rest;
 
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.RequestInjectableContext;
 import de.ii.xtraplatform.services.domain.ServiceInjectableContext;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

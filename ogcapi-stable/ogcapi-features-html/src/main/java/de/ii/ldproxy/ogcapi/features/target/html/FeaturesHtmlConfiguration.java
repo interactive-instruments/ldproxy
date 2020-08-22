@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTypeMapping2;
-import de.ii.xtraplatform.codelists.Codelist;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

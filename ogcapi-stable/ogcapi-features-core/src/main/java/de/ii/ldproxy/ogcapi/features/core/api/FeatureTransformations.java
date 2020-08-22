@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.features.core.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.ii.xtraplatform.codelists.Codelist;
-import de.ii.xtraplatform.codelists.ImmutableFeaturePropertyTransformerCodelist;
+import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.codelists.domain.ImmutableFeaturePropertyTransformerCodelist;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
 import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerDateFormat;

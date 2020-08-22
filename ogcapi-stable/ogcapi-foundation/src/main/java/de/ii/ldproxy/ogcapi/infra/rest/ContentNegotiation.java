@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import org.glassfish.jersey.message.internal.QualitySourceMediaType;
 import org.slf4j.Logger;

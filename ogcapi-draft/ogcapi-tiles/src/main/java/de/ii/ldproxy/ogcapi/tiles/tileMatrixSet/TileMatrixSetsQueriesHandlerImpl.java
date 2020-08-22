@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.tiles.VectorTilesLinkGenerator;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import org.apache.felix.ipojo.annotations.Component;

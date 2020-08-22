@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.target.html;
 
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
-import de.ii.xtraplatform.codelists.Codelist;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import io.dropwizard.views.ViewRenderer;
 import org.immutables.value.Value;
 

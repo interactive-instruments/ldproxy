@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.application;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

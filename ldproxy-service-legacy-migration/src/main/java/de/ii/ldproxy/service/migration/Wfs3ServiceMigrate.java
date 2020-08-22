@@ -9,23 +9,25 @@ package de.ii.ldproxy.service.migration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiFeaturesGenericMapping;
+import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
+import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonGeometryMapping;
 import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonMapping;
 import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonPropertyMapping;
-import de.ii.ldproxy.ogcapi.features.target.geojson.Gml2GeoJsonMappingProvider;
-import de.ii.ldproxy.ogcapi.features.target.html.Gml2MicrodataMappingProvider;
 import de.ii.ldproxy.ogcapi.features.target.html.MicrodataGeometryMapping;
 import de.ii.ldproxy.ogcapi.features.target.html.MicrodataMapping;
 import de.ii.ldproxy.ogcapi.features.target.html.MicrodataPropertyMapping;
 import de.ii.xtraplatform.dropwizard.domain.Jackson;
-import de.ii.xtraplatform.store.domain.entities.legacy.EntityRepository;
-import de.ii.xtraplatform.store.domain.entities.legacy.EntityRepositoryForType;
 import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
 import de.ii.xtraplatform.kvstore.api.KeyNotFoundException;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
+import de.ii.xtraplatform.store.domain.entities.legacy.EntityRepository;
+import de.ii.xtraplatform.store.domain.entities.legacy.EntityRepositoryForType;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Requires;
@@ -272,11 +274,11 @@ public class Wfs3ServiceMigrate {
         String mappingType = (String) mapping.get("mappingType");
 
         switch (mimeType) {
-            case OgcApiFeaturesGenericMapping.BASE_TYPE:
+            case "general":
                 return createGenericMapping(mappingType, mapping, (OgcApiFeaturesGenericMapping) oldTargetMapping);
-            case Gml2GeoJsonMappingProvider.MIME_TYPE:
+            case "application/geo+json":
                 return createGeoJsonMapping(mappingType, mapping, (GeoJsonPropertyMapping) oldTargetMapping);
-            case Gml2MicrodataMappingProvider.MIME_TYPE:
+            case "text/html":
                 return createMicrodataMapping(mappingType, mapping, (MicrodataPropertyMapping) oldTargetMapping);
         }
         return null;

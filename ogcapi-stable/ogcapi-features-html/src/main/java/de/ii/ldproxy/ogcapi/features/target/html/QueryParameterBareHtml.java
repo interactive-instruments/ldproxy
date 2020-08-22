@@ -4,8 +4,9 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.target.html.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.runtime.FelixRuntime;
+import de.ii.xtraplatform.runtime.domain.Constants;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -14,6 +15,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.osgi.framework.BundleContext;
 
+//TODO: this was not meant for debugging but is needed for the nearby functionality, so it could be moved to community
 @Component
 @Provides
 @Instantiate
@@ -23,7 +25,7 @@ public class QueryParameterBareHtml implements OgcApiQueryParameter {
     private final boolean allowDebug;
 
     public QueryParameterBareHtml(@Context BundleContext context) {
-        this.allowDebug = FelixRuntime.ENV.valueOf(context.getProperty(FelixRuntime.ENV_KEY)) == FelixRuntime.ENV.DEVELOPMENT;
+        this.allowDebug = Constants.ENV.valueOf(context.getProperty(Constants.ENV_KEY)) == Constants.ENV.DEVELOPMENT;
     }
 
     @Override

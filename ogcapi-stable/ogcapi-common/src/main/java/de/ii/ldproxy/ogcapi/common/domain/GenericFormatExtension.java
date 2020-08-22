@@ -10,9 +10,9 @@ package de.ii.ldproxy.ogcapi.common.domain;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.target.html.HtmlConfiguration;
-import de.ii.ldproxy.ogcapi.target.json.JsonConfiguration;
-import de.ii.ldproxy.ogcapi.target.xml.XmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
+import de.ii.ldproxy.ogcapi.xml.domain.XmlConfiguration;
 
 import java.util.Map;
 

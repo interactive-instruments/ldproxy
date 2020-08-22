@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.admin.rest;
 
-import de.ii.xtraplatform.codelists.CodelistData;
-import de.ii.xtraplatform.codelists.CodelistImporter;
+import de.ii.xtraplatform.codelists.domain.CodelistData;
+import de.ii.xtraplatform.codelists.domain.CodelistImporter;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
 import de.ii.xtraplatform.dropwizard.domain.Endpoint;

@@ -12,9 +12,9 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
-import de.ii.xtraplatform.codelists.Codelist;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
@@ -72,7 +72,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2 {
 
     @Override
     public String getTargetFormat() {
-        return Gml2GeoJsonMappingProvider.MIME_TYPE;
+        return FeaturesFormatGeoJson.MEDIA_TYPE.type().toString();
     }
 
     private Consumer<FeatureTransformationContextGeoJson> executePipeline(

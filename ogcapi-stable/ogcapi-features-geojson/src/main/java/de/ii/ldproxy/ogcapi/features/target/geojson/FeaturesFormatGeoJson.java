@@ -12,14 +12,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.api.TargetMappingRefiner;
-import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
-import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
-import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
-import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
-import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
-import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -151,54 +144,4 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                                                                                      .build(), geoJsonWriters));
     }
 
-    @Override
-    public Optional<TargetMappingProviderFromGml> getMappingGenerator() {
-        return Optional.of(new Gml2GeoJsonMappingProvider());
-    }
-
-    @Override
-    public Optional<TargetMappingRefiner> getMappingRefiner() {
-        return Optional.of(new TargetMappingRefiner() {
-            @Override
-            public boolean needsRefinement(SourcePathMapping sourcePathMapping) {
-                if (!sourcePathMapping.hasMappingForType(Gml2GeoJsonMappingProvider.MIME_TYPE)
-                        || !(sourcePathMapping.getMappingForType(Gml2GeoJsonMappingProvider.MIME_TYPE) instanceof GeoJsonGeometryMapping)) {
-                    return false;
-                }
-                GeoJsonGeometryMapping geoJsonGeometryMapping = (GeoJsonGeometryMapping) sourcePathMapping.getMappingForType(Gml2GeoJsonMappingProvider.MIME_TYPE);
-
-                return geoJsonGeometryMapping.getGeometryType() == GEO_JSON_GEOMETRY_TYPE.GENERIC;
-            }
-
-            @Override
-            public SourcePathMapping refine(SourcePathMapping sourcePathMapping,
-                                            SimpleFeatureGeometry simpleFeatureGeometry, boolean mustReversePolygon) {
-                if (!needsRefinement(sourcePathMapping)) {
-                    return sourcePathMapping;
-                }
-
-                ImmutableSourcePathMapping.Builder builder = new ImmutableSourcePathMapping.Builder();
-
-                for (Map.Entry<String, TargetMapping> entry : sourcePathMapping.getMappings()
-                                                                               .entrySet()) {
-                    TargetMapping targetMapping = entry.getValue();
-
-                    if (targetMapping instanceof GeoJsonGeometryMapping) {
-                        GeoJsonGeometryMapping geoJsonGeometryMapping = new GeoJsonGeometryMapping((GeoJsonGeometryMapping) targetMapping);
-                        geoJsonGeometryMapping.setGeometryType(GEO_JSON_GEOMETRY_TYPE.forGmlType(simpleFeatureGeometry));
-
-                        if (mustReversePolygon && (simpleFeatureGeometry == SimpleFeatureGeometry.POLYGON || simpleFeatureGeometry == SimpleFeatureGeometry.MULTI_POLYGON)) {
-                            geoJsonGeometryMapping.setMustReversePolygon(true);
-                        }
-
-                        builder.putMappings(entry.getKey(), geoJsonGeometryMapping);
-                    } else {
-                        builder.putMappings(entry.getKey(), entry.getValue());
-                    }
-                }
-
-                return builder.build();
-            }
-        });
-    }
 }

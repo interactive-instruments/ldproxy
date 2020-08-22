@@ -4,6 +4,7 @@ package de.ii.ldproxy.ogcapi.features.core.application;
 import de.ii.ldproxy.ogcapi.collections.domain.PathParameterCollectionIdCollections;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

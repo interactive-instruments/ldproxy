@@ -1,7 +1,7 @@
 package de.ii.ldproxy.ogcapi.features.processing;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import org.apache.felix.ipojo.annotations.*;

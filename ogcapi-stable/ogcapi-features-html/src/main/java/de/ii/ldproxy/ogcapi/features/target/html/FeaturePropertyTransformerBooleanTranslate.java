@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.target.html;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
 import org.immutables.value.Value;

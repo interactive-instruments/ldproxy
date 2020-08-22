@@ -7,9 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
