@@ -11,7 +11,7 @@ import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import org.immutables.value.Value;

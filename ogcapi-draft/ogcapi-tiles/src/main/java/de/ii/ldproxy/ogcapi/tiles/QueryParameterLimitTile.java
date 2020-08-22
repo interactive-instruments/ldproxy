@@ -3,7 +3,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.features.core.application.QueryParameterLimitFeatures;
+import de.ii.ldproxy.ogcapi.features.core.app.QueryParameterLimitFeatures;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;

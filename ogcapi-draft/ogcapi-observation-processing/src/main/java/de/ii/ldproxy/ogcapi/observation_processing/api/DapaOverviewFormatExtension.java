@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.observation_processing.api;
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.features.processing.Processing;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.Processing;
 
 public interface DapaOverviewFormatExtension extends GenericFormatExtension {
 

@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.features.core.application.FeaturesCoreQueriesHandlerImpl;
+import de.ii.ldproxy.ogcapi.features.core.app.FeaturesCoreQueriesHandlerImpl;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.codelists.domain.Codelist;

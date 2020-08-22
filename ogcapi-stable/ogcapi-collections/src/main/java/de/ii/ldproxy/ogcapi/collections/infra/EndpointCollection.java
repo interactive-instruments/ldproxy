@@ -9,8 +9,8 @@ package de.ii.ldproxy.ogcapi.collections.infra;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.collections.application.ImmutableQueryInputFeatureCollection;
-import de.ii.ldproxy.ogcapi.collections.application.QueriesHandlerCollections;
+import de.ii.ldproxy.ogcapi.collections.app.ImmutableQueryInputFeatureCollection;
+import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionsConfiguration;

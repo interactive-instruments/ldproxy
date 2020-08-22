@@ -1,7 +1,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryPoint;

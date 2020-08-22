@@ -2,8 +2,8 @@ package de.ii.ldproxy.ogcapi.collections.queryables;
 
 
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.application.PathParameterCollectionIdFeatures;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.app.PathParameterCollectionIdFeatures;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

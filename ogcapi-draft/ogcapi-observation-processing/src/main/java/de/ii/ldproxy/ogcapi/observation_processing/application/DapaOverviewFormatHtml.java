@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.processing.Processing;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.Processing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.DapaOverviewFormatExtension;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;

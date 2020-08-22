@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
  */
 public class FeatureTransformerHtmlTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerHtmlTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(de.ii.ldproxy.ogcapi.features.html.app.FeatureTransformerHtmlTest.class);
 
     @Test
     public void testWriteField() {

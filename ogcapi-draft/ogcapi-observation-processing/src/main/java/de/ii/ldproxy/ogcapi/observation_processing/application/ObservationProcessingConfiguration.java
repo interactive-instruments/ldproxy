@@ -9,8 +9,8 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.processing.ProcessDocumentation;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.ProcessDocumentation;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
