@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.xtraplatform.rest.InjectableContext;
+import de.ii.xtraplatform.services.domain.InjectableContext;
 
 
 public interface RequestInjectableContext extends InjectableContext<ApiRequestContext> {

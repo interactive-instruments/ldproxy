@@ -9,9 +9,9 @@ package de.ii.ldproxy.admin.rest;
 
 import de.ii.xtraplatform.codelists.CodelistData;
 import de.ii.xtraplatform.codelists.CodelistImporter;
-import de.ii.xtraplatform.entities.domain.EntityData;
-import de.ii.xtraplatform.entities.domain.EntityDataStore;
-import de.ii.xtraplatform.web.api.Endpoint;
+import de.ii.xtraplatform.store.domain.entities.EntityData;
+import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
+import de.ii.xtraplatform.dropwizard.domain.Endpoint;
 import io.dropwizard.jersey.caching.CacheControl;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Provides;

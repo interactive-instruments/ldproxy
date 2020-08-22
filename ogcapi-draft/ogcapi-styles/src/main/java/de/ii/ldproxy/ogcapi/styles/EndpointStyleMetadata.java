@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
  * fetch list the metadata of a style

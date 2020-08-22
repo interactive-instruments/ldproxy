@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.target.html;
 
 import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.base.Splitter;
-import de.ii.xtraplatform.rest.views.GenericView;
+import de.ii.xtraplatform.services.app.views.GenericView;
 import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;

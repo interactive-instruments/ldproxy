@@ -7,13 +7,11 @@
  */
 package de.ii.ldproxy.config;
 
-import de.ii.xtraplatform.dropwizard.api.AbstractConfigurationProvider;
-import de.ii.xtraplatform.dropwizard.api.XtraPlatformConfiguration;
+import de.ii.xtraplatform.dropwizard.domain.AbstractConfigurationProvider;
+import de.ii.xtraplatform.runtime.domain.XtraPlatformConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-
-import java.util.List;
 
 @Component
 @Provides

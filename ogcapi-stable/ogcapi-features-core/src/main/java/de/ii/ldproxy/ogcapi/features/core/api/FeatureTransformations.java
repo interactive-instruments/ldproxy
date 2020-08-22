@@ -15,7 +15,7 @@ import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransfor
 import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerDateFormat;
 import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerRemove;
 import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerRename;
-import de.ii.xtraplatform.stringtemplates.ImmutableFeaturePropertyTransformerStringFormat;
+import de.ii.xtraplatform.stringtemplates.domain.ImmutableFeaturePropertyTransformerStringFormat;
 import org.immutables.value.Value;
 
 import java.util.ArrayList;

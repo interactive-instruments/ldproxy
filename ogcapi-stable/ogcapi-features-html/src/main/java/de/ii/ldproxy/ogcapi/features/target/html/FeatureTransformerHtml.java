@@ -14,7 +14,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.target.html.MicrodataGeometryMapping.MICRODATA_GEOMETRY_TYPE;
 import de.ii.ldproxy.ogcapi.target.html.NavigationDTO;
-import de.ii.xtraplatform.akka.http.HttpClient;
+import de.ii.xtraplatform.streams.app.HttpClient;
 import de.ii.xtraplatform.crs.domain.CoordinateTuple;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.views.FallbackMustacheViewRenderer;

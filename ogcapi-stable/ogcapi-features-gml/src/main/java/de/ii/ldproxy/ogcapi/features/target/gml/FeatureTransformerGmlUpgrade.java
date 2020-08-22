@@ -16,7 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
-import de.ii.xtraplatform.util.xml.XMLNamespaceNormalizer;
+import de.ii.xtraplatform.xml.domain.XMLNamespaceNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +32,8 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
 
-import static de.ii.xtraplatform.util.functional.LambdaWithException.biConsumerMayThrow;
-import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMayThrow;
+import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.biConsumerMayThrow;
+import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.consumerMayThrow;
 
 /**
  * @author zahnen

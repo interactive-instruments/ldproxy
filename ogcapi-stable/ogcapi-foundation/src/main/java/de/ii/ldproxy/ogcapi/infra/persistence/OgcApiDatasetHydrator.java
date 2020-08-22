@@ -9,9 +9,9 @@ package de.ii.ldproxy.ogcapi.infra.persistence;
 
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.xtraplatform.entities.domain.EntityHydrator;
-import de.ii.xtraplatform.entities.domain.handler.Entity;
-import de.ii.xtraplatform.service.api.Service;
+import de.ii.xtraplatform.store.domain.entities.EntityHydrator;
+import de.ii.xtraplatform.store.domain.entities.handler.Entity;
+import de.ii.xtraplatform.services.domain.Service;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

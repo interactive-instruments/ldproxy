@@ -4,7 +4,7 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.xtraplatform.runtime.FelixRuntime;
+import de.ii.xtraplatform.runtime.domain.Constants;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -22,7 +22,7 @@ public class QueryParameterPrettyFeaturesGeoJson implements OgcApiQueryParameter
     private final boolean allowDebug;
 
     public QueryParameterPrettyFeaturesGeoJson(@Context BundleContext context) {
-        this.allowDebug = FelixRuntime.ENV.valueOf(context.getProperty(FelixRuntime.ENV_KEY)) == FelixRuntime.ENV.DEVELOPMENT;
+        this.allowDebug = Constants.ENV.valueOf(context.getProperty(Constants.ENV_KEY)) == Constants.ENV.DEVELOPMENT;
     }
 
     @Override

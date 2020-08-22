@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
  * add resources link to the landing page

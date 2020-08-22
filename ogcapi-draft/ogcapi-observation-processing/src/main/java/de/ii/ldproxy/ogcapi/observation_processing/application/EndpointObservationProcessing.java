@@ -24,7 +24,7 @@ import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableQueryInputObserv
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
-import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;

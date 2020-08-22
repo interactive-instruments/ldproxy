@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.config;
 
-import de.ii.xtraplatform.dropwizard.views.PartialMustacheResolver;
-import de.ii.xtraplatform.dropwizard.views.PerClassMustacheResolver;
+import de.ii.xtraplatform.dropwizard.domain.PartialMustacheResolver;
+import de.ii.xtraplatform.dropwizard.domain.PerClassMustacheResolver;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

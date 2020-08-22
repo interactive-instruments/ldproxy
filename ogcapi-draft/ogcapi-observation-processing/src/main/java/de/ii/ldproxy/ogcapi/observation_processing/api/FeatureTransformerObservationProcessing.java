@@ -20,7 +20,7 @@ import de.ii.ldproxy.ogcapi.observation_processing.application.ResultFormatExten
 import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
 import de.ii.ldproxy.ogcapi.observation_processing.data.*;
 import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonConfiguration;
-import de.ii.xtraplatform.akka.http.HttpClient;
+import de.ii.xtraplatform.streams.domain.HttpClient;
 import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;

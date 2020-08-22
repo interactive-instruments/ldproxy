@@ -17,12 +17,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.styles.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.StyleMetadataFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.StylesConfiguration;
-import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import org.apache.felix.ipojo.annotations.Component;
@@ -46,7 +45,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
  * update style metadata

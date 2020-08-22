@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

@@ -11,7 +11,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ExtendableConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

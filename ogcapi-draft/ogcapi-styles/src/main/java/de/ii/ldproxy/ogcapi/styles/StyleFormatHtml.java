@@ -7,10 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.styles;
 
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
-import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
+import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;

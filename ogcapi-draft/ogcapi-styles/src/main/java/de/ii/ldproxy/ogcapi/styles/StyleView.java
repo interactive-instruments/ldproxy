@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.rest.views.GenericView;
+import de.ii.xtraplatform.services.app.views.GenericView;
 
 import java.util.Map;
 

@@ -24,7 +24,7 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.GmlStreamParserFlow;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesWriterJson;
-import de.ii.xtraplatform.util.xml.XMLPathTracker;
+import de.ii.xtraplatform.xml.domain.XMLPathTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

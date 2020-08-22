@@ -1,29 +1,7 @@
 dependencies {
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-geojson'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-rest'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-scheduler-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-service-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-geometries'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-crs'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-auth-api'
-
     //  use an old version, because of the Jackson dependency
     embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.24') {
         exclude module: 'jackson-databind'
         exclude module: 'slf4j-api'
-    }
-}
-
-jar {
-    manifest {
-        instruction 'Embed-Import', 'false'
-        instruction 'Embed-Export', 'false'
     }
 }

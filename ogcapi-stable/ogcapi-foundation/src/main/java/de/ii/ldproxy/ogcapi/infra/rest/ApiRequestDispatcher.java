@@ -9,8 +9,8 @@ package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
-import de.ii.xtraplatform.service.api.ServiceResource;
+import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.services.domain.ServiceEndpoint;
 import org.apache.felix.ipojo.annotations.*;
 import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
 import org.slf4j.Logger;
@@ -31,12 +31,12 @@ import static de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition.SORT_PRIORITY_DU
 
 @Component
 @Provides(properties = {
-        @StaticServiceProperty(name = ServiceResource.SERVICE_TYPE_KEY, type = "java.lang.String", value = "OGC_API")
+        @StaticServiceProperty(name = ServiceEndpoint.SERVICE_TYPE_KEY, type = "java.lang.String", value = "OGC_API")
 })
 @Instantiate
 
 @PermitAll
-public class ApiRequestDispatcher implements ServiceResource {
+public class ApiRequestDispatcher implements ServiceEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiRequestDispatcher.class);
 

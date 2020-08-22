@@ -9,5 +9,5 @@
 @BuildableMapEncodingEnabled
 package de.ii.ldproxy.ogcapi;
 
-import de.ii.xtraplatform.entities.domain.maptobuilder.encoding.BuildableMapEncodingEnabled;
+import de.ii.xtraplatform.store.domain.entities.maptobuilder.encoding.BuildableMapEncodingEnabled;
 import org.immutables.value.Value;

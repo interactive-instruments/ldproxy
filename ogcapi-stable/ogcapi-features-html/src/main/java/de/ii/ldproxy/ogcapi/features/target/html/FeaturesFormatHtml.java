@@ -18,21 +18,19 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.target.html.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.target.html.NavigationDTO;
-import de.ii.xtraplatform.akka.http.Http;
 import de.ii.xtraplatform.codelists.Codelist;
-import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.feature.transformer.api.TargetMappingProviderFromGml;
-import de.ii.xtraplatform.features.app.FeatureSchemaToTypeVisitor;
+import de.ii.xtraplatform.features.domain.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
-import de.ii.xtraplatform.kvstore.api.KeyValueStore;
-import de.ii.xtraplatform.stringtemplates.StringTemplateFilters;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.streams.domain.Http;
+import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.*;
-import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
@@ -58,9 +56,6 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     private final Schema schema = new StringSchema().example("<html>...</html>");
     private final static String schemaRef = "#/components/schemas/htmlSchema";
 
-    @Context
-    private BundleContext bc;
-
     @Requires
     private Dropwizard dropwizard;
 
@@ -69,9 +64,6 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
     @Requires
     private Http http;
-
-    @Requires
-    private KeyValueStore keyValueStore;
 
     @Requires
     private I18n i18n;

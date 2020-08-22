@@ -31,7 +31,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static de.ii.xtraplatform.util.functional.LambdaWithException.consumerMayThrow;
+import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.consumerMayThrow;
 
 /**
  * @author zahnen

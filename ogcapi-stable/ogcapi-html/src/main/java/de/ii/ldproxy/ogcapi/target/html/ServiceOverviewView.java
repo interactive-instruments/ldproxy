@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.target.html;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.application.I18n;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.service.api.ServiceData;
+import de.ii.xtraplatform.services.domain.ServiceData;
 
 import java.net.URI;
 import java.util.List;

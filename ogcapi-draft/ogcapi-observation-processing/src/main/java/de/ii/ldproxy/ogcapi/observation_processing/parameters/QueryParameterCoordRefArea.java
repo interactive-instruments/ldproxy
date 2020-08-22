@@ -1,13 +1,12 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryMultiPolygon;
-import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.akka.http.HttpClient;
+import de.ii.xtraplatform.streams.domain.Http;
+import de.ii.xtraplatform.streams.domain.HttpClient;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;

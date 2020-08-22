@@ -10,10 +10,10 @@ package de.ii.ldproxy.ogcapi.domain;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
-import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableMap;
+import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
+import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerServiceData;
-import de.ii.xtraplatform.service.api.ServiceData;
+import de.ii.xtraplatform.services.domain.ServiceData;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

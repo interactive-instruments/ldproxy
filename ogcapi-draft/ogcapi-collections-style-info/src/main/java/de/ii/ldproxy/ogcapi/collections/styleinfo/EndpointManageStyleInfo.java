@@ -11,9 +11,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import org.apache.felix.ipojo.annotations.Component;
@@ -37,7 +36,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
  * creates, updates and deletes a style from the service

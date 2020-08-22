@@ -7,20 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.api;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.xtraplatform.codelists.Codelist;
-import de.ii.xtraplatform.codelists.CodelistData;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
-import de.ii.xtraplatform.stringtemplates.StringTemplateFilters;
 import org.immutables.value.Value;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 
 @Value.Immutable(builder = true)
 public interface FeaturePropertyTransformerNullValue extends FeaturePropertyValueTransformer {

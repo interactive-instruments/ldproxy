@@ -11,7 +11,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPage;
 import de.ii.ldproxy.ogcapi.domain.ExternalDocumentation;
 import de.ii.ldproxy.ogcapi.target.html.HtmlConfiguration;
@@ -27,7 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.ii.xtraplatform.api.functional.LambdaWithException.mayThrow;
+import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.mayThrow;
 
 public class OgcApiLandingPageView extends OgcApiView {
     private final LandingPage apiLandingPage;

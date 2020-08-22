@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.observation_processing.api;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
@@ -17,7 +16,7 @@ import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
 import de.ii.ldproxy.ogcapi.observation_processing.data.DataArrayXy;
 import de.ii.ldproxy.ogcapi.observation_processing.data.DataArrayXyt;
 import de.ii.ldproxy.ogcapi.observation_processing.data.Geometry;
-import de.ii.xtraplatform.akka.http.Http;
+import de.ii.xtraplatform.streams.domain.Http;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 

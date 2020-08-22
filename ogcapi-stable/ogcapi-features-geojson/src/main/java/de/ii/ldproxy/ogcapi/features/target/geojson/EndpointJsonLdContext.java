@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 @Component
 @Provides

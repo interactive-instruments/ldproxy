@@ -14,7 +14,7 @@ import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonConfiguration;
-import de.ii.xtraplatform.akka.http.HttpClient;
+import de.ii.xtraplatform.streams.domain.HttpClient;
 import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;

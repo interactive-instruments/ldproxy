@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import de.ii.xtraplatform.service.api.Service;
+import de.ii.xtraplatform.services.domain.Service;
 
 import java.util.List;
 import java.util.Optional;

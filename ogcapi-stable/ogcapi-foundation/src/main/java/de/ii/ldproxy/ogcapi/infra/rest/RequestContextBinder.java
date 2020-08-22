@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.infra.rest;
 
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.xtraplatform.services.domain.ServiceInjectableContext;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -19,8 +20,6 @@ import org.glassfish.jersey.server.internal.inject.AbstractContainerRequestValue
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.ext.Provider;
-
-import static de.ii.xtraplatform.rest.ServiceContextBinder.SERVICE_CONTEXT_KEY;
 
 
 @Component
@@ -63,7 +62,7 @@ public class RequestContextBinder extends AbstractBinder implements Binder, Requ
         @Override
         @RequestScoped
         public OgcApi provide() {
-            return (OgcApi) getContainerRequest().getProperty(SERVICE_CONTEXT_KEY);
+            return (OgcApi) getContainerRequest().getProperty(ServiceInjectableContext.SERVICE_CONTEXT_KEY);
         }
     }
 }

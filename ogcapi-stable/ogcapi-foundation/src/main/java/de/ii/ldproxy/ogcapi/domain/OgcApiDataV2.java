@@ -12,9 +12,9 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.domain.*;
-import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
-import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableMap;
-import de.ii.xtraplatform.service.api.ServiceData;
+import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
+import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
+import de.ii.xtraplatform.services.domain.ServiceData;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -97,7 +97,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
             Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>();
 
             getCollections().values()
-                            .forEach(featureTypeConfigurationOgcApi -> mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.toBuilder()
+                            .forEach(featureTypeConfigurationOgcApi -> mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.getBuilder()
                                                                                                                                                                .parentExtensions(getExtensions())
                                                                                                                                                                .build()));
 
