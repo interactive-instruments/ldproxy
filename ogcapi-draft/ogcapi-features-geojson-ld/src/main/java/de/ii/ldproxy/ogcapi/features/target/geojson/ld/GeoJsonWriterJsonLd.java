@@ -5,10 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.features.target.geojson;
+package de.ii.ldproxy.ogcapi.features.target.geojson.ld;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonConfiguration.JsonLdOptions;
+import de.ii.ldproxy.ogcapi.features.target.geojson.FeatureTransformationContextGeoJson;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.stringtemplates.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
@@ -17,12 +18,10 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-/**
- * @author zahnen
- */
 @Component
 @Provides
 @Instantiate
@@ -42,13 +41,12 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     public void onStart(FeatureTransformationContextGeoJson transformationContext,
                         Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (transformationContext.isFeatureCollection()) {
-            Optional<JsonLdOptions> jsonLdOptions = transformationContext.getApiData()
+            Optional<GeoJsonLdConfiguration> jsonLdOptions = transformationContext.getApiData()
                                                                          .getCollections()
                                                                          .get(transformationContext.getCollectionId())
-                                                                         .getExtension(GeoJsonConfiguration.class)
-                                                                         .flatMap(GeoJsonConfiguration::getJsonLd);
+                                                                         .getExtension(GeoJsonLdConfiguration.class);
 
-            if (jsonLdOptions.isPresent()) {
+            if (jsonLdOptions.isPresent() && jsonLdOptions.get().isEnabled()) {
                 writeContextAndJsonLdType(transformationContext, jsonLdOptions.get()
                                                                               .getContext(), ImmutableList.of("geojson:FeatureCollection"));
             }
@@ -61,14 +59,13 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     @Override
     public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
                                Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        Optional<JsonLdOptions> jsonLdOptions = transformationContext.getApiData()
+        Optional<GeoJsonLdConfiguration> jsonLdOptions = transformationContext.getApiData()
                                                                      .getCollections()
                                                                      .get(transformationContext.getCollectionId())
-                                                                     .getExtension(GeoJsonConfiguration.class)
-                                                                     .flatMap(GeoJsonConfiguration::getJsonLd);
+                                                                     .getExtension(GeoJsonLdConfiguration.class);
 
-        if (jsonLdOptions.isPresent()) {
-            List<String> types = jsonLdOptions.map(JsonLdOptions::getTypes)
+        if (jsonLdOptions.isPresent() && jsonLdOptions.get().isEnabled()) {
+            List<String> types = jsonLdOptions.map(GeoJsonLdConfiguration::getTypes)
                                               .orElse(ImmutableList.of("geojson:Feature"));
 
             writeContextAndJsonLdType(transformationContext, jsonLdOptions.get()
@@ -101,9 +98,8 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
                 Optional<String> jsonLdId = transformationContext.getApiData()
                                                                  .getCollections()
                                                                  .get(transformationContext.getCollectionId())
-                                                                 .getExtension(GeoJsonConfiguration.class)
-                                                                 .flatMap(GeoJsonConfiguration::getJsonLd)
-                                                                 .flatMap(GeoJsonConfiguration.JsonLdOptions::getIdTemplate)
+                                                                 .getExtension(GeoJsonLdConfiguration.class)
+                                                                 .flatMap(GeoJsonLdConfiguration::getIdTemplate)
                                                                  .map(idTemplate -> {
                                                                      String currentUri = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {
                                                                      }, "featureId");
@@ -136,7 +132,7 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
                                            List<String> types,
                                            boolean writeContext) throws IOException {
 
-        if (writeContext)
+        if (writeContext && Objects.nonNull(ldContext))
             transformationContext.getJson()
                                  .writeStringField("@context",
                                          ldContext.replace("{{serviceUrl}}", transformationContext.getServiceUrl())

@@ -1,6 +1,7 @@
 
 dependencies {
     provided project(":ogcapi-crs")
+    provided project(":ogcapi-features-geojson-ld")
 
     provided group: 'de.interactive_instruments', name: 'ogcapi-common'
     provided group: 'de.interactive_instruments', name: 'ogcapi-features-geojson'

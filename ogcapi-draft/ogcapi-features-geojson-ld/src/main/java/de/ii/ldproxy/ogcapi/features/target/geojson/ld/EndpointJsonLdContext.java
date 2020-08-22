@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.features.target.geojson;
+package de.ii.ldproxy.ogcapi.features.target.geojson.ld;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -41,7 +41,7 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 public class EndpointJsonLdContext extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointJsonLdContext.class);
-    private static final List<String> TAGS = ImmutableList.of("Access data");
+    private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
     private static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application","ld+json"))
@@ -60,7 +60,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return GeoJsonConfiguration.class;
+        return GeoJsonLdConfiguration.class;
     }
 
     @Path("/{collectionId}/context")

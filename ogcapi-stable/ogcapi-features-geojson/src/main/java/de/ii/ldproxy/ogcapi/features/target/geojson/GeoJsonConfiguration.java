@@ -37,19 +37,6 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, FeatureTra
     @Nullable
     String getSeparator();
 
-    Optional<JsonLdOptions> getJsonLd();
-
-    @Value.Immutable
-    @JsonDeserialize(builder = ImmutableJsonLdOptions.Builder.class)
-    interface JsonLdOptions {
-
-        String getContext();
-
-        List<String> getTypes();
-
-        Optional<String> getIdTemplate();
-    }
-
     @Override
     default Builder getBuilder() {
         return new ImmutableGeoJsonConfiguration.Builder();

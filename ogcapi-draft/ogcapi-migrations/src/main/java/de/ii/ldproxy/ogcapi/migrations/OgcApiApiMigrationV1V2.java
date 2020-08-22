@@ -19,8 +19,12 @@ import de.ii.ldproxy.ogcapi.features.core.application.FeaturesCollectionQueryabl
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.target.geojson.*;
-import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonConfiguration.JsonLdOptions;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonMapping;
+import de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonPropertyMapping;
+import de.ii.ldproxy.ogcapi.features.target.geojson.ImmutableGeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.target.geojson.ld.GeoJsonLdConfiguration;
+import de.ii.ldproxy.ogcapi.features.target.geojson.ld.ImmutableGeoJsonLdConfiguration;
 import de.ii.ldproxy.ogcapi.features.target.html.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.target.html.ImmutableFeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.target.html.MicrodataMapping;
@@ -148,12 +152,15 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
 
                                                                                 geoJsonConfiguration.ifPresent(newGeoJsonConfiguration::from);
 
-                                                                                Optional<JsonLdOptions> jsonLdOptions = getJsonLdOptions(entityData.getFeatureProvider()
-                                                                                                                                                   .getMappings()
-                                                                                                                                                   .get(collection.getId()));
+                                                                                Optional<GeoJsonLdConfiguration> geoJsonLdConfiguration = collection.getExtension(GeoJsonLdConfiguration.class);
 
-                                                                                newGeoJsonConfiguration.jsonLd(jsonLdOptions);
+                                                                                ImmutableGeoJsonLdConfiguration.Builder newGeoJsonLdConfiguration = new ImmutableGeoJsonLdConfiguration.Builder();
 
+                                                                                geoJsonLdConfiguration.ifPresent(newGeoJsonLdConfiguration::from);
+
+                                                                                getJsonLdOptions(entityData.getFeatureProvider()
+                                                                                                           .getMappings()
+                                                                                                           .get(collection.getId())).ifPresent(newGeoJsonLdConfiguration::from);
 
                                                                                 Optional<FeaturesHtmlConfiguration> htmlConfiguration = collection.getExtension(FeaturesHtmlConfiguration.class);
 
@@ -200,6 +207,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                                                                            if (extension instanceof GeoJsonConfiguration) {
                                                                                                                                                return newGeoJsonConfiguration.build();
                                                                                                                                            }
+                                                                                                                                           if (extension instanceof GeoJsonLdConfiguration) {
+                                                                                                                                               return newGeoJsonLdConfiguration.build();
+                                                                                                                                           }
                                                                                                                                            if (extension instanceof FeaturesHtmlConfiguration) {
                                                                                                                                                return newHtmlConfiguration.build();
                                                                                                                                            }
@@ -217,6 +227,10 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                 if (newExtensions.stream()
                                                                                                  .noneMatch(extension -> extension instanceof GeoJsonConfiguration)) {
                                                                                     newCollection.addExtensions(newGeoJsonConfiguration.build());
+                                                                                }
+                                                                                if (newExtensions.stream()
+                                                                                                 .noneMatch(extension -> extension instanceof GeoJsonLdConfiguration)) {
+                                                                                    newCollection.addExtensions(newGeoJsonLdConfiguration.build());
                                                                                 }
                                                                                 if (newExtensions.stream()
                                                                                                  .noneMatch(extension -> extension instanceof FeaturesHtmlConfiguration)) {
@@ -537,10 +551,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
         return transformations;
     }
 
+    private Optional<GeoJsonLdConfiguration> getJsonLdOptions(FeatureTypeMapping featureTypeMapping) {
 
-    private Optional<JsonLdOptions> getJsonLdOptions(FeatureTypeMapping featureTypeMapping) {
-
-        ImmutableJsonLdOptions.Builder builder = new ImmutableJsonLdOptions.Builder();
+        ImmutableGeoJsonLdConfiguration.Builder builder = new ImmutableGeoJsonLdConfiguration.Builder();
         boolean isJsonLd = false;
 
         for (Map.Entry<String, SourcePathMapping> entry : featureTypeMapping.getMappings()
@@ -551,7 +564,8 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                .getMappingForType("application/geo+json");
                 if (Objects.nonNull(geoJson.getLdContext())) {
                     isJsonLd = true;
-                    builder.context(geoJson.getLdContext());
+                    builder.enabled(true)
+                           .context(geoJson.getLdContext());
                 }
                 if (Objects.nonNull(geoJson.getLdType())) {
                     builder.types(geoJson.getLdType());
