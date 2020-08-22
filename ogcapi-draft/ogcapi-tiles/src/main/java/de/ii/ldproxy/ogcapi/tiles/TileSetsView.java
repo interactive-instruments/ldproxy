@@ -11,10 +11,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.target.html.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.target.html.NavigationDTO;
 import de.ii.ldproxy.ogcapi.target.html.OgcApiView;
@@ -127,7 +124,7 @@ public class TileSetsView extends OgcApiView {
                 .map(FeatureTypeConfigurationOgcApi::getExtent)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .map(FeatureTypeConfigurationOgcApi.CollectionExtent::getTemporal)
+                .map(CollectionExtent::getTemporal)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})

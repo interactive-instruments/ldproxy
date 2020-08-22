@@ -40,7 +40,7 @@ public class OgcApiLandingPageView extends OgcApiView {
     public URICustomizer uriCustomizer;
     public boolean spatialSearch;
     public Map<String, String> bbox2;
-    public Map<String, String> temporalExtent;
+    public TemporalExtent temporalExtent;
     public String dataTitle;
     public String apiDefinitionTitle;
     public String apiDocumentationTitle;
@@ -73,34 +73,7 @@ public class OgcApiLandingPageView extends OgcApiView {
                 "minLat", Double.toString(spatialExtent.getYmin()),
                 "maxLng", Double.toString(spatialExtent.getXmax()),
                 "maxLat", Double.toString(spatialExtent.getYmax()));
-        Long[] interval = apiData.getCollections()
-                .values()
-                .stream()
-                .map(FeatureTypeConfigurationOgcApi::getExtent)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(FeatureTypeConfigurationOgcApi.CollectionExtent::getTemporal)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})
-                .reduce((longs, longs2) -> new Long[]{
-                        longs[0]==null || longs2[0]==null ? null : Math.min(longs[0], longs2[0]),
-                        longs[1]==null || longs2[1]==null ? null : Math.max(longs[1], longs2[1])})
-                .orElse(null);
-        if (interval==null)
-            this.temporalExtent = null;
-        else if (interval[0]==null && interval[1]==null)
-            this.temporalExtent = ImmutableMap.of();
-        else if (interval[0]==null)
-            this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                "end", interval[1]==null ? null : interval[1].toString());
-        else if (interval[1]==null)
-            this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                "start", interval[0]==null ? null : interval[0].toString());
-        else
-            this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                "start", interval[0]==null ? null : interval[0].toString(),
-                "end", interval[1]==null ? null : interval[1].toString());
+        this.temporalExtent = apiData.getTemporalExtent();
         this.spatialSearch = false;
 
         if (apiData.getMetadata().isPresent()) {

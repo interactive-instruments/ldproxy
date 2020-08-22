@@ -59,6 +59,8 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     public abstract Optional<ExternalDocumentation> getExternalDocs();
 
+    public abstract Optional<CollectionExtent> getDefaultExtent();
+
     @JsonProperty(value = "api")
     @JsonMerge
     @Override
@@ -118,14 +120,10 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     @JsonIgnore
     @Value.Derived
     public BoundingBox getSpatialExtent() {
-        double[] val = getCollections().values()
+        double[] val = getCollections().keySet()
                                        .stream()
-                                       .map(FeatureTypeConfigurationOgcApi::getExtent)
-                                       .filter(Optional::isPresent)
-                                       .map(Optional::get)
-                                       .map(FeatureTypeConfigurationOgcApi.CollectionExtent::getSpatial)
-                                       .filter(Optional::isPresent)
-                                       .map(Optional::get)
+                                       .map(collectionId -> getSpatialExtent(collectionId))
+                                       .filter(Objects::nonNull)
                                        .map(BoundingBox::getCoords)
                                        .reduce((doubles, doubles2) -> new double[]{
                                                Math.min(doubles[0], doubles2[0]),
@@ -143,6 +141,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
      * @param targetCrs the target CRS
      * @return the bounding box
      */
+    @Nullable
     @Value.Derived
     public BoundingBox getSpatialExtent(CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         BoundingBox spatialExtent = getSpatialExtent();
@@ -151,24 +150,55 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     }
 
     /**
+     * Determine temporal extent of all collections in the dataset.
+     * @return the temporal extent in the Gregorian calendar
+     */
+    @Nullable
+    @JsonIgnore
+    public TemporalExtent getTemporalExtent() {
+        Long[] interval = getCollections().keySet()
+                                       .stream()
+                                       .map(collectionId -> getTemporalExtent(collectionId))
+                                       .filter(Objects::nonNull)
+                                       .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})
+                                       .reduce((longs, longs2) -> new Long[]{
+                                               longs[0]==null || longs2[0]==null ? null : Math.min(longs[0], longs2[0]),
+                                               longs[1]==null || longs2[1]==null ? null : Math.max(longs[1], longs2[1])})
+                                       .orElse(null);
+
+        if (Objects.isNull(interval))
+            return null;
+
+        return new ImmutableTemporalExtent.Builder()
+                .start(interval[0])
+                .end(interval[1])
+                .build();
+    }
+
+    /**
      * Determine spatial extent of a collection in the dataset.
      * @param collectionId the name of the feature type
      * @return the bounding box in the default CRS
      */
+    @Nullable
     @Value.Derived
     public BoundingBox getSpatialExtent(String collectionId) {
         return getCollections().values()
                                .stream()
                                .filter(featureTypeConfiguration -> featureTypeConfiguration.getId()
                                                                                            .equals(collectionId))
+                               .filter(FeatureTypeConfigurationOgcApi::getEnabled)
                                .map(FeatureTypeConfigurationOgcApi::getExtent)
                                .filter(Optional::isPresent)
                                .map(Optional::get)
-                               .map(FeatureTypeConfigurationOgcApi.CollectionExtent::getSpatial)
+                               .map(CollectionExtent::getSpatial)
                                .filter(Optional::isPresent)
                                .map(Optional::get)
                                .findFirst()
-                               .orElse(null);
+                               .orElse(getDefaultExtent().map(CollectionExtent::getSpatial)
+                                                         .filter(Optional::isPresent)
+                                                         .map(Optional::get)
+                                                         .orElse(null));
     }
 
     /**
@@ -178,6 +208,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
      * @param targetCrs the target CRS
      * @return the bounding box in the target CRS
      */
+    @Nullable
     @Value.Derived
     public BoundingBox getSpatialExtent(String collectionId, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         BoundingBox spatialExtent = getSpatialExtent(collectionId);
@@ -185,6 +216,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         return transformSpatialExtent(spatialExtent, crsTransformerFactory, targetCrs);
     }
 
+    @Nullable
     @Value.Derived
     private BoundingBox transformSpatialExtent(BoundingBox spatialExtent, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
         Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
@@ -195,5 +227,32 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         }
 
         return spatialExtent;
+    }
+
+    /**
+     * Determine temporal extent of a collection in the dataset.
+     * @param collectionId the name of the feature type
+     * @return the temporal extent in the Gregorian calendar
+     */
+    @Nullable
+    @JsonIgnore
+    @Value.Derived
+    public TemporalExtent getTemporalExtent(String collectionId) {
+        return getCollections().values()
+                               .stream()
+                               .filter(featureTypeConfiguration -> featureTypeConfiguration.getId()
+                                                                                           .equals(collectionId))
+                               .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                               .map(FeatureTypeConfigurationOgcApi::getExtent)
+                               .filter(Optional::isPresent)
+                               .map(Optional::get)
+                               .map(CollectionExtent::getTemporal)
+                               .filter(Optional::isPresent)
+                               .map(Optional::get)
+                               .findFirst()
+                               .orElse(getDefaultExtent().map(CollectionExtent::getTemporal)
+                                                         .filter(Optional::isPresent)
+                                                         .map(Optional::get)
+                                                         .orElse(null));
     }
 }

@@ -13,13 +13,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilder;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueInstance;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,40 +54,6 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
     @JsonAlias(value = "capabilities")
     @Override
     List<ExtensionConfiguration> getExtensions();
-
-    @Value.Immutable
-    @JsonDeserialize(builder = ImmutableCollectionExtent.Builder.class)
-    interface CollectionExtent {
-
-        Optional<TemporalExtent> getTemporal();
-
-        Optional<BoundingBox> getSpatial();
-
-        @Value.Default
-        default boolean getSpatialComputed() {
-            return false;
-        }
-
-    }
-
-    @Value.Immutable
-    @JsonDeserialize(builder = ImmutableTemporalExtent.Builder.class)
-    interface TemporalExtent {
-
-        @Value.Default
-        @Nullable
-        default Long getStart() {
-            return null;
-        }
-
-        @Value.Default
-        @Nullable
-        default Long getEnd() {
-            return null;
-        }
-
-        // TODO: support computed temporal extent
-    }
 
     @JsonIgnore
     List<ExtensionConfiguration> getParentExtensions();
