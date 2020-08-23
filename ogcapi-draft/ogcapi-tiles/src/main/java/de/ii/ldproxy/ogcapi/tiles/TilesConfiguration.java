@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -21,7 +22,7 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
-public interface TilesConfiguration extends ExtensionConfiguration {
+public interface TilesConfiguration extends ExtensionConfiguration, FeatureTransformations {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }

@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,13 +11,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.crs.domain.*;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
-import de.ii.xtraplatform.services.domain.ServiceData;
 import org.immutables.value.Value;
 
-import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +67,8 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     public abstract Optional<ExternalDocumentation> getExternalDocs();
 
+    public abstract Optional<CollectionExtent> getDefaultExtent();
+
     @JsonProperty(value = "api")
     @JsonMerge
     @Override
@@ -98,12 +104,12 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
             getCollections().values()
                             .forEach(featureTypeConfigurationOgcApi -> mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.getBuilder()
-                                                                                                                                                               .parentExtensions(getExtensions())
-                                                                                                                                                               .build()));
+                                                                                                                                                                   .parentExtensions(getExtensions())
+                                                                                                                                                                   .build()));
 
             return new ImmutableOgcApiDataV2.Builder().from(this)
-                                                         .collections(mergedCollections)
-                                                         .build();
+                                                      .collections(mergedCollections)
+                                                      .build();
         }
 
         return this;
@@ -116,74 +122,99 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     /**
      * Determine spatial extent of all collections in the dataset.
+     *
      * @return the bounding box in the default CRS
      */
-    @Nullable
     @JsonIgnore
     @Value.Derived
-    public BoundingBox getSpatialExtent() {
-        double[] val = getCollections().values()
-                                       .stream()
-                                       .map(FeatureTypeConfigurationOgcApi::getExtent)
-                                       .filter(Optional::isPresent)
-                                       .map(Optional::get)
-                                       .map(FeatureTypeConfigurationOgcApi.CollectionExtent::getSpatial)
-                                       .filter(Optional::isPresent)
-                                       .map(Optional::get)
-                                       .map(BoundingBox::getCoords)
-                                       .reduce((doubles, doubles2) -> new double[]{
-                                               Math.min(doubles[0], doubles2[0]),
-                                               Math.min(doubles[1], doubles2[1]),
-                                               Math.max(doubles[2], doubles2[2]),
-                                               Math.max(doubles[3], doubles2[3])})
-                                       .orElse(null);
-
-        return Objects.nonNull(val) ? new BoundingBox(val[0], val[1], val[2], val[3], OgcCrs.CRS84) : null;
+    public Optional<BoundingBox> getSpatialExtent() {
+        return getCollections().keySet()
+                               .stream()
+                               .map(this::getSpatialExtent)
+                               .filter(Optional::isPresent)
+                               .map(Optional::get)
+                               .map(BoundingBox::getCoords)
+                               .reduce((doubles, doubles2) -> new double[]{
+                                       Math.min(doubles[0], doubles2[0]),
+                                       Math.min(doubles[1], doubles2[1]),
+                                       Math.max(doubles[2], doubles2[2]),
+                                       Math.max(doubles[3], doubles2[3])})
+                               .map(doubles -> new BoundingBox(doubles[0], doubles[1], doubles[2], doubles[3], OgcCrs.CRS84));
     }
 
     /**
      * Determine spatial extent of all collections in the dataset in another CRS.
+     *
      * @param crsTransformerFactory the factory for CRS transformers
-     * @param targetCrs the target CRS
+     * @param targetCrs             the target CRS
      * @return the bounding box
      */
-    public BoundingBox getSpatialExtent(CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
-        BoundingBox spatialExtent = getSpatialExtent();
+    public Optional<BoundingBox> getSpatialExtent(CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
+        Optional<BoundingBox> spatialExtent = getSpatialExtent();
 
-        return transformSpatialExtent(spatialExtent, crsTransformerFactory, targetCrs);
+        if (spatialExtent.isPresent()) {
+            return Optional.ofNullable(transformSpatialExtent(spatialExtent.get(), crsTransformerFactory, targetCrs));
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Determine temporal extent of all collections in the dataset.
+     *
+     * @return the temporal extent in the Gregorian calendar
+     */
+    @JsonIgnore
+    @Value.Derived
+    public Optional<TemporalExtent> getTemporalExtent() {
+        return getCollections().keySet()
+                               .stream()
+                               .map(this::getTemporalExtent)
+                               .filter(Optional::isPresent)
+                               .map(Optional::get)
+                               .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})
+                               .reduce((longs, longs2) -> new Long[]{
+                                       longs[0] == null || longs2[0] == null ? null : Math.min(longs[0], longs2[0]),
+                                       longs[1] == null || longs2[1] == null ? null : Math.max(longs[1], longs2[1])})
+                               .map(longs -> new ImmutableTemporalExtent.Builder().start(longs[0])
+                                                                                  .end(longs[1])
+                                                                                  .build());
     }
 
     /**
      * Determine spatial extent of a collection in the dataset.
+     *
      * @param collectionId the name of the feature type
      * @return the bounding box in the default CRS
      */
-    public BoundingBox getSpatialExtent(String collectionId) {
+    public Optional<BoundingBox> getSpatialExtent(String collectionId) {
         return getCollections().values()
                                .stream()
                                .filter(featureTypeConfiguration -> featureTypeConfiguration.getId()
                                                                                            .equals(collectionId))
-                               .map(FeatureTypeConfigurationOgcApi::getExtent)
-                               .filter(Optional::isPresent)
-                               .map(Optional::get)
-                               .map(FeatureTypeConfigurationOgcApi.CollectionExtent::getSpatial)
-                               .filter(Optional::isPresent)
-                               .map(Optional::get)
+                               .filter(FeatureTypeConfigurationOgcApi::getEnabled)
                                .findFirst()
-                               .orElse(null);
+                               .flatMap(FeatureTypeConfigurationOgcApi::getExtent)
+                               .flatMap(CollectionExtent::getSpatial)
+                               .or(() -> getDefaultExtent().flatMap(CollectionExtent::getSpatial));
     }
 
     /**
      * Determine spatial extent of a collection in the dataset in another CRS.
-     * @param collectionId the name of the feature type
+     *
+     * @param collectionId          the name of the feature type
      * @param crsTransformerFactory the factory for CRS transformers
-     * @param targetCrs the target CRS
+     * @param targetCrs             the target CRS
      * @return the bounding box in the target CRS
      */
-    public BoundingBox getSpatialExtent(String collectionId, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
-        BoundingBox spatialExtent = getSpatialExtent(collectionId);
+    public Optional<BoundingBox> getSpatialExtent(String collectionId, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
+        Optional<BoundingBox> spatialExtent = getSpatialExtent(collectionId);
 
-        return transformSpatialExtent(spatialExtent, crsTransformerFactory, targetCrs);
+        if (spatialExtent.isPresent()) {
+            return Optional.ofNullable(transformSpatialExtent(spatialExtent.get(), crsTransformerFactory, targetCrs));
+        }
+
+        return Optional.empty();
     }
 
     private BoundingBox transformSpatialExtent(BoundingBox spatialExtent, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
@@ -195,5 +226,23 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         }
 
         return spatialExtent;
+    }
+
+    /**
+     * Determine temporal extent of a collection in the dataset.
+     *
+     * @param collectionId the name of the feature type
+     * @return the temporal extent in the Gregorian calendar
+     */
+    public Optional<TemporalExtent> getTemporalExtent(String collectionId) {
+        return getCollections().values()
+                               .stream()
+                               .filter(featureTypeConfiguration -> featureTypeConfiguration.getId()
+                                                                                           .equals(collectionId))
+                               .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                               .findFirst()
+                               .flatMap(FeatureTypeConfigurationOgcApi::getExtent)
+                               .flatMap(CollectionExtent::getTemporal)
+                               .or(() -> getDefaultExtent().flatMap(CollectionExtent::getTemporal));
     }
 }

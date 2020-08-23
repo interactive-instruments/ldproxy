@@ -14,6 +14,7 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.services.domain.GenericView;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class StyleView extends GenericView {
     public String styleUrl;
@@ -30,11 +31,11 @@ public class StyleView extends GenericView {
         this.styleId = styleId;
         this.apiData = api.getData();
 
-        BoundingBox spatialExtent = apiData.getSpatialExtent();
-        this.bbox = spatialExtent==null ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent.getXmin()),
-                "minLat", Double.toString(spatialExtent.getYmin()),
-                "maxLng", Double.toString(spatialExtent.getXmax()),
-                "maxLat", Double.toString(spatialExtent.getYmax()));
+        Optional<BoundingBox> spatialExtent = apiData.getSpatialExtent();
+        this.bbox = spatialExtent.isEmpty() ? null : ImmutableMap.of(
+                "minLng", Double.toString(spatialExtent.get().getXmin()),
+                "minLat", Double.toString(spatialExtent.get().getYmin()),
+                "maxLng", Double.toString(spatialExtent.get().getXmax()),
+                "maxLat", Double.toString(spatialExtent.get().getYmax()));
     }
 }

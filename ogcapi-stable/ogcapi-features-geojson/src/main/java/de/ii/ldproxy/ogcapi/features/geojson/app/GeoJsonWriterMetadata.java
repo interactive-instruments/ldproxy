@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.geojson.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

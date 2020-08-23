@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
@@ -185,9 +186,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         //JsonGenerator jsonOut = transformationContext.getJsonGenerator();
 
         FeatureTransformerGeoJson.NESTED_OBJECTS nestedObjectStrategy = transformationContext.getGeoJsonConfig()
-                                                                                             .getNestedObjectStrategy();
+                                                                   .getNestedObjectStrategy();
         FeatureTransformerGeoJson.MULTIPLICITY multiplicityStrategy = transformationContext.getGeoJsonConfig()
-                                                                                           .getMultiplicityStrategy();
+                                                                 .getMultiplicityStrategy();
         List<Integer> multiplicities = transformationContext.getState()
                                                             .getCurrentMultiplicity();
 

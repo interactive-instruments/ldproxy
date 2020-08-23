@@ -8,18 +8,12 @@
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
 import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.geojson.app.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.app.FeaturesFormatGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
-import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
@@ -29,47 +23,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.consumerMayThrow;
+
 
 /**
  * @author zahnen
  */
-public class FeatureTransformerGeoJson implements FeatureTransformer2 {
+public class FeatureTransformerGeoJson extends FeatureTransformerBase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerGeoJson.class);
 
     private final ImmutableCollection<GeoJsonWriter> featureWriters;
     private final FeatureTransformationContextGeoJson transformationContext;
     private final StringBuilder stringBuilder;
-    private final Optional<FeatureTransformations> baseTransformations;
-    private final Optional<FeatureTransformations> geojsonTransformations;
     private FeatureProperty currentProperty;
     private boolean combineCurrentPropertyValues;
 
-    public enum NESTED_OBJECTS {NEST, FLATTEN}
-
-    public enum MULTIPLICITY {ARRAY, SUFFIX}
-
-
     public FeatureTransformerGeoJson(FeatureTransformationContextGeoJson transformationContext,
                                      ImmutableCollection<GeoJsonWriter> featureWriters) {
+        super(GeoJsonConfiguration.class,
+              transformationContext.getApiData(), transformationContext.getCollectionId(),
+              transformationContext.getCodelists(), transformationContext.getServiceUrl(),
+              transformationContext.isFeatureCollection());
         this.transformationContext = transformationContext;
         this.featureWriters = featureWriters;
         this.stringBuilder = new StringBuilder();
-
-        FeatureTypeConfigurationOgcApi featureType = transformationContext.getApiData()
-                                                                          .getCollections()
-                                                                          .get(transformationContext.getCollectionId());
-        baseTransformations = Objects.isNull(featureType) ? Optional.empty() : featureType
-                .getExtension(OgcApiFeaturesCoreConfiguration.class)
-                .map(coreConfiguration -> coreConfiguration);
-        geojsonTransformations = Objects.isNull(featureType) ? Optional.empty() : featureType
-                .getExtension(GeoJsonConfiguration.class)
-                .map(coreConfiguration -> coreConfiguration);
     }
 
     @Override
@@ -198,68 +183,6 @@ public class FeatureTransformerGeoJson implements FeatureTransformer2 {
                              .setCurrentValue(Optional.empty());
         this.currentProperty = null;
         this.combineCurrentPropertyValues = false;
-    }
-
-    private List<FeaturePropertyValueTransformer> getValueTransformations(FeatureProperty featureProperty) {
-        List<FeaturePropertyValueTransformer> valueTransformations = null;
-        if (baseTransformations.isPresent()) {
-            valueTransformations = baseTransformations.get()
-                                                      .getValueTransformations(transformationContext.getCodelists(), transformationContext.getServiceUrl())
-                                                      .get(featureProperty.getName()
-                                                                          .replaceAll("\\[[^\\]]+?\\]", "[]"));
-        }
-        if (geojsonTransformations.isPresent()) {
-            if (Objects.nonNull(valueTransformations)) {
-                List<FeaturePropertyValueTransformer> moreTransformations = geojsonTransformations.get()
-                                                                                                  .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
-                                                                                                  .get(featureProperty.getName()
-                                                                                                                      .replaceAll("\\[[^\\]]+?\\]", "[]"));
-                if (Objects.nonNull(moreTransformations)) {
-                    valueTransformations = Stream
-                            .of(valueTransformations, moreTransformations)
-                            .flatMap(Collection::stream)
-                            .collect(ImmutableList.toImmutableList());
-                }
-            } else {
-                valueTransformations = geojsonTransformations.get()
-                                                             .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
-                                                             .get(featureProperty.getName()
-                                                                                 .replaceAll("\\[[^\\]]+?\\]", "[]"));
-            }
-        }
-
-        return Objects.nonNull(valueTransformations) ? valueTransformations : ImmutableList.of();
-    }
-
-    private List<FeaturePropertySchemaTransformer> getSchemaTransformations(FeatureProperty featureProperty) {
-        List<FeaturePropertySchemaTransformer> schemaTransformations = null;
-        if (baseTransformations.isPresent()) {
-            schemaTransformations = baseTransformations.get()
-                                                       .getSchemaTransformations(false)
-                                                       .get(featureProperty.getName()
-                                                                           .replaceAll("\\[[^\\]]+?\\]", "[]"));
-        }
-        if (geojsonTransformations.isPresent()) {
-            if (Objects.nonNull(schemaTransformations)) {
-                List<FeaturePropertySchemaTransformer> moreTransformations = geojsonTransformations.get()
-                                                                                                   .getSchemaTransformations(false)
-                                                                                                   .get(featureProperty.getName()
-                                                                                                                       .replaceAll("\\[[^\\]]+?\\]", "[]"));
-                if (Objects.nonNull(moreTransformations)) {
-                    schemaTransformations = Stream
-                            .of(schemaTransformations, moreTransformations)
-                            .flatMap(Collection::stream)
-                            .collect(ImmutableList.toImmutableList());
-                }
-            } else {
-                schemaTransformations = geojsonTransformations.get()
-                                                              .getSchemaTransformations(false)
-                                                              .get(featureProperty.getName()
-                                                                                  .replaceAll("\\[[^\\]]+?\\]", "[]"));
-            }
-        }
-
-        return Objects.nonNull(schemaTransformations) ? schemaTransformations : ImmutableList.of();
     }
 
     @Override

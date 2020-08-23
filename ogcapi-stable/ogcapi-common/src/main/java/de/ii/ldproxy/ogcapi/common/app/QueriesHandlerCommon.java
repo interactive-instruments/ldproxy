@@ -86,8 +86,15 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
                                                         i18n,
                                                         requestContext.getLanguage());
 
-        BoundingBox bbox = apiData.getSpatialExtent();
-        OgcApiExtent spatialExtent = Objects.nonNull(bbox) ? new OgcApiExtent(bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax()) : null;
+        Optional<BoundingBox> bbox = apiData.getSpatialExtent();
+        Optional<TemporalExtent> interval = apiData.getTemporalExtent();
+        OgcApiExtent spatialExtent = bbox.isPresent() && interval.isPresent() ?
+                new OgcApiExtent(interval.get().getStart(), interval.get().getEnd(), bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax()) :
+                bbox.isPresent() ?
+                        new OgcApiExtent(bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax()) :
+                        interval.isPresent() ?
+                                new OgcApiExtent(interval.get().getStart(), interval.get().getEnd()) :
+                                null;
 
         ImmutableLandingPage.Builder apiLandingPage = new ImmutableLandingPage.Builder()
                 .title(apiData.getLabel())

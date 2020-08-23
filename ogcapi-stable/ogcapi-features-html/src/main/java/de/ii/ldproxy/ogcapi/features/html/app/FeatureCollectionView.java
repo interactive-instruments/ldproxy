@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.DatasetView;
@@ -44,7 +45,7 @@ public class FeatureCollectionView extends DatasetView {
     public PropertyDTO links;
     public Set<Map.Entry<String, String>> filterFields;
     public Map<String, String> bbox2;
-    public FeatureTypeConfigurationOgcApi.TemporalExtent temporalExtent;
+    public TemporalExtent temporalExtent;
     public URICustomizer uriBuilder;
     public URICustomizer uriBuilderWithFOnly;
     public boolean bare;

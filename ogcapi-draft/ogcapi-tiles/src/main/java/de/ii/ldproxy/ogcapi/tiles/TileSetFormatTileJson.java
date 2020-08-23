@@ -105,16 +105,17 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
 
         // TODO: add support for attribution and version (manage revisions to the data)
 
-        BoundingBox bbox = collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent();
-        if (Objects.nonNull(bbox))
-            tileJsonBuilder.bounds(ImmutableList.of(bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax()));
+        Optional<BoundingBox> bbox = collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent();
+        if (bbox.isPresent()) {
+            tileJsonBuilder.bounds(ImmutableList.of(bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax()));
+        }
 
         List<Integer> minMaxZoom = getMinMaxZoom(zoomLevels, tileMatrixSet);
         tileJsonBuilder.minzoom(minMaxZoom.get(0))
                        .maxzoom(minMaxZoom.get(1));
 
-        double centerLon = (Objects.nonNull(center) && center.length>=1) ? center[0] : bbox.getXmin()+(bbox.getXmax()-bbox.getXmin())*0.5;
-        double centerLat = (Objects.nonNull(center) && center.length>=2) ? center[1] : bbox.getYmin()+(bbox.getYmax()-bbox.getYmin())*0.5;
+        double centerLon = (Objects.nonNull(center) && center.length>=1) ? center[0] : bbox.get().getXmin()+(bbox.get().getXmax()-bbox.get().getXmin())*0.5;
+        double centerLat = (Objects.nonNull(center) && center.length>=2) ? center[1] : bbox.get().getYmin()+(bbox.get().getYmax()-bbox.get().getYmin())*0.5;
         int defaultZoomLevel = zoomLevels.getDefault().orElse(minMaxZoom.get(0) + (minMaxZoom.get(1)-minMaxZoom.get(0))/2);
         tileJsonBuilder.center(ImmutableList.of(centerLon, centerLat, defaultZoomLevel));
 

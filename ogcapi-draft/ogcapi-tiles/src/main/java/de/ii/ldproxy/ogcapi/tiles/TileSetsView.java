@@ -10,10 +10,11 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.CollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -21,7 +22,12 @@ import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TileSetsView extends OgcApiView {
@@ -56,18 +62,19 @@ public class TileSetsView extends OgcApiView {
                 tiles.getDescription()
                      .orElse(""));
 
-        BoundingBox spatialExtent = apiData.getSpatialExtent();
-        this.bbox2 = spatialExtent==null ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent.getXmin()),
-                "minLat", Double.toString(spatialExtent.getYmin()),
-                "maxLng", Double.toString(spatialExtent.getXmax()),
-                "maxLat", Double.toString(spatialExtent.getYmax()));
+        Optional<BoundingBox> spatialExtent = apiData.getSpatialExtent();
+        this.bbox2 = spatialExtent.map(boundingBox -> ImmutableMap.of(
+                "minLng", Double.toString(boundingBox.getXmin()),
+                "minLat", Double.toString(boundingBox.getYmin()),
+                "maxLng", Double.toString(boundingBox.getXmax()),
+                "maxLat", Double.toString(boundingBox.getYmax())))
+                                  .orElse(null);
         this.center = tiles.getDefaultCenter().isPresent() && tiles.getDefaultCenter().get().length>=2 ? ImmutableMap.of(
                 "lon", Double.toString(tiles.getDefaultCenter().get()[0]),
-                "lat", Double.toString(tiles.getDefaultCenter().get()[1])) : Objects.nonNull(spatialExtent) ? ImmutableMap.of(
-                "lon", Double.toString(spatialExtent.getXmax()*0.5+spatialExtent.getXmin()*0.5),
-                "lat", Double.toString(spatialExtent.getYmax()*0.5+spatialExtent.getYmin()*0.5)) : ImmutableMap.of();
-        this.tileCollections = spatialExtent==null ? ImmutableList.of() :tiles.getTileMatrixSetLinks()
+                "lat", Double.toString(tiles.getDefaultCenter().get()[1])) : spatialExtent.isPresent() ? ImmutableMap.of(
+                "lon", Double.toString(spatialExtent.get().getXmax()*0.5+spatialExtent.get().getXmin()*0.5),
+                "lat", Double.toString(spatialExtent.get().getYmax()*0.5+spatialExtent.get().getYmin()*0.5)) : ImmutableMap.of();
+        this.tileCollections = spatialExtent.isPresent() ? tiles.getTileMatrixSetLinks()
                 .stream()
                 .filter(tms -> tms.getTileMatrixSet().isPresent())
                 .map(tms -> {
@@ -97,7 +104,7 @@ public class TileSetsView extends OgcApiView {
                             .put("projection","EPSG:"+tileMatrixSet.getCrs().getCode())
                             .build();
                 })
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()) : ImmutableList.of();
 
         this.tilesUrl = links.stream()
                 .filter(link -> Objects.equals(link.getRel(),"item"))
@@ -127,7 +134,7 @@ public class TileSetsView extends OgcApiView {
                 .map(FeatureTypeConfigurationOgcApi::getExtent)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .map(FeatureTypeConfigurationOgcApi.CollectionExtent::getTemporal)
+                .map(CollectionExtent::getTemporal)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})

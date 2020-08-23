@@ -86,17 +86,21 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
     public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDataV2 data, TileMatrixSet tileMatrixSet,
                                                             MinMax tileMatrixRange, CrsTransformerFactory crsTransformerFactory) {
 
-        BoundingBox bbox = data.getSpatialExtent();
-        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
-        if (transformer.isPresent()) {
-            try {
-                bbox = transformer.get().transformBoundingBox(bbox);
-            } catch (CrsTransformationException e) {
-                LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().toSimpleString()));
-                return ImmutableList.of();
+        Optional<BoundingBox> bbox = data.getSpatialExtent();
+        if (bbox.isPresent()) {
+            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.get().getEpsgCrs(), tileMatrixSet.getCrs());
+            if (transformer.isPresent()) {
+                try {
+                    bbox = Optional.ofNullable(transformer.get()
+                                                          .transformBoundingBox(bbox.get()));
+                } catch (CrsTransformationException e) {
+                    LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax(), bbox.get().getEpsgCrs()
+                                                                                                                                                                                                                               .toSimpleString()));
+                    return ImmutableList.of();
+                }
             }
         }
 
-        return tileMatrixSet.getLimitsList(tileMatrixRange, bbox);
+        return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.orElse(null));
     }
 }

@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
-import de.ii.ldproxy.ogcapi.features.geojson.app.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.app.FeatureWriterGeoJson;
 
 /**
