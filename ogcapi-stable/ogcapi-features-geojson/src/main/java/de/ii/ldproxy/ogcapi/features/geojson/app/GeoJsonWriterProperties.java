@@ -12,6 +12,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

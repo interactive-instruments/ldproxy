@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.ExternalDocumentation;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.oas30.domain.OpenApiExtension;
 import de.ii.xtraplatform.runtime.domain.AuthConfig;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import io.swagger.v3.core.util.Json;
@@ -42,7 +43,7 @@ import java.util.TreeSet;
 @Provides(specifications = {ExtendableOpenApiDefinition.class})
 @Instantiate
 @Wbp(
-        filter = "(objectClass=de.ii.ldproxy.ogcapi.oas30.OpenApiExtension)",
+        filter = "(objectClass=de.ii.ldproxy.ogcapi.oas30.domain.OpenApiExtension)",
         onArrival = "onArrival",
         onDeparture = "onDeparture")
 public class ExtendableOpenApiDefinition {

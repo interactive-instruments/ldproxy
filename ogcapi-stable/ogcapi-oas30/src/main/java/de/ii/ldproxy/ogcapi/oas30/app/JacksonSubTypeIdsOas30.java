@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.oas30.app;
 
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import de.ii.xtraplatform.dropwizard.domain.JacksonSubTypeIds;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

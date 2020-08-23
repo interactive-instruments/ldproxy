@@ -8,13 +8,17 @@
 package de.ii.ldproxy.ogcapi.app;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.xtraplatform.store.domain.entities.EntityComponent;
-import de.ii.xtraplatform.store.domain.entities.handler.Entity;
+import de.ii.ldproxy.ogcapi.domain.StartupTask;
 import de.ii.xtraplatform.services.domain.AbstractService;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
+import de.ii.xtraplatform.store.domain.entities.EntityComponent;
+import de.ii.xtraplatform.store.domain.entities.handler.Entity;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

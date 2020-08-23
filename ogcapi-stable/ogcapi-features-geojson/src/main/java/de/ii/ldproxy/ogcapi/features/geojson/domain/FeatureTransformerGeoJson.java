@@ -16,7 +16,6 @@ import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration
 import de.ii.ldproxy.ogcapi.features.geojson.app.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.app.FeaturesFormatGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
-import de.ii.ldproxy.ogcapi.features.geojson.app.GeoJsonWriter;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;

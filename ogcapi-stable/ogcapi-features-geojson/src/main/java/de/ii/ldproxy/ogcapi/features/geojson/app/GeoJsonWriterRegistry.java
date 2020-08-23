@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -26,7 +27,7 @@ import java.util.Objects;
 @Provides(specifications = GeoJsonWriterRegistry.class)
 @Instantiate
 @Wbp(
-        filter = "(objectClass=de.ii.ldproxy.ogcapi.features.target.geojson.GeoJsonWriter)",
+        filter = "(objectClass=de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter)",
         onArrival = "onArrival",
         onDeparture = "onDeparture")
 public class GeoJsonWriterRegistry {

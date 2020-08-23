@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.oas30.app;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

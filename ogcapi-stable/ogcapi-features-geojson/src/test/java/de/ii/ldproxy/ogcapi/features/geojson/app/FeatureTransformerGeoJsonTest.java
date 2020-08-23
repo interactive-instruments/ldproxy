@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext.Event;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureProperty;

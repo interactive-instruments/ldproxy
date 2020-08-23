@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;

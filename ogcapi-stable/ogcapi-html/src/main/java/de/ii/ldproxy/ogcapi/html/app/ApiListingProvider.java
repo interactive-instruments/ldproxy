@@ -63,9 +63,9 @@ public class ApiListingProvider implements ServiceListingProvider {
             ImmutableOgcApiDataV2 defaults = ((ImmutableOgcApiDataV2.Builder) builder).id("NOT_SET")
                                                                                       .build();
             return defaults.getExtension(HtmlConfiguration.class)
-                           .orElse(null);
+                           .orElse(new ImmutableHtmlConfiguration.Builder().build());
         }
-        return null;
+        return new ImmutableHtmlConfiguration.Builder().build();
     }
 
     // TODO: move externalUri handling to XtraplatformRequestContext in ServicesResource

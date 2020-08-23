@@ -5,10 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.oas30.app;
+package de.ii.ldproxy.ogcapi.oas30.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.oas30.app.ImmutableOas30Configuration;
 import org.immutables.value.Value;
 
 @Value.Immutable

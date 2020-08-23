@@ -8,6 +8,8 @@
 package de.ii.ldproxy.ogcapi.oas30.app;
 
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
+import de.ii.ldproxy.ogcapi.oas30.domain.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

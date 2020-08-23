@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
