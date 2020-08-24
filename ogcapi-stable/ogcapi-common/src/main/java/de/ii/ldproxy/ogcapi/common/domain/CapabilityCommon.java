@@ -26,21 +26,21 @@ public class CapabilityCommon implements ApiBuildingBlock {
 
     @Override
     public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableOgcApiCommonConfiguration.Builder();
+        return new ImmutableCommonConfiguration.Builder();
     }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableOgcApiCommonConfiguration.Builder().enabled(true)
-                                                               .includeHomeLink(false)
-                                                               .includeLinkHeader(true)
-                                                               .useLangParameter(false)
-                                                               .encodings(extensionRegistry.getExtensionsForType(CommonFormatExtension.class)
+        return new ImmutableCommonConfiguration.Builder().enabled(true)
+                                                         .includeHomeLink(false)
+                                                         .includeLinkHeader(true)
+                                                         .useLangParameter(false)
+                                                         .encodings(extensionRegistry.getExtensionsForType(CommonFormatExtension.class)
                                                                                            .stream()
                                                                                            .filter(GenericFormatExtension::isEnabledByDefault)
                                                                                            .map(format -> format.getMediaType().label())
                                                                                            .collect(ImmutableList.toImmutableList()))
-                                                               .build();
+                                                         .build();
     }
 
 }

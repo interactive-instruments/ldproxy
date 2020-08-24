@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.collections.app;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionsConfiguration;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.dropwizard.domain.JacksonSubTypeIds;
 import org.apache.felix.ipojo.annotations.Component;
@@ -24,7 +24,7 @@ public class JacksonSubTypeIdsOgcApiCollections implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(OgcApiCollectionsConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(OgcApiCollectionsConfiguration.class))
+                .put(CollectionsConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(CollectionsConfiguration.class))
                 .build();
     }
 }

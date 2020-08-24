@@ -21,7 +21,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -153,8 +153,8 @@ public class TileFormatMVT implements TileFormatExtension {
         OgcApiDataV2 apiData = tile.getApi().getData();
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
 
-        final Map<String, String> filterableFields = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
+        final Map<String, String> filterableFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                .map(FeaturesCoreConfiguration::getAllFilterParameters)
                 .orElse(ImmutableMap.of());
 
         Set<String> filterParameters = ImmutableSet.of();

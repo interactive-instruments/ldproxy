@@ -1,6 +1,6 @@
 package de.ii.ldproxy.ogcapi.styles.app;
 
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
@@ -48,8 +48,8 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
 
     @Override
     public Response getStyleMetadataResponse(StyleMetadata metadata, OgcApi api, ApiRequestContext requestContext) {
-        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
         return Response.ok()

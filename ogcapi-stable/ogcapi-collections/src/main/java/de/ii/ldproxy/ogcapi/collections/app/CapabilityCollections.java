@@ -1,6 +1,6 @@
 package de.ii.ldproxy.ogcapi.collections.app;
 
-import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollectionsConfiguration;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import org.apache.felix.ipojo.annotations.Component;
@@ -14,12 +14,12 @@ public class CapabilityCollections implements ApiBuildingBlock {
 
     @Override
     public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableOgcApiCollectionsConfiguration.Builder();
+        return new ImmutableCollectionsConfiguration.Builder();
     }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableOgcApiCollectionsConfiguration.Builder().enabled(true)
-                                                                    .build();
+        return new ImmutableCollectionsConfiguration.Builder().enabled(true)
+                                                              .build();
     }
 }

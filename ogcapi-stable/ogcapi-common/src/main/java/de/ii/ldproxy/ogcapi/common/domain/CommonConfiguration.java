@@ -16,8 +16,8 @@ import java.util.List;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-@JsonDeserialize(builder = ImmutableOgcApiCommonConfiguration.Builder.class)
-public interface OgcApiCommonConfiguration extends ExtensionConfiguration {
+@JsonDeserialize(builder = ImmutableCommonConfiguration.Builder.class)
+public interface CommonConfiguration extends ExtensionConfiguration {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
@@ -35,12 +35,12 @@ public interface OgcApiCommonConfiguration extends ExtensionConfiguration {
 
     @Override
     default Builder getBuilder() {
-        return new ImmutableOgcApiCommonConfiguration.Builder();
+        return new ImmutableCommonConfiguration.Builder();
     }
 
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        ImmutableOgcApiCommonConfiguration.Builder builder = ((ImmutableOgcApiCommonConfiguration.Builder) source.getBuilder())
+        ImmutableCommonConfiguration.Builder builder = ((ImmutableCommonConfiguration.Builder) source.getBuilder())
                 .from(source)
                 .from(this);
 

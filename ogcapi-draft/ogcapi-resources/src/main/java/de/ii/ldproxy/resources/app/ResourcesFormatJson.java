@@ -1,6 +1,6 @@
 package de.ii.ldproxy.resources.app;
 
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.resources.domain.ResourcesFormatExtension;
@@ -56,8 +56,8 @@ public class ResourcesFormatJson implements ResourcesFormatExtension {
 
     @Override
     public Response getResourcesResponse(Resources resources, OgcApi api, ApiRequestContext requestContext) {
-        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
         return Response.ok(resources)

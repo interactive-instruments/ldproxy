@@ -15,8 +15,8 @@ import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -45,7 +45,7 @@ public class CollectionExtensionFeatures implements CollectionExtension {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiFeaturesCoreConfiguration.class;
+        return FeaturesCoreConfiguration.class;
     }
 
     @Override
@@ -107,14 +107,14 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                     .build());
         }
 
-        Optional<OgcApiFeaturesCoreConfiguration> config = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class);
+        Optional<FeaturesCoreConfiguration> config = apiData.getExtension(FeaturesCoreConfiguration.class);
         if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/collections/"+featureType.getId())) {
             List<Link> additionalLinks = config.get().getAdditionalLinks().get("/collections/"+featureType.getId());
             additionalLinks.stream().forEach(link -> collection.addLinks(link));
         }
 
         // only add extents for cases where we can filter using spatial / temporal predicates
-        Optional<FeaturesCollectionQueryables> queryables = featureType.getExtension(OgcApiFeaturesCoreConfiguration.class).flatMap(OgcApiFeaturesCoreConfiguration::getQueryables);
+        Optional<FeaturesCollectionQueryables> queryables = featureType.getExtension(FeaturesCoreConfiguration.class).flatMap(FeaturesCoreConfiguration::getQueryables);
         boolean hasSpatialQueryable = queryables.map(FeaturesCollectionQueryables::getSpatial)
                                                 .filter(spatial -> !spatial.isEmpty())
                                                 .isPresent();

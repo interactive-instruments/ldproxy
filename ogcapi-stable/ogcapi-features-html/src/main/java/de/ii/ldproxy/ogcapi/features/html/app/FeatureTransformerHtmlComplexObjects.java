@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.legacy.MicrodataGeometryMapping;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -211,7 +211,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                                                                                        .get(transformationContext.getCollectionId());
 
         Optional<FeatureTransformations> baseTransformations = featureTypeConfiguration
-                .getExtension(OgcApiFeaturesCoreConfiguration.class)
+                .getExtension(FeaturesCoreConfiguration.class)
                 .map(coreConfiguration -> coreConfiguration);
 
         this.transformations = featureTypeConfiguration

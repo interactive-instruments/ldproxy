@@ -13,7 +13,7 @@ import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
@@ -86,7 +86,7 @@ public class CrsSupportImpl implements CrsSupport {
 
     private EpsgCrs getDefaultCrs(OgcApiDataV2 apiData,
                                   Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
-        return apiData.getExtension(OgcApiFeaturesCoreConfiguration.class)
+        return apiData.getExtension(FeaturesCoreConfiguration.class)
                       .get()
                       .getDefaultEpsgCrs();
     }

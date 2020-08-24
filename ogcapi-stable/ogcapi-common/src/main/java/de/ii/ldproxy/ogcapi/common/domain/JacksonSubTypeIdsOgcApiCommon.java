@@ -23,7 +23,7 @@ public class JacksonSubTypeIdsOgcApiCommon implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(OgcApiCommonConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(OgcApiCommonConfiguration.class))
+                .put(CommonConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(CommonConfiguration.class))
                 .build();
     }
 }

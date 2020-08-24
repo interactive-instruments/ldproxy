@@ -3,7 +3,7 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -36,7 +36,7 @@ public class QueryParameterFFeatures extends QueryParameterF {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiFeaturesCoreConfiguration.class;
+        return FeaturesCoreConfiguration.class;
     }
 
 }

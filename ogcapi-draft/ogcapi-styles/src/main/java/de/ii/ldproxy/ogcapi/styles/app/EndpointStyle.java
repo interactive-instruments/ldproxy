@@ -9,9 +9,9 @@ package de.ii.ldproxy.ogcapi.styles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
@@ -155,8 +155,8 @@ public class EndpointStyle extends Endpoint {
 
         // collect self/alternate links, but only, if we need to return them in the headers
         List<Link> links = null;
-        boolean includeLinkHeader = dataset.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = dataset.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
         if (includeLinkHeader) {
             final DefaultLinksGenerator defaultLinkGenerator = new DefaultLinksGenerator();

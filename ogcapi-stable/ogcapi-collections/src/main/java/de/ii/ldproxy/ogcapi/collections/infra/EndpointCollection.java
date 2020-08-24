@@ -13,8 +13,8 @@ import de.ii.ldproxy.ogcapi.collections.app.ImmutableQueryInputFeatureCollection
 import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionsConfiguration;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
@@ -51,7 +51,7 @@ public class EndpointCollection extends EndpointSubCollection {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiCollectionsConfiguration.class;
+        return CollectionsConfiguration.class;
     }
 
     @Override
@@ -123,11 +123,11 @@ public class EndpointCollection extends EndpointSubCollection {
                                   @Context ApiRequestContext requestContext, @PathParam("collectionId") String collectionId) {
         checkAuthorization(api.getData(), optionalUser);
 
-        boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+        boolean includeHomeLink = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
         QueriesHandlerCollections.QueryInputFeatureCollection queryInput = new ImmutableQueryInputFeatureCollection.Builder()

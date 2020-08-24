@@ -11,7 +11,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ExtendableConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
@@ -50,8 +50,8 @@ public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
     }
 
     private Optional<FeatureProvider2> getOptionalFeatureProvider(ExtendableConfiguration extendableConfiguration) {
-        return extendableConfiguration.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                                      .flatMap(OgcApiFeaturesCoreConfiguration::getFeatureProvider)
+        return extendableConfiguration.getExtension(FeaturesCoreConfiguration.class)
+                                      .flatMap(FeaturesCoreConfiguration::getFeatureProvider)
                                       .flatMap(id -> entityRegistry.getEntity(FeatureProvider2.class, id));
     }
 }

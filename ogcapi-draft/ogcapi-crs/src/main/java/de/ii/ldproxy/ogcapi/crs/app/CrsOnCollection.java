@@ -14,9 +14,9 @@ import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -58,8 +58,8 @@ public class CrsOnCollection implements CollectionExtension {
                                                      ApiMediaType mediaType,
                                                      List<ApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
-        boolean hasGeometry = featureTypeConfiguration.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
+        boolean hasGeometry = featureTypeConfiguration.getExtension(FeaturesCoreConfiguration.class)
+                .flatMap(FeaturesCoreConfiguration::getQueryables)
                 .map(FeaturesCollectionQueryables::getSpatial)
                 .filter(spatial -> !spatial.isEmpty())
                 .isPresent();

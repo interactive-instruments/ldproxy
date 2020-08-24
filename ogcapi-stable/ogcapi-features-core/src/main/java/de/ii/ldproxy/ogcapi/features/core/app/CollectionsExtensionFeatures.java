@@ -12,7 +12,7 @@ import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -37,7 +37,7 @@ public class CollectionsExtensionFeatures implements CollectionsExtension {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiFeaturesCoreConfiguration.class;
+        return FeaturesCoreConfiguration.class;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class CollectionsExtensionFeatures implements CollectionsExtension {
             return collectionsBuilder;
         }
 
-        Optional<OgcApiFeaturesCoreConfiguration> config = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class);
+        Optional<FeaturesCoreConfiguration> config = apiData.getExtension(FeaturesCoreConfiguration.class);
         if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/collections")) {
             List<Link> additionalLinks = config.get().getAdditionalLinks().get("/collections");
             additionalLinks.stream().forEach(link -> collectionsBuilder.addLinks(link));

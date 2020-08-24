@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableQueryInputVariables;
 import de.ii.ldproxy.ogcapi.observation_processing.api.DapaVariablesFormatExtension;
@@ -116,11 +116,11 @@ public class EndpointVariables extends EndpointSubCollection {
         checkAuthorization(api.getData(), optionalUser);
         checkPathParameter(extensionRegistry, api.getData(), "/collections/{collectionId}/"+ DAPA_PATH_ELEMENT +"/variables", "collectionId", collectionId);
 
-        final boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+        final boolean includeHomeLink = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        final boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        final boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
         final List<Variable> variables = api.getData().getExtension(ObservationProcessingConfiguration.class)
                 .map(ObservationProcessingConfiguration::getVariables)

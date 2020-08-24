@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.app.ImmutableQueryInputCollections;
 import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
-import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionsConfiguration;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
@@ -46,7 +46,7 @@ public class EndpointCollections extends Endpoint {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiCollectionsConfiguration.class;
+        return CollectionsConfiguration.class;
     }
 
     @Override
@@ -103,11 +103,11 @@ public class EndpointCollections extends Endpoint {
                                    @Context ApiRequestContext requestContext) {
         checkAuthorization(api.getData(), optionalUser);
 
-        boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+        boolean includeHomeLink = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
         QueriesHandlerCollections.QueryInputCollections queryInput = new ImmutableQueryInputCollections.Builder()

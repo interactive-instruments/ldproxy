@@ -33,6 +33,6 @@ public class QueryParameterFApiDefinition extends QueryParameterF {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiCommonConfiguration.class;
+        return CommonConfiguration.class;
     }
 }

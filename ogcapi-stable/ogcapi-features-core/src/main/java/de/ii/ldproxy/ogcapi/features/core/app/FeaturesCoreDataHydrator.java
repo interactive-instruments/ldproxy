@@ -17,10 +17,10 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables;
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableOgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -55,7 +55,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiFeaturesCoreConfiguration.class;
+        return FeaturesCoreConfiguration.class;
     }
 
     @Override
@@ -135,7 +135,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                                   .extent(new ImmutableCollectionExtent.Builder()
                                                           .spatialComputed(true)
                                                           .build())
-                                                  .addExtensions(new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
+                                                  .addExtensions(new ImmutableFeaturesCoreConfiguration.Builder()
                                                           .enabled(true)
                                                           .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
                                                                   .spatial(spatialProperty)

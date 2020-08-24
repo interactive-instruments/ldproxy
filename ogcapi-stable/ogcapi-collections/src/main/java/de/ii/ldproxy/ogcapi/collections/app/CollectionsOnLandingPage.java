@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.collections.app;
 
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollectionsConfiguration;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -32,7 +32,7 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiCollectionsConfiguration.class;
+        return CollectionsConfiguration.class;
     }
 
     @Override

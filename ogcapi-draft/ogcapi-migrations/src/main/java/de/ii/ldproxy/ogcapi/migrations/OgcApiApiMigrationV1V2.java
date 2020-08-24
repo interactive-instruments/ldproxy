@@ -21,10 +21,10 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV1;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables;
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableOgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonMapping;
@@ -106,8 +106,8 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
         List<ExtensionConfiguration> extensions = entityData.getExtensions()
                                                             .stream()
                                                             .map(extensionConfiguration -> {
-                                                                if (extensionConfiguration instanceof OgcApiFeaturesCoreConfiguration) {
-                                                                    return new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
+                                                                if (extensionConfiguration instanceof FeaturesCoreConfiguration) {
+                                                                    return new ImmutableFeaturesCoreConfiguration.Builder()
                                                                             .from(extensionConfiguration)
                                                                             .featureProvider(entityData.getId())
                                                                             .build();
@@ -143,9 +143,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                     newCollection.enabled(false);
                                                                                 }
 
-                                                                                Optional<OgcApiFeaturesCoreConfiguration> coreConfiguration = collection.getExtension(OgcApiFeaturesCoreConfiguration.class);
+                                                                                Optional<FeaturesCoreConfiguration> coreConfiguration = collection.getExtension(FeaturesCoreConfiguration.class);
 
-                                                                                ImmutableOgcApiFeaturesCoreConfiguration.Builder newCoreConfiguration = new ImmutableOgcApiFeaturesCoreConfiguration.Builder();
+                                                                                ImmutableFeaturesCoreConfiguration.Builder newCoreConfiguration = new ImmutableFeaturesCoreConfiguration.Builder();
 
                                                                                 coreConfiguration.ifPresent(newCoreConfiguration::from);
 
@@ -217,7 +217,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                                                                        .stream()
                                                                                                                                        .map(extension -> {
 
-                                                                                                                                           if (extension instanceof OgcApiFeaturesCoreConfiguration) {
+                                                                                                                                           if (extension instanceof FeaturesCoreConfiguration) {
                                                                                                                                                return newCoreConfiguration.build();
                                                                                                                                            }
                                                                                                                                            if (extension instanceof GeoJsonConfiguration) {
@@ -237,7 +237,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                 newCollection.extensions(newExtensions);
 
                                                                                 if (newExtensions.stream()
-                                                                                                 .noneMatch(extension -> extension instanceof OgcApiFeaturesCoreConfiguration)) {
+                                                                                                 .noneMatch(extension -> extension instanceof FeaturesCoreConfiguration)) {
                                                                                     newCollection.addExtensions(newCoreConfiguration.build());
                                                                                 }
                                                                                 if (newExtensions.stream()

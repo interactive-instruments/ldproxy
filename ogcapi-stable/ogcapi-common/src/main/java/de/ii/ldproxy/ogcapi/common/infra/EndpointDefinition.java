@@ -12,7 +12,7 @@ import de.ii.ldproxy.ogcapi.common.app.ImmutableDefinition;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
@@ -47,7 +47,7 @@ public class EndpointDefinition extends Endpoint {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiCommonConfiguration.class;
+        return CommonConfiguration.class;
     }
 
     @Override

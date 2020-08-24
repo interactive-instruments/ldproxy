@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
@@ -100,8 +100,8 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
                                                    Map<String, String> parameters,
                                                    OgcApiDataV2 serviceData) {
         if (parameters.containsKey("variables")) {
-            final Map<String, String> filterableFields = featureType.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                    .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
+            final Map<String, String> filterableFields = featureType.getExtension(FeaturesCoreConfiguration.class)
+                    .map(FeaturesCoreConfiguration::getAllFilterParameters)
                     .orElse(ImmutableMap.of());
             if (!filterableFields.containsKey("observedProperty")) {
                 throw new RuntimeException(String.format("The observation collection '%s' has no 'observedProperty' attribute.", featureType.getId()));

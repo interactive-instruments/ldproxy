@@ -53,6 +53,6 @@ public abstract class AbstractQueryParameterDatetime implements OgcApiQueryParam
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiFeaturesCoreConfiguration.class;
+        return FeaturesCoreConfiguration.class;
     }
 }

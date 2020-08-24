@@ -19,7 +19,7 @@ import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
@@ -90,8 +90,8 @@ public class OgcApiCollectionView extends OgcApiView {
         this.storageCrs = collection
                 .getStorageCrs()
                 .orElse("");
-        this.hasGeometry = apiData.getCollections().get(collection.getId()).getExtension(OgcApiFeaturesCoreConfiguration.class)
-                .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
+        this.hasGeometry = apiData.getCollections().get(collection.getId()).getExtension(FeaturesCoreConfiguration.class)
+                .flatMap(FeaturesCoreConfiguration::getQueryables)
                 .map(FeaturesCollectionQueryables::getSpatial)
                 .filter(spatial -> !spatial.isEmpty())
                 .isPresent();

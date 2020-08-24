@@ -11,7 +11,7 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -31,7 +31,7 @@ public class LandingPageExtensionFeatures implements LandingPageExtension {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiFeaturesCoreConfiguration.class;
+        return FeaturesCoreConfiguration.class;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class LandingPageExtensionFeatures implements LandingPageExtension {
             return landingPageBuilder;
         }
 
-        Optional<OgcApiFeaturesCoreConfiguration> config = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class);
+        Optional<FeaturesCoreConfiguration> config = apiData.getExtension(FeaturesCoreConfiguration.class);
         if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/")) {
             List<Link> additionalLinks = config.get().getAdditionalLinks().get("/");
             additionalLinks.stream().forEach(link -> landingPageBuilder.addLinks(link));

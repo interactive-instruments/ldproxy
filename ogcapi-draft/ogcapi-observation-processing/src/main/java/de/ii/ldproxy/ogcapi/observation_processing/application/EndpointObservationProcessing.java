@@ -11,10 +11,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcess;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
@@ -281,13 +281,13 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
         // TODO check that the request is not considered to be too demanding
 
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        final OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                                                                                .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", apiData.getId(), collectionId)));
+        final FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                          .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", apiData.getId(), collectionId)));
         final int minimumPageSize = coreConfiguration.getMinimumPageSize();
         final int defaultPageSize = coreConfiguration.getDefaultPageSize();
         final int maxPageSize = coreConfiguration.getMaximumPageSize();
-        final boolean includeLinkHeader = apiData.getExtension(OgcApiCommonConfiguration.class)
-                                                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        final boolean includeLinkHeader = apiData.getExtension(CommonConfiguration.class)
+                                                .map(CommonConfiguration::getIncludeLinkHeader)
                                                 .orElse(false);
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
 

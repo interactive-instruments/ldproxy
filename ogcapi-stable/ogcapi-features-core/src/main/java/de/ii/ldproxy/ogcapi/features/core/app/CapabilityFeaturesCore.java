@@ -9,15 +9,15 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableOgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import static de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration.DEFAULT_PAGE_SIZE;
-import static de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration.MAX_PAGE_SIZE;
-import static de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration.MINIMUM_PAGE_SIZE;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DEFAULT_PAGE_SIZE;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.MAX_PAGE_SIZE;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.MINIMUM_PAGE_SIZE;
 
 @Component
 @Provides
@@ -26,18 +26,18 @@ public class CapabilityFeaturesCore implements ApiBuildingBlock {
 
     @Override
     public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableOgcApiFeaturesCoreConfiguration.Builder();
+        return new ImmutableFeaturesCoreConfiguration.Builder();
     }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableOgcApiFeaturesCoreConfiguration.Builder().enabled(true)
-                                                                     .defaultCrs(OgcApiFeaturesCoreConfiguration.DefaultCrs.CRS84)
-                                                                     .minimumPageSize(MINIMUM_PAGE_SIZE)
-                                                                     .defaultPageSize(DEFAULT_PAGE_SIZE)
-                                                                     .maximumPageSize(MAX_PAGE_SIZE)
-                                                                     .showsFeatureSelfLink(false)
-                                                                     .build();
+        return new ImmutableFeaturesCoreConfiguration.Builder().enabled(true)
+                                                               .defaultCrs(FeaturesCoreConfiguration.DefaultCrs.CRS84)
+                                                               .minimumPageSize(MINIMUM_PAGE_SIZE)
+                                                               .defaultPageSize(DEFAULT_PAGE_SIZE)
+                                                               .maximumPageSize(MAX_PAGE_SIZE)
+                                                               .showsFeatureSelfLink(false)
+                                                               .build();
     }
 
 }

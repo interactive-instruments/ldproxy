@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -106,24 +106,24 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
                 .get(collectionId);
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
-        Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
+        Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
 
         List<String> featureTypeIds = featuresCoreConfiguration.get().getFeatureTypes();
         if (featureTypeIds.isEmpty())
             featureTypeIds = ImmutableList.of(collectionId);
 
         List<String> otherQueryables = featuresCoreConfiguration
-                .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
+                .flatMap(FeaturesCoreConfiguration::getQueryables)
                 .map(FeaturesCollectionQueryables::getOther)
                 .orElse(ImmutableList.of());
 
         List<String> temporalQueryables = featuresCoreConfiguration
-                .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
+                .flatMap(FeaturesCoreConfiguration::getQueryables)
                 .map(FeaturesCollectionQueryables::getTemporal)
                 .orElse(ImmutableList.of());
 
         List<String> spatialQueryables = featuresCoreConfiguration
-                .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables)
+                .flatMap(FeaturesCoreConfiguration::getQueryables)
                 .map(FeaturesCollectionQueryables::getSpatial)
                 .orElse(ImmutableList.of());
 

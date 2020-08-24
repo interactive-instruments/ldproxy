@@ -26,8 +26,8 @@ import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-@JsonDeserialize(builder = ImmutableOgcApiFeaturesCoreConfiguration.Builder.class)
-public interface OgcApiFeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations {
+@JsonDeserialize(builder = ImmutableFeaturesCoreConfiguration.Builder.class)
+public interface FeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
@@ -144,7 +144,7 @@ public interface OgcApiFeaturesCoreConfiguration extends ExtensionConfiguration,
 
     @Override
     default Builder getBuilder() {
-        return new ImmutableOgcApiFeaturesCoreConfiguration.Builder();
+        return new ImmutableFeaturesCoreConfiguration.Builder();
     }
 
 }

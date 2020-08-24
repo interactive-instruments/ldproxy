@@ -53,7 +53,7 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
                 apiData.getCollections()
                        .get(collectionId) :
                 null;
-        coreTransformations = Objects.isNull(featureType) ? Optional.empty() : featureType.getExtension(OgcApiFeaturesCoreConfiguration.class)
+        coreTransformations = Objects.isNull(featureType) ? Optional.empty() : featureType.getExtension(FeaturesCoreConfiguration.class)
                                                                                           .map(configuration -> configuration);
         buildingBlockTransformations = Objects.isNull(featureType) ? Optional.empty() : featureType.getExtension(buildingBlockConfigurationClass)
                                                                                                    .map(configuration -> configuration);

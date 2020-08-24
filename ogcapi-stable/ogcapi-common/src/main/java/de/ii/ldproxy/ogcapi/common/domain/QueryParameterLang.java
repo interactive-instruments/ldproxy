@@ -48,14 +48,14 @@ public class QueryParameterLang implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, OgcApiCommonConfiguration.class) &&
-                apiData.getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getUseLangParameter)
+        return isExtensionEnabled(apiData, CommonConfiguration.class) &&
+                apiData.getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getUseLangParameter)
                 .orElse(false);
     }
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiCommonConfiguration.class;
+        return CommonConfiguration.class;
     }
 }

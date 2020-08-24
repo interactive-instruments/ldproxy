@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputLandingPage;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon.Query;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
@@ -47,7 +47,7 @@ public class EndpointLandingPage extends Endpoint {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiCommonConfiguration.class;
+        return CommonConfiguration.class;
     }
 
     @Override
@@ -90,8 +90,8 @@ public class EndpointLandingPage extends Endpoint {
                                    @Context ApiRequestContext requestContext) {
         checkAuthorization(api.getData(), optionalUser);
 
-        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
         QueriesHandlerCommon.QueryInputLandingPage queryInput = new ImmutableQueryInputLandingPage.Builder()

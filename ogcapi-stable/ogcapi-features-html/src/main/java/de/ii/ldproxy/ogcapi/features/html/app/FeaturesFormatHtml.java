@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -143,13 +143,13 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         if (transformationContext.isFeatureCollection()) {
             FeatureTypeConfigurationOgcApi collectionData = serviceData.getCollections()
                                                                        .get(collectionName);
-            Optional<OgcApiFeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class);
+            Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
             Optional<HtmlConfiguration> htmlConfiguration = collectionData.getExtension(HtmlConfiguration.class);
             FeatureProviderDataV2 providerData = providers.getFeatureProvider(serviceData, collectionData)
                                                           .getData();
 
             Map<String, String> filterableFields = featuresCoreConfiguration
-                                                                 .map(OgcApiFeaturesCoreConfiguration::getOtherFilterParameters)
+                                                                 .map(FeaturesCoreConfiguration::getOtherFilterParameters)
                                                                  .orElse(ImmutableMap.of());
 
             Map<String, String> htmlNames = new LinkedHashMap<>();

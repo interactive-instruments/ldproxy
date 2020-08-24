@@ -4,7 +4,7 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -50,18 +50,18 @@ public class QueryParameterLimitFeatures implements OgcApiQueryParameter {
         if (schema==null) {
             schema = new IntegerSchema();
 
-            Optional<Integer> minimumPageSize = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                    .map(OgcApiFeaturesCoreConfiguration::getMinimumPageSize);
+            Optional<Integer> minimumPageSize = apiData.getExtension(FeaturesCoreConfiguration.class)
+                    .map(FeaturesCoreConfiguration::getMinimumPageSize);
             if (minimumPageSize.isPresent())
                 schema.minimum(BigDecimal.valueOf(minimumPageSize.get()));
 
-            Optional<Integer> defaultPageSize = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                    .map(OgcApiFeaturesCoreConfiguration::getDefaultPageSize);
+            Optional<Integer> defaultPageSize = apiData.getExtension(FeaturesCoreConfiguration.class)
+                    .map(FeaturesCoreConfiguration::getDefaultPageSize);
             if (defaultPageSize.isPresent())
                 schema.setDefault(BigDecimal.valueOf(defaultPageSize.get()));
 
-            Optional<Integer> maxPageSize = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                    .map(OgcApiFeaturesCoreConfiguration::getMaximumPageSize);
+            Optional<Integer> maxPageSize = apiData.getExtension(FeaturesCoreConfiguration.class)
+                    .map(FeaturesCoreConfiguration::getMaximumPageSize);
             if (maxPageSize.isPresent())
                 schema.maximum(BigDecimal.valueOf(maxPageSize.get()));
         }
@@ -70,7 +70,7 @@ public class QueryParameterLimitFeatures implements OgcApiQueryParameter {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiFeaturesCoreConfiguration.class;
+        return FeaturesCoreConfiguration.class;
     }
 
 }

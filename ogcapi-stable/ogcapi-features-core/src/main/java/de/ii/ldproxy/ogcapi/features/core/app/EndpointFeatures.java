@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableQueryParameterTemplateQueryable;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiCommonConfiguration;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -29,12 +29,12 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import io.dropwizard.auth.Auth;
@@ -84,7 +84,7 @@ public class EndpointFeatures extends EndpointSubCollection {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiFeaturesCoreConfiguration.class;
+        return FeaturesCoreConfiguration.class;
     }
 
     @Override
@@ -182,11 +182,11 @@ public class EndpointFeatures extends EndpointSubCollection {
         ImmutableList<OgcApiQueryParameter> generalList = super.getQueryParameters(extensionRegistry, apiData, definitionPath, collectionId);
 
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-        Optional<OgcApiFeaturesCoreConfiguration> coreConfiguration = featureType==null ?
-                apiData.getExtension(OgcApiFeaturesCoreConfiguration.class) :
-                featureType.getExtension(OgcApiFeaturesCoreConfiguration.class);
+        Optional<FeaturesCoreConfiguration> coreConfiguration = featureType==null ?
+                apiData.getExtension(FeaturesCoreConfiguration.class) :
+                featureType.getExtension(FeaturesCoreConfiguration.class);
 
-        final Map<String, String> filterableFields = coreConfiguration.map(OgcApiFeaturesCoreConfiguration::getOtherFilterParameters)
+        final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getOtherFilterParameters)
                 .orElse(ImmutableMap.of());
 
         Map<String, FeatureTypeMapping2> transformations;
@@ -226,18 +226,18 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                        .getCollections()
                                                        .get(collectionId);
 
-        OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                                                                          .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
+        FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                    .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
 
         int minimumPageSize = coreConfiguration.getMinimumPageSize();
         int defaultPageSize = coreConfiguration.getDefaultPageSize();
         int maxPageSize = coreConfiguration.getMaximumPageSize();
         boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
-        boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+        boolean includeHomeLink = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
@@ -272,14 +272,14 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                            .getCollections()
                                                            .get(collectionId);
 
-        OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                                                                          .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
+        FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                    .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
-        boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+        boolean includeHomeLink = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeHomeLink)
                 .orElse(false);
-        boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
+                .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items/{featureId}", collectionId);

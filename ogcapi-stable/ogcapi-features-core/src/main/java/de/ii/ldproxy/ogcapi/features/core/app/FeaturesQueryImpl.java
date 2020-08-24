@@ -18,7 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
@@ -59,9 +59,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
-import static de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration.PARAMETER_BBOX;
-import static de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration.PARAMETER_DATETIME;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
 
 
 @Component
@@ -100,7 +100,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     @Override
     public FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                              OgcApiFeaturesCoreConfiguration coreConfiguration,
+                                              FeaturesCoreConfiguration coreConfiguration,
                                               Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
                                               String featureId) {
 
@@ -124,12 +124,12 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     @Override
     public FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                              OgcApiFeaturesCoreConfiguration coreConfiguration,
+                                              FeaturesCoreConfiguration coreConfiguration,
                                               int minimumPageSize,
                                               int defaultPageSize, int maxPageSize, Map<String, String> parameters,
                                               List<OgcApiQueryParameter> allowedParameters) {
-        final Map<String, String> filterableFields = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                                                                   .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
+        final Map<String, String> filterableFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                   .map(FeaturesCoreConfiguration::getAllFilterParameters)
                                                                    .orElse(ImmutableMap.of());
 
         Set<String> filterParameters = ImmutableSet.of();

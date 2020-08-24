@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.dropwizard.domain.JacksonSubTypeIds;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -25,7 +25,7 @@ public class JacksonSubTypeIdsFeaturesCore implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(OgcApiFeaturesCoreConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(OgcApiFeaturesCoreConfiguration.class))
+                .put(FeaturesCoreConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(FeaturesCoreConfiguration.class))
                 .build();
     }
 }

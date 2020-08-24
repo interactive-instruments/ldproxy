@@ -1,7 +1,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
@@ -102,7 +102,7 @@ public class QueryParameterCoordArea implements OgcApiQueryParameter {
     private String getSpatialProperty(OgcApiDataV2 apiData, String collectionId) {
         return apiData.getCollections()
                 .get(collectionId)
-                .getExtension(OgcApiFeaturesCoreConfiguration.class)
+                .getExtension(FeaturesCoreConfiguration.class)
                 .orElseThrow(() -> new RuntimeException(String.format("No configuration found for feature collection '%s'.",collectionId)))
                 .getQueryables()
                 .orElseThrow(() -> new RuntimeException(String.format("Configuration for feature collection '%s' does not specify any spatial queryable.",collectionId)))

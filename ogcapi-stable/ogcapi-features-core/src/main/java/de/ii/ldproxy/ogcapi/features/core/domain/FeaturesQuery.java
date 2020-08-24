@@ -21,12 +21,12 @@ import java.util.Set;
 
 public interface FeaturesQuery {
     FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                       OgcApiFeaturesCoreConfiguration coreConfiguration,
+                                       FeaturesCoreConfiguration coreConfiguration,
                                        Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
                                        String featureId);
 
     FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                       OgcApiFeaturesCoreConfiguration coreConfiguration,
+                                       FeaturesCoreConfiguration coreConfiguration,
                                        int minimumPageSize,
                                        int defaultPageSize, int maxPageSize, Map<String, String> parameters,
                                        List<OgcApiQueryParameter> allowedParameters);

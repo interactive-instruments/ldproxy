@@ -38,7 +38,7 @@ public class QueryParameterFCollections extends QueryParameterF {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return OgcApiCollectionsConfiguration.class;
+        return CollectionsConfiguration.class;
     }
 
 }

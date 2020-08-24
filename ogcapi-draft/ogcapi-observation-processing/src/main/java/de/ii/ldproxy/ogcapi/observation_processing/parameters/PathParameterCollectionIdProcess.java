@@ -6,8 +6,8 @@ import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.OgcApiFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
@@ -109,8 +109,8 @@ public class PathParameterCollectionIdProcess extends AbstractPathParameterColle
                         }
                         Optional<FeaturesCollectionQueryables> queryables = apiData.getCollections()
                                                                                    .get(collectionId)
-                                                                                   .getExtension(OgcApiFeaturesCoreConfiguration.class)
-                                                                                   .flatMap(OgcApiFeaturesCoreConfiguration::getQueryables);
+                                                                                   .getExtension(FeaturesCoreConfiguration.class)
+                                                                                   .flatMap(FeaturesCoreConfiguration::getQueryables);
                         if (queryables.isPresent()) {
                             if (requiredProperty.equals("phenomenonTime")) {
                                 if (queryables.get().getTemporal().stream()

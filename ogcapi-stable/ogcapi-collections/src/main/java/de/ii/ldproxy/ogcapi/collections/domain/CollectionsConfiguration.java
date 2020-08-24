@@ -13,14 +13,14 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-@JsonDeserialize(builder = ImmutableOgcApiCollectionsConfiguration.Builder.class)
-public interface OgcApiCollectionsConfiguration extends ExtensionConfiguration {
+@JsonDeserialize(builder = ImmutableCollectionsConfiguration.Builder.class)
+public interface CollectionsConfiguration extends ExtensionConfiguration {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
     @Override
     default Builder getBuilder() {
-        return new ImmutableOgcApiCollectionsConfiguration.Builder();
+        return new ImmutableCollectionsConfiguration.Builder();
     }
 }
