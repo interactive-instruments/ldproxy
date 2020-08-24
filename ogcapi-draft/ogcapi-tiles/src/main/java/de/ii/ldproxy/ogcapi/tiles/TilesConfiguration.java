@@ -11,19 +11,18 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.entity.api.maptobuilder.BuildableBuilder;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
-public interface TilesConfiguration extends ExtensionConfiguration {
+public interface TilesConfiguration extends ExtensionConfiguration, FeatureTransformations {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
@@ -43,6 +42,9 @@ public interface TilesConfiguration extends ExtensionConfiguration {
     Integer getMaxPolygonPerTileDefault();
 
     @Nullable
+    Boolean getSingleCollectionEnabled();
+
+    @Nullable
     Boolean getMultiCollectionEnabled();
 
     @JsonMerge(value = OptBoolean.FALSE)
@@ -58,6 +60,8 @@ public interface TilesConfiguration extends ExtensionConfiguration {
     @Nullable
     Map<String, List<PredefinedFilter>> getFilters();
 
+    List<String> getTileEncodings();
+
     @Nullable
     double[] getCenter();
 
@@ -66,16 +70,23 @@ public interface TilesConfiguration extends ExtensionConfiguration {
         return new ImmutableTilesConfiguration.Builder();
     }
 
-    //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
-    // try to find a better solution that also enables deep merges
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        return ((ImmutableTilesConfiguration.Builder)source.getBuilder())
-                     .from(source)
-                     .from(this)
-                     .seeding(getSeeding())
-                     .zoomLevels(getZoomLevels())
-                     .filters(getFilters())
-                     .build();
+        ImmutableTilesConfiguration.Builder builder = ((ImmutableTilesConfiguration.Builder) source.getBuilder())
+                .from(source)
+                .from(this);
+
+        //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
+        // try to find a better solution that also enables deep merges
+        if (!getTileEncodings().isEmpty())
+            builder.tileEncodings(getTileEncodings());
+        if (getSeeding()!=null)
+            builder.seeding(getSeeding());
+        if (getZoomLevels()!=null)
+            builder.zoomLevels(getZoomLevels());
+        if (getFilters()!=null)
+            builder.filters(getFilters());
+
+        return builder.build();
     }
 }

@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
  * Access to the cache for tile files.

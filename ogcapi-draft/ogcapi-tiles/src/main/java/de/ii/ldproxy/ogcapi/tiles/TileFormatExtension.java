@@ -7,20 +7,37 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
-import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
 public interface TileFormatExtension extends FormatExtension {
+
+    @Override
+    default boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return apiData.getExtension(TilesConfiguration.class)
+                      .filter(config -> config.getTileEncodings().contains(this.getMediaType().label()))
+                      .isPresent();
+    }
+
+    @Override
+    default boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        return apiData.getCollections()
+                      .get(collectionId)
+                      .getExtension(TilesConfiguration.class)
+                      .filter(config -> config.getTileEncodings().contains(this.getMediaType().label()))
+                      .isPresent();
+    }
 
     @Override
     default String getPathPattern() {

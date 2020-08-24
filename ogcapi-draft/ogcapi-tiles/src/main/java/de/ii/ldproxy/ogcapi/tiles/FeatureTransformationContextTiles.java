@@ -7,9 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
-import de.ii.xtraplatform.codelists.Codelist;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import org.immutables.value.Value;
 

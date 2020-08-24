@@ -9,16 +9,16 @@ package de.ii.ldproxy.ogcapi.features.core;
 
 import com.google.common.collect.ImmutableList
 import de.ii.ldproxy.ogcapi.application.I18nDefault
-import de.ii.ldproxy.ogcapi.application.OgcApiApiEntity
+import de.ii.ldproxy.ogcapi.application.OgcApiEntity
 import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCollections
 import de.ii.ldproxy.ogcapi.domain.*
-import de.ii.ldproxy.ogcapi.features.core.api.ImmutableOgcApiFeaturesCollectionQueryables
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureFormatExtension
+import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeaturesCollectionQueryables
+import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders
+import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension
+import de.ii.ldproxy.ogcapi.features.core.application.CollectionExtensionFeatures
+import de.ii.ldproxy.ogcapi.features.core.application.CollectionsExtensionFeatures
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCollectionExtension
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCollectionsExtension
-import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext
+import de.ii.ldproxy.ogcapi.infra.rest.ImmutableRequestContext
 import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollection
 import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollections
 import de.ii.xtraplatform.crs.domain.BoundingBox
@@ -31,10 +31,10 @@ import java.util.stream.Collectors
 
 class OgcApiCoreSpecCollections extends Specification {
 
-    static final OgcApiExtensionRegistry registry = createExtensionRegistry()
-    static final OgcApiApiDataV2 datasetData = createDatasetData()
-    static final OgcApiApiEntity ogcApiApiEntity = createOgcApiApiEntity()
-    static final OgcApiRequestContext requestContext = createRequestContext()
+    static final ExtensionRegistry registry = createExtensionRegistry()
+    static final OgcApiDataV2 datasetData = createDatasetData()
+    static final OgcApiEntity ogcApiApiEntity = createOgcApiApiEntity()
+    static final ApiRequestContext requestContext = createRequestContext()
     static OgcApiQueriesHandlerCollections ogcApiQueriesHandlerCollections = new OgcApiQueriesHandlerCollections(registry)
     static final OgcApiEndpointCollections collectionsEndpoint = createCollectionsEndpoint()
     static final OgcApiEndpointCollection collectionEndpoint = createCollectionEndpoint()
@@ -122,74 +122,74 @@ class OgcApiCoreSpecCollections extends Specification {
 
 
     static def createExtensionRegistry() {
-        new OgcApiExtensionRegistry() {
+        new ExtensionRegistry() {
 
             @Override
-            List<OgcApiExtension> getExtensions() {
+            List<ApiExtension> getExtensions() {
                 return ImmutableList.of()
 
             }
 
             @Override
-            <T extends OgcApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
+            <T extends ApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
                 if (extensionType == CollectionsFormatExtension.class) {
                     return ImmutableList.of((T) new CollectionsFormatExtension() {
                         @Override
-                        OgcApiMediaType getMediaType() {
-                            return new ImmutableOgcApiMediaType.Builder()
+                        ApiMediaType getMediaType() {
+                            return new ImmutableApiMediaType.Builder()
                                     .type(MediaType.APPLICATION_JSON_TYPE)
                                     .build()
                         }
 
                         @Override
-                        Response getCollectionsResponse(Collections collections, OgcApiApi api, OgcApiRequestContext requestContext) {
+                        Response getCollectionsResponse(Collections collections, OgcApi api, ApiRequestContext requestContext) {
                             return Response.ok().entity(collections).build()
                         }
 
                         @Override
-                        Response getCollectionResponse(OgcApiCollection ogcApiCollection, OgcApiApi api, OgcApiRequestContext requestContext) {
+                        Response getCollectionResponse(OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
                             return Response.ok().entity(ogcApiCollection).build()
                         }
 
                     })
                 }
                 if (extensionType == OgcApiCollectionsExtension.class) {
-                    return ImmutableList.of((T) new OgcApiFeaturesCollectionsExtension(registry))
+                    return ImmutableList.of((T) new CollectionsExtensionFeatures(registry))
                 }
                 if (extensionType == OgcApiCollectionExtension.class) {
-                    OgcApiFeatureCoreProviders providers = new OgcApiFeatureCoreProviders() {
+                    FeaturesCoreProviders providers = new FeaturesCoreProviders() {
                         @Override
-                        FeatureProvider2 getFeatureProvider(OgcApiApiDataV2 apiData) {
+                        FeatureProvider2 getFeatureProvider(OgcApiDataV2 apiData) {
                             return null
                         }
 
                         @Override
-                        FeatureProvider2 getFeatureProvider(OgcApiApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
+                        FeatureProvider2 getFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
                             return null
                         }
                     }
-                    OgcApiFeaturesCollectionExtension collectionExtension = new OgcApiFeaturesCollectionExtension(registry, providers)
+                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, providers)
                     collectionExtension.i18n = new I18nDefault()
                     return ImmutableList.of((T) collectionExtension)
                 }
-                if (extensionType == OgcApiFeatureFormatExtension.class) {
-                    return ImmutableList.of((T) new OgcApiFeatureFormatExtension() {
+                if (extensionType == FeatureFormatExtension.class) {
+                    return ImmutableList.of((T) new FeatureFormatExtension() {
 
                         @Override
-                        OgcApiMediaType getMediaType() {
-                            return new ImmutableOgcApiMediaType.Builder()
+                        ApiMediaType getMediaType() {
+                            return new ImmutableApiMediaType.Builder()
                                     .type(MediaType.APPLICATION_JSON_TYPE)
                                     .build()
                         }
 
                         @Override
-                        boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+                        boolean isEnabledForApi(OgcApiDataV2 apiData) {
                             return true
                         }
 
                         @Override
-                        OgcApiMediaType getCollectionMediaType() {
-                            return new ImmutableOgcApiMediaType.Builder()
+                        ApiMediaType getCollectionMediaType() {
+                            return new ImmutableApiMediaType.Builder()
                                     .type(MediaType.APPLICATION_JSON_TYPE)
                                     .build()
                         }
@@ -201,11 +201,11 @@ class OgcApiCoreSpecCollections extends Specification {
     }
 
     static def createRequestContext(String uri = 'http://example.com/collections') {
-        new ImmutableOgcApiRequestContext.Builder()
-                .mediaType(new ImmutableOgcApiMediaType.Builder()
+        new ImmutableRequestContext.Builder()
+                .mediaType(new ImmutableApiMediaType.Builder()
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build())
-                .alternateMediaTypes(ImmutableList.of(new ImmutableOgcApiMediaType.Builder()
+                .alternateMediaTypes(ImmutableList.of(new ImmutableApiMediaType.Builder()
                         .type(MediaType.APPLICATION_XML_TYPE)
                         .build()))
                 .api(ogcApiApiEntity)
@@ -215,7 +215,7 @@ class OgcApiCoreSpecCollections extends Specification {
     }
 
     static def createDatasetData() {
-        return new ImmutableOgcApiApiDataV2.Builder()
+        return new ImmutableOgcApiDataV2.Builder()
                 .id('test')
                 .serviceType('WFS3')
                 .putCollections('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
@@ -227,7 +227,7 @@ class OgcApiCoreSpecCollections extends Specification {
                                 .temporal(new ImmutableTemporalExtent.Builder().build())
                                 .build())
                         .addExtensions(new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
-                                .queryables(new ImmutableOgcApiFeaturesCollectionQueryables.Builder()
+                                .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
                                         .spatial(ImmutableList.of('geometry'))
                                         .temporal(ImmutableList.of('datum_open'))
                                         .build())
@@ -239,7 +239,7 @@ class OgcApiCoreSpecCollections extends Specification {
 
 
     static def createOgcApiApiEntity() {
-        def entity = new OgcApiApiEntity(registry)
+        def entity = new OgcApiEntity(registry)
         entity.setData(datasetData)
         return entity
     }

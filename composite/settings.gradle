@@ -18,5 +18,4 @@ if (xtraplatformSdiTools) {
 
 includeBuild '../ogcapi-stable'
 includeBuild '../ogcapi-draft'
-includeBuild '../ogcapi-experimental'
 includeBuild '../'

@@ -10,19 +10,26 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
-import de.ii.ldproxy.ogcapi.infra.rest.ImmutableOgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ContentExtension;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.ImmutableRequestContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.StartupTask;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
+import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
+import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -51,7 +58,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class VectorTileSeeding implements OgcApiStartupTask {
+public class VectorTileSeeding implements StartupTask {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(VectorTileSeeding.class);
     private Thread t = null;
     private Map<Thread, String> threadMap = new HashMap<>();
@@ -59,29 +66,26 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     private final I18n i18n;
     private final CrsTransformerFactory crsTransformerFactory;
     private final MetricRegistry metricRegistry;
-    private CodelistRegistry codelistRegistry;
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TilesCache tilesCache;
     private final XtraPlatform xtraPlatform;
-    private final OgcApiFeaturesQuery queryParser;
-    private final OgcApiFeatureCoreProviders providers;
+    private final FeaturesQuery queryParser;
+    private final FeaturesCoreProviders providers;
     private final TilesQueriesHandler queryHandler;
 
     public VectorTileSeeding(@Requires I18n i18n,
                              @Requires CrsTransformerFactory crsTransformerFactory,
                              @Requires Dropwizard dropwizard,
-                             @Requires CodelistRegistry codelistRegistry,
-                             @Requires OgcApiExtensionRegistry extensionRegistry,
+                             @Requires ExtensionRegistry extensionRegistry,
                              @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                              @Requires TilesCache tilesCache,
                              @Requires XtraPlatform xtraPlatform,
-                             @Requires OgcApiFeaturesQuery queryParser,
-                             @Requires OgcApiFeatureCoreProviders providers,
+                             @Requires FeaturesQuery queryParser,
+                             @Requires FeaturesCoreProviders providers,
                              @Requires TilesQueriesHandler queryHandler) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
-        this.codelistRegistry = codelistRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                 .metrics();
@@ -95,7 +99,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
@@ -105,7 +109,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
         Optional<TilesConfiguration> extension = featureType!=null ?
                 featureType.getExtension(TilesConfiguration.class) :
@@ -117,7 +121,12 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                 .isPresent();
     }
 
-    private boolean isEnabledForApiMultiCollection(OgcApiApiDataV2 apiData) {
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
+    }
+
+    private boolean isEnabledForApiMultiCollection(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
@@ -134,9 +143,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @return the runnable process
      */
     @Override
-    public Runnable getTask(OgcApiApi api) {
+    public Runnable getTask(OgcApi api) {
 
-        OgcApiApiDataV2 apiData = api.getData();
+        OgcApiDataV2 apiData = api.getData();
 
         List<TileFormatExtension> outputFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class);
         if (outputFormats.isEmpty()) {
@@ -182,7 +191,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
      * @param apiData       the service data of the Wfs3 Service
      * @return a map with all collectionIds and the seeding configuration
      */
-    private Map<String, Map<String, MinMax>> getMinMaxMap(OgcApiApiDataV2 apiData) {
+    private Map<String, Map<String, MinMax>> getMinMaxMap(OgcApiDataV2 apiData) {
 
         Map<String, Map<String, MinMax>> minMaxMap = new HashMap<>();
         for (FeatureTypeConfigurationOgcApi featureType : apiData.getCollections().values()) {
@@ -198,8 +207,8 @@ public class VectorTileSeeding implements OgcApiStartupTask {
         return minMaxMap;
     }
 
-    private void seedSingleLayerTiles(OgcApiApi api, List<TileFormatExtension> outputFormats) {
-        OgcApiApiDataV2 apiData = api.getData();
+    private void seedSingleLayerTiles(OgcApi api, List<TileFormatExtension> outputFormats) {
+        OgcApiDataV2 apiData = api.getData();
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         Map<String, Map<String, MinMax>> seedingMap = getMinMaxMap(apiData);
         for (Map.Entry<String, Map<String, MinMax>> collectionEntry : seedingMap.entrySet()) {
@@ -246,7 +255,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                 }
 
                                 URICustomizer uriCustomizer = new URICustomizer(uri);
-                                OgcApiRequestContext requestContext = new ImmutableOgcApiRequestContext.Builder()
+                                ApiRequestContext requestContext = new ImmutableRequestContext.Builder()
                                         .api(api)
                                         .requestUri(uri)
                                         .mediaType(outputFormat.getMediaType())
@@ -255,9 +264,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                 // generate a query template for an arbitrary collection
                                 FeatureQuery query = outputFormat.getQuery(tile, ImmutableList.of(), ImmutableMap.of(), tilesConfiguration.get(), uriCustomizer);
 
-                                OgcApiFeaturesCoreConfiguration coreConfiguration = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class).get();
+                                FeaturesCoreConfiguration coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class).get();
 
-                                TilesQueriesHandler.OgcApiQueryInputTileSingleLayer queryInput = new ImmutableOgcApiQueryInputTileSingleLayer.Builder()
+                                TilesQueriesHandler.QueryInputTileSingleLayer queryInput = new ImmutableQueryInputTileSingleLayer.Builder()
                                         .tile(tile)
                                         .query(query)
                                         .outputStream(new ByteArrayOutputStream())
@@ -278,8 +287,8 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
     }
 
-    private void seedMultiLayerTiles(OgcApiApi api, List<TileFormatExtension> outputFormats) {
-        OgcApiApiDataV2 apiData = api.getData();
+    private void seedMultiLayerTiles(OgcApi api, List<TileFormatExtension> outputFormats) {
+        OgcApiDataV2 apiData = api.getData();
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         Map<String, MinMax> multiLayerTilesSeeding = ImmutableMap.of();
         Optional<TilesConfiguration> tilesConfiguration = apiData.getExtension(TilesConfiguration.class);
@@ -334,7 +343,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                             }
 
                             URICustomizer uriCustomizer = new URICustomizer(uri);
-                            OgcApiRequestContext requestContext = new ImmutableOgcApiRequestContext.Builder()
+                            ApiRequestContext requestContext = new ImmutableRequestContext.Builder()
                                     .api(api)
                                     .requestUri(uri)
                                     .mediaType(outputFormat.getMediaType())
@@ -355,9 +364,9 @@ public class VectorTileSeeding implements OgcApiStartupTask {
                                             .type(collectionId)
                                             .build()));
 
-                            OgcApiFeaturesCoreConfiguration coreConfiguration = apiData.getExtension(OgcApiFeaturesCoreConfiguration.class).get();
+                            FeaturesCoreConfiguration coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class).get();
 
-                            TilesQueriesHandler.OgcApiQueryInputTileMultiLayer queryInput = new ImmutableOgcApiQueryInputTileMultiLayer.Builder()
+                            TilesQueriesHandler.QueryInputTileMultiLayer queryInput = new ImmutableQueryInputTileMultiLayer.Builder()
                                     .tile(multiLayerTile)
                                     .singleLayerTileMap(singleLayerTileMap)
                                     .queryMap(queryMap)
@@ -379,7 +388,7 @@ public class VectorTileSeeding implements OgcApiStartupTask {
 
     private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {
         TileMatrixSet tileMatrixSet = null;
-        for (OgcApiContentExtension contentExtension : extensionRegistry.getExtensionsForType(OgcApiContentExtension.class)) {
+        for (ContentExtension contentExtension : extensionRegistry.getExtensionsForType(ContentExtension.class)) {
             if (contentExtension instanceof TileMatrixSet && ((TileMatrixSet) contentExtension).getId().equals(tileMatrixSetId)) {
                 tileMatrixSet = (TileMatrixSet) contentExtension;
                 break;

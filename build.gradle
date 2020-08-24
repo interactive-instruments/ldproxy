@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '2.3.4'
+    id 'de.interactive_instruments.xtraplatform-application' version '3.0.0-rc.2'
     id 'com.jfrog.bintray' version '1.8.4' apply false
     id 'com.github.hierynomus.license-report' version '0.15.0' apply false
     id 'com.bmuschko.docker-java-application' version '3.1.0' apply false
@@ -9,18 +9,16 @@ allprojects {
     group = 'de.interactive_instruments'
 }
 
-version = '2.0.0-beta3'
+version = '2.0.0-beta4'
 
 apply from: 'xtraplatform.gradle'
 
 dependencies {
     // features to include in this application
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.2.4'
-    featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '2.2.1'
+    featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '3.0.0-rc.1'
 
     feature group: 'de.interactive_instruments', name: 'ogcapi-stable'
     feature group: 'de.interactive_instruments', name: 'ogcapi-draft'
-    feature group: 'de.interactive_instruments', name: 'ogcapi-experimental'
 
     // bundles to include in this application
     bundle subprojects
@@ -80,6 +78,7 @@ task allDependencies {
 }
 tasks.run {
     debug = project.findProperty('debug') ?: false
+//    args= ["/home/zahnen/development/configs-ldproxy/inspire-nrw"]
 }
 
 tasks.check { dependsOn subprojects*.tasks*.findByPath('test') }

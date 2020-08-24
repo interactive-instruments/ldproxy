@@ -1,8 +1,8 @@
 package de.ii.ldproxy.ogcapi.observation_processing.processes;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
@@ -13,7 +13,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,14 +25,14 @@ import java.util.stream.Collectors;
 @Instantiate
 public class FeatureProcessAggregateTimeGrid implements ObservationProcess {
 
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
 
-    public FeatureProcessAggregateTimeGrid(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public FeatureProcessAggregateTimeGrid(@Requires ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 
     @Override
-    public List<FeatureProcess> getSupportedProcesses(OgcApiApiDataV2 apiData) {
+    public List<FeatureProcess> getSupportedProcesses(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(FeatureProcess.class).stream()
                 .filter(param -> param.getOutputType()== DataArrayXyt.class)
                 .collect(Collectors.toList());

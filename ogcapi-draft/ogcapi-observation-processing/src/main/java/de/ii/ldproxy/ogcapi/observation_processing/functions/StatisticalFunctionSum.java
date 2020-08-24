@@ -1,6 +1,6 @@
 package de.ii.ldproxy.ogcapi.observation_processing.functions;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -14,9 +14,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Instantiate
 public class StatisticalFunctionSum implements ObservationProcessingStatisticalFunction {
 
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
 
-    public StatisticalFunctionSum(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public StatisticalFunctionSum(@Requires ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 

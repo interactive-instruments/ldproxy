@@ -1,6 +1,0 @@
-[submodule "ldproxy-manager/src/main/javascript/xtraplatform-manager-wfs-proxy"]
-	path = ldproxy-manager/src/main/javascript/xtraplatform-manager-wfs-proxy
-	url = https://github.com/interactive-instruments/XtraPlatform-Manager-WFS-Proxy
-[submodule "ldproxy-manager/src/main/javascript/xtraplatform-manager"]
-	path = ldproxy-manager/src/main/javascript/xtraplatform-manager
-	url = https://github.com/interactive-instruments/XtraPlatform-Manager
