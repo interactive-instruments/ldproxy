@@ -30,7 +30,7 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements ConformanceClass {
+public class EndpointTileSetsMultiCollection extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSetsMultiCollection.class);
 
@@ -38,7 +38,7 @@ public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements C
 
     private final TilesQueriesHandler queryHandler;
 
-    EndpointTileSetsMultiCollection(@Requires OgcApiExtensionRegistry extensionRegistry,
+    EndpointTileSetsMultiCollection(@Requires ExtensionRegistry extensionRegistry,
                                     @Requires TilesQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
@@ -46,17 +46,23 @@ public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements C
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/collections");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/dataset-tilesets",
+                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/geodata-selection");
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
                 .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::getMultiCollectionEnabled)
                 .isPresent();
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
     }
 
     @Override
@@ -67,24 +73,24 @@ public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements C
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("tiles")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_TILE_SETS);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS);
             String path = "/tiles";
-            OgcApiContext.HttpMethods method = OgcApiContext.HttpMethods.GET;
+            HttpMethods method = HttpMethods.GET;
             List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             String operationSummary = "retrieve a list of the available tile sets";
             Optional<String> operationDescription = Optional.of("This operation fetches the list of multi-layer tile sets supported by this API.");
             ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
                     .path(path)
                     .subResourceType("Tile Set");
-            OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilderSet.putOperations(method.name(), operation);
             definitionBuilder.putResources(path, resourceBuilderSet.build());
@@ -97,15 +103,15 @@ public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements C
 
     @Path("")
     @GET
-    public Response getTileSets(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
+    public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext) {
 
-        OgcApiApiDataV2 apiData = api.getData();
+        OgcApiDataV2 apiData = api.getData();
         if (!isEnabledForApi(apiData))
             throw new NotFoundException("Multi-collection tiles are not available in this API.");
 
         TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
-        TilesQueriesHandler.OgcApiQueryInputTileSets queryInput = new ImmutableOgcApiQueryInputTileSets.Builder()
+        TilesQueriesHandler.QueryInputTileSets queryInput = new ImmutableQueryInputTileSets.Builder()
                 .from(getGenericQueryInput(api.getData()))
                 .center(tilesConfiguration.getCenter())
                 .tileMatrixSetZoomLevels(tilesConfiguration.getZoomLevels())

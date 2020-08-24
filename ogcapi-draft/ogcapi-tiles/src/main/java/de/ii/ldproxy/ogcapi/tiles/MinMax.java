@@ -18,8 +18,6 @@ import java.util.Optional;
 public
 interface MinMax {
     int getMin();
-
     int getMax();
-
     Optional<Integer> getDefault();
 }

@@ -23,7 +23,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Handle responses under '/tiles/{tileMatrixSetId}'.
@@ -31,7 +30,7 @@ import java.util.Set;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetMultiCollection extends OgcApiEndpoint {
+public class EndpointTileSetMultiCollection extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSetMultiCollection.class);
 
@@ -39,20 +38,25 @@ public class EndpointTileSetMultiCollection extends OgcApiEndpoint {
 
     private final TilesQueriesHandler queryHandler;
 
-    EndpointTileSetMultiCollection(@Requires OgcApiExtensionRegistry extensionRegistry,
+    EndpointTileSetMultiCollection(@Requires ExtensionRegistry extensionRegistry,
                                    @Requires TilesQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
                 .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::getMultiCollectionEnabled)
                 .isPresent();
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
     }
 
     @Override
@@ -63,17 +67,17 @@ public class EndpointTileSetMultiCollection extends OgcApiEndpoint {
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
         String apiId = apiData.getId();
         if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("tiles")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_TILE_SET);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SET);
             String path = "/tiles/{tileMatrixSetId}";
-            OgcApiContext.HttpMethods method = OgcApiContext.HttpMethods.GET;
+            HttpMethods method = HttpMethods.GET;
             List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             String operationSummary = "retrieve information about a tile set";
@@ -81,7 +85,7 @@ public class EndpointTileSetMultiCollection extends OgcApiEndpoint {
             ImmutableOgcApiResourceAuxiliary.Builder resourceBuilderSet = new ImmutableOgcApiResourceAuxiliary.Builder()
                     .path(path)
                     .pathParameters(pathParameters);
-            OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilderSet.putOperations(method.name(), operation);
             definitionBuilder.putResources(path, resourceBuilderSet.build());
@@ -99,17 +103,17 @@ public class EndpointTileSetMultiCollection extends OgcApiEndpoint {
      */
     @Path("/{tileMatrixSetId}")
     @GET
-    public Response getTileSet(@Context OgcApiApi api,
-                                       @Context OgcApiRequestContext requestContext,
+    public Response getTileSet(@Context OgcApi api,
+                                       @Context ApiRequestContext requestContext,
                                        @PathParam("tileMatrixSetId") String tileMatrixSetId) {
 
-        OgcApiApiDataV2 apiData = api.getData();
+        OgcApiDataV2 apiData = api.getData();
         String path = "/tiles/{tileMatrixSetId}";
         checkPathParameter(extensionRegistry, apiData, path, "tileMatrixSetId", tileMatrixSetId);
 
         TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
-        TilesQueriesHandler.OgcApiQueryInputTileSet queryInput = new ImmutableOgcApiQueryInputTileSet.Builder()
+        TilesQueriesHandler.QueryInputTileSet queryInput = new ImmutableQueryInputTileSet.Builder()
                 .from(getGenericQueryInput(api.getData()))
                 .tileMatrixSetId(tileMatrixSetId)
                 .center(tilesConfiguration.getCenter())

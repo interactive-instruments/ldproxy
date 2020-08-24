@@ -7,24 +7,26 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 
 import static de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.PathParameterTileMatrixSetId.TMS_REGEX;
 
-public interface TileSetFormatExtension extends FormatExtension {
+public interface TileSetFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
         return "^(?:/collections/[\\w\\-]+)?/tiles/"+TMS_REGEX+"/?$";
     }
 
-    Object getTileSetEntity(OgcApiApiDataV2 apiData, OgcApiRequestContext requestContext,
+    Object getTileSetEntity(OgcApiDataV2 apiData, ApiRequestContext requestContext,
                             Optional<String> collectionId,
                             TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center,
-                            List<OgcApiLink> links);
+                            List<Link> links);
 }

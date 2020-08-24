@@ -8,12 +8,11 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.domain.Link;
 
 import java.util.List;
 import java.util.Locale;
@@ -32,10 +31,10 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
      * @param language the requested language (optional)
      * @return a List with links
      */
-    public List<OgcApiLink> generateLandingPageLinks(URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
+    public List<Link> generateLandingPageLinks(URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
 
-        return ImmutableList.<OgcApiLink>builder()
-                .add(new ImmutableOgcApiLink.Builder()
+        return ImmutableList.<Link>builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                         .removeLastPathSegment("collections")
                                         .ensureNoTrailingSlash()
@@ -45,7 +44,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                         .rel("tiling-schemes")
                         .title(i18n.get("tileMatrixSetsLink", language))
                         .build())
-                .add(new ImmutableOgcApiLink.Builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .removeLastPathSegment("collections")
                                 .ensureNoTrailingSlash()
@@ -67,11 +66,11 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
      * @param language the requested language (optional)
      * @return a list with links
      */
-    public List<OgcApiLink> generateTileMatrixSetsLinks(URICustomizer uriBuilder, String tileMatrixSetId, I18n i18n, Optional<Locale> language) {
+    public List<Link> generateTileMatrixSetsLinks(URICustomizer uriBuilder, String tileMatrixSetId, I18n i18n, Optional<Locale> language) {
 
 
-        return ImmutableList.<OgcApiLink>builder()
-                .add(new ImmutableOgcApiLink.Builder()
+        return ImmutableList.<Link>builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                         .ensureLastPathSegment(tileMatrixSetId)
                                         .removeParameters("f")
@@ -98,10 +97,10 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
      * @param language the requested language (optional)
      * @return
      */
-    public List<OgcApiLink> generateGeoJSONTileLinks(URICustomizer uriBuilder, OgcApiMediaType mediaType,
-                                                     OgcApiMediaType alternateMediaType, String tileMatrixSetId,
-                                                     String zoomLevel, String row, String col, boolean mvt,
-                                                     boolean json, I18n i18n, Optional<Locale> language) {
+    public List<Link> generateGeoJSONTileLinks(URICustomizer uriBuilder, ApiMediaType mediaType,
+                                               ApiMediaType alternateMediaType, String tileMatrixSetId,
+                                               String zoomLevel, String row, String col, boolean mvt,
+                                               boolean json, I18n i18n, Optional<Locale> language) {
 
         uriBuilder.removeLastPathSegments(3);
         uriBuilder
@@ -109,10 +108,10 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                 .ensureParameter("f", mediaType.parameter())
                 .ensureLastPathSegments("tiles", "WebMercatorQuad", zoomLevel, row, col);
 
-        final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>();
+        final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>();
 
         if (json) {
-            builder.add(new ImmutableOgcApiLink.Builder()
+            builder.add(new ImmutableLink.Builder()
                     .href(uriBuilder
                             .ensureNoTrailingSlash()
                             .ensureLastPathSegments("tiles", tileMatrixSetId, zoomLevel, row, col)
@@ -124,7 +123,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                     .build());
         }
         if (mvt) {
-            builder.add(new ImmutableOgcApiLink.Builder()
+            builder.add(new ImmutableLink.Builder()
                     .href(uriBuilder.copy()
                                     .ensureNoTrailingSlash()
                                     .ensureLastPathSegments("tiles", tileMatrixSetId, zoomLevel, row, col)
@@ -144,28 +143,26 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
      * generates the URI templates on the page /serviceId/tileMatrixSets/{tileMatrixSetId} and /serviceId/tiles/{tileMatrixSetId}
      *
      * @param uriBuilder        the URI, split in host, path and query
-     * @param mvt               mvt enabled or disabled
-     * @param json              json enabled or disabled
      * @param i18n module to get linguistic text
      * @param language the requested language (optional)
      * @return a list with links
      */
-    public List<OgcApiLink> generateTilesLinks(URICustomizer uriBuilder,
-                                               OgcApiMediaType mediaType,
-                                               List<OgcApiMediaType> alternateMediaTypes,
-                                               boolean homeLink,
-                                               boolean isCollectionTile,
-                                               boolean isMetadata,
-                                               List<OgcApiMediaType> tileSetFormats,
-                                               List<OgcApiMediaType> tileFormats,
-                                               I18n i18n,
-                                               Optional<Locale> language) {
+    public List<Link> generateTilesLinks(URICustomizer uriBuilder,
+                                         ApiMediaType mediaType,
+                                         List<ApiMediaType> alternateMediaTypes,
+                                         boolean homeLink,
+                                         boolean isCollectionTile,
+                                         boolean isMetadata,
+                                         List<ApiMediaType> tileSetFormats,
+                                         List<ApiMediaType> tileFormats,
+                                         I18n i18n,
+                                         Optional<Locale> language) {
 
-        final ImmutableList.Builder<OgcApiLink> builder = new ImmutableList.Builder<OgcApiLink>()
+        final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>()
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
         if (homeLink)
-            builder.add(new ImmutableOgcApiLink.Builder()
+            builder.add(new ImmutableLink.Builder()
                     .href(uriBuilder
                             .copy()
                             .removeLastPathSegments(isCollectionTile ? (isMetadata ? 5 : 3) : (isMetadata ? 3 : 1))
@@ -178,10 +175,10 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
 
         tileFormats.stream()
                 .forEach(format -> {
-                    builder.add(new ImmutableOgcApiLink.Builder()
+                    builder.add(new ImmutableLink.Builder()
                             .href(uriBuilder.copy()
                                     .clearParameters()
-                                    .removeLastPathSegments(isMetadata ? 2 : 0)
+                                    .removeLastPathSegments(isMetadata ? 1 : 0)
                                     .ensureNoTrailingSlash()
                                     .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f="+format.parameter())
                             .rel("item")
@@ -196,11 +193,11 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
         if (!isMetadata)
             tileSetFormats.stream()
                     .forEach(format -> {
-                        builder.add(new ImmutableOgcApiLink.Builder()
+                        builder.add(new ImmutableLink.Builder()
                                 .href(uriBuilder.copy()
-                                        .clearParameters()
-                                        .ensureNoTrailingSlash()
-                                        .toString() + "/{tileMatrixSetId}")
+                                                .clearParameters()
+                                                .ensureNoTrailingSlash()
+                                                .toString() + "/{tileMatrixSetId}")
                                 .rel("describedby")
                                 .type(format.type().toString())
                                 .title(i18n.get("tilejsonLink", language)) // TODO
@@ -219,11 +216,11 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
      * @param language the requested language (optional)
      * @return a list with links
      */
-    public List<OgcApiLink> generateCollectionLinks(URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
+    public List<Link> generateCollectionLinks(URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
 
 
-        return ImmutableList.<OgcApiLink>builder()
-                .add(new ImmutableOgcApiLink.Builder()
+        return ImmutableList.<Link>builder()
+                .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
                                 .ensureLastPathSegment("tiles")

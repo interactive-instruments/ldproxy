@@ -7,20 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 
-import javax.ws.rs.core.Response;
 import java.util.Optional;
 
-public interface TileSetsFormatExtension extends FormatExtension {
+public interface TileSetsFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
         return "^(?:/collections/[\\w\\-]+)?/tiles/?$";
     }
 
-    Object getTileSetsEntity(TileSets tiles, Optional<String> collectionId, OgcApiApi api, OgcApiRequestContext requestContext);
+    Object getTileSetsEntity(TileSets tiles, Optional<String> collectionId, OgcApi api, ApiRequestContext requestContext);
 
 }

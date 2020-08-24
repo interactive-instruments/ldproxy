@@ -7,20 +7,21 @@
  */
 package de.ii.ldproxy.ogcapi.observation_processing.api;
 
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiProcessExtension;
+import de.ii.ldproxy.ogcapi.domain.ProcessExtension;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public interface ObservationProcessingStatisticalFunction extends OgcApiProcessExtension {
+public interface ObservationProcessingStatisticalFunction extends ProcessExtension {
     Number getValue(CopyOnWriteArrayList<Number> values);
     Class getType();
     default boolean isDefault() { return true; }
 
     @Override
-    default boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    default boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
                 apiData.getCollections()
                         .values()
@@ -30,7 +31,8 @@ public interface ObservationProcessingStatisticalFunction extends OgcApiProcessE
     }
 
     @Override
-    default boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return ObservationProcessingConfiguration.class;
     }
+
 }

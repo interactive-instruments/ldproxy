@@ -17,6 +17,9 @@ subprojects {
         
         //TODO: only needed for non-interface mocks in spock tests (e.g. vt), replace with interfaces and remove 
         testImplementation 'net.bytebuddy:byte-buddy:1.9.10'
+
+        //TODO: for e2e tests
+        testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
     }
 
     test {

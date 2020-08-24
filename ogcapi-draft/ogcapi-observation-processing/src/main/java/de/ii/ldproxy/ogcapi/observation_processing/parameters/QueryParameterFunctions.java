@@ -3,7 +3,7 @@ package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
@@ -23,10 +23,10 @@ import java.util.stream.Collectors;
 @Instantiate
 public class QueryParameterFunctions implements OgcApiQueryParameter {
 
-    final OgcApiExtensionRegistry extensionRegistry;
+    final ExtensionRegistry extensionRegistry;
     final FeatureProcessInfo featureProcessInfo;
 
-    public QueryParameterFunctions(@Requires OgcApiExtensionRegistry extensionRegistry,
+    public QueryParameterFunctions(@Requires ExtensionRegistry extensionRegistry,
                                    @Requires FeatureProcessInfo featureProcessInfo) {
         this.extensionRegistry = extensionRegistry;
         this.featureProcessInfo = featureProcessInfo;
@@ -43,16 +43,16 @@ public class QueryParameterFunctions implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-                method==OgcApiContext.HttpMethods.GET &&
+                method== HttpMethods.GET &&
                 featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"aggregate-time", "aggregate-space", "aggregate-space-time");
     }
 
     private Schema schema = null;
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         if (schema==null) {
             List<String> functionsEnum = new ArrayList<>();
             List<String> defaultList = new ArrayList<>();
@@ -72,7 +72,7 @@ public class QueryParameterFunctions implements OgcApiQueryParameter {
         return schema;
     }
 
-    private List<ObservationProcessingStatisticalFunction> getFunctions(OgcApiApiDataV2 apiData, boolean defaultOnly) {
+    private List<ObservationProcessingStatisticalFunction> getFunctions(OgcApiDataV2 apiData, boolean defaultOnly) {
         return extensionRegistry.getExtensionsForType(ObservationProcessingStatisticalFunction.class)
                 .stream()
                 .filter(function -> function.isEnabledForApi(apiData) && (!defaultOnly || function.isDefault()))
@@ -83,7 +83,7 @@ public class QueryParameterFunctions implements OgcApiQueryParameter {
     public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType,
                                                 Map<String, Object> context,
                                                 Map<String, String> parameters,
-                                                OgcApiApiDataV2 apiData) {
+                                                OgcApiDataV2 apiData) {
         List<ObservationProcessingStatisticalFunction> functions;
         if (parameters.containsKey(getName())) {
             List<ObservationProcessingStatisticalFunction> knownFunctions = getFunctions(apiData, false);
@@ -106,19 +106,17 @@ public class QueryParameterFunctions implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
                 apiData.getCollections()
                         .values()
                         .stream()
-                        .filter(featureType -> featureType.getEnabled())
-                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
-                        .findAny()
-                        .isPresent();
-    }
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+}
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return ObservationProcessingConfiguration.class;
     }
 }

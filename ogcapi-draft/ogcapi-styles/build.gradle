@@ -1,16 +1,4 @@
 
 dependencies {
-    provided project(":ogcapi-collection-queryables")
-
-    provided group: 'de.interactive_instruments', name: 'ogcapi-common'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-features-core'
-    provided group: 'de.interactive_instruments', name: 'ogcapi-oas30'
-
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
-
-    //TODO: to unit-tests.gradle or e2e-tests.gradle???
-    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+    provided project(":ogcapi-collections-queryables")
 }

@@ -1,16 +1,17 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryMultiPolygon;
-import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.akka.http.HttpClient;
+import de.ii.xtraplatform.streams.domain.Http;
+import de.ii.xtraplatform.streams.domain.HttpClient;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -54,9 +55,9 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
     public String getId() { return "coordRef-resample-to-grid"; }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-                method==OgcApiContext.HttpMethods.GET &&
+                method== HttpMethods.GET &&
                 featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"resample-to-grid");
     }
 
@@ -71,31 +72,29 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         return baseSchema;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
                 apiData.getCollections()
                         .values()
                         .stream()
-                        .filter(featureType -> featureType.getEnabled())
-                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
-                        .findAny()
-                        .isPresent();
-    }
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+}
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return ObservationProcessingConfiguration.class;
     }
 
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
-                                                   OgcApiApiDataV2 apiData) {
+                                                   OgcApiDataV2 apiData) {
         if (parameters.containsKey("coord")) {
             if (parameters.containsKey(getName())) {
                 throw new IllegalArgumentException("Only one of the parameters 'coord' and 'coordRef' may be provided.");
@@ -116,10 +115,10 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
         return parameters;
     }
 
-    private String getSpatialProperty(OgcApiApiDataV2 apiData, String collectionId) {
+    private String getSpatialProperty(OgcApiDataV2 apiData, String collectionId) {
         return apiData.getCollections()
                 .get(collectionId)
-                .getExtension(OgcApiFeaturesCoreConfiguration.class)
+                .getExtension(FeaturesCoreConfiguration.class)
                 .orElseThrow(() -> new RuntimeException(String.format("No configuration found for feature collection '%s'.",collectionId)))
                 .getQueryables()
                 .orElseThrow(() -> new RuntimeException(String.format("Configuration for feature collection '%s' does not specify any spatial queryable.",collectionId)))
@@ -153,7 +152,7 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
     public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType,
                                                 Map<String, Object> context,
                                                 Map<String, String> parameters,
-                                                OgcApiApiDataV2 apiData) {
+                                                OgcApiDataV2 apiData) {
         String coordRef = parameters.get(getName());
         if (coordRef==null)
             return context;

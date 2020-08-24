@@ -1,9 +1,9 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.features.core.application.QueryParameterLimitFeatures;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -19,11 +19,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterLimitTile extends QueryParameterLimitFeatures {
+public class QueryParameterLimitTile implements OgcApiQueryParameter {
 
     @Override
     public String getId() {
         return "limitTile";
+    }
+
+    @Override
+    public String getName() {
+        return "limit";
     }
 
     @Override
@@ -32,23 +37,23 @@ public class QueryParameterLimitTile extends QueryParameterLimitFeatures {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-                method==OgcApiContext.HttpMethods.GET &&
+                method== HttpMethods.GET &&
                 definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, String collectionId, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
         return isEnabledForApi(apiData, collectionId) &&
-                method==OgcApiContext.HttpMethods.GET &&
+                method== HttpMethods.GET &&
                 definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
     }
 
     private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         String key = apiData.getId()+"_*";
         if (!schemaMap.containsKey(key)) {
             Schema schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
@@ -64,7 +69,7 @@ public class QueryParameterLimitTile extends QueryParameterLimitFeatures {
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         String key = apiData.getId()+"_"+collectionId;
         if (!schemaMap.containsKey(key)) {
             Schema schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
@@ -81,12 +86,12 @@ public class QueryParameterLimitTile extends QueryParameterLimitFeatures {
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return isExtensionEnabled(apiData, TilesConfiguration.class);
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         return isExtensionEnabled(apiData.getCollections().get(collectionId), TilesConfiguration.class);
     }
 
@@ -94,7 +99,7 @@ public class QueryParameterLimitTile extends QueryParameterLimitFeatures {
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureType,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters,
-                                                        OgcApiApiDataV2 apiData) {
+                                                        OgcApiDataV2 apiData) {
         if (parameters.containsKey(getName())) {
             queryBuilder.limit(Integer.parseInt(parameters.get(getName())));
         }

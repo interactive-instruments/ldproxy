@@ -1,7 +1,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.processes;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
@@ -24,14 +24,14 @@ import java.util.stream.Collectors;
 @Instantiate
 public class FeatureProcessPosition implements ObservationProcess {
 
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
 
-    public FeatureProcessPosition(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public FeatureProcessPosition(@Requires ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 
     @Override
-    public Set<String> getSupportedCollections(OgcApiApiDataV2 apiData) {
+    public Set<String> getSupportedCollections(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(PathParameterCollectionIdProcess.class).stream()
                 .map(param -> param.getValues(apiData))
                 .flatMap(Set::stream)
@@ -49,7 +49,7 @@ public class FeatureProcessPosition implements ObservationProcess {
             throw new RuntimeException("Missing information for executing '" + getName() + "': No time interval has been provided.");
         }
         obj = processingParameters.get("apiData");
-        if (obj==null || !(obj instanceof OgcApiApiDataV2))
+        if (obj==null || !(obj instanceof OgcApiDataV2))
             throw new RuntimeException("Missing information for executing '"+getName()+"': No API information has been provided.");
         obj = processingParameters.get("collectionId");
         if (obj==null || !(obj instanceof String))
@@ -65,7 +65,7 @@ public class FeatureProcessPosition implements ObservationProcess {
         Observations observations = (Observations) data;
         GeometryPoint point = (GeometryPoint) processingParameters.get("point");
         TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");
-        OgcApiApiDataV2 apiData = (OgcApiApiDataV2) processingParameters.get("apiData");
+        OgcApiDataV2 apiData = (OgcApiDataV2) processingParameters.get("apiData");
         String collectionId = (String) processingParameters.get("collectionId");
 
         ObservationProcessingConfiguration config =
