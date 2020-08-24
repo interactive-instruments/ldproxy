@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.oas30.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.oas30.app.ImmutableOas30Configuration;
 import org.immutables.value.Value;
 
 @Value.Immutable

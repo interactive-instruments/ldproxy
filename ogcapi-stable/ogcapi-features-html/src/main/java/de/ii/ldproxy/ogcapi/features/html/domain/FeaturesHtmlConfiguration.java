@@ -13,7 +13,6 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.html.app.HtmlPropertyTransformations;
-import de.ii.ldproxy.ogcapi.features.html.app.ImmutableFeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.app.ImmutableHtmlPropertyTransformations;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import org.immutables.value.Value;

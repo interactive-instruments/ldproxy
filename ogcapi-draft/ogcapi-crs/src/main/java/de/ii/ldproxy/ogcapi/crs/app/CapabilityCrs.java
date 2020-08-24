@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.crs.app;
 
+import de.ii.ldproxy.ogcapi.crs.domain.ImmutableCrsConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.apache.felix.ipojo.annotations.Component;

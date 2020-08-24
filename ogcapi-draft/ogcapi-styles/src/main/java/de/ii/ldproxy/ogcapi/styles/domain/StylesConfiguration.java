@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.styles.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.styles.app.ImmutableStylesConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
