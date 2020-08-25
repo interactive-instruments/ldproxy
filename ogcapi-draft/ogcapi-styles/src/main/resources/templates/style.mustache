@@ -44,7 +44,7 @@ white-space: nowrap;
    let features = map.queryRenderedFeatures(e.point);
    if (features.length) {
     var properties = features[0].properties;
-    var atts = '';
+    var atts = '<p>'+features[0].sourceLayer+'</p>';
     Object.keys(properties).sort().forEach(function(key) {
     atts += '<tr><td>'+key+'</td><td>'+properties[key]+'</td></tr>';
     });
