@@ -245,6 +245,11 @@ public class TileFormatMVT implements TileFormatExtension {
                             String msg = "Failure to access the single-layer tile {}/{}/{}/{} in dataset '{}', layer '{}', format '{}'. Trying again ...";
                             LOGGER.info(msg, tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
                                         singleLayerTile.getApi().getId(), collectionId, getExtension());
+                        } catch (IllegalArgumentException e) {
+                            // another problem generating the tile
+                            throw new RuntimeException(String.format("Failure to process the single-layer tile %s/%d/%d/%d in dataset '%s', layer '%s', format '%s'.",
+                                                                     tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
+                                                                     singleLayerTile.getApi().getId(), collectionId, getExtension()), e);
                         }
                     } else if (tileFile.exists() && FileUtils.sizeOf(tileFile)==0) {
                         // an empty tile, so we are done for this collection
