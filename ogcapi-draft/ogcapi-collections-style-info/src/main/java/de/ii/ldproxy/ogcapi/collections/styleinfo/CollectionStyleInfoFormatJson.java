@@ -129,7 +129,7 @@ public class CollectionStyleInfoFormatJson implements CollectionStyleInfoFormatE
         try {
             Files.write(styleFile.toPath(), payload);
         } catch (IOException e) {
-            throw new RuntimeException("Could not PATCH style information: " + collectionId);
+            throw new RuntimeException("Could not PATCH style information: " + collectionId, e);
         }
     }
 }

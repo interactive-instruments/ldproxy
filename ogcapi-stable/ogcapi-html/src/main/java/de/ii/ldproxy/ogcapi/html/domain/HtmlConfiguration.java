@@ -59,12 +59,6 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     @Nullable
     String getFooterText();
 
-    @Nullable
-    String getApiCatalogLabel();
-
-    @Nullable
-    String getApiCatalogDescription();
-
     @Override
     default Builder getBuilder() {
         return new ImmutableHtmlConfiguration.Builder();

@@ -8,12 +8,13 @@
 package de.ii.ldproxy.ogcapi.html.app;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ApiCatalog;
+import de.ii.ldproxy.ogcapi.domain.ApiCatalogEntry;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.DatasetView;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
-import de.ii.xtraplatform.services.domain.ServiceData;
 
 import java.net.URI;
 import java.util.List;
@@ -29,11 +30,11 @@ public class ServiceOverviewView extends DatasetView {
     public URI uri;
     public boolean isApiCatalog = true;
 
-    public ServiceOverviewView(URI uri, List<ServiceData> data, String urlPrefix, HtmlConfiguration htmlConfig, I18n i18n, Optional<Locale> language) {
-        super("services", uri, data, urlPrefix, htmlConfig, Objects.equals(htmlConfig.getNoIndexEnabled(), true));
+    public ServiceOverviewView(URI uri, ApiCatalog apiCatalog, HtmlConfiguration htmlConfig, I18n i18n, Optional<Locale> language) {
+        super("services", uri, apiCatalog.getApis(), apiCatalog.getUrlPrefix(), htmlConfig, Objects.equals(htmlConfig.getNoIndexEnabled(), true));
         this.uri = uri;
-        this.title = Objects.requireNonNullElse(htmlConfig.getApiCatalogLabel(), i18n.get("rootTitle", language));
-        this.description = Objects.requireNonNullElse(htmlConfig.getApiCatalogDescription(), i18n.get("rootDescription", language));
+        this.title = apiCatalog.getTitle().orElse(i18n.get("rootTitle", language));
+        this.description = apiCatalog.getDescription().orElse(i18n.get("rootDescription", language));
         this.keywords = new ImmutableList.Builder<String>().add("ldproxy", "OGC API").build();
         this.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(i18n.get("root", language), true))
@@ -45,16 +46,16 @@ public class ServiceOverviewView extends DatasetView {
     }
 
     public String getDatasetsAsString() {
-        return ((List<ServiceData>)getData())
+        return ((List<ApiCatalogEntry>)getData())
                 .stream()
                 .map(api -> "{ \"@type\": \"Dataset\", \"name\": \"" +
-                        api.getLabel() +
+                        api.getTitle() +
                         "\", \"description\": \"" +
                         api.getDescription() +
                         "\", \"url\": \"" +
-                        getCanonicalUrl() + api.getId() +
+                        api.getLandingPageUri() +
                         "\", \"sameAs\": \"" +
-                        getCanonicalUrl() + api.getId() +
+                        api.getLandingPageUri() +
                         "\" }")
                 .collect(Collectors.joining(", "));
     }

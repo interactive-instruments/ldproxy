@@ -15,6 +15,8 @@ import org.apache.felix.ipojo.annotations.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 
 @Component
 @Provides
@@ -30,7 +32,7 @@ public class BackgroundTaskExceptionHandlerImpl implements BackgroundTaskExcepti
 
     @Override
     public void uncaughtException(Thread t, Throwable exception) {
-        LOGGER.error("Server Error during background task: {}.", exception.getMessage());
+        LOGGER.error("Server Error during background task: {}", exception.getMessage() + Objects.requireNonNullElse(" "+exception.getCause().getMessage()+".", ""));
         if(LOGGER.isDebugEnabled()) {
             LOGGER.debug("Stacktrace:", exception);
         }

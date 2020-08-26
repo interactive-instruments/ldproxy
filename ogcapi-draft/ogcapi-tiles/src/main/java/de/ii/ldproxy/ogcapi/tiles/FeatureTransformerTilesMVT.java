@@ -145,12 +145,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     @Override
     public void onEnd() {
 
-        /*
-        for (FeatureProcess process : processes.asList()) {
-            data = process.execute(data, processingParameters);
-        }
-         */
-
         try {
             byte[] mvt = encoder.encode();
             outputStream.write(mvt);
@@ -162,7 +156,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                 FileUtils.writeByteArrayToFile(tileFile, mvt);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error writing output stream.");
+            throw new RuntimeException("Error writing output stream.", e);
         }
 
         LOGGER.trace("Response written.");

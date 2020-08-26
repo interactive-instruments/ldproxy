@@ -10,6 +10,8 @@ package de.ii.ldproxy.ogcapi.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
+
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFoundationConfiguration.Builder.class)
@@ -17,6 +19,12 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
+
+    @Nullable
+    String getApiCatalogLabel();
+
+    @Nullable
+    String getApiCatalogDescription();
 
     @Override
     default Builder getBuilder() {

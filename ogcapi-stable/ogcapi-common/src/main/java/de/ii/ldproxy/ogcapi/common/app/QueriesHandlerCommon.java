@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.common.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.common.domain.*;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -24,7 +23,6 @@ import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
