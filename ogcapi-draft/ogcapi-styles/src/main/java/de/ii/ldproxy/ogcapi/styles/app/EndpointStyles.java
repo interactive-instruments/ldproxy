@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -132,11 +133,11 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
         Styles styles = ImmutableStyles.builder()
                                        .styles(
                         Arrays.stream(apiDir.listFiles())
-                            .filter(file -> !file.isHidden())
-                            .map(File::getName)
-                            .sorted()
-                            .filter(filename -> Files.getFileExtension(filename).equalsIgnoreCase("metadata"))
-                            .map(filename -> ImmutableStyleEntry.builder()
+                              .filter(file -> !file.isHidden())
+                              .map(File::getName)
+                              .filter(filename -> Files.getFileExtension(filename).equalsIgnoreCase("metadata"))
+                              .sorted()
+                              .map(filename -> ImmutableStyleEntry.builder()
                                     .id(Files.getNameWithoutExtension(filename))
                                     .title(getMetadata(Files.getNameWithoutExtension(filename), requestContext).get().getTitle())
                                     .links(stylesLinkGenerator.generateStyleLinks(requestContext.getUriCustomizer(),
@@ -199,6 +200,7 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
     private List<ApiMediaType> getStylesheetMediaTypes(OgcApiDataV2 apiData, File apiDir, String styleId) {
         return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
                 .stream()
+                .sorted(Comparator.comparing(StyleFormatExtension::getFileExtension))
                 .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(apiData))
                 .filter(styleFormat -> new File(apiDir + File.separator + styleId + "." + styleFormat.getFileExtension()).exists())
                 .map(StyleFormatExtension::getMediaType)
