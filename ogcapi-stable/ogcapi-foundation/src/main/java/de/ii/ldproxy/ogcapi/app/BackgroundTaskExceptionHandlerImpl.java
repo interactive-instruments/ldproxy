@@ -32,7 +32,7 @@ public class BackgroundTaskExceptionHandlerImpl implements BackgroundTaskExcepti
 
     @Override
     public void uncaughtException(Thread t, Throwable exception) {
-        LOGGER.error("Server Error during background task: {}", exception.getMessage() + Objects.requireNonNullElse(" "+exception.getCause().getMessage()+".", ""));
+        LOGGER.error("Server Error during background task: {} {}", exception.getMessage(), Objects.nonNull(exception.getCause()) ? exception.getCause().getMessage() : "" );
         if(LOGGER.isDebugEnabled()) {
             LOGGER.debug("Stacktrace:", exception);
         }
