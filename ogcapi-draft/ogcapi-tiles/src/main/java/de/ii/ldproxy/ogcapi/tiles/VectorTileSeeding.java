@@ -10,17 +10,8 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ContentExtension;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableRequestContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.StartupTask;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.domain.BackgroundTaskExceptionHandler;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
@@ -73,6 +64,7 @@ public class VectorTileSeeding implements StartupTask {
     private final FeaturesQuery queryParser;
     private final FeaturesCoreProviders providers;
     private final TilesQueriesHandler queryHandler;
+    private final BackgroundTaskExceptionHandler backgroundTaskExceptionHandler;
 
     public VectorTileSeeding(@Requires I18n i18n,
                              @Requires CrsTransformerFactory crsTransformerFactory,
@@ -83,7 +75,8 @@ public class VectorTileSeeding implements StartupTask {
                              @Requires XtraPlatform xtraPlatform,
                              @Requires FeaturesQuery queryParser,
                              @Requires FeaturesCoreProviders providers,
-                             @Requires TilesQueriesHandler queryHandler) {
+                             @Requires TilesQueriesHandler queryHandler,
+                             @Requires BackgroundTaskExceptionHandler backgroundTaskExceptionHandler) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
 
@@ -96,6 +89,7 @@ public class VectorTileSeeding implements StartupTask {
         this.queryParser = queryParser;
         this.providers = providers;
         this.queryHandler = queryHandler;
+        this.backgroundTaskExceptionHandler = backgroundTaskExceptionHandler;
     }
 
     @Override
@@ -163,6 +157,7 @@ public class VectorTileSeeding implements StartupTask {
 
         };
         t = new Thread(startSeeding);
+        t.setUncaughtExceptionHandler(backgroundTaskExceptionHandler);
         t.setDaemon(true);
         t.start();
         threadMap.put(t, apiData.getId());
