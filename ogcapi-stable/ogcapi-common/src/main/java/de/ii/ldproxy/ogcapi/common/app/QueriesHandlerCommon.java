@@ -39,6 +39,7 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
     @Value.Immutable
     public interface QueryInputLandingPage extends QueryInput {
         boolean getIncludeLinkHeader();
+        List<Link> getAdditionalLinks();
     }
 
     @Value.Immutable
@@ -99,7 +100,8 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
                 .description(apiData.getDescription().orElse(""))
                 .externalDocs(apiData.getExternalDocs())
                 .extent(Optional.ofNullable(spatialExtent))
-                .links(links);
+                .links(links)
+                .addAllLinks(queryInput.getAdditionalLinks());
 
         for (LandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
             apiLandingPage = ogcApiLandingPageExtension.process(apiLandingPage,

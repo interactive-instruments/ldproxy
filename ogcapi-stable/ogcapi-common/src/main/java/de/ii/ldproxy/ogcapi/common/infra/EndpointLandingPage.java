@@ -93,9 +93,13 @@ public class EndpointLandingPage extends Endpoint {
         boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
                 .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
+        List<Link> additionalLinks = api.getData().getExtension(CommonConfiguration.class)
+                                        .map(CommonConfiguration::getAdditionalLinks)
+                                        .orElse(ImmutableList.of());
 
         QueriesHandlerCommon.QueryInputLandingPage queryInput = new ImmutableQueryInputLandingPage.Builder()
                 .includeLinkHeader(includeLinkHeader)
+                .additionalLinks(additionalLinks)
                 .build();
 
         return queryHandler.handle(Query.LANDING_PAGE, queryInput, requestContext);

@@ -9,9 +9,23 @@ package de.ii.ldproxy.ogcapi.collections.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollections;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.collections.domain.*;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.Metadata;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -19,7 +33,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.List;
@@ -40,6 +53,7 @@ public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerC
     public interface QueryInputCollections extends QueryInput {
         boolean getIncludeHomeLink();
         boolean getIncludeLinkHeader();
+        List<Link> getAdditionalLinks();
     }
 
     @Value.Immutable
@@ -47,6 +61,7 @@ public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerC
         String getCollectionId();
         boolean getIncludeHomeLink();
         boolean getIncludeLinkHeader();
+        List<Link> getAdditionalLinks();
     }
 
     private final ExtensionRegistry extensionRegistry;
@@ -89,7 +104,8 @@ public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerC
         ImmutableCollections.Builder collections = new ImmutableCollections.Builder()
                 .title(apiData.getLabel())
                 .description(apiData.getDescription().orElse(""))
-                .links(links);
+                .links(links)
+                .addAllLinks(queryInput.getAdditionalLinks());
 
         for (CollectionsExtension ogcApiCollectionsExtension : getCollectionsExtenders()) {
             collections = ogcApiCollectionsExtension.process(collections,
@@ -122,10 +138,6 @@ public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerC
         OgcApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
 
-        if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
-        }
-
         Optional<String> licenseUrl = apiData.getMetadata().flatMap(Metadata::getLicenseUrl);
         Optional<String> licenseName = apiData.getMetadata().flatMap(Metadata::getLicenseName);
         List<Link> links = new CollectionLinksGenerator().generateLinks(
@@ -144,7 +156,8 @@ public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerC
 
         ImmutableOgcApiCollection.Builder ogcApiCollection = ImmutableOgcApiCollection.builder()
                 .id(collectionId)
-                .links(links);
+                .links(links)
+                .addAllLinks(queryInput.getAdditionalLinks());
 
         FeatureTypeConfigurationOgcApi featureTypeConfiguration = apiData.getCollections()
                                                                          .get(collectionId);

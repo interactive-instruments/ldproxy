@@ -26,10 +26,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -123,17 +125,28 @@ public class EndpointCollection extends EndpointSubCollection {
                                   @Context ApiRequestContext requestContext, @PathParam("collectionId") String collectionId) {
         checkAuthorization(api.getData(), optionalUser);
 
-        boolean includeHomeLink = api.getData().getExtension(CommonConfiguration.class)
-                .map(CommonConfiguration::getIncludeHomeLink)
-                .orElse(false);
-        boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
-                .map(CommonConfiguration::getIncludeLinkHeader)
-                .orElse(false);
+        if (!api.getData().isCollectionEnabled(collectionId)) {
+            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
+        }
+
+        boolean includeHomeLink = api.getData()
+                                     .getExtension(CommonConfiguration.class)
+                                     .map(CommonConfiguration::getIncludeHomeLink)
+                                     .orElse(false);
+        boolean includeLinkHeader = api.getData()
+                                       .getExtension(CommonConfiguration.class)
+                                       .map(CommonConfiguration::getIncludeLinkHeader)
+                                       .orElse(false);
+        List<Link> additionalLinks = api.getData()
+                                        .getCollections()
+                                        .get(collectionId)
+                                        .getAdditionalLinks();
 
         QueriesHandlerCollections.QueryInputFeatureCollection queryInput = new ImmutableQueryInputFeatureCollection.Builder()
                 .collectionId(collectionId)
                 .includeHomeLink(includeHomeLink)
                 .includeLinkHeader(includeLinkHeader)
+                .additionalLinks(additionalLinks)
                 .build();
 
         return queryHandler.handle(QueriesHandlerCollections.Query.FEATURE_COLLECTION, queryInput, requestContext);

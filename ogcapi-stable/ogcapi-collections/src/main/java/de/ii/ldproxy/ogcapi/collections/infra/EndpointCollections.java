@@ -109,10 +109,14 @@ public class EndpointCollections extends Endpoint {
         boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
                 .map(CommonConfiguration::getIncludeLinkHeader)
                 .orElse(false);
+        List<Link> additionalLinks = api.getData().getExtension(CollectionsConfiguration.class)
+                                        .map(CollectionsConfiguration::getAdditionalLinks)
+                                        .orElse(ImmutableList.of());
 
         QueriesHandlerCollections.QueryInputCollections queryInput = new ImmutableQueryInputCollections.Builder()
                 .includeHomeLink(includeHomeLink)
                 .includeLinkHeader(includeLinkHeader)
+                .additionalLinks(additionalLinks)
                 .build();
 
         return queryHandler.handle(QueriesHandlerCollections.Query.COLLECTIONS, queryInput, requestContext);

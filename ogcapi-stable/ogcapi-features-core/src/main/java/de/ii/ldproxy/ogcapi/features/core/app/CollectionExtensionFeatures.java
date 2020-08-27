@@ -107,12 +107,6 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                     .build());
         }
 
-        Optional<FeaturesCoreConfiguration> config = apiData.getExtension(FeaturesCoreConfiguration.class);
-        if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/collections/"+featureType.getId())) {
-            List<Link> additionalLinks = config.get().getAdditionalLinks().get("/collections/"+featureType.getId());
-            additionalLinks.stream().forEach(link -> collection.addLinks(link));
-        }
-
         // only add extents for cases where we can filter using spatial / temporal predicates
         Optional<FeaturesCollectionQueryables> queryables = featureType.getExtension(FeaturesCoreConfiguration.class).flatMap(FeaturesCoreConfiguration::getQueryables);
         boolean hasSpatialQueryable = queryables.map(FeaturesCollectionQueryables::getSpatial)

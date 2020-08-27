@@ -45,12 +45,6 @@ public class LandingPageExtensionFeatures implements LandingPageExtension {
             return landingPageBuilder;
         }
 
-        Optional<FeaturesCoreConfiguration> config = apiData.getExtension(FeaturesCoreConfiguration.class);
-        if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/")) {
-            List<Link> additionalLinks = config.get().getAdditionalLinks().get("/");
-            additionalLinks.stream().forEach(link -> landingPageBuilder.addLinks(link));
-        }
-
         return landingPageBuilder;
     }
 }

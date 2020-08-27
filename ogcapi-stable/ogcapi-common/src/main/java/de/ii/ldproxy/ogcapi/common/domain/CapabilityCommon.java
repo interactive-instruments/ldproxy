@@ -35,11 +35,6 @@ public class CapabilityCommon implements ApiBuildingBlock {
                                                          .includeHomeLink(false)
                                                          .includeLinkHeader(true)
                                                          .useLangParameter(false)
-                                                         .encodings(extensionRegistry.getExtensionsForType(CommonFormatExtension.class)
-                                                                                           .stream()
-                                                                                           .filter(GenericFormatExtension::isEnabledByDefault)
-                                                                                           .map(format -> format.getMediaType().label())
-                                                                                           .collect(ImmutableList.toImmutableList()))
                                                          .build();
     }
 
