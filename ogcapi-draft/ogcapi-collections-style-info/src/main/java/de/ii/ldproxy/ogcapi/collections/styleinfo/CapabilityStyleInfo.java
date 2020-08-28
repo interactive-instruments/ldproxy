@@ -26,7 +26,7 @@ public class CapabilityStyleInfo implements ApiBuildingBlock {
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableStyleInfoConfiguration.Builder().enabled(true)
+        return new ImmutableStyleInfoConfiguration.Builder().enabled(false)
                                                             .build();
     }
 

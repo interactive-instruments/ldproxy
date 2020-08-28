@@ -26,7 +26,7 @@ public class CapabilitySchema implements ApiBuildingBlock {
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableSchemaConfiguration.Builder().enabled(true)
+        return new ImmutableSchemaConfiguration.Builder().enabled(false)
                                                          .build();
     }
 
