@@ -15,6 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -55,8 +56,34 @@ public class StyleInfoOnCollection implements CollectionExtension {
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
+
+        if (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getStyleInfosOnCollection()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        Optional<StylesConfiguration> stylesExtension = apiData.isCollectionEnabled(collectionId) ?
+                apiData.getCollections()
+                       .get(collectionId)
+                       .getExtension(StylesConfiguration.class) :
+                Optional.empty();
+
+        if (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getStyleInfosOnCollection()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StyleInfoConfiguration.class;
+        return StylesConfiguration.class;
     }
 
     @Override
@@ -68,7 +95,7 @@ public class StyleInfoOnCollection implements CollectionExtension {
                                                      ApiMediaType mediaType,
                                                      List<ApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
-        if (isExtensionEnabled(featureTypeConfiguration, StyleInfoConfiguration.class) && !isNested) {
+        if (!isNested && isEnabledForApi(apiData, featureTypeConfiguration.getId())) {
             final String collectionId = featureTypeConfiguration.getId();
 
             final String apiId = apiData.getId();

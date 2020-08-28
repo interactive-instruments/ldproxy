@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -83,8 +84,20 @@ public class EndpointManageStyleInfo extends EndpointSubCollection implements Co
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
+
+        if (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getStyleInfosOnCollection() && stylesExtension.get()
+                                                                                                         .getManagerEnabled()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StyleInfoConfiguration.class;
+        return StylesConfiguration.class;
     }
 
     @Override

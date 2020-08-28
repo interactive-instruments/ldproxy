@@ -25,6 +25,9 @@ public interface StylesConfiguration extends ExtensionConfiguration {
     List<String> getStyleEncodings();
 
     @Nullable
+    Boolean getStyleInfosOnCollection();
+
+    @Nullable
     Boolean getManagerEnabled();
 
     @Nullable
