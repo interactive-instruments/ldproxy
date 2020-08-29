@@ -113,7 +113,7 @@ public class CollectionStyleInfoFormatJson implements CollectionStyleInfoFormatE
 
     private boolean isNewStyleInfo(File styleInfosStore, String apiId, String collectionId) {
 
-        File file = new File( styleInfosStore + File.separator + apiId + File.separator + collectionId);
+        File file = new File( styleInfosStore + File.separator + apiId + File.separator + collectionId + ".json");
         return !file.exists();
     }
 
@@ -125,7 +125,7 @@ public class CollectionStyleInfoFormatJson implements CollectionStyleInfoFormatE
      */
     private void putStylesInfoDocument(File styleInfosStore, String apiId, String collectionId, byte[] payload) {
 
-        File styleFile = new File(styleInfosStore + File.separator + apiId + File.separator + collectionId);
+        File styleFile = new File(styleInfosStore + File.separator + apiId + File.separator + collectionId + ".json");
         try {
             Files.write(styleFile.toPath(), payload);
         } catch (IOException e) {

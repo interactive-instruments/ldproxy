@@ -11,6 +11,7 @@ package de.ii.ldproxy.ogcapi.collections.styleinfo;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
@@ -26,8 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -49,7 +52,7 @@ public class StyleInfoOnCollection implements CollectionExtension {
     private final File styleInfosStore;
 
     public StyleInfoOnCollection(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
-        this.styleInfosStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styleInfos");
+        this.styleInfosStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "style-infos");
         if (!styleInfosStore.exists()) {
             styleInfosStore.mkdirs();
         }
@@ -96,17 +99,17 @@ public class StyleInfoOnCollection implements CollectionExtension {
                                                      List<ApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
         if (!isNested && isEnabledForApi(apiData, featureTypeConfiguration.getId())) {
-            final String collectionId = featureTypeConfiguration.getId();
-
             final String apiId = apiData.getId();
+            final Optional<Integer> apiVersion = apiData.getApiVersion();
+            final String collectionId = featureTypeConfiguration.getId();
             File apiDir = new File(styleInfosStore + File.separator + apiId);
             if (!apiDir.exists()) {
                 apiDir.mkdirs();
             }
 
-            File collectionFile = new File(styleInfosStore + File.separator + apiId + File.separator + featureTypeConfiguration.getId());
+            File collectionFile = new File(styleInfosStore + File.separator + apiId + File.separator + collectionId + ".json");
             if (collectionFile.exists()) {
-                Optional<StyleInfo> styleInfos = getStyleInfos(collectionFile);
+                Optional<StyleInfo> styleInfos = getStyleInfos(collectionFile, apiId, apiVersion, collectionId, uriCustomizer.copy());
                 if (styleInfos.isPresent() && styleInfos.get().getStyles().isPresent()) {
                     collection.putExtensions("styles",
                             styleInfos.get()
@@ -129,7 +132,7 @@ public class StyleInfoOnCollection implements CollectionExtension {
         return collection;
     }
 
-    private Optional<StyleInfo> getStyleInfos(File styleInfosFile) {
+    private Optional<StyleInfo> getStyleInfos(File styleInfosFile, String apiId, Optional<Integer> apiVersion, String collectionId, URICustomizer uriCustomizer) {
 
         try {
             final byte[] content = java.nio.file.Files.readAllBytes(styleInfosFile.toPath());
@@ -142,7 +145,7 @@ public class StyleInfoOnCollection implements CollectionExtension {
                 // parse input
                 StyleInfo styleInfo = mapper.readValue(content, StyleInfo.class);
 
-                return Optional.of(styleInfo);
+                return Optional.of(replaceParameters(styleInfo, apiId, apiVersion, collectionId, uriCustomizer));
             } catch (IOException e) {
                 LOGGER.error("File in styleInfo store is invalid and is skipped: "+styleInfosFile.getAbsolutePath());
             }
@@ -150,5 +153,49 @@ public class StyleInfoOnCollection implements CollectionExtension {
             LOGGER.error("Style info could not be read: "+styleInfosFile.getAbsolutePath());
         }
         return Optional.empty();
-    };
+    }
+
+    private StyleInfo replaceParameters(StyleInfo styleInfo, String apiId, Optional<Integer> apiVersion, String collectionId, URICustomizer uriCustomizer) {
+
+        // any template parameters in links?
+        boolean templated = styleInfo.getStyles()
+                                     .orElse(ImmutableList.of())
+                                     .stream()
+                                     .map(style -> style.getLinks())
+                                     .flatMap(Collection::stream)
+                                     .filter(Objects::nonNull)
+                                     .anyMatch(link -> Objects.requireNonNullElse(link.getTemplated(),false) && link.getHref().matches("^.*\\{(serviceUrl|collectionId)\\}.*$"));
+
+        if (!templated)
+            return styleInfo;
+
+        String serviceUrl = uriCustomizer.removeLastPathSegments(2)
+                                         .clearParameters()
+                                         .ensureNoTrailingSlash()
+                                         .toString();
+
+        return ImmutableStyleInfo.builder()
+                                 .defaultStyle(styleInfo.getDefaultStyle())
+                                 .styles(styleInfo.getStyles()
+                                                  .orElse(ImmutableList.of())
+                                                  .stream()
+                                                  .map(style -> ImmutableStyleEntry.builder()
+                                                                                   .id(style.getId())
+                                                                                   .title(style.getTitle())
+                                                                                   .description(style.getDescription())
+                                                                                   .links(style.getLinks()
+                                                                                               .stream()
+                                                                                               .map(link -> link.getTemplated() ?
+                                                                                                       new ImmutableLink.Builder()
+                                                                                                                        .from(link)
+                                                                                                                        .href(link.getHref()
+                                                                                                                                  .replace("{serviceUrl}", serviceUrl)
+                                                                                                                                  .replace("{collectionId}", collectionId))
+                                                                                                                        .templated(null)
+                                                                                                                        .build() : link)
+                                                                                               .collect(ImmutableList.toImmutableList()))
+                                                                                   .build())
+                                                  .collect(ImmutableList.toImmutableList()))
+                                 .build();
+    }
 }

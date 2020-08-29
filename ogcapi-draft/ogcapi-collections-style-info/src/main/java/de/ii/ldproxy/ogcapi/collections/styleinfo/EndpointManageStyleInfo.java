@@ -72,7 +72,7 @@ public class EndpointManageStyleInfo extends EndpointSubCollection implements Co
     public EndpointManageStyleInfo(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
                                    @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
-        this.styleInfosStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styleInfos");
+        this.styleInfosStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "style-infos");
         if (!styleInfosStore.exists()) {
             styleInfosStore.mkdirs();
         }
