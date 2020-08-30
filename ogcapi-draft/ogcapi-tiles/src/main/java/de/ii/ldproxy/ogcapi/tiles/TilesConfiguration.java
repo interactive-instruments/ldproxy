@@ -56,6 +56,8 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
 
     List<String> getTileEncodings();
 
+    List<String> getTileSetEncodings();
+
     @Nullable
     double[] getCenter();
 
@@ -74,6 +76,8 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
         // try to find a better solution that also enables deep merges
         if (!getTileEncodings().isEmpty())
             builder.tileEncodings(getTileEncodings());
+        if (!getTileSetEncodings().isEmpty())
+            builder.tileSetEncodings(getTileSetEncodings());
         if (getSeeding()!=null)
             builder.seeding(getSeeding());
         if (getZoomLevels()!=null)

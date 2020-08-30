@@ -55,6 +55,11 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                                                                         .filter(FormatExtension::isEnabledByDefault)
                                                                                         .map(format -> format.getMediaType().label())
                                                                                         .collect(ImmutableList.toImmutableList()))
+                                                        .tileSetEncodings(extensionRegistry.getExtensionsForType(TileSetFormatExtension.class)
+                                                                                        .stream()
+                                                                                        .filter(FormatExtension::isEnabledByDefault)
+                                                                                        .map(format -> format.getMediaType().label())
+                                                                                        .collect(ImmutableList.toImmutableList()))
                                                         .build();
     }
 

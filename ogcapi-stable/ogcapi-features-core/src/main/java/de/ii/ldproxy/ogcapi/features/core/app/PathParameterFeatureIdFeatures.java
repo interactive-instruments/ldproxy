@@ -2,8 +2,10 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 
 
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -59,5 +61,10 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
                 definitionPath.equals("/collections/{collectionId}/items/{featureId}");
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return FeaturesCoreConfiguration.class;
     }
 }

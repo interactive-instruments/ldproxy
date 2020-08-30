@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
@@ -60,7 +61,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.APPLICATION_JSON_TYPE)
-            .label("JSON")
+            .label("TileJSON")
             .parameter("json")
             .build();
 
@@ -86,6 +87,11 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                     .build();
 
         throw new RuntimeException("Unexpected path: " + path);
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
     }
 
     @Override

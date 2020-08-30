@@ -8,8 +8,10 @@
 package de.ii.ldproxy.resources.domain;
 
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -37,4 +39,8 @@ public interface ResourceFormatExtension extends FormatExtension {
                          OgcApi api,
                          ApiRequestContext requestContext);
 
+    @Override
+    default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
+    }
 }

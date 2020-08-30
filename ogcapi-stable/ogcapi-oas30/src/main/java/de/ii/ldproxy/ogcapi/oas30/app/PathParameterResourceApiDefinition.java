@@ -1,8 +1,10 @@
 package de.ii.ldproxy.ogcapi.oas30.app;
 
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -56,5 +58,10 @@ public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
                 definitionPath.matches("/api/[^/]+/?");
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return Oas30Configuration.class;
     }
 }
