@@ -31,6 +31,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
@@ -298,12 +299,12 @@ public class EndpointStyleMetadataManager extends Endpoint {
     @PATCH
     @Consumes(MediaType.APPLICATION_JSON)
     public Response patchStyleMetadata(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                                       @Context OgcApi dataset, @Context ApiRequestContext ogcApiRequest,
+                                       @Context OgcApi api, @Context ApiRequestContext ogcApiRequest,
                                        @Context HttpServletRequest request, byte[] requestBody) {
 
-        checkAuthorization(dataset.getData(), optionalUser);
+        checkAuthorization(api.getData(), optionalUser);
 
-        boolean newStyle = isNewStyle(dataset.getId(), styleId);
+        boolean newStyle = isNewStyle(api.getId(), styleId);
         if (newStyle) {
             throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
         }
@@ -318,14 +319,18 @@ public class EndpointStyleMetadataManager extends Endpoint {
         try {
             // parse input for validation
             mapper.readValue(requestBody, StyleMetadata.class);
-            File metadataFile = new File( stylesStore + File.separator + dataset.getId() + File.separator + styleId + ".metadata");
+            File metadataFile = new File( stylesStore + File.separator + api.getId() + File.separator + styleId + ".metadata");
             currentMetadata = mapper.readValue(metadataFile, new TypeReference<LinkedHashMap>() {
             });
             ObjectReader objectReader = mapper.readerForUpdating(currentMetadata);
             updatedMetadata = objectReader.readValue(requestBody);
-            byte[] updatedMetadataString = mapper.writerWithDefaultPrettyPrinter()
-                                                 .writeValueAsBytes(updatedMetadata); // TODO: remove pretty print
-            putStyleDocument(dataset.getId(), styleId, "metadata", updatedMetadataString);
+            Optional<JsonConfiguration> jsonConfig = api.getData()
+                                                        .getExtension(JsonConfiguration.class);
+            byte[] updatedMetadataString = jsonConfig.isPresent() && jsonConfig.get().getUseFormattedJsonOutput() ?
+                    mapper.writerWithDefaultPrettyPrinter()
+                          .writeValueAsBytes(updatedMetadata) :
+                    mapper.writeValueAsBytes(updatedMetadata);
+            putStyleDocument(api.getId(), styleId, "metadata", updatedMetadataString);
         } catch (IOException e) {
             throw new BadRequestException(e);
         }

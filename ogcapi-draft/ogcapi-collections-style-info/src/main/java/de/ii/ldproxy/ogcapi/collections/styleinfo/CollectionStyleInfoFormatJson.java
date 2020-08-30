@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -18,6 +19,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -71,8 +73,12 @@ public class CollectionStyleInfoFormatJson implements CollectionStyleInfoFormatE
             updatedContent = mapper.readValue(requestBody, StyleInfo.class);
         }
         // parse input for validation
-        byte[] updatedContentString = mapper.writerWithDefaultPrettyPrinter()
-                .writeValueAsBytes(updatedContent); // TODO: remove pretty print
+        Optional<JsonConfiguration> jsonConfig = api.getData()
+                                                    .getExtension(JsonConfiguration.class);
+        byte[] updatedContentString = jsonConfig.isPresent() && jsonConfig.get().getUseFormattedJsonOutput() ?
+                mapper.writerWithDefaultPrettyPrinter()
+                      .writeValueAsBytes(updatedContent) :
+                mapper.writeValueAsBytes(updatedContent);
         putStylesInfoDocument(styleInfosStore, api.getId(), collectionId, updatedContentString);
 
         return Response.noContent()

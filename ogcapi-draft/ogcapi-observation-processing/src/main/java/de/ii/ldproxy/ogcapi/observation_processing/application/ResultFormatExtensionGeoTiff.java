@@ -70,7 +70,7 @@ public class ResultFormatExtensionGeoTiff implements DapaResultFormatExtension {
     }
 
     @Override
-    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream) throws IOException {
+    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream, OgcApiDataV2 apiData) throws IOException {
         Result result = new Result(processes.getSubSubPath(), processingParameters, variables, outputStream);
         switch (result.processName.substring(DAPA_PATH_ELEMENT.length()+2)) {
             case "resample-to-grid":
