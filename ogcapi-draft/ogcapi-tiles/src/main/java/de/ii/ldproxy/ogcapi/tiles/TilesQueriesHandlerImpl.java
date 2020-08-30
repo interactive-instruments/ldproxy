@@ -138,7 +138,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     Optional<TilesConfiguration> config = collectionId.isPresent() ?
                             api.getData().getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
                             api.getData().getExtension(TilesConfiguration.class);
-                    return config.isPresent() && (config.get().getFormats()==null || (config.get().getFormats().isEmpty() || config.get().getFormats().contains(format.getMediaType().type().toString())));
+                    return config.isPresent() && (config.get().getTileEncodings()==null || (config.get().getTileEncodings().isEmpty() || config.get().getTileEncodings().contains(format.getMediaType().type().toString())));
                 })
                                                              .map(FormatExtension::getMediaType)
                                                              .collect(Collectors.toList());
@@ -150,7 +150,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     Optional<TilesConfiguration> config = collectionId.isPresent() ?
                             api.getData().getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
                             api.getData().getExtension(TilesConfiguration.class);
-                    return config.isPresent() && (config.get().getFormats()==null || (config.get().getFormats().isEmpty() || config.get().getFormats().contains(format.getMediaType().type().toString())));
+                    return config.isPresent() && (config.get().getTileEncodings()==null || (config.get().getTileEncodings().isEmpty() || config.get().getTileEncodings().contains(format.getMediaType().type().toString())));
                 })
                                                           .map(FormatExtension::getMediaType)
                                                           .collect(Collectors.toList());
@@ -223,7 +223,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     Optional<TilesConfiguration> config = collectionId.isPresent() ?
                             api.getData().getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
                             api.getData().getExtension(TilesConfiguration.class);
-                    return config.isPresent() && (config.get().getFormats()==null || (config.get().getFormats().isEmpty() || config.get().getFormats().contains(format.getMediaType().type().toString())));
+                    return config.isPresent() && (config.get().getTileEncodings()==null || (config.get().getTileEncodings().isEmpty() || config.get().getTileEncodings().contains(format.getMediaType().type().toString())));
                 })
                                                           .map(FormatExtension::getMediaType)
                                                           .collect(Collectors.toList());

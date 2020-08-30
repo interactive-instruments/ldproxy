@@ -7,8 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import com.fasterxml.jackson.annotation.JsonMerge;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
@@ -46,10 +44,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
 
     @Nullable
     Boolean getMultiCollectionEnabled();
-
-    @JsonMerge(value = OptBoolean.FALSE)
-    @Nullable
-    List<String> getFormats();
 
     @Nullable
     Map<String, MinMax> getSeeding();
