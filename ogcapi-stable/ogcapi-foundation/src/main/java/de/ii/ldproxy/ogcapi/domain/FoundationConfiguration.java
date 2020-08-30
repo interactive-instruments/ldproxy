@@ -21,6 +21,12 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
     }
 
     @Nullable
+    Boolean getUseLangParameter();
+
+    @Nullable
+    Boolean getIncludeLinkHeader();
+
+    @Nullable
     String getApiCatalogLabel();
 
     @Nullable

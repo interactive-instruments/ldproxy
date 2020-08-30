@@ -25,7 +25,6 @@ public class CollectionLinksGenerator extends DefaultLinksGenerator {
                                     List<ApiMediaType> alternateMediaTypes,
                                     Optional<String> licenseUrl,
                                     Optional<String> licenseName,
-                                    boolean homeLink,
                                     I18n i18n,
                                     Optional<Locale> language)
     {
@@ -39,18 +38,6 @@ public class CollectionLinksGenerator extends DefaultLinksGenerator {
                     .title(licenseName.isPresent() ? licenseName.get() : i18n.get("licenseLink",language))
                     .build());
         }
-
-        if (homeLink)
-            builder.add(new ImmutableLink.Builder()
-                    .href(uriBuilder
-                            .copy()
-                            .removeLastPathSegments(2)
-                            .ensureNoTrailingSlash()
-                            .clearParameters()
-                            .toString())
-                    .rel("home")
-                    .title(i18n.get("homeLink",language))
-                    .build());
 
         return builder.build();
     }

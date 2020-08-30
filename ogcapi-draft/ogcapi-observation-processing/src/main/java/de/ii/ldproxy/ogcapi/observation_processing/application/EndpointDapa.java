@@ -9,15 +9,31 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
-import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiResponse;
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceProcess;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.ImmutableProcess;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.ImmutableProcessing;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.Processing;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableQueryInputProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.DapaOverviewFormatExtension;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableQueryInputProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import de.ii.xtraplatform.auth.domain.User;
@@ -36,7 +52,12 @@ import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -220,18 +241,14 @@ public class EndpointDapa extends EndpointSubCollection implements ConformanceCl
         final String path = "/collections/{collectionId}/"+DAPA_PATH_ELEMENT;
         checkPathParameter(extensionRegistry, api.getData(), path, "collectionId", collectionId);
 
-        final boolean includeHomeLink = api.getData().getExtension(CommonConfiguration.class)
-                .map(CommonConfiguration::getIncludeHomeLink)
-                .orElse(false);
-        final boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
-                .map(CommonConfiguration::getIncludeLinkHeader)
+        final boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
+                .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
         ObservationProcessingQueriesHandler.QueryInputProcessing queryInput = new ImmutableQueryInputProcessing.Builder()
                 .collectionId(collectionId)
                 .processing(processList)
                 .includeLinkHeader(includeLinkHeader)
-                .includeHomeLink(includeHomeLink)
                 .build();
 
         ObservationProcessingQueriesHandler.Query process = ObservationProcessingQueriesHandlerImpl.Query.LIST;

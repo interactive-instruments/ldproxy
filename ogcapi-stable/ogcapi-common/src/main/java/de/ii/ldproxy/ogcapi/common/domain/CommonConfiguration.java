@@ -23,15 +23,6 @@ public interface CommonConfiguration extends ExtensionConfiguration {
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    @Nullable
-    Boolean getIncludeHomeLink();
-
-    @Nullable
-    Boolean getUseLangParameter();
-
-    @Nullable
-    Boolean getIncludeLinkHeader();
-
     List<Link> getAdditionalLinks();
 
     @Override

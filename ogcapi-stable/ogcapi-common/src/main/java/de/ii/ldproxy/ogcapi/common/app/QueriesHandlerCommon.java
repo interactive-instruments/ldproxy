@@ -44,7 +44,6 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
 
     @Value.Immutable
     public interface QueryInputConformance extends QueryInput {
-        boolean getIncludeHomeLink();
         boolean getIncludeLinkHeader();
     }
 
@@ -135,7 +134,6 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
                 requestContext.getUriCustomizer().copy(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
-                queryInput.getIncludeHomeLink(),
                 i18n,
                 requestContext.getLanguage());
 

@@ -32,9 +32,6 @@ public class CapabilityCommon implements ApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableCommonConfiguration.Builder().enabled(true)
-                                                         .includeHomeLink(false)
-                                                         .includeLinkHeader(true)
-                                                         .useLangParameter(false)
                                                          .build();
     }
 

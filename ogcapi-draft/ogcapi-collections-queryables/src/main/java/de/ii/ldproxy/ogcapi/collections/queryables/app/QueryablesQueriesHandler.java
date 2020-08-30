@@ -41,8 +41,6 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
     public interface QueryInputQueryables extends QueryInput {
         String getCollectionId();
 
-        boolean getIncludeHomeLink();
-
         boolean getIncludeLinkHeader();
     }
 

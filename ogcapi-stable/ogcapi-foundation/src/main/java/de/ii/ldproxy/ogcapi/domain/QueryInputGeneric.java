@@ -14,12 +14,6 @@ public abstract class QueryInputGeneric implements QueryInput {
 
     @Override
     @Value.Default
-    public boolean getIncludeHomeLink() {
-        return false;
-    }
-
-    @Override
-    @Value.Default
     public boolean getIncludeLinkHeader() {
         return false;
     }

@@ -141,22 +141,12 @@ public abstract class Endpoint implements EndpointExtension {
     }
 
     protected QueryInput getGenericQueryInput(OgcApiDataV2 apiData) {
-        final boolean includeHomeLink = false;
-                /* TODO fix
-                apiData.getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
+        final boolean includeLinkHeader = apiData.getExtension(FoundationConfiguration.class)
+                .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
-                 */
-        final boolean includeLinkHeader = true;
-                /* TODO fix
-                apiData.getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
-                .orElse(false);
-                 */
 
         QueryInput queryInput = new ImmutableQueryInputGeneric.Builder()
                 .includeLinkHeader(includeLinkHeader)
-                .includeHomeLink(includeHomeLink)
                 .build();
 
         return queryInput;

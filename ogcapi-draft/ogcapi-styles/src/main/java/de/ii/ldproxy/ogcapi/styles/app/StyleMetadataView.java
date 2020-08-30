@@ -108,7 +108,7 @@ public class StyleMetadataView extends OgcApiView {
 
     public List<Link> getAdditionalLinks() {
         return links.stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|preview|home)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|preview)$"))
                 .collect(Collectors.toList());
     }
 }

@@ -24,6 +24,8 @@ public class CapabilityFoundation implements ApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFoundationConfiguration.Builder().enabled(true)
+                                                             .includeLinkHeader(true)
+                                                             .useLangParameter(false)
                                                              .build();
     }
 }

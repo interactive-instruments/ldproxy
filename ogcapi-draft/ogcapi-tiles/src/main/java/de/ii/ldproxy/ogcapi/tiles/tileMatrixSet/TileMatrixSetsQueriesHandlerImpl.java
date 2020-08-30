@@ -72,7 +72,6 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                 requestContext.getUriCustomizer(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
-                queryInput.getIncludeHomeLink(),
                 true,
                 i18n,
                 requestContext.getLanguage());
@@ -113,7 +112,6 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                 requestContext.getUriCustomizer(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
-                queryInput.getIncludeHomeLink(),
                 false,
                 i18n,
                 requestContext.getLanguage());

@@ -37,8 +37,6 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
     public interface QueryInputQueryables extends QueryInput {
         String getCollectionId();
 
-        boolean getIncludeHomeLink();
-
         boolean getIncludeLinkHeader();
     }
 

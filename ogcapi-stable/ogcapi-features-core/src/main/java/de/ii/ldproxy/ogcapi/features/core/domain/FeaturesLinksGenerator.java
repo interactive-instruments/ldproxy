@@ -26,7 +26,6 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                                     int defaultLimit,
                                     ApiMediaType mediaType,
                                     List<ApiMediaType> alternateMediaTypes,
-                                    boolean homeLink,
                                     I18n i18n,
                                     Optional<Locale> language)
     {
@@ -60,18 +59,6 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
                     .title(i18n.get("firstLink",language))
                     .build());
         }
-
-        if (homeLink)
-            builder.add(new ImmutableLink.Builder()
-                    .href(uriBuilder
-                            .copy()
-                            .removeLastPathSegments(3)
-                            .ensureNoTrailingSlash()
-                            .clearParameters()
-                            .toString())
-                    .rel("home")
-                    .title(i18n.get("homeLink",language))
-                    .build());
 
         return builder.build();
     }

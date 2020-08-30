@@ -26,24 +26,11 @@ public class CollectionsLinksGenerator extends DefaultLinksGenerator {
                                     List<ApiMediaType> alternateMediaTypes,
                                     Optional<String> licenseUrl,
                                     Optional<String> licenseName,
-                                    boolean homeLink,
                                     I18n i18n,
                                     Optional<Locale> language)
     {
         final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>()
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
-
-        if (homeLink)
-            builder.add(new ImmutableLink.Builder()
-                    .href(uriBuilder
-                            .copy()
-                            .removeLastPathSegments(1)
-                            .ensureNoTrailingSlash()
-                            .clearParameters()
-                            .toString())
-                    .rel("home")
-                    .title(i18n.get("homeLink",language))
-                    .build());
 
         if (licenseUrl.isPresent()) {
             builder.add(new ImmutableLink.Builder()

@@ -51,7 +51,6 @@ public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerC
 
     @Value.Immutable
     public interface QueryInputCollections extends QueryInput {
-        boolean getIncludeHomeLink();
         boolean getIncludeLinkHeader();
         List<Link> getAdditionalLinks();
     }
@@ -59,7 +58,6 @@ public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerC
     @Value.Immutable
     public interface QueryInputFeatureCollection extends QueryInput {
         String getCollectionId();
-        boolean getIncludeHomeLink();
         boolean getIncludeLinkHeader();
         List<Link> getAdditionalLinks();
     }
@@ -97,7 +95,6 @@ public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerC
                         requestContext.getAlternateMediaTypes(),
                         licenseUrl,
                         licenseName,
-                        queryInput.getIncludeHomeLink(),
                         i18n,
                         requestContext.getLanguage());
 
@@ -147,7 +144,6 @@ public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerC
                 requestContext.getAlternateMediaTypes(),
                 licenseUrl,
                 licenseName,
-                queryInput.getIncludeHomeLink(),
                 i18n,
                 requestContext.getLanguage());
 
