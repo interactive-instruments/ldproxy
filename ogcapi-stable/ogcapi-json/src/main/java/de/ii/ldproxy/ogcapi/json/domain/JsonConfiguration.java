@@ -21,6 +21,7 @@ public interface JsonConfiguration extends ExtensionConfiguration {
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    // TODO currently without effect, all output that is returned as a POJO is pretty-printed
     @Nullable
     Boolean getUseFormattedJsonOutput();
 
