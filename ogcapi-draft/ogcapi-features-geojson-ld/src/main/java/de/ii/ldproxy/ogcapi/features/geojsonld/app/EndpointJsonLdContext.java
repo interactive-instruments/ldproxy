@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 
@@ -76,7 +77,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
     EndpointJsonLdContext(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
                           @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
-        this.contextDirectory = Paths.get(bundleContext.getProperty(DATA_DIR_KEY))
+        this.contextDirectory = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                      .resolve("json-ld-contexts");
     }
 
