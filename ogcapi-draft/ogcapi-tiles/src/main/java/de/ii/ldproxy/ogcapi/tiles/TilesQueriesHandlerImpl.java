@@ -12,9 +12,9 @@ import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
-import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
@@ -35,7 +35,6 @@ import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureStream2;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
-import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -50,10 +49,11 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
@@ -282,26 +282,31 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      i18n,
                                                                      requestContext.getLanguage());
 
-        ImmutableFeatureTransformationContextTiles.Builder transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
-                .apiData(api.getData())
-                .featureSchema(featureProvider.getData().getTypes().get(collectionId))
-                .tile(tile)
-                .tileFile(tilesCache.getFile(tile))
-                .collectionId(collectionId)
-                .ogcApiRequest(requestContext)
-                .crsTransformer(crsTransformer)
-                .crsTransformerFactory(crsTransformerFactory)
-                .shouldSwapCoordinates(swapCoordinates)
-                .codelists(entityRegistry.getEntitiesForType(Codelist.class)
-                                         .stream()
-                                         .collect(Collectors.toMap(c -> c.getId(), c -> c)))
-                .defaultCrs(queryInput.getDefaultCrs())
-                .links(links)
-                .isFeatureCollection(true)
-                .fields(query.getFields())
-                .limit(query.getLimit())
-                .offset(0)
-                .i18n(i18n);
+        ImmutableFeatureTransformationContextTiles.Builder transformationContext = null;
+        try {
+            transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
+                    .apiData(api.getData())
+                    .featureSchema(featureProvider.getData().getTypes().get(collectionId))
+                    .tile(tile)
+                    .tileFile(tilesCache.getFile(tile))
+                    .collectionId(collectionId)
+                    .ogcApiRequest(requestContext)
+                    .crsTransformer(crsTransformer)
+                    .crsTransformerFactory(crsTransformerFactory)
+                    .shouldSwapCoordinates(swapCoordinates)
+                    .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                             .stream()
+                                             .collect(Collectors.toMap(c -> c.getId(), c -> c)))
+                    .defaultCrs(queryInput.getDefaultCrs())
+                    .links(links)
+                    .isFeatureCollection(true)
+                    .fields(query.getFields())
+                    .limit(query.getLimit())
+                    .offset(0)
+                    .i18n(i18n);
+        } catch (IOException e) {
+            throw new RuntimeException("Error accessing the tile cache.", e);
+        }
 
         if (queryInput.getOutputStream().isPresent()) {
 
@@ -349,9 +354,10 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             FeatureStream2 featureStream = featureProvider.queries()
                     .getFeatureStream2(query);
 
+            ImmutableFeatureTransformationContextTiles.Builder finalTransformationContext = transformationContext;
             streamingOutput = stream(featureStream, false,
                     outputStream -> outputFormat.getFeatureTransformer(
-                            transformationContext.outputStream(outputStream).build(),
+                            finalTransformationContext.outputStream(outputStream).build(),
                             requestContext.getLanguage())
                             .get());
         } else {
@@ -404,13 +410,18 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             // TODO limitation of the current model: all layers have to come from the same feature provider and use the same CRS
 
             Tile tile = singleLayerTileMap.get(collectionId);
-            File tileFile = tilesCache.getFile(tile);
+            Path tileFile = null;
+            try {
+                tileFile = tilesCache.getFile(tile);
+            } catch (IOException e) {
+                throw new RuntimeException("Error accessing the tile cache.", e);
+            }
             ByteArrayOutputStream singleLayerOutputStream = byteArrayMap.get(collectionId);
-            if (!multiLayerTile.getTemporary() && tileFile.exists()) {
+            if (!multiLayerTile.getTemporary() && Files.exists(tileFile)) {
                 // use cached tile
                 try {
-                    if (FileUtils.sizeOf(tileFile)>0) {
-                        singleLayerOutputStream.write(FileUtils.readFileToByteArray(tileFile));
+                    if (Files.size(tileFile)>0) {
+                        singleLayerOutputStream.write(Files.readAllBytes(tileFile));
                         singleLayerOutputStream.flush();
                     }
                     continue;
@@ -420,28 +431,33 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             }
 
             FeatureQuery query = queryMap.get(collectionId);
-            ImmutableFeatureTransformationContextTiles transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
-                    .apiData(api.getData())
-                    .featureSchema(featureProvider.getData().getTypes().get(collectionId))
-                    .tile(tile)
-                    .tileFile(tilesCache.getFile(tile))
-                    .collectionId(collectionId)
-                    .ogcApiRequest(requestContext)
-                    .crsTransformer(crsTransformer)
-                    .crsTransformerFactory(crsTransformerFactory)
-                    .shouldSwapCoordinates(swapCoordinates)
-                    .codelists(entityRegistry.getEntitiesForType(Codelist.class)
-                                             .stream()
-                                             .collect(Collectors.toMap(c -> c.getId(), c -> c)))
-                    .defaultCrs(queryInput.getDefaultCrs())
-                    .links(links)
-                    .isFeatureCollection(true)
-                    .fields(query.getFields())
-                    .limit(query.getLimit())
-                    .offset(0)
-                    .i18n(i18n)
-                    .outputStream(singleLayerOutputStream)
-                    .build();
+            ImmutableFeatureTransformationContextTiles transformationContext = null;
+            try {
+                transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
+                        .apiData(api.getData())
+                        .featureSchema(featureProvider.getData().getTypes().get(collectionId))
+                        .tile(tile)
+                        .tileFile(tilesCache.getFile(tile))
+                        .collectionId(collectionId)
+                        .ogcApiRequest(requestContext)
+                        .crsTransformer(crsTransformer)
+                        .crsTransformerFactory(crsTransformerFactory)
+                        .shouldSwapCoordinates(swapCoordinates)
+                        .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                                 .stream()
+                                                 .collect(Collectors.toMap(c -> c.getId(), c -> c)))
+                        .defaultCrs(queryInput.getDefaultCrs())
+                        .links(links)
+                        .isFeatureCollection(true)
+                        .fields(query.getFields())
+                        .limit(query.getLimit())
+                        .offset(0)
+                        .i18n(i18n)
+                        .outputStream(singleLayerOutputStream)
+                        .build();
+            } catch (IOException e) {
+                throw new RuntimeException("Error accessing the tile cache.", e);
+            }
 
             if (outputFormat.canTransformFeatures()) {
                 FeatureStream2 featureStream = featureProvider.queries()
@@ -474,14 +490,24 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             }
         }
 
-        TileFormatExtension.MultiLayerTileContent result = outputFormat.combineSingleLayerTilesToMultiLayerTile(tileMatrixSet, singleLayerTileMap, byteArrayMap);
+        TileFormatExtension.MultiLayerTileContent result = null;
+        try {
+            result = outputFormat.combineSingleLayerTilesToMultiLayerTile(tileMatrixSet, singleLayerTileMap, byteArrayMap);
+        } catch (IOException e) {
+            throw new RuntimeException("Error accessing the tile cache.", e);
+        }
 
         // try to write/update tile in cache, if all collections have been processed
         if (result.isComplete) {
-            File tileFile = tilesCache.getFile(multiLayerTile);
-            if (!tileFile.exists() || tileFile.canWrite()) {
+            Path tileFile = null;
+            try {
+                tileFile = tilesCache.getFile(multiLayerTile);
+            } catch (IOException e) {
+                throw new RuntimeException("Error accessing the tile cache.", e);
+            }
+            if (Files.notExists(tileFile) || Files.isWritable(tileFile)) {
                 try {
-                    FileUtils.writeByteArrayToFile(tileFile, result.byteArray);
+                    Files.write(tileFile, result.byteArray);
                 } catch (IOException e) {
                     String msg = "Failure to write the multi-layer file of tile {}/{}/{}/{} in dataset '{}', format '{}' to the cache.";
                     LOGGER.info(msg, tileMatrixSet.getId(), tileLevel, tileRow, tileCol, api.getId(), outputFormat.getExtension());
@@ -497,7 +523,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private Response getTileFileResponse(QueryInputTileFile queryInput, ApiRequestContext requestContext) {
 
         StreamingOutput streamingOutput = outputStream -> {
-            ByteStreams.copy(new FileInputStream(queryInput.getTileFile()), outputStream);
+            ByteStreams.copy(new FileInputStream(queryInput.getTileFile().toFile()), outputStream);
         };
 
         List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),

@@ -17,6 +17,10 @@ import javax.annotation.Nullable;
 @JsonDeserialize(builder = ImmutableFoundationConfiguration.Builder.class)
 public interface FoundationConfiguration extends ExtensionConfiguration {
 
+    String API_RESOURCES_DIR = "api-resources";
+    String CACHE_DIR = "cache";
+    String TMP_DIR = "tmp";
+
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 

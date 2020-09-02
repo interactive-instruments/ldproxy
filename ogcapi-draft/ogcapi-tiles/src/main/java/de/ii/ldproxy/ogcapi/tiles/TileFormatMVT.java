@@ -20,8 +20,8 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -39,7 +39,6 @@ import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import no.ecc.vectortile.VectorTileDecoder;
 import no.ecc.vectortile.VectorTileEncoder;
-import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -50,8 +49,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -223,7 +223,7 @@ public class TileFormatMVT implements TileFormatExtension {
     }
 
     @Override
-    public MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) {
+    public MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException {
         VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         VectorTileDecoder decoder = new VectorTileDecoder();
         Set<String> processedCollections = new TreeSet<>();
@@ -233,7 +233,7 @@ public class TileFormatMVT implements TileFormatExtension {
                 if (!processedCollections.contains(collectionId)) {
                     Tile singleLayerTile = singleLayerTileMap.get(collectionId);
                     ByteArrayOutputStream outputStream = singleLayerByteArrayMap.get(collectionId);
-                    File tileFile = tilesCache.getFile(singleLayerTile);
+                    Path tileFile = tilesCache.getFile(singleLayerTile);
                     if (outputStream.size()>0) {
                         try {
                             List<VectorTileDecoder.Feature> features = decoder.decode(outputStream.toByteArray()).asList();
@@ -251,7 +251,7 @@ public class TileFormatMVT implements TileFormatExtension {
                                                                      tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
                                                                      singleLayerTile.getApi().getId(), collectionId, getExtension()), e);
                         }
-                    } else if (tileFile.exists() && FileUtils.sizeOf(tileFile)==0) {
+                    } else if (Files.exists(tileFile) && Files.size(tileFile)==0) {
                         // an empty tile, so we are done for this collection
                         processedCollections.add(collectionId);
                     }

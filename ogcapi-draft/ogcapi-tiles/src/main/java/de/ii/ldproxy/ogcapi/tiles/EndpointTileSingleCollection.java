@@ -53,6 +53,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -168,7 +170,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection {
                             @PathParam("tileMatrixSetId") String tileMatrixSetId, @PathParam("tileMatrix") String tileMatrix,
                             @PathParam("tileRow") String tileRow, @PathParam("tileCol") String tileCol,
                             @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
-        throws CrsTransformationException, FileNotFoundException, NotFoundException {
+            throws CrsTransformationException, IOException, NotFoundException {
 
         OgcApiDataV2 apiData = api.getData();
         checkAuthorization(apiData, optionalUser);
@@ -246,8 +248,8 @@ public class EndpointTileSingleCollection extends EndpointSubCollection {
         // if cache can be used and the tile is cached for the requested format, return the cache
         if (useCache) {
             // get the tile from the cache and return it
-            File tileFile = cache.getFile(tile);
-            if (tileFile.exists()) {
+            java.nio.file.Path tileFile = cache.getFile(tile);
+            if (Files.exists(tileFile)) {
                 TilesQueriesHandler.QueryInputTileFile queryInput = new ImmutableQueryInputTileFile.Builder()
                         .from(getGenericQueryInput(api.getData()))
                         .tile(tile)

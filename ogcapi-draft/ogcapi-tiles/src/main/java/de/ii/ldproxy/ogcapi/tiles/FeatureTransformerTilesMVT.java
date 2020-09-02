@@ -18,9 +18,17 @@ import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransfor
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.streams.domain.HttpClient;
 import no.ecc.vectortile.VectorTileEncoder;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.io.ParseException;
@@ -29,10 +37,18 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.OptionalLong;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.Vector;
 import java.util.regex.Pattern;
 
 public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
@@ -152,9 +168,9 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             outputStream.flush();
 
             // write/update tile in cache
-            File tileFile = transformationContext.getTileFile();
-            if (!tileFile.exists() || tileFile.canWrite()) {
-                FileUtils.writeByteArrayToFile(tileFile, mvt);
+            Path tileFile = transformationContext.getTileFile();
+            if (Files.notExists(tileFile) || Files.isWritable(tileFile)) {
+                Files.write(tileFile, mvt);
             }
         } catch (IOException e) {
             throw new RuntimeException("Error writing output stream.", e);
