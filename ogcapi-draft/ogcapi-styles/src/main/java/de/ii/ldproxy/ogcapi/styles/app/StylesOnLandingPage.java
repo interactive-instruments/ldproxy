@@ -20,10 +20,15 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -38,12 +43,13 @@ public class StylesOnLandingPage implements LandingPageExtension {
     @Requires
     I18n i18n;
 
-    private final File stylesStore;
+    private final Path stylesStore;
 
-    public StylesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
-        this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
-        if (!stylesStore.exists()) {
-            stylesStore.mkdirs();
+    public StylesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) throws IOException {
+        this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                .resolve("styles");
+        if (Files.notExists(stylesStore)) {
+            Files.createDirectory(stylesStore);
         }
     }
 

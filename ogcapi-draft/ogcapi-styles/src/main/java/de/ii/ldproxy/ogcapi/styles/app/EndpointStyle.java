@@ -48,12 +48,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -71,14 +73,15 @@ public class EndpointStyle extends Endpoint {
 
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
-    private final File stylesStore;
+    private final java.nio.file.Path stylesStore;
 
     public EndpointStyle(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                         @Requires ExtensionRegistry extensionRegistry) {
+                         @Requires ExtensionRegistry extensionRegistry) throws IOException {
         super(extensionRegistry);
-        this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
-        if (!stylesStore.exists()) {
-            stylesStore.mkdirs();
+        this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                .resolve("styles");
+        if (java.nio.file.Files.notExists(stylesStore)) {
+            java.nio.file.Files.createDirectory(stylesStore);
         }
     }
 

@@ -60,6 +60,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
@@ -70,6 +71,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -86,14 +88,15 @@ public class EndpointStyleMetadataManager extends Endpoint {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyleMetadataManager.class);
     private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
 
-    private final File stylesStore;
+    private final java.nio.file.Path stylesStore;
 
     public EndpointStyleMetadataManager(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                        @Requires ExtensionRegistry extensionRegistry) {
+                                        @Requires ExtensionRegistry extensionRegistry) throws IOException {
         super(extensionRegistry);
-        this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
-        if (!stylesStore.exists()) {
-            stylesStore.mkdirs();
+        this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                    .resolve("styles");
+        if (Files.notExists(stylesStore)) {
+            Files.createDirectory(stylesStore);
         }
     }
 

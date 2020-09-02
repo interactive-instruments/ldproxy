@@ -14,7 +14,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 
 public interface ResourceFormatExtension extends FormatExtension {
 
@@ -33,11 +34,11 @@ public interface ResourceFormatExtension extends FormatExtension {
                                  OgcApi api,
                                  ApiRequestContext requestContext);
 
-    Response putResource(File resourcesStore,
+    Response putResource(Path resourcesStore,
                          byte[] resource,
                          String resourceId,
                          OgcApi api,
-                         ApiRequestContext requestContext);
+                         ApiRequestContext requestContext) throws IOException;
 
     @Override
     default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

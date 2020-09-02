@@ -12,10 +12,16 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.domain.ImmutableStyleEntry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -27,6 +33,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -34,6 +43,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -49,12 +59,13 @@ public class StyleInfoOnCollection implements CollectionExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleInfoOnCollection.class);
 
-    private final File styleInfosStore;
+    private final Path styleInfosStore;
 
-    public StyleInfoOnCollection(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
-        this.styleInfosStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "style-infos");
-        if (!styleInfosStore.exists()) {
-            styleInfosStore.mkdirs();
+    public StyleInfoOnCollection(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) throws IOException {
+        this.styleInfosStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                    .resolve("style-infos");
+        if (Files.notExists(styleInfosStore)) {
+            Files.createDirectory(styleInfosStore);
         }
     }
 
@@ -107,8 +118,8 @@ public class StyleInfoOnCollection implements CollectionExtension {
                 apiDir.mkdirs();
             }
 
-            File collectionFile = new File(styleInfosStore + File.separator + apiId + File.separator + collectionId + ".json");
-            if (collectionFile.exists()) {
+            Path collectionFile = styleInfosStore.resolve(apiId).resolve(collectionId + ".json");
+            if (Files.exists(collectionFile)) {
                 Optional<StyleInfo> styleInfos = getStyleInfos(collectionFile, apiId, apiVersion, collectionId, uriCustomizer.copy());
                 if (styleInfos.isPresent() && styleInfos.get().getStyles().isPresent()) {
                     collection.putExtensions("styles",
@@ -132,10 +143,10 @@ public class StyleInfoOnCollection implements CollectionExtension {
         return collection;
     }
 
-    private Optional<StyleInfo> getStyleInfos(File styleInfosFile, String apiId, Optional<Integer> apiVersion, String collectionId, URICustomizer uriCustomizer) {
+    private Optional<StyleInfo> getStyleInfos(Path styleInfosFile, String apiId, Optional<Integer> apiVersion, String collectionId, URICustomizer uriCustomizer) {
 
         try {
-            final byte[] content = java.nio.file.Files.readAllBytes(styleInfosFile.toPath());
+            final byte[] content = java.nio.file.Files.readAllBytes(styleInfosFile);
 
             // prepare Jackson mapper for deserialization
             final ObjectMapper mapper = new ObjectMapper();
@@ -147,10 +158,10 @@ public class StyleInfoOnCollection implements CollectionExtension {
 
                 return Optional.of(replaceParameters(styleInfo, apiId, apiVersion, collectionId, uriCustomizer));
             } catch (IOException e) {
-                LOGGER.error("File in styleInfo store is invalid and is skipped: "+styleInfosFile.getAbsolutePath());
+                LOGGER.error("File in styleInfo store is invalid and is skipped: "+styleInfosFile.toAbsolutePath());
             }
         } catch (IOException e) {
-            LOGGER.error("Style info could not be read: "+styleInfosFile.getAbsolutePath());
+            LOGGER.error("Style info could not be read: "+styleInfosFile.toAbsolutePath());
         }
         return Optional.empty();
     }

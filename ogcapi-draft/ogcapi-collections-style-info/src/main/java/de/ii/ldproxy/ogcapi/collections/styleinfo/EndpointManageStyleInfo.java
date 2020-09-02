@@ -45,14 +45,16 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -67,14 +69,15 @@ public class EndpointManageStyleInfo extends EndpointSubCollection implements Co
 
     private static final List<String> TAGS = ImmutableList.of("Mutate data collections");
 
-    private final File styleInfosStore;
+    private final java.nio.file.Path styleInfosStore;
 
     public EndpointManageStyleInfo(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                   @Requires ExtensionRegistry extensionRegistry) {
+                                   @Requires ExtensionRegistry extensionRegistry) throws IOException {
         super(extensionRegistry);
-        this.styleInfosStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "style-infos");
-        if (!styleInfosStore.exists()) {
-            styleInfosStore.mkdirs();
+        this.styleInfosStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                   .resolve("style-infos");
+        if (Files.notExists(styleInfosStore)) {
+            Files.createDirectory(styleInfosStore);
         }
     }
 
