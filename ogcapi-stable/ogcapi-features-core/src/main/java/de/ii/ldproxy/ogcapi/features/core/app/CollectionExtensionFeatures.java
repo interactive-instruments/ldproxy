@@ -115,24 +115,8 @@ public class CollectionExtensionFeatures implements CollectionExtension {
         boolean hasTemporalQueryable = queryables.map(FeaturesCollectionQueryables::getTemporal)
                                                  .filter(temporal -> !temporal.isEmpty())
                                                  .isPresent();
-        Optional<BoundingBox> spatial = featureType.getExtent().isPresent() ?
-                                            featureType.getExtent()
-                                                       .get()
-                                                       .getSpatial() :
-                                            apiData.getDefaultExtent().isPresent() ?
-                                                apiData.getDefaultExtent()
-                                                       .get()
-                                                       .getSpatial() :
-                                                Optional.empty();
-        Optional<TemporalExtent> temporal = featureType.getExtent().isPresent() ?
-                                            featureType.getExtent()
-                                                       .get()
-                                                       .getTemporal() :
-                                            apiData.getDefaultExtent().isPresent() ?
-                                                    apiData.getDefaultExtent()
-                                                           .get()
-                                                           .getTemporal() :
-                                                    Optional.empty();
+        Optional<BoundingBox> spatial = apiData.getSpatialExtent(featureType.getId());
+        Optional<TemporalExtent> temporal = apiData.getTemporalExtent(featureType.getId());
         if (hasSpatialQueryable && hasTemporalQueryable && spatial.isPresent() && temporal.isPresent()) {
             collection.extent(new OgcApiExtent(
                     temporal.get()

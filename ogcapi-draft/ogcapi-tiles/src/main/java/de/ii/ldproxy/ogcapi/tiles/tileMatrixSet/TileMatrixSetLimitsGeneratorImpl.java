@@ -51,7 +51,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
                 .filter(featureType -> collectionId.equals(featureType.getId()))
                 .collect(Collectors.toList());
 
-        Optional<BoundingBox> bbox = collectionData.get(0).getExtent().isPresent()? collectionData.get(0).getExtent().get().getSpatial() : Optional.empty();
+        Optional<BoundingBox> bbox = data.getSpatialExtent(collectionData.get(0).getId()).isPresent()? data.getSpatialExtent(collectionData.get(0).getId()) : Optional.empty();
 
         if (!bbox.isPresent()) {
             return ImmutableList.of();
