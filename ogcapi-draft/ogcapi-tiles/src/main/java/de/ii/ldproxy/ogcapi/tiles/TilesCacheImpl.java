@@ -48,6 +48,9 @@ public class TilesCacheImpl implements TilesCache {
         this.tilesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
                                .resolve(TILES_DIR_NAME);
         if (Files.notExists(tilesStore)) {
+            if (Files.notExists(tilesStore.getParent())) {
+                Files.createDirectory(tilesStore.getParent());
+            }
             Files.createDirectory(tilesStore);
         }
 
@@ -141,6 +144,12 @@ public class TilesCacheImpl implements TilesCache {
         }
 
         if (Files.notExists(subDir)) {
+            if (Files.notExists(subDir.getParent())) {
+                if (Files.notExists(subDir.getParent().getParent())) {
+                    Files.createDirectory(subDir.getParent().getParent());
+                }
+                Files.createDirectory(subDir.getParent());
+            }
             Files.createDirectory(subDir);
         }
         return subDir;

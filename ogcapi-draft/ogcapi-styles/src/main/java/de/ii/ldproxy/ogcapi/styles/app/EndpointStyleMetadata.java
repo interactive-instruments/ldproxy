@@ -88,6 +88,9 @@ public class EndpointStyleMetadata extends Endpoint {
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");
         if (Files.notExists(stylesStore)) {
+            if (Files.notExists(stylesStore.getParent())) {
+                Files.createDirectory(stylesStore.getParent());
+            }
             Files.createDirectory(stylesStore);
         }
     }

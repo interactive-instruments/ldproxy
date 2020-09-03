@@ -81,6 +81,9 @@ public class EndpointStyle extends Endpoint {
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");
         if (java.nio.file.Files.notExists(stylesStore)) {
+            if (java.nio.file.Files.notExists(stylesStore.getParent())) {
+                java.nio.file.Files.createDirectory(stylesStore.getParent());
+            }
             java.nio.file.Files.createDirectory(stylesStore);
         }
     }
