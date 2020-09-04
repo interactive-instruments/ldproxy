@@ -183,7 +183,7 @@ public class QueryParameterDatetime implements OgcApiQueryParameter {
                     throw new IllegalArgumentException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
             }            
         } catch (DateTimeException e) {
-            throw new IllegalArgumentException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
+            throw new IllegalArgumentException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime), e);
         }
         parameters.put(getName(),newDatetime);
         return parameters;

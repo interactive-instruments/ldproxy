@@ -5,8 +5,15 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -18,6 +25,8 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -41,7 +50,7 @@ public class CollectionStyleInfoFormatJson implements CollectionStyleInfoFormatE
     }
 
     @Override
-    public Response patchStyleInfos(byte[] requestBody, File styleInfosStore, OgcApi api, String collectionId) throws IOException {
+    public Response patchStyleInfos(byte[] requestBody, Path styleInfosStore, OgcApi api, String collectionId) throws IOException {
 
         final String apiId = api.getData().getId();
         File apiDir = new File(styleInfosStore + File.separator + apiId);
@@ -71,8 +80,12 @@ public class CollectionStyleInfoFormatJson implements CollectionStyleInfoFormatE
             updatedContent = mapper.readValue(requestBody, StyleInfo.class);
         }
         // parse input for validation
-        byte[] updatedContentString = mapper.writerWithDefaultPrettyPrinter()
-                .writeValueAsBytes(updatedContent); // TODO: remove pretty print
+        Optional<JsonConfiguration> jsonConfig = api.getData()
+                                                    .getExtension(JsonConfiguration.class);
+        byte[] updatedContentString = jsonConfig.isPresent() && jsonConfig.get().getUseFormattedJsonOutput() ?
+                mapper.writerWithDefaultPrettyPrinter()
+                      .writeValueAsBytes(updatedContent) :
+                mapper.writeValueAsBytes(updatedContent);
         putStylesInfoDocument(styleInfosStore, api.getId(), collectionId, updatedContentString);
 
         return Response.noContent()
@@ -111,10 +124,9 @@ public class CollectionStyleInfoFormatJson implements CollectionStyleInfoFormatE
         throw new RuntimeException(String.format("Unexpected path/method. Path: %s. Method: %s", path, method));
     }
 
-    private boolean isNewStyleInfo(File styleInfosStore, String apiId, String collectionId) {
+    private boolean isNewStyleInfo(Path styleInfosStore, String apiId, String collectionId) {
 
-        File file = new File( styleInfosStore + File.separator + apiId + File.separator + collectionId);
-        return !file.exists();
+        return Files.notExists(styleInfosStore.resolve(apiId).resolve(collectionId+".json"));
     }
 
     /**
@@ -123,13 +135,13 @@ public class CollectionStyleInfoFormatJson implements CollectionStyleInfoFormatE
      * @param collectionId           the id of the collection, for which a styleInfos document should be updated or created
      * @param payload the new Style as a byte array
      */
-    private void putStylesInfoDocument(File styleInfosStore, String apiId, String collectionId, byte[] payload) {
+    private void putStylesInfoDocument(Path styleInfosStore, String apiId, String collectionId, byte[] payload) {
 
-        File styleFile = new File(styleInfosStore + File.separator + apiId + File.separator + collectionId);
+        Path styleFile = styleInfosStore.resolve(apiId).resolve(collectionId+".json");
         try {
-            Files.write(styleFile.toPath(), payload);
+            Files.write(styleFile, payload);
         } catch (IOException e) {
-            throw new RuntimeException("Could not PATCH style information: " + collectionId);
+            throw new RuntimeException("Could not PATCH style information: " + collectionId, e);
         }
     }
 }

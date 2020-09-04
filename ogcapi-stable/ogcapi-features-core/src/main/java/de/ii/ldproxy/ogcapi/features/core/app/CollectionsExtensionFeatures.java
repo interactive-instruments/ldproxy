@@ -51,12 +51,6 @@ public class CollectionsExtensionFeatures implements CollectionsExtension {
             return collectionsBuilder;
         }
 
-        Optional<FeaturesCoreConfiguration> config = apiData.getExtension(FeaturesCoreConfiguration.class);
-        if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/collections")) {
-            List<Link> additionalLinks = config.get().getAdditionalLinks().get("/collections");
-            additionalLinks.stream().forEach(link -> collectionsBuilder.addLinks(link));
-        }
-
         List<CollectionExtension> collectionExtenders = extensionRegistry.getExtensionsForType(CollectionExtension.class);
 
         List<OgcApiCollection> collections = apiData.getCollections()

@@ -1,7 +1,13 @@
 package de.ii.ldproxy.ogcapi.styles.app;
 
-import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.styles.domain.Styles;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesFormatExtension;
@@ -43,8 +49,8 @@ public class StylesFormatJson implements StylesFormatExtension {
 
     @Override
     public Response getStylesResponse(Styles styles, OgcApi api, ApiRequestContext requestContext) {
-        boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
-                .map(CommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
+                .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
         return Response.ok(styles)

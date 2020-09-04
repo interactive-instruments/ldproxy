@@ -16,6 +16,7 @@ import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -65,7 +66,7 @@ public interface TileFormatExtension extends FormatExtension {
         boolean isComplete;
     }
 
-    MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap);
+    MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException;
 
     double getMaxAllowableOffsetNative(Tile tile);
     double getMaxAllowableOffsetCrs84(Tile tile);

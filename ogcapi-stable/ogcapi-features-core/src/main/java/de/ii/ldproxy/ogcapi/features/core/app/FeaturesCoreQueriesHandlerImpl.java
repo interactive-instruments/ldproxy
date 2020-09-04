@@ -125,7 +125,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                                                  .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
-                queryInput.getIncludeHomeLink(), queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
+                queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
     }
 
     private Response getItemResponse(QueryInputFeature queryInput,
@@ -154,7 +154,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         }
 
         return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), false, persistentUri, outputFormat, false, Optional.empty(),
-                queryInput.getIncludeHomeLink(), false, queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
+                false, queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
     }
 
     private Response getItemsResponse(OgcApi api, ApiRequestContext requestContext, String collectionId,
@@ -162,7 +162,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                                       String canonicalUri,
                                       FeatureFormatExtension outputFormat,
                                       boolean onlyHitsIfMore, Optional<Integer> defaultPageSize,
-                                      boolean includeHomeLink,
                                       boolean showsFeatureSelfLink, boolean includeLinkHeader,
                                       EpsgCrs defaultCrs) {
 
@@ -188,8 +187,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
         List<Link> links =
                 isCollection ?
-                        new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes, includeHomeLink, i18n, requestContext.getLanguage()) :
-                        new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, outputFormat.getCollectionMediaType(), canonicalUri, includeHomeLink, i18n, requestContext.getLanguage());
+                        new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage()) :
+                        new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, outputFormat.getCollectionMediaType(), canonicalUri, i18n, requestContext.getLanguage());
 
         ImmutableFeatureTransformationContextGeneric.Builder transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
                 .apiData(api.getData())

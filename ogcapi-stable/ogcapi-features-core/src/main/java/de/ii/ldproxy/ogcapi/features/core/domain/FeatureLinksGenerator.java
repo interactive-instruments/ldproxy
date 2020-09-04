@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
@@ -26,7 +26,6 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
                                     List<ApiMediaType> alternateMediaTypes,
                                     ApiMediaType collectionMediaType,
                                     String canonicalUri,
-                                    boolean homeLink,
                                     I18n i18n,
                                     Optional<Locale> language)
     {
@@ -51,18 +50,6 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
                 .type(collectionMediaType.type().toString())
                 .title(i18n.get("collectionLink",language))
                 .build());
-
-        if (homeLink)
-            builder.add(new ImmutableLink.Builder()
-                    .href(uriBuilder
-                            .copy()
-                            .removeLastPathSegments(4)
-                            .ensureNoTrailingSlash()
-                            .clearParameters()
-                            .toString())
-                    .rel("home")
-                    .title(i18n.get("homeLink",language))
-                    .build());
 
         return builder.build();
     }

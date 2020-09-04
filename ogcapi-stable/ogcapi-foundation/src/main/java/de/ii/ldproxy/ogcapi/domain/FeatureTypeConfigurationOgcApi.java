@@ -50,6 +50,8 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
 
     Optional<CollectionExtent> getExtent();
 
+    List<Link> getAdditionalLinks();
+
     @JsonProperty(value = "api")
     @JsonAlias(value = "capabilities")
     @Override

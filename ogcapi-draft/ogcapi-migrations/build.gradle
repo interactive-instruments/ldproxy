@@ -1,5 +1,4 @@
 
 dependencies {
-    provided project(":ogcapi-crs")
     provided project(":ogcapi-features-geojson-ld")
 }

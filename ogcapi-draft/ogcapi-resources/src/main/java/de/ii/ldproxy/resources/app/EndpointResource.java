@@ -8,8 +8,20 @@
 package de.ii.ldproxy.resources.app;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.Endpoint;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceAuxiliary;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourceFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
@@ -20,17 +32,24 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -48,13 +67,17 @@ public class EndpointResource extends Endpoint {
 
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
-    private final File resourcesStore; // TODO: change to Store
+    private final java.nio.file.Path resourcesStore;
 
-    public EndpointResource(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires ExtensionRegistry extensionRegistry) {
+    public EndpointResource(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires ExtensionRegistry extensionRegistry) throws IOException {
         super(extensionRegistry);
-        this.resourcesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "resources");
-        if (!resourcesStore.exists()) {
-            resourcesStore.mkdirs();
+        this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                   .resolve("resources");
+        if (Files.notExists(resourcesStore)) {
+            if (Files.notExists(resourcesStore.getParent())) {
+                Files.createDirectory(resourcesStore.getParent());
+            }
+            Files.createDirectory(resourcesStore);
         }
     }
 
@@ -125,22 +148,22 @@ public class EndpointResource extends Endpoint {
     @GET
     @Produces(MediaType.WILDCARD)
     public Response getResource(@PathParam("resourceId") String resourceId, @Context OgcApi api,
-                                @Context ApiRequestContext requestContext) {
+                                @Context ApiRequestContext requestContext) throws IOException {
 
         final String datasetId = api.getId();
-        final File apiDir = new File(resourcesStore + File.separator + datasetId);
-        if (!apiDir.exists()) {
-            apiDir.mkdirs();
+        java.nio.file.Path apiDir = resourcesStore.resolve(datasetId);
+        if (Files.notExists(apiDir)) {
+            Files.createDirectory(apiDir);
         }
 
-        File resourceFile = new File(apiDir + File.separator + resourceId);
+        java.nio.file.Path resourceFile = apiDir.resolve(resourceId);
 
-        if (!resourceFile.exists()) {
+        if (Files.notExists(resourceFile)) {
             throw new NotFoundException(MessageFormat.format("The file ''{0}'' does not exist.", resourceId));
         }
 
         try {
-            final byte[] resource = Files.readAllBytes(resourceFile.toPath());
+            final byte[] resource = Files.readAllBytes(resourceFile);
 
             return getFormats().stream()
                     .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))

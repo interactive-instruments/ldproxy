@@ -13,7 +13,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
@@ -30,12 +30,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -53,14 +56,18 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
 
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
-    private final File stylesStore;
+    private final java.nio.file.Path stylesStore;
 
     public EndpointStyles(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                          @Requires ExtensionRegistry extensionRegistry) {
+                          @Requires ExtensionRegistry extensionRegistry) throws IOException {
         super(extensionRegistry);
-        this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
-        if (!stylesStore.exists()) {
-            stylesStore.mkdirs();
+        this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                .resolve("styles");
+        if (java.nio.file.Files.notExists(stylesStore)) {
+            if (java.nio.file.Files.notExists(stylesStore.getParent())) {
+                java.nio.file.Files.createDirectory(stylesStore.getParent());
+            }
+            java.nio.file.Files.createDirectory(stylesStore);
         }
     }
 
@@ -132,11 +139,11 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
         Styles styles = ImmutableStyles.builder()
                                        .styles(
                         Arrays.stream(apiDir.listFiles())
-                            .filter(file -> !file.isHidden())
-                            .map(File::getName)
-                            .sorted()
-                            .filter(filename -> Files.getFileExtension(filename).equalsIgnoreCase("metadata"))
-                            .map(filename -> ImmutableStyleEntry.builder()
+                              .filter(file -> !file.isHidden())
+                              .map(File::getName)
+                              .filter(filename -> Files.getFileExtension(filename).equalsIgnoreCase("metadata"))
+                              .sorted()
+                              .map(filename -> ImmutableStyleEntry.builder()
                                     .id(Files.getNameWithoutExtension(filename))
                                     .title(getMetadata(Files.getNameWithoutExtension(filename), requestContext).get().getTitle())
                                     .links(stylesLinkGenerator.generateStyleLinks(requestContext.getUriCustomizer(),
@@ -199,6 +206,7 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
     private List<ApiMediaType> getStylesheetMediaTypes(OgcApiDataV2 apiData, File apiDir, String styleId) {
         return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
                 .stream()
+                .sorted(Comparator.comparing(StyleFormatExtension::getFileExtension))
                 .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(apiData))
                 .filter(styleFormat -> new File(apiDir + File.separator + styleId + "." + styleFormat.getFileExtension()).exists())
                 .map(StyleFormatExtension::getMediaType)

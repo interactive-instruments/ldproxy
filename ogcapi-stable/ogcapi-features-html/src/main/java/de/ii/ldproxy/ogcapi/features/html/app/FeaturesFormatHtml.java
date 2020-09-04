@@ -166,8 +166,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                 //Map<String, List<FeaturePropertyTransformation>> transformations = htmlConfiguration.getTransformations();
             }
 
-            featureTypeDataset = createFeatureCollectionView(serviceData.getCollections()
-                                                                        .get(collectionName), uriCustomizer.copy(), filterableFields, htmlNames, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getLayout(serviceData), providers.getFeatureProvider(serviceData));
+            featureTypeDataset = createFeatureCollectionView(serviceData, serviceData.getCollections()
+                                                                                     .get(collectionName), uriCustomizer.copy(), filterableFields, htmlNames, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getLayout(serviceData), providers.getFeatureProvider(serviceData));
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getCollections()
                                                                                         .get(collectionName)
@@ -203,7 +203,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         return Optional.of(transformer);
     }
 
-    private FeatureCollectionView createFeatureCollectionView(FeatureTypeConfigurationOgcApi featureType,
+    private FeatureCollectionView createFeatureCollectionView(OgcApiDataV2 apiData,
+                                                              FeatureTypeConfigurationOgcApi featureType,
                                                               URICustomizer uriCustomizer,
                                                               Map<String, String> filterableFields,
                                                               Map<String, String> htmlNames, String staticUrlPrefix,
@@ -227,15 +228,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
         FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH), layout);
 
-        boolean hasExtent = featureType.getExtent().isPresent();
-        if (hasExtent) {
-            featureTypeDataset.temporalExtent = featureType.getExtent().get()
-                    .getTemporal().orElse(null);
-
-            featureType.getExtent().get().getSpatial().ifPresent(bbox -> featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
-        } else {
-            featureTypeDataset.temporalExtent = null;
-        }
+        featureTypeDataset.temporalExtent = apiData.getTemporalExtent(featureType.getId()).orElse(null);
+        apiData.getSpatialExtent(featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
 
         featureTypeDataset.filterFields = filterableFields.entrySet()
                                                           .stream()

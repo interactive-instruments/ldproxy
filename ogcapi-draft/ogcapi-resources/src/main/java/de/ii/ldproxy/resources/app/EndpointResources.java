@@ -8,7 +8,7 @@
 package de.ii.ldproxy.resources.app;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
@@ -29,12 +29,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -52,13 +56,17 @@ public class EndpointResources extends Endpoint implements ConformanceClass {
 
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
-    private final File resourcesStore; // TODO: change to Store
+    private final java.nio.file.Path resourcesStore;
 
-    public EndpointResources(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires ExtensionRegistry extensionRegistry) {
+    public EndpointResources(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires ExtensionRegistry extensionRegistry) throws IOException {
         super(extensionRegistry);
-        this.resourcesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "resources");
-        if (!resourcesStore.exists()) {
-            resourcesStore.mkdirs();
+        this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                   .resolve("resources");
+        if (Files.notExists(resourcesStore)) {
+            if (Files.notExists(resourcesStore.getParent())) {
+                Files.createDirectory(resourcesStore.getParent());
+            }
+            Files.createDirectory(resourcesStore);
         }
     }
 

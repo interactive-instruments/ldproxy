@@ -107,12 +107,6 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                     .build());
         }
 
-        Optional<FeaturesCoreConfiguration> config = apiData.getExtension(FeaturesCoreConfiguration.class);
-        if(config.isPresent() && config.get().getAdditionalLinks().containsKey("/collections/"+featureType.getId())) {
-            List<Link> additionalLinks = config.get().getAdditionalLinks().get("/collections/"+featureType.getId());
-            additionalLinks.stream().forEach(link -> collection.addLinks(link));
-        }
-
         // only add extents for cases where we can filter using spatial / temporal predicates
         Optional<FeaturesCollectionQueryables> queryables = featureType.getExtension(FeaturesCoreConfiguration.class).flatMap(FeaturesCoreConfiguration::getQueryables);
         boolean hasSpatialQueryable = queryables.map(FeaturesCollectionQueryables::getSpatial)
@@ -121,24 +115,8 @@ public class CollectionExtensionFeatures implements CollectionExtension {
         boolean hasTemporalQueryable = queryables.map(FeaturesCollectionQueryables::getTemporal)
                                                  .filter(temporal -> !temporal.isEmpty())
                                                  .isPresent();
-        Optional<BoundingBox> spatial = featureType.getExtent().isPresent() ?
-                                            featureType.getExtent()
-                                                       .get()
-                                                       .getSpatial() :
-                                            apiData.getDefaultExtent().isPresent() ?
-                                                apiData.getDefaultExtent()
-                                                       .get()
-                                                       .getSpatial() :
-                                                Optional.empty();
-        Optional<TemporalExtent> temporal = featureType.getExtent().isPresent() ?
-                                            featureType.getExtent()
-                                                       .get()
-                                                       .getTemporal() :
-                                            apiData.getDefaultExtent().isPresent() ?
-                                                    apiData.getDefaultExtent()
-                                                           .get()
-                                                           .getTemporal() :
-                                                    Optional.empty();
+        Optional<BoundingBox> spatial = apiData.getSpatialExtent(featureType.getId());
+        Optional<TemporalExtent> temporal = apiData.getTemporalExtent(featureType.getId());
         if (hasSpatialQueryable && hasTemporalQueryable && spatial.isPresent() && temporal.isPresent()) {
             collection.extent(new OgcApiExtent(
                     temporal.get()

@@ -52,7 +52,6 @@ public interface ObservationProcessingQueriesHandler extends QueriesHandler<Obse
 
         String getCollectionId();
         boolean getIncludeLinkHeader();
-        boolean getIncludeHomeLink();
         List<Variable> getVariables();
     }
 
@@ -61,7 +60,6 @@ public interface ObservationProcessingQueriesHandler extends QueriesHandler<Obse
 
         String getCollectionId();
         boolean getIncludeLinkHeader();
-        boolean getIncludeHomeLink();
         Processing getProcessing();
     }
 }

@@ -98,7 +98,7 @@ public interface DapaResultFormatExtension extends FormatExtension {
         return Optional.of(transformer);
     }
 
-    Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream) throws IOException;
+    Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream, OgcApiDataV2 apiData) throws IOException;
     default boolean addDataArray(Object result, DataArrayXyt array) throws IOException { return false; }
     default boolean addDataArray(Object result, DataArrayXy array) throws IOException { return false; }
     void addFeature(Object result, Optional<String> locationCode, Optional<String> locationName, Geometry geometry, Temporal timeBegin, Temporal timeEnd, Map<String, Number> values) throws IOException;

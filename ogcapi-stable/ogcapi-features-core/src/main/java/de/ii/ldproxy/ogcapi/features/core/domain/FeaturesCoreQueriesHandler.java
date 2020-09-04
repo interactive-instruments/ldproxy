@@ -40,8 +40,6 @@ public interface FeaturesCoreQueriesHandler extends QueriesHandler<FeaturesCoreQ
 
         boolean getShowsFeatureSelfLink();
 
-        boolean getIncludeHomeLink();
-
         boolean getIncludeLinkHeader();
     }
 
@@ -56,8 +54,6 @@ public interface FeaturesCoreQueriesHandler extends QueriesHandler<FeaturesCoreQ
         FeatureProvider2 getFeatureProvider();
 
         EpsgCrs getDefaultCrs();
-
-        boolean getIncludeHomeLink();
 
         boolean getIncludeLinkHeader();
     }

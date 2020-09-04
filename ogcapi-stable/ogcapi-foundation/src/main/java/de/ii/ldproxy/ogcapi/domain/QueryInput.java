@@ -14,7 +14,4 @@ public interface QueryInput {
     // general output options
     @Value.Default
     default boolean getIncludeLinkHeader() { return false; }
-
-    @Value.Default
-    default boolean getIncludeHomeLink() { return false; }
 }

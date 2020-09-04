@@ -16,8 +16,8 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import org.immutables.value.Value;
 
-import java.io.File;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,7 +38,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     interface QueryInputTileFile extends QueryInput {
 
         Tile getTile();
-        File getTileFile();
+        Path getTileFile();
     }
 
     @Value.Immutable

@@ -26,7 +26,7 @@ public class CapabilityQueryables implements ApiBuildingBlock {
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableQueryablesConfiguration.Builder().enabled(true)
+        return new ImmutableQueryablesConfiguration.Builder().enabled(false)
                                                              .build();
     }
 

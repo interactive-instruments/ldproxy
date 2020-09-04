@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.collections.schema;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
@@ -36,8 +36,6 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
     @Value.Immutable
     public interface QueryInputQueryables extends QueryInput {
         String getCollectionId();
-
-        boolean getIncludeHomeLink();
 
         boolean getIncludeLinkHeader();
     }

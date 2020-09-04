@@ -11,9 +11,23 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
+import de.ii.ldproxy.ogcapi.styles.domain.ImmutableMbStyleVectorSource;
+import de.ii.ldproxy.ogcapi.styles.domain.MbStyleSource;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleStylesheet;
+import de.ii.ldproxy.ogcapi.styles.domain.MbStyleVectorSource;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -28,6 +42,8 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Provides
@@ -118,9 +134,67 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         }
 
         return Response.ok()
-                .entity(parsedContent)
+                .entity(replaceParameters(parsedContent, api.getId(), api.getData().getApiVersion(), requestContext.getUriCustomizer().copy()))
                 .type(MEDIA_TYPE.type())
                 .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(javax.ws.rs.core.Link[]::new))
                 .build();
+    }
+
+    private MbStyleStylesheet replaceParameters(MbStyleStylesheet stylesheet, String apiId, Optional<Integer> apiVersion, URICustomizer uriCustomizer) {
+
+        // any template parameters in links?
+        boolean templated = stylesheet.getSprite()
+                                      .orElse("")
+                                      .matches("^.*\\{serviceUrl\\}.*$") ||
+                            stylesheet.getGlyphs()
+                                      .orElse("")
+                                      .matches("^.*\\{serviceUrl\\}.*$") ||
+                            stylesheet.getSources()
+                                      .values()
+                                      .stream()
+                                      .filter(source -> source instanceof MbStyleVectorSource)
+                                      .anyMatch(source -> ((MbStyleVectorSource) source).getTiles()
+                                                                                        .orElse(ImmutableList.of())
+                                                                                        .stream()
+                                                                                        .anyMatch(tilesUri -> tilesUri.matches("^.*\\{serviceUrl\\}.*$")) ||
+                                                        ((MbStyleVectorSource) source).getUrl()
+                                                                                      .orElse("")
+                                                                                      .matches("^.*\\{serviceUrl\\}.*$"));
+        if (!templated)
+            return stylesheet;
+
+        String serviceUrl = uriCustomizer.removeLastPathSegments(2)
+                                         .clearParameters()
+                                         .ensureNoTrailingSlash()
+                                         .toString();
+
+        return ImmutableMbStyleStylesheet.builder()
+                                         .from(stylesheet)
+                                         .sprite(stylesheet.getSprite().isPresent() ?
+                                                 Optional.of(stylesheet.getSprite().get().replace("{serviceUrl}", serviceUrl)) :
+                                                 Optional.empty())
+                                         .glyphs(stylesheet.getGlyphs().isPresent() ?
+                                                         Optional.of(stylesheet.getGlyphs().get().replace("{serviceUrl}", serviceUrl)) :
+                                                         Optional.empty())
+                                         .sources(stylesheet.getSources()
+                                                            .entrySet()
+                                                            .stream()
+                                                            .collect(Collectors.toMap(entry -> entry.getKey(),
+                                                                                      entry -> {
+                                                                                          MbStyleSource source = entry.getValue();
+                                                                                          return (source instanceof MbStyleVectorSource) ?
+                                                                                                  ImmutableMbStyleVectorSource.builder()
+                                                                                                                              .from((MbStyleVectorSource)source)
+                                                                                                                              .url(((MbStyleVectorSource)source).getUrl()
+                                                                                                                                                                .map(url -> url.replace("{serviceUrl}", serviceUrl)))
+                                                                                                                              .tiles(((MbStyleVectorSource)source).getTiles()
+                                                                                                                                                                  .orElse(ImmutableList.of())
+                                                                                                                                                                  .stream()
+                                                                                                                                                                  .map(tile -> tile.replace("{serviceUrl}", serviceUrl))
+                                                                                                                                                                  .collect(Collectors.toList()))
+                                                                                                                              .build() :
+                                                                                                  source;
+                                                                                      })))
+                                         .build();
     }
 }

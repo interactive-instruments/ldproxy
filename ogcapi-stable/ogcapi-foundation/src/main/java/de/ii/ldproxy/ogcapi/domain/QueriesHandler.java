@@ -42,7 +42,7 @@ public interface QueriesHandler<T extends QueryIdentifier> {
     default Response.ResponseBuilder prepareSuccessResponse(OgcApi api,
                                                             ApiRequestContext requestContext,
                                                             List<Link> links) {
-        return prepareSuccessResponse(api, requestContext, null, null);
+        return prepareSuccessResponse(api, requestContext, links, null);
     }
 
     default Response.ResponseBuilder prepareSuccessResponse(OgcApi api,

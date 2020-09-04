@@ -11,18 +11,33 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.Example;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.ExternalDocumentation;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceProcess;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcess;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.ProcessDocumentation;
+import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableQueryInputObservationProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
-import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -42,7 +57,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Provides
@@ -286,8 +305,8 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
         final int minimumPageSize = coreConfiguration.getMinimumPageSize();
         final int defaultPageSize = coreConfiguration.getDefaultPageSize();
         final int maxPageSize = coreConfiguration.getMaximumPageSize();
-        final boolean includeLinkHeader = apiData.getExtension(CommonConfiguration.class)
-                                                .map(CommonConfiguration::getIncludeLinkHeader)
+        final boolean includeLinkHeader = apiData.getExtension(FoundationConfiguration.class)
+                                                .map(FoundationConfiguration::getIncludeLinkHeader)
                                                 .orElse(false);
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
 

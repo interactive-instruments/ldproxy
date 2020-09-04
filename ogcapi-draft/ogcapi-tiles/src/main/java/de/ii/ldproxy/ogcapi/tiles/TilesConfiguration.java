@@ -7,8 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import com.fasterxml.jackson.annotation.JsonMerge;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
@@ -47,10 +45,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Nullable
     Boolean getMultiCollectionEnabled();
 
-    @JsonMerge(value = OptBoolean.FALSE)
-    @Nullable
-    List<String> getFormats();
-
     @Nullable
     Map<String, MinMax> getSeeding();
 
@@ -61,6 +55,8 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     Map<String, List<PredefinedFilter>> getFilters();
 
     List<String> getTileEncodings();
+
+    List<String> getTileSetEncodings();
 
     @Nullable
     double[] getCenter();
@@ -80,6 +76,8 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
         // try to find a better solution that also enables deep merges
         if (!getTileEncodings().isEmpty())
             builder.tileEncodings(getTileEncodings());
+        if (!getTileSetEncodings().isEmpty())
+            builder.tileSetEncodings(getTileSetEncodings());
         if (getSeeding()!=null)
             builder.seeding(getSeeding());
         if (getZoomLevels()!=null)

@@ -8,16 +8,14 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.ApiErrorMessage;
-import de.ii.ldproxy.ogcapi.domain.ExceptionFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.FormatNotSupportedException;
+import de.ii.ldproxy.ogcapi.domain.*;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import org.apache.felix.ipojo.annotations.*;
+import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.*;
@@ -77,7 +75,33 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                                  .get() :
                 extensionRegistry.getExtensionsForType(ExceptionFormatExtension.class).get(0);
 
-        if (exception instanceof WebApplicationException) {
+        if (exception instanceof FormatNotSupportedException) {
+            responseStatus = Response.Status.NOT_ACCEPTABLE;
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", responseStatus.getStatusCode(), uriInfo.getRequestUri().toString(), exception.getMessage());
+            }
+            return Response.status(responseStatus)
+                           .type(exceptionFormat.getMediaType().type())
+                           .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
+                                                                                          responseStatus.getReasonPhrase(),
+                                                                                          exception.getMessage(),
+                                                                                          uriInfo.getAbsolutePath().toString())))
+                           .build();
+        } else if (exception instanceof InternalServerErrorException &&
+                   Objects.requireNonNullElse(exception.getCause(),exception) instanceof MessageBodyProviderNotFoundException) {
+            // this catches exceptions when the API catalog is requested and the requested format cannot be written
+            responseStatus = Response.Status.NOT_ACCEPTABLE;
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", responseStatus.getStatusCode(), uriInfo.getRequestUri().toString(), exception.getCause().getMessage());
+            }
+            return Response.status(responseStatus)
+                           .type(exceptionFormat.getMediaType().type())
+                           .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
+                                                                                          responseStatus.getReasonPhrase(),
+                                                                                          exception.getCause().getMessage(),
+                                                                                          uriInfo.getAbsolutePath().toString())))
+                           .build();
+        } else if (exception instanceof WebApplicationException) {
             final Response response = ((WebApplicationException) exception).getResponse();
             Response.Status.Family family = response.getStatusInfo().getFamily();
             if (family.equals(Response.Status.Family.REDIRECTION)) {
@@ -105,18 +129,6 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
             }
         } else if (exception instanceof IllegalArgumentException) {
             responseStatus = Response.Status.BAD_REQUEST;
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", responseStatus.getStatusCode(), uriInfo.getRequestUri().toString(), exception.getMessage());
-            }
-            return Response.status(responseStatus)
-                    .type(exceptionFormat.getMediaType().type())
-                    .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
-                                                                                responseStatus.getReasonPhrase(),
-                                                                                exception.getMessage(),
-                                                                                uriInfo.getAbsolutePath().toString())))
-                    .build();
-        } else if (exception instanceof FormatNotSupportedException) {
-            responseStatus = Response.Status.NOT_ACCEPTABLE;
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", responseStatus.getStatusCode(), uriInfo.getRequestUri().toString(), exception.getMessage());
             }

@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 
@@ -76,7 +77,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
     EndpointJsonLdContext(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
                           @Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
-        this.contextDirectory = Paths.get(bundleContext.getProperty(DATA_DIR_KEY))
+        this.contextDirectory = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                      .resolve("json-ld-contexts");
     }
 
@@ -85,17 +86,24 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
         return GeoJsonLdConfiguration.class;
     }
 
+    private java.nio.file.Path getContextPath(String apiId, String collectionId) {
+        return contextDirectory.resolve(apiId)
+                               .resolve(collectionId + ".jsonld");
+    }
+
     @Path("/{collectionId}/context")
     @GET
     @Produces("application/ld+json")
-    public Response getContext(@Context ApiRequestContext apiRequestContext, @Context OgcApi service,
+    public Response getContext(@Context ApiRequestContext apiRequestContext, @Context OgcApi api,
                                @PathParam("collectionId") String collectionId) throws IOException {
 
-        java.nio.file.Path context = contextDirectory.resolve(collectionId);
+        java.nio.file.Path context = getContextPath(api.getId(), collectionId);
 
         if (!Files.isRegularFile(context)) {
             throw new NotFoundException("The JSON-LD context was not found.");
         }
+
+        // TODO validate, that it is a valid JSON-LD Context document
 
         return Response.ok(Files.newInputStream(context),"application/ld+json")
                        .build();
@@ -126,7 +134,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                         collectionIdParam.getValues(apiData) :
                         ImmutableSet.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    if (explode && !Files.isRegularFile(contextDirectory.resolve(collectionId)))
+                    if (explode && !Files.isRegularFile(getContextPath(apiData.getId(), collectionId)))
                         // skip, if no context is available
                         continue;
                     final List<OgcApiQueryParameter> queryParameters = explode ?
