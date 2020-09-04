@@ -71,7 +71,9 @@ public class StylesLinkGenerator {
                     )
                     .rel("stylesheet")
                     .type(mediaType.type().toString())
-                    .title(i18n.get("stylesheetLink",language).replace("{{format}}", mediaType.label()))
+                    .title(mediaType.label().equals("HTML") ?
+                                   i18n.get("stylesheetLinkMap",language) :
+                                   i18n.get("stylesheetLink",language).replace("{{format}}", mediaType.label()))
                     .build());
         }
 

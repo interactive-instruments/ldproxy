@@ -10,10 +10,22 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableQueryInputVariables;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceProcess;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.observation_processing.api.DapaVariablesFormatExtension;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableQueryInputVariables;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
@@ -116,11 +128,8 @@ public class EndpointVariables extends EndpointSubCollection {
         checkAuthorization(api.getData(), optionalUser);
         checkPathParameter(extensionRegistry, api.getData(), "/collections/{collectionId}/"+ DAPA_PATH_ELEMENT +"/variables", "collectionId", collectionId);
 
-        final boolean includeHomeLink = api.getData().getExtension(CommonConfiguration.class)
-                .map(CommonConfiguration::getIncludeHomeLink)
-                .orElse(false);
-        final boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
-                .map(CommonConfiguration::getIncludeLinkHeader)
+        final boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
+                .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
         final List<Variable> variables = api.getData().getExtension(ObservationProcessingConfiguration.class)
                 .map(ObservationProcessingConfiguration::getVariables)
@@ -130,7 +139,6 @@ public class EndpointVariables extends EndpointSubCollection {
                 .collectionId(collectionId)
                 .variables(variables)
                 .includeLinkHeader(includeLinkHeader)
-                .includeHomeLink(includeHomeLink)
                 .build();
 
         return queryHandler.handle(ObservationProcessingQueriesHandler.Query.VARIABLES, queryInput, requestContext);

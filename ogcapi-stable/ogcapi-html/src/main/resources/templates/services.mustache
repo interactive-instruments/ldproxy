@@ -9,16 +9,14 @@
 
     <ul class="list-unstyled space-after">
         {{#data}}
-        {{#uri}}
         <li>
             <h2>
-                <a href="{{path}}{{id}}">
-                    <span>{{label}}</span>
+                <a href="{{landingPageUri}}">
+                    <span>{{title}}</span>
                 </a>
             </h2>
             <div>{{{description}}}</div>
         </li>
-        {{/uri}}
         {{/data}}
         {{^data}}
         <li>None</li>

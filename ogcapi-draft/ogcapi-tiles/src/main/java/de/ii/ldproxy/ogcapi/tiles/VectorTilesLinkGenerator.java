@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
@@ -150,7 +150,6 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
     public List<Link> generateTilesLinks(URICustomizer uriBuilder,
                                          ApiMediaType mediaType,
                                          List<ApiMediaType> alternateMediaTypes,
-                                         boolean homeLink,
                                          boolean isCollectionTile,
                                          boolean isMetadata,
                                          List<ApiMediaType> tileSetFormats,
@@ -160,18 +159,6 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
 
         final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>()
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
-
-        if (homeLink)
-            builder.add(new ImmutableLink.Builder()
-                    .href(uriBuilder
-                            .copy()
-                            .removeLastPathSegments(isCollectionTile ? (isMetadata ? 5 : 3) : (isMetadata ? 3 : 1))
-                            .ensureNoTrailingSlash()
-                            .clearParameters()
-                            .toString())
-                    .rel("home")
-                    .title(i18n.get("homeLink",language))
-                    .build());
 
         tileFormats.stream()
                 .forEach(format -> {

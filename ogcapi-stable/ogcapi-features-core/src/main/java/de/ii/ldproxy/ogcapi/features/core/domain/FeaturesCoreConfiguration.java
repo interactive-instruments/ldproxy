@@ -66,8 +66,6 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     @Nullable
     Boolean getShowsFeatureSelfLink();
 
-    Map<String, List<Link>> getAdditionalLinks();
-
     Optional<FeaturesCollectionQueryables> getQueryables();
 
     @Override

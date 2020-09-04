@@ -11,8 +11,8 @@ import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public interface CollectionStyleInfoFormatExtension extends GenericFormatExtension {
 
@@ -21,7 +21,7 @@ public interface CollectionStyleInfoFormatExtension extends GenericFormatExtensi
         return "^/collections(?:/[\\w\\-]+)?/?$";
     }
 
-    Response patchStyleInfos(byte[] requestBody, File styleInfosStore, OgcApi api, String collectionId) throws IOException;
+    Response patchStyleInfos(byte[] requestBody, Path styleInfosStore, OgcApi api, String collectionId) throws IOException;
 
     default boolean canSupportTransactions() { return true; }
 }

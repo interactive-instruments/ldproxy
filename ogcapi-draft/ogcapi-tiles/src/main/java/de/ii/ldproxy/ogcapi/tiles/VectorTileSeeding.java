@@ -11,6 +11,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.BackgroundTaskExceptionHandler;
 import de.ii.ldproxy.ogcapi.domain.ContentExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
@@ -41,9 +42,11 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +76,7 @@ public class VectorTileSeeding implements StartupTask {
     private final FeaturesQuery queryParser;
     private final FeaturesCoreProviders providers;
     private final TilesQueriesHandler queryHandler;
+    private final BackgroundTaskExceptionHandler backgroundTaskExceptionHandler;
 
     public VectorTileSeeding(@Requires I18n i18n,
                              @Requires CrsTransformerFactory crsTransformerFactory,
@@ -83,7 +87,8 @@ public class VectorTileSeeding implements StartupTask {
                              @Requires XtraPlatform xtraPlatform,
                              @Requires FeaturesQuery queryParser,
                              @Requires FeaturesCoreProviders providers,
-                             @Requires TilesQueriesHandler queryHandler) {
+                             @Requires TilesQueriesHandler queryHandler,
+                             @Requires BackgroundTaskExceptionHandler backgroundTaskExceptionHandler) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
 
@@ -96,6 +101,7 @@ public class VectorTileSeeding implements StartupTask {
         this.queryParser = queryParser;
         this.providers = providers;
         this.queryHandler = queryHandler;
+        this.backgroundTaskExceptionHandler = backgroundTaskExceptionHandler;
     }
 
     @Override
@@ -155,14 +161,20 @@ public class VectorTileSeeding implements StartupTask {
 
         Runnable startSeeding = () -> {
 
-            // first seed the multi-layer tiles, which also generates the necessary single-layer tiles
-            seedMultiLayerTiles(api, outputFormats);
+            try {
+                // first seed the multi-layer tiles, which also generates the necessary single-layer tiles
+                seedMultiLayerTiles(api, outputFormats);
 
-            // add any additional single-layer tiles
-            seedSingleLayerTiles(api, outputFormats);
+                // add any additional single-layer tiles
+                seedSingleLayerTiles(api, outputFormats);
+            } catch (IOException e) {
+                throw new RuntimeException("Error accessing the tile cache during seeding.", e);
+            }
+
 
         };
         t = new Thread(startSeeding);
+        t.setUncaughtExceptionHandler(backgroundTaskExceptionHandler);
         t.setDaemon(true);
         t.start();
         threadMap.put(t, apiData.getId());
@@ -207,7 +219,7 @@ public class VectorTileSeeding implements StartupTask {
         return minMaxMap;
     }
 
-    private void seedSingleLayerTiles(OgcApi api, List<TileFormatExtension> outputFormats) {
+    private void seedSingleLayerTiles(OgcApi api, List<TileFormatExtension> outputFormats) throws IOException {
         OgcApiDataV2 apiData = api.getData();
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         Map<String, Map<String, MinMax>> seedingMap = getMinMaxMap(apiData);
@@ -240,8 +252,8 @@ public class VectorTileSeeding implements StartupTask {
                                         .featureProvider(featureProvider)
                                         .outputFormat(outputFormat)
                                         .build();
-                                File tileFile = tilesCache.getFile(tile);
-                                if (tileFile.exists())
+                                Path tileFile = tilesCache.getFile(tile);
+                                if (Files.exists(tileFile))
                                     // already there, nothing to create
                                     continue;
 
@@ -287,7 +299,7 @@ public class VectorTileSeeding implements StartupTask {
 
     }
 
-    private void seedMultiLayerTiles(OgcApi api, List<TileFormatExtension> outputFormats) {
+    private void seedMultiLayerTiles(OgcApi api, List<TileFormatExtension> outputFormats) throws IOException {
         OgcApiDataV2 apiData = api.getData();
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         Map<String, MinMax> multiLayerTilesSeeding = ImmutableMap.of();
@@ -328,8 +340,8 @@ public class VectorTileSeeding implements StartupTask {
                                     .featureProvider(featureProvider)
                                     .outputFormat(outputFormat)
                                     .build();
-                            File tileFile = tilesCache.getFile(multiLayerTile);
-                            if (tileFile.exists())
+                            Path tileFile = tilesCache.getFile(multiLayerTile);
+                            if (Files.exists(tileFile))
                                 // already there, nothing to create
                                 continue;
 

@@ -9,7 +9,16 @@ package de.ii.ldproxy.ogcapi.features.geojson.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiExtension;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
@@ -27,7 +36,11 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author zahnen
@@ -141,7 +154,8 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                                                                                                                                         .getParameters()
                                                                                                                                                         .get("pretty"))
                                                                                                                        .filter(value -> Objects.equals(value, "true"))
-                                                                                                                       .isPresent())
+                                                                                                                       .isPresent() ||
+                                                                                                               (transformationContext.getApiData().getCollections().get(transformationContext.getCollectionId()).getExtension(GeoJsonConfiguration.class).get().getUseFormattedJsonOutput()))
                                                                                                      .debugJson(Optional.ofNullable(transformationContext.getOgcApiRequest()
                                                                                                                                                         .getParameters()
                                                                                                                                                         .get("debug"))

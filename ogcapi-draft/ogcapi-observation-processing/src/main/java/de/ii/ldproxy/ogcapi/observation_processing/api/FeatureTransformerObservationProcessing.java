@@ -146,7 +146,7 @@ public class FeatureTransformerObservationProcessing extends FeatureTransformerB
 
         LOGGER.debug("{} observations received.", observationCount);
 
-        Object entity = outputFormat.initializeResult(processes, processingParameters, variables, outputStream);
+        Object entity = outputFormat.initializeResult(processes, processingParameters, variables, outputStream, transformationContext.getApiData());
 
         Object data = observations;
         for (FeatureProcess process : processes.asList()) {

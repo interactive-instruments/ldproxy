@@ -9,10 +9,24 @@ package de.ii.ldproxy.ogcapi.styles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.Endpoint;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceAuxiliary;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
@@ -23,18 +37,25 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -52,14 +73,18 @@ public class EndpointStyle extends Endpoint {
 
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
-    private final File stylesStore;
+    private final java.nio.file.Path stylesStore;
 
     public EndpointStyle(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                         @Requires ExtensionRegistry extensionRegistry) {
+                         @Requires ExtensionRegistry extensionRegistry) throws IOException {
         super(extensionRegistry);
-        this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
-        if (!stylesStore.exists()) {
-            stylesStore.mkdirs();
+        this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                .resolve("styles");
+        if (java.nio.file.Files.notExists(stylesStore)) {
+            if (java.nio.file.Files.notExists(stylesStore.getParent())) {
+                java.nio.file.Files.createDirectory(stylesStore.getParent());
+            }
+            java.nio.file.Files.createDirectory(stylesStore);
         }
     }
 
@@ -155,8 +180,8 @@ public class EndpointStyle extends Endpoint {
 
         // collect self/alternate links, but only, if we need to return them in the headers
         List<Link> links = null;
-        boolean includeLinkHeader = dataset.getData().getExtension(CommonConfiguration.class)
-                .map(CommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = dataset.getData().getExtension(FoundationConfiguration.class)
+                .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
         if (includeLinkHeader) {
             final DefaultLinksGenerator defaultLinkGenerator = new DefaultLinksGenerator();

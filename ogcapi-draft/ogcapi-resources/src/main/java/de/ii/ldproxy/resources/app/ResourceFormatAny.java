@@ -1,7 +1,14 @@
 package de.ii.ldproxy.resources.app;
 
 import com.google.common.io.ByteSource;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.resources.domain.ResourceFormatExtension;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -11,10 +18,10 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Component
 @Provides
@@ -84,18 +91,18 @@ public class ResourceFormatAny implements ResourceFormatExtension {
     }
 
     @Override
-    public Response putResource(File resourcesStore, byte[] resource, String resourceId, OgcApi api, ApiRequestContext requestContext) {
+    public Response putResource(Path resourcesStore, byte[] resource, String resourceId, OgcApi api, ApiRequestContext requestContext) throws IOException {
 
         final String datasetId = api.getId();
-        File apiDir = new File(resourcesStore + File.separator + datasetId);
-        if (!apiDir.exists()) {
-            apiDir.mkdirs();
+        Path apiDir = resourcesStore.resolve(datasetId);
+        if (Files.notExists(apiDir)) {
+            Files.createDirectory(apiDir);
         }
 
-        File resourceFile = new File(apiDir + File.separator + resourceId);
+        Path resourceFile = apiDir.resolve(resourceId);
 
         try {
-            Files.write(resourceFile.toPath(), resource);
+            Files.write(resourceFile, resource);
         } catch (IOException e) {
             throw new RuntimeException("Could not PUT resource: " + resourceId);
         }

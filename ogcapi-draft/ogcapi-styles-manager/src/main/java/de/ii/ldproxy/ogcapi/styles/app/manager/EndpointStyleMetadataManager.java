@@ -31,6 +31,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
@@ -59,6 +60,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
@@ -69,6 +71,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -85,14 +88,18 @@ public class EndpointStyleMetadataManager extends Endpoint {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyleMetadataManager.class);
     private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
 
-    private final File stylesStore;
+    private final java.nio.file.Path stylesStore;
 
     public EndpointStyleMetadataManager(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                        @Requires ExtensionRegistry extensionRegistry) {
+                                        @Requires ExtensionRegistry extensionRegistry) throws IOException {
         super(extensionRegistry);
-        this.stylesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "styles");
-        if (!stylesStore.exists()) {
-            stylesStore.mkdirs();
+        this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                    .resolve("styles");
+        if (Files.notExists(stylesStore)) {
+            if (Files.notExists(stylesStore.getParent())) {
+                Files.createDirectory(stylesStore.getParent());
+            }
+            Files.createDirectory(stylesStore);
         }
     }
 
@@ -298,12 +305,12 @@ public class EndpointStyleMetadataManager extends Endpoint {
     @PATCH
     @Consumes(MediaType.APPLICATION_JSON)
     public Response patchStyleMetadata(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
-                                       @Context OgcApi dataset, @Context ApiRequestContext ogcApiRequest,
+                                       @Context OgcApi api, @Context ApiRequestContext ogcApiRequest,
                                        @Context HttpServletRequest request, byte[] requestBody) {
 
-        checkAuthorization(dataset.getData(), optionalUser);
+        checkAuthorization(api.getData(), optionalUser);
 
-        boolean newStyle = isNewStyle(dataset.getId(), styleId);
+        boolean newStyle = isNewStyle(api.getId(), styleId);
         if (newStyle) {
             throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
         }
@@ -318,14 +325,18 @@ public class EndpointStyleMetadataManager extends Endpoint {
         try {
             // parse input for validation
             mapper.readValue(requestBody, StyleMetadata.class);
-            File metadataFile = new File( stylesStore + File.separator + dataset.getId() + File.separator + styleId + ".metadata");
+            File metadataFile = new File( stylesStore + File.separator + api.getId() + File.separator + styleId + ".metadata");
             currentMetadata = mapper.readValue(metadataFile, new TypeReference<LinkedHashMap>() {
             });
             ObjectReader objectReader = mapper.readerForUpdating(currentMetadata);
             updatedMetadata = objectReader.readValue(requestBody);
-            byte[] updatedMetadataString = mapper.writerWithDefaultPrettyPrinter()
-                                                 .writeValueAsBytes(updatedMetadata); // TODO: remove pretty print
-            putStyleDocument(dataset.getId(), styleId, "metadata", updatedMetadataString);
+            Optional<JsonConfiguration> jsonConfig = api.getData()
+                                                        .getExtension(JsonConfiguration.class);
+            byte[] updatedMetadataString = jsonConfig.isPresent() && jsonConfig.get().getUseFormattedJsonOutput() ?
+                    mapper.writerWithDefaultPrettyPrinter()
+                          .writeValueAsBytes(updatedMetadata) :
+                    mapper.writeValueAsBytes(updatedMetadata);
+            putStyleDocument(api.getId(), styleId, "metadata", updatedMetadataString);
         } catch (IOException e) {
             throw new BadRequestException(e);
         }

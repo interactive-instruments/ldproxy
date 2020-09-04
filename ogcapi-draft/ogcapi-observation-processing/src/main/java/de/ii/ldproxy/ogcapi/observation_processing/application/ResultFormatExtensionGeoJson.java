@@ -12,14 +12,21 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiExtension;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureCollection;
+import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
 import de.ii.ldproxy.ogcapi.observation_processing.data.Geometry;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryMultiPolygon;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryPoint;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureCollection;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -51,8 +58,6 @@ public class ResultFormatExtensionGeoJson implements DapaResultFormatExtension {
             .parameter("json")
             .build();
 
-    private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-
     @Requires
     SchemaGeneratorFeatureCollection schemaGeneratorFeatureCollection;
 
@@ -62,8 +67,11 @@ public class ResultFormatExtensionGeoJson implements DapaResultFormatExtension {
     }
 
     @Override
-    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream) {
-        Result result = new Result(processes.getSubSubPath(), processingParameters, outputStream);
+    public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream, OgcApiDataV2 apiData) {
+        boolean pretty = apiData.getExtension(JsonConfiguration.class)
+                                .map(config -> config.getUseFormattedJsonOutput())
+                                .orElse(false);
+        Result result = new Result(processes.getSubSubPath(), processingParameters, outputStream, pretty);
         result.featureCollection.put("type", "FeatureCollection");
         ArrayNode features = result.featureCollection.putArray("features");
         return result;
@@ -117,10 +125,9 @@ public class ResultFormatExtensionGeoJson implements DapaResultFormatExtension {
         }
     }
 
-
     @Override
     public void finalizeResult(Object result) throws IOException {
-        mapper.writeValue(((Result)result).outputStreamWriter, ((Result) result).featureCollection);
+        ((Result)result).mapper.writeValue(((Result)result).outputStreamWriter, ((Result) result).featureCollection);
     }
 
     @Override
@@ -149,8 +156,9 @@ public class ResultFormatExtensionGeoJson implements DapaResultFormatExtension {
         final List<ObservationProcessingStatisticalFunction> functions;
         final List<String> var_funct;
         final OutputStreamWriter outputStreamWriter;
+        final ObjectMapper mapper;
         ObjectNode featureCollection;
-        Result(String processName, Map<String, Object> processingParameters, OutputStream outputStream) {
+        Result(String processName, Map<String, Object> processingParameters, OutputStream outputStream, boolean pretty) {
             this.outputStreamWriter = new OutputStreamWriter(outputStream);
             this.processName = processName;
             variables = (List<String>) processingParameters.getOrDefault("variables", ImmutableList.of());
@@ -160,6 +168,7 @@ public class ResultFormatExtensionGeoJson implements DapaResultFormatExtension {
                     .flatMap(Collection::stream)
                     .sorted()
                     .collect(Collectors.toList());
+            this.mapper = pretty ? new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT) : new ObjectMapper();
             featureCollection = mapper.createObjectNode();
         }
     }

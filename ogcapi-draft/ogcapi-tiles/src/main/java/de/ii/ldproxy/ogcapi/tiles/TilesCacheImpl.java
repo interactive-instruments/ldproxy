@@ -14,8 +14,14 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.CACHE_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
@@ -31,15 +37,22 @@ public class TilesCacheImpl implements TilesCache {
     private static final String TILES_DIR_NAME = "tiles";
     private static final String TMP_DIR_NAME = "__tmp__";
     private static final long TEN_MINUTES = 10 * 60 * 1000;
-    private File dataDirectory;
+    private final Path tilesStore;
     private long lastCleanup = System.currentTimeMillis();
 
     /**
      * set data directory
      */
-    public TilesCacheImpl(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) {
+    public TilesCacheImpl(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) throws IOException {
         // the ldproxy data directory, in development environment this would be ./build/data
-        this.dataDirectory = new File(bundleContext.getProperty(DATA_DIR_KEY));
+        this.tilesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
+                               .resolve(TILES_DIR_NAME);
+        if (Files.notExists(tilesStore)) {
+            if (Files.notExists(tilesStore.getParent())) {
+                Files.createDirectory(tilesStore.getParent());
+            }
+            Files.createDirectory(tilesStore);
+        }
 
         // TODO move to background task
         cleanup();
@@ -50,12 +63,8 @@ public class TilesCacheImpl implements TilesCache {
      * @return the file object of the directory
      */
     @Override
-    public File getTilesDirectory() {
-        File tilesDirectory = new File(dataDirectory, TILES_DIR_NAME);
-        if (!tilesDirectory.exists()) {
-            tilesDirectory.mkdirs();
-        }
-        return tilesDirectory;
+    public Path getTilesStore() {
+        return tilesStore;
     }
 
 
@@ -64,10 +73,10 @@ public class TilesCacheImpl implements TilesCache {
      * @return the file object of the directory
      */
     @Override
-    public File getTmpDirectory() {
-        File tmpDirectory = new File(new File(dataDirectory, TILES_DIR_NAME), TMP_DIR_NAME);
-        if (!tmpDirectory.exists()) {
-            tmpDirectory.mkdirs();
+    public Path getTmpDirectory() throws IOException {
+        Path tmpDirectory = tilesStore.resolve(TMP_DIR_NAME);
+        if (Files.notExists(tmpDirectory)) {
+            Files.createDirectory(tmpDirectory);
         }
         return tmpDirectory;
     }
@@ -78,17 +87,28 @@ public class TilesCacheImpl implements TilesCache {
     @Override
     public void cleanup() {
         Runnable cleanup = () -> {
-            File tmpDirectory = getTmpDirectory();
-            long cutoff = System.currentTimeMillis() - TEN_MINUTES;
-            File[] files = tmpDirectory.listFiles();
-            if (files!=null) {
-                for (File file : files) {
-                    if (file.lastModified() <= cutoff) {
-                        file.delete();
-                    }
-                }
+            try {
+                Path tmpDirectory = getTmpDirectory();
+                long cutoff = FileTime.from(Instant.now()).toMillis() - TEN_MINUTES;
+                Files.list(tmpDirectory)
+                     .filter(path -> {
+                         try {
+                             return Files.getLastModifiedTime(path).toMillis() <= cutoff;
+                         } catch (IOException e) {
+                             throw new RuntimeException("Error while cleaning the tile cache.", e);
+                         }
+                     })
+                     .forEach(path -> {
+                         try {
+                             Files.delete(path);
+                         } catch (IOException e) {
+                             throw new RuntimeException("Error while cleaning the tile cache.", e);
+                         }
+                     });
+                lastCleanup = System.currentTimeMillis();
+            } catch (IOException e) {
+                throw new RuntimeException("Error while cleaning the tile cache.", e);
             }
-            lastCleanup = System.currentTimeMillis();
         };
 
         new Thread(cleanup).start();
@@ -101,8 +121,8 @@ public class TilesCacheImpl implements TilesCache {
      * @return the file object of the tile in the cache
      */
     @Override
-    public File getFile(Tile tile) {
-        return new File(getTileDirectory(tile), tile.getFileName());
+    public Path getFile(Tile tile) throws IOException {
+        return getTileDirectory(tile).resolve(tile.getFileName());
     }
 
     /**
@@ -111,17 +131,26 @@ public class TilesCacheImpl implements TilesCache {
      * @param tile the tile
      * @return the directory for the cached tile
      */
-    private File getTileDirectory(Tile tile) {
-        File subDir;
+    private Path getTileDirectory(Tile tile) throws IOException {
+        Path subDir;
         if (tile.getTemporary()) {
             subDir = getTmpDirectory();
-            if (System.currentTimeMillis() - lastCleanup > TEN_MINUTES)
+            if (FileTime.from(Instant.now()).toMillis() - lastCleanup > TEN_MINUTES)
                 cleanup();
-        } else
-            subDir = new File(new File(new File(getTilesDirectory(), tile.getApi().getId()), (tile.getCollectionIds().size()!=1 ? "__all__" : tile.getCollectionId())), tile.getTileMatrixSet().getId());
+        } else {
+            subDir = getTilesStore().resolve(tile.getApi().getId())
+                                    .resolve(tile.getCollectionIds().size() != 1 ? "__all__" : tile.getCollectionId())
+                                    .resolve(tile.getTileMatrixSet().getId());
+        }
 
-        if (!subDir.exists()) {
-            subDir.mkdirs();
+        if (Files.notExists(subDir)) {
+            if (Files.notExists(subDir.getParent())) {
+                if (Files.notExists(subDir.getParent().getParent())) {
+                    Files.createDirectory(subDir.getParent().getParent());
+                }
+                Files.createDirectory(subDir.getParent());
+            }
+            Files.createDirectory(subDir);
         }
         return subDir;
     }

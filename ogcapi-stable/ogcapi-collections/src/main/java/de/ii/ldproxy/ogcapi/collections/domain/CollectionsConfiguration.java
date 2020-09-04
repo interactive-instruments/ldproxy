@@ -9,7 +9,10 @@ package de.ii.ldproxy.ogcapi.collections.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
+
+import java.util.List;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -18,6 +21,8 @@ public interface CollectionsConfiguration extends ExtensionConfiguration {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
+
+    List<Link> getAdditionalLinks();
 
     @Override
     default Builder getBuilder() {

@@ -93,15 +93,11 @@ public class EndpointConformance extends Endpoint {
     public Response getConformanceClasses(@Auth Optional<User> optionalUser, @Context OgcApi api,
                                           @Context ApiRequestContext requestContext) {
 
-        boolean includeHomeLink = api.getData().getExtension(CommonConfiguration.class)
-                .map(CommonConfiguration::getIncludeHomeLink)
-                .orElse(false);
-        boolean includeLinkHeader = api.getData().getExtension(CommonConfiguration.class)
-                .map(CommonConfiguration::getIncludeLinkHeader)
+        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
+                .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
         QueriesHandlerCommon.QueryInputConformance queryInput = new ImmutableQueryInputConformance.Builder()
-                .includeHomeLink(includeHomeLink)
                 .includeLinkHeader(includeLinkHeader)
                 .build();
 

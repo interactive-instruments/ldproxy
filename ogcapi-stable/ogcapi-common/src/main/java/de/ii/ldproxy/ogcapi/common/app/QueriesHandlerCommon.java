@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.common.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.common.domain.*;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -24,7 +23,6 @@ import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -41,11 +39,11 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
     @Value.Immutable
     public interface QueryInputLandingPage extends QueryInput {
         boolean getIncludeLinkHeader();
+        List<Link> getAdditionalLinks();
     }
 
     @Value.Immutable
     public interface QueryInputConformance extends QueryInput {
-        boolean getIncludeHomeLink();
         boolean getIncludeLinkHeader();
     }
 
@@ -101,7 +99,8 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
                 .description(apiData.getDescription().orElse(""))
                 .externalDocs(apiData.getExternalDocs())
                 .extent(Optional.ofNullable(spatialExtent))
-                .links(links);
+                .links(links)
+                .addAllLinks(queryInput.getAdditionalLinks());
 
         for (LandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
             apiLandingPage = ogcApiLandingPageExtension.process(apiLandingPage,
@@ -135,7 +134,6 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
                 requestContext.getUriCustomizer().copy(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
-                queryInput.getIncludeHomeLink(),
                 i18n,
                 requestContext.getLanguage());
 

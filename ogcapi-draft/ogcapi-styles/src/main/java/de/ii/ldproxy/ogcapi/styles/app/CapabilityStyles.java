@@ -35,6 +35,7 @@ public class CapabilityStyles implements ApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableStylesConfiguration.Builder().enabled(false)
+                                                         .styleInfosOnCollection(false)
                                                          .managerEnabled(false)
                                                          .validationEnabled(false)
                                                          .resourcesEnabled(false)

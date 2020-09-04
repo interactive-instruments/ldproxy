@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.collections.queryables.app;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.queryables.domain.ImmutableQueryable;
-import de.ii.ldproxy.ogcapi.common.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -40,8 +40,6 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
     @Value.Immutable
     public interface QueryInputQueryables extends QueryInput {
         String getCollectionId();
-
-        boolean getIncludeHomeLink();
 
         boolean getIncludeLinkHeader();
     }

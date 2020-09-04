@@ -158,7 +158,7 @@ public class OgcApiCollectionView extends OgcApiView {
     public List<Link> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|home|describedby|license|enclosure|ogc-dapa)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|describedby|license|enclosure|ogc-dapa)$"))
                 .collect(Collectors.toList());
     }
 
