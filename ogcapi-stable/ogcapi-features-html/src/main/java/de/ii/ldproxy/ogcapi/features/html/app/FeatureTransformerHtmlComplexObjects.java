@@ -462,7 +462,8 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
 
                 // special treatment for links - TODO generalize, use transformations?
                 if (currentProperty.getType() == FeatureProperty.Type.STRING &&
-                        currentProperty.getAdditionalInfo().containsKey("role")) {
+                        currentProperty.getAdditionalInfo().containsKey("role") &&
+                        Objects.nonNull(currentValue.value)) {
                     if (currentProperty.getAdditionalInfo().get("role").equalsIgnoreCase("LINKHREF")) {
                         String updatedValue = currentValue.value.replaceAll("\\{\\{href\\}\\}", value);
                         currentValue.setValue(updatedValue);
