@@ -118,7 +118,7 @@ public class OgcApiLandingPageView extends OgcApiView {
     public List<Link> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|data|tiles|styles|service-desc|service-doc|ogc-dapa)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|data|tiles|styles|service-desc|service-doc|ogc-dapa|ldp-map)$"))
                 .collect(Collectors.toList());
     }
 
@@ -147,6 +147,13 @@ public class OgcApiLandingPageView extends OgcApiView {
         return links
                 .stream()
                 .filter(link -> Objects.equals(link.getRel(), "ogc-dapa"))
+                .findFirst();
+    }
+
+    public Optional<Link> getMap() {
+        return links
+                .stream()
+                .filter(link -> Objects.equals(link.getRel(), "ldp-map"))
                 .findFirst();
     }
 

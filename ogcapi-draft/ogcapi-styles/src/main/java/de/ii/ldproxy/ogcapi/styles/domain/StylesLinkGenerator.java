@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.styles.domain;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
@@ -30,11 +30,13 @@ public class StylesLinkGenerator {
      * @return a list with links
      */
     public List<Link> generateLandingPageLinks(URICustomizer uriBuilder,
+                                               Optional<String> defaultStyle,
                                                I18n i18n,
                                                Optional<Locale> language) {
 
-        return ImmutableList.<Link>builder()
-                .add(new ImmutableLink.Builder()
+        ImmutableList.Builder<Link> builder = ImmutableList.<Link>builder();
+
+        builder.add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                         .ensureNoTrailingSlash()
                                         .ensureLastPathSegment("styles")
@@ -42,8 +44,20 @@ public class StylesLinkGenerator {
                                         .toString())
                         .rel("styles")
                         .title(i18n.get("stylesLink",language))
-                        .build())
-                .build();
+                        .build());
+
+        if (defaultStyle.isPresent())
+            builder.add(new ImmutableLink.Builder()
+                                .href(uriBuilder.copy()
+                                             .ensureNoTrailingSlash()
+                                             .ensureLastPathSegments("styles", defaultStyle.get())
+                                             .setParameter("f", "html")
+                                             .toString())
+                                .rel("ldp-map")
+                                .title(i18n.get("webmapLink",language))
+                                .build());
+
+        return builder.build();
     }
 
     /**

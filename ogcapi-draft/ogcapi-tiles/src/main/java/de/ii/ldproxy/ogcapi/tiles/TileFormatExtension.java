@@ -27,6 +27,8 @@ public interface TileFormatExtension extends FormatExtension {
     @Override
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(TilesConfiguration.class)
+                      .filter(TilesConfiguration::getEnabled)
+                      .filter(TilesConfiguration::getMultiCollectionEnabled)
                       .filter(config -> config.getTileEncodings().contains(this.getMediaType().label()))
                       .isPresent();
     }
@@ -36,6 +38,8 @@ public interface TileFormatExtension extends FormatExtension {
         return apiData.getCollections()
                       .get(collectionId)
                       .getExtension(TilesConfiguration.class)
+                      .filter(TilesConfiguration::getEnabled)
+                      .filter(TilesConfiguration::getSingleCollectionEnabled)
                       .filter(config -> config.getTileEncodings().contains(this.getMediaType().label()))
                       .isPresent();
     }

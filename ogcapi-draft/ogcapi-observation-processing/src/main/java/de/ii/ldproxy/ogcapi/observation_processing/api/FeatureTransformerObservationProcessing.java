@@ -311,6 +311,8 @@ public class FeatureTransformerObservationProcessing extends FeatureTransformerB
             List<FeaturePropertyValueTransformer> valueTransformations = getValueTransformations(currentProperty);
             for (FeaturePropertyValueTransformer valueTransformer : valueTransformations) {
                 value = valueTransformer.transform(value);
+                if (Objects.isNull(value))
+                    break;
             }
             // skip, if the value has been transformed to null
             if (Objects.nonNull(value)) {
