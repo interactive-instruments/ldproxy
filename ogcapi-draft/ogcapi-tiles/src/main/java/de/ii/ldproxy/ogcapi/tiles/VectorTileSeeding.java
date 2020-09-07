@@ -106,6 +106,10 @@ public class VectorTileSeeding implements StartupTask {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        // currently no vector tiles support for WFS backends
+        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+            return false;
+
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
@@ -116,6 +120,10 @@ public class VectorTileSeeding implements StartupTask {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        // currently no vector tiles support for WFS backends
+        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+            return false;
+
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
         Optional<TilesConfiguration> extension = featureType!=null ?
                 featureType.getExtension(TilesConfiguration.class) :
@@ -133,6 +141,10 @@ public class VectorTileSeeding implements StartupTask {
     }
 
     private boolean isEnabledForApiMultiCollection(OgcApiDataV2 apiData) {
+        // currently no vector tiles support for WFS backends
+        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+            return false;
+
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
@@ -152,6 +164,10 @@ public class VectorTileSeeding implements StartupTask {
     public Runnable getTask(OgcApi api) {
 
         OgcApiDataV2 apiData = api.getData();
+        if (!isEnabledForApi(apiData)) {
+            return () -> {
+            };
+        }
 
         List<TileFormatExtension> outputFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class);
         if (outputFormats.isEmpty()) {

@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -37,11 +38,14 @@ public class EndpointTileSetsMultiCollection extends Endpoint implements Conform
     private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
     private final TilesQueriesHandler queryHandler;
+    private final FeaturesCoreProviders providers;
 
     EndpointTileSetsMultiCollection(@Requires ExtensionRegistry extensionRegistry,
-                                    @Requires TilesQueriesHandler queryHandler) {
+                                    @Requires TilesQueriesHandler queryHandler,
+                                    @Requires FeaturesCoreProviders providers) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
+        this.providers = providers;
     }
 
     @Override
@@ -52,6 +56,10 @@ public class EndpointTileSetsMultiCollection extends Endpoint implements Conform
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        // currently no vector tiles support for WFS backends
+        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+            return false;
+
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
