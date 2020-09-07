@@ -49,8 +49,6 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDataV2> {
             LOGGER.info("Service with id '{}' is in auto mode, generating configuration ...", hydrated.getId());
         }
 
-        hydrated = generateBuildingBlocksIfNecessary(hydrated);
-
         for (OgcApiDataHydratorExtension hydrator : extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class)) {
             if (hydrator.isEnabledForApi(hydrated)) {
                 hydrated = hydrator.getHydratedData(hydrated);
@@ -60,23 +58,4 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDataV2> {
         return hydrated;
     }
 
-    private OgcApiDataV2 generateBuildingBlocksIfNecessary(OgcApiDataV2 data) {
-
-        if (data.isAuto() && data.getExtensions()
-                                  .isEmpty()) {
-
-            List<ExtensionConfiguration> buildingBlocks = extensionRegistry.getExtensionsForType(ApiBuildingBlock.class)
-                                                                           .stream()
-                                                                           .sorted(Comparator.comparing(buildingBlock -> buildingBlock.getClass()
-                                                                                                                                      .getSimpleName()))
-                                                                           .map(ApiBuildingBlock::getDefaultConfiguration)
-                                                                           .collect(Collectors.toList());
-
-            return new ImmutableOgcApiDataV2.Builder().from(data)
-                                                         .extensions(buildingBlocks)
-                                                         .build();
-        }
-
-        return data;
-    }
 }
