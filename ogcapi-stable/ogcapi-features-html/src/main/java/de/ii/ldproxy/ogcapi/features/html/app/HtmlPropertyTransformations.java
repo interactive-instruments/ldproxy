@@ -46,8 +46,10 @@ public abstract class HtmlPropertyTransformations implements FeaturePropertyTran
         if (Objects.nonNull(value)) {
             for (FeaturePropertyValueTransformer valueTransformer : getValueTransformers()) {
                 transformedValue = valueTransformer.transform(transformedValue);
+                if (Objects.isNull(transformedValue))
+                    break;
             }
-            if (schema.getType() == FeatureProperty.Type.BOOLEAN) {
+            if (schema.getType() == FeatureProperty.Type.BOOLEAN && Objects.nonNull(transformedValue)) {
                 //TODO: make explicit as booleanNormalize + i18n
                 transformedValue = new ImmutableFeaturePropertyTransformerBooleanTranslate.Builder()
                         .i18n(getI18n())

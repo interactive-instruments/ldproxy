@@ -75,7 +75,8 @@ public class StylesOnLandingPage implements LandingPageExtension {
 
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
-        List<Link> links = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
+        Optional<String> defaultStyle = Optional.ofNullable(apiData.getExtension(StylesConfiguration.class).get().getDefaultStyle());
+        List<Link> links = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, defaultStyle, i18n, language);
         landingPageBuilder.addAllLinks(links);
 
         final String datasetId = apiData.getId();

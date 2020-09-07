@@ -101,6 +101,9 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
             }
         }
 
-        return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.orElse(null));
+        if (bbox.isPresent())
+            return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
+
+        return ImmutableList.of();
     }
 }
