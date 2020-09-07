@@ -39,6 +39,9 @@ public interface StylesConfiguration extends ExtensionConfiguration {
     @Nullable
     Boolean getResourceManagerEnabled();
 
+    @Nullable
+    String getDefaultStyle();
+
     @Deprecated
     @Nullable
     Boolean getMapsEnabled();
