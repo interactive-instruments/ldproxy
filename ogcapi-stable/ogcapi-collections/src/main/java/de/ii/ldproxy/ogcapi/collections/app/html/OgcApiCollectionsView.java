@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public class OgcApiCollectionsView extends OgcApiView {
     private final List<OgcApiCollection> collections;
     private boolean showCollectionDescriptions;
+    public final boolean hasGeometry;
     public String dataSourceUrl;
     public String keywords;
     public List<String> crs;
@@ -54,6 +55,7 @@ public class OgcApiCollectionsView extends OgcApiView {
         this.showCollectionDescriptions = showCollectionDescriptions;
         this.crs = collections
                 .getCrs();
+        this.hasGeometry = apiData.getSpatialExtent().isPresent();
 
         if (dataSourceUrl.isPresent()) {
             this.dataSourceUrl = dataSourceUrl.get();
