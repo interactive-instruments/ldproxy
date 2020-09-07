@@ -72,11 +72,19 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                     .build();
         }
 
-        if (hasMissingBboxes(data.getCollections())) {
+        if (!data.isAutoPersist() && hasMissingBboxes(data.getCollections())) {
             data = new ImmutableOgcApiDataV2.Builder()
                     .from(data)
                     .collections(computeMissingBboxes(data))
                     .build();
+        }
+
+        if (data.isAuto() && data.isAutoPersist()) {
+            data = new ImmutableOgcApiDataV2.Builder()
+                .from(data)
+                .auto(Optional.empty())
+                .autoPersist(Optional.empty())
+                .build();
         }
 
         if (!data.getMetadata().isPresent() && featureProvider.supportsMetadata()) {

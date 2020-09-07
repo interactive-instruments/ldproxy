@@ -17,6 +17,9 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.ConnectionInfo;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureProviderDataV2;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
@@ -43,6 +46,15 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
         @JsonProperty("api")
         public abstract Builder addAllExtensions(Iterable<? extends ExtensionConfiguration> elements);
+
+        public abstract ImmutableOgcApiDataV2.Builder id(String id);
+
+        @Override
+        public EntityDataBuilder<OgcApiDataV2> fillRequiredFieldsWithPlaceholders() {
+            String placeholder = "__DEFAULT__";
+            return this.id(placeholder)
+                .serviceType(placeholder);
+        }
 
     }
 
