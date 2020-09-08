@@ -68,9 +68,11 @@ public class OgcApiLandingPageView extends OgcApiView {
         super("landingPage.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
                 apiLandingPage.getLinks(),
                 apiLandingPage.getTitle()
-                        .orElse(apiData.getId()),
+                              .orElse(apiData.getId())
+                              .replace("\"", "\\\""),
                 apiLandingPage.getDescription()
-                .orElse(""));
+                              .orElse("")
+                              .replace("\"", "\\\""));
         this.apiLandingPage = apiLandingPage;
         this.uriCustomizer = uriCustomizer;
 
