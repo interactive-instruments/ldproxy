@@ -39,6 +39,7 @@ public class OgcApiLandingPageView extends OgcApiView {
     private final LandingPage apiLandingPage;
     public final String mainLinksTitle;
     public final String apiInformationTitle;
+    public Optional<String> catalogUrl;
     public String dataSourceUrl;
     public String keywords;
     public String keywordsWithQuotes;
@@ -98,6 +99,16 @@ public class OgcApiLandingPageView extends OgcApiView {
                         .collect(Collectors.toList()));
             }
         }
+
+        catalogUrl = links.stream()
+                          .filter(link -> Objects.equals(link.getRel(), "self"))
+                          .map(Link::getHref)
+                          .map(mayThrow(url -> new URICustomizer(url)
+                                  .clearParameters()
+                                  .removeLastPathSegments(apiData.getApiVersion().isPresent()? 2 : 1)
+                                  .ensureNoTrailingSlash()
+                                  .toString()))
+                          .findFirst();
 
         this.dataTitle = i18n.get("dataTitle", language);
         this.apiDefinitionTitle = i18n.get("apiDefinitionTitle", language);
@@ -208,18 +219,5 @@ public class OgcApiLandingPageView extends OgcApiView {
                         .toString()))
                 .findFirst()
                 .orElse(null);
-    }
-
-    public Optional<String> getCatalogUrl() {
-        return links
-                .stream()
-                .filter(link -> Objects.equals(link.getRel(), "self"))
-                .map(Link::getHref)
-                .map(mayThrow(url -> new URICustomizer(url)
-                        .clearParameters()
-                        .removeLastPathSegments(1)
-                        .ensureNoTrailingSlash()
-                        .toString()))
-                .findFirst();
     }
 }

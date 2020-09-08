@@ -18,6 +18,8 @@ import java.util.Map;
 @JsonDeserialize(builder = ImmutableApiCatalogEntry.Builder.class)
 public abstract class ApiCatalogEntry extends PageRepresentation {
 
+    public abstract String getId();
+
     public abstract URI getLandingPageUri();
 
     @JsonAnyGetter

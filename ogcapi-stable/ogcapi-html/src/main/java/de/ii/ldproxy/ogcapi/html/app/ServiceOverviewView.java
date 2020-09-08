@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ApiCatalog;
 import de.ii.ldproxy.ogcapi.domain.ApiCatalogEntry;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.DatasetView;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -29,34 +28,32 @@ import java.util.stream.Collectors;
 public class ServiceOverviewView extends DatasetView {
     public URI uri;
     public boolean isApiCatalog = true;
+    public String canonicalUrl;
 
     public ServiceOverviewView(URI uri, ApiCatalog apiCatalog, HtmlConfiguration htmlConfig, I18n i18n, Optional<Locale> language) {
         super("services", uri, apiCatalog.getApis(), apiCatalog.getUrlPrefix(), htmlConfig, Objects.equals(htmlConfig.getNoIndexEnabled(), true));
         this.uri = uri;
         this.title = apiCatalog.getTitle().orElse(i18n.get("rootTitle", language));
         this.description = apiCatalog.getDescription().orElse(i18n.get("rootDescription", language));
+        this.canonicalUrl = apiCatalog.getCatalogUri().toString();
         this.keywords = new ImmutableList.Builder<String>().add("ldproxy", "OGC API").build();
         this.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(i18n.get("root", language), true))
                 .build();
     }
 
-    public String getCanonicalUrl() {
-        return new URICustomizer(uri).clearParameters().ensureTrailingSlash().toString();
-    }
-
     public String getDatasetsAsString() {
         return ((List<ApiCatalogEntry>)getData())
                 .stream()
                 .map(api -> "{ \"@type\": \"Dataset\", \"name\": \"" +
-                        api.getTitle() +
+                        api.getTitle().orElse(api.getId()).replace("\"", "\\\"") +
                         "\", \"description\": \"" +
-                        api.getDescription() +
+                        api.getDescription().orElse("").replace("\"", "\\\"") +
                         "\", \"url\": \"" +
                         api.getLandingPageUri() +
                         "\", \"sameAs\": \"" +
                         api.getLandingPageUri() +
-                        "\" }")
+                        "\" }\n")
                 .collect(Collectors.joining(", "));
     }
 }

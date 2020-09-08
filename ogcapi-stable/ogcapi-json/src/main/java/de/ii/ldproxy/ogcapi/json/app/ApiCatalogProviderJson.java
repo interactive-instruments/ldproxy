@@ -20,6 +20,7 @@ import org.osgi.framework.BundleContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -43,7 +44,7 @@ public class ApiCatalogProviderJson extends ApiCatalogProvider {
 
     // TODO: add locale parameter in ServiceListing.getServiceListing() in xtraplatform
     @Override
-    public Response getServiceListing(List<ServiceData> apis, URI uri, Optional<Locale> language) {
+    public Response getServiceListing(List<ServiceData> apis, URI uri, Optional<Locale> language) throws URISyntaxException {
         ApiCatalog apiCatalog = getCatalog(apis, uri, language);
 
         // TODO: map in caller

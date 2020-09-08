@@ -12,12 +12,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableApiCatalog.Builder.class)
 public abstract class ApiCatalog extends PageRepresentation {
+
+    public abstract URI getCatalogUri();
 
     public abstract List<ApiCatalogEntry> getApis();
 

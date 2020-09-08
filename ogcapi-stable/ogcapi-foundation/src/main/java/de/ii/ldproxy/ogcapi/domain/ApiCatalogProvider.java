@@ -40,10 +40,14 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider {
 
     @Override
     public Response getServiceListing(List<ServiceData> apis, URI uri) {
-        return getServiceListing(apis, uri, Optional.of(Locale.ENGLISH));
+        try {
+            return getServiceListing(apis, uri, Optional.of(Locale.ENGLISH));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Could not generate service overview.", e);
+        }
     }
 
-    public abstract Response getServiceListing(List<ServiceData> services, URI uri, Optional<Locale> language);
+    public abstract Response getServiceListing(List<ServiceData> services, URI uri, Optional<Locale> language) throws URISyntaxException;
 
     @Override
     public Response getStaticAsset(String path) {
@@ -97,7 +101,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider {
             new URICustomizer(uri).clearParameters().ensureLastPathSegment(apiId).ensureNoTrailingSlash().build();
     }
 
-    protected ApiCatalog getCatalog(List<ServiceData> services, URI uri, Optional<Locale> language) {
+    protected ApiCatalog getCatalog(List<ServiceData> services, URI uri, Optional<Locale> language) throws URISyntaxException {
         final DefaultLinksGenerator linksGenerator = new DefaultLinksGenerator();
         URICustomizer uriCustomizer = new URICustomizer(uri);
         String urlPrefix = getStaticUrlPrefix(uriCustomizer);
@@ -121,6 +125,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider {
         ImmutableApiCatalog.Builder builder = new ImmutableApiCatalog.Builder()
                 .title(Objects.requireNonNullElse(config.getApiCatalogLabel(), i18n.get("rootTitle", language)))
                 .description(Objects.requireNonNullElse(config.getApiCatalogDescription(), i18n.get("rootDescription", language)))
+                .catalogUri(new URICustomizer(finalUri).clearParameters().ensureNoTrailingSlash().build())
                 .urlPrefix(urlPrefix)
                 // TODO skip links for now until we can properly create self/alternate links
                 // .links(linksGenerator.generateLinks(uriCustomizer, mediaType, alternateMediaTypes, i18n, language))
@@ -129,6 +134,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider {
                               .map(api -> {
                                   try {
                                       return new ImmutableApiCatalogEntry.Builder()
+                                              .id(api.getId())
                                               .title(api.getLabel())
                                               .description(api.getDescription())
                                               .landingPageUri(getApiUrl(finalUri, api.getId(), api.getApiVersion()))
