@@ -52,6 +52,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     Map<String, MinMax> getZoomLevels();
 
     @Nullable
+    Map<String, MinMax> getZoomLevelsCache();
+
+    @Nullable
     Map<String, List<PredefinedFilter>> getFilters();
 
     List<String> getTileEncodings();
@@ -82,6 +85,8 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
             builder.seeding(getSeeding());
         if (getZoomLevels()!=null)
             builder.zoomLevels(getZoomLevels());
+        if (getZoomLevelsCache()!=null)
+            builder.zoomLevelsCache(getZoomLevelsCache());
         if (getFilters()!=null)
             builder.filters(getFilters());
 

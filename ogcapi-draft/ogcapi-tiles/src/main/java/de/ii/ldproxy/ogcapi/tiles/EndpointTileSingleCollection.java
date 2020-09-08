@@ -57,6 +57,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -262,6 +263,16 @@ public class EndpointTileSingleCollection extends EndpointSubCollection {
             }
         }
 
+        // don't store the tile in the cache if it is outside the range
+        MinMax cacheMinMax = tilesConfiguration.getZoomLevelsCache()
+                                               .get(tileMatrixSetId);
+        Tile finalTile = Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()) ?
+                tile :
+                new ImmutableTile.Builder()
+                        .from(tile)
+                        .temporary(true)
+                        .build();
+
         // first execute the information that is passed as processing parameters (e.g., "properties")
         Map<String, Object> processingParameters = new HashMap<>();
         for (OgcApiQueryParameter parameter : allowedParameters) {
@@ -275,7 +286,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection {
         // TODO add caching information
         TilesQueriesHandler.QueryInputTileSingleLayer queryInput = new ImmutableQueryInputTileSingleLayer.Builder()
                 .from(getGenericQueryInput(api.getData()))
-                .tile(tile)
+                .tile(finalTile)
                 .query(query)
                 .processingParameters(processingParameters)
                 .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
