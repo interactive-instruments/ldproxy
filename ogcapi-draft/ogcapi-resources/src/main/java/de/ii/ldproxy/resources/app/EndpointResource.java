@@ -73,12 +73,7 @@ public class EndpointResource extends Endpoint {
         super(extensionRegistry);
         this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                    .resolve("resources");
-        if (Files.notExists(resourcesStore)) {
-            if (Files.notExists(resourcesStore.getParent())) {
-                Files.createDirectory(resourcesStore.getParent());
-            }
-            Files.createDirectory(resourcesStore);
-        }
+        Files.createDirectories(resourcesStore);
     }
 
     @Override
@@ -152,9 +147,7 @@ public class EndpointResource extends Endpoint {
 
         final String datasetId = api.getId();
         java.nio.file.Path apiDir = resourcesStore.resolve(datasetId);
-        if (Files.notExists(apiDir)) {
-            Files.createDirectory(apiDir);
-        }
+        Files.createDirectories(apiDir);
 
         java.nio.file.Path resourceFile = apiDir.resolve(resourceId);
 

@@ -47,12 +47,7 @@ public class TilesCacheImpl implements TilesCache {
         // the ldproxy data directory, in development environment this would be ./build/data
         this.tilesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
                                .resolve(TILES_DIR_NAME);
-        if (Files.notExists(tilesStore)) {
-            if (Files.notExists(tilesStore.getParent())) {
-                Files.createDirectory(tilesStore.getParent());
-            }
-            Files.createDirectory(tilesStore);
-        }
+        Files.createDirectories(tilesStore);
 
         // TODO move to background task
         cleanup();
@@ -75,9 +70,7 @@ public class TilesCacheImpl implements TilesCache {
     @Override
     public Path getTmpDirectory() throws IOException {
         Path tmpDirectory = tilesStore.resolve(TMP_DIR_NAME);
-        if (Files.notExists(tmpDirectory)) {
-            Files.createDirectory(tmpDirectory);
-        }
+        Files.createDirectories(tmpDirectory);
         return tmpDirectory;
     }
 
@@ -122,7 +115,19 @@ public class TilesCacheImpl implements TilesCache {
      */
     @Override
     public Path getFile(Tile tile) throws IOException {
-        return getTileDirectory(tile).resolve(tile.getFileName());
+        Path path = getTileDirectory(tile).resolve(tile.getRelativePath());
+        createDirectories(path, false);
+        return path;
+    }
+
+    private void createDirectories(Path path, boolean isDirectory) throws IOException {
+        if (Files.notExists(path)) {
+            if (isDirectory) {
+                Files.createDirectories(path);
+            } else if (Files.notExists(path.getParent())) {
+                Files.createDirectories(path.getParent());
+            }
+        }
     }
 
     /**
@@ -143,15 +148,8 @@ public class TilesCacheImpl implements TilesCache {
                                     .resolve(tile.getTileMatrixSet().getId());
         }
 
-        if (Files.notExists(subDir)) {
-            if (Files.notExists(subDir.getParent())) {
-                if (Files.notExists(subDir.getParent().getParent())) {
-                    Files.createDirectory(subDir.getParent().getParent());
-                }
-                Files.createDirectory(subDir.getParent());
-            }
-            Files.createDirectory(subDir);
-        }
+        Files.createDirectories(subDir);
+
         return subDir;
     }
 

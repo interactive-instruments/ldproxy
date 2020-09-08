@@ -76,12 +76,7 @@ public class EndpointManageStyleInfo extends EndpointSubCollection implements Co
         super(extensionRegistry);
         this.styleInfosStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                    .resolve("style-infos");
-        if (Files.notExists(styleInfosStore)) {
-            if (Files.notExists(styleInfosStore.getParent())) {
-                Files.createDirectory(styleInfosStore.getParent());
-            }
-            Files.createDirectory(styleInfosStore);
-        }
+        Files.createDirectories(styleInfosStore);
     }
 
     @Override
