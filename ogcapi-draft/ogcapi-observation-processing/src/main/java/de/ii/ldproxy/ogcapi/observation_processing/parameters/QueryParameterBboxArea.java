@@ -23,14 +23,14 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterBbox implements OgcApiQueryParameter {
+public class QueryParameterBboxArea implements OgcApiQueryParameter {
 
     private final Schema baseSchema;
     private final GeometryHelperWKT geometryHelper;
     final FeatureProcessInfo featureProcessInfo;
 
-    public QueryParameterBbox(@Requires GeometryHelperWKT geometryHelper,
-                              @Requires FeatureProcessInfo featureProcessInfo) {
+    public QueryParameterBboxArea(@Requires GeometryHelperWKT geometryHelper,
+                                  @Requires FeatureProcessInfo featureProcessInfo) {
         this.geometryHelper = geometryHelper;
         this.featureProcessInfo = featureProcessInfo;
 

@@ -2,7 +2,6 @@ package de.ii.ldproxy.ogcapi.observation_processing.data;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
-import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.function.Constant;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
@@ -18,7 +17,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.IntStream;
 
-import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterDatetime.ANI;
+import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParameterDatetimeDapa.ANI;
 import static java.lang.Float.NaN;
 
 public class Observations {

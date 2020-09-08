@@ -30,7 +30,7 @@ import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParame
 @Component
 @Provides
 @Instantiate
-public class QueryParameterDatetime implements OgcApiQueryParameter {
+public class QueryParameterDatetimeDapa implements OgcApiQueryParameter {
 
     public static final double ANI = 2; // TODO document
 
@@ -49,7 +49,7 @@ public class QueryParameterDatetime implements OgcApiQueryParameter {
     private final Schema baseSchema;
     final FeatureProcessInfo featureProcessInfo;
 
-    public QueryParameterDatetime(@Requires FeatureProcessInfo featureProcessInfo) {
+    public QueryParameterDatetimeDapa(@Requires FeatureProcessInfo featureProcessInfo) {
         this.featureProcessInfo = featureProcessInfo;
         baseSchema = new StringSchema().pattern(DATETIME_CLOSED_REGEX);
     }
