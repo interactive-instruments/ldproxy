@@ -20,6 +20,8 @@ import org.immutables.value.Value;
 import org.locationtech.jts.geom.util.AffineTransformation;
 
 import javax.annotation.Nullable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
@@ -97,16 +99,17 @@ public abstract class Tile {
 
     @Value.Derived
     @Value.Auxiliary
-    public String getFileName() {
-        String fileName;
+    public Path getRelativePath() {
+        Path tilePath;
+        String extension = getOutputFormat().getExtension();
         if (this.getTemporary()) {
-            fileName = UUID.randomUUID()
-                           .toString();
+            tilePath = Paths.get(String.format("%s.%s", UUID.randomUUID()
+                                                            .toString(), extension));
         } else {
-            fileName = String.format("%s_%s_%s", getTileLevel(), getTileRow(), getTileCol());
+            tilePath = Paths.get(String.valueOf(getTileLevel()), String.valueOf(getTileRow()), String.format("%d.%s", getTileCol(), extension));
         }
 
-        return String.format("%s.%s", fileName, getOutputFormat().getExtension());
+        return tilePath;
     }
 
     /**
