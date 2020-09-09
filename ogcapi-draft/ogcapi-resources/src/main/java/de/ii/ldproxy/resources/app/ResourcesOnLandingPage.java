@@ -47,12 +47,7 @@ public class ResourcesOnLandingPage implements LandingPageExtension {
     public ResourcesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) throws IOException {
         this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                    .resolve("resources");
-        if (Files.notExists(resourcesStore)) {
-            if (Files.notExists(resourcesStore.getParent())) {
-                Files.createDirectory(resourcesStore.getParent());
-            }
-            Files.createDirectory(resourcesStore);
-        }
+        Files.createDirectories(resourcesStore);
     }
 
     @Override

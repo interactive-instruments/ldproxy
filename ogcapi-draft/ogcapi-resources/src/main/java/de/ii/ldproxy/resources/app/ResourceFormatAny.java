@@ -95,9 +95,7 @@ public class ResourceFormatAny implements ResourceFormatExtension {
 
         final String datasetId = api.getId();
         Path apiDir = resourcesStore.resolve(datasetId);
-        if (Files.notExists(apiDir)) {
-            Files.createDirectory(apiDir);
-        }
+        Files.createDirectories(apiDir);
 
         Path resourceFile = apiDir.resolve(resourceId);
 

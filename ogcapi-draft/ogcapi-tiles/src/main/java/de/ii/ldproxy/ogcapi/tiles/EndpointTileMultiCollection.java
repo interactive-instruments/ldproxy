@@ -59,6 +59,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -96,6 +97,10 @@ public class EndpointTileMultiCollection extends Endpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        // currently no vector tiles support for WFS backends
+        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+            return false;
+
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
@@ -265,9 +270,19 @@ public class EndpointTileMultiCollection extends Endpoint {
             }
         }
 
-        Map<String, Tile> singleLayerTileMap = collections.stream()
-                .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> new ImmutableTile.Builder()
+        // don't store the tile in the cache if it is outside the range
+        MinMax cacheMinMax = tilesConfiguration.getZoomLevelsCache()
+                                               .get(tileMatrixSetId);
+        Tile finalMultiLayerTile = Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()) ?
+                multiLayerTile :
+                new ImmutableTile.Builder()
                         .from(multiLayerTile)
+                        .temporary(true)
+                        .build();
+
+        Map<String, Tile> singleLayerTileMap = collections.stream()
+                                                          .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> new ImmutableTile.Builder()
+                        .from(finalMultiLayerTile)
                         .collectionIds(ImmutableList.of(collectionId))
                         .build()));
 
@@ -290,7 +305,7 @@ public class EndpointTileMultiCollection extends Endpoint {
 
         TilesQueriesHandler.QueryInputTileMultiLayer queryInput = new ImmutableQueryInputTileMultiLayer.Builder()
                 .from(getGenericQueryInput(api.getData()))
-                .tile(multiLayerTile)
+                .tile(finalMultiLayerTile)
                 .singleLayerTileMap(singleLayerTileMap)
                 .queryMap(queryMap)
                 .processingParameters(processingParameters)

@@ -87,8 +87,8 @@ public class OgcApiCollectionView extends OgcApiView {
                 .getCrs();
         this.storageCrs = collection
                 .getStorageCrs()
-                .orElse("");
-        this.hasGeometry = Objects.nonNull(apiData.getSpatialExtent(collection.getId()));
+                .orElse(null);
+        this.hasGeometry = apiData.getSpatialExtent().isPresent();
         Optional<String> defaultStyleOrNull = (Optional<String>) collection
                 .getExtensions()
                 .get("defaultStyle");

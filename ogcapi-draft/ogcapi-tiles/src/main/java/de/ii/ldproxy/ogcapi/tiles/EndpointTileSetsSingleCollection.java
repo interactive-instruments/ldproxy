@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -43,13 +44,16 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
 
     private final CrsTransformerFactory crsTransformerFactory;
     private final TilesQueriesHandler queryHandler;
+    private final FeaturesCoreProviders providers;
 
     EndpointTileSetsSingleCollection(@Requires CrsTransformerFactory crsTransformerFactory,
                                      @Requires ExtensionRegistry extensionRegistry,
-                                     @Requires TilesQueriesHandler queryHandler) {
+                                     @Requires TilesQueriesHandler queryHandler,
+                                     @Requires FeaturesCoreProviders providers) {
         super(extensionRegistry);
         this.crsTransformerFactory = crsTransformerFactory;
         this.queryHandler = queryHandler;
+        this.providers = providers;
     }
 
     @Override
@@ -73,6 +77,10 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        // currently no vector tiles support for WFS backends
+        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+            return false;
+
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension

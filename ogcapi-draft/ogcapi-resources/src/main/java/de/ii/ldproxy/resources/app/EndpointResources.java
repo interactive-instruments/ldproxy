@@ -62,12 +62,7 @@ public class EndpointResources extends Endpoint implements ConformanceClass {
         super(extensionRegistry);
         this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                    .resolve("resources");
-        if (Files.notExists(resourcesStore)) {
-            if (Files.notExists(resourcesStore.getParent())) {
-                Files.createDirectory(resourcesStore.getParent());
-            }
-            Files.createDirectory(resourcesStore);
-        }
+        Files.createDirectories(resourcesStore);
     }
 
     @Override

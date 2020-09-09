@@ -20,8 +20,8 @@ public class QueryParameterBbox implements OgcApiQueryParameter {
     private final Schema baseSchema;
 
     public QueryParameterBbox() {
-        // TODO support 6 coordinates
-        baseSchema = new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(4);
+        // TODO support 6 coordinates (note: maxItems was originally set to 4 for now, but the CITE tests require maxItems=6)
+        baseSchema = new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(6);
     }
 
     @Override

@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -44,12 +45,15 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch tiling schemes");
 
     private final TileMatrixSetsQueriesHandler queryHandler;
+    private final FeaturesCoreProviders providers;
 
     EndpointTileMatrixSets(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
                            @Requires ExtensionRegistry extensionRegistry,
-                           @Requires TileMatrixSetsQueriesHandler queryHandler) {
+                           @Requires TileMatrixSetsQueriesHandler queryHandler,
+                           @Requires FeaturesCoreProviders providers) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
+        this.providers = providers;
     }
 
     @Override
@@ -67,6 +71,19 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(TileMatrixSetsFormatExtension.class);
         return formats;
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        // currently no vector tiles support for WFS backends
+        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+            return false;
+
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::isEnabled)
+                .isPresent();
     }
 
     @Override

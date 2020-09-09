@@ -50,6 +50,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                                                 .min(0)
                                                                 .max(23)
                                                                 .build()))
+                                                        .zoomLevelsCache(ImmutableMap.of())
                                                         .tileEncodings(extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                                                                                         .stream()
                                                                                         .filter(FormatExtension::isEnabledByDefault)
