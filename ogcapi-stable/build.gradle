@@ -8,14 +8,14 @@ allprojects {
     group = 'de.interactive_instruments'
 }
 
+apply from: '../version.gradle'
+
 apply from: '../xtraplatform.gradle'
 
 dependencies {
     // bundles to include in this feature
     bundle subprojects
 }
-
-apply from: '../version.gradle'
 
 apply from: '../immutables.gradle'
 

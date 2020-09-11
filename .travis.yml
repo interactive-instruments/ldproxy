@@ -25,9 +25,9 @@ after_success:
 - docker login -u $DOCKER_USER -p $DOCKER_PASS
 - docker push $REPO
 - cd ../../ogcapi-stable
-- if [[ -n "$TRAVIS_TAG" ]]; then ../gradlew bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS; fi
+- if [[ -n "$TRAVIS_TAG" ]]; then ../gradlew publishToMavenLocal bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS; fi
 - cd ../ogcapi-draft
-- if [[ -n "$TRAVIS_TAG" ]]; then ../gradlew bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS; fi
+- if [[ -n "$TRAVIS_TAG" ]]; then ../gradlew bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS --init-script ../.maven-local.gradle; fi
 env:
   global:
   - REPO=iide/ldproxy
