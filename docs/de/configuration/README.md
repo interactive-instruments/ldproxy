@@ -72,6 +72,8 @@ Dieser Konfigurationsobjekt-Typ hat die folgenden Eigenschaften:
 |`{sub-typ}` |n/a
 |`{id}` |die Id der Codelist
 
+<a name="special-cases"></a>
+
 #### Besonderheiten
 
 Bei der Verwendung von `defaults` und `overrides` sind die folgenden in Besonderheiten zu beachten:
@@ -80,3 +82,63 @@ Bei der Verwendung von `defaults` und `overrides` sind die folgenden in Besonder
 * Beim [Aufsplitten von Konfigurationsobjekten](global-configuration.md#split-defaults-overrides) ist bei `buildingBlock`-Objekten im `api`-Array der Wert von `buildingBlock` in Kleinbuchstaben als Dateiname zu verwenden, nicht [der Schlüssel des JSON-Elements](global-configuration.md#array-exceptions)). Beispiel: `store/defaults/services/ogc_api/features-core.yml`.
 
 Der [HTTP-Client](global-configuration.md#http-client) wird nur bei der Verwendung von WFS-Feature-Providern benötigt.
+
+## Beispiele
+
+Die Beispiele in der Konfigurationsdokumentation verwenden eine hypothetische API für einen Datensatz für Kindergärten, der nach dem INSPIRE-Datenmodell für staatliche Dienste in einer flachen GeoJSON-Datenstruktur abgegeben werden soll, die von gängigen Clients verarbeitet werden kann.
+
+Das Datenbankschema des Quelldatensatzes besteht aus zwei Tabellen:
+
+```sql
+CREATE TABLE public.weinlagen (
+    ogc_fid integer NOT NULL,
+    wkb_geometry public.geometry(MultiPolygon,25832),
+    wlg_nr character varying(254),
+    datum date,
+    suchfeld character varying(254),
+    suchfeld_1 character varying(254),
+    anbaugebie character varying(254),
+    bereich character varying(254),
+    grosslage character varying(254),
+    wlg_name character varying(254),
+    gemeinde character varying(254),
+    gemarkunge character varying(254),
+    rebflache_ character varying(254),
+    gem_info character varying(254),
+    gid numeric(9,0)
+);
+
+CREATE TABLE public.plaetze (
+  oid integer NOT NULL,
+  kita_fk integer NOT NULL,
+  art character varying(255) NOT NULL,
+  anzahl integer NOT NULL,
+  PRIMARY KEY (oid)
+);
+
+ALTER TABLE public.plaetze
+  ADD CONSTRAINT fk_plaetze
+  FOREIGN KEY (kita_fk) REFERENCES public.kita;
+```
+
+Das Zielschema basiert auf der Objektart [`GovernmentalService`](https://inspire.ec.europa.eu/featureconcept/GovernmentalService) aus dem INSPIRE-Anwendungsschema für staatliche Dienste, erweitert mit dem Attribut `occupancy` aus dem erweiterten Anwendungsschema. Damit ergibt sich folgendes Profil des Anwendungsschemas:
+
+* Objektart `GovernmentalService`
+  * `inspireId : URI`
+  * `thematicId : CharacterString`
+  * `geometry : GM_Point`
+  * `serviceType : ServiceTypeValue = ServiceTypeValue::childCareService {frozen}`
+  * `pointOfContact : Contact [0..1]`
+  * `name : CharacterString`
+  * `occupancy : OccupancyType [0..*]`
+* Datentyp `Contact`
+  * `address : AddressRepresentation [0..1]`
+  * `telephoneVoice : CharacterString [0..1]`
+* Datentyp `AddressRepresentation`
+  * `thoroughfare : CharacterString [0..1]`
+  * `locatorDesignator : CharacterString [0..1]`
+  * `postCode : CharacterString [0..1]`
+  * `adminUnit : CharacterString`
+* Datentyp `OccupancyType`
+  * `typeOfOccupant : CharacterString`
+  * `numberOfOccupants : Integer`

@@ -13,7 +13,7 @@ Die Konfigurationsdatei `cfg.yml` befindet sich im Daten-Verzeichnis.
 
 ## Store
 
-Der Store enthält alle vom Benutzer erzeugten Konfigurationsobjekte.
+Der Store enthält Konfigurationsobjekte.
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
@@ -24,7 +24,7 @@ Der Store enthält alle vom Benutzer erzeugten Konfigurationsobjekte.
 
 ### Struktur des Store
 
-Jedes Konfigurationsobjekt hat einen Typ, einen optionalen Sub-Typ (siehe [Konfigurationsobjekt-Typen](README.md#configuration-object-types)) sowie eine für den Typ eindeutige Id. Der Pfad zur entsprechenden Konfigurationsdatei sieht dann so aus:
+Jedes Konfigurationsobjekt hat einen Typ, einen optionalen Sub-Typ sowie eine für den Typ eindeutige Id (siehe [Konfigurationsobjekt-Typen](README.md#configuration-object-types)). Der Pfad zur entsprechenden Konfigurationsdatei sieht dann so aus:
 
 ```text
 store/entities/{typ}/{id}.yml
@@ -49,7 +49,7 @@ Das Zusammenführen funktioniert auch für verschachtelte Strukturen, d.h. man m
 
 <a name="merge-exceptions"></a>
 
-Ausnahmen, bei denen das Zusammenführen für verschachtelte Strukturen nicht funktioniert und ganze Objekte wiederholt werden müssen, sind ensprechend in der Beschreibung der [Konfigurationsobjekt-Typen](README.md#configuration-object-types) markiert.
+Ausnahmen, bei denen das Zusammenführen für verschachtelte Strukturen nicht funktioniert und ganze Objekte wiederholt werden müssen, sind ensprechend in der Beschreibung der [Konfigurationsobjekt-Typen](README.md#configuration-object-types) im Abschnitt ["Besonderheiten"](README.md#special-cases) genannt.
 
 Die zusammengeführten Konfigurationsobjekte müssen dann alle Pflichtangaben enthalten, ansonsten kommt es beim Start zu einem Fehler.
 
@@ -135,7 +135,7 @@ store/overrides/{typ}/{id}/key1/key2.yml
 
 <a name="array-exceptions"></a>
 
-Es gibt einige Sonderfälle, bei denen das Aufsplitten nicht nur anhand der Objektpfade erlaubt ist, sondern z.B. auch für eindeutig referenzierbare Array-Element. Auf diese Sonderfälle wird in der Beschreibung der [Konfigurationsobjekt-Typen](README.md#configuration-object-types) eingegangen.
+Es gibt einige Sonderfälle, bei denen das Aufsplitten nicht nur anhand der Objektpfade erlaubt ist, sondern z.B. auch für eindeutig referenzierbare Array-Element. Auf diese Sonderfälle wird in der Beschreibung der [Konfigurationsobjekt-Typen](README.md#configuration-object-types) im Abschnitt ["Besonderheiten"](README.md#special-cases) eingegangen.
 
 <a name="environment-variables"></a>
 
@@ -212,7 +212,7 @@ server:
 
 ## HTTP-Client
 
-Einige Konfigurationsobjekte verwenden einen HTTP-Client zum Zugriff auf externe Ressourcen. Ein ensprechender Hinweis findet sich in der Beschreibung der [Konfigurationsobjekt-Typen](README.md#configuration-object-types).
+Einige Konfigurationsobjekte verwenden einen HTTP-Client zum Zugriff auf externe Ressourcen. Ein ensprechender Hinweis findet sich in der Beschreibung der [Konfigurationsobjekt-Typen](README.md#configuration-object-types) im Abschnitt ["Besonderheiten"](README.md#special-cases).
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
