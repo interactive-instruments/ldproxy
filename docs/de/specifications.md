@@ -17,7 +17,7 @@ Zusätzlich werden verschiedene Erweiterungen, für die noch keine offiziellen E
 
 ldproxy ist als [OGC-Referenzimplementierung für "OGC API - Features - Part 1: Core" zertifiziert](http://www.ogc.org/resource/products/details/?pid=1598).
 
-<div style='text-align:center; border:1px solid #777; background-color: #FFF; padding:12px; width:190px;'><span style='font-weight:bold; color:#000;font-size:106.8%;'>interactive instruments GmbH</span><br/><img src='https://portal.ogc.org/public_ogc/compliance/Certified_OGC_Compliant_Logo_Web.gif' alt='Certified OGC Compliant Logo' height='74' style='padding:0;margin:0;border:0;'/><br/><br/><span style='font-weight:bold; font-size:89%;'>ldproxy 2.0</span><br/><a href='http://www.ogc.org/resource/products/details/?pid=1598'><img src='https://portal.ogc.org/public_ogc/compliance/badge.php?s=ogcapi-features-1 1.0' height='45px' style='padding:0;margin:0;border:0;' /></a><br/><span style='color:#BBB;font-size:62.3%;'><br/>Valid Until: 2020-09-28</span></div>
+<img src='https://portal.ogc.org/public_ogc/compliance/Certified_OGC_Compliant_Logo_Web.gif' alt='Certified OGC Compliant Logo' height='74' style='padding:0;margin:0;border:0;'/>
 
 ## Formate
 
