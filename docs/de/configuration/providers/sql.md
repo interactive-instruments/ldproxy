@@ -22,6 +22,18 @@ Das Connection-Info-Objekt für PostgreSQL/PostGIS-Datenbanken wird wie folgt be
 |`pathSyntax` |object |`{ 'defaultPrimaryKey': 'id', 'defaultSortKey': 'id', 'junctionTablePattern': '.+_2_.+' }` |ldproxy erwartet für die Ausführung von Queries auf der Datenbank in jeder Tabelle, mit Ausnahme von Zwischentabellen, eine Spalte mit einen eindeutigen Primärschlüssel. Der Name ist in `defaultPrimaryKey` anzugeben, Default ist "id". Es wird empfohlen, dass als Datentyp eine Ganzzahl verwendet wird.<br>Um das Paging effizient unterstützen zu können, wird bei jeder dieser Tabellen eine Spalte zum Sortieren der selektierten Objekte verwendet. Standardmäßig ist dies ebenso die Spalte "id".<br>ldproxy muss Zwischentabellen als solche über den Namen erkennen können. Sofern diese in der Datenbank vorkommen, muss der reguläre Ausdruck zur Erkennung der Zwischentabellen in `junctionTablePattern` angegeben werden, der Default erkennt z.B. eine Tabelle mit Namen "featurea_2_featureb" als Zwischentabelle.
 |`computeNumberMatched` |boolean |`true` |Steuert, ob bei Abfragen auf der Features-Ressource die Anzahl der selektierten Features berechnet und in `numberMatched` zurückgegeben werden soll oder ob dies aus Performancegründen unterbleiben soll. Bei großen Datensätzen empfiehlt es sich in der Regel, die Option zu deaktivieren.
 
+Bei `connectionInfo`-Objekten muss stets [das ganze Objekt angegeben/wiederholt werden](../global-configuration.md#merge-exceptions). Ein `connectionInfo`-Objekt in den Overrides ersetzt ein `connectionInfo`-Objekt in den Defaults oder den regulären Konfigurationsobjekten. 
+
+Wird ein `connectionInfo`-Objekt immer in den Overrides gesetzt, dann ist ein minimales Objekt mit den Pflichtangaben im regulären Provider anzugeben, z.B.:
+
+```yaml
+connectionInfo:
+  host: ''
+  database: ''
+  user: ''
+  password: ''
+```
+
 <a name="path-syntax"></a>
 
 ## SQL-Feature-Provider-Pfadsyntax

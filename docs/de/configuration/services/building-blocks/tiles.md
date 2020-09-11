@@ -14,7 +14,9 @@ Das Modul basiert auf dem Entwurf von [OGC API - Tiles - Part 1: Core](https://g
 
 Als Kachelschemas stehen u.a. zur Verfügung: [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62), [WorldCRS84Quad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#63), [WorldMercatorWGS84Quad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#64).
 
-Der Tile-Cache liegt im ldproxy-Datenverzeichnis unter dem relativen Pfad `tiles/{apiId}/{collectionId}/{tileMatrixSetId}/{tileMatrix}_{tileRow}_{tileCol}.pbf`, wobei "__all__" als Wert für `collectionId` bei den Kacheln für den gesamten Datensatz verwendet wird. Wenn die Daten aus einer API geändert wurden, dann sollte das Cache-Verzeichnis für die API gelöscht werden, damit der Cache mit den aktualisierten Daten neu aufgebaut wird.
+Der Tile-Cache liegt im ldproxy-Datenverzeichnis unter dem relativen Pfad `tiles/{apiId}/{collectionId}/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}.pbf`, wobei "__all__" als Wert für `collectionId` bei den Kacheln für den gesamten Datensatz verwendet wird.
+
+Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann sollte das Cache-Verzeichnis für die API gelöscht werden, damit der Cache mit den aktualisierten Daten oder Regeln neu aufgebaut wird.
 
 |Option |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
