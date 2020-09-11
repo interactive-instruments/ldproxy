@@ -9,6 +9,8 @@ allprojects {
     group = 'de.interactive_instruments'
 }
 
+apply from: 'version.gradle'
+
 apply from: 'xtraplatform.gradle'
 
 dependencies {
@@ -22,8 +24,6 @@ dependencies {
     bundle subprojects
 }
 
-
-apply from: 'version.gradle'
 
 apply from: 'immutables.gradle'
 
