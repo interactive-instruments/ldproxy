@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '3.0.0-rc.3'
+    id 'de.interactive_instruments.xtraplatform-application' version '3.0.0'
     id 'com.jfrog.bintray' version '1.8.4' apply false
     id 'com.github.hierynomus.license-report' version '0.15.0' apply false
     id 'com.bmuschko.docker-java-application' version '3.1.0' apply false
@@ -8,8 +8,6 @@ plugins {
 allprojects {
     group = 'de.interactive_instruments'
 }
-
-version = '2.0.0-rc.1'
 
 apply from: 'xtraplatform.gradle'
 
@@ -24,6 +22,8 @@ dependencies {
     bundle subprojects
 }
 
+
+apply from: 'version.gradle'
 
 apply from: 'immutables.gradle'
 
