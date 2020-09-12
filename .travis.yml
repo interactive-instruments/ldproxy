@@ -24,6 +24,7 @@ after_success:
 - docker build -t $REPO:$TAG .
 - docker login -u $DOCKER_USER -p $DOCKER_PASS
 - docker push $REPO
+- if [[ -n "$TRAVIS_TAG" ]]; then docker tag $REPO:$TAG $REPO:latest; docker push $REPO:latest; fi
 - cd ../../ogcapi-stable
 - if [[ -n "$TRAVIS_TAG" ]]; then ../gradlew publishToMavenLocal bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS; fi
 - cd ../ogcapi-draft
