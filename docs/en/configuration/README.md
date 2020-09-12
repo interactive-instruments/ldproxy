@@ -1,0 +1,1 @@
+This is a placeholder for the configuration guide. Currently it is only available in [German](../de/configuration/README.md).
