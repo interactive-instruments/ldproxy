@@ -1,0 +1,1 @@
+Dies ist ein Platzhalter für die zukünftige Dokumentation des ldproxy-Managers.
