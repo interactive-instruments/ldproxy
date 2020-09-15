@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.xtraplatform.features.domain.*;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
@@ -57,11 +58,16 @@ public class SchemaGeneratorFeature {
         String key = apiData.getId()+"__"+collectionId;
         if (!schemaMapOpenApi.containsKey(key)) {
             FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
-                    .get(collectionId);
+                                                                   .get(collectionId);
+            String featureTypeId = apiData.getCollections()
+                                          .get(collectionId)
+                                          .getExtension(FeaturesCoreConfiguration.class)
+                                          .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                          .orElse(collectionId);
             FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
             FeatureSchema featureType = featureProvider.getData()
-                    .getTypes()
-                    .get(collectionId);
+                                                       .getTypes()
+                                                       .get(featureTypeId);
 
             // TODO we should generalize this and move it to Features Core; this is not just about GeoJSON, but applies to other feature encodings
             Optional<GeoJsonConfiguration> geoJsonConfiguration = collectionData.getExtension(GeoJsonConfiguration.class);
@@ -89,9 +95,14 @@ public class SchemaGeneratorFeature {
 
     public List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId, boolean withSpatial, boolean withArrayBrackets) {
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, apiData.getCollections().get(collectionId));
+        String featureTypeId = apiData.getCollections()
+                                      .get(collectionId)
+                                      .getExtension(FeaturesCoreConfiguration.class)
+                                      .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                      .orElse(collectionId);
         return featureProvider.getData()
                 .getTypes()
-                .get(collectionId)
+                .get(featureTypeId)
                 .getProperties()
                 .stream()
                 .filter(featureProperty -> !featureProperty.isSpatial() || withSpatial)
@@ -330,10 +341,15 @@ public class SchemaGeneratorFeature {
 
             FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
                     .get(collectionId);
+            String featureTypeId = apiData.getCollections()
+                                          .get(collectionId)
+                                          .getExtension(FeaturesCoreConfiguration.class)
+                                          .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                          .orElse(collectionId);
             FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
             FeatureSchema featureType = featureProvider.getData()
                     .getTypes()
-                    .get(collectionId);
+                    .get(featureTypeId);
 
             Optional<GeoJsonConfiguration> geoJsonConfiguration = collectionData.getExtension(GeoJsonConfiguration.class);
             boolean flatten = geoJsonConfiguration.filter(geoJsonConfig -> geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&

@@ -110,8 +110,15 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         final CqlFilter filter = CqlFilter.of(In.of(ScalarLiteral.of(urldecode(featureId))));
 
+        final String collectionId = collectionData.getId();
+        final String featureTypeId = apiData.getCollections()
+                                      .get(collectionId)
+                                      .getExtension(FeaturesCoreConfiguration.class)
+                                      .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                      .orElse(collectionId);
+
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
-                                                                                .type(collectionData.getId())
+                                                                                .type(featureTypeId)
                                                                                 .filter(filter)
                                                                                 .crs(coreConfiguration.getDefaultEpsgCrs());
 
@@ -160,8 +167,15 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         final int limit = parseLimit(minimumPageSize, defaultPageSize, maxPageSize, parameters.get("limit"));
         final int offset = parseOffset(parameters.get("offset"));
 
+        final String collectionId = collectionData.getId();
+        String featureTypeId = apiData.getCollections()
+                                      .get(collectionId)
+                                      .getExtension(FeaturesCoreConfiguration.class)
+                                      .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                      .orElse(collectionId);
+
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
-                                                                                .type(collectionData.getId())
+                                                                                .type(featureTypeId)
                                                                                 .crs(coreConfiguration.getDefaultEpsgCrs())
                                                                                 .limit(limit)
                                                                                 .offset(offset)

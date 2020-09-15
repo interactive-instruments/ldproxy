@@ -130,10 +130,15 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                 .stream()
                 .filter(featureTypeApi -> !collectionId.isPresent() || featureTypeApi.getId().equals(collectionId.get()))
                 .map(featureTypeApi -> {
+                    String featureTypeId = apiData.getCollections()
+                                                  .get(featureTypeApi.getId())
+                                                  .getExtension(FeaturesCoreConfiguration.class)
+                                                  .map(cfg -> cfg.getFeatureType().orElse(featureTypeApi.getId()))
+                                                  .orElse(featureTypeApi.getId());
                     FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, featureTypeApi);
                     FeatureSchema featureType = featureProvider.getData()
                             .getTypes()
-                            .get(featureTypeApi.getId());
+                            .get(featureTypeId);
                     Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = featureTypeApi.getExtension(FeaturesCoreConfiguration.class);
                     Optional<GeoJsonConfiguration> geoJsonConfiguration = featureTypeApi.getExtension(GeoJsonConfiguration.class);
                     boolean flatten = geoJsonConfiguration.filter(cfg -> cfg.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && cfg.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)

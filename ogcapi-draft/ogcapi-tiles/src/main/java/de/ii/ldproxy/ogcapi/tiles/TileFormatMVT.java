@@ -135,8 +135,15 @@ public class TileFormatMVT implements TileFormatExtension {
         String tileMatrixSetId = tile.getTileMatrixSet().getId();
         int level = tile.getTileLevel();
 
+        String featureTypeId = tile.getApi()
+                                   .getData()
+                                   .getCollections()
+                                   .get(collectionId)
+                                   .getExtension(FeaturesCoreConfiguration.class)
+                                   .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                   .orElse(collectionId);
         ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
-                .type(collectionId)
+                .type(featureTypeId)
                 .limit(tilesConfiguration.getLimit())
                 .offset(0)
                 .crs(tile.getTileMatrixSet().getCrs())
