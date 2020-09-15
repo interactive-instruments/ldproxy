@@ -101,6 +101,13 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider {
             new URICustomizer(uri).clearParameters().ensureLastPathSegment(apiId).ensureNoTrailingSlash().build();
     }
 
+    protected URI getApiUrl(URI uri, List<String> subPathToLandingPage) throws URISyntaxException {
+        return new URICustomizer(uri).clearParameters()
+                                     .ensureLastPathSegments(subPathToLandingPage.toArray(new String[0]))
+                                     .ensureNoTrailingSlash()
+                                     .build();
+    }
+
     protected ApiCatalog getCatalog(List<ServiceData> services, URI uri, Optional<Locale> language) throws URISyntaxException {
         final DefaultLinksGenerator linksGenerator = new DefaultLinksGenerator();
         URICustomizer uriCustomizer = new URICustomizer(uri);
@@ -133,6 +140,13 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider {
                               .sorted(Comparator.comparing(ServiceData::getLabel))
                               .map(api -> {
                                   try {
+                                      if (api instanceof OgcApiDataV2)
+                                          return new ImmutableApiCatalogEntry.Builder()
+                                                  .id(api.getId())
+                                                  .title(api.getLabel())
+                                                  .description(api.getDescription())
+                                                  .landingPageUri(getApiUrl(finalUri, ((OgcApiDataV2)api).getSubPath()))
+                                                  .build();
                                       return new ImmutableApiCatalogEntry.Builder()
                                               .id(api.getId())
                                               .title(api.getLabel())

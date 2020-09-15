@@ -19,5 +19,5 @@ public interface ApiCatalogExtension extends ContentExtension {
                                         List<ApiMediaType> alternateMediaTypes,
                                         Optional<Locale> language);
 
-    default String getResourceName() { return "Landing Page"; };
+    default String getResourceName() { return "API Catalog"; };
 }

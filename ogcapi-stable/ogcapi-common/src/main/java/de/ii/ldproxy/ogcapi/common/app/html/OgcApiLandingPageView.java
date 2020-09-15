@@ -107,7 +107,7 @@ public class OgcApiLandingPageView extends OgcApiView {
                           .map(Link::getHref)
                           .map(mayThrow(url -> new URICustomizer(url)
                                   .clearParameters()
-                                  .removeLastPathSegments(apiData.getApiVersion().isPresent()? 2 : 1)
+                                  .removeLastPathSegments(apiData.getSubPathLength())
                                   .ensureNoTrailingSlash()
                                   .toString()))
                           .findFirst();

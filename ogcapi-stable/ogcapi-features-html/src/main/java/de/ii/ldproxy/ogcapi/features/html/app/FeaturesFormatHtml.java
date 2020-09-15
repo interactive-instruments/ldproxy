@@ -171,10 +171,10 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getCollections()
                                                                                         .get(collectionName)
-                                                                                        .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language, serviceData.getApiVersion());
+                                                                                        .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language, serviceData.getSubPath());
         } else {
             featureTypeDataset = createFeatureDetailsView(serviceData.getCollections()
-                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getApiVersion(), getLayout(serviceData));
+                                                                     .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getSubPath(), getLayout(serviceData));
         }
 
         ImmutableFeatureTransformationContextHtml transformationContextHtml = ImmutableFeatureTransformationContextHtml.builder()
@@ -260,7 +260,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                            String apiLabel, String featureId,
                                                            String staticUrlPrefix, Optional<Locale> language,
                                                            boolean noIndex,
-                                                           Optional<Integer> apiVersion,
+                                                           List<String> subPathToLandingPage,
                                                            FeaturesHtmlConfiguration.LAYOUT layout) {
 
         String rootTitle = i18n.get("root", language);
@@ -293,7 +293,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
         featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, uriBuilder.copy()
-                        .removeLastPathSegments(apiVersion.isPresent() ? 5 : 4)
+                        .removeLastPathSegments(3 + subPathToLandingPage.size())
                         .toString()))
                 .add(new NavigationDTO(apiLabel, uriBuilder.copy()
                         .removeLastPathSegments(3)
@@ -322,7 +322,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
     private void addDatasetNavigation(FeatureCollectionView featureCollectionView, String apiLabel,
                                       String collectionLabel, List<Link> links, URICustomizer uriCustomizer,
-                                      Optional<Locale> language, Optional<Integer> apiVersion) {
+                                      Optional<Locale> language, List<String> subPathToLandingPage) {
 
         String rootTitle = i18n.get("root", language);
         String collectionsTitle = i18n.get("collectionsTitle", language);
@@ -334,7 +334,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
         featureCollectionView.breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, uriBuilder.copy()
-                        .removeLastPathSegments(apiVersion.isPresent() ? 4 : 3)
+                        .removeLastPathSegments(2 + subPathToLandingPage.size())
                         .toString()))
                 .add(new NavigationDTO(apiLabel, uriBuilder.copy()
                         .removeLastPathSegments(2)

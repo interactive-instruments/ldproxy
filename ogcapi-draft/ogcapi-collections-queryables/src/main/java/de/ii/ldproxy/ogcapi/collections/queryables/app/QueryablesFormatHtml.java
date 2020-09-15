@@ -71,7 +71,7 @@ public class QueryablesFormatHtml implements QueryablesFormatExtension {
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 5 : 4)
+                                .removeLastPathSegments(api.getData().getSubPathLength() + 3)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()

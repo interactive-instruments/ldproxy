@@ -102,18 +102,9 @@ public interface FeatureTransformationContext {
     // to ValueTransformerContext
     @Value.Derived
     default String getServiceUrl() {
-        if (getApiData().getApiVersion()
-                        .isPresent()) {
-            return getOgcApiRequest().getUriCustomizer()
-                                     .copy()
-                                     .cutPathAfterSegments(getApiData().getId(), String.format("v%d", getApiData().getApiVersion()
-                                                                                                                  .get()))
-                                     .clearParameters()
-                                     .toString();
-        }
         return getOgcApiRequest().getUriCustomizer()
                                  .copy()
-                                 .cutPathAfterSegments(getApiData().getId())
+                                 .cutPathAfterSegments(getApiData().getSubPath().toArray(new String[0]))
                                  .clearParameters()
                                  .toString();
     }

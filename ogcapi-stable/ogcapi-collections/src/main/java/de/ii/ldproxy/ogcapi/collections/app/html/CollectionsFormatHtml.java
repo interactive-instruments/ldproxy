@@ -76,7 +76,7 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension {
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(api.getData().getApiVersion().isPresent() ?  3 : 2)
+                        .removeLastPathSegments(api.getData().getSubPathLength() + 1)
                         .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(1)
@@ -113,7 +113,7 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension {
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
-                        .removeLastPathSegments(api.getData().getApiVersion().isPresent() ? 4 : 3)
+                        .removeLastPathSegments(api.getData().getSubPathLength() + 2)
                         .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
                         .removeLastPathSegments(2)

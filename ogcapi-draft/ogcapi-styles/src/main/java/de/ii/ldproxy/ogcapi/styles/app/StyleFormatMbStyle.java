@@ -134,13 +134,13 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         }
 
         return Response.ok()
-                .entity(replaceParameters(parsedContent, api.getId(), api.getData().getApiVersion(), requestContext.getUriCustomizer().copy()))
+                .entity(replaceParameters(parsedContent, requestContext.getUriCustomizer().copy()))
                 .type(MEDIA_TYPE.type())
                 .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(javax.ws.rs.core.Link[]::new))
                 .build();
     }
 
-    private MbStyleStylesheet replaceParameters(MbStyleStylesheet stylesheet, String apiId, Optional<Integer> apiVersion, URICustomizer uriCustomizer) {
+    private MbStyleStylesheet replaceParameters(MbStyleStylesheet stylesheet, URICustomizer uriCustomizer) {
 
         // any template parameters in links?
         boolean templated = stylesheet.getSprite()
