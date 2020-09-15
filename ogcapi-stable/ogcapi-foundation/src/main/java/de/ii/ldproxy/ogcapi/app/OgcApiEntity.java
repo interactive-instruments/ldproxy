@@ -77,7 +77,9 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
                 }
             }
 
-            startupTasks.forEach(startupTask -> startupTaskExecutor.submit(startupTask.getTask(this)));
+            // TODO getTask is already starting the task (and adds it to the thread map)
+            //startupTasks.forEach(startupTask -> startupTaskExecutor.submit(startupTask.getTask(this)));
+            startupTasks.forEach(startupTask -> startupTask.getTask(this));
         }
     }
 

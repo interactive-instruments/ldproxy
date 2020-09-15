@@ -177,6 +177,8 @@ public class VectorTileSeeding implements StartupTask {
 
         Runnable startSeeding = () -> {
 
+            LOGGER.debug("Start seeding vector tiles for API {}.", api.getId(), Thread.currentThread().getName());
+
             try {
                 // first seed the multi-layer tiles, which also generates the necessary single-layer tiles
                 seedMultiLayerTiles(api, outputFormats);
@@ -187,6 +189,7 @@ public class VectorTileSeeding implements StartupTask {
                 throw new RuntimeException("Error accessing the tile cache during seeding.", e);
             }
 
+            LOGGER.debug("Finished seeding vector tiles for API {}.", api.getId(), Thread.currentThread().getName());
 
         };
         t = new Thread(startSeeding);
