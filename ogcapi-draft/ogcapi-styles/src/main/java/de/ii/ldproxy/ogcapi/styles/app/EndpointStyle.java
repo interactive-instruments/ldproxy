@@ -47,6 +47,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -164,9 +165,15 @@ public class EndpointStyle extends Endpoint {
         String key = styleId + "." + styleFormat.getFileExtension();
         String datasetId = dataset.getId();
         File stylesheet = new File( stylesStore + File.separator + datasetId + File.separator + styleId + "." + styleFormat.getFileExtension());
-        File metadata = new File( stylesStore + File.separator + datasetId + File.separator + styleId + ".metadata");
         if (!stylesheet.exists()) {
-            if (metadata.exists()) {
+            File folder = new File( stylesStore + File.separator + datasetId );
+            boolean styleExists = stylesheet.getParentFile().listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.matches("^"+styleId+"\\..*");
+                }
+            }).length > 0;
+            if (styleExists) {
                 throw new NotAcceptableException(MessageFormat.format("The style ''{0}'' is not available in the requested format.", styleId));
             } else {
                 throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));

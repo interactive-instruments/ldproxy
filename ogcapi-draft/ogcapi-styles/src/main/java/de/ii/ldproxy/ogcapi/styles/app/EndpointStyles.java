@@ -130,22 +130,28 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
             apiDir.mkdirs();
         }
 
+        List<StyleFormatExtension> styleFormats = extensionRegistry.getExtensionsForType(StyleFormatExtension.class);
+        String styleFormatRegex = styleFormats.stream()
+                                              .filter(format -> !format.getDerived())
+                                              .map(StyleFormatExtension::getFileExtension)
+                                              .collect(Collectors.joining("|"));
         Optional<StylesConfiguration> stylesExtension = api.getData().getExtension(StylesConfiguration.class);
         Styles styles = ImmutableStyles.builder()
                                        .styles(
                         Arrays.stream(apiDir.listFiles())
                               .filter(file -> !file.isHidden())
-                              .map(File::getName)
-                              .filter(filename -> Files.getFileExtension(filename).equalsIgnoreCase("metadata"))
+                              .filter(file -> Files.getFileExtension(file.getName()).matches(styleFormatRegex))
+                              .map(file -> Files.getNameWithoutExtension(file.getName()))
+                              .distinct()
                               .sorted()
-                              .map(filename -> ImmutableStyleEntry.builder()
-                                    .id(Files.getNameWithoutExtension(filename))
-                                    .title(getMetadata(Files.getNameWithoutExtension(filename), requestContext).get().getTitle())
+                              .map(stylename -> ImmutableStyleEntry.builder()
+                                    .id(stylename)
+                                    .title(getTitle(stylename, requestContext).orElse(stylename))
                                     .links(stylesLinkGenerator.generateStyleLinks(requestContext.getUriCustomizer(),
-                                                                         Files.getNameWithoutExtension(filename),
+                                                                         stylename,
                                                                          getStylesheetMediaTypes(api.getData(),
                                                                                  apiDir,
-                                                                                 Files.getNameWithoutExtension(filename)),
+                                                                                 stylename),
                                                                          i18n,
                                                                          requestContext.getLanguage()))
                                     .build())
@@ -166,13 +172,12 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
                 .getStylesResponse(styles, api, requestContext);
     }
 
-    private Optional<StyleMetadata> getMetadata(String styleId, ApiRequestContext requestContext) {
-        String key = styleId + ".metadata";
+    private Optional<String> getTitle(String styleId, ApiRequestContext requestContext) {
         String apiId = requestContext.getApi().getId();
         File metadataFile = new File( stylesStore + File.separator + apiId + File.separator + styleId + ".metadata");
 
         if (!metadataFile.exists()) {
-            throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
+            return Optional.empty();
         }
 
         try {
@@ -187,8 +192,7 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
                 // parse input
                 StyleMetadata metadata = mapper.readValue(metadataContent, StyleMetadata.class);
 
-                // TODO add standard links to preview?
-                return Optional.of(metadata);
+                return metadata.getTitle();
             } catch (IOException e) {
                 LOGGER.error("Cannot determine style title. Style metadata file in styles store is invalid: "+metadataFile.getAbsolutePath());
             }
