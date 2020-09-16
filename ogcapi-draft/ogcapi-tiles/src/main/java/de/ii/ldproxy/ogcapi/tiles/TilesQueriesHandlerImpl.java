@@ -578,7 +578,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
                 if (result.getError()
                           .isPresent()) {
-                    throw new InternalServerErrorException(result.getError().get().getMessage());
+                    throw new InternalServerErrorException(result.getError().get());
                 }
 
                 if (result.isEmpty() && failIfEmpty) {

@@ -75,6 +75,13 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                                  .get() :
                 extensionRegistry.getExtensionsForType(ExceptionFormatExtension.class).get(0);
 
+        String msg = exception.getMessage();
+        if (Objects.isNull(msg))
+            msg = exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString();
+        String msgCause = Objects.nonNull(exception.getCause()) ? exception.getCause().getMessage() : "";
+        if (Objects.isNull(msgCause))
+            msgCause = exception.getCause().getClass().getSimpleName() + " at " + exception.getCause().getStackTrace()[0].toString();
+
         if (exception instanceof FormatNotSupportedException) {
             responseStatus = Response.Status.NOT_ACCEPTABLE;
             if (LOGGER.isDebugEnabled()) {
@@ -84,7 +91,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                            .type(exceptionFormat.getMediaType().type())
                            .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
                                                                                           responseStatus.getReasonPhrase(),
-                                                                                          exception.getMessage(),
+                                                                                          msg,
                                                                                           uriInfo.getAbsolutePath().toString())))
                            .build();
         } else if (exception instanceof InternalServerErrorException &&
@@ -98,7 +105,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                            .type(exceptionFormat.getMediaType().type())
                            .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
                                                                                           responseStatus.getReasonPhrase(),
-                                                                                          exception.getCause().getMessage(),
+                                                                                          msgCause,
                                                                                           uriInfo.getAbsolutePath().toString())))
                            .build();
         } else if (exception instanceof WebApplicationException) {
@@ -114,7 +121,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                         .type(exceptionFormat.getMediaType().type())
                         .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(response.getStatus(),
                                                                                     response.getStatusInfo().getReasonPhrase(),
-                                                                                    exception.getMessage(),
+                                                                                    msg,
                                                                                     uriInfo.getRequestUri().toString())))
                         .build();
             } else if (family.equals(Response.Status.Family.SERVER_ERROR)) {
@@ -136,7 +143,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                     .type(exceptionFormat.getMediaType().type())
                     .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
                                                                                 responseStatus.getReasonPhrase(),
-                                                                                exception.getMessage(),
+                                                                                msg,
                                                                                 uriInfo.getAbsolutePath().toString())))
                     .build();
         }
@@ -154,7 +161,10 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
 
     protected long logException(Throwable exception) {
         final long id = ThreadLocalRandom.current().nextLong();
-        LOGGER.error(String.format("Server Error with ID %016x: {}", id), exception.getMessage());
+        String message = exception.getMessage();
+        if (Objects.isNull(message))
+            message = exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString();
+        LOGGER.error(String.format("Server Error with ID %016x: {}", id), message);
         if(LOGGER.isDebugEnabled()) {
             LOGGER.debug("Stacktrace:", exception);
         }
