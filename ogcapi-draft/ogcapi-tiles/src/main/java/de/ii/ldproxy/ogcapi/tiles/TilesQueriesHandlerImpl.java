@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -282,11 +283,17 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      i18n,
                                                                      requestContext.getLanguage());
 
+        String featureTypeId = api.getData().getCollections()
+                                            .get(collectionId)
+                                            .getExtension(FeaturesCoreConfiguration.class)
+                                            .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                            .orElse(collectionId);
+
         ImmutableFeatureTransformationContextTiles.Builder transformationContext = null;
         try {
             transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
                     .apiData(api.getData())
-                    .featureSchema(featureProvider.getData().getTypes().get(collectionId))
+                    .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                     .tile(tile)
                     .tileFile(tilesCache.getFile(tile))
                     .collectionId(collectionId)
@@ -430,12 +437,18 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 }
             }
 
+            String featureTypeId = api.getData().getCollections()
+                                      .get(collectionId)
+                                      .getExtension(FeaturesCoreConfiguration.class)
+                                      .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                      .orElse(collectionId);
+
             FeatureQuery query = queryMap.get(collectionId);
             ImmutableFeatureTransformationContextTiles transformationContext = null;
             try {
                 transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
                         .apiData(api.getData())
-                        .featureSchema(featureProvider.getData().getTypes().get(collectionId))
+                        .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                         .tile(tile)
                         .tileFile(tilesCache.getFile(tile))
                         .collectionId(collectionId)

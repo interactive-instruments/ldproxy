@@ -21,6 +21,7 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureLinksGenerator;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
@@ -190,9 +191,15 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                         new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage()) :
                         new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, outputFormat.getCollectionMediaType(), canonicalUri, i18n, requestContext.getLanguage());
 
+        String featureTypeId = api.getData().getCollections()
+                                  .get(collectionId)
+                                  .getExtension(FeaturesCoreConfiguration.class)
+                                  .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                  .orElse(collectionId);
+
         ImmutableFeatureTransformationContextGeneric.Builder transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
                 .apiData(api.getData())
-                .featureSchema(featureProvider.getData().getTypes().get(collectionId))
+                .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)

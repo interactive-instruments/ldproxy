@@ -296,10 +296,17 @@ public class EndpointTileMultiCollection extends Endpoint {
         FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collections.get(0)), allowedParameters, queryParams, tilesConfiguration, requestContext.getUriCustomizer());
 
         Map<String, FeatureQuery> queryMap = collections.stream()
-                .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> ImmutableFeatureQuery.builder()
-                        .from(query)
-                        .type(collectionId)
-                        .build()));
+                .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> {
+                    String featureTypeId = apiData.getCollections()
+                                                  .get(collectionId)
+                                                  .getExtension(FeaturesCoreConfiguration.class)
+                                                  .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                                  .orElse(collectionId);
+                    return ImmutableFeatureQuery.builder()
+                                                .from(query)
+                                                .type(featureTypeId)
+                                                .build();
+                }));
 
         FeaturesCoreConfiguration coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class).get();
 

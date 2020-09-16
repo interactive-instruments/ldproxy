@@ -95,10 +95,16 @@ public class PathParameterCollectionIdProcess extends AbstractPathParameterColle
                         return;
                     }
 
+                    String featureTypeId = apiData.getCollections()
+                                                  .get(collectionId)
+                                                  .getExtension(FeaturesCoreConfiguration.class)
+                                                  .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                                  .orElse(collectionId);
+
                     FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, apiData.getCollections().get(collectionId));
                     FeatureSchema featureType = featureProvider.getData()
                             .getTypes()
-                            .get(collectionId);
+                            .get(featureTypeId);
                     List<FeatureSchema> featureProperties = featureType.getProperties();
 
                     for (String requiredProperty: new String[]{"observedProperty", "result", "phenomenonTime"}) {

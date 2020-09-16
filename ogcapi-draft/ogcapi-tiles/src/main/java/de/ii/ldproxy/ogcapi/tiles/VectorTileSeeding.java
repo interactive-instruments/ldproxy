@@ -387,10 +387,17 @@ public class VectorTileSeeding implements StartupTask {
                             FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collectionIds.get(0)), ImmutableList.of(), ImmutableMap.of(), tilesConfiguration.get(), uriCustomizer);
 
                             Map<String, FeatureQuery> queryMap = collectionIds.stream()
-                                    .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> ImmutableFeatureQuery.builder()
+                                    .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> {
+                                        String featureTypeId = apiData.getCollections()
+                                                                      .get(collectionId)
+                                                                      .getExtension(FeaturesCoreConfiguration.class)
+                                                                      .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                                                      .orElse(collectionId);
+                                        return ImmutableFeatureQuery.builder()
                                             .from(query)
-                                            .type(collectionId)
-                                            .build()));
+                                            .type(featureTypeId)
+                                            .build();
+                                    }));
 
                             FeaturesCoreConfiguration coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class).get();
 
