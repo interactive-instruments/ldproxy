@@ -320,6 +320,10 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             }
         }
 
+        // the property may have been removed by the transformations
+        if (Objects.isNull(processedFeatureProperty))
+            return;
+
         currentProperty = processedFeatureProperty;
         currentPropertyName = currentProperty.getName();
         multiplicities.stream()
