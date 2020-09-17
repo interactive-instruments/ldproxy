@@ -8,9 +8,17 @@
 package de.ii.ldproxy.ogcapi.infra.rest;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiErrorMessage;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ExceptionFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatNotSupportedException;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.Validate;
 import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +26,10 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import java.util.Objects;
 import java.util.Optional;
@@ -85,28 +96,26 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
         if (exception instanceof FormatNotSupportedException) {
             responseStatus = Response.Status.NOT_ACCEPTABLE;
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", responseStatus.getStatusCode(), uriInfo.getRequestUri().toString(), exception.getMessage());
+                LOGGER.debug("Client error, HTTP status {}, Request path {}: {}", responseStatus.getStatusCode(), getRequestPath(true), exception.getMessage());
             }
             return Response.status(responseStatus)
                            .type(exceptionFormat.getMediaType().type())
                            .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
                                                                                           responseStatus.getReasonPhrase(),
-                                                                                          msg,
-                                                                                          uriInfo.getAbsolutePath().toString())))
+                                                                                          msg)))
                            .build();
         } else if (exception instanceof InternalServerErrorException &&
                    Objects.requireNonNullElse(exception.getCause(),exception) instanceof MessageBodyProviderNotFoundException) {
             // this catches exceptions when the API catalog is requested and the requested format cannot be written
             responseStatus = Response.Status.NOT_ACCEPTABLE;
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", responseStatus.getStatusCode(), uriInfo.getRequestUri().toString(), exception.getCause().getMessage());
+                LOGGER.debug("Client error, HTTP status {}, Request path {}: {}", responseStatus.getStatusCode(), getRequestPath(true), exception.getCause().getMessage());
             }
             return Response.status(responseStatus)
                            .type(exceptionFormat.getMediaType().type())
                            .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
                                                                                           responseStatus.getReasonPhrase(),
-                                                                                          msgCause,
-                                                                                          uriInfo.getAbsolutePath().toString())))
+                                                                                          msgCause)))
                            .build();
         } else if (exception instanceof WebApplicationException) {
             final Response response = ((WebApplicationException) exception).getResponse();
@@ -115,14 +124,13 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                 return response;
             } else if (family.equals(Response.Status.Family.CLIENT_ERROR)) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", response.getStatus(), uriInfo.getRequestUri().toString(), exception.getMessage());
+                    LOGGER.debug("Client error, HTTP status {}, Request path {}: {}", response.getStatus(), getRequestPath(true), exception.getMessage());
                 }
                 return Response.fromResponse(response)
                         .type(exceptionFormat.getMediaType().type())
                         .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(response.getStatus(),
                                                                                     response.getStatusInfo().getReasonPhrase(),
-                                                                                    msg,
-                                                                                    uriInfo.getRequestUri().toString())))
+                                                                                    msg)))
                         .build();
             } else if (family.equals(Response.Status.Family.SERVER_ERROR)) {
                 long id = logException(Objects.nonNull(exception.getCause()) ? exception.getCause() : exception);
@@ -130,21 +138,19 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                         .type(exceptionFormat.getMediaType().type())
                         .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(response.getStatus(),
                                                                                     response.getStatusInfo().getReasonPhrase(),
-                                                                                    String.format("There was an error processing your request, it has been logged. Error ID: %016x", id),
-                                                                                    uriInfo.getAbsolutePath().toString())))
+                                                                                    String.format("There was an error processing your request, it has been logged. Error ID: %016x", id))))
                         .build();
             }
         } else if (exception instanceof IllegalArgumentException) {
             responseStatus = Response.Status.BAD_REQUEST;
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Client error, HTTP status {}, Request URI {}: {}", responseStatus.getStatusCode(), uriInfo.getRequestUri().toString(), exception.getMessage());
+                LOGGER.debug("Client error, HTTP status {}, Request path {}: {}", responseStatus.getStatusCode(), getRequestPath(true), exception.getMessage());
             }
             return Response.status(responseStatus)
                     .type(exceptionFormat.getMediaType().type())
                     .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
                                                                                 responseStatus.getReasonPhrase(),
-                                                                                msg,
-                                                                                uriInfo.getAbsolutePath().toString())))
+                                                                                msg)))
                     .build();
         }
 
@@ -154,8 +160,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                 .type(exceptionFormat.getMediaType().type())
                 .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
                                                                             responseStatus.getReasonPhrase(),
-                                                                            String.format("There was an error processing your request, it has been logged. Error ID: %016x", id),
-                                                                            uriInfo.getAbsolutePath().toString())))
+                                                                            String.format("There was an error processing your request, it has been logged. Error ID: %016x", id))))
                 .build();
     }
 
@@ -170,4 +175,12 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
         }
         return id;
     }
+
+    private String getRequestPath(boolean queryParameters) {
+        // TODO we do not have access to the externalUrl, so this can only be used for responses
+        String s = queryParameters ? uriInfo.getRequestUri().toString() :
+                                     uriInfo.getAbsolutePath().toString();
+        return s.substring(s.lastIndexOf("/rest/services") + 14);
+    }
+
 }
