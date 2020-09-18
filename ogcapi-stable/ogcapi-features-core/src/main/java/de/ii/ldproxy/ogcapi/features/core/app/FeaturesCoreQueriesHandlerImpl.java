@@ -45,7 +45,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
@@ -273,7 +272,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
-                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
+                    throw new NotFoundException("The requested feature does not exist.");
                 }
 
             } catch (CompletionException e) {
@@ -300,7 +299,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
-                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
+                    throw new NotFoundException("The requested feature does not exist.");
                 }
 
             } catch (CompletionException e) {

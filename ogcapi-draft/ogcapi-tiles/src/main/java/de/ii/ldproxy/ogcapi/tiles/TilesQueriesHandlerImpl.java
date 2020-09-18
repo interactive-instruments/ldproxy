@@ -43,7 +43,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.WebApplicationException;
@@ -362,7 +361,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .getFeatureStream2(query);
 
             ImmutableFeatureTransformationContextTiles.Builder finalTransformationContext = transformationContext;
-            streamingOutput = stream(featureStream, false,
+            streamingOutput = stream(featureStream,
                     outputStream -> outputFormat.getFeatureTransformer(
                             finalTransformationContext.outputStream(outputStream).build(),
                             requestContext.getLanguage())
@@ -564,7 +563,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .build();
     }
 
-    private StreamingOutput stream(FeatureStream2 featureTransformStream, boolean failIfEmpty,
+    private StreamingOutput stream(FeatureStream2 featureTransformStream,
                                    final Function<OutputStream, FeatureTransformer2> featureTransformer) {
         Timer.Context timer = metricRegistry.timer(name(TilesQueriesHandlerImpl.class, "stream"))
                                             .time();
@@ -578,11 +577,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
                 if (result.getError()
                           .isPresent()) {
-                    throw new InternalServerErrorException(result.getError().get());
-                }
-
-                if (result.isEmpty() && failIfEmpty) {
-                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
+                    processStreamError(result.getError().get());
+                    // the connection has been lost, typically the client has cancelled the request, log on debug level
+                    LOGGER.debug("Request cancelled due to lost connection.");
                 }
 
             } catch (CompletionException e) {
