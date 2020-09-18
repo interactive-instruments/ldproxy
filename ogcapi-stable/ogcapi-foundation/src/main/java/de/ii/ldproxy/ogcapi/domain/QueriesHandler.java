@@ -77,6 +77,8 @@ public interface QueriesHandler<T extends QueryIdentifier> {
      */
     default void processStreamError(Throwable error) {
         String errorMessage = error.getMessage();
+        if (Objects.isNull(errorMessage))
+            errorMessage = error.getClass().getSimpleName() + " at " + error.getStackTrace()[0].toString();
         while (Objects.nonNull(error) && !Objects.equals(error,error.getCause())) {
             if (error instanceof org.eclipse.jetty.io.EofException) {
                 // the connection has been lost, typically the client has cancelled the request, log on debug level
