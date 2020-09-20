@@ -1,0 +1,74 @@
+{
+  "bearing" : 0.0,
+  "version" : 8,
+  "pitch" : 0.0,
+  "name" : "default",
+  "center": [
+    7.35, 
+    49.8
+  ],
+  "zoom": 8,
+  "sources" : {
+    "vineyards" : {
+      "type" : "vector",
+      "tiles" : [ "{serviceUrl}/collections/vineyards/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt" ],
+      "maxzoom" : 16
+    },
+    "basemap" : {
+      "type" : "raster",
+      "tiles" : [ "https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png" ],
+      "attribution" : "&copy; <a href=\"http://www.bkg.bund.de\" class=\"link0\" target=\"_new\">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href=\"http://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\" class=\"link0\" target=\"_new\">Datenquellen</a>'; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href=\"http://weinlagen.lwk-rlp.de/\" class=\"link0\" target=\"_blank\">weinlagen.lwk-rlp.de</a>, <a href=\"http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html\" class=\"link0\" target=\"_blank\">Regelungen zu Gewährleistung und Haftung</a>'"
+    }
+  },
+  "glyphs": "https://go-spatial.github.io/carto-assets/fonts/{fontstack}/{range}.pbf",
+  "layers" : [ {
+    "id": "background",
+    "type": "raster",
+    "source" : "basemap"
+  }, {
+    "type" : "fill",
+    "source-layer" : "vineyards",
+    "layout" : {
+      "visibility" : "visible"
+    },
+    "paint" : {
+      "fill-color" : "#00ff00",
+      "fill-opacity" : 0.9
+    },
+    "id" : "vineyards_fill",
+    "source" : "vineyards"
+  }, {
+    "type" : "line",
+    "source-layer" : "vineyards",
+    "layout" : {
+      "visibility" : "visible"
+    },
+    "paint" : {
+      "line-color" : "#408040",
+      "line-width" : 1
+    },
+    "id" : "vineyards_line",
+    "source" : "vineyards"
+  }, {
+    "type" : "symbol",
+    "id" : "vineyards_symbol",
+    "source" : "vineyards",
+    "source-layer" : "vineyards",
+    "layout" : {
+      "text-field": [ "step",
+        ["zoom"],
+        "",
+        12,
+        ["get", "name"] 
+      ],
+      "text-size": 10,
+      "text-padding": 18,
+      "text-justify": "auto"
+    },
+    "paint":{
+      "text-color": "#006000",
+      "text-halo-width": 2,
+      "text-halo-blur": 2
+    }
+  } ]
+}

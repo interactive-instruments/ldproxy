@@ -47,7 +47,7 @@ Falls ldproxy nicht antwortet, konsultieren Sie das Protokoll mit `docker logs l
 
 Um ldproxy zu aktualisieren, entfernen Sie einfach den Container und erstellen Sie einen neuen mit dem Befehl run wie oben beschrieben. Zum Beispiel:
 
-````Bash
+```bash
 docker stop ldproxy
 docker rm ldproxy
 docker run --name ldproxy -d -p 7080:7080 -v ~/docker/ldproxy_data:/ldproxy/data iide/ldproxy:latest
