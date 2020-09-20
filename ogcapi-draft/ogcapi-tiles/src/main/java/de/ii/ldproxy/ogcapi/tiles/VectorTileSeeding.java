@@ -50,6 +50,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -114,7 +115,7 @@ public class VectorTileSeeding implements StartupTask {
 
         return extension
                 .filter(TilesConfiguration::isEnabled)
-                .filter(config -> !config.getSeeding().isEmpty())
+                .filter(config -> Objects.nonNull(config.getSeeding()) && !config.getSeeding().isEmpty())
                 .isPresent();
     }
 
