@@ -6,10 +6,10 @@ entityStorageVersion: 2
 providerType: FEATURE
 featureProviderType: SQL
 connectionInfo:
-  host: host.docker.internal
+  host: localhost
   database: vineyards
   user: postgres
-  password: cG9zdGdyZXM=
+  password: <base64-encoded-password>
   dialect: PGIS
   computeNumberMatched: true
   pathSyntax:
