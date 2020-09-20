@@ -1,0 +1,140 @@
+{
+  "bearing" : 0.0,
+  "version" : 8,
+  "pitch" : 0.0,
+  "name" : "complementary_colors",
+  "center": [
+    7.35, 
+    49.8
+  ],
+  "zoom": 8,
+  "sources" : {
+    "vineyards" : {
+      "type" : "vector",
+      "tiles" : [ "{serviceUrl}/collections/vineyards/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt" ],
+      "maxzoom" : 16
+    },
+    "basemap" : {
+      "type" : "raster",
+      "tiles" : [ "https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png" ],
+      "attribution" : "&copy; <a href=\"http://www.bkg.bund.de\" class=\"link0\" target=\"_new\">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href=\"http://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\" class=\"link0\" target=\"_new\">Datenquellen</a>'; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href=\"http://weinlagen.lwk-rlp.de/\" class=\"link0\" target=\"_blank\">weinlagen.lwk-rlp.de</a>, <a href=\"http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html\" class=\"link0\" target=\"_blank\">Regelungen zu Gewährleistung und Haftung</a>'"
+    }
+  },
+  "glyphs": "https://go-spatial.github.io/carto-assets/fonts/{fontstack}/{range}.pbf",
+  "layers" : [ {
+    "id": "background",
+    "type": "raster",
+    "source" : "basemap"
+  }, {
+    "type" : "fill",
+    "source-layer" : "vineyards",
+    "layout" : {
+      "visibility" : "visible"
+    },
+    "paint" : {
+      "fill-color" : 
+      [ "step",
+        ["zoom"],
+        [ "case",
+          ["==", ["floor", ["/", ["to-number", ["get", "registerId"]], 100000]], 1], "#80FF00", 
+          ["==", ["floor", ["/", ["to-number", ["get", "registerId"]], 100000]], 2], "#7F00FF", 
+          ["==", ["floor", ["/", ["to-number", ["get", "registerId"]], 100000]], 3], "#00FFFF", 
+          ["==", ["floor", ["/", ["to-number", ["get", "registerId"]], 100000]], 4], "#FF0000", 
+          ["==", ["floor", ["/", ["to-number", ["get", "registerId"]], 100000]], 5], "#FF00FF", 
+          ["==", ["floor", ["/", ["to-number", ["get", "registerId"]], 100000]], 6], "#00FF00", 
+          ["==", ["floor", ["/", ["to-number", ["get", "registerId"]], 100000]], 7], "#FF8000", 
+          ["==", ["floor", ["/", ["to-number", ["get", "registerId"]], 100000]], 8], "#0080FF", 
+          "#808080"                  
+        ],
+        10,
+        [ "case",
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 10000]], 10], 1], "#80FF00", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 10000]], 10], 2], "#7F00FF", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 10000]], 10], 3], "#00FFFF", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 10000]], 10], 4], "#FF0000", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 10000]], 10], 5], "#FF00FF", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 10000]], 10], 6], "#00FF00", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 10000]], 10], 7], "#FF8000", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 10000]], 10], 8], "#0080FF", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 10000]], 10], 9], "#0000FF", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 10000]], 10], 0], "#FFFF00", 
+          "#808080"                  
+        ],
+        11, 
+        [ "case",
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 1], "#80FF00", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 2], "#7F00FF", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 3], "#00FFFF", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 4], "#FF0000", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 5], "#FF00FF", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 6], "#00FF00", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 7], "#FF8000", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 8], "#0080FF", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 9], "#0000FF", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 10], "#FFFF00", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 11], "#FF0080", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 12], "#00FF80", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 13], "#FFFF00", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 14], "#FFFF00", 
+          ["==", ["%", ["floor", ["/", ["to-number", ["get", "registerId"]], 100]], 15], 0], "#FFFF00", 
+          "#808080"                  
+        ],
+        12, 
+        [ "case",
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 1], "#80FF00", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 2], "#7F00FF", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 3], "#00FFFF", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 4], "#FF0000", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 5], "#FF00FF", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 6], "#00FF00", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 7], "#FF8000", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 8], "#0080FF", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 9], "#0000FF", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 10], "#FFFF00", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 11], "#FFFF00", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 12], "#FFFF00", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 13], "#FFFF00", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 14], "#FFFF00", 
+          ["==", ["%", ["to-number", ["get", "registerId"]], 15], 0], "#FFFF00", 
+          "#808080"                  
+        ]
+      ],
+      "fill-opacity" : 0.9
+    },
+    "id" : "vineyards_fill",
+    "source" : "vineyards"
+  }, {
+    "type" : "line",
+    "source-layer" : "vineyards",
+    "layout" : {
+      "visibility" : "visible"
+    },
+    "paint" : {
+      "line-color" : "#408040",
+      "line-width" : 1
+    },
+    "id" : "vineyards_line",
+    "source" : "vineyards"
+  }, {
+    "type" : "symbol",
+    "id" : "vineyards_symbol",
+    "source" : "vineyards",
+    "source-layer" : "vineyards",
+    "layout" : {
+      "text-field": [ "step",
+        ["zoom"],
+        "",
+        12,
+        ["get", "name"] 
+      ],
+      "text-size": 10,
+      "text-padding": 18,
+      "text-justify": "auto"
+    },
+    "paint":{
+      "text-color": "#006000",
+      "text-halo-width": 2,
+      "text-halo-blur": 2
+    }
+  } ]
+}

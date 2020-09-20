@@ -1,0 +1,12 @@
+---
+store:
+  mode: READ_ONLY
+server:
+  externalUrl: https://demo.ldproxy.net
+logging:
+  level: 'OFF'
+  appenders:
+    - type: console
+      timeZone: Europe/Berlin
+  loggers:
+    de.ii: INFO

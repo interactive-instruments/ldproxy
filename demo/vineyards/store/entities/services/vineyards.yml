@@ -1,0 +1,138 @@
+---
+id: vineyards
+createdAt: 1600610292106
+lastModified: 1600610292106
+entityStorageVersion: 2
+serviceType: OGC_API
+label: Vineyards in Rhineland-Palatinate, Germany
+description: 'Have you ever wondered where the wine that you are drinking comes from? If the wine comes from the wine-growing regions Mosel, Nahe, Rheinhessen, Pfalz, Ahr, or Mittelrhein you can find this information in this API that implements multiple <a href="https://ogcapi.ogc.org/" target="_blank">OGC API standards</a>.
+<br><br>
+The dataset shared by this API is the vineyard register (Weinbergsrolle) of Rhineland-Palatinate, available under an open-data license. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP). 
+<br>
+<small>© Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" target="_blank">weinlagen.lwk-rlp.de</a>; <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" target="_blank">Regelungen zu Gewährleistung und Haftung</a></small>'
+metadata:
+  contactName: Clemens Portele, interactive instruments GmbH
+  contactEmail: portele@interactive-instruments.de
+  licenseName: Datenlizenz Deutschland - Namensnennung - Version 2.0
+  licenseUrl: https://www.govdata.de/dl-de/by-2-0
+api:
+- buildingBlock: COLLECTIONS
+  additionalLinks:
+  - rel: related
+    type: text/html 
+    title: 'Weinlagen-Online website (Provider: Landwirtschaftskammer Rheinland-Pfalz)'
+    href: 'http://weinlagen.lwk-rlp.de/portal/weinlagen.html'
+    hreflang: de
+  - rel: related
+    type: application/xml 
+    title: 'OGC Web Map Service with the data (Provider: Landwirtschaftskammer Rheinland-Pfalz)'
+    href: 'http://weinlagen.lwk-rlp.de/cgi-bin/mapserv?map=/data/_map/weinlagen/einzellagen_rlp.map&service=WMS&request=GetCapabilities'
+    hreflang: de
+  - rel: related
+    type: application/xml 
+    title: 'OGC Web Feature Service with the data (Provider: Landwirtschaftskammer Rheinland-Pfalz)'
+    href: 'http://weinlagen.lwk-rlp.de/geoserver/lwk/ows?service=WFS&request=getcapabilities'
+    hreflang: de
+  - rel: enclosure
+    type: application/x-shape
+    title: 'Download the data as a shapefile (Provider: Landwirtschaftskammer Rheinland-Pfalz)'
+    href: 'http://weinlagen.lwk-rlp.de/geoserver/lwk/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=lwk:Weinlagen&outputFormat=shape-zip'
+    hreflang: de
+- buildingBlock: CRS
+  enabled: true
+  additionalCrs:
+  - code: 25832
+    forceAxisOrder: NONE
+  - code: 4258
+    forceAxisOrder: NONE
+  - code: 4326
+    forceAxisOrder: NONE
+  - code: 3857
+    forceAxisOrder: NONE
+- buildingBlock: HTML
+  enabled: true
+  noIndexEnabled: true
+  schemaOrgEnabled: true
+  collectionDescriptionsInOverview: true
+  legalName: Legal notice
+  legalUrl: https://www.interactive-instruments.de/en/about/impressum/
+  privacyName: Privacy notice
+  privacyUrl: https://www.interactive-instruments.de/en/about/datenschutzerklarung/
+  leafletUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
+  leafletAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
+    f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
+    class="link0" target="_new">Datenquellen</a>; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" class="link0" target="_blank">weinlagen.lwk-rlp.de</a>, <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" class="link0" target="_blank">Regelungen zu Gewährleistung und Haftung</a>'
+  openLayersUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
+  openLayersAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
+    f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
+    class="link0" target="_new">Datenquellen</a>; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" class="link0" target="_blank">weinlagen.lwk-rlp.de</a>, <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" class="link0" target="_blank">Regelungen zu Gewährleistung und Haftung</a>'
+- buildingBlock: FILTER
+  enabled: true
+- buildingBlock: TILES
+  enabled: true
+  multiCollectionEnabled: true
+  zoomLevels:
+    WebMercatorQuad:
+      min: 6
+      max: 16
+      default: 8
+  seeding:
+    WebMercatorQuad:
+      min: 6
+      max: 10
+  center:
+  - 7.35
+  - 49.8
+- buildingBlock: STYLES
+  enabled: true
+  styleEncodings:
+  - Mapbox
+  - HTML
+  defaultStyle: default
+collections:
+  vineyards:
+    id: vineyards
+    label: Vineyards
+    description: 'The vineyard register constitutes the authorized list of names of single vineyards, vineyards clusters (Großlagen), sub-regions (Bereiche) and wine-growing regions (Anbaugebiete) for the protected designation of origin for wines in the German state Rhineland-Palatinate. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP). 
+    <br>
+    The data for each vineyard includes the vineyard register number, the wine-growing region, the sub-region, the vineyard cluster, the name of the single vineyard, the village(s), the cadastral district(s) and the area with vines in hectares. The six-digit vineyard register number contains in the first digit the wine-growing region, in the second digit the sub-region, in the third and fourth digit the vineyard cluster and in the fifth and sixth digit the single vineyard.'
+    enabled: true
+    extent:
+      spatialComputed: true
+    api:
+    - buildingBlock: FEATURES_CORE
+      enabled: true
+      queryables:
+        spatial:
+        - geometry
+        temporal:
+        - date
+        other:
+        - registerId
+        - name
+        - area_ha
+        - region
+        - subregion
+        - cluster
+        - village
+        - searchfield1
+        - searchfield2
+      transformations:
+        area_ha:
+          stringFormat: '{{value | replace:''k. A.'':''unknown'' | replace:'','':''.''}}'
+        ogc_fid:
+          remove: ALWAYS
+        gid:
+          remove: ALWAYS
+    - buildingBlock: FEATURES_HTML
+      itemLabelFormat: '{{name}}'
+      transformations:
+        village_info:
+          remove: ALWAYS
+        searchfield1:
+          remove: OVERVIEW
+        searchfield2:
+          remove: OVERVIEW
+        date:
+          remove: OVERVIEW
+          dateFormat: dd/MM/yyyy
