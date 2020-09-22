@@ -31,9 +31,12 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleLayer;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleSheet;
+import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
+import de.ii.ldproxy.ogcapi.styles.domain.StyleSheet;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -45,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -57,6 +59,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -170,7 +173,31 @@ public class EndpointStyleMetadata extends Endpoint {
         File metadataFile = new File( stylesStore + File.separator + apiId + File.separator + styleId + ".metadata");
 
         if (!metadataFile.exists()) {
-            throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
+            final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
+            List<StyleSheet> stylesheets = new ArrayList<>();
+            stylesheets.addAll(extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
+                                                .stream()
+                                                .filter(format -> !format.getDerived())
+                                                .filter(format -> Paths.get(stylesStore.toString(),apiId)
+                                                                       .resolve(styleId+"."+format.getFileExtension())
+                                                                       .toFile()
+                                                                       .exists())
+                                                .map(format -> ImmutableStyleSheet.builder()
+                                                                                  .native_(true)
+                                                                                  .title(styleId)
+                                                                                  .link(stylesLinkGenerator.generateStylesheetLink(requestContext.getUriCustomizer(),
+                                                                                                                                   styleId, format.getMediaType(),
+                                                                                                                                   i18n, requestContext.getLanguage()))
+                                                                                  .specification(format.getSpecification())
+                                                                                  .version(format.getVersion())
+                                                                                  .build())
+                                                .collect(Collectors.toList()));
+            ImmutableStyleMetadata.Builder metadata = ImmutableStyleMetadata.builder()
+                                                                            .id(styleId)
+                                                                            .title(styleId)
+                                                                            .stylesheets(stylesheets);
+
+            return metadata.build();
         }
 
         try {

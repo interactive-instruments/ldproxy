@@ -1,0 +1,86 @@
+---
+id: vineyards
+createdAt: 1600610292030
+lastModified: 1600610292030
+entityStorageVersion: 2
+providerType: FEATURE
+featureProviderType: SQL
+connectionInfo:
+  host: localhost
+  database: vineyards
+  user: postgres
+  password: <base64-encoded-password>
+  dialect: PGIS
+  computeNumberMatched: true
+  pathSyntax:
+    defaultPrimaryKey: ogc_fid
+    defaultSortKey: ogc_fid
+    junctionTablePattern: .+_2_.+
+    junctionTableFlag: '{junction}'
+nativeCrs:
+  code: 25832
+  forceAxisOrder: NONE
+types:
+  vineyards:
+    sourcePath: /vineyards
+    type: OBJECT
+    properties:
+      registerId:
+        sourcePath: wlg_nr
+        type: STRING
+        role: ID
+        label: Vineyard register number
+      name:
+        sourcePath: wlg_name
+        type: STRING
+        label: Vineyard name
+      area_ha:
+        sourcePath: rebflache_
+        type: STRING
+        label: Area in hectares
+      region:
+        sourcePath: anbaugebie
+        type: STRING
+        label: Wine-growing region
+      subregion:
+        sourcePath: bereich
+        type: STRING
+        label: Sub-region (Bereich)
+      cluster:
+        sourcePath: grosslage
+        type: STRING
+        label: Vineyard cluster (Großlage)
+      village:
+        sourcePath: gemeinde
+        type: STRING
+        label: Village(s)
+      village_info:
+        sourcePath: gem_info
+        type: STRING
+        label: Additional information
+      cadastraldistrict:
+        sourcePath: gemarkunge
+        type: STRING
+        label: Cadastral district(s)
+      searchfield1:
+        sourcePath: suchfeld
+        type: STRING
+        label: Search field (option 1)
+      searchfield2:
+        sourcePath: suchfeld_1
+        type: STRING
+        label: Search field (option 2)
+      date:
+        sourcePath: datum
+        type: DATETIME
+        label: Validity date
+      geometry:
+        sourcePath: wkb_geometry
+        type: GEOMETRY
+        geometryType: MULTI_POLYGON
+      ogc_fid:
+        sourcePath: ogc_fid
+        type: INTEGER
+      gid:
+        sourcePath: gid
+        type: INTEGER

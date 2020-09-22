@@ -26,7 +26,6 @@ import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Eq;
 import de.ii.xtraplatform.cql.domain.Function;
 import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
-import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Property;
@@ -108,10 +107,17 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             parameters = parameter.transformParameters(collectionData, parameters, apiData);
         }
 
-        final CqlFilter filter = CqlFilter.of(In.of(ScalarLiteral.of(urldecode(featureId))));
+        final CqlFilter filter = CqlFilter.of(Eq.of("_ID_", ScalarLiteral.of(urldecode(featureId))));
+
+        final String collectionId = collectionData.getId();
+        final String featureTypeId = apiData.getCollections()
+                                      .get(collectionId)
+                                      .getExtension(FeaturesCoreConfiguration.class)
+                                      .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                      .orElse(collectionId);
 
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
-                                                                                .type(collectionData.getId())
+                                                                                .type(featureTypeId)
                                                                                 .filter(filter)
                                                                                 .crs(coreConfiguration.getDefaultEpsgCrs());
 
@@ -160,8 +166,15 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         final int limit = parseLimit(minimumPageSize, defaultPageSize, maxPageSize, parameters.get("limit"));
         final int offset = parseOffset(parameters.get("offset"));
 
+        final String collectionId = collectionData.getId();
+        String featureTypeId = apiData.getCollections()
+                                      .get(collectionId)
+                                      .getExtension(FeaturesCoreConfiguration.class)
+                                      .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                      .orElse(collectionId);
+
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
-                                                                                .type(collectionData.getId())
+                                                                                .type(featureTypeId)
                                                                                 .crs(coreConfiguration.getDefaultEpsgCrs())
                                                                                 .limit(limit)
                                                                                 .offset(offset)

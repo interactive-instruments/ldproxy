@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -42,7 +43,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.WebApplicationException;
@@ -282,11 +282,17 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      i18n,
                                                                      requestContext.getLanguage());
 
+        String featureTypeId = api.getData().getCollections()
+                                            .get(collectionId)
+                                            .getExtension(FeaturesCoreConfiguration.class)
+                                            .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                            .orElse(collectionId);
+
         ImmutableFeatureTransformationContextTiles.Builder transformationContext = null;
         try {
             transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
                     .apiData(api.getData())
-                    .featureSchema(featureProvider.getData().getTypes().get(collectionId))
+                    .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                     .tile(tile)
                     .tileFile(tilesCache.getFile(tile))
                     .collectionId(collectionId)
@@ -355,7 +361,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .getFeatureStream2(query);
 
             ImmutableFeatureTransformationContextTiles.Builder finalTransformationContext = transformationContext;
-            streamingOutput = stream(featureStream, false,
+            streamingOutput = stream(featureStream,
                     outputStream -> outputFormat.getFeatureTransformer(
                             finalTransformationContext.outputStream(outputStream).build(),
                             requestContext.getLanguage())
@@ -430,12 +436,18 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 }
             }
 
+            String featureTypeId = api.getData().getCollections()
+                                      .get(collectionId)
+                                      .getExtension(FeaturesCoreConfiguration.class)
+                                      .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                      .orElse(collectionId);
+
             FeatureQuery query = queryMap.get(collectionId);
             ImmutableFeatureTransformationContextTiles transformationContext = null;
             try {
                 transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
                         .apiData(api.getData())
-                        .featureSchema(featureProvider.getData().getTypes().get(collectionId))
+                        .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                         .tile(tile)
                         .tileFile(tilesCache.getFile(tile))
                         .collectionId(collectionId)
@@ -551,7 +563,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .build();
     }
 
-    private StreamingOutput stream(FeatureStream2 featureTransformStream, boolean failIfEmpty,
+    private StreamingOutput stream(FeatureStream2 featureTransformStream,
                                    final Function<OutputStream, FeatureTransformer2> featureTransformer) {
         Timer.Context timer = metricRegistry.timer(name(TilesQueriesHandlerImpl.class, "stream"))
                                             .time();
@@ -565,11 +577,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
                 if (result.getError()
                           .isPresent()) {
-                    throw new InternalServerErrorException(result.getError().get().getMessage());
-                }
-
-                if (result.isEmpty() && failIfEmpty) {
-                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
+                    processStreamError(result.getError().get());
+                    // the connection has been lost, typically the client has cancelled the request, log on debug level
+                    LOGGER.debug("Request cancelled due to lost connection.");
                 }
 
             } catch (CompletionException e) {

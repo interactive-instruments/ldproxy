@@ -20,6 +20,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.ImmutableProcessing;
@@ -217,12 +218,18 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
 
         List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
+        String featureTypeId = apiData.getCollections()
+                                                .get(collectionId)
+                                                .getExtension(FeaturesCoreConfiguration.class)
+                                                .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                                .orElse(collectionId);
+
         // TODO add links
         List<Link> links = ImmutableList.of();
 
         ImmutableFeatureTransformationContextObservationProcessing.Builder transformationContext = new ImmutableFeatureTransformationContextObservationProcessing.Builder()
                 .apiData(api.getData())
-                .featureSchema(featureProvider.getData().getTypes().get(collectionId))
+                .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                 .i18n(i18n)
                 .language(requestContext.getLanguage())
                 .codelists(entityRegistry.getEntitiesForType(Codelist.class)

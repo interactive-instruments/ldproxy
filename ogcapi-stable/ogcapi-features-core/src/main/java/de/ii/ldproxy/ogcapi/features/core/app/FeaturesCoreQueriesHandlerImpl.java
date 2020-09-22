@@ -21,6 +21,7 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureLinksGenerator;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
@@ -44,7 +45,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
@@ -190,9 +190,15 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                         new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage()) :
                         new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, outputFormat.getCollectionMediaType(), canonicalUri, i18n, requestContext.getLanguage());
 
+        String featureTypeId = api.getData().getCollections()
+                                  .get(collectionId)
+                                  .getExtension(FeaturesCoreConfiguration.class)
+                                  .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                  .orElse(collectionId);
+
         ImmutableFeatureTransformationContextGeneric.Builder transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
                 .apiData(api.getData())
-                .featureSchema(featureProvider.getData().getTypes().get(collectionId))
+                .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
@@ -266,7 +272,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
-                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
+                    throw new NotFoundException("The requested feature does not exist.");
                 }
 
             } catch (CompletionException e) {
@@ -293,7 +299,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 }
 
                 if (result.isEmpty() && failIfEmpty) {
-                    throw new InternalServerErrorException("The feature stream returned an invalid empty response.");
+                    throw new NotFoundException("The requested feature does not exist.");
                 }
 
             } catch (CompletionException e) {

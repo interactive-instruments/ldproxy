@@ -19,6 +19,7 @@ import de.ii.xtraplatform.crs.domain.CoordinateTuple;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
@@ -53,6 +54,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
     private final CrsTransformer crsTransformer;
     private final FeatureCollectionView dataset;
     private final FeaturesHtmlConfiguration htmlConfiguration;
+    private final Optional<FeatureSchema> featureSchema;
     private final Map<String, HtmlPropertyTransformations> transformations;
     private final boolean isSchemaOrgEnabled;
     /* TODO move to nearby module in community repo
@@ -87,6 +89,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
         this.nearbyResolver = new SimpleNearbyResolver(httpClient);
          */
         this.htmlConfiguration = transformationContext.getHtmlConfiguration();
+        this.featureSchema = transformationContext.getFeatureSchema();
 
         FeatureTypeConfigurationOgcApi featureTypeConfiguration = transformationContext.getApiData()
                                                                                        .getCollections()
@@ -365,10 +368,36 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
                     Optional.empty();
 
             if (transformedProperty.isPresent()) {
+                if (transformedProperty.get().property.name.equals(featureProperty.getName()) && featureSchema.isPresent()) {
+                    String propertyName = featureProperty.getName().replace("[]", "");
+                    FeatureSchema schema = featureSchema.get()
+                                                        .getProperties()
+                                                        .stream()
+                                                        .filter(prop -> prop.getName().equals(propertyName))
+                                                        .findAny()
+                                                        .orElse(null);
+                    if (schema!=null) {
+                        transformedProperty.get().property.name = schema.getLabel().orElse(schema.getName());
+                    }
+                }
+
                 property.values.set(0,transformedProperty.get());
                 currentFeature.addChild(property);
             }
         } else {
+            if (featureSchema.isPresent()) {
+                String propertyName = featureProperty.getName().replace("[]", "");
+                FeatureSchema schema = featureSchema.get()
+                                                    .getProperties()
+                                                    .stream()
+                                                    .filter(prop -> prop.getName().equals(propertyName))
+                                                    .findAny()
+                                                    .orElse(null);
+                if (schema!=null) {
+                    property.name = schema.getLabel().orElse(schema.getName());
+                }
+            }
+
             currentFeature.addChild(property);
         }
     }
