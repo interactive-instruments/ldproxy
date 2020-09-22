@@ -9,8 +9,10 @@ package de.ii.ldproxy.ogcapi.json.app;
 
 import de.ii.ldproxy.ogcapi.domain.ApiCatalog;
 import de.ii.ldproxy.ogcapi.domain.ApiCatalogProvider;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
@@ -30,6 +32,12 @@ import java.util.Optional;
 @Instantiate
 public class ApiCatalogProviderJson extends ApiCatalogProvider {
 
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
+            .type(new MediaType("application", "json"))
+            .label("JSON")
+            .parameter("json")
+            .build();
+
     public ApiCatalogProviderJson(@Context BundleContext bundleContext, @Requires XtraPlatform xtraPlatform, @Requires I18n i18n, @Requires EntityDataDefaultsStore defaultsStore, @Requires ExtensionRegistry extensionRegistry) {
         super(bundleContext, xtraPlatform, i18n, defaultsStore, extensionRegistry);
     }
@@ -38,8 +46,13 @@ public class ApiCatalogProviderJson extends ApiCatalogProvider {
     // TODO: derive Wfs3Request from injected XtraplatformRequest
 
     @Override
+    public ApiMediaType getApiMediaType() {
+        return MEDIA_TYPE;
+    }
+
+    @Override
     public MediaType getMediaType() {
-        return MediaType.APPLICATION_JSON_TYPE;
+        return MEDIA_TYPE.type();
     }
 
     // TODO: add locale parameter in ServiceListing.getServiceListing() in xtraplatform

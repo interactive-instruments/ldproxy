@@ -17,12 +17,10 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.ConnectionInfo;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureProviderDataV2;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
+import jersey.repackaged.com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
 
 import java.util.LinkedHashMap;
@@ -80,6 +78,25 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     public abstract Optional<ExternalDocumentation> getExternalDocs();
 
     public abstract Optional<CollectionExtent> getDefaultExtent();
+
+    // TODO: move to ServiceData?
+    public abstract List<String> getTags();
+
+    // TODO: move to ServiceData?
+    @Value.Derived
+    public List<String> getSubPath() {
+        ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>();
+        builder.add(getId());
+        if (getApiVersion().isPresent())
+            builder.add("v"+getApiVersion().get());
+        return builder.build();
+    }
+
+    // TODO: move to ServiceData?
+    @Value.Derived
+    public int getSubPathLength() {
+        return 1 + (getApiVersion().isPresent() ? 1 : 0);
+    }
 
     @JsonProperty(value = "api")
     @JsonMerge

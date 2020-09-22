@@ -212,7 +212,7 @@ public class EndpointStyleMetadata extends Endpoint {
                 // parse input
                 StyleMetadata metadata = mapper.readValue(metadataContent, StyleMetadata.class);
 
-                return replaceParameters(metadata, apiId, api.getData().getApiVersion(), requestContext.getUriCustomizer().copy());
+                return replaceParameters(metadata, requestContext.getUriCustomizer().copy());
             } catch (IOException e) {
                 LOGGER.error("Style metadata file in styles store is invalid: "+metadataFile.getAbsolutePath());
                 throw new InternalServerErrorException(MessageFormat.format("Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.", styleId, api.getId()), e);
@@ -223,7 +223,7 @@ public class EndpointStyleMetadata extends Endpoint {
         }
     }
 
-    private StyleMetadata replaceParameters(StyleMetadata metadata, String apiId, Optional<Integer> apiVersion, URICustomizer uriCustomizer) {
+    private StyleMetadata replaceParameters(StyleMetadata metadata, URICustomizer uriCustomizer) {
 
         // any template parameters in links?
         boolean templated = metadata.getStylesheets()

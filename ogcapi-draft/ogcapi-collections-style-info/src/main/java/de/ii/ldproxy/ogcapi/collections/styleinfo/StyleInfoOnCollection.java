@@ -109,7 +109,6 @@ public class StyleInfoOnCollection implements CollectionExtension {
                                                      Optional<Locale> language) {
         if (!isNested && isEnabledForApi(apiData, featureTypeConfiguration.getId())) {
             final String apiId = apiData.getId();
-            final Optional<Integer> apiVersion = apiData.getApiVersion();
             final String collectionId = featureTypeConfiguration.getId();
             File apiDir = new File(styleInfosStore + File.separator + apiId);
             if (!apiDir.exists()) {
@@ -118,7 +117,7 @@ public class StyleInfoOnCollection implements CollectionExtension {
 
             Path collectionFile = styleInfosStore.resolve(apiId).resolve(collectionId + ".json");
             if (Files.exists(collectionFile)) {
-                Optional<StyleInfo> styleInfos = getStyleInfos(collectionFile, apiId, apiVersion, collectionId, uriCustomizer.copy());
+                Optional<StyleInfo> styleInfos = getStyleInfos(collectionFile, collectionId, uriCustomizer.copy());
                 if (styleInfos.isPresent() && styleInfos.get().getStyles().isPresent()) {
                     collection.putExtensions("styles",
                             styleInfos.get()
@@ -141,7 +140,7 @@ public class StyleInfoOnCollection implements CollectionExtension {
         return collection;
     }
 
-    private Optional<StyleInfo> getStyleInfos(Path styleInfosFile, String apiId, Optional<Integer> apiVersion, String collectionId, URICustomizer uriCustomizer) {
+    private Optional<StyleInfo> getStyleInfos(Path styleInfosFile, String collectionId, URICustomizer uriCustomizer) {
 
         try {
             final byte[] content = java.nio.file.Files.readAllBytes(styleInfosFile);
@@ -154,7 +153,7 @@ public class StyleInfoOnCollection implements CollectionExtension {
                 // parse input
                 StyleInfo styleInfo = mapper.readValue(content, StyleInfo.class);
 
-                return Optional.of(replaceParameters(styleInfo, apiId, apiVersion, collectionId, uriCustomizer));
+                return Optional.of(replaceParameters(styleInfo, collectionId, uriCustomizer));
             } catch (IOException e) {
                 LOGGER.error("File in styleInfo store is invalid and is skipped: "+styleInfosFile.toAbsolutePath());
             }
@@ -164,7 +163,7 @@ public class StyleInfoOnCollection implements CollectionExtension {
         return Optional.empty();
     }
 
-    private StyleInfo replaceParameters(StyleInfo styleInfo, String apiId, Optional<Integer> apiVersion, String collectionId, URICustomizer uriCustomizer) {
+    private StyleInfo replaceParameters(StyleInfo styleInfo, String collectionId, URICustomizer uriCustomizer) {
 
         // any template parameters in links?
         boolean templated = styleInfo.getStyles()

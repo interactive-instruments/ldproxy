@@ -1,6 +1,6 @@
 package de.ii.ldproxy.ogcapi.domain;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Splitter;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
@@ -15,10 +15,14 @@ import org.osgi.framework.BundleContext;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public abstract class ApiCatalogProvider implements ServiceListingProvider {
+public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiExtension {
 
     protected final BundleContext bundleContext;
     protected final XtraPlatform xtraPlatform;
@@ -54,6 +58,8 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider {
 
         throw new RuntimeException(String.format("Static assets not supported for class '%s'. File requested at path '%s'.", this.getClass().getSimpleName(), path));
     }
+
+    public abstract ApiMediaType getApiMediaType();
 
     private Optional<URI> getExternalUri() {
         return Optional.ofNullable(xtraPlatform.getServicesUri());
@@ -101,10 +107,31 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider {
             new URICustomizer(uri).clearParameters().ensureLastPathSegment(apiId).ensureNoTrailingSlash().build();
     }
 
+    protected URI getApiUrl(URI uri, List<String> subPathToLandingPage) throws URISyntaxException {
+        return new URICustomizer(uri).clearParameters()
+                                     .ensureLastPathSegments(subPathToLandingPage.toArray(new String[0]))
+                                     .ensureNoTrailingSlash()
+                                     .build();
+    }
+
     protected ApiCatalog getCatalog(List<ServiceData> services, URI uri, Optional<Locale> language) throws URISyntaxException {
         final DefaultLinksGenerator linksGenerator = new DefaultLinksGenerator();
         URICustomizer uriCustomizer = new URICustomizer(uri);
         String urlPrefix = getStaticUrlPrefix(uriCustomizer);
+        List<String> tags = Splitter.on(',')
+                                    .omitEmptyStrings()
+                                    .trimResults()
+                                    .splitToList(uriCustomizer.getQueryParams()
+                                                              .stream()
+                                                              .filter(param -> param.getName().equals("tags"))
+                                                              .map(param -> param.getValue())
+                                                              .findAny()
+                                                              .orElse(""));
+        Optional<String> name = uriCustomizer.getQueryParams()
+                                   .stream()
+                                   .filter(param -> param.getName().equals("name"))
+                                   .map(param -> param.getValue())
+                                   .findAny();
         customizeUri(uriCustomizer);
         try {
             uri = uriCustomizer.build();
@@ -112,12 +139,12 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider {
             // ignore
         }
 
-        // TODO we do not have the additional information
-        ApiMediaType mediaType = new ImmutableApiMediaType.Builder()
-                .type(getMediaType())
-                .build();
-        // TODO we do not have this information
-        List<ApiMediaType> alternateMediaTypes = ImmutableList.<ApiMediaType>of();
+        ApiMediaType mediaType = getApiMediaType();
+        List<ApiMediaType> alternateMediaTypes = extensionRegistry.getExtensionsForType(ApiCatalogProvider.class)
+                                                      .stream()
+                                                      .map(ApiCatalogProvider::getApiMediaType)
+                                                      .filter(candidate -> !candidate.label().equals(mediaType.label()))
+                                                      .collect(Collectors.toList());
 
         FoundationConfiguration config = getConfig();
 
@@ -127,12 +154,25 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider {
                 .description(Objects.requireNonNullElse(config.getApiCatalogDescription(), i18n.get("rootDescription", language)))
                 .catalogUri(new URICustomizer(finalUri).clearParameters().ensureNoTrailingSlash().build())
                 .urlPrefix(urlPrefix)
-                // TODO skip links for now until we can properly create self/alternate links
-                // .links(linksGenerator.generateLinks(uriCustomizer, mediaType, alternateMediaTypes, i18n, language))
+                .links(linksGenerator.generateLinks(uriCustomizer, mediaType, alternateMediaTypes, i18n, language))
                 .apis(services.stream()
                               .sorted(Comparator.comparing(ServiceData::getLabel))
+                              .filter(api -> !name.isPresent() || api.getLabel()
+                                                                     .toLowerCase(language.orElse(Locale.ENGLISH))
+                                                                     .contains(name.get().toLowerCase(language.orElse(Locale.ENGLISH))))
+                              .filter(api -> tags.isEmpty() || (api instanceof OgcApiDataV2 && ((OgcApiDataV2) api).getTags()
+                                                                                                                   .stream()
+                                                                                                                   .anyMatch(tag -> tags.contains(tag))))
                               .map(api -> {
                                   try {
+                                      if (api instanceof OgcApiDataV2)
+                                          return new ImmutableApiCatalogEntry.Builder()
+                                                  .id(api.getId())
+                                                  .title(api.getLabel())
+                                                  .description(api.getDescription())
+                                                  .landingPageUri(getApiUrl(finalUri, ((OgcApiDataV2)api).getSubPath()))
+                                                  .tags(((OgcApiDataV2)api).getTags())
+                                                  .build();
                                       return new ImmutableApiCatalogEntry.Builder()
                                               .id(api.getId())
                                               .title(api.getLabel())
