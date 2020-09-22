@@ -1,6 +1,6 @@
 # Beispiele für lproxy-APIs 
 
-Die folgenden Links verweisen auf Landing Pages von öffentlich zugänglichen Einsätzen mit ldproxy 2.0.
+Die folgenden Links verweisen auf Landing Pages von öffentlich zugänglichen APIs mit ldproxy 2.0.
 
 * API für die Registrierung als OGC-Referenzimplementierung
   * [Topographische Daten in Daraa, Syrien](https://services.interactive-instruments.de/t15/daraa)
