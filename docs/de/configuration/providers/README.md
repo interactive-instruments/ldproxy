@@ -34,6 +34,10 @@ Das Types-Objekt hat für jede Objektart einen Eintrag mit dem Identifikator der
 |`objectType` |string | |Optional kann ein Name für den Typ spezifiziert werden. Der Name hat i.d.R. nur informativen Charakter und wird z.B. bei der Erzeugung von JSON-Schemas verwendet. Bei Eigenschaften, die als Web-Links nach RFC 8288 abgebildet werden sollen, ist immer "Link" anzugeben.
 |`geometryType` |enum | |Mit der Angabe kann der Geometrietype spezifiziert werden. Die Angabe ist nur bei Geometrieeigenschaften (`type: GEOMETRY`) relevant. Erlaubt sind die Simple-Feature-Geometrietypen, d.h. `POINT`, `MULTI_POINT`, `LINE_STRING`, `MULTI_LINE_STRING`, `POLYGON`, `MULTI_POLYGON`, `GEOMETRY_COLLECTION` und `ANY`.
 
+## Die ConnectionInfo-Objekte
+
+Informationen zu den Datenquellen finden Sie auf separaten Seiten: [SQL](sql.md#connection-info) und [WFS](wfs.md#connection-info).
+
 ## Eine Feature-Provider-Beispielkonfiguration (SQL)
 
 ```yaml
