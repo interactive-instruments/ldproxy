@@ -35,6 +35,12 @@ import java.util.Optional;
 @Instantiate
 public class ApiCatalogProviderHtml extends ApiCatalogProvider {
 
+    static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
+            .type(MediaType.TEXT_HTML_TYPE)
+            .label("HTML")
+            .parameter("html")
+            .build();
+
     public ApiCatalogProviderHtml(@Context BundleContext bundleContext, @Requires XtraPlatform xtraPlatform, @Requires I18n i18n, @Requires EntityDataDefaultsStore defaultsStore, @Requires ExtensionRegistry extensionRegistry) {
         super(bundleContext, xtraPlatform, i18n, defaultsStore, extensionRegistry);
     }
@@ -55,8 +61,13 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
     // TODO: derive Wfs3Request from injected XtraplatformRequest
 
     @Override
+    public ApiMediaType getApiMediaType() {
+        return MEDIA_TYPE;
+    }
+
+    @Override
     public MediaType getMediaType() {
-        return MediaType.TEXT_HTML_TYPE;
+        return MEDIA_TYPE.type();
     }
 
     // TODO: add locale parameter in ServiceListing.getServiceListing() in xtraplatform
@@ -85,4 +96,5 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
                            .build();
 
     }
+
 }

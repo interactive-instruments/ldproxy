@@ -79,15 +79,13 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     public abstract Optional<CollectionExtent> getDefaultExtent();
 
-    // TODO: move to ServiceData; change ServiceEndpoint to also support /{group}/{service}/v{version}
-    public abstract Optional<String> getApiGroup();
+    // TODO: move to ServiceData?
+    public abstract List<String> getTags();
 
     // TODO: move to ServiceData?
     @Value.Derived
     public List<String> getSubPath() {
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>();
-        if (getApiGroup().isPresent())
-            builder.add(getApiGroup().get());
         builder.add(getId());
         if (getApiVersion().isPresent())
             builder.add("v"+getApiVersion().get());
@@ -97,7 +95,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     // TODO: move to ServiceData?
     @Value.Derived
     public int getSubPathLength() {
-        return 1 + (getApiGroup().isPresent() ? 1 : 0) + (getApiVersion().isPresent() ? 1 : 0);
+        return 1 + (getApiVersion().isPresent() ? 1 : 0);
     }
 
     @JsonProperty(value = "api")
