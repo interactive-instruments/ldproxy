@@ -2,6 +2,8 @@
 
 Jede API-Konfiguration wird in einer Konfigurationsdatei in einem Objekt mit den folgenden Eigenschaften beschrieben. Werte ohne Defaultwert sind in diesem Fall Pflichtangaben.
 
+Informationen zu den einzelnen API-Modulen finden Sie [hier](building-blocks/README.md), siehe `api` in der nachfolgenden Tabelle.
+
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
 |`id` |string | |Eindeutiger Identifikator der API. Typischerweise identisch mit dem Identifikator des Feature-Providers.
