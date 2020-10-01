@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -113,8 +113,9 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
 
         wfs3Core.checkCollectionName(wfs3Service.getData(), id);
 
-        Wfs3Collection wfs3Collection = wfs3Core.createCollection(wfs3Service.getData().getFeatureTypes()
-                                                                  .get(id), new Wfs3LinksGenerator(), wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), false);
+        Wfs3Collection wfs3Collection = wfs3Core.createCollection(wfs3Service.getData()
+                                                                             .getFeatureTypes()
+                                                                             .get(id), new Wfs3LinksGenerator(), wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), false);
 
         return wfs3OutputFormats.get(wfs3Request.getMediaType())
                                 .getCollectionResponse(wfs3Collection, wfs3Service.getData(), wfs3Request.getMediaType(), getAlternativeMediaTypes(wfs3Request.getMediaType()), wfs3Request.getUriCustomizer(), id);
@@ -124,23 +125,24 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
 
     @Path("/{id}/items")
     @GET
-    public Response getItems(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("bbox-crs") String bboxCrs, @QueryParam("resultType") String resultType, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @HeaderParam("Range") String range, @Context Service service, @Context UriInfo uriInfo, @Context Wfs3RequestContext wfs3Request) {
+    public Response getItems(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("bbox-crs") String bboxCrs, @QueryParam("resultType") String resultType, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @QueryParam("skipGeometry") boolean skipGeometry, @HeaderParam("Range") String range, @Context Service service, @Context UriInfo uriInfo, @Context Wfs3RequestContext wfs3Request) {
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
-        FeatureQuery query = getFeatureQuery(((Wfs3Service) service), id, range, crs, bboxCrs, maxAllowableOffset, uriInfo.getQueryParameters(), resultType != null && resultType.toLowerCase()
-                                                                                                                                                                                 .equals("hits"));
+        FeatureQuery query = getFeatureQuery(((Wfs3Service) service), id, range, crs, bboxCrs, maxAllowableOffset, skipGeometry, uriInfo.getQueryParameters(), resultType != null && resultType.toLowerCase()
+                                                                                                                                                                                                 .equals("hits"));
 
         return ((Wfs3Service) service).getItemsResponse(wfs3Request, id, query);
     }
 
     @Path("/{id}/items/{featureid}")
     @GET
-    public Response getItem(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @PathParam("featureid") final String featureId, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
+    public Response getItem(@Auth Optional<User> optionalUser, @PathParam("id") String id, @QueryParam("crs") String crs, @QueryParam("maxAllowableOffset") String maxAllowableOffset, @QueryParam("skipGeometry") boolean skipGeometry, @PathParam("featureid") final String featureId, @Context Service service, @Context Wfs3RequestContext wfs3Request) {
         checkAuthorization(((Wfs3Service) service).getData(), optionalUser);
 
         ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                           .type(id)
-                                                                          .filter(String.format("IN ('%s')", featureId));
+                                                                          .filter(String.format("IN ('%s')", featureId))
+                                                                          .skipGeometry(skipGeometry);
 
         if (Objects.nonNull(crs) && !isDefaultCrs(crs)) {
             EpsgCrs targetCrs = new EpsgCrs(crs);
@@ -160,7 +162,7 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
         return ((Wfs3Service) service).getItemsResponse(wfs3Request, id, queryBuilder.build());
     }
 
-    private FeatureQuery getFeatureQuery(Wfs3Service service, String featureType, String range, String crs, String bboxCrs, String maxAllowableOffset, MultivaluedMap<String, String> queryParameters, boolean hitsOnly) {
+    private FeatureQuery getFeatureQuery(Wfs3Service service, String featureType, String range, String crs, String bboxCrs, String maxAllowableOffset, boolean skipGeometry, MultivaluedMap<String, String> queryParameters, boolean hitsOnly) {
         final Map<String, String> filterableFields = service.getData()
                                                             .getFilterableFieldsForFeatureType(featureType);
 
@@ -172,7 +174,8 @@ public class Wfs3EndpointCore implements Wfs3EndpointExtension {
                                                                                 .type(featureType)
                                                                                 .limit(countFrom[0])
                                                                                 .offset(countFrom[1])
-                                                                                .hitsOnly(hitsOnly);
+                                                                                .hitsOnly(hitsOnly)
+                                                                                .skipGeometry(skipGeometry);
 
         if (Objects.nonNull(crs) && !isDefaultCrs(crs)) {
             EpsgCrs targetCrs = new EpsgCrs(crs);
