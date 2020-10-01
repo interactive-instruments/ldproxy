@@ -16,6 +16,7 @@ import de.ii.xtraplatform.crs.api.EpsgCrs;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -132,6 +133,18 @@ public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
                                                          .explode(false)
                                                          .example(0.05)
                                          );
+                           clonedPathItem.getGet()
+                                         .addParametersItem(
+                                                 new Parameter()
+                                                         .name("skipGeometry")
+                                                         .in("query")
+                                                         .description("This option can be used to skip response geometries.")
+                                                         .required(false)
+                                                         .schema(new BooleanSchema()._default(false))
+                                                         .style(Parameter.StyleEnum.FORM)
+                                                         .explode(false)
+                                                         .example(true)
+                                         );
 
                            Map<String, String> filterableFields = serviceData.getFilterableFieldsForFeatureType(ft.getId(), true);
                            filterableFields.keySet()
@@ -189,6 +202,18 @@ public class Wfs3OpenApiCore implements Wfs3OpenApiExtension {
                                                           .explode(false)
                                                           .example(0.05)
                                           );
+                           clonedPathItem2.getGet()
+                                         .addParametersItem(
+                                                 new Parameter()
+                                                         .name("skipGeometry")
+                                                         .in("query")
+                                                         .description("This option can be used to skip response geometries.")
+                                                         .required(false)
+                                                         .schema(new BooleanSchema()._default(false))
+                                                         .style(Parameter.StyleEnum.FORM)
+                                                         .explode(false)
+                                                         .example(true)
+                                         );
 
                            openAPI.getPaths()
                                   .addPathItem("/collections/" + ft.getId() + "/items/{featureId}", clonedPathItem2);
