@@ -42,8 +42,7 @@ public class QueryParameterSkipGeometry implements OgcApiQueryParameter {
         return isEnabledForApi(apiData) &&
                 method == HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                        definitionPath.equals("/collections/{collectionId}/items/{featureId}") ||
-                        definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+                        definitionPath.equals("/collections/{collectionId}/items/{featureId}"));
     }
 
     @Override
