@@ -163,6 +163,7 @@ public class FeatureTransformerGeoJson implements FeatureTransformer, FeatureTra
 
         if (json == jsonBuffer)  {
             stopBuffering();
+            json.writeNullField("geometry");
             flushBuffer();
         }
 
