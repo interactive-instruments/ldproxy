@@ -2,3 +2,5 @@ unreleased=false
 since-tag=v2.0.0
 pull-requests=false
 issues-wo-labels=false
+exclude-tags-regex=^(?!v[2-9]\.\d+\.\d+).*$
+add-sections={"dependencies":{"prefix":"**Dependency updates:**","labels":["dependencies"]}, "improvement":{"prefix":"**Improvements:**","labels":["improvement"]}}
