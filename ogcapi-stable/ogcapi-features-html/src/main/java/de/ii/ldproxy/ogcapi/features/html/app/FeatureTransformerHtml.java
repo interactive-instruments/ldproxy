@@ -431,17 +431,18 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
 
         coordinatesTransformerBuilder.coordinatesWriter(ImmutableCoordinatesWriterMicrodata.of(coordinatesOutput, Optional.ofNullable(dimension).orElse(2)));
 
+        int fallbackDimension = Objects.nonNull(dimension) ? dimension : 2;
+
         if (Objects.nonNull(crsTransformer)) {
             coordinatesTransformerBuilder.crsTransformer(crsTransformer);
-        }
-
-        if (dimension != null) {
-            coordinatesTransformerBuilder.sourceDimension(dimension);
-            coordinatesTransformerBuilder.targetDimension(dimension);
+            coordinatesTransformerBuilder.sourceDimension(Objects.requireNonNullElse(crsTransformer.getSourceDimension(), fallbackDimension));
+            coordinatesTransformerBuilder.targetDimension(Objects.requireNonNullElse(crsTransformer.getTargetDimension(), fallbackDimension));
+        } else {
+            coordinatesTransformerBuilder.sourceDimension(fallbackDimension);
+            coordinatesTransformerBuilder.targetDimension(fallbackDimension);
         }
 
         coordinatesWriter = coordinatesTransformerBuilder.build();
-
 
         currentGeometryParts = 0;
     }
