@@ -227,7 +227,17 @@ public class EndpointTileMultiCollection extends Endpoint {
                         .values()
                         .stream()
                         .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
-                        .filter(collection -> collection.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
+                        .filter(collection -> {
+                            Optional<TilesConfiguration> layerConfiguration = collection.getExtension(TilesConfiguration.class);
+                            if (!layerConfiguration.isPresent() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().getMultiCollectionEnabled())
+                                return false;
+                            MinMax levels = layerConfiguration.get().getZoomLevels().get(tileMatrixSetId);
+                            if (Objects.nonNull(levels) && (levels.getMax() < level || levels.getMin() > level))
+                                return false;
+
+                            LOGGER.debug("Multi-layer tile {}/{}/{} includes collection {}", level, row, col, collection.getId());
+                            return true;
+                        })
                         .map(FeatureTypeConfiguration::getId)
                         .collect(Collectors.toList());
 
@@ -292,9 +302,6 @@ public class EndpointTileMultiCollection extends Endpoint {
             processingParameters = parameter.transformContext(null, processingParameters, queryParams, api.getData());
         }
 
-        // generate a query template for an arbitrary collection
-        FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collections.get(0)), allowedParameters, queryParams, tilesConfiguration, requestContext.getUriCustomizer());
-
         Map<String, FeatureQuery> queryMap = collections.stream()
                 .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> {
                     String featureTypeId = apiData.getCollections()
@@ -302,6 +309,11 @@ public class EndpointTileMultiCollection extends Endpoint {
                                                   .getExtension(FeaturesCoreConfiguration.class)
                                                   .map(cfg -> cfg.getFeatureType().orElse(collectionId))
                                                   .orElse(collectionId);
+                    TilesConfiguration layerConfiguration = apiData.getCollections()
+                                                                   .get(collectionId)
+                                                                   .getExtension(TilesConfiguration.class)
+                                                                   .orElse(tilesConfiguration);
+                    FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collectionId), allowedParameters, queryParams, layerConfiguration, requestContext.getUriCustomizer());
                     return ImmutableFeatureQuery.builder()
                                                 .from(query)
                                                 .type(featureTypeId)
