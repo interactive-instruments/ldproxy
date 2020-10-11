@@ -235,7 +235,6 @@ public class EndpointTileMultiCollection extends Endpoint {
                             if (Objects.nonNull(levels) && (levels.getMax() < level || levels.getMin() > level))
                                 return false;
 
-                            LOGGER.debug("Multi-layer tile {}/{}/{} includes collection {}", level, row, col, collection.getId());
                             return true;
                         })
                         .map(FeatureTypeConfiguration::getId)
