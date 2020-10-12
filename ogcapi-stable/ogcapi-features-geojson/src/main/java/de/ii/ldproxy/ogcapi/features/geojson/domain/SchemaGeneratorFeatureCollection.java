@@ -10,7 +10,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
-@Provides
+@Provides(specifications = {SchemaGeneratorFeatureCollection.class})
 @Instantiate
 public class SchemaGeneratorFeatureCollection {
 
