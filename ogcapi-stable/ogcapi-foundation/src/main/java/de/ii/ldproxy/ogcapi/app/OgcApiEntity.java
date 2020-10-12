@@ -84,6 +84,11 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
     }
 
     @Override
+    protected void onStop() {
+        LOGGER.info("Service with id '{}' stopped.", getId());
+    }
+
+    @Override
     public OgcApiDataV2 getData() {
         return super.getData();
     }
