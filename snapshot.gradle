@@ -1,0 +1,10 @@
+allprojects {
+    publishing {
+        repositories {
+            maven {
+                url "https://pkgs2.ci.interactive-instruments.de/repository/maven-snapshots/"
+            }
+        }
+    }
+}
+
