@@ -11,11 +11,31 @@ import java.util.Optional;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 @JsonDeserialize(as = ImmutableMbStyleLayer.class)
 public abstract class MbStyleLayer {
-    public enum LayerType { background, fill, line, symbol, raster, circle, fillExtrusion, heatmap, hillshade }
+    public enum LayerType {
+        background("background"),
+        fill("fill"),
+        line("line"),
+        symbol("symbol"),
+        raster("raster"),
+        circle("circle"),
+        fillExtrusion("fill-extrusion"),
+        heatmap("heatmap"),
+        hillshade("hillshade");
+
+        public final String label;
+
+        LayerType(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() { return label; };
+    }
 
     public abstract String getId();
 
-    public abstract LayerType getType();
+    // TODO use enum to check that we have a valid value
+    public abstract String getType();
 
     public abstract Optional<Object> getMetadata();
 

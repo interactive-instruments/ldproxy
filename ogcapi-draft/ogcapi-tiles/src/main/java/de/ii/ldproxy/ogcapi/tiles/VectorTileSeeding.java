@@ -387,21 +387,23 @@ public class VectorTileSeeding implements StartupTask {
                                             .collectionIds(ImmutableList.of(collectionId))
                                             .build()));
 
-                            // generate a query template for an arbitrary collection
-                            FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collectionIds.get(0)), ImmutableList.of(), ImmutableMap.of(), tilesConfiguration.get(), uriCustomizer);
-
                             Map<String, FeatureQuery> queryMap = collectionIds.stream()
-                                    .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> {
-                                        String featureTypeId = apiData.getCollections()
-                                                                      .get(collectionId)
-                                                                      .getExtension(FeaturesCoreConfiguration.class)
-                                                                      .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-                                                                      .orElse(collectionId);
-                                        return ImmutableFeatureQuery.builder()
-                                            .from(query)
-                                            .type(featureTypeId)
-                                            .build();
-                                    }));
+                                                                              .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> {
+                                                                                  String featureTypeId = apiData.getCollections()
+                                                                                                                .get(collectionId)
+                                                                                                                .getExtension(FeaturesCoreConfiguration.class)
+                                                                                                                .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                                                                                                .orElse(collectionId);
+                                                                                  TilesConfiguration layerConfiguration = apiData.getCollections()
+                                                                                                                                 .get(collectionId)
+                                                                                                                                 .getExtension(TilesConfiguration.class)
+                                                                                                                                 .orElse(tilesConfiguration.get());
+                                                                                  FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collectionId), ImmutableList.of(), ImmutableMap.of(), layerConfiguration, requestContext.getUriCustomizer());
+                                                                                  return ImmutableFeatureQuery.builder()
+                                                                                                              .from(query)
+                                                                                                              .type(featureTypeId)
+                                                                                                              .build();
+                                                                              }));
 
                             FeaturesCoreConfiguration coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class).get();
 

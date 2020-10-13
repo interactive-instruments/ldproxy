@@ -26,8 +26,10 @@ public abstract class MbStyleStylesheet {
     public abstract Optional<Object> getMetadata();
     public abstract Optional<List<Double>> getCenter();
     public abstract Optional<Double> getZoom();
-    public Optional<Double> getBearing() { return Optional.of(0.0); }
-    public Optional<Double> getPitch() { return Optional.of(0.0); }
+    @Value.Default
+    public Double getBearing() { return 0.0; }
+    @Value.Default
+    public Double getPitch() { return 0.0; }
     public abstract Optional<MbStyleLight> getLight();
     public abstract Map<String, MbStyleSource> getSources();
     public abstract Optional<String> getSprite();
