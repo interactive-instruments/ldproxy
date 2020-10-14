@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Component
-@Provides
+@Provides(specifications = {SchemaGeneratorFeature.class})
 @Instantiate
 public class SchemaGeneratorFeature {
 

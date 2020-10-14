@@ -54,6 +54,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static de.ii.xtraplatform.runtime.domain.Logging.withMdc;
+
 /**
  * This class is responsible for a automatic generation of the Tiles.
  * The range is specified in the config.
@@ -193,7 +195,7 @@ public class VectorTileSeeding implements StartupTask {
             LOGGER.debug("Finished seeding vector tiles for API {}.", api.getId(), Thread.currentThread().getName());
 
         };
-        t = new Thread(startSeeding);
+        t = new Thread(withMdc(startSeeding));
         t.setUncaughtExceptionHandler(backgroundTaskExceptionHandler);
         t.setDaemon(true);
         t.start();
