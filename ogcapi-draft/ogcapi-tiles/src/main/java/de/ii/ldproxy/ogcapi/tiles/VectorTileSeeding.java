@@ -54,7 +54,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.ii.xtraplatform.runtime.domain.Logging.withMdc;
+import static de.ii.xtraplatform.runtime.domain.LogContext.withMdc;
 
 /**
  * This class is responsible for a automatic generation of the Tiles.

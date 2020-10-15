@@ -24,9 +24,10 @@ pipeline:
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
       - cd ogcapi-stable
-      - ../gradlew publish -PisSnapshot=true
+      - ../gradlew publish -PisSnapshot=true -PsnapshotUser=$SNAPSHOT_USER -PsnapshotPassword=$SNAPSHOT_PASS
       - cd ../ogcapi-draft
-      - ../gradlew publish -PisSnapshot=true --init-script ../.maven-local.gradle
+      - ../gradlew publish -PisSnapshot=true -PsnapshotUser=$SNAPSHOT_USER -PsnapshotPassword=$SNAPSHOT_PASS --init-script ../.maven-local.gradle
+    secrets: [ snapshot_user, snapshot_pass]
     when:
       event: push
       branch: master
