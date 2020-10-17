@@ -7,12 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import java.util.Map;
+import de.ii.xtraplatform.services.domain.ServiceBackgroundTask;
 
 
-// TODO: support for a ServiceBackgroundTask
-public interface StartupTask extends ApiExtension {
-    Runnable getTask(OgcApi api);
-    Map<Thread,String> getThreadMap();
-    void removeThreadMapEntry(Thread t);
+public interface OgcApiBackgroundTask extends ApiExtension, ServiceBackgroundTask<OgcApi> {
+
 }
