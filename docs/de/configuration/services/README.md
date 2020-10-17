@@ -14,10 +14,11 @@ Informationen zu den einzelnen API-Modulen finden Sie [hier](building-blocks/REA
 |`label` |string |der Wert von `id` |Eine Bezeichnung der API, z.B. für die Präsentation zu Nutzern.
 |`description` |string |`null` |Eine Beschreibung des Schemaobjekts, z.B. für die Präsentation zu Nutzern.
 |`serviceType` |enum | |Stets `OGC_API`.
-|`shouldStart` |boolean |`true` |Steuert, ob die API mit dem Start von ldproxy aktiviert wird.
+|`enabled` |boolean |`true` |Steuert, ob die API mit dem Start von ldproxy aktiviert wird.
+|`shouldStart` |boolean |`true` |*Deprecated* Siehe `enabled`
 |`metadata` |object |`{}` |Über dieses Objekt können grundlegende Metadaten zur API (Version, Kontaktdaten, Lizenzinformationen) festgelegt werden. Erlaubt sind die folgenden Elemente (in Klammern werden die Ressourcen genannt, in denen die Angabe verwendet wird): `version` (API-Definition), `contactName` (API-Definition, HTML-Landing-Page), `contactUrl` (API-Definition, HTML-Landing-Page), `contactEmail` (API-Definition, HTML-Landing-Page), `contactPhone` (HTML-Landing-Page), `licenseName` (API-Definition, HTML-Landing-Page, Feature-Collections, Feature-Collection), `licenseUrl` (API-Definition, HTML-Landing-Page, Feature-Collections, Feature-Collection) und `keywords` (HTML-Landing-Page). Alle Angaben sind Strings, bis auf die Keywords, die als Array von Strings angegeben werden.
 |`tags` |array |`null` |Ordnet der API die aufgelisteten Tags zu. Die Tags müssen jeweils Strings ohne Leerzeichen sein. Die Tags werden im API-Katalog angezeigt und können über den Query-Parameter `tags` zur Filterung der in der API-Katalog-Antwort zurückgelieferten APIs verwendet werden, z.B. `tags=INSPIRE`.<br>_seit Version 2.1_
-|`extenalDocs` |object |`{}` |Es kann externes Dokument mit weiteren Informationen angegeben werden, auf das aus der API verlinkt wird. Anzugeben sind die Eigenschaften `url` und `description`.
+|`externalDocs` |object |`{}` |Es kann externes Dokument mit weiteren Informationen angegeben werden, auf das aus der API verlinkt wird. Anzugeben sind die Eigenschaften `url` und `description`.
 |`defaultExtent` |object |`{}` |Es kann ein Standardwert für die räumliche (`spatial`) und/oder zeitliche (`temporal`) Ausdehnung der Daten angeben werden, die bei den Objektarten verwendet wird, wenn dort keine anderslautende Ausdehnung spezifiziert wird. Für die räumliche Ausdehnung sind die folgenden Eigenschaften anzugeben (alle Angaben in `CRS84`): `xmin`, `ymin`, `xmax`, `ymax`. Für die zeitliche Ausdehnung sind die folgenden Eigenschaften anzugeben (alle Angaben in Millisekunden seit dem 1.1.1970): `start`, `end`. Hinweis: Es handelt sich hierbei nicht um die Ausdehnung des Datensatzes insgesamt, dieser wird stets automatisch aus den Ausdehnungen der einzelnen Objektarten ermittelt.
 |`api` |array |`[]` |Ein Array mit der Konfiguration der [API-Module](building-blocks/README.md) für die API.
 |`collections` |object |`{}` |Ein Objekt mit der spezifischen Konfiguration zu jeder Objektart, der Name der Objektart ist der Schlüssel, der Wert ein [Collection-Objekt](#collection).
@@ -59,7 +60,7 @@ lastModified: 1598603585258
 entityStorageVersion: 2
 label: Kindertageseinrichtungen
 description: Hier steht eine Beschreibung der API und seiner Inhalte, die einem Nutzer erläutert, was ihm die API bietet.
-shouldStart: true
+enabled: true
 secured: false
 serviceType: OGC_API
 apiVersion: 1

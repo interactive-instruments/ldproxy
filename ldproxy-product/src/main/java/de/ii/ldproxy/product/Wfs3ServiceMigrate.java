@@ -153,7 +153,7 @@ public class Wfs3ServiceMigrate {
             builder
                     .id((String) service.get("id"))
                     .createdAt((Long) service.get("dateCreated"))
-                    .shouldStart(true)
+                    .enabled(true)
                     .serviceType("WFS3");
         }
 
