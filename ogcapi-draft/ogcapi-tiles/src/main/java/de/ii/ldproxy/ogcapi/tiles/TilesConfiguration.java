@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
 import org.immutables.value.Value;
@@ -15,6 +16,7 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Value.Immutable
@@ -92,4 +94,38 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
 
         return builder.build();
     }
+
+    /**
+     *
+     * @return seeding map also considering the zoom level configuration (drops zoom levels outside of the range from seeding)
+     */
+    @Value.Derived
+    default Map<String, MinMax> getEffectiveSeeding() {
+        Map<String, MinMax> baseSeeding = getSeeding();
+        if (Objects.isNull(baseSeeding))
+            return ImmutableMap.of();
+
+        Map<String, MinMax> zoomLevels = getZoomLevels();
+        if (Objects.isNull(zoomLevels))
+            return ImmutableMap.of();
+
+        ImmutableMap.Builder<String, MinMax> responseBuilder = ImmutableMap.builder();
+        for (Map.Entry<String, MinMax> entry : baseSeeding.entrySet()) {
+            if (zoomLevels.containsKey(entry.getKey())) {
+                MinMax minmax = zoomLevels.get(entry.getKey());
+                int minSeeding = entry.getValue().getMin();
+                int maxSeeding = entry.getValue().getMax();
+                int minRange = minmax.getMin();
+                int maxRange = minmax.getMax();
+                if (maxSeeding >= minRange && minSeeding <= maxRange)
+                    responseBuilder.put(entry.getKey(), new ImmutableMinMax.Builder()
+                                                                           .min(Math.max(minSeeding, minRange))
+                                                                           .max(Math.min(maxSeeding, maxRange))
+                                                                           .build());
+            }
+        }
+
+        return responseBuilder.build();
+    }
+
 }

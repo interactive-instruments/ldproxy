@@ -7,13 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.app;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.StartupTask;
 import de.ii.xtraplatform.services.domain.AbstractService;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
@@ -24,12 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 @EntityComponent
@@ -42,7 +36,6 @@ import java.util.stream.Collectors;
 public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcApi {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEntity.class);
-    private static final ExecutorService startupTaskExecutor = MoreExecutors.getExitingExecutorService((ThreadPoolExecutor) Executors.newFixedThreadPool(1));
 
     private final ExtensionRegistry extensionRegistry;
 
@@ -51,50 +44,8 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
     }
 
     @Override
-    protected void onStart() {
-        if (shouldRegister()) {
-            //TODO: check all extensions if startup was successful
-            LOGGER.info("Service with id '{}' started successfully.", getId());
-
-            //TODO: merge with service background tasks
-            List<StartupTask> startupTasks = getStartupTasks();
-            Map<Thread, String> threadMap = null;
-            for (StartupTask startupTask : startupTasks) {
-                threadMap = startupTask.getThreadMap();
-            }
-
-            if (threadMap != null) {
-                for (Map.Entry<Thread, String> entry : threadMap.entrySet()) {
-                    if (entry.getValue()
-                             .equals(getData().getId())) {
-                        if (entry.getKey()
-                                 .getState() != Thread.State.TERMINATED) {
-                            entry.getKey()
-                                 .interrupt();
-                            startupTasks.forEach(startupTask -> startupTask.removeThreadMapEntry(entry.getKey()));
-                        }
-                    }
-                }
-            }
-
-            // TODO getTask is already starting the task (and adds it to the thread map)
-            //startupTasks.forEach(startupTask -> startupTaskExecutor.submit(startupTask.getTask(this)));
-            startupTasks.forEach(startupTask -> startupTask.getTask(this));
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        LOGGER.info("Service with id '{}' stopped.", getId());
-    }
-
-    @Override
     public OgcApiDataV2 getData() {
         return super.getData();
-    }
-
-    private List<StartupTask> getStartupTasks() {
-        return extensionRegistry.getExtensionsForType(StartupTask.class);
     }
 
     @Override

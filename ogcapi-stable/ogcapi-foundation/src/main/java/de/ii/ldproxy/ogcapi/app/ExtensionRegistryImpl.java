@@ -90,8 +90,8 @@ public class ExtensionRegistryImpl implements ExtensionRegistry {
                 LOGGER.debug("ENDPOINT {}", endpoint.getClass().getSimpleName());
             }
 
-            if (apiExtension instanceof StartupTask) {
-                final StartupTask startupTask = (StartupTask) apiExtension;
+            if (apiExtension instanceof OgcApiBackgroundTask) {
+                final OgcApiBackgroundTask ogcApiBackgroundTask = (OgcApiBackgroundTask) apiExtension;
 
                 LOGGER.debug("STARTUP TASK {}", apiExtension.getClass().getSimpleName());
            }
