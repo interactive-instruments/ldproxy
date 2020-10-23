@@ -218,7 +218,7 @@ public class TileFormatMVT implements TileFormatExtension {
             }
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Filter: {}", combinedFilter);
+                LOGGER.trace("Filter: {}", combinedFilter);
             }
 
             queryBuilder.filter(combinedFilter);
@@ -253,7 +253,8 @@ public class TileFormatMVT implements TileFormatExtension {
                             LOGGER.info(msg, tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
                                         singleLayerTile.getApi().getId(), collectionId, getExtension());
                         } catch (IllegalArgumentException e) {
-                            // another problem generating the tile
+                            // another problem generating the tile, remove the problematic tile file from the cache
+                            Files.delete(tileFile);
                             throw new RuntimeException(String.format("Failure to process the single-layer tile %s/%d/%d/%d in dataset '%s', layer '%s', format '%s'.",
                                                                      tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
                                                                      singleLayerTile.getApi().getId(), collectionId, getExtension()), e);
