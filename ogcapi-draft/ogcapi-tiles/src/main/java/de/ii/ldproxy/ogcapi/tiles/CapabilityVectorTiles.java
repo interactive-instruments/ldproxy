@@ -46,6 +46,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                                         .maxPointPerTileDefault(MAX_POINT_PER_TILE_DEFAULT)
                                                         .singleCollectionEnabled(true)
                                                         .multiCollectionEnabled(true)
+                                                        .ignoreInvalidGeometries(false)
                                                         .zoomLevels(ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder()
                                                                 .min(0)
                                                                 .max(23)

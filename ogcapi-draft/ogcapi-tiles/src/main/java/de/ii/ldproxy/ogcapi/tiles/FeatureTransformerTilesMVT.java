@@ -21,6 +21,7 @@ import no.ecc.vectortile.VectorTileEncoder;
 import org.apache.commons.lang3.ArrayUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
@@ -28,12 +29,10 @@ import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.TopologyException;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
-import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
-import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -73,7 +71,10 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private final int pointLimit;
     private final String layerName;
     private final List<String> properties;
-    private final GeometryFactory geometryFactory;
+    private final PrecisionModel tilePrecisionModel;
+    private final GeometryPrecisionReducer reducer;
+    private final GeometryFactory geometryFactoryWorld;
+    private final GeometryFactory geometryFactoryTile;
     private final Pattern separatorPattern;
 
     private SimpleFeatureGeometry currentGeometryType;
@@ -112,8 +113,11 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         this.tile = transformationContext.getTile();
         this.tileMatrixSet = tile.getTileMatrixSet();
         this.properties = transformationContext.getFields();
-        this.geometryFactory = new GeometryFactory();
         this.separatorPattern = Pattern.compile("\\s+|\\,");
+        this.geometryFactoryWorld = new GeometryFactory();
+        this.tilePrecisionModel = new PrecisionModel((double)tileMatrixSet.getTileExtent() / (double)tileMatrixSet.getTileSize());
+        this.geometryFactoryTile = new GeometryFactory(tilePrecisionModel);
+        this.reducer = new GeometryPrecisionReducer(tilePrecisionModel);
 
         if (collectionId!=null) {
             tilesConfiguration = transformationContext.getConfiguration();
@@ -132,13 +136,13 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
         final int size = tileMatrixSet.getTileSize();
         final int buffer = 8;
-        Coordinate[] coords = new Coordinate[5];
-        coords[0] = new Coordinate(0 - buffer, size + buffer);
-        coords[1] = new Coordinate(size + buffer, size + buffer);
-        coords[2] = new Coordinate(size + buffer, 0 - buffer);
-        coords[3] = new Coordinate(0 - buffer, 0 - buffer);
+        CoordinateXY[] coords = new CoordinateXY[5];
+        coords[0] = new CoordinateXY(0 - buffer, size + buffer);
+        coords[1] = new CoordinateXY(size + buffer, size + buffer);
+        coords[2] = new CoordinateXY(size + buffer, 0 - buffer);
+        coords[3] = new CoordinateXY(0 - buffer, 0 - buffer);
         coords[4] = coords[0];
-        this.clipGeometry = geometryFactory.createPolygon(coords);
+        this.clipGeometry = geometryFactoryTile.createPolygon(coords);
     }
 
     @Override
@@ -190,62 +194,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         currentId = null;
     }
 
-    private Polygon processPolygon(Polygon geom) {
-        if (geom.getArea() <= 1.0)
-            // skip this feature, too small
-            return null;
-        LinearRing shell = geom.getExteriorRing();
-        if (geometryFactory.createPolygon(shell).getArea() <= 1.0)
-            // skip this feature, too small
-            return null;
-        List<LinearRing> holes= new ArrayList<>();
-        boolean skipped = false;
-        for (int i=0; i < geom.getNumInteriorRing(); i++) {
-            LinearRing hole = geom.getInteriorRingN(i);
-            if (geometryFactory.createPolygon(hole).getArea() > 1.0)
-                holes.add(hole);
-            else
-                skipped = true;
-        }
-        return skipped ? geometryFactory.createPolygon(shell, holes.toArray(LinearRing[]::new)) : geom;
-    }
 
-    private MultiPolygon processMultiPolygon(MultiPolygon geom) {
-        List<Polygon> patches = new ArrayList<>();
-        boolean skipped = false;
-        for (int i=0; i < geom.getNumGeometries(); i++) {
-            Polygon patch = (Polygon) geom.getGeometryN(i);
-            patch = processPolygon(patch);
-            if (Objects.nonNull(patch))
-                patches.add(patch);
-            else
-                skipped = true;
-        }
-        return skipped ? geometryFactory.createMultiPolygon(patches.toArray(Polygon[]::new)) : geom;
-    }
-
-    private Geometry clipGeometry(Geometry geometry) {
-        try {
-            Geometry original = geometry;
-            geometry = clipGeometry.intersection(original);
-
-            // some times a intersection is returned as an empty geometry.
-            // going via wkt fixes the problem.
-            if (geometry.isEmpty() && original.intersects(clipGeometry)) {
-                Geometry originalViaWkt = new WKTReader().read(original.toText());
-                geometry = clipGeometry.intersection(originalViaWkt);
-            }
-
-            return geometry;
-        } catch (TopologyException e) {
-            // could not intersect. original geometry will be used instead.
-            return geometry;
-        } catch (ParseException e1) {
-            // could not encode/decode WKT. original geometry will be used
-            // instead.
-            return geometry;
-        }
-    }
 
     @Override
     public void onFeatureEnd() {
@@ -253,34 +202,39 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         if (currentGeometry==null)
             return;
 
-        // TODO prepare geometry here, the encoder sometimes has problems with small rings
+        // convert to the tile coordinate system
         currentGeometry.apply(affineTransformation);
-        currentGeometry = TopologyPreservingSimplifier.simplify(currentGeometry, 0.1);
-        currentGeometry = clipGeometry(currentGeometry);
 
-        // filter features
-        String geomType = currentGeometry.getGeometryType();
+        // remove small rings or line strings (small in the context of the tile)
+        currentGeometry = TileGeometryUtil.removeSmallPieces(currentGeometry);
+        if (currentGeometry==null)
+            return;
 
-        if (geomType.equals("Polygon")) {
-            currentGeometry = processPolygon((Polygon) currentGeometry);
-            if (Objects.isNull(currentGeometry))
+        // limit the coordinates to the tile with a buffer
+        currentGeometry = TileGeometryUtil.clipGeometry(currentGeometry, clipGeometry);
+
+        // reduce the geometry to the tile grid
+        currentGeometry = reducer.reduce(currentGeometry);
+
+        // if the resulting geometry is invalid, try to make it valid
+        if (!currentGeometry.isValid()) {
+            if (currentGeometry instanceof Polygon || currentGeometry instanceof MultiPolygon)
+                currentGeometry = currentGeometry.buffer(0.0);
+
+            // again, remove small rings or line strings (small in the context of the tile) that may
+            // have been created in some cases by changing to the tile grid
+            currentGeometry = TileGeometryUtil.removeSmallPieces(currentGeometry);
+            if (currentGeometry==null)
                 return;
-            if (polygonCount++ > polygonLimit)
-                return;
-        } else if (geomType.equals("MultiPolygon")) {
-            currentGeometry = processMultiPolygon((MultiPolygon) currentGeometry);
-            if (Objects.isNull(currentGeometry))
-                return;
-            if (polygonCount++ > polygonLimit)
-                return;
-        } else if (geomType.contains("LineString")) {
-            double length = currentGeometry.getLength();
-            if (length <= 1.0)
-                return;
-            if (lineStringCount++ > lineStringLimit)
-                return;
-        } else if (geomType.contains("Point")) {
-            if (pointCount++ > pointLimit)
+
+            // again, make sure the geometry is using the tile grid
+            currentGeometry = reducer.reduce(currentGeometry);
+        }
+
+        // Geometry is still invalid -> log this information and skip it, if that option is used
+        if (!currentGeometry.isValid()) {
+            LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", currentId, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+            if (tilesConfiguration.getIgnoreInvalidGeometries())
                 return;
         }
 
@@ -361,13 +315,18 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                         break;
                     case INTEGER:
                         currentProperties.put(currentPropertyName, Long.parseLong(value));
+                        break;
                     case FLOAT:
                         currentProperties.put(currentPropertyName, Double.parseDouble(value));
+                        break;
                     case DATETIME:
                     case STRING:
                     default:
                         currentProperties.put(currentPropertyName, value);
                 }
+
+                if (currentProperty.isId())
+                    currentId = value;
             }
         }
 
@@ -433,19 +392,19 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             case MULTI_POINT:
                 coord = parseCoordinate(text);
                 if (coord!=null)
-                    currentPoints.add(geometryFactory.createPoint(coord));
+                    currentPoints.add(geometryFactoryWorld.createPoint(coord));
                 break;
             case LINE_STRING:
             case MULTI_LINE_STRING:
                 coords = parseCoordinates(text);
                 if (coords!=null)
-                    currentLineStrings.add(geometryFactory.createLineString(coords));
+                    currentLineStrings.add(geometryFactoryWorld.createLineString(coords));
                 break;
             case POLYGON:
             case MULTI_POLYGON:
                 coords = parseCoordinates(text);
                 if (coords!=null)
-                    currentLinearRings.add(geometryFactory.createLinearRing(coords));
+                    currentLinearRings.add(geometryFactoryWorld.createLinearRing(coords));
                 break;
         }
     }
@@ -493,9 +452,9 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             case MULTI_POLYGON:
                 int rings = currentLinearRings.size();
                 if (rings==1)
-                    currentPolygons.add(geometryFactory.createPolygon(currentLinearRings.get(0)));
+                    currentPolygons.add(geometryFactoryWorld.createPolygon(currentLinearRings.get(0)));
                 else if (rings>1)
-                    currentPolygons.add(geometryFactory.createPolygon(currentLinearRings.get(0),currentLinearRings.subList(1,rings).toArray(new LinearRing[0])));
+                    currentPolygons.add(geometryFactoryWorld.createPolygon(currentLinearRings.get(0), currentLinearRings.subList(1, rings).toArray(new LinearRing[0])));
                 currentLinearRings = new Vector<>();
                 break;
         }
@@ -510,25 +469,25 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                     currentGeometry = currentPoints.get(0);
                 break;
             case MULTI_POINT:
-                currentGeometry = geometryFactory.createMultiPoint(currentPoints.toArray(new Point[0]));
+                currentGeometry = geometryFactoryWorld.createMultiPoint(currentPoints.toArray(new Point[0]));
                 break;
             case LINE_STRING:
                 if (currentLineStrings.size()==1)
                     currentGeometry = currentLineStrings.get(0);
                 break;
             case MULTI_LINE_STRING:
-                currentGeometry = geometryFactory.createMultiLineString(currentLineStrings.toArray(new LineString[0]));
+                currentGeometry = geometryFactoryWorld.createMultiLineString(currentLineStrings.toArray(new LineString[0]));
                 break;
             case POLYGON:
                 int rings = currentLinearRings.size();
                 if (rings==1)
-                    currentGeometry = geometryFactory.createPolygon(currentLinearRings.get(0));
+                    currentGeometry = geometryFactoryWorld.createPolygon(currentLinearRings.get(0));
                 else if (rings>1)
-                    currentGeometry = geometryFactory.createPolygon(currentLinearRings.get(0),currentLinearRings.subList(1,rings).toArray(new LinearRing[0]));
+                    currentGeometry = geometryFactoryWorld.createPolygon(currentLinearRings.get(0), currentLinearRings.subList(1, rings).toArray(new LinearRing[0]));
                 currentLinearRings = new Vector<>();
                 break;
             case MULTI_POLYGON:
-                currentGeometry = geometryFactory.createMultiPolygon(currentPolygons.toArray(new Polygon[0]));
+                currentGeometry = geometryFactoryWorld.createMultiPolygon(currentPolygons.toArray(new Polygon[0]));
                 break;
         }
 
