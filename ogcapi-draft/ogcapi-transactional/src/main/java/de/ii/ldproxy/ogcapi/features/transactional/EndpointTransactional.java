@@ -101,8 +101,8 @@ public class EndpointTransactional extends EndpointSubCollection {
 
     @Override
     public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
             ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
                     .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES_TRANSACTION);
@@ -171,10 +171,10 @@ public class EndpointTransactional extends EndpointSubCollection {
                 }
 
             }
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     @Path("/{id}/items")

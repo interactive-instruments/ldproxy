@@ -126,8 +126,8 @@ public class EndpointResourcesManager extends Endpoint implements ConformanceCla
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
             Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
             ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("resources")
@@ -167,10 +167,10 @@ public class EndpointResourcesManager extends Endpoint implements ConformanceCla
                 resourceBuilder.putOperations(method.name(), operation);
             definitionBuilder.putResources(path, resourceBuilder.build());
 
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     /**
