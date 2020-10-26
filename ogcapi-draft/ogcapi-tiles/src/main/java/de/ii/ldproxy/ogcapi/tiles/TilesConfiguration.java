@@ -48,6 +48,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     Boolean getMultiCollectionEnabled();
 
     @Nullable
+    Boolean getIgnoreInvalidGeometries();
+
+    @Nullable
     Map<String, MinMax> getSeeding();
 
     @Nullable
