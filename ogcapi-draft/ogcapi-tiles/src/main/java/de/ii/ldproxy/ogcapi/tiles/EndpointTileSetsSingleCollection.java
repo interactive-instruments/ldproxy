@@ -94,8 +94,8 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
             ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
                     .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION);
@@ -130,10 +130,10 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
                 }
             }
 
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     /**

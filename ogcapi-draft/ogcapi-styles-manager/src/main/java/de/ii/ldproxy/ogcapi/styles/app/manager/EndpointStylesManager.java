@@ -169,8 +169,8 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
             Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
             ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("styles")
@@ -239,10 +239,10 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
                 resourceBuilder.putOperations("DELETE", operation);
             definitionBuilder.putResources(path, resourceBuilder.build());
 
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     /**

@@ -24,7 +24,7 @@ public abstract class Endpoint implements EndpointExtension {
     );
 
     protected final ExtensionRegistry extensionRegistry;
-    protected Map<String, ApiEndpointDefinition> apiDefinitions;
+    protected Map<Integer, ApiEndpointDefinition> apiDefinitions;
     protected List<? extends FormatExtension> formats;
 
     /**

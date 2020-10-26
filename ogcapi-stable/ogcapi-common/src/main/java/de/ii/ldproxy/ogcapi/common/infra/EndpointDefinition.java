@@ -62,8 +62,8 @@ public class EndpointDefinition extends Endpoint {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
             ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("api")
                     .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_API_DEFINITION);
@@ -87,10 +87,10 @@ public class EndpointDefinition extends Endpoint {
                 resourceBuilder.putOperations("GET", operation);
             definitionBuilder.putResources(path, resourceBuilder.build());
 
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     @GET

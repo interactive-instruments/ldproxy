@@ -79,8 +79,8 @@ public class EndpointTileSetMultiCollection extends Endpoint {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
             ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("tiles")
                     .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SET);
@@ -98,10 +98,10 @@ public class EndpointTileSetMultiCollection extends Endpoint {
                 resourceBuilderSet.putOperations(method.name(), operation);
             definitionBuilder.putResources(path, resourceBuilderSet.build());
 
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     /**
