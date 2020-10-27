@@ -4,6 +4,10 @@ services:
 - docker
 language:
 - java
+addons:
+  apt:
+    packages:
+      - openjdk-11-jdk
 jdk:
 - openjdk11
 node_js: '10'
