@@ -36,8 +36,8 @@ public class SchemaGeneratorFeature {
 
     final static String DEFINITIONS_TOKEN = "definitions";
 
-    private final ConcurrentMap<String, Schema> schemaMapOpenApi = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, Map<String, Object>> schemaMapJson = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, ConcurrentMap<String, Schema>> schemaMapOpenApi = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, ConcurrentMap<String, Map<String, Object>>> schemaMapJson = new ConcurrentHashMap<>();
 
     @Requires
     FeaturesCoreProviders providers;
@@ -55,8 +55,10 @@ public class SchemaGeneratorFeature {
     }
 
     public Schema getSchemaOpenApi(OgcApiDataV2 apiData, String collectionId) {
-        String key = apiData.getId()+"__"+collectionId;
-        if (!schemaMapOpenApi.containsKey(key)) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMapOpenApi.containsKey(apiHashCode))
+            schemaMapOpenApi.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMapOpenApi.get(apiHashCode).containsKey(collectionId)) {
             FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
                                                                    .get(collectionId);
             String featureTypeId = apiData.getCollections()
@@ -76,17 +78,17 @@ public class SchemaGeneratorFeature {
                                                   .isPresent();
 
             ContextOpenApi featureContext = processPropertiesOpenApi(featureType, true, flatten);
-            schemaMapOpenApi.put(key, new ObjectSchema()
-                    .title(featureType.getLabel().orElse(null))
-                    .description(featureType.getDescription().orElse(null))
-                    .required(ImmutableList.of("type", "geometry", "properties"))
-                    .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
-                    .addProperties("geometry", featureContext.geometry)
-                    .addProperties("properties", featureContext.properties)
-                    .addProperties("id", new StringSchema())
-                    .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link"))));
+            schemaMapOpenApi.get(apiHashCode)
+                            .put(collectionId, new ObjectSchema().title(featureType.getLabel().orElse(null))
+                                                                 .description(featureType.getDescription().orElse(null))
+                                                                 .required(ImmutableList.of("type", "geometry", "properties"))
+                                                                 .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
+                                                                 .addProperties("geometry", featureContext.geometry)
+                                                                 .addProperties("properties", featureContext.properties)
+                                                                 .addProperties("id", new StringSchema())
+                                                                 .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link"))));
         }
-        return schemaMapOpenApi.get(key);
+        return schemaMapOpenApi.get(apiHashCode).get(collectionId);
     }
 
     public List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId) {
@@ -336,8 +338,10 @@ public class SchemaGeneratorFeature {
     }
 
     public Map<String, Object> getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri) {
-        String key = apiData.getId()+"__"+collectionId;
-        if (!schemaMapJson.containsKey(key)) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMapJson.containsKey(apiHashCode))
+            schemaMapJson.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMapJson.get(apiHashCode).containsKey(collectionId)) {
 
             FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
                     .get(collectionId);
@@ -383,36 +387,37 @@ public class SchemaGeneratorFeature {
                 current = next;
             }
 
-            schemaMapJson.put(key, ImmutableMap.<String, Object>builder()
-                    .put("$schema", "http://json-schema.org/draft-07/schema#")
-                    .put("$id", schemaUri)
-                    .put("type", "object")
-                    .put("title", featureType.getLabel())
-                    .put("description", featureType.getDescription())
-                    .put("required", ImmutableList.builder()
-                            .add("type", "geometry", "properties")
-                            .build())
-                    .put("properties", ImmutableMap.builder()
-                            .put("type", ImmutableMap.builder()
-                                    .put("type", "string")
-                                    .put("enum", ImmutableList.builder()
-                                            .add("Feature")
-                                            .build())
-                                    .build())
-                            .put("id", ImmutableMap.builder()
-                                    .put("type", "string")
-                                    .build())
-                            .put("links", ImmutableMap.builder()
-                                    .put("type", "array")
-                                    .put("items", ImmutableMap.builder().put("$ref", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link").build())
-                                    .build())
-                            .put("geometry", featureContext.geometry)
-                            .put("properties", featureContext.properties)
-                            .build())
-                    .put(DEFINITIONS_TOKEN, definitionsMapBuilder.build())
-                    .build());
+            schemaMapJson.get(apiHashCode)
+                         .put(collectionId, ImmutableMap.<String, Object>builder()
+                                 .put("$schema", "http://json-schema.org/draft-07/schema#")
+                                 .put("$id", schemaUri)
+                                 .put("type", "object")
+                                 .put("title", featureType.getLabel())
+                                 .put("description", featureType.getDescription())
+                                 .put("required", ImmutableList.builder()
+                                                               .add("type", "geometry", "properties")
+                                                               .build())
+                                 .put("properties", ImmutableMap.builder()
+                                                                .put("type", ImmutableMap.builder()
+                                                                                         .put("type", "string")
+                                                                                         .put("enum", ImmutableList.builder()
+                                                                                                                   .add("Feature")
+                                                                                                                   .build())
+                                                                                         .build())
+                                                                .put("id", ImmutableMap.builder()
+                                                                                       .put("type", "string")
+                                                                                       .build())
+                                                                .put("links", ImmutableMap.builder()
+                                                                                          .put("type", "array")
+                                                                                          .put("items", ImmutableMap.builder().put("$ref", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link").build())
+                                                                                          .build())
+                                                                .put("geometry", featureContext.geometry)
+                                                                .put("properties", featureContext.properties)
+                                                                .build())
+                                 .put(DEFINITIONS_TOKEN, definitionsMapBuilder.build())
+                                 .build());
         }
-        return schemaMapJson.get(key);
+        return schemaMapJson.get(apiHashCode).get(collectionId);
     }
 
     private Map<String, Object> getJsonSchemaForLiteralType(de.ii.xtraplatform.features.domain.SchemaBase.Type type) {

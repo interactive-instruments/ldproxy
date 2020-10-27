@@ -15,6 +15,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension.DAPA_PATH_ELEMENT;
 
@@ -63,8 +64,10 @@ public class QueryParameterFProcessesPosition extends QueryParameterF {
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData) {
-        String key = apiData.getId()+"_*";
-        if (!schemaMap.containsKey(key)) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey("*")) {
             List<String> fEnum = new ArrayList<>();
             extensionRegistry.getExtensionsForType(getFormatClass())
                     .stream()
@@ -72,15 +75,17 @@ public class QueryParameterFProcessesPosition extends QueryParameterF {
                     .filter(f -> !f.getMediaType().parameter().equals("*"))
                     .filter(f -> f.getContent(apiData, "/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/position")!=null)
                     .forEach(f -> fEnum.add(f.getMediaType().parameter()));
-            schemaMap.put(key, new StringSchema()._enum(fEnum));
+            schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(fEnum));
         }
-        return schemaMap.get(key);
+        return schemaMap.get(apiHashCode).get("*");
     }
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
-        String key = apiData.getId()+"_"+collectionId;
-        if (!schemaMap.containsKey(key)) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
             List<String> fEnum = new ArrayList<>();
             extensionRegistry.getExtensionsForType(getFormatClass())
                     .stream()
@@ -88,8 +93,8 @@ public class QueryParameterFProcessesPosition extends QueryParameterF {
                     .filter(f -> !f.getMediaType().parameter().equals("*"))
                     .filter(f -> f.getContent(apiData, "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/position")!=null)
                     .forEach(f -> fEnum.add(f.getMediaType().parameter()));
-            schemaMap.put(key, new StringSchema()._enum(fEnum));
+            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(fEnum));
         }
-        return schemaMap.get(key);
+        return schemaMap.get(apiHashCode).get(collectionId);
     }
 }

@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Component
 @Provides
@@ -50,12 +51,14 @@ public class QueryParameterLimitTile implements OgcApiQueryParameter {
                 definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
     }
 
-    private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<Integer, Map<String,Schema>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData) {
-        String key = apiData.getId()+"_*";
-        if (!schemaMap.containsKey(key)) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey("*")) {
             Schema schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
 
             Optional<Integer> limit = apiData.getExtension(TilesConfiguration.class)
@@ -63,15 +66,18 @@ public class QueryParameterLimitTile implements OgcApiQueryParameter {
             if (limit.isPresent())
                 schema.setDefault(BigDecimal.valueOf(limit.get()));
 
-            schemaMap.put(key, schema);
+            schemaMap.get(apiHashCode)
+                     .put("*", schema);
         }
-        return schemaMap.get(key);
+        return schemaMap.get(apiHashCode).get("*");
     }
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
-        String key = apiData.getId()+"_"+collectionId;
-        if (!schemaMap.containsKey(key)) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
             Schema schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
 
             FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
@@ -80,9 +86,11 @@ public class QueryParameterLimitTile implements OgcApiQueryParameter {
             if (limit.isPresent())
                 schema.setDefault(BigDecimal.valueOf(limit.get()));
 
-            schemaMap.put(key, schema);
+            schemaMap.get(apiHashCode)
+                     .put(collectionId, schema);
         }
-        return schemaMap.get(key);
+        return schemaMap.get(apiHashCode)
+                        .get(collectionId);
     }
 
     @Override

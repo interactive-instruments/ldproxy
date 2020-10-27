@@ -4,7 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -17,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Component
 @Provides
@@ -56,19 +61,22 @@ public class QueryParameterBboxCrsFeatures implements OgcApiQueryParameter {
                 definitionPath.equals("/collections/{collectionId}/items");
     }
 
-    private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
-        String key = apiData.getId()+"__"+collectionId;
-        if (!schemaMap.containsKey(key)) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
             List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
                                              .stream()
                                              .map(EpsgCrs::toUriString)
                                              .collect(ImmutableList.toImmutableList());
-            schemaMap.put(key, new StringSchema()._enum(crsList)._default(CRS84));
+            schemaMap.get(apiHashCode)
+                     .put(collectionId, new StringSchema()._enum(crsList)._default(CRS84));
         }
-        return schemaMap.get(key);
+        return schemaMap.get(apiHashCode).get(collectionId);
     }
 
     @Override

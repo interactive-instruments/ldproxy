@@ -39,13 +39,13 @@ public class QueryParameterCollections implements OgcApiQueryParameter {
                definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
     }
 
-    private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();
-    private Map<String,List<String>> collectionsMap = new ConcurrentHashMap<>();
+    private Map<Integer,Schema> schemaMap = new ConcurrentHashMap<>();
+    private Map<Integer,List<String>> collectionsMap = new ConcurrentHashMap<>();
 
     private List<String> getCollectionIds(OgcApiDataV2 apiData) {
-        String key = apiData.getId();
-        if (!collectionsMap.containsKey(key)) {
-            collectionsMap.put(key, apiData.getCollections()
+        int apiHashCode = apiData.hashCode();
+        if (!collectionsMap.containsKey(apiHashCode)) {
+            collectionsMap.put(apiHashCode, apiData.getCollections()
                     .values()
                     .stream()
                     .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
@@ -53,16 +53,16 @@ public class QueryParameterCollections implements OgcApiQueryParameter {
                     .map(FeatureTypeConfiguration::getId)
                     .collect(Collectors.toList()));
         }
-        return collectionsMap.get(key);
+        return collectionsMap.get(apiHashCode);
     }
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData) {
-        String key = apiData.getId();
-        if (!schemaMap.containsKey(key)) {
-            schemaMap.put(key, new ArraySchema().items(new StringSchema()._enum(getCollectionIds(apiData))));
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode)) {
+            schemaMap.put(apiHashCode, new ArraySchema().items(new StringSchema()._enum(getCollectionIds(apiData))));
         }
-        return schemaMap.get(key);
+        return schemaMap.get(apiHashCode);
     }
 
     @Override

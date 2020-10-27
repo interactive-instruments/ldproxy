@@ -18,7 +18,7 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPathParameterCollectionId.class);
 
-    protected final Map<String,Set<String>> apiCollectionMap;
+    protected final Map<Integer,Set<String>> apiCollectionMap;
 
     public AbstractPathParameterCollectionId() {
         this.apiCollectionMap = new HashMap<>();
@@ -36,13 +36,13 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
 
     @Override
     public Set<String> getValues(OgcApiDataV2 apiData) {
-        if (!apiCollectionMap.containsKey(apiData.getId())) {
-            apiCollectionMap.put(apiData.getId(), apiData.getCollections().keySet().stream()
-                                                         .filter(collectionId -> apiData.isCollectionEnabled(collectionId))
-                                                         .collect(Collectors.toSet()));
+        if (!apiCollectionMap.containsKey(apiData.hashCode())) {
+            apiCollectionMap.put(apiData.hashCode(), apiData.getCollections().keySet().stream()
+                                                            .filter(collectionId -> apiData.isCollectionEnabled(collectionId))
+                                                            .collect(Collectors.toSet()));
         }
 
-        return apiCollectionMap.get(apiData.getId());
+        return apiCollectionMap.get(apiData.hashCode());
     }
 
     @Override
