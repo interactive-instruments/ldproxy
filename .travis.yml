@@ -1,10 +1,15 @@
+dist: bionic
 sudo: required
 services:
 - docker
 language:
 - java
-jdk:
-- openjdk11
+addons:
+  apt:
+    packages:
+      - openjdk-11-jdk
+#jdk:
+#- openjdk11
 node_js: '10'
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -15,6 +20,8 @@ cache:
   - "$HOME/.gradle/wrapper/"
 before_install:
 - npm install -g yarn
+- export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+- export
 script:
 - "./gradlew assemble"
 after_success:
