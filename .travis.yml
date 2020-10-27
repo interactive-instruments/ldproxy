@@ -20,6 +20,7 @@ cache:
   - "$HOME/.gradle/wrapper/"
 before_install:
 - npm install -g yarn
+- export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 - export
 script:
 - "./gradlew assemble"
