@@ -16,6 +16,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Component
 @Provides
@@ -55,19 +56,21 @@ public class QueryParameterCrsFeatures implements OgcApiQueryParameter, Conforma
                  definitionPath.equals("/collections/{collectionId}/items/{featureId}"));
     }
 
-    private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
-        String key = apiData.getId()+"__"+collectionId;
-        if (!schemaMap.containsKey(key)) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
             List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
                                              .stream()
                                              .map(EpsgCrs::toUriString)
                                              .collect(ImmutableList.toImmutableList());
-            schemaMap.put(key, new StringSchema()._enum(crsList)._default(CRS84));
+            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsList)._default(CRS84));
         }
-        return schemaMap.get(key);
+        return schemaMap.get(apiHashCode).get(collectionId);
     }
 
     @Override

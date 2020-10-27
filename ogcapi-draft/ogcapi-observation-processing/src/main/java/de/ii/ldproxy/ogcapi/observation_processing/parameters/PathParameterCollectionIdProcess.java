@@ -43,10 +43,10 @@ public class PathParameterCollectionIdProcess extends AbstractPathParameterColle
 
     @Override
     public Set<String> getValues(OgcApiDataV2 apiData) {
-        if (!apiCollectionMap.containsKey(apiData.getId()))
-            apiCollectionMap.put(apiData.getId(),returnObservationCollections(apiData));
+        if (!apiCollectionMap.containsKey(apiData.hashCode()))
+            apiCollectionMap.put(apiData.hashCode(),returnObservationCollections(apiData));
 
-        return apiCollectionMap.get(apiData.getId());
+        return apiCollectionMap.get(apiData.hashCode());
     }
 
     @Override

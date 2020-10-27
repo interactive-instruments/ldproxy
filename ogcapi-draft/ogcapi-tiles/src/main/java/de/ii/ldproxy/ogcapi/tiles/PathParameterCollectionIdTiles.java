@@ -21,8 +21,8 @@ public class PathParameterCollectionIdTiles extends AbstractPathParameterCollect
 
     @Override
     public Set<String> getValues(OgcApiDataV2 apiData) {
-        if (!apiCollectionMap.containsKey(apiData.getId())) {
-            apiCollectionMap.put(apiData.getId(), apiData.getCollections().values()
+        if (!apiCollectionMap.containsKey(apiData.hashCode())) {
+            apiCollectionMap.put(apiData.hashCode(), apiData.getCollections().values()
                     .stream()
                     .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
                     .filter(collection -> collection.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
@@ -30,7 +30,7 @@ public class PathParameterCollectionIdTiles extends AbstractPathParameterCollect
                     .collect(Collectors.toSet()));
         }
 
-        return apiCollectionMap.get(apiData.getId());
+        return apiCollectionMap.get(apiData.hashCode());
     }
 
     @Override

@@ -2,7 +2,11 @@ package de.ii.ldproxy.ogcapi.projections;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -16,6 +20,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Component
 @Provides
@@ -49,15 +54,18 @@ public class QueryParameterProperties implements OgcApiQueryParameter {
                  definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
     }
 
-    private Map<String,Schema> schemaMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
-        String key = apiData.getId()+"__"+collectionId;
-        if (!schemaMap.containsKey(key)) {
-            schemaMap.put(key, new ArraySchema().items(new StringSchema()._enum(schemaGeneratorFeature.getPropertyNames(apiData, collectionId))));
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+            schemaMap.get(apiHashCode)
+                     .put(collectionId, new ArraySchema().items(new StringSchema()._enum(schemaGeneratorFeature.getPropertyNames(apiData, collectionId))));
         }
-        return schemaMap.get(key);
+        return schemaMap.get(apiHashCode).get(collectionId);
     }
 
     @Override

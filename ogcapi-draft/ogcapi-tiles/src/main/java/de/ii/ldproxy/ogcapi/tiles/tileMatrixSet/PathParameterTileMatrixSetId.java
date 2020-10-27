@@ -3,9 +3,9 @@ package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -36,7 +37,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     private final ExtensionRegistry extensionRegistry;
     final FeaturesCoreProviders providers;
     final FeatureProcessInfo featureProcessInfo;
-    protected Map<String, Schema> schemaMap = new ConcurrentHashMap<>();
+    protected ConcurrentMap<Integer, Schema> schemaMap = new ConcurrentHashMap<>();
 
     public PathParameterTileMatrixSetId(@Requires ExtensionRegistry extensionRegistry,
                                         @Requires FeaturesCoreProviders providers,
@@ -80,11 +81,11 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData) {
-        if (!schemaMap.containsKey(apiData.getId())) {
-            schemaMap.put(apiData.getId(),new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData))));
+        if (!schemaMap.containsKey(apiData.hashCode())) {
+            schemaMap.put(apiData.hashCode(),new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData))));
         }
 
-        return schemaMap.get(apiData.getId());
+        return schemaMap.get(apiData.hashCode());
     }
 
     @Override
