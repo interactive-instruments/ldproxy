@@ -101,7 +101,6 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         int apiDataHash = apiData.hashCode();
         if (!apiDefinitions.containsKey(apiDataHash)) {
-            LOGGER.info("OAPI GEN");
             ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
                     .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES);
