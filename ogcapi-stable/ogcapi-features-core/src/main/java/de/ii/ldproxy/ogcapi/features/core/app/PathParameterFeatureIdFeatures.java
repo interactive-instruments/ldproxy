@@ -34,7 +34,7 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
 
     @Override
     public String getPattern() {
-        return "[\\w\\-]+";
+        return "[\\w\\-\\.]+";
     }
 
     @Override
