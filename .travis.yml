@@ -8,8 +8,8 @@ addons:
   apt:
     packages:
       - openjdk-11-jdk
-jdk:
-- openjdk11
+#jdk:
+#- openjdk11
 node_js: '10'
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
