@@ -20,6 +20,7 @@ cache:
   - "$HOME/.gradle/wrapper/"
 before_install:
 - npm install -g yarn
+- export
 script:
 - "./gradlew assemble"
 after_success:
