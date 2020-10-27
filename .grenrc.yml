@@ -1,0 +1,26 @@
+---
+  dataSource: "issues"
+  prefix: ""
+  ignoreIssuesWith: 
+    - "duplicate"
+    - "question"
+    - "wontfix"
+  onlyMilestones: false
+  ignoreTagsWith: 
+    - "v1"
+    - "-beta"
+    - "-rc"
+  groupBy:
+    Breaking changes:
+      - breaking
+    Implemented enhancements:
+      - enhancement
+    Improvements:
+      - improvement
+    Fixed bugs:
+      - bug
+    Dependency updates:
+      - dependencies
+  changelogFilename: "CHANGELOG.md"
+  template:
+    label: ''

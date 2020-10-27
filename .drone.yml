@@ -32,6 +32,26 @@ pipeline:
       event: push
       branch: master
 
+  release:
+    image: node:12-alpine
+    commands:
+      - npx github-release-notes@0.17.1 release --token=$GITHUB_TOKEN
+      - npx github-release-notes@0.17.1 changelog --override --token=$GITHUB_TOKEN
+    secrets: [ github_token ]
+    when:
+      event: [tag]
+
+  changelog:
+    image: alpine/git
+    commands:
+      - git checkout -B changelog-$DRONE_TAG
+      - git add CHANGELOG.md
+      - git commit -m "add changelog for $DRONE_TAG"
+      - git push -u origin changelog-$DRONE_TAG
+    secrets: [ github_token ]
+    when:
+      event: [tag]
+
   save-cache:
     image: drillster/drone-volume-cache
     volumes: [/tmp:/cache]
