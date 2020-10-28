@@ -257,7 +257,12 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                            throw new IllegalArgumentException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
                                                        }
 
-                                                       List<String> invalidProperties = cql.findInvalidProperties(cqlPredicate, filterableFields.keySet());
+                                                       // add "_ID_" to the list to support ID filters (a ldproxy CQL extension)
+                                                       ImmutableSet<String> validProperties = ImmutableSet.<String>builder()
+                                                                                                          .addAll(filterableFields.keySet())
+                                                                                                          .add("_ID_")
+                                                                                                          .build();
+                                                       List<String> invalidProperties = cql.findInvalidProperties(cqlPredicate, validProperties);
 
                                                        if (invalidProperties.isEmpty()) {
                                                            return cqlPredicate;
