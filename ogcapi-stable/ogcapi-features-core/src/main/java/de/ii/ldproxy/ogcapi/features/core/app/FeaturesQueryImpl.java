@@ -16,9 +16,9 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
@@ -257,12 +257,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                            throw new IllegalArgumentException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
                                                        }
 
-                                                       // add "_ID_" to the list to support ID filters (a ldproxy CQL extension)
-                                                       ImmutableSet<String> validProperties = ImmutableSet.<String>builder()
-                                                                                                          .addAll(filterableFields.keySet())
-                                                                                                          .add("_ID_")
-                                                                                                          .build();
-                                                       List<String> invalidProperties = cql.findInvalidProperties(cqlPredicate, validProperties);
+                                                       List<String> invalidProperties = cql.findInvalidProperties(cqlPredicate, filterableFields.keySet());
 
                                                        if (invalidProperties.isEmpty()) {
                                                            return cqlPredicate;
