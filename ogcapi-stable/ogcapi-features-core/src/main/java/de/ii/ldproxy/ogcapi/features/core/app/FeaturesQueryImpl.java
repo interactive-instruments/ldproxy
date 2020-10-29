@@ -16,9 +16,9 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
@@ -26,6 +26,7 @@ import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Eq;
 import de.ii.xtraplatform.cql.domain.Function;
 import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
+import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Property;
@@ -107,7 +108,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             parameters = parameter.transformParameters(collectionData, parameters, apiData);
         }
 
-        final CqlFilter filter = CqlFilter.of(Eq.of("_ID_", ScalarLiteral.of(urldecode(featureId))));
+        final CqlFilter filter = CqlFilter.of(In.of(ScalarLiteral.of(urldecode(featureId))));
 
         final String collectionId = collectionData.getId();
         final String featureTypeId = apiData.getCollections()
