@@ -112,7 +112,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
         } else {
             selectedMediaType = contentNegotiation.negotiate(requestContext, supportedMediaTypes)
-                                                  .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
+                                                  .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The Accept header ''{0}'' does not match any of the supported media types for this resource: {1}.", requestContext.getHeaderString("Accept"), supportedMediaTypes.stream().map(mediaType -> mediaType.type().toString()).collect(Collectors.toList()))));
             alternateMediaTypes = getAlternateMediaTypes(selectedMediaType, supportedMediaTypes);
 
         }
