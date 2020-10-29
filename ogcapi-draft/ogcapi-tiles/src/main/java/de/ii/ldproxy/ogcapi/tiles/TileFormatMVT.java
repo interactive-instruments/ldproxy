@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -135,6 +134,15 @@ public class TileFormatMVT implements TileFormatExtension {
         String tileMatrixSetId = tile.getTileMatrixSet().getId();
         int level = tile.getTileLevel();
 
+        final  Map<String, List<PredefinedFilter>> predefFilters = tilesConfiguration.getFilters();
+        final String predefFilter = (Objects.nonNull(predefFilters) && predefFilters.containsKey(tileMatrixSetId)) ?
+                predefFilters.get(tileMatrixSetId).stream()
+                             .filter(filter -> filter.getMax()>=level && filter.getMin()<=level && filter.getFilter().isPresent())
+                             .map(filter -> filter.getFilter().get())
+                             .findAny()
+                             .orElse(null) :
+                null;
+
         String featureTypeId = tile.getApi()
                                    .getData()
                                    .getCollections()
@@ -149,13 +157,16 @@ public class TileFormatMVT implements TileFormatExtension {
                 .crs(tile.getTileMatrixSet().getCrs())
                 .maxAllowableOffset(getMaxAllowableOffsetNative(tile));
 
-        List<String> properties = queryParameters.containsKey("properties") ?
-                Splitter.on(",")
-                        .trimResults()
-                        .omitEmptyStrings()
-                        .splitToList(queryParameters.get("properties")) :
-                ImmutableList.of("*");
-        queryBuilder.fields(properties);
+        if (!queryParameters.containsKey("properties") && (Objects.nonNull(predefFilters) && predefFilters.containsKey(tileMatrixSetId))) {
+            List<String> properties = predefFilters.get(tileMatrixSetId).stream()
+                                                   .filter(filter -> filter.getMax() >= level && filter.getMin() <= level)
+                                                   .map(filter -> filter.getProperties())
+                                                   .findAny()
+                                                   .orElse(ImmutableList.of());
+            if (!properties.isEmpty()) {
+                queryParameters.put("properties", String.join(",", properties));
+            }
+        }
 
         OgcApiDataV2 apiData = tile.getApi().getData();
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
@@ -178,15 +189,6 @@ public class TileFormatMVT implements TileFormatExtension {
         for (OgcApiQueryParameter parameter : allowedParameters) {
             parameter.transformQuery(collectionData, queryBuilder, queryParameters, apiData);
         }
-
-        final  Map<String, List<PredefinedFilter>> predefFilters = tilesConfiguration.getFilters();
-        final String predefFilter = (Objects.nonNull(predefFilters) && predefFilters.containsKey(tileMatrixSetId)) ?
-                predefFilters.get(tileMatrixSetId).stream()
-                    .filter(filter -> filter.getMax()>=level && filter.getMin()<=level)
-                    .map(filter -> filter.getFilter())
-                    .findAny()
-                    .orElse(null) :
-                null;
 
         CqlPredicate spatialPredicate = CqlPredicate.of(Intersects.of(filterableFields.get("bbox"), tile.getBoundingBox()));
         if ((predefFilter!=null || !filters.isEmpty()) && filterableFields != null) {
