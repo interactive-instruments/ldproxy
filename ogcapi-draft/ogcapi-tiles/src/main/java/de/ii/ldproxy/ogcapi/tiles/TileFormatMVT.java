@@ -164,7 +164,10 @@ public class TileFormatMVT implements TileFormatExtension {
                                                    .findAny()
                                                    .orElse(ImmutableList.of());
             if (!properties.isEmpty()) {
-                queryParameters.put("properties", String.join(",", properties));
+                queryParameters = ImmutableMap.<String, String>builder()
+                                              .putAll(queryParameters)
+                                              .put("properties", String.join(",", properties))
+                                              .build();
             }
         }
 
