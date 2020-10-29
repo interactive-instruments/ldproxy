@@ -30,9 +30,11 @@ white-space: nowrap;
 <script>
  var map = new mapboxgl.Map({
  container: 'map',
+ hash: true,
  style: '{{{styleUrl}}}'
  });
  map.addControl(new mapboxgl.NavigationControl());
+ map.addControl(new mapboxgl.ScaleControl());
 {{#popup}}
  map.on('load', function() {
    var popup = new mapboxgl.Popup({
