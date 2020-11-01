@@ -21,7 +21,7 @@ public class PathParameterCollectionIdSchema extends AbstractPathParameterCollec
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return isEnabledForApi(apiData) && definitionPath.matches("/collections/\\{collectionId\\}/schema");
+        return isEnabledForApi(apiData) && definitionPath.equals("/collections/{collectionId}/schema");
     }
 
     @Override

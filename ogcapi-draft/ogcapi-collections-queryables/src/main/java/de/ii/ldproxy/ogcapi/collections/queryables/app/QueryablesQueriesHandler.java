@@ -7,17 +7,20 @@
  */
 package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.collections.queryables.domain.ImmutableQueryable;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -28,7 +31,9 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Component
 @Instantiate
@@ -93,6 +98,7 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
         List<Link> links =
                 new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
 
+        /*
         ImmutableQueryables.Builder queryables = ImmutableQueryables.builder();
 
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
@@ -216,9 +222,15 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
         });
 
         queryables.links(links);
+         */
+
+        Map<String,Object> jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
+                                                                                                         .filter(link -> link.getRel().equals("self"))
+                                                                                                         .map(link -> link.getHref())
+                                                                                                         .findAny(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES);
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
-                .entity(outputFormat.getEntity(queryables.build(), collectionId, api, requestContext))
+                .entity(outputFormat.getEntity(jsonSchema, links, collectionId, api, requestContext))
                 .build();
     }
 }

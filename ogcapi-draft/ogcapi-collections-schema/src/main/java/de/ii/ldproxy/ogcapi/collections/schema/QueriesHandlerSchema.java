@@ -34,7 +34,7 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
     public enum Query implements QueryIdentifier {SCHEMA}
 
     @Value.Immutable
-    public interface QueryInputQueryables extends QueryInput {
+    public interface QueryInputSchema extends QueryInput {
         String getCollectionId();
 
         boolean getIncludeLinkHeader();
@@ -49,7 +49,7 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
     public QueriesHandlerSchema(@Requires I18n i18n) {
         this.i18n = i18n;
         this.queryHandlers = ImmutableMap.of(
-                Query.SCHEMA, QueryHandler.with(QueryInputQueryables.class, this::getSchemaResponse)
+                Query.SCHEMA, QueryHandler.with(QueryInputSchema.class, this::getSchemaResponse)
         );
     }
 
@@ -64,7 +64,7 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
         }
     }
 
-    private Response getSchemaResponse(QueryInputQueryables queryInput, ApiRequestContext requestContext) {
+    private Response getSchemaResponse(QueryInputSchema queryInput, ApiRequestContext requestContext) {
 
         OgcApi api = requestContext.getApi();
         OgcApiDataV2 apiData = api.getData();
@@ -86,9 +86,9 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
                 new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
 
         Map<String,Object> jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
-                .filter(link -> link.getRel().equals("self"))
-                .map(link -> link.getHref())
-                .findAny());
+                                                                                                         .filter(link -> link.getRel().equals("self"))
+                                                                                                         .map(link -> link.getHref())
+                                                                                                         .findAny());
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
                 .entity(outputFormat.getEntity(jsonSchema, collectionId, api, requestContext))

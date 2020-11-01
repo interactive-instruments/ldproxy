@@ -8,8 +8,12 @@
 package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+
+import java.util.List;
+import java.util.Map;
 
 public interface QueryablesFormatExtension extends GenericFormatExtension {
 
@@ -17,6 +21,6 @@ public interface QueryablesFormatExtension extends GenericFormatExtension {
         return "^\\/?collections\\/[^\\/]+\\/queryables/?$";
     }
 
-    Object getEntity(Queryables queryables, String collectionId, OgcApi api, ApiRequestContext requestContext);
+    Object getEntity(Map<String,Object> schemaQueryables, List<Link> links, String collectionId, OgcApi api, ApiRequestContext requestContext);
 
 }

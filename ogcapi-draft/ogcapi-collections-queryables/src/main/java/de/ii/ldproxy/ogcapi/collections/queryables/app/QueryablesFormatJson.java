@@ -7,33 +7,30 @@
  */
 package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
-import io.swagger.v3.oas.models.media.Schema;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Provides
 @Instantiate
 public class QueryablesFormatJson implements QueryablesFormatExtension {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
-    private final Schema schema;
-    public final static String SCHEMA_REF = "#/components/schemas/Queryables";
-
-    public QueryablesFormatJson() {
-        schema = schemaGenerator.getSchema(Queryables.class);
-    }
-
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "json"))
+            .type(new MediaType("application", "schema+json"))
             .label("JSON")
             .parameter("json")
             .build();
@@ -46,14 +43,14 @@ public class QueryablesFormatJson implements QueryablesFormatExtension {
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schema)
-                .schemaRef(SCHEMA_REF)
+                .schema(new ObjectSchema())
+                .schemaRef("https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v3.0/schema.json#/definitions/Schema")
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
     }
 
     @Override
-    public Object getEntity(Queryables queryables, String collectionId, OgcApi api, ApiRequestContext requestContext) {
-        return queryables;
+    public Object getEntity(Map<String,Object> schemaQueryables, List<Link> links, String collectionId, OgcApi api, ApiRequestContext requestContext) {
+        return schemaQueryables;
     }
 }

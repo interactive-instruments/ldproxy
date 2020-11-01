@@ -32,6 +32,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
     }
 
     private String currentId;
+    private boolean currentIdIsInteger;
     private boolean writeAtFeatureEnd = false;
 
     @Override
@@ -60,10 +61,15 @@ public class GeoJsonWriterId implements GeoJsonWriter {
             this.writeAtFeatureEnd = false;
 
             if (Objects.nonNull(currentId)) {
-                transformationContext.getJson()
-                                     .writeStringField("id", currentId);
+                if (currentIdIsInteger)
+                    transformationContext.getJson()
+                                         .writeNumberField("id", Long.valueOf(currentId));
+                else
+                    transformationContext.getJson()
+                                         .writeStringField("id", currentId);
                 writeLink(transformationContext, currentId);
                 this.currentId = null;
+                this.currentIdIsInteger = false;
             }
         }
 
@@ -90,11 +96,17 @@ public class GeoJsonWriterId implements GeoJsonWriter {
                                                        .get();
 
             if (currentFeatureProperty.isId()) {
+                boolean isInteger = (currentFeatureProperty.getType() == FeatureProperty.Type.INTEGER);
                 if (writeAtFeatureEnd) {
                     currentId = currentValue;
+                    currentIdIsInteger = isInteger;
                 } else {
-                    transformationContext.getJson()
-                                         .writeStringField("id", currentValue);
+                    if (isInteger)
+                        transformationContext.getJson()
+                                             .writeNumberField("id", Long.valueOf(currentValue));
+                    else
+                        transformationContext.getJson()
+                                             .writeStringField("id", currentValue);
 
                     writeLink(transformationContext, currentValue);
                 }

@@ -37,9 +37,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
@@ -125,7 +123,6 @@ public class EndpointQueryables extends EndpointSubCollection implements Conform
 
     @GET
     @Path("/{collectionId}/queryables")
-    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getQueryables(@Auth Optional<User> optionalUser,
                              @Context OgcApi api,
                              @Context ApiRequestContext requestContext,
