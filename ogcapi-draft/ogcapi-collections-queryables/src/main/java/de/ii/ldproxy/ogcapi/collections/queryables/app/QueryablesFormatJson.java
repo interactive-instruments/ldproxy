@@ -44,7 +44,8 @@ public class QueryablesFormatJson implements QueryablesFormatExtension {
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         return new ImmutableApiMediaTypeContent.Builder()
                 .schema(new ObjectSchema())
-                .schemaRef("https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v3.0/schema.json#/definitions/Schema")
+                .schemaRef("#/components/schemas/anyObject")
+                // TODO with OpenAPI 3.1 change to a link to a propert schema .schemaRef("https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v3.0/schema.json#/definitions/Schema")
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
     }
