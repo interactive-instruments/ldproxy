@@ -143,14 +143,15 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
             }
         } else if (exception instanceof IllegalArgumentException) {
             responseStatus = Response.Status.BAD_REQUEST;
+            String message = msgCause.isEmpty() ? msg : String.format("%s: %s", msg, msgCause);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Client error, HTTP status {}, Request path {}: {}", responseStatus.getStatusCode(), getRequestPath(true), exception.getMessage());
+                LOGGER.debug("Client error, HTTP status {}, Request path {}: {}", responseStatus.getStatusCode(), getRequestPath(true), message);
             }
             return Response.status(responseStatus)
                     .type(exceptionFormat.getMediaType().type())
                     .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
                                                                                 responseStatus.getReasonPhrase(),
-                                                                                msg)))
+                                                                                message)))
                     .build();
         }
 

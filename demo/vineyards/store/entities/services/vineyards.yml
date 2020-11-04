@@ -5,11 +5,11 @@ lastModified: 1600610292106
 entityStorageVersion: 2
 serviceType: OGC_API
 label: Vineyards in Rhineland-Palatinate, Germany
-description: 'Have you ever wondered where the wine that you are drinking comes from? If the wine comes from the wine-growing regions Mosel, Nahe, Rheinhessen, Pfalz, Ahr, or Mittelrhein you can find this information in this API that implements multiple <a href="https://ogcapi.ogc.org/" target="_blank">OGC API standards</a>.
+description: 'Have you ever wondered where the wine that you are drinking comes from? If the wine comes from the wine-growing regions Mosel, Nahe, Rheinhessen, Pfalz, Ahr, or Mittelrhein you can find this information in this API that implements multiple <a href=''https://ogcapi.ogc.org/'' target=''_blank''>OGC API standards</a>.
 <br><br>
 The dataset shared by this API is the vineyard register (Weinbergsrolle) of Rhineland-Palatinate, available under an open-data license. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP). 
 <br>
-<small>© Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" target="_blank">weinlagen.lwk-rlp.de</a>; <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" target="_blank">Regelungen zu Gewährleistung und Haftung</a></small>'
+<small>© Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href=''http://weinlagen.lwk-rlp.de/'' target=''_blank''>weinlagen.lwk-rlp.de</a>; <a href=''http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html'' target=''_blank''>Regelungen zu Gewährleistung und Haftung</a></small>'
 metadata:
   contactName: Clemens Portele, interactive instruments GmbH
   contactEmail: portele@interactive-instruments.de
