@@ -26,6 +26,7 @@ import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Eq;
 import de.ii.xtraplatform.cql.domain.Function;
 import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
+import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Property;
@@ -38,6 +39,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -107,7 +109,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             parameters = parameter.transformParameters(collectionData, parameters, apiData);
         }
 
-        final CqlFilter filter = CqlFilter.of(Eq.of("_ID_", ScalarLiteral.of(urldecode(featureId))));
+        final CqlFilter filter = CqlFilter.of(In.of(ScalarLiteral.of(urldecode(featureId))));
 
         final String collectionId = collectionData.getId();
         final String featureTypeId = apiData.getCollections()
@@ -243,10 +245,14 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                .map(filter -> {
                                                    if (filter.getKey()
                                                              .equals(PARAMETER_BBOX)) {
+                                                       if (filterableFields.get(filter.getKey()).equals(FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE))
+                                                           return null;
                                                        return bboxToCql(filterableFields.get(filter.getKey()), filter.getValue());
                                                    }
                                                    if (filter.getKey()
                                                              .equals(PARAMETER_DATETIME)) {
+                                                       if (filterableFields.get(filter.getKey()).equals(FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE))
+                                                           return null;
                                                        return timeToCql(filterableFields.get(filter.getKey()), filter.getValue()).orElse(null);
                                                    }
                                                    if (filterParameters.contains(filter.getKey())) {
