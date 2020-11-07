@@ -29,6 +29,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -53,10 +54,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerTilesMVT.class);
+    static final String NULL = "__NULL__";
 
     private OutputStream outputStream;
 
@@ -146,7 +149,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         final Map<String, List<Postprocessing>> postprocessing = tilesConfiguration.getPostprocessing();
         this.groupByAttributes = (Objects.nonNull(postprocessing) && postprocessing.containsKey(tileMatrixSet.getId())) ?
                 postprocessing.get(tileMatrixSet.getId()).stream()
-                             .filter(proc -> proc.getMax()>=tile.getTileLevel() && proc.getMin()<=tile.getTileLevel() && proc.getMergePolygons().orElse(false))
+                             .filter(proc -> proc.getMax()>=tile.getTileLevel() && proc.getMin()<=tile.getTileLevel() && proc.getMergeFeatures().orElse(false))
                              .map(proc -> proc.getGroupByWhenMerging())
                              .findAny()
                              .orElse(null) :
@@ -183,26 +186,31 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         }
     }
 
-    private void mergePolgons(List<Object> values) {
+    private void mergePolygons(List<Object> values) {
         // merge all polygons with the values
         MultiPolygon multiPolygon = geometryFactoryTile.createMultiPolygon(mergeGeometries.entrySet()
-                                                                              .stream()
-                                                                              .filter(entry -> {
-                                                                                  int i = 0;
-                                                                                  boolean match = true;
-                                                                                  for (String att : groupByAttributes) {
-                                                                                      if (!values.get(i++).equals(mergeProperties.get(entry.getKey()).get(att))) {
-                                                                                          match = false;
-                                                                                          break;
-                                                                                      }
-                                                                                  }
-                                                                                  return match;
-                                                                              })
-                                                                              .map(entry -> entry.getValue())
-                                                                              .map(g -> g instanceof MultiPolygon ? TileGeometryUtil.splitMultiPolygon((MultiPolygon) g) : ImmutableList.of(g))
-                                                                              .flatMap(Collection::stream)
-                                                                              .map(g -> (Polygon) g)
-                                                                              .toArray(Polygon[]::new));
+                                                                                          .stream()
+                                                                                          .filter(entry -> entry.getValue() instanceof Polygon || entry.getValue() instanceof MultiPolygon)
+                                                                                          .filter(entry -> {
+                                                                                              int i = 0;
+                                                                                              boolean match = true;
+                                                                                              for (String att : groupByAttributes) {
+                                                                                                  if (values.get(i).equals(NULL) && !mergeProperties.get(entry.getKey()).containsKey(att)) {
+                                                                                                      match = false;
+                                                                                                      break;
+                                                                                                  } else if (!values.get(i).equals(mergeProperties.get(entry.getKey()).get(att))) {
+                                                                                                      match = false;
+                                                                                                      break;
+                                                                                                  }
+                                                                                                  i++;
+                                                                                              }
+                                                                                              return match;
+                                                                                          })
+                                                                                          .map(entry -> entry.getValue())
+                                                                                          .map(g -> g instanceof MultiPolygon ? TileGeometryUtil.splitMultiPolygon((MultiPolygon) g) : ImmutableList.of(g))
+                                                                                          .flatMap(Collection::stream)
+                                                                                          .map(g -> (Polygon) g)
+                                                                                          .toArray(Polygon[]::new));
         if (multiPolygon.getNumGeometries()==0)
             return;
 
@@ -230,6 +238,56 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             encoder.addFeature(layerName, propertiesBuilder.build(), geom);
     }
 
+    private void mergeLineStrings(List<Object> values) {
+        // merge all line strings with the values
+        List<LineString> lineStrings = mergeGeometries.entrySet()
+                                                      .stream()
+                                                      .filter(entry -> entry.getValue() instanceof LineString || entry.getValue() instanceof MultiLineString)
+                                                      .filter(entry -> {
+                                                          int i = 0;
+                                                          boolean match = true;
+                                                          for (String att : groupByAttributes) {
+                                                              if (values.get(i).equals(NULL) && !mergeProperties.get(entry.getKey()).containsKey(att)) {
+                                                                  match = false;
+                                                                  break;
+                                                              } else if (!values.get(i).equals(mergeProperties.get(entry.getKey()).get(att))) {
+                                                                  match = false;
+                                                                  break;
+                                                              }
+                                                          }
+                                                          return match;
+                                                      })
+                                                      .map(entry -> entry.getValue())
+                                                      .map(g -> g instanceof MultiLineString ? TileGeometryUtil.splitMultiLineString((MultiLineString) g) : ImmutableList.of(g))
+                                                      .flatMap(Collection::stream)
+                                                      .map(g -> (LineString) g)
+                                                      .collect(Collectors.toList());
+        if (lineStrings.isEmpty())
+            return;
+
+        LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} line strings", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, lineStrings.size());
+        Geometry geom = TileGeometryUtil.processLineStrings(lineStrings, reducer);
+
+        ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
+        int i = 0;
+        for (String att : groupByAttributes) {
+            propertiesBuilder.put(att,values.get(i++));
+        }
+
+        if (Objects.isNull(geom) || geom.getNumGeometries()==0) {
+            LOGGER.trace("Merged line string feature grouped by {} in collection {} has no geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+            return;
+        }
+
+        // Geometry is invalid -> log this information and skip it, if that option is used
+        if (!geom.isValid()) {
+            LOGGER.info("Merged line string feature grouped by {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+            if (!tilesConfiguration.getIgnoreInvalidGeometries()) {
+                encoder.addFeature(layerName, propertiesBuilder.build(), geom);
+            }
+        } else
+            encoder.addFeature(layerName, propertiesBuilder.build(), geom);
+    }
 
     @Override
     public void onEnd() {
@@ -238,13 +296,21 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             ImmutableList<ImmutableList<Object>> groups = groupByAttributes.stream()
                                                                            .map(att -> mergeProperties.values()
                                                                                                       .stream()
-                                                                                                      .map(props -> props.get(att))
+                                                                                                      .map(props -> props.containsKey(att) ? props.get(att) : NULL)
                                                                                                       .distinct()
                                                                                                       .collect(ImmutableList.toImmutableList()))
                                                                            .collect(ImmutableList.toImmutableList());
-            Lists.cartesianProduct(groups)
-                 .stream()
-                 .forEach(values -> mergePolgons(values));
+
+            if (mergeGeometries.values().stream().anyMatch(geom -> geom instanceof Polygon || geom instanceof MultiPolygon))
+                Lists.cartesianProduct(groups)
+                     .stream()
+                     .forEach(values -> mergePolygons(values));
+
+            if (mergeGeometries.values().stream().anyMatch(geom -> geom instanceof LineString || geom instanceof MultiLineString))
+                Lists.cartesianProduct(groups)
+                     .stream()
+                     .forEach(values -> mergeLineStrings(values));
+
         }
 
         try {

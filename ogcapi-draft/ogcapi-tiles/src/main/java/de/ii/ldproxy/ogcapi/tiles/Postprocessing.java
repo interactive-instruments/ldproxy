@@ -19,6 +19,6 @@ import java.util.Optional;
 interface Postprocessing {
     int getMin();
     int getMax();
-    Optional<Boolean> getMergePolygons();
+    Optional<Boolean> getMergeFeatures();
     List<String> getGroupByWhenMerging();
 }

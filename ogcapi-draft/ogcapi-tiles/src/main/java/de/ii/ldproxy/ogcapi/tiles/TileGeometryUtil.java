@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.operation.linemerge.LineMerger;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,6 +110,14 @@ public class TileGeometryUtil {
         return patches;
     }
 
+    static List<LineString> splitMultiLineString(MultiLineString geom) {
+        List<LineString> segments = new ArrayList<>();
+        for (int i=0; i < geom.getNumGeometries(); i++) {
+            segments.add((LineString) geom.getGeometryN(i));
+        }
+        return segments;
+    }
+
     static Geometry processPolygons(Geometry geom, GeometryPrecisionReducer reducer) {
         if (geom instanceof Polygon || geom instanceof MultiPolygon)
             geom = geom.buffer(0.0);
@@ -123,6 +132,23 @@ public class TileGeometryUtil {
         // make sure the geometry is using the tile grid
         return reducer.reduce(geom);
     }
+
+    static Geometry processLineStrings(List<LineString> geoms, GeometryPrecisionReducer reducer) {
+        LineMerger merger = new LineMerger();
+        merger.add(geoms);
+        Geometry geom = geoms.get(0).getFactory().createMultiLineString((LineString[]) merger.getMergedLineStrings().toArray());
+
+        // remove small rings or line strings (small in the context of the tile) that may
+        // have been created in some cases by changing to the tile grid
+        geom = TileGeometryUtil.removeSmallPieces(geom);
+        if (geom==null) {
+            return null;
+        }
+
+        // make sure the geometry is using the tile grid
+        return reducer.reduce(geom);
+    }
+
 
     static Geometry validate(Geometry geom) {
         if (geom instanceof Polygon || geom instanceof MultiPolygon) {
