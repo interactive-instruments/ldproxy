@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,6 +101,29 @@ public class TileGeometryUtil {
         return geom;
     }
 
+    static List<Polygon> splitMultiPolygon(MultiPolygon geom) {
+        List<Polygon> patches = new ArrayList<>();
+        for (int i=0; i < geom.getNumGeometries(); i++) {
+            patches.add((Polygon) geom.getGeometryN(i));
+        }
+        return patches;
+    }
+
+    static Geometry processPolygons(Geometry geom, GeometryPrecisionReducer reducer) {
+        if (geom instanceof Polygon || geom instanceof MultiPolygon)
+            geom = geom.buffer(0.0);
+
+        // remove small rings or line strings (small in the context of the tile) that may
+        // have been created in some cases by changing to the tile grid
+        geom = TileGeometryUtil.removeSmallPieces(geom);
+        if (geom==null) {
+            return null;
+        }
+
+        // make sure the geometry is using the tile grid
+        return reducer.reduce(geom);
+    }
+
     static Geometry validate(Geometry geom) {
         if (geom instanceof Polygon || geom instanceof MultiPolygon) {
             // The standard recommendation in JTS to fix invalid (multi-)polygons is to try a buffer with distance 0.0.
@@ -109,3 +133,5 @@ public class TileGeometryUtil {
         return geom;
     }
 }
+
+

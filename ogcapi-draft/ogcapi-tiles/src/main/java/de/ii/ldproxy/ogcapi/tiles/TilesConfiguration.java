@@ -62,6 +62,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Nullable
     Map<String, List<PredefinedFilter>> getFilters();
 
+    @Nullable
+    Map<String, List<Postprocessing>> getPostprocessing();
+
     List<String> getTileEncodings();
 
     List<String> getTileSetEncodings();
