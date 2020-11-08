@@ -123,15 +123,24 @@ public class TileGeometryUtil {
         boolean geomUpdated = false;
         if (geom instanceof Polygon || geom instanceof MultiPolygon) {
             // the standard fix for invalid, self-intersecting polygons is to use a zero-distance buffer;
-            // however, this does not work in all cases and sometimes creates invalid or unwanted results;
-            // if the deviation is too big or invalid, we use the convex hull instead
+            // however, this does not work in all cases and sometimes creates invalid or unwanted results
             Geometry bufferGeom = geom.buffer(0.0);
             double areaChange = Math.abs(bufferGeom.getArea() - geom.getArea()) / geom.getArea();
             if (areaChange > 0.5 || !bufferGeom.isValid()) {
-                Geometry hullGeom = geom.convexHull();
-                areaChange = Math.abs(hullGeom.getArea() - geom.getArea()) / geom.getArea();
-                if (areaChange <= 0.5 && bufferGeom.isValid()) {
-                    geom = hullGeom;
+                // if the deviation is too big or invalid, try a union of the buffered geometry
+                Geometry bufferUnionGeom = bufferGeom.union();
+                areaChange = Math.abs(bufferUnionGeom.getArea() - geom.getArea()) / geom.getArea();
+                if (areaChange > 0.5 || !bufferUnionGeom.isValid()) {
+                    // if the deviation is too big or invalid, try a convex hull
+                    Geometry hullGeom = geom.convexHull();
+                    areaChange = Math.abs(hullGeom.getArea() - geom.getArea()) / geom.getArea();
+                    if (areaChange <= 0.5 && hullGeom.isValid()) {
+                        geom = hullGeom;
+                        geomUpdated = true;
+                    } else
+                        LOGGER.trace("Could not fix polygon geometry.");
+                } else {
+                    geom = bufferUnionGeom;
                     geomUpdated = true;
                 }
             } else {
