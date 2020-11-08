@@ -11,6 +11,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.operation.linemerge.LineMerger;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
+import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +119,7 @@ public class TileGeometryUtil {
         return segments;
     }
 
-    static Geometry processPolygons(Geometry geom, GeometryPrecisionReducer reducer) {
+    static Geometry processPolygons(Geometry geom, GeometryPrecisionReducer reducer, double distanceTolerance) {
         boolean reduceAgain = false;
         if (geom instanceof Polygon || geom instanceof MultiPolygon) {
             // the standard fix for invalid, self-intersecting polygons is to use a zero-distance buffer;
@@ -131,6 +132,11 @@ public class TileGeometryUtil {
             } else {
                 geom = bufferGeom;
             }
+
+            // simplify the geometry, if the geometry hasn't been simplified before
+            if (distanceTolerance != Double.NaN)
+                geom = TopologyPreservingSimplifier.simplify(geom, distanceTolerance);
+
             reduceAgain = true;
         }
 
@@ -148,7 +154,7 @@ public class TileGeometryUtil {
         return geom;
     }
 
-    static Geometry processLineStrings(List<LineString> geoms, GeometryPrecisionReducer reducer) {
+    static Geometry processLineStrings(List<LineString> geoms, GeometryPrecisionReducer reducer, double distanceTolerance) {
         LineMerger merger = new LineMerger();
         merger.add(geoms);
         Geometry geom = geoms.get(0).getFactory().createMultiLineString((LineString[]) merger.getMergedLineStrings().toArray());
@@ -158,6 +164,9 @@ public class TileGeometryUtil {
         if (geom==null) {
             return null;
         }
+
+        // simplify the geometry
+        geom = TopologyPreservingSimplifier.simplify(geom, distanceTolerance);
 
         // make sure the geometry is using the tile grid
         return reducer.reduce(geom);

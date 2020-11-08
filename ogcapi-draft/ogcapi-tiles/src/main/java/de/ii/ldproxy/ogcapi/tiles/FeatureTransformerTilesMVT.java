@@ -37,6 +37,7 @@ import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
+import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -215,7 +216,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             return;
 
         LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} polygons", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, multiPolygon.getNumGeometries());
-        Geometry geom = TileGeometryUtil.processPolygons(multiPolygon, reducer);
+        Geometry geom = TileGeometryUtil.processPolygons(multiPolygon, reducer, 1.0/tilePrecisionModel.getScale());
 
         ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
         int i = 0;
@@ -266,7 +267,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             return;
 
         LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} line strings", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, lineStrings.size());
-        Geometry geom = TileGeometryUtil.processLineStrings(lineStrings, reducer);
+        Geometry geom = TileGeometryUtil.processLineStrings(lineStrings, reducer, 1.0/tilePrecisionModel.getScale());
 
         ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
         int i = 0;
@@ -362,6 +363,9 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             return;
         }
 
+        // simplify the geometry
+        currentGeometry = TopologyPreservingSimplifier.simplify(currentGeometry, 1.0/tilePrecisionModel.getScale());
+
         // limit the coordinates to the tile with a buffer
         currentGeometry = TileGeometryUtil.clipGeometry(currentGeometry, clipGeometry);
         if (currentGeometry==null || currentGeometry.isEmpty()) {
@@ -378,7 +382,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
         // if the resulting geometry is invalid, try to make it valid
         if (!currentGeometry.isValid()) {
-            currentGeometry = TileGeometryUtil.processPolygons(currentGeometry, reducer);
+            currentGeometry = TileGeometryUtil.processPolygons(currentGeometry, reducer, Double.NaN);
             if (currentGeometry==null || currentGeometry.isEmpty()) {
                 resetFeatureInfo();
                 return;
