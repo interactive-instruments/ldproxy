@@ -120,24 +120,28 @@ public class TileGeometryUtil {
     }
 
     static Geometry processPolygons(Geometry geom, GeometryPrecisionReducer reducer, double distanceTolerance) {
-        boolean reduceAgain = false;
+        boolean geomUpdated = false;
         if (geom instanceof Polygon || geom instanceof MultiPolygon) {
             // the standard fix for invalid, self-intersecting polygons is to use a zero-distance buffer;
             // however, this does not work in all cases and sometimes creates invalid or unwanted results;
             // if the deviation is too big or invalid, we use the convex hull instead
             Geometry bufferGeom = geom.buffer(0.0);
             double areaChange = Math.abs(bufferGeom.getArea() - geom.getArea()) / geom.getArea();
-            if (areaChange > 1.1 || areaChange < 0.9 || !bufferGeom.isValid()) {
-                geom = geom.convexHull();
+            if (areaChange > 0.5 || !bufferGeom.isValid()) {
+                Geometry hullGeom = geom.convexHull();
+                areaChange = Math.abs(hullGeom.getArea() - geom.getArea()) / geom.getArea();
+                if (areaChange <= 0.5 && bufferGeom.isValid()) {
+                    geom = hullGeom;
+                    geomUpdated = true;
+                }
             } else {
                 geom = bufferGeom;
+                geomUpdated = true;
             }
 
             // simplify the geometry, if the geometry hasn't been simplified before
-            if (distanceTolerance != Double.NaN)
+            if (geomUpdated && distanceTolerance != Double.NaN)
                 geom = TopologyPreservingSimplifier.simplify(geom, distanceTolerance);
-
-            reduceAgain = true;
         }
 
         // remove small rings or line strings (small in the context of the tile) that may
@@ -148,7 +152,7 @@ public class TileGeometryUtil {
         }
 
         // make sure the geometry is using the tile grid, if we processed a polygon geometry
-        if (reduceAgain)
+        if (geomUpdated)
             geom = reducer.reduce(geom);
 
         return geom;
