@@ -119,18 +119,33 @@ public class TileGeometryUtil {
     }
 
     static Geometry processPolygons(Geometry geom, GeometryPrecisionReducer reducer) {
-        if (geom instanceof Polygon || geom instanceof MultiPolygon)
-            geom = geom.buffer(0.0);
+        boolean reduceAgain = false;
+        if (geom instanceof Polygon || geom instanceof MultiPolygon) {
+            // the standard fix for invalid, self-intersecting polygons is to use a zero-distance buffer;
+            // however, this does not work in all cases and sometimes creates invalid or unwanted results;
+            // if the deviation is too big or invalid, we use the convex hull instead
+            Geometry bufferGeom = geom.buffer(0.0);
+            double areaChange = Math.abs(bufferGeom.getArea() - geom.getArea()) / geom.getArea();
+            if (areaChange > 1.1 || areaChange < 0.9 || !bufferGeom.isValid()) {
+                geom = geom.convexHull();
+            } else {
+                geom = bufferGeom;
+            }
+            reduceAgain = true;
+        }
 
         // remove small rings or line strings (small in the context of the tile) that may
         // have been created in some cases by changing to the tile grid
         geom = TileGeometryUtil.removeSmallPieces(geom);
-        if (geom==null) {
+        if (geom==null || geom.isEmpty()) {
             return null;
         }
 
-        // make sure the geometry is using the tile grid
-        return reducer.reduce(geom);
+        // make sure the geometry is using the tile grid, if we processed a polygon geometry
+        if (reduceAgain)
+            geom = reducer.reduce(geom);
+
+        return geom;
     }
 
     static Geometry processLineStrings(List<LineString> geoms, GeometryPrecisionReducer reducer) {
@@ -138,8 +153,7 @@ public class TileGeometryUtil {
         merger.add(geoms);
         Geometry geom = geoms.get(0).getFactory().createMultiLineString((LineString[]) merger.getMergedLineStrings().toArray());
 
-        // remove small rings or line strings (small in the context of the tile) that may
-        // have been created in some cases by changing to the tile grid
+        // remove small line strings (small in the context of the tile)
         geom = TileGeometryUtil.removeSmallPieces(geom);
         if (geom==null) {
             return null;

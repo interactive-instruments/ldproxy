@@ -383,14 +383,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                 resetFeatureInfo();
                 return;
             }
-            // ... and once more
-            if (!currentGeometry.isValid()) {
-                currentGeometry = TileGeometryUtil.processPolygons(currentGeometry, reducer);
-                if (currentGeometry==null || currentGeometry.isEmpty()) {
-                    resetFeatureInfo();
-                    return;
-                }
-            }
         }
 
         // Geometry is still invalid -> log this information and skip it, if that option is used
