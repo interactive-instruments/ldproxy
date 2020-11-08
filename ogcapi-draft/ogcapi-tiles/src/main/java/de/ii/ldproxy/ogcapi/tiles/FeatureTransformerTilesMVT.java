@@ -389,21 +389,21 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             }
         }
 
-        // Geometry is still invalid -> log this information and skip it, if that option is used
-        if (!currentGeometry.isValid()) {
-            LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", currentId, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-            if (tilesConfiguration.getIgnoreInvalidGeometries()) {
-                resetFeatureInfo();
-                return;
-            }
-        }
-
+        // if polygons have to be merged, store them for now and process at the end
         if (Objects.nonNull(groupByAttributes) && currentGeometry.getGeometryType().contains("Polygon")) {
-            // polygons have to be merged, store them for now and process at the end
             mergeGeometries.put(++mergeId, currentGeometry);
             mergeProperties.put(mergeId, currentProperties);
             resetFeatureInfo();
             return;
+        }
+
+        // Geometry is still invalid -> log this information and skip it, if that option is used
+        if (!currentGeometry.isValid()) {
+            LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Pixel size: {}.", currentId, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), currentGeometry.getArea());
+            if (tilesConfiguration.getIgnoreInvalidGeometries()) {
+                resetFeatureInfo();
+                return;
+            }
         }
 
         // If we have an id that happens to be a long value, use it

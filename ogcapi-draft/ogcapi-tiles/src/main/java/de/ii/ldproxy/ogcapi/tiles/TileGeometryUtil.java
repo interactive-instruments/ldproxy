@@ -1,6 +1,12 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
+import com.google.common.collect.ImmutableList;
+import org.locationtech.jts.algorithm.LineIntersector;
+import org.locationtech.jts.algorithm.RobustLineIntersector;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.IntersectionMatrix;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiLineString;
@@ -10,14 +16,19 @@ import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.operation.linemerge.LineMerger;
+import org.locationtech.jts.operation.polygonize.Polygonizer;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TileGeometryUtil {
 
@@ -119,6 +130,127 @@ public class TileGeometryUtil {
         return segments;
     }
 
+    static private List<LineString> splitLineStringOnePass(LineString lineString, LineString otherLineString) {
+        GeometryFactory factory = lineString.getFactory();
+        ImmutableList.Builder<LineString> result = ImmutableList.builder();
+        Coordinate[] newCoords = new Coordinate[lineString.getNumPoints()];
+        Coordinate[] coordsOther = otherLineString.getCoordinates();
+        Coordinate coord;
+        int indexL1 = 0;
+        for (Coordinate coordL1 : lineString.getCoordinates()) {
+            if (indexL1>0) {
+                if (coordL1.equals2D(newCoords[indexL1-1]))
+                    continue;
+                for (int indexL2 = 1; indexL2 < coordsOther.length; indexL2++) {
+                    LineIntersector lineIntersector = new RobustLineIntersector();
+                    lineIntersector.setPrecisionModel(lineString.getPrecisionModel());
+                    lineIntersector.computeIntersection(newCoords[indexL1-1], coordL1, coordsOther[indexL2-1], coordsOther[indexL2]);
+                    if (lineIntersector.hasIntersection()) {
+                        // the two segments intersect, split the input line string at the intersection point,
+                        // which may be the start or end point or a proper interior point; note that the
+                        // segments may also be collinear
+                        if (lineIntersector.getIntersectionNum()==2) {
+                            double distance1 = lineIntersector.getEdgeDistance(0, 0);
+                            double distance2 = lineIntersector.getEdgeDistance(0, 1);
+                            int first = (distance1<distance2) ? 0 : 1;
+                            int second = (distance1<distance2) ? 1 : 0;
+
+                            coord = lineIntersector.getIntersection(first);
+                            if (!coord.equals2D(newCoords[indexL1-1]))
+                                newCoords[indexL1++] = coord;
+                            if (indexL1 > 1) {
+                                LineString newLineString = factory.createLineString(Arrays.copyOf(newCoords, indexL1));
+                                result.add(newLineString);
+                                newCoords[0] = coord;
+                                indexL1 = 1;
+                            }
+
+                            coord = lineIntersector.getIntersection(second);
+                            if (!coord.equals2D(newCoords[indexL1-1]))
+                                newCoords[indexL1++] = coord;
+                            if (indexL1 > 1) {
+                                LineString newLineString = factory.createLineString(Arrays.copyOf(newCoords, indexL1));
+                                result.add(newLineString);
+                                newCoords[0] = coord;
+                                indexL1 = 1;
+                            }
+                        } else {
+                            coord = lineIntersector.getIntersection(0);
+                            if (!coord.equals2D(newCoords[indexL1-1]))
+                                newCoords[indexL1++] = coord;
+                            if (indexL1 > 1) {
+                                LineString newLineString = factory.createLineString(Arrays.copyOf(newCoords, indexL1));
+                                result.add(newLineString);
+                                newCoords[0] = coord;
+                                indexL1 = 1;
+                            }
+                        }
+                    }
+                }
+                // all segments of the other line string processed, add the coordinate
+                if (!coordL1.equals2D(newCoords[indexL1-1]))
+                    newCoords[indexL1++] = coordL1;
+            } else {
+                newCoords[indexL1++] = coordL1;
+            }
+        }
+        if (indexL1 > 1)
+            result.add(factory.createLineString(Arrays.copyOf(newCoords, indexL1)));
+
+        return result.build();
+    }
+
+    static private List<LineString> splitLineString(LineString lineString, LineString otherLineString, int level) {
+        // LOGGER.debug("Call level {}: Splitting line strings {} and {}.", level, lineString, otherLineString);
+
+        List<LineString> result = splitLineStringOnePass(lineString, otherLineString);
+        if (result.size()==1)
+            return result;
+
+        return result.stream()
+                     .map(ls -> splitLineString(ls, otherLineString, level+1))
+                     .flatMap(Collection::stream)
+                     .collect(Collectors.toList());
+    }
+
+    // TODO optimize performance, minimize memory
+    static MultiPolygon rebuildPolygon(Geometry geom, GeometryPrecisionReducer reducer) {
+        LOGGER.debug("Rebuilding an invalid polygon geometry with {} vertices.", geom.getNumPoints());
+        LineMerger lineMerger = new LineMerger();
+        lineMerger.add(geom);
+        Set<LineString> edges = (Set<LineString>) lineMerger.getMergedLineStrings().stream().collect(Collectors.toSet());
+        LineString[] lineStringsOrig = edges.toArray(LineString[]::new);
+        for (LineString lineString1 : lineStringsOrig) {
+            boolean cont = true;
+            while (cont) {
+                LineString[] edgesCopy = edges.toArray(LineString[]::new);
+                edges.clear();
+                cont = false;
+                for (LineString lineString2 : edgesCopy) {
+                    if (lineString1.equals(lineString2)) {
+                        edges.add(lineString2);
+                        continue;
+                    }
+                    IntersectionMatrix matrix = lineString1.relate(lineString2);
+                    if (matrix.matches("FF*F*****")) {
+                        edges.add(lineString2);
+                    } else {
+                        List<LineString> result = splitLineString(lineString2, lineString1, 1);
+                        edges.addAll(result);
+                        cont = result.size() > 1;
+                    }
+                }
+            }
+        }
+        Polygonizer polygonizer = new Polygonizer(true);
+        List<Geometry> lineStringsOnGrid = edges.stream().map(edge -> reducer.reduce(edge)).collect(Collectors.toList());
+        polygonizer.add(lineStringsOnGrid);
+        Collection polygons = polygonizer.getPolygons();
+        if (polygons.isEmpty())
+            return null;
+        return geom.getFactory().createMultiPolygon((Polygon[]) polygons.toArray(Polygon[]::new));
+    }
+
     static Geometry processPolygons(Geometry geom, GeometryPrecisionReducer reducer, double distanceTolerance) {
         boolean geomUpdated = false;
         if (geom instanceof Polygon || geom instanceof MultiPolygon) {
@@ -127,20 +259,51 @@ public class TileGeometryUtil {
             Geometry bufferGeom = geom.buffer(0.0);
             double areaChange = Math.abs(bufferGeom.getArea() - geom.getArea()) / geom.getArea();
             if (areaChange > 0.5 || !bufferGeom.isValid()) {
-                // if the deviation is too big or invalid, try a union of the buffered geometry
-                Geometry bufferUnionGeom = bufferGeom.union();
-                areaChange = Math.abs(bufferUnionGeom.getArea() - geom.getArea()) / geom.getArea();
-                if (areaChange > 0.5 || !bufferUnionGeom.isValid()) {
+                // if the deviation is too big or invalid, try a union
+                Geometry unionGeom = geom.union();
+                areaChange = Math.abs(unionGeom.getArea() - geom.getArea()) / geom.getArea();
+                if (areaChange > 0.5 || !unionGeom.isValid()) {
                     // if the deviation is too big or invalid, try a convex hull
                     Geometry hullGeom = geom.convexHull();
                     areaChange = Math.abs(hullGeom.getArea() - geom.getArea()) / geom.getArea();
                     if (areaChange <= 0.5 && hullGeom.isValid()) {
                         geom = hullGeom;
                         geomUpdated = true;
-                    } else
-                        LOGGER.trace("Could not fix polygon geometry.");
+                    } else {
+                        Geometry newGeom = rebuildPolygon(unionGeom, reducer);
+                        if (Objects.nonNull(newGeom)) {
+                            LOGGER.debug("Polygon rebuilt, valid={}, old area {}, new area {}.", newGeom.isValid(), unionGeom.getArea(), newGeom.getArea());
+
+                            if (newGeom.isValid()) {
+                                // simplify the geometry, if the geometry hasn't been simplified before
+                                // if (distanceTolerance != Double.NaN)
+                                //    newGeom = TopologyPreservingSimplifier.simplify(newGeom, distanceTolerance);
+
+                                // remove small rings or line strings (small in the context of the tile) that may
+                                // have been created in some cases by changing to the tile grid
+                                newGeom = TileGeometryUtil.removeSmallPieces(newGeom);
+                                if (newGeom == null || newGeom.isEmpty()) {
+                                    LOGGER.debug("Empty result after removing small pieces.");
+                                    return null;
+                                }
+                                LOGGER.debug("Small pieces removed, valid={}, new area {}.", newGeom.isValid(), newGeom.getArea());
+
+                                // make sure the geometry is using the tile grid, if we processed a polygon geometry
+                                newGeom = reducer.reduce(newGeom);
+                                LOGGER.debug("Reduced to grid, valid={}, new area {}.", newGeom.isValid(), newGeom.getArea());
+
+                                if (newGeom.isValid())
+                                    return newGeom;
+                            } else {
+                                LOGGER.debug("Polygon rebuild failed.");
+                            }
+
+                        } else {
+                            LOGGER.debug("Polygon rebuilt with empty result");
+                        }
+                    }
                 } else {
-                    geom = bufferUnionGeom;
+                    geom = unionGeom;
                     geomUpdated = true;
                 }
             } else {
