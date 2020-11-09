@@ -1,7 +1,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.processes;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
@@ -14,7 +14,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -25,14 +24,14 @@ import java.util.stream.Collectors;
 @Instantiate
 public class FeatureProcessPosition implements ObservationProcess {
 
-    private final OgcApiExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
 
-    public FeatureProcessPosition(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    public FeatureProcessPosition(@Requires ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 
     @Override
-    public Set<String> getSupportedCollections(OgcApiApiDataV2 apiData) {
+    public Set<String> getSupportedCollections(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(PathParameterCollectionIdProcess.class).stream()
                 .map(param -> param.getValues(apiData))
                 .flatMap(Set::stream)
@@ -40,33 +39,33 @@ public class FeatureProcessPosition implements ObservationProcess {
     }
 
     @Override
-    public void validateProcessingParameters(Map<String, Object> processingParameters) throws ServerErrorException {
+    public void validateProcessingParameters(Map<String, Object> processingParameters) {
         Object obj = processingParameters.get("point");
         if (obj==null || !(obj instanceof GeometryPoint)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No point has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No point has been provided.");
         }
         obj = processingParameters.get("interval");
         if (obj==null || !(obj instanceof TemporalInterval)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No time interval has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No time interval has been provided.");
         }
         obj = processingParameters.get("apiData");
-        if (obj==null || !(obj instanceof OgcApiApiDataV2))
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No API information has been provided.", 500);
+        if (obj==null || !(obj instanceof OgcApiDataV2))
+            throw new RuntimeException("Missing information for executing '"+getName()+"': No API information has been provided.");
         obj = processingParameters.get("collectionId");
         if (obj==null || !(obj instanceof String))
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No collection identifier has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '"+getName()+"': No collection identifier has been provided.");
     }
 
     @Override
     public Object execute(Object data, Map<String, Object> processingParameters) {
         validateProcessingParameters(processingParameters);
         if (!(data instanceof Observations)) {
-            throw new ServerErrorException("Missing information for executing '"+getName()+"': No observation data has been provided.", 500);
+            throw new RuntimeException("Missing information for executing '" + getName() + "': No observation data has been provided.");
         }
         Observations observations = (Observations) data;
         GeometryPoint point = (GeometryPoint) processingParameters.get("point");
         TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");
-        OgcApiApiDataV2 apiData = (OgcApiApiDataV2) processingParameters.get("apiData");
+        OgcApiDataV2 apiData = (OgcApiDataV2) processingParameters.get("apiData");
         String collectionId = (String) processingParameters.get("collectionId");
 
         ObservationProcessingConfiguration config =

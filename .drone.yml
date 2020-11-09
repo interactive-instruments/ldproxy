@@ -1,0 +1,82 @@
+
+
+pipeline:
+
+  load-cache:
+    image: drillster/drone-volume-cache
+    volumes: [/tmp:/cache]
+    restore: true
+    mount:
+      - .gradle/caches
+      - .gradle/wrapper
+
+  build:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - cd ogcapi-stable
+      - ../gradlew assemble publishToMavenLocal -PisSnapshot=true
+      - cd ../ogcapi-draft
+      - ../gradlew assemble -PisSnapshot=true --init-script ../.maven-local.gradle
+    when:
+      event: [push, pull_request]
+
+  publish-snapshot:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - cd ogcapi-stable
+      - ../gradlew publish -PisSnapshot=true -PsnapshotUser=$SNAPSHOT_USER -PsnapshotPassword=$SNAPSHOT_PASS
+      - cd ../ogcapi-draft
+      - ../gradlew publish -PisSnapshot=true -PsnapshotUser=$SNAPSHOT_USER -PsnapshotPassword=$SNAPSHOT_PASS --init-script ../.maven-local.gradle
+    secrets: [ snapshot_user, snapshot_pass]
+    when:
+      event: push
+      branch: master
+
+  release:
+    image: node:12-alpine
+    commands:
+      - export HOME=$${DRONE_WORKSPACE}
+      - apk --no-cache add git libc6-compat
+      - wget -O - https://github.com/cli/cli/releases/download/v1.2.0/gh_1.2.0_linux_amd64.tar.gz | tar xzvf -
+      - chmod +x gh_1.2.0_linux_amd64/bin/gh
+      - npx github-release-notes@0.17.1 release --override --token=$GITHUB_TOKEN
+      - npx github-release-notes@0.17.1 changelog --override --token=$GITHUB_TOKEN
+      - git config user.name $DRONE_COMMIT_AUTHOR
+      - git config user.email $DRONE_COMMIT_AUTHOR_EMAIL
+      - git checkout -B changelog-$DRONE_TAG
+      - git add CHANGELOG.md
+      - git commit -m "add changelog for $DRONE_TAG"
+      - git push -u https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$DRONE_REPO_OWNER/$DRONE_REPO_NAME.git changelog-$DRONE_TAG > /dev/null 2>&1
+      - GITHUB_TOKEN=$GITHUB_TOKEN ./gh_1.2.0_linux_amd64/bin/gh pr create --base master --head changelog-$DRONE_TAG --reviewer $DRONE_COMMIT_AUTHOR --title " add changelog for $DRONE_TAG" --body ""
+    secrets: [ github_token, github_user ]
+    when:
+      event: [tag]
+
+  save-cache:
+    image: drillster/drone-volume-cache
+    volumes: [/tmp:/cache]
+    rebuild: true
+    mount:
+      - .gradle/caches
+      - .gradle/wrapper
+
+  notify:
+    image: plugins/slack:1.3.0
+    webhook: ${SLACK_WEBHOOK}
+    secrets: [ slack_webhook ]
+    link_names: true
+    template: >
+      {{#if build.pull }}
+        *{{#success build.status}}✔{{ else }}✘{{/success}} {{ uppercasefirst build.status }}*: {{ repo.owner }}/{{ repo.name }} - <https://github.com/{{ repo.owner }}/{{ repo.name }}/pull/{{ build.pull }}|Pull Request #{{ build.pull }}>
+      {{else}}
+        *{{#success build.status}}✔{{ else }}✘{{/success}} {{ uppercasefirst build.status }}: {{ repo.owner }}/{{ repo.name }} - Build #{{ build.number }}* (type: `{{ build.event }}`)
+      {{/if}}
+      Commit: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commit/{{ build.commit }}|{{ truncate build.commit 8 }}>
+      Branch: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commits/{{ build.branch }}|{{ build.branch }}>
+      Author: <@{{ build.author }}>
+      Duration: {{ since build.created }}
+      <{{ build.link }}|Visit build page ↗>
+    when:
+      status:  [ failure, success ]

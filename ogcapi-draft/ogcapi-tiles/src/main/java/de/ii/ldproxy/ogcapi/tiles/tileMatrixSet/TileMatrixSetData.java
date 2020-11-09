@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.OgcApiLink;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
 
 import java.net.URI;
@@ -27,7 +27,7 @@ public abstract class TileMatrixSetData {
 
     public abstract Optional<String> getTitle();
 
-    public abstract List<OgcApiLink> getLinks();
+    public abstract List<Link> getLinks();
 
     @Value.Default
     public String getType() { return "TileMatrixSetType"; };

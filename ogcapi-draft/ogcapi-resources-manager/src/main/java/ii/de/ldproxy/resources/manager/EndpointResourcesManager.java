@@ -8,11 +8,25 @@
 package ii.de.ldproxy.resources.manager;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext.HttpMethods;
-import de.ii.ldproxy.resources.ResourceFormatExtension;
-import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
-import de.ii.xtraplatform.auth.api.User;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.Endpoint;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.ldproxy.resources.domain.ResourceFormatExtension;
+import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -23,15 +37,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.NotSupportedException;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.util.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
  * creates, updates and deletes a resource from the service
@@ -39,29 +66,29 @@ import static de.ii.xtraplatform.runtime.FelixRuntime.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointResourcesManager extends OgcApiEndpoint implements ConformanceClass {
+public class EndpointResourcesManager extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResourcesManager.class);
     private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
 
-    private final File resourcesStore;
+    private final java.nio.file.Path resourcesStore;
 
     public EndpointResourcesManager(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                 @Requires OgcApiExtensionRegistry extensionRegistry) {
+                                 @Requires ExtensionRegistry extensionRegistry) throws IOException {
         super(extensionRegistry);
-        this.resourcesStore = new File(bundleContext.getProperty(DATA_DIR_KEY) + File.separator + "resources");
-        if (!resourcesStore.exists()) {
-            resourcesStore.mkdirs();
-        }
+
+        this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
+                                   .resolve("resources");
+        Files.createDirectories(resourcesStore);
     }
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/t15/opf-styles-1/1.0/conf/manage-resources");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/manage-resources");
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
         if (stylesExtension.isPresent() && stylesExtension.get()
@@ -69,6 +96,11 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 
     @Override
@@ -81,7 +113,7 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
         return formats;
     }
 
-    private Map<MediaType, OgcApiMediaTypeContent> getRequestContent(OgcApiApiDataV2 apiData, String path, OgcApiContext.HttpMethods method) {
+    private Map<MediaType, ApiMediaTypeContent> getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
         return getFormats().stream()
                 .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
                 .map(f -> f.getRequestContent(apiData, path, method))
@@ -90,16 +122,16 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
             Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("resources")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
             String path = "/resources/{resourceId}";
             HttpMethods method = HttpMethods.PUT;
             List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -120,8 +152,8 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
             ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                     .path(path)
                     .pathParameters(pathParameters);
-            Map<MediaType, OgcApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
-            OgcApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+            Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
+            ApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilder.putOperations(method.name(), operation);
             method = HttpMethods.DELETE;
@@ -135,10 +167,10 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
                 resourceBuilder.putOperations(method.name(), operation);
             definitionBuilder.putResources(path, resourceBuilder.build());
 
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     /**
@@ -151,8 +183,8 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
     @PUT
     @Consumes(MediaType.WILDCARD)
     public Response putResource(@Auth Optional<User> optionalUser, @PathParam("resourceId") String resourceId,
-                                @Context OgcApiApi api, @Context OgcApiRequestContext requestContext,
-                                @Context HttpServletRequest request, byte[] requestBody) {
+                                @Context OgcApi api, @Context ApiRequestContext requestContext,
+                                @Context HttpServletRequest request, byte[] requestBody) throws IOException {
 
         checkAuthorization(api.getData(), optionalUser);
 
@@ -160,7 +192,7 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
                 .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
                 .findAny()
                 .map(ResourceFormatExtension.class::cast)
-                .orElseThrow(() -> new NotAcceptableException())
+                .orElseThrow(() -> new NotSupportedException(MessageFormat.format("The provided media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())))
                 .putResource(resourcesStore, requestBody, resourceId, api, requestContext);
     }
 
@@ -173,7 +205,7 @@ public class EndpointResourcesManager extends OgcApiEndpoint implements Conforma
     @Path("/{resourceId}")
     @DELETE
     public Response deleteResource(@Auth Optional<User> optionalUser, @PathParam("resourceId") String resourceId,
-                                @Context OgcApiApi dataset) {
+                                @Context OgcApi dataset) {
 
         checkAuthorization(dataset.getData(), optionalUser);
 

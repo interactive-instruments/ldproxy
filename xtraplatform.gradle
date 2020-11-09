@@ -1,13 +1,7 @@
 
 dependencies {
-    if(JavaVersion.current().isJava9Compatible()) {
-        feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.3.2'
-    } else {
-        feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.2.4'
-    }
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.2.13'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.2.4'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '3.3.6'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-core', version: '3.2.0-SNAPSHOT'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-spatial', version: '4.3.0-SNAPSHOT'
 }
 
 allprojects {

@@ -13,6 +13,8 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutablePredefinedFilter.Builder.class)
-interface PredefinedFilter extends MinMax {
+interface PredefinedFilter {
+    int getMin();
+    int getMax();
     String getFilter();
 }

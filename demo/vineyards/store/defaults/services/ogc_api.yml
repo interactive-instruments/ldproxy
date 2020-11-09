@@ -1,0 +1,7 @@
+---
+api:
+- buildingBlock: FOUNDATION
+  includeLinkHeader: true
+  useLangParameter: false
+  apiCatalogLabel: 'Demonstration APIs using ldproxy'
+  apiCatalogDescription: 'The APIs below are available as examples for Web APIs that can be set up with <a href="https://github.com/interactive-instruments/ldproxy">ldproxy</a>.'

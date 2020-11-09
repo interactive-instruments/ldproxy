@@ -7,7 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Access to the cache for tile files.
@@ -18,14 +19,14 @@ public interface TilesCache {
      * return and if necessary create the directory for the tiles cache
      * @return the file object of the directory
      */
-    File getTilesDirectory();
+    Path getTilesStore();
 
 
     /**
      * return and if necessary create the directory for the tile files that cannot be cached
      * @return the file object of the directory
      */
-    File getTmpDirectory();
+    Path getTmpDirectory() throws IOException;
 
     /**
      * clean-up files that cannot be cached due to the use of parameters
@@ -38,6 +39,6 @@ public interface TilesCache {
      * @param tile     the tile
      * @return the file object of the tile in the cache
      */
-    File getFile(Tile tile);
+    Path getFile(Tile tile) throws IOException;
 
 }

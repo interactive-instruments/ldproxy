@@ -4,12 +4,9 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.application.Variable;
@@ -21,7 +18,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,13 +47,13 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
-                method==OgcApiContext.HttpMethods.GET &&
+                method== HttpMethods.GET &&
                 featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position", "area", "resample-to-grid");
     }
 
-    private List<String> getValues(OgcApiApiDataV2 apiData, String collectionId) {
+    private List<String> getValues(OgcApiDataV2 apiData, String collectionId) {
         Optional<FeatureTypeConfigurationOgcApi> collectionData = Optional.ofNullable(apiData
                 .getCollections()
                 .get(collectionId));
@@ -73,44 +69,42 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
     private final Schema schema = new ArraySchema().items(new StringSchema());
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
         return schema;
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         ArraySchema collectionSchema = new ArraySchema().items(new StringSchema()._enum(getValues(apiData, collectionId)));
         collectionSchema.setDefault(getValues(apiData, collectionId));
         return collectionSchema;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
                 apiData.getCollections()
                         .values()
                         .stream()
-                        .filter(featureType -> featureType.getEnabled())
-                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
-                        .findAny()
-                        .isPresent();
-    }
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+}
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return ObservationProcessingConfiguration.class;
     }
 
     @Override
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
-                                                   OgcApiApiDataV2 serviceData) {
+                                                   OgcApiDataV2 serviceData) {
         if (parameters.containsKey("variables")) {
-            final Map<String, String> filterableFields = featureType.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                    .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
+            final Map<String, String> filterableFields = featureType.getExtension(FeaturesCoreConfiguration.class)
+                    .map(FeaturesCoreConfiguration::getAllFilterParameters)
                     .orElse(ImmutableMap.of());
             if (!filterableFields.containsKey("observedProperty")) {
-                throw new ServerErrorException(String.format("The observation collection '%s' has no 'observedProperty' attribute.", featureType.getId()), 500);
+                throw new RuntimeException(String.format("The observation collection '%s' has no 'observedProperty' attribute.", featureType.getId()));
             }
             Set<String> variables = new TreeSet<>();
             List<String> vars = Splitter.on(",")
@@ -129,12 +123,12 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
     }
 
     @Override
-    public Set<String> getFilterParameters(Set<String> filterParameters, OgcApiApiDataV2 apiData, String collectionId) {
+    public Set<String> getFilterParameters(Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) {
         return ImmutableSet.<String>builder().addAll(filterParameters).add("filter").build();
     }
 
     @Override
-    public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType, Map<String, Object> context, Map<String, String> parameters, OgcApiApiDataV2 apiData) {
+    public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType, Map<String, Object> context, Map<String, String> parameters, OgcApiDataV2 apiData) {
         if (parameters.containsKey("variables")) {
             // the variables have been validated already
             Set<String> variables = new TreeSet<>();

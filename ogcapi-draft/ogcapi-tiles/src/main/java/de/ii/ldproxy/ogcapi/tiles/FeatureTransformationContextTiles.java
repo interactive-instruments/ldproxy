@@ -7,13 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
-import de.ii.xtraplatform.codelists.Codelist;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import org.immutables.value.Value;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,7 +23,7 @@ public abstract class FeatureTransformationContextTiles implements FeatureTransf
     public abstract Map<String, Object> getProcessingParameters();
 
     public abstract Tile getTile();
-    public abstract File getTileFile();
+    public abstract Path getTileFile();
     public abstract CrsTransformerFactory getCrsTransformerFactory();
 
     @Value.Derived

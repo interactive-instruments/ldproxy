@@ -7,22 +7,16 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
-import de.ii.ldproxy.ogcapi.application.I18n;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.infra.json.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetData;
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSets;
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetsFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 @Component
 @Provides
@@ -32,7 +26,7 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     @Requires
     SchemaGenerator schemaGenerator;
 
-    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.APPLICATION_JSON_TYPE)
             .label("JSON")
             .parameter("json")
@@ -57,40 +51,35 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     }
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
-    }
-
-    @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.equals("/tileMatrixSets"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaStyleTileMatrixSets)
                     .schemaRef(SCHEMA_REF_TILE_MATRIX_SETS)
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
         else if (path.equals("/tileMatrixSets/{tileMatrixSetId}"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaStyleTileMatrixSet)
                     .schemaRef(SCHEMA_REF_TILE_MATRIX_SET)
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override
-    public Object getTileMatrixSetsEntity(TileMatrixSets tileMatrixSets, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Object getTileMatrixSetsEntity(TileMatrixSets tileMatrixSets, OgcApi api, ApiRequestContext requestContext) {
         return tileMatrixSets;
     }
 
     @Override
-    public Object getTileMatrixSetEntity(TileMatrixSetData tileMatrixSet, OgcApiApi api, OgcApiRequestContext requestContext) {
+    public Object getTileMatrixSetEntity(TileMatrixSetData tileMatrixSet, OgcApi api, ApiRequestContext requestContext) {
         return tileMatrixSet;
     }
 

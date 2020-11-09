@@ -9,11 +9,25 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableOgcApiQueryInputVariables;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormatVariables;
+import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceProcess;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.observation_processing.api.DapaVariablesFormatExtension;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableQueryInputVariables;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
-import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -35,7 +49,7 @@ import java.util.Set;
 @Component
 @Provides
 @Instantiate
-public class EndpointVariables extends OgcApiEndpointSubCollection {
+public class EndpointVariables extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointVariables.class);
     private static final String DAPA_PATH_ELEMENT = "dapa";
@@ -43,7 +57,7 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
 
     private final ObservationProcessingQueriesHandler queryHandler;
 
-    public EndpointVariables(@Requires OgcApiExtensionRegistry extensionRegistry,
+    public EndpointVariables(@Requires ExtensionRegistry extensionRegistry,
                              @Requires ObservationProcessingQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
@@ -51,23 +65,23 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
 
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(ObservationProcessingOutputFormatVariables.class);
+            formats = extensionRegistry.getExtensionsForType(DapaVariablesFormatExtension.class);
         return formats;
     }
 
     @Override
-    protected Class getConfigurationClass() {
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return ObservationProcessingConfiguration.class;
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
                     .sortPriority(10010);
             final String subSubPath = "/"+ DAPA_PATH_ELEMENT +"/variables";
@@ -78,7 +92,7 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
             } else {
-                final  OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
                 boolean explode = collectionIdParam.getExplodeInOpenApi();
                 final Set<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
@@ -91,44 +105,40 @@ public class EndpointVariables extends OgcApiEndpointSubCollection {
                             ImmutableOgcApiResourceProcess.Builder resourceBuilder = new ImmutableOgcApiResourceProcess.Builder()
                                     .path(resourcePath)
                                     .pathParameters(pathParameters);
-                            OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                            ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
                             if (operation!=null)
                                 resourceBuilder.putOperations("GET", operation);
                             definitionBuilder.putResources(resourcePath, resourceBuilder.build());
                         });
 
             }
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     @GET
     @Path("/{collectionId}/"+ DAPA_PATH_ELEMENT +"/variables")
     public Response getVariables(@Auth Optional<User> optionalUser,
-                             @Context OgcApiApi api,
-                             @Context OgcApiRequestContext requestContext,
+                             @Context OgcApi api,
+                             @Context ApiRequestContext requestContext,
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
         checkAuthorization(api.getData(), optionalUser);
         checkPathParameter(extensionRegistry, api.getData(), "/collections/{collectionId}/"+ DAPA_PATH_ELEMENT +"/variables", "collectionId", collectionId);
 
-        final boolean includeHomeLink = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeHomeLink)
-                .orElse(false);
-        final boolean includeLinkHeader = api.getData().getExtension(OgcApiCommonConfiguration.class)
-                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        final boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
+                .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
         final List<Variable> variables = api.getData().getExtension(ObservationProcessingConfiguration.class)
                 .map(ObservationProcessingConfiguration::getVariables)
                 .orElse(ImmutableList.of());
 
-        ObservationProcessingQueriesHandler.OgcApiQueryInputVariables queryInput = new ImmutableOgcApiQueryInputVariables.Builder()
+        ObservationProcessingQueriesHandler.QueryInputVariables queryInput = new ImmutableQueryInputVariables.Builder()
                 .collectionId(collectionId)
                 .variables(variables)
                 .includeLinkHeader(includeLinkHeader)
-                .includeHomeLink(includeHomeLink)
                 .build();
 
         return queryHandler.handle(ObservationProcessingQueriesHandler.Query.VARIABLES, queryInput, requestContext);

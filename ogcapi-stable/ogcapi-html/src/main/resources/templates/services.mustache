@@ -1,0 +1,26 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <p>{{{description}}}</p>
+    {{#hasTags}}<div>{{tagsTitle}}: <code><a href="?tags=">&#x274c;</a></code> {{#allTags}}<code><a href="?tags={{.}}">{{.}}</a></code> {{/allTags}}</div>{{/hasTags}}
+    <br/>
+    <br/>
+
+    <ul class="list-unstyled space-after">
+        {{#data}}
+        <li>
+            <h2>
+                <a href="{{landingPageUri}}">{{title}}</a>{{#hasTags}}&nbsp;&nbsp;<span style="vertical-align: super; font-size: small; word-spacing: 5px">{{#tags}}<code><a href="?tags={{.}}">{{.}}</a></code> {{/tags}}</span>{{/hasTags}}
+            </h2>
+            <div>{{{description}}}</div>
+        </li>
+        {{/data}}
+        {{^data}}
+        <li>None</li>
+        {{/data}}
+    </ul>
+
+</div>
+
+{{> footer}}

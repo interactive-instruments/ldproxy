@@ -11,22 +11,42 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.application.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.application.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
-import de.ii.ldproxy.ogcapi.features.processing.ImmutableProcessing;
-import de.ii.ldproxy.ogcapi.features.processing.Processing;
-import de.ii.ldproxy.ogcapi.observation_processing.api.*;
-import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
+import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.QueryHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.ImmutableProcessing;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.Processing;
+import de.ii.ldproxy.ogcapi.observation_processing.api.DapaOverviewFormatExtension;
+import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
+import de.ii.ldproxy.ogcapi.observation_processing.api.DapaVariablesFormatExtension;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableFeatureTransformationContextObservationProcessing;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.dropwizard.api.Dropwizard;
-import de.ii.xtraplatform.features.domain.*;
-import org.apache.felix.ipojo.annotations.*;
+import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureStream2;
+import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.streams.domain.Http;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
@@ -34,9 +54,13 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -45,25 +69,27 @@ import static com.codahale.metrics.MetricRegistry.name;
 @Provides
 public class ObservationProcessingQueriesHandlerImpl implements ObservationProcessingQueriesHandler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObservationProcessingQueriesHandlerImpl.class);
+
     private static final String DAPA_PATH_ELEMENT = "dapa";
     private final I18n i18n;
     private final CrsTransformerFactory crsTransformerFactory;
-    private final Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> queryHandlers;
+    private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
-    private final CodelistRegistry codelistRegistry;
-    private final OgcApiFeatureCoreProviders providers;
+    private final EntityRegistry entityRegistry;
+    private final FeaturesCoreProviders providers;
     private final Http http;
 
 
     public ObservationProcessingQueriesHandlerImpl(@Requires I18n i18n,
                                                    @Requires CrsTransformerFactory crsTransformerFactory,
                                                    @Requires Dropwizard dropwizard,
-                                                   @Requires CodelistRegistry codelistRegistry,
-                                                   @Requires OgcApiFeatureCoreProviders providers,
+                                                   @Requires EntityRegistry entityRegistry,
+                                                   @Requires FeaturesCoreProviders providers,
                                                    @Requires Http http) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
-        this.codelistRegistry = codelistRegistry;
+        this.entityRegistry = entityRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
@@ -72,48 +98,49 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
 
         this.queryHandlers = ImmutableMap.of(
                 Query.PROCESS,
-                OgcApiQueryHandler.with(OgcApiQueryInputObservationProcessing.class, this::getProcessResponse),
+                QueryHandler.with(QueryInputObservationProcessing.class, this::getProcessResponse),
                 Query.VARIABLES,
-                OgcApiQueryHandler.with(OgcApiQueryInputVariables.class, this::getVariablesResponse),
+                QueryHandler.with(QueryInputVariables.class, this::getVariablesResponse),
                 Query.LIST,
-                OgcApiQueryHandler.with(OgcApiQueryInputProcessing.class, this::getProcessingResponse)
+                QueryHandler.with(QueryInputProcessing.class, this::getProcessingResponse)
         );
     }
 
     @Override
-    public Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> getQueryHandlers() {
+    public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
         return queryHandlers;
     }
 
-    public static void ensureCollectionIdExists(OgcApiApiDataV2 apiData, String collectionId) {
+    public static void ensureCollectionIdExists(OgcApiDataV2 apiData, String collectionId) {
         if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
         }
     }
 
     private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
         if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("feature provider does not support queries");
+            throw new IllegalStateException("Feature provider does not support queries.");
         }
     }
 
-    private Response getVariablesResponse(OgcApiQueryInputVariables queryInput, OgcApiRequestContext requestContext) {
-        OgcApiApi api = requestContext.getApi();
-        OgcApiApiDataV2 apiData = api.getData();
+    private Response getVariablesResponse(QueryInputVariables queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
+        OgcApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         if (!apiData.isCollectionEnabled(collectionId))
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
 
-        ObservationProcessingOutputFormatVariables outputFormat = api.getOutputFormat(
-                ObservationProcessingOutputFormatVariables.class,
+        DapaVariablesFormatExtension outputFormat = api.getOutputFormat(
+                DapaVariablesFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/variables")
-                .orElseThrow(NotAcceptableException::new);
+                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/variables",
+                Optional.of(collectionId))
+                                                       .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ensureCollectionIdExists(api.getData(), collectionId);
 
-        List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
-        List<OgcApiLink> links =
+        List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
+        List<Link> links =
                 new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
 
         Variables variables = ImmutableVariables.builder()
@@ -126,24 +153,25 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                 .build();
     }
 
-    private Response getProcessingResponse(OgcApiQueryInputProcessing queryInput, OgcApiRequestContext requestContext) {
-        OgcApiApi api = requestContext.getApi();
-        OgcApiApiDataV2 apiData = api.getData();
+    private Response getProcessingResponse(QueryInputProcessing queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
+        OgcApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         if (!apiData.isCollectionEnabled(collectionId))
-            throw new NotFoundException();
+            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
 
-        ObservationProcessingOutputFormatProcessing outputFormat = api.getOutputFormat(
-                ObservationProcessingOutputFormatProcessing.class,
+        DapaOverviewFormatExtension outputFormat = api.getOutputFormat(
+                DapaOverviewFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT)
-                .orElseThrow(NotAcceptableException::new);
+                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT,
+                Optional.of(collectionId))
+                                                      .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ensureCollectionIdExists(api.getData(), collectionId);
 
         final ObservationProcessingLinksGenerator linkGenerator = new ObservationProcessingLinksGenerator();
-        List<OgcApiLink> links = linkGenerator.generateDapaLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(), i18n, requestContext.getLanguage());
+        List<Link> links = linkGenerator.generateDapaLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(),
+                                                           requestContext.getAlternateMediaTypes(), i18n, requestContext.getLanguage());
 
         Processing processing = ImmutableProcessing.builder()
                 .from(queryInput.getProcessing())
@@ -155,9 +183,9 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                 .build();
     }
 
-    private Response getProcessResponse(OgcApiQueryInputObservationProcessing queryInput, OgcApiRequestContext requestContext) {
-        OgcApiApi api = requestContext.getApi();
-        OgcApiApiDataV2 apiData = api.getData();
+    private Response getProcessResponse(QueryInputObservationProcessing queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
+        OgcApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         FeatureQuery query = queryInput.getQuery();
         FeatureProvider2 featureProvider = queryInput.getFeatureProvider();
@@ -166,11 +194,12 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         Map<String, Object> processingParameters = queryInput.getProcessingParameters();
         FeatureProcessChain processes = queryInput.getProcesses();
 
-        ObservationProcessingOutputFormat outputFormat = api.getOutputFormat(
-                ObservationProcessingOutputFormat.class,
+        DapaResultFormatExtension outputFormat = api.getOutputFormat(
+                DapaResultFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + processes.getSubSubPath())
-                .orElseThrow(NotAcceptableException::new);
+                "/collections/" + collectionId + processes.getSubSubPath(),
+                Optional.of(collectionId))
+                                                    .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         ensureCollectionIdExists(api.getData(), collectionId);
         ensureFeatureProviderSupportsQueries(featureProvider);
@@ -183,25 +212,32 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
             EpsgCrs sourceCrs = featureProvider.crs().getNativeCrs();
             //TODO: warmup on service start
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() ? crsTransformer.get()
-                    .needsCoordinateSwap() : query.getCrs().isPresent() && featureProvider.crs().shouldSwapCoordinates(query.getCrs().get());
+            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
+                                                                          .needsCoordinateSwap();
         }
 
-        List<OgcApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
+        List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
+
+        String featureTypeId = apiData.getCollections()
+                                                .get(collectionId)
+                                                .getExtension(FeaturesCoreConfiguration.class)
+                                                .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                                .orElse(collectionId);
 
         // TODO add links
-        List<OgcApiLink> links = ImmutableList.of();
+        List<Link> links = ImmutableList.of();
 
         ImmutableFeatureTransformationContextObservationProcessing.Builder transformationContext = new ImmutableFeatureTransformationContextObservationProcessing.Builder()
                 .apiData(api.getData())
-                .featureSchema(featureProvider.getData().getTypes().get(collectionId))
+                .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                 .i18n(i18n)
                 .language(requestContext.getLanguage())
-                .codelists(codelistRegistry.getCodelists())
+                .codelists(entityRegistry.getEntitiesForType(Codelist.class)
+                                         .stream()
+                                         .collect(Collectors.toMap(c -> c.getId(), c -> c)))
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
-                .codelists(codelistRegistry.getCodelists())
                 .defaultCrs(defaultCrs)
                 .links(links)
                 .isFeatureCollection(true)
@@ -227,7 +263,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
             streamingOutput = stream(featureStream, outputStream -> outputFormat.getFeatureTransformer(transformationContext.outputStream(outputStream).build(), providers, http)
                     .get());
         } else {
-            throw new NotAcceptableException();
+            throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
         return prepareSuccessResponse(api, requestContext, includeLinkHeader ? links : null, targetCrs)
@@ -241,15 +277,23 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
                                             .time();
         return outputStream -> {
             try {
-                featureTransformStream.runWith(featureTransformer.apply(outputStream))
-                                      .toCompletableFuture()
-                                      .join();
+                FeatureStream2.Result result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
+                                                                     .toCompletableFuture()
+                                                                     .join();
                 timer.stop();
+
+                if (result.getError()
+                          .isPresent()) {
+                    processStreamError(result.getError().get());
+                    // the connection has been lost, typically the client has cancelled the request, log on debug level
+                    LOGGER.debug("Request cancelled due to lost connection.");
+                }
+
             } catch (CompletionException e) {
                 if (e.getCause() instanceof WebApplicationException) {
                     throw (WebApplicationException) e.getCause();
                 }
-                throw new IllegalStateException("Feature stream error", e.getCause());
+                throw new IllegalStateException("Feature stream error.", e.getCause());
             }
         };
     }

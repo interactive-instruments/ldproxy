@@ -11,24 +11,34 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
-import de.ii.xtraplatform.akka.http.Http;
-import de.ii.xtraplatform.codelists.CodelistRegistry;
-import de.ii.xtraplatform.cql.domain.*;
+import de.ii.xtraplatform.cql.domain.And;
+import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.cql.domain.CqlFilter;
+import de.ii.xtraplatform.cql.domain.CqlPredicate;
+import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.streams.domain.Http;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import no.ecc.vectortile.VectorTileDecoder;
 import no.ecc.vectortile.VectorTileEncoder;
-import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -37,12 +47,18 @@ import org.apache.http.NameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Component
@@ -53,17 +69,15 @@ public class TileFormatMVT implements TileFormatExtension {
     @Requires
     CrsTransformerFactory crsTransformerFactory;
     @Requires
-    OgcApiFeaturesQuery queryParser;
+    FeaturesQuery queryParser;
     @Requires
     TilesCache tilesCache;
-    @Requires
-    CodelistRegistry codelistRegistry;
     @Requires
     Http http;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
 
-    public static final OgcApiMediaType MEDIA_TYPE = new ImmutableOgcApiMediaType.Builder()
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application","vnd.mapbox-vector-tile"))
             .label("MVT")
             .parameter("mvt")
@@ -73,18 +87,8 @@ public class TileFormatMVT implements TileFormatExtension {
     public final static String SCHEMA_REF_TILE = "#/components/schemas/TileMVT";
 
     @Override
-    public OgcApiMediaType getMediaType() {
+    public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), TilesConfiguration.class);
     }
 
     @Override
@@ -98,15 +102,15 @@ public class TileFormatMVT implements TileFormatExtension {
     }
 
     @Override
-    public OgcApiMediaTypeContent getContent(OgcApiApiDataV2 apiData, String path) {
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-            return new ImmutableOgcApiMediaTypeContent.Builder()
+            return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaTile)
                     .schemaRef(SCHEMA_REF_TILE)
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new ServerErrorException("Unexpected path "+path,500);
+        throw new RuntimeException("Unexpected path: " + path);
     }
 
     @Override
@@ -131,8 +135,15 @@ public class TileFormatMVT implements TileFormatExtension {
         String tileMatrixSetId = tile.getTileMatrixSet().getId();
         int level = tile.getTileLevel();
 
+        String featureTypeId = tile.getApi()
+                                   .getData()
+                                   .getCollections()
+                                   .get(collectionId)
+                                   .getExtension(FeaturesCoreConfiguration.class)
+                                   .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                   .orElse(collectionId);
         ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
-                .type(collectionId)
+                .type(featureTypeId)
                 .limit(tilesConfiguration.getLimit())
                 .offset(0)
                 .crs(tile.getTileMatrixSet().getCrs())
@@ -146,11 +157,11 @@ public class TileFormatMVT implements TileFormatExtension {
                 ImmutableList.of("*");
         queryBuilder.fields(properties);
 
-        OgcApiApiDataV2 apiData = tile.getApi().getData();
+        OgcApiDataV2 apiData = tile.getApi().getData();
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
 
-        final Map<String, String> filterableFields = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                .map(OgcApiFeaturesCoreConfiguration::getAllFilterParameters)
+        final Map<String, String> filterableFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                .map(FeaturesCoreConfiguration::getAllFilterParameters)
                 .orElse(ImmutableMap.of());
 
         Set<String> filterParameters = ImmutableSet.of();
@@ -207,7 +218,7 @@ public class TileFormatMVT implements TileFormatExtension {
             }
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Filter: {}", combinedFilter);
+                LOGGER.trace("Filter: {}", combinedFilter);
             }
 
             queryBuilder.filter(combinedFilter);
@@ -219,7 +230,7 @@ public class TileFormatMVT implements TileFormatExtension {
     }
 
     @Override
-    public MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) {
+    public MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException {
         VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         VectorTileDecoder decoder = new VectorTileDecoder();
         Set<String> processedCollections = new TreeSet<>();
@@ -229,7 +240,7 @@ public class TileFormatMVT implements TileFormatExtension {
                 if (!processedCollections.contains(collectionId)) {
                     Tile singleLayerTile = singleLayerTileMap.get(collectionId);
                     ByteArrayOutputStream outputStream = singleLayerByteArrayMap.get(collectionId);
-                    File tileFile = tilesCache.getFile(singleLayerTile);
+                    Path tileFile = tilesCache.getFile(singleLayerTile);
                     if (outputStream.size()>0) {
                         try {
                             List<VectorTileDecoder.Feature> features = decoder.decode(outputStream.toByteArray()).asList();
@@ -241,8 +252,14 @@ public class TileFormatMVT implements TileFormatExtension {
                             String msg = "Failure to access the single-layer tile {}/{}/{}/{} in dataset '{}', layer '{}', format '{}'. Trying again ...";
                             LOGGER.info(msg, tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
                                         singleLayerTile.getApi().getId(), collectionId, getExtension());
+                        } catch (IllegalArgumentException e) {
+                            // another problem generating the tile, remove the problematic tile file from the cache
+                            Files.delete(tileFile);
+                            throw new RuntimeException(String.format("Failure to process the single-layer tile %s/%d/%d/%d in dataset '%s', layer '%s', format '%s'.",
+                                                                     tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
+                                                                     singleLayerTile.getApi().getId(), collectionId, getExtension()), e);
                         }
-                    } else if (tileFile.exists() && FileUtils.sizeOf(tileFile)==0) {
+                    } else if (Files.exists(tileFile) && Files.size(tileFile)==0) {
                         // an empty tile, so we are done for this collection
                         processedCollections.add(collectionId);
                     }
@@ -277,8 +294,10 @@ public class TileFormatMVT implements TileFormatExtension {
         try {
             maxAllowableOffsetCrs84 = tile.getTileMatrixSet().getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), OgcCrs.CRS84, crsTransformerFactory);
         } catch (CrsTransformationException e) {
-            LOGGER.error("CRS transformation error: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("CRS transformation error while computing maxAllowableOffsetCrs84: {}.", e.getMessage());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stacktrace:", e);
+            }
         }
 
         return maxAllowableOffsetCrs84;
@@ -291,5 +310,10 @@ public class TileFormatMVT implements TileFormatExtension {
      */
     public Object getEmptyTile(Tile tile) {
         return new VectorTileEncoder(tile.getTileMatrixSet().getTileExtent()).encode();
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
     }
 }

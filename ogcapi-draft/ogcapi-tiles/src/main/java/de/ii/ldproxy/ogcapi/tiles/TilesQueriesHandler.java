@@ -7,42 +7,42 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueriesHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryHandler;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryIdentifier;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryInput;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import org.immutables.value.Value;
 
-import java.io.File;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 
-public interface TilesQueriesHandler extends OgcApiQueriesHandler<TilesQueriesHandler.Query> {
+public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.Query> {
 
     @Override
-    Map<Query, OgcApiQueryHandler<? extends OgcApiQueryInput>> getQueryHandlers();
+    Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();
 
-    enum Query implements OgcApiQueryIdentifier {TILE_SETS, TILE_SET, SINGLE_LAYER_TILE, MULTI_LAYER_TILE, TILE_FILE, EMPTY_TILE}
+    enum Query implements QueryIdentifier {TILE_SETS, TILE_SET, SINGLE_LAYER_TILE, MULTI_LAYER_TILE, TILE_FILE, EMPTY_TILE}
 
     @Value.Immutable
-    interface OgcApiQueryInputTileEmpty extends OgcApiQueryInput {
+    interface QueryInputTileEmpty extends QueryInput {
 
         Tile getTile();
     }
 
     @Value.Immutable
-    interface OgcApiQueryInputTileFile extends OgcApiQueryInput {
+    interface QueryInputTileFile extends QueryInput {
 
         Tile getTile();
-        File getTileFile();
+        Path getTileFile();
     }
 
     @Value.Immutable
-    interface OgcApiQueryInputTileMultiLayer extends OgcApiQueryInput {
+    interface QueryInputTileMultiLayer extends QueryInput {
 
         Tile getTile();
         Map<String, Tile> getSingleLayerTileMap();
@@ -56,7 +56,7 @@ public interface TilesQueriesHandler extends OgcApiQueriesHandler<TilesQueriesHa
     }
 
     @Value.Immutable
-    interface OgcApiQueryInputTileSingleLayer extends OgcApiQueryInput {
+    interface QueryInputTileSingleLayer extends QueryInput {
 
         Tile getTile();
         FeatureQuery getQuery();
@@ -69,7 +69,7 @@ public interface TilesQueriesHandler extends OgcApiQueriesHandler<TilesQueriesHa
     }
 
     @Value.Immutable
-    interface OgcApiQueryInputTileSets extends OgcApiQueryInput {
+    interface QueryInputTileSets extends QueryInput {
 
         Optional<String> getCollectionId();
         double[] getCenter();
@@ -77,7 +77,7 @@ public interface TilesQueriesHandler extends OgcApiQueriesHandler<TilesQueriesHa
     }
 
     @Value.Immutable
-    interface OgcApiQueryInputTileSet extends OgcApiQueryInput {
+    interface QueryInputTileSet extends QueryInput {
 
         Optional<String> getCollectionId();
         String getTileMatrixSetId();

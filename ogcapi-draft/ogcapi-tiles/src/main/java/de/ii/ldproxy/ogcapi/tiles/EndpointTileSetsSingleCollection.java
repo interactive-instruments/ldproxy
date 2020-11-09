@@ -9,7 +9,9 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -34,7 +36,7 @@ import java.util.Set;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetsSingleCollection extends OgcApiEndpointSubCollection implements ConformanceClass {
+public class EndpointTileSetsSingleCollection extends EndpointSubCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSetsSingleCollection.class);
 
@@ -42,22 +44,27 @@ public class EndpointTileSetsSingleCollection extends OgcApiEndpointSubCollectio
 
     private final CrsTransformerFactory crsTransformerFactory;
     private final TilesQueriesHandler queryHandler;
+    private final FeaturesCoreProviders providers;
 
     EndpointTileSetsSingleCollection(@Requires CrsTransformerFactory crsTransformerFactory,
-                                     @Requires OgcApiExtensionRegistry extensionRegistry,
-                                     @Requires TilesQueriesHandler queryHandler) {
+                                     @Requires ExtensionRegistry extensionRegistry,
+                                     @Requires TilesQueriesHandler queryHandler,
+                                     @Requires FeaturesCoreProviders providers) {
         super(extensionRegistry);
         this.crsTransformerFactory = crsTransformerFactory;
         this.queryHandler = queryHandler;
+        this.providers = providers;
     }
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tileset",
+                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets",
+                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/geodata-tilesets");
     }
 
     @Override
-    protected Class getConfigurationClass() {
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return TilesConfiguration.class;
     }
 
@@ -69,25 +76,39 @@ public class EndpointTileSetsSingleCollection extends OgcApiEndpointSubCollectio
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        // currently no vector tiles support for WFS backends
+        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+            return false;
+
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::isEnabled)
+                .filter(TilesConfiguration::getSingleCollectionEnabled)
+                .isPresent();
+    }
+
+    @Override
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION);
             final String subSubPath = "/tiles";
             final String path = "/collections/{collectionId}" + subSubPath;
-            final OgcApiContext.HttpMethods method = OgcApiContext.HttpMethods.GET;
+            final HttpMethods method = HttpMethods.GET;
             final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
             } else {
-                final  OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
                 boolean explode = collectionIdParam.getExplodeInOpenApi();
                 final Set<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
@@ -102,17 +123,17 @@ public class EndpointTileSetsSingleCollection extends OgcApiEndpointSubCollectio
                             .path(resourcePath)
                             .pathParameters(pathParameters)
                             .subResourceType("Tile Set");
-                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                    ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
                     if (operation != null)
                         resourceBuilder.putOperations(method.name(), operation);
                     definitionBuilder.putResources(resourcePath, resourceBuilder.build());
                 }
             }
 
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     /**
@@ -122,13 +143,13 @@ public class EndpointTileSetsSingleCollection extends OgcApiEndpointSubCollectio
      */
     @Path("/{collectionId}/tiles")
     @GET
-    public Response getTileSets(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext,
+    public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext,
                                 @PathParam("collectionId") String collectionId) {
 
-        OgcApiApiDataV2 apiData = api.getData();
+        OgcApiDataV2 apiData = api.getData();
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/tiles", "collectionId", collectionId);
 
-        TilesQueriesHandler.OgcApiQueryInputTileSets queryInput = new ImmutableOgcApiQueryInputTileSets.Builder()
+        TilesQueriesHandler.QueryInputTileSets queryInput = new ImmutableQueryInputTileSets.Builder()
                 .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
                 .center(getCenter(apiData))
@@ -138,12 +159,12 @@ public class EndpointTileSetsSingleCollection extends OgcApiEndpointSubCollectio
         return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
     }
 
-    private double[] getCenter(OgcApiApiDataV2 data) {
+    private double[] getCenter(OgcApiDataV2 data) {
         TilesConfiguration tilesConfiguration = data.getExtension(TilesConfiguration.class).get();
         return tilesConfiguration.getCenter();
     }
 
-    private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiApiDataV2 data, String collectionId) {
+    private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiDataV2 data, String collectionId) {
         TilesConfiguration tilesConfiguration = data.getCollections().get(collectionId).getExtension(TilesConfiguration.class).get();
         return tilesConfiguration.getZoomLevels();
     }

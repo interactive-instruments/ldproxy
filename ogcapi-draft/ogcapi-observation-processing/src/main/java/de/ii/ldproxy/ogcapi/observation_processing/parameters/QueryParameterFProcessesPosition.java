@@ -1,9 +1,10 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
+import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -14,8 +15,9 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat.DAPA_PATH_ELEMENT;
+import static de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension.DAPA_PATH_ELEMENT;
 
 @Component
 @Provides
@@ -25,7 +27,7 @@ public class QueryParameterFProcessesPosition extends QueryParameterF {
     @Requires
     FeatureProcessInfo featureProcessInfo;
 
-    protected QueryParameterFProcessesPosition(@Requires OgcApiExtensionRegistry extensionRegistry) {
+    protected QueryParameterFProcessesPosition(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 
@@ -35,37 +37,37 @@ public class QueryParameterFProcessesPosition extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiApiDataV2 apiData, String definitionPath, OgcApiContext.HttpMethods method) {
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) &&
                 featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position");
     }
 
     @Override
     protected Class<? extends FormatExtension> getFormatClass() {
-        return ObservationProcessingOutputFormat.class;
+        return DapaResultFormatExtension.class;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
                 apiData.getCollections()
                         .values()
                         .stream()
-                        .filter(featureType -> featureType.getEnabled())
-                        .filter(featureType -> isEnabledForApi(apiData, featureType.getId()))
-                        .findAny()
-                        .isPresent();
+                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+}
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return ObservationProcessingConfiguration.class;
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
-    }
-
-    @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData) {
-        String key = apiData.getId()+"_*";
-        if (!schemaMap.containsKey(key)) {
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey("*")) {
             List<String> fEnum = new ArrayList<>();
             extensionRegistry.getExtensionsForType(getFormatClass())
                     .stream()
@@ -73,15 +75,17 @@ public class QueryParameterFProcessesPosition extends QueryParameterF {
                     .filter(f -> !f.getMediaType().parameter().equals("*"))
                     .filter(f -> f.getContent(apiData, "/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/position")!=null)
                     .forEach(f -> fEnum.add(f.getMediaType().parameter()));
-            schemaMap.put(key, new StringSchema()._enum(fEnum));
+            schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(fEnum));
         }
-        return schemaMap.get(key);
+        return schemaMap.get(apiHashCode).get("*");
     }
 
     @Override
-    public Schema getSchema(OgcApiApiDataV2 apiData, String collectionId) {
-        String key = apiData.getId()+"_"+collectionId;
-        if (!schemaMap.containsKey(key)) {
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
             List<String> fEnum = new ArrayList<>();
             extensionRegistry.getExtensionsForType(getFormatClass())
                     .stream()
@@ -89,8 +93,8 @@ public class QueryParameterFProcessesPosition extends QueryParameterF {
                     .filter(f -> !f.getMediaType().parameter().equals("*"))
                     .filter(f -> f.getContent(apiData, "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/position")!=null)
                     .forEach(f -> fEnum.add(f.getMediaType().parameter()));
-            schemaMap.put(key, new StringSchema()._enum(fEnum));
+            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(fEnum));
         }
-        return schemaMap.get(key);
+        return schemaMap.get(apiHashCode).get(collectionId);
     }
 }

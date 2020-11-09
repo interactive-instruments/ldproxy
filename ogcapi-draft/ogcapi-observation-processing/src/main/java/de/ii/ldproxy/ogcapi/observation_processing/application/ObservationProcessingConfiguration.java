@@ -9,23 +9,17 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.processing.ProcessDocumentation;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.ProcessDocumentation;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.*;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableObservationProcessingConfiguration.Builder.class)
 public interface ObservationProcessingConfiguration extends ExtensionConfiguration, FeatureTransformations {
-
-    // TODO this module belongs to ogcapi-experimental, not ogcapi-draft, but it is part of ogcapi-draft due
-    //      to the HTML module dependency issues
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
@@ -44,6 +38,8 @@ public interface ObservationProcessingConfiguration extends ExtensionConfigurati
 
     Map<String, ProcessDocumentation> getDocumentation();
 
+    List<String> getResultEncodings();
+
     @Nullable
     Double getIdwPower();
 
@@ -58,15 +54,19 @@ public interface ObservationProcessingConfiguration extends ExtensionConfigurati
         return new ImmutableObservationProcessingConfiguration.Builder();
     }
 
-    //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
-    // try to find a better solution that also enables deep merges
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        return ((ImmutableObservationProcessingConfiguration.Builder) source.getBuilder())
+        ImmutableObservationProcessingConfiguration.Builder builder = ((ImmutableObservationProcessingConfiguration.Builder) source.getBuilder())
                 .from(source)
-                .from(this)
-                .documentation(getDocumentation())
-                .build();
-    }
+                .from(this);
 
+        //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
+        // try to find a better solution that also enables deep merges
+        if (getDocumentation()!=null)
+            builder.documentation(getDocumentation());
+        if (!getResultEncodings().isEmpty())
+            builder.resultEncodings(getResultEncodings());
+
+        return builder.build();
+    }
 }

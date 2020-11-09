@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -23,7 +24,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Handle responses under '/tiles'.
@@ -31,33 +31,46 @@ import java.util.Set;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements ConformanceClass {
+public class EndpointTileSetsMultiCollection extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSetsMultiCollection.class);
 
     private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
     private final TilesQueriesHandler queryHandler;
+    private final FeaturesCoreProviders providers;
 
-    EndpointTileSetsMultiCollection(@Requires OgcApiExtensionRegistry extensionRegistry,
-                                    @Requires TilesQueriesHandler queryHandler) {
+    EndpointTileSetsMultiCollection(@Requires ExtensionRegistry extensionRegistry,
+                                    @Requires TilesQueriesHandler queryHandler,
+                                    @Requires FeaturesCoreProviders providers) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
+        this.providers = providers;
     }
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/collections");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/dataset-tilesets",
+                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/geodata-selection");
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        // currently no vector tiles support for WFS backends
+        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+            return false;
+
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
 
         return extension
                 .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::getMultiCollectionEnabled)
                 .isPresent();
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
     }
 
     @Override
@@ -68,45 +81,45 @@ public class EndpointTileSetsMultiCollection extends OgcApiEndpoint implements C
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("tiles")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_TILE_SETS);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS);
             String path = "/tiles";
-            OgcApiContext.HttpMethods method = OgcApiContext.HttpMethods.GET;
+            HttpMethods method = HttpMethods.GET;
             List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             String operationSummary = "retrieve a list of the available tile sets";
             Optional<String> operationDescription = Optional.of("This operation fetches the list of multi-layer tile sets supported by this API.");
             ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
                     .path(path)
                     .subResourceType("Tile Set");
-            OgcApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
                 resourceBuilderSet.putOperations(method.name(), operation);
             definitionBuilder.putResources(path, resourceBuilderSet.build());
 
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     @Path("")
     @GET
-    public Response getTileSets(@Context OgcApiApi api, @Context OgcApiRequestContext requestContext) {
+    public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext) {
 
-        OgcApiApiDataV2 apiData = api.getData();
+        OgcApiDataV2 apiData = api.getData();
         if (!isEnabledForApi(apiData))
-            throw new NotFoundException();
+            throw new NotFoundException("Multi-collection tiles are not available in this API.");
 
         TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
-        TilesQueriesHandler.OgcApiQueryInputTileSets queryInput = new ImmutableOgcApiQueryInputTileSets.Builder()
+        TilesQueriesHandler.QueryInputTileSets queryInput = new ImmutableQueryInputTileSets.Builder()
                 .from(getGenericQueryInput(api.getData()))
                 .center(tilesConfiguration.getCenter())
                 .tileMatrixSetZoomLevels(tilesConfiguration.getZoomLevels())

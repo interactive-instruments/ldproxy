@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.MinMax;
 import de.ii.xtraplatform.crs.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
@@ -41,9 +41,9 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
      * @param crsTransformation crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiApiDataV2 data, String collectionId,
-                                                                             TileMatrixSet tileMatrixSet, MinMax tileMatrixRange,
-                                                                             CrsTransformerFactory crsTransformation) {
+    public List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiDataV2 data, String collectionId,
+                                                                      TileMatrixSet tileMatrixSet, MinMax tileMatrixRange,
+                                                                      CrsTransformerFactory crsTransformation) {
 
         List<FeatureTypeConfigurationOgcApi> collectionData = data.getCollections()
                 .values()
@@ -51,7 +51,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
                 .filter(featureType -> collectionId.equals(featureType.getId()))
                 .collect(Collectors.toList());
 
-        Optional<BoundingBox> bbox = collectionData.get(0).getExtent().isPresent()? collectionData.get(0).getExtent().get().getSpatial() : Optional.empty();
+        Optional<BoundingBox> bbox = data.getSpatialExtent(collectionData.get(0).getId()).isPresent()? data.getSpatialExtent(collectionData.get(0).getId()) : Optional.empty();
 
         if (!bbox.isPresent()) {
             return ImmutableList.of();
@@ -83,20 +83,27 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
      * @param crsTransformerFactory crs transfromation
      * @return list of TileMatrixSetLimits
      */
-    public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiApiDataV2 data, TileMatrixSet tileMatrixSet,
-                                                                   MinMax tileMatrixRange, CrsTransformerFactory crsTransformerFactory) {
+    public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDataV2 data, TileMatrixSet tileMatrixSet,
+                                                            MinMax tileMatrixRange, CrsTransformerFactory crsTransformerFactory) {
 
-        BoundingBox bbox = data.getSpatialExtent();
-        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.getEpsgCrs(), tileMatrixSet.getCrs());
-        if (transformer.isPresent()) {
-            try {
-                bbox = transformer.get().transformBoundingBox(bbox);
-            } catch (CrsTransformationException e) {
-                LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs().toSimpleString()));
-                return ImmutableList.of();
+        Optional<BoundingBox> bbox = data.getSpatialExtent();
+        if (bbox.isPresent()) {
+            Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(bbox.get().getEpsgCrs(), tileMatrixSet.getCrs());
+            if (transformer.isPresent()) {
+                try {
+                    bbox = Optional.ofNullable(transformer.get()
+                                                          .transformBoundingBox(bbox.get()));
+                } catch (CrsTransformationException e) {
+                    LOGGER.error(String.format(Locale.US, "Cannot generate tile matrix set limits. Error converting bounding box (%f, %f, %f, %f) to %s.", bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax(), bbox.get().getEpsgCrs()
+                                                                                                                                                                                                                               .toSimpleString()));
+                    return ImmutableList.of();
+                }
             }
         }
 
-        return tileMatrixSet.getLimitsList(tileMatrixRange, bbox);
+        if (bbox.isPresent())
+            return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
+
+        return ImmutableList.of();
     }
 }

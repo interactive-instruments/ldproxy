@@ -9,13 +9,27 @@ package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSetLimitsGenerator;
-import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -28,13 +42,24 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Handle responses under '/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'.
@@ -42,20 +67,20 @@ import java.util.*;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
+public class EndpointTileSingleCollection extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSingleCollection.class);
 
     private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
 
-    private final OgcApiFeatureCoreProviders providers;
+    private final FeaturesCoreProviders providers;
     private final TilesQueriesHandler queryHandler;
     private final CrsTransformerFactory crsTransformerFactory;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TilesCache cache;
 
-    EndpointTileSingleCollection(@Requires OgcApiFeatureCoreProviders providers,
-                                 @Requires OgcApiExtensionRegistry extensionRegistry,
+    EndpointTileSingleCollection(@Requires FeaturesCoreProviders providers,
+                                 @Requires ExtensionRegistry extensionRegistry,
                                  @Requires TilesQueriesHandler queryHandler,
                                  @Requires CrsTransformerFactory crsTransformerFactory,
                                  @Requires TileMatrixSetLimitsGenerator limitsGenerator, 
@@ -69,7 +94,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    protected Class getConfigurationClass() {
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return TilesConfiguration.class;
     }
 
@@ -81,25 +106,39 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        // currently no vector tiles support for WFS backends
+        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+            return false;
+
+        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
+
+        return extension
+                .filter(TilesConfiguration::isEnabled)
+                .filter(TilesConfiguration::getSingleCollectionEnabled)
+                .isPresent();
+    }
+
+    @Override
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
-                    .sortPriority(OgcApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION);
+                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION);
             final String subSubPath = "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}";
             final String path = "/collections/{collectionId}" + subSubPath;
-            final OgcApiContext.HttpMethods method = OgcApiContext.HttpMethods.GET;
+            final HttpMethods method = HttpMethods.GET;
             final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
             List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
             } else {
-                final  OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
                 boolean explode = collectionIdParam.getExplodeInOpenApi();
                 final Set<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
@@ -115,28 +154,28 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
                     ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                             .path(resourcePath)
                             .pathParameters(pathParameters);
-                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                    ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
                     if (operation != null)
                         resourceBuilder.putOperations(method.name(), operation);
                     definitionBuilder.putResources(resourcePath, resourceBuilder.build());
                 }
             }
 
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     @Path("/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
     @GET
-    public Response getTile(@Auth Optional< User > optionalUser, @Context OgcApiApi api, @PathParam("collectionId") String collectionId,
+    public Response getTile(@Auth Optional< User > optionalUser, @Context OgcApi api, @PathParam("collectionId") String collectionId,
                             @PathParam("tileMatrixSetId") String tileMatrixSetId, @PathParam("tileMatrix") String tileMatrix,
                             @PathParam("tileRow") String tileRow, @PathParam("tileCol") String tileCol,
-                            @Context UriInfo uriInfo, @Context OgcApiRequestContext requestContext)
-        throws CrsTransformationException, FileNotFoundException, NotFoundException {
+                            @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
+            throws CrsTransformationException, IOException, NotFoundException {
 
-        OgcApiApiDataV2 apiData = api.getData();
+        OgcApiDataV2 apiData = api.getData();
         checkAuthorization(apiData, optionalUser);
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         ensureFeatureProviderSupportsQueries(featureProvider);
@@ -169,7 +208,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
 
         MinMax zoomLevels = tilesConfiguration.getZoomLevels().get(tileMatrixSetId);
         if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
-            throw new NotFoundException();
+            throw new NotFoundException("The requested tile is outside the zoom levels for this tile set.");
 
         TileMatrixSet tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
                 .filter(tms -> tms.getId().equals(tileMatrixSetId))
@@ -186,7 +225,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
             if (tileLimits.getMaxTileCol()<col || tileLimits.getMinTileCol()>col ||
                     tileLimits.getMaxTileRow()<row || tileLimits.getMinTileRow()>row)
                 // return 404, if outside the range
-                throw new NotFoundException();
+                throw new NotFoundException("The requested tile is outside of the limits for this zoom level and tile set.");
         }
 
         String path = definitionPath.replace("{collectionId}", collectionId)
@@ -194,8 +233,8 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
                 .replace("{tileMatrix}", tileMatrix)
                 .replace("{tileRow}", tileRow)
                 .replace("{tileCol}", tileCol);
-        TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path)
-                .orElseThrow(NotAcceptableException::new);
+        TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path, Optional.of(collectionId))
+                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         Tile tile = new ImmutableTile.Builder()
                 .collectionIds(ImmutableList.of(collectionId))
@@ -212,9 +251,9 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
         // if cache can be used and the tile is cached for the requested format, return the cache
         if (useCache) {
             // get the tile from the cache and return it
-            File tileFile = cache.getFile(tile);
-            if (tileFile.exists()) {
-                TilesQueriesHandler.OgcApiQueryInputTileFile queryInput = new ImmutableOgcApiQueryInputTileFile.Builder()
+            java.nio.file.Path tileFile = cache.getFile(tile);
+            if (Files.exists(tileFile)) {
+                TilesQueriesHandler.QueryInputTileFile queryInput = new ImmutableQueryInputTileFile.Builder()
                         .from(getGenericQueryInput(api.getData()))
                         .tile(tile)
                         .tileFile(tileFile)
@@ -224,6 +263,16 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
             }
         }
 
+        // don't store the tile in the cache if it is outside the range
+        MinMax cacheMinMax = tilesConfiguration.getZoomLevelsCache()
+                                               .get(tileMatrixSetId);
+        Tile finalTile = Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()) ?
+                tile :
+                new ImmutableTile.Builder()
+                        .from(tile)
+                        .temporary(true)
+                        .build();
+
         // first execute the information that is passed as processing parameters (e.g., "properties")
         Map<String, Object> processingParameters = new HashMap<>();
         for (OgcApiQueryParameter parameter : allowedParameters) {
@@ -232,12 +281,12 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
 
         FeatureQuery query = outputFormat.getQuery(tile, allowedParameters, queryParams, tilesConfiguration, requestContext.getUriCustomizer());
 
-        OgcApiFeaturesCoreConfiguration coreConfiguration = featureType.getExtension(OgcApiFeaturesCoreConfiguration.class).get();
+        FeaturesCoreConfiguration coreConfiguration = featureType.getExtension(FeaturesCoreConfiguration.class).get();
 
         // TODO add caching information
-        TilesQueriesHandler.OgcApiQueryInputTileSingleLayer queryInput = new ImmutableOgcApiQueryInputTileSingleLayer.Builder()
+        TilesQueriesHandler.QueryInputTileSingleLayer queryInput = new ImmutableQueryInputTileSingleLayer.Builder()
                 .from(getGenericQueryInput(api.getData()))
-                .tile(tile)
+                .tile(finalTile)
                 .query(query)
                 .processingParameters(processingParameters)
                 .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
@@ -248,7 +297,7 @@ public class EndpointTileSingleCollection extends OgcApiEndpointSubCollection {
 
     private void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
         if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("feature provider does not support queries");
+            throw new IllegalStateException("Feature provider does not support queries.");
         }
     }
 }

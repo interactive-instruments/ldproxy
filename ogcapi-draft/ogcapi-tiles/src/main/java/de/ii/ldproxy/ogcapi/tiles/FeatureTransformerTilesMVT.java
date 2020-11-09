@@ -8,39 +8,48 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
-import de.ii.ldproxy.target.geojson.GeoJsonConfiguration;
-import de.ii.xtraplatform.akka.http.HttpClient;
-import de.ii.xtraplatform.codelists.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import de.ii.xtraplatform.streams.domain.HttpClient;
 import no.ecc.vectortile.VectorTileEncoder;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.CoordinateXY;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ServerErrorException;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.OptionalLong;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.Vector;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
-public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
+public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerTilesMVT.class);
 
@@ -52,9 +61,6 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
     private final TileMatrixSet tileMatrixSet;
     private final CrsTransformer crsTransformer;
     private final boolean swapCoordinates;
-    private final Map<String, Codelist> codelists;
-    private final Optional<FeatureTransformations> baseTransformations;
-    private final Optional<FeatureTransformations> geojsonTransformations;
     private final FeatureTransformationContextTiles transformationContext;
     private final Map<String, Object> processingParameters;
     private final TilesConfiguration tilesConfiguration;
@@ -65,7 +71,10 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
     private final int pointLimit;
     private final String layerName;
     private final List<String> properties;
-    private final GeometryFactory geometryFactory;
+    private final PrecisionModel tilePrecisionModel;
+    private final GeometryPrecisionReducer reducer;
+    private final GeometryFactory geometryFactoryWorld;
+    private final GeometryFactory geometryFactoryTile;
     private final Pattern separatorPattern;
 
     private SimpleFeatureGeometry currentGeometryType;
@@ -86,39 +95,34 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
     private int polygonCount = 0;
     private int lineStringCount = 0;
     private int pointCount = 0;
+    private final Polygon clipGeometry;
 
     public FeatureTransformerTilesMVT(FeatureTransformationContextTiles transformationContext, HttpClient httpClient) {
+        super(TilesConfiguration.class,
+              transformationContext.getApiData(), transformationContext.getCollectionId(),
+              transformationContext.getCodelists(), transformationContext.getServiceUrl(),
+              transformationContext.isFeatureCollection());
         this.outputStream = transformationContext.getOutputStream();
         this.limit = transformationContext.getLimit();
         this.crsTransformer = transformationContext.getCrsTransformer()
                                                    .orElse(null);
         this.swapCoordinates = transformationContext.shouldSwapCoordinates();
-        this.codelists = transformationContext.getCodelists();
         this.transformationContext = transformationContext;
         this.processingParameters = transformationContext.getProcessingParameters();
         this.collectionId = transformationContext.getCollectionId();
         this.tile = transformationContext.getTile();
         this.tileMatrixSet = tile.getTileMatrixSet();
         this.properties = transformationContext.getFields();
-        this.geometryFactory = new GeometryFactory();
         this.separatorPattern = Pattern.compile("\\s+|\\,");
+        this.geometryFactoryWorld = new GeometryFactory();
+        this.tilePrecisionModel = new PrecisionModel((double)tileMatrixSet.getTileExtent() / (double)tileMatrixSet.getTileSize());
+        this.geometryFactoryTile = new GeometryFactory(tilePrecisionModel);
+        this.reducer = new GeometryPrecisionReducer(tilePrecisionModel);
 
         if (collectionId!=null) {
-            FeatureTypeConfigurationOgcApi featureType = transformationContext.getApiData()
-                    .getCollections()
-                    .get(transformationContext.getCollectionId());
-            baseTransformations = Objects.isNull(featureType) ? Optional.empty() : featureType
-                    .getExtension(OgcApiFeaturesCoreConfiguration.class)
-                    .map(configuration -> configuration);
-            // TODO keep those only for the GeoJSON variant
-            geojsonTransformations = Objects.isNull(featureType) ? Optional.empty() : featureType
-                    .getExtension(GeoJsonConfiguration.class)
-                    .map(configuration -> configuration);
             tilesConfiguration = transformationContext.getConfiguration();
             layerName = collectionId;
         } else {
-            baseTransformations = Optional.empty();
-            geojsonTransformations = Optional.empty();
             tilesConfiguration = transformationContext.getConfiguration();
             layerName = "layer";
         }
@@ -129,6 +133,16 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
         this.polygonLimit = tilesConfiguration!=null ? tilesConfiguration.getMaxPolygonPerTileDefault() : 10000;
         this.lineStringLimit = tilesConfiguration!=null ? tilesConfiguration.getMaxLineStringPerTileDefault() : 10000;
         this.pointLimit = tilesConfiguration!=null ? tilesConfiguration.getMaxPointPerTileDefault() : 10000;
+
+        final int size = tileMatrixSet.getTileSize();
+        final int buffer = 8;
+        CoordinateXY[] coords = new CoordinateXY[5];
+        coords[0] = new CoordinateXY(0 - buffer, size + buffer);
+        coords[1] = new CoordinateXY(size + buffer, size + buffer);
+        coords[2] = new CoordinateXY(size + buffer, 0 - buffer);
+        coords[3] = new CoordinateXY(0 - buffer, 0 - buffer);
+        coords[4] = coords[0];
+        this.clipGeometry = geometryFactoryTile.createPolygon(coords);
     }
 
     @Override
@@ -152,24 +166,18 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
     @Override
     public void onEnd() {
 
-        /*
-        for (FeatureProcess process : processes.asList()) {
-            data = process.execute(data, processingParameters);
-        }
-         */
-
         try {
             byte[] mvt = encoder.encode();
             outputStream.write(mvt);
             outputStream.flush();
 
             // write/update tile in cache
-            File tileFile = transformationContext.getTileFile();
-            if (!tileFile.exists() || tileFile.canWrite()) {
-                FileUtils.writeByteArrayToFile(tileFile, mvt);
+            Path tileFile = transformationContext.getTileFile();
+            if (Files.notExists(tileFile) || Files.isWritable(tileFile)) {
+                Files.write(tileFile, mvt);
             }
         } catch (IOException e) {
-            throw new ServerErrorException("Error writing output stream.", 500);
+            throw new RuntimeException("Error writing output stream.", e);
         }
 
         LOGGER.trace("Response written.");
@@ -186,31 +194,47 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
         currentId = null;
     }
 
+
+
     @Override
     public void onFeatureEnd() {
 
         if (currentGeometry==null)
             return;
 
+        // convert to the tile coordinate system
         currentGeometry.apply(affineTransformation);
 
-        // filter features
-        String geomType = currentGeometry.getGeometryType();
-        if (geomType.contains("Polygon")) {
-            currentGeometry.reverse();
-            double area = currentGeometry.getArea();
-            if (area <= 4)
+        // remove small rings or line strings (small in the context of the tile)
+        currentGeometry = TileGeometryUtil.removeSmallPieces(currentGeometry);
+        if (currentGeometry==null)
+            return;
+
+        // limit the coordinates to the tile with a buffer
+        currentGeometry = TileGeometryUtil.clipGeometry(currentGeometry, clipGeometry);
+
+        // reduce the geometry to the tile grid
+        currentGeometry = reducer.reduce(currentGeometry);
+
+        // if the resulting geometry is invalid, try to make it valid
+        if (!currentGeometry.isValid()) {
+            if (currentGeometry instanceof Polygon || currentGeometry instanceof MultiPolygon)
+                currentGeometry = currentGeometry.buffer(0.0);
+
+            // again, remove small rings or line strings (small in the context of the tile) that may
+            // have been created in some cases by changing to the tile grid
+            currentGeometry = TileGeometryUtil.removeSmallPieces(currentGeometry);
+            if (currentGeometry==null)
                 return;
-            if (polygonCount++ > polygonLimit)
-                return;
-        } else if (geomType.contains("LineString")) {
-            double length = currentGeometry.getLength();
-            if (length <= 2)
-                return;
-            if (lineStringCount++ > lineStringLimit)
-                return;
-        } else if (geomType.contains("Point")) {
-            if (pointCount++ > pointLimit)
+
+            // again, make sure the geometry is using the tile grid
+            currentGeometry = reducer.reduce(currentGeometry);
+        }
+
+        // Geometry is still invalid -> log this information and skip it, if that option is used
+        if (!currentGeometry.isValid()) {
+            LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", currentId, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+            if (tilesConfiguration.getIgnoreInvalidGeometries())
                 return;
         }
 
@@ -250,6 +274,10 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
             }
         }
 
+        // the property may have been removed by the transformations
+        if (Objects.isNull(processedFeatureProperty))
+            return;
+
         currentProperty = processedFeatureProperty;
         currentPropertyName = currentProperty.getName();
         multiplicities.stream()
@@ -276,6 +304,8 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
             List<FeaturePropertyValueTransformer> valueTransformations = getValueTransformations(currentProperty);
             for (FeaturePropertyValueTransformer valueTransformer : valueTransformations) {
                 value = valueTransformer.transform(value);
+                if (Objects.isNull(value))
+                    break;
             }
             // skip, if the value has been transformed to null
             if (Objects.nonNull(value)) {
@@ -285,13 +315,18 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
                         break;
                     case INTEGER:
                         currentProperties.put(currentPropertyName, Long.parseLong(value));
+                        break;
                     case FLOAT:
                         currentProperties.put(currentPropertyName, Double.parseDouble(value));
+                        break;
                     case DATETIME:
                     case STRING:
                     default:
                         currentProperties.put(currentPropertyName, value);
                 }
+
+                if (currentProperty.isId())
+                    currentId = value;
             }
         }
 
@@ -357,19 +392,19 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
             case MULTI_POINT:
                 coord = parseCoordinate(text);
                 if (coord!=null)
-                    currentPoints.add(geometryFactory.createPoint(coord));
+                    currentPoints.add(geometryFactoryWorld.createPoint(coord));
                 break;
             case LINE_STRING:
             case MULTI_LINE_STRING:
                 coords = parseCoordinates(text);
                 if (coords!=null)
-                    currentLineStrings.add(geometryFactory.createLineString(coords));
+                    currentLineStrings.add(geometryFactoryWorld.createLineString(coords));
                 break;
             case POLYGON:
             case MULTI_POLYGON:
                 coords = parseCoordinates(text);
                 if (coords!=null)
-                    currentLinearRings.add(geometryFactory.createLinearRing(coords));
+                    currentLinearRings.add(geometryFactoryWorld.createLinearRing(coords));
                 break;
         }
     }
@@ -417,9 +452,9 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
             case MULTI_POLYGON:
                 int rings = currentLinearRings.size();
                 if (rings==1)
-                    currentPolygons.add(geometryFactory.createPolygon(currentLinearRings.get(0)));
+                    currentPolygons.add(geometryFactoryWorld.createPolygon(currentLinearRings.get(0)));
                 else if (rings>1)
-                    currentPolygons.add(geometryFactory.createPolygon(currentLinearRings.get(0),currentLinearRings.subList(1,rings).toArray(new LinearRing[0])));
+                    currentPolygons.add(geometryFactoryWorld.createPolygon(currentLinearRings.get(0), currentLinearRings.subList(1, rings).toArray(new LinearRing[0])));
                 currentLinearRings = new Vector<>();
                 break;
         }
@@ -434,93 +469,29 @@ public class FeatureTransformerTilesMVT implements FeatureTransformer2 {
                     currentGeometry = currentPoints.get(0);
                 break;
             case MULTI_POINT:
-                currentGeometry = geometryFactory.createMultiPoint(currentPoints.toArray(new Point[0]));
+                currentGeometry = geometryFactoryWorld.createMultiPoint(currentPoints.toArray(new Point[0]));
                 break;
             case LINE_STRING:
                 if (currentLineStrings.size()==1)
                     currentGeometry = currentLineStrings.get(0);
                 break;
             case MULTI_LINE_STRING:
-                currentGeometry = geometryFactory.createMultiLineString(currentLineStrings.toArray(new LineString[0]));
+                currentGeometry = geometryFactoryWorld.createMultiLineString(currentLineStrings.toArray(new LineString[0]));
                 break;
             case POLYGON:
                 int rings = currentLinearRings.size();
                 if (rings==1)
-                    currentGeometry = geometryFactory.createPolygon(currentLinearRings.get(0));
+                    currentGeometry = geometryFactoryWorld.createPolygon(currentLinearRings.get(0));
                 else if (rings>1)
-                    currentGeometry = geometryFactory.createPolygon(currentLinearRings.get(0),currentLinearRings.subList(1,rings).toArray(new LinearRing[0]));
+                    currentGeometry = geometryFactoryWorld.createPolygon(currentLinearRings.get(0), currentLinearRings.subList(1, rings).toArray(new LinearRing[0]));
                 currentLinearRings = new Vector<>();
                 break;
             case MULTI_POLYGON:
-                currentGeometry = geometryFactory.createMultiPolygon(currentPolygons.toArray(new Polygon[0]));
+                currentGeometry = geometryFactoryWorld.createMultiPolygon(currentPolygons.toArray(new Polygon[0]));
                 break;
         }
 
         currentProperty = null;
         currentGeometryType = null;
-    }
-
-    // TODO move somewhere central for reuse?
-    private List<FeaturePropertyValueTransformer> getValueTransformations(FeatureProperty featureProperty) {
-        List<FeaturePropertyValueTransformer> valueTransformations = null;
-        if (baseTransformations.isPresent()) {
-            valueTransformations = baseTransformations.get()
-                    .getValueTransformations(transformationContext.getCodelists(), transformationContext.getServiceUrl())
-                    .get(featureProperty.getName()
-                            .replaceAll("\\[[^\\]]+?\\]", "[]"));
-        }
-        if (geojsonTransformations.isPresent()) {
-            if (Objects.nonNull(valueTransformations)) {
-                List<FeaturePropertyValueTransformer> moreTransformations = geojsonTransformations.get()
-                        .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
-                        .get(featureProperty.getName()
-                                .replaceAll("\\[[^\\]]+?\\]", "[]"));
-                if (Objects.nonNull(moreTransformations)) {
-                    valueTransformations = Stream
-                            .of(valueTransformations, moreTransformations)
-                            .flatMap(Collection::stream)
-                            .collect(ImmutableList.toImmutableList());
-                }
-            } else {
-                valueTransformations = geojsonTransformations.get()
-                        .getValueTransformations(new HashMap<String, Codelist>(), transformationContext.getServiceUrl())
-                        .get(featureProperty.getName()
-                                .replaceAll("\\[[^\\]]+?\\]", "[]"));
-            }
-        }
-
-        return Objects.nonNull(valueTransformations) ? valueTransformations : ImmutableList.of();
-    }
-
-    // TODO move somewhere central for reuse?
-    private List<FeaturePropertySchemaTransformer> getSchemaTransformations(FeatureProperty featureProperty) {
-        List<FeaturePropertySchemaTransformer> schemaTransformations = null;
-        if (baseTransformations.isPresent()) {
-            schemaTransformations = baseTransformations.get()
-                    .getSchemaTransformations(false)
-                    .get(featureProperty.getName()
-                            .replaceAll("\\[[^\\]]+?\\]", "[]"));
-        }
-        if (geojsonTransformations.isPresent()) {
-            if (Objects.nonNull(schemaTransformations)) {
-                List<FeaturePropertySchemaTransformer> moreTransformations = geojsonTransformations.get()
-                        .getSchemaTransformations(false)
-                        .get(featureProperty.getName()
-                                .replaceAll("\\[[^\\]]+?\\]", "[]"));
-                if (Objects.nonNull(moreTransformations)) {
-                    schemaTransformations = Stream
-                            .of(schemaTransformations, moreTransformations)
-                            .flatMap(Collection::stream)
-                            .collect(ImmutableList.toImmutableList());
-                }
-            } else {
-                schemaTransformations = geojsonTransformations.get()
-                        .getSchemaTransformations(false)
-                        .get(featureProperty.getName()
-                                .replaceAll("\\[[^\\]]+?\\]", "[]"));
-            }
-        }
-
-        return Objects.nonNull(schemaTransformations) ? schemaTransformations : ImmutableList.of();
     }
 }

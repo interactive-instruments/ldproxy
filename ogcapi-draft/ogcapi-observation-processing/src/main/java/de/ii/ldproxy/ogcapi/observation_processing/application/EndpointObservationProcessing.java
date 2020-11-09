@@ -10,35 +10,36 @@ package de.ii.ldproxy.ogcapi.observation_processing.application;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.Example;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.ExternalDocumentation;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceProcess;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiCommonConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointSubCollection;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExample;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiExternalDocumentation;
-import de.ii.ldproxy.ogcapi.domain.OgcApiOperation;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.ldproxy.ogcapi.features.core.api.OgcApiFeatureCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesQuery;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcess;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessChain;
-import de.ii.ldproxy.ogcapi.features.processing.FeatureProcessInfo;
-import de.ii.ldproxy.ogcapi.features.processing.ProcessDocumentation;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableOgcApiQueryInputObservationProcessing;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcess;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.ProcessDocumentation;
+import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
+import de.ii.ldproxy.ogcapi.observation_processing.api.ImmutableQueryInputObservationProcessing;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
-import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingOutputFormat;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingQueriesHandler;
-import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -55,6 +56,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,20 +66,20 @@ import java.util.Set;
 @Component
 @Provides
 @Instantiate
-public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
+public class EndpointObservationProcessing extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointObservationProcessing.class);
     private static final List<String> TAGS = ImmutableList.of("DAPA"); // TODO make configurable
     private static final String DAPA_PATH_ELEMENT = "dapa";
 
-    final OgcApiFeatureCoreProviders providers;
-    final OgcApiFeaturesQuery ogcApiFeaturesQuery;
+    final FeaturesCoreProviders providers;
+    final FeaturesQuery ogcApiFeaturesQuery;
     final ObservationProcessingQueriesHandler queryHandler;
     final FeatureProcessInfo featureProcessInfo;
 
-    public EndpointObservationProcessing(@Requires OgcApiExtensionRegistry extensionRegistry,
-                                         @Requires OgcApiFeatureCoreProviders providers,
-                                         @Requires OgcApiFeaturesQuery ogcApiFeaturesQuery,
+    public EndpointObservationProcessing(@Requires ExtensionRegistry extensionRegistry,
+                                         @Requires FeaturesCoreProviders providers,
+                                         @Requires FeaturesQuery ogcApiFeaturesQuery,
                                          @Requires ObservationProcessingQueriesHandler queryHandler,
                                          @Requires FeatureProcessInfo featureProcessInfo) {
         super(extensionRegistry);
@@ -88,24 +90,24 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
     }
 
     @Override
-    protected Class getConfigurationClass() {
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return ObservationProcessingConfiguration.class;
     }
 
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(ObservationProcessingOutputFormat.class);
+            formats = extensionRegistry.getExtensionsForType(DapaResultFormatExtension.class);
         return formats;
     }
 
     @Override
-    public OgcApiEndpointDefinition getDefinition(OgcApiApiDataV2 apiData) {
+    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
         if (!isEnabledForApi(apiData))
             return super.getDefinition(apiData);
 
-        String apiId = apiData.getId();
-        if (!apiDefinitions.containsKey(apiId)) {
-            ImmutableOgcApiEndpointDefinition.Builder definitionBuilder = new ImmutableOgcApiEndpointDefinition.Builder()
+        int apiDataHash = apiData.hashCode();
+        if (!apiDefinitions.containsKey(apiDataHash)) {
+            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
                     .sortPriority(10020);
             featureProcessInfo.getProcessingChains(apiData, ObservationProcess.class)
@@ -141,8 +143,8 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                     String operationSummary = chain.getOperationSummary();
                                     Optional<String> operationDescription = chain.getOperationDescription();
                                     Optional<String> responseDescription = chain.getResponseDescription();
-                                    Optional<OgcApiExternalDocumentation> externalDocs = Optional.empty();
-                                    Map<String, List<OgcApiExample>> examples = ImmutableMap.of();
+                                    Optional<ExternalDocumentation> externalDocs = Optional.empty();
+                                    Map<String, List<Example>> examples = ImmutableMap.of();
                                     List<String> tags;
                                     String processId = subSubPath.substring(DAPA_PATH_ELEMENT.length()+2);
                                     switch (processId) {
@@ -260,24 +262,24 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                                     ImmutableOgcApiResourceProcess.Builder resourceBuilder = new ImmutableOgcApiResourceProcess.Builder()
                                             .path(resourcePath)
                                             .pathParameters(pathParameters);
-                                    OgcApiOperation operation = addOperation(apiData, OgcApiContext.HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, TAGS);
+                                    ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, TAGS);
                                     if (operation!=null)
                                         resourceBuilder.putOperations("GET", operation);
                                     definitionBuilder.putResources(resourcePath, resourceBuilder.build());
                                 });
                     });
 
-            apiDefinitions.put(apiId, definitionBuilder.build());
+            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiId);
+        return apiDefinitions.get(apiDataHash);
     }
 
     @GET
     @Path("/{collectionId}/"+DAPA_PATH_ELEMENT+"/{processIds}")
     public Response getProcessResult(@Auth Optional<User> optionalUser,
-                                     @Context OgcApiApi api,
-                                     @Context OgcApiRequestContext requestContext,
+                                     @Context OgcApi api,
+                                     @Context ApiRequestContext requestContext,
                                      @Context UriInfo uriInfo,
                                      @PathParam("collectionId") String collectionId,
                                      @PathParam("processIds") String processIds) {
@@ -285,26 +287,26 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
         FeatureProcessChain processChain = featureProcessInfo.getProcessingChains(api.getData(), collectionId, ObservationProcess.class).stream()
                 .filter(chain -> chain.getSubSubPath().equals("/"+DAPA_PATH_ELEMENT+"/"+processIds))
                 .findAny()
-                .orElseThrow(() -> new NotFoundException());
+                .orElseThrow(() -> new NotFoundException("The requested path is not a resource in this API."));
         final String path = "/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/"+processIds;
         checkPathParameter(extensionRegistry, api.getData(), path, "collectionId", collectionId);
         final List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), path, collectionId);
         return getResponse(optionalUser, api.getData(), requestContext, uriInfo, collectionId, allowedParameters, processChain);
     }
 
-    Response getResponse(Optional<User> optionalUser, OgcApiApiDataV2 apiData, OgcApiRequestContext requestContext,
+    Response getResponse(Optional<User> optionalUser, OgcApiDataV2 apiData, ApiRequestContext requestContext,
                          UriInfo uriInfo, String collectionId, List<OgcApiQueryParameter> allowedParameters, FeatureProcessChain processChain) {
 
         // TODO check that the request is not considered to be too demanding
 
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        final OgcApiFeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(OgcApiFeaturesCoreConfiguration.class)
-                                                                                .orElseThrow(NotFoundException::new);
+        final FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                          .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", apiData.getId(), collectionId)));
         final int minimumPageSize = coreConfiguration.getMinimumPageSize();
         final int defaultPageSize = coreConfiguration.getDefaultPageSize();
         final int maxPageSize = coreConfiguration.getMaximumPageSize();
-        final boolean includeLinkHeader = apiData.getExtension(OgcApiCommonConfiguration.class)
-                                                .map(OgcApiCommonConfiguration::getIncludeLinkHeader)
+        final boolean includeLinkHeader = apiData.getExtension(FoundationConfiguration.class)
+                                                .map(FoundationConfiguration::getIncludeLinkHeader)
                                                 .orElse(false);
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
 
@@ -328,7 +330,7 @@ public class EndpointObservationProcessing extends OgcApiEndpointSubCollection {
                 .map(ObservationProcessingConfiguration::getVariables)
                 .orElse(ImmutableList.of());
 
-        ObservationProcessingQueriesHandler.OgcApiQueryInputObservationProcessing queryInput = new ImmutableOgcApiQueryInputObservationProcessing.Builder()
+        ObservationProcessingQueriesHandler.QueryInputObservationProcessing queryInput = new ImmutableQueryInputObservationProcessing.Builder()
                 .featureProvider(providers.getFeatureProvider(apiData, collectionData))
                 .collectionId(collectionId)
                 .query(query)
