@@ -33,13 +33,13 @@ public class QueryParameterFProcessesResampleToGrid extends QueryParameterF {
 
     @Override
     public String getId() {
-        return "fProcesses-resample-to-grid";
+        return "fProcesses-grid";
     }
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"resample-to-grid");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid");
     }
 
     @Override
@@ -78,7 +78,7 @@ public class QueryParameterFProcessesResampleToGrid extends QueryParameterF {
                     .stream()
                     .filter(f -> f.isEnabledForApi(apiData))
                     .filter(f -> !f.getMediaType().parameter().equals("*"))
-                    .filter(f -> f.getContent(apiData, "/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/resample-to-grid")!=null)
+                    .filter(f -> f.getContent(apiData, "/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/grid")!=null)
                     .forEach(f -> fEnum.add(f.getMediaType().parameter()));
             schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(fEnum));
         }
@@ -96,7 +96,7 @@ public class QueryParameterFProcessesResampleToGrid extends QueryParameterF {
                     .stream()
                     .filter(f -> f.isEnabledForApi(apiData, collectionId))
                     .filter(f -> !f.getMediaType().parameter().equals("*"))
-                    .filter(f -> f.getContent(apiData, "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/resample-to-grid")!=null)
+                    .filter(f -> f.getContent(apiData, "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/grid")!=null)
                     .forEach(f -> fEnum.add(f.getMediaType().parameter()));
             schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(fEnum));
         }

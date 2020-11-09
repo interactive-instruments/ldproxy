@@ -15,8 +15,7 @@ import de.ii.ldproxy.ogcapi.observation_processing.application.Variables;
 public interface DapaVariablesFormatExtension extends GenericFormatExtension {
 
     default String getPathPattern() {
-        String DAPA_PATH_ELEMENT = "dapa";
-        return "^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/variables/?$";
+        return "^/collections/[\\w\\-]+/variables/?$";
     }
 
     Object getEntity(Variables variables, String collectionId, OgcApi api, ApiRequestContext requestContext);

@@ -34,7 +34,7 @@ public class FeatureProcessAggregateTimeGrid implements ObservationProcess {
     @Override
     public List<FeatureProcess> getSupportedProcesses(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(FeatureProcess.class).stream()
-                .filter(param -> param.getOutputType()== DataArrayXyt.class)
+                .filter(proc -> proc.getOutputType()== DataArrayXyt.class && !proc.isAlwaysTerminal())
                 .collect(Collectors.toList());
     }
 

@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class FeatureProcessResampleToGrid implements ObservationProcess {
+public class FeatureProcessGrid implements ObservationProcess {
 
     private final ExtensionRegistry extensionRegistry;
 
-    public FeatureProcessResampleToGrid(@Requires ExtensionRegistry extensionRegistry) {
+    public FeatureProcessGrid(@Requires ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 
@@ -88,7 +88,7 @@ public class FeatureProcessResampleToGrid implements ObservationProcess {
 
     @Override
     public String getName() {
-        return "resample-to-grid";
+        return "grid";
     }
 
     @Override
@@ -99,7 +99,7 @@ public class FeatureProcessResampleToGrid implements ObservationProcess {
     @Override
     public Optional<String> getDescription() {
         return Optional.of("TODO" +
-                "A point observation feature with a point geometry at the selected location (`coord`) " +
+                "A point observation feature with a point geometry at the selected location (`coords`) " +
                 "at the selected time or for each time step in the selected time interval (`datetime`). " +
                 "The feature contains a property for each selected variable (`variables`) for which " +
                 "a value can be interpolated. " +
@@ -140,5 +140,10 @@ public class FeatureProcessResampleToGrid implements ObservationProcess {
             });
         });
         return bbox;
+    }
+
+    @Override
+    public boolean isNeverTerminal() {
+        return true;
     }
 }

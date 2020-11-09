@@ -71,7 +71,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ObservationProcessingQueriesHandlerImpl.class);
 
-    private static final String DAPA_PATH_ELEMENT = "dapa";
+    private static final String DAPA_PATH_ELEMENT = "processes";
     private final I18n i18n;
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
@@ -133,7 +133,7 @@ public class ObservationProcessingQueriesHandlerImpl implements ObservationProce
         DapaVariablesFormatExtension outputFormat = api.getOutputFormat(
                 DapaVariablesFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/"+collectionId+"/"+DAPA_PATH_ELEMENT+"/variables",
+                "/collections/"+collectionId+"/variables",
                 Optional.of(collectionId))
                                                        .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 

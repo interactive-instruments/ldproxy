@@ -64,13 +64,13 @@ public class ResultFormatExtensionCsv implements DapaResultFormatExtension {
     public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream, OgcApiDataV2 apiData) throws IOException {
         Result result = new Result(processes.getSubSubPath(), processingParameters, outputStream);
         switch (result.processName.substring(DAPA_PATH_ELEMENT.length()+2)) {
-            case "position":
+            case "position:retrieve":
                 result.outputStreamWriter.write("phenomenonTime,"+String.join(",", result.variables)+System.lineSeparator());
                 break;
-            case "area":
+            case "area:retrieve":
                 result.outputStreamWriter.write("longitude,latitude,locationCode,locationName,phenomenonTime,"+String.join(",", result.variables)+System.lineSeparator());
                 break;
-            case "resample-to-grid":
+            case "grid:retrieve":
                 result.outputStreamWriter.write("longitude,latitude,phenomenonTime,"+String.join(",", result.variables)+System.lineSeparator());
                 break;
             case "position:aggregate-time":
@@ -80,7 +80,7 @@ public class ResultFormatExtensionCsv implements DapaResultFormatExtension {
             case "area:aggregate-time":
                 result.outputStreamWriter.write("longitude,latitude,locationCode,locationName,"+String.join(",", result.var_funct)+System.lineSeparator());
                 break;
-            case "resample-to-grid:aggregate-time":
+            case "grid:aggregate-time":
                 result.outputStreamWriter.write("longitude,latitude,"+String.join(",", result.var_funct)+System.lineSeparator());
                 break;
             case "area:aggregate-space":
@@ -104,7 +104,7 @@ public class ResultFormatExtensionCsv implements DapaResultFormatExtension {
                 result.outputStreamWriter.write(String.join(",", point)+","+locationCode.orElse("")+","+locationName.orElse("")+","+phenomenonTime+","+String.join(",", mapValues(result.variables, values))+System.lineSeparator());
                 ;
                 break;
-            case "resample-to-grid":
+            case "grid":
                 result.outputStreamWriter.write(String.join(",", point)+","+phenomenonTime+","+String.join(",", mapValues(result.variables, values))+System.lineSeparator());
                 break;
             case "position:aggregate-time":
@@ -114,7 +114,7 @@ public class ResultFormatExtensionCsv implements DapaResultFormatExtension {
             case "area:aggregate-time":
                 result.outputStreamWriter.write(String.join(",", point)+","+locationCode.orElse("")+","+locationName.orElse("")+","+String.join(",", mapValues(result.var_funct, values))+System.lineSeparator());
                 break;
-            case "resample-to-grid:aggregate-time":
+            case "grid:aggregate-time":
                 result.outputStreamWriter.write(String.join(",", point)+","+String.join(",", mapValues(result.var_funct, values))+System.lineSeparator());
                 break;
             case "area:aggregate-space":

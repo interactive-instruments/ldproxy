@@ -53,7 +53,7 @@ public class DapaOverviewFormatJson implements DapaOverviewFormatExtension {
             .build();
 
     private final Schema schema;
-    private static final String DAPA_PATH_ELEMENT = "dapa";
+    private static final String DAPA_PATH_ELEMENT = "processes";
     private final static String schemaRef = "#/components/schemas/"+DAPA_PATH_ELEMENT;
 
     public DapaOverviewFormatJson() {

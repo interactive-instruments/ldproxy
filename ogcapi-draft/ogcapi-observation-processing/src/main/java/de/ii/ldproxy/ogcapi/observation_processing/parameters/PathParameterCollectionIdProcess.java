@@ -30,7 +30,7 @@ import java.util.Set;
 public class PathParameterCollectionIdProcess extends AbstractPathParameterCollectionId {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterCollectionIdProcess.class);
-    private static final String DAPA_PATH_ELEMENT = "dapa";
+    private static final String DAPA_PATH_ELEMENT = "processes";
 
     private final FeaturesCoreProviders providers;
     private final FeatureProcessInfo featureProcessInfo;
@@ -58,7 +58,7 @@ public class PathParameterCollectionIdProcess extends AbstractPathParameterColle
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
                 (featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"*") ||
-                 definitionPath.equals("/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/variables") ||
+                 definitionPath.equals("/collections/{collectionId}/variables") ||
                  definitionPath.equals("/collections/{collectionId}/"+DAPA_PATH_ELEMENT));
     }
 

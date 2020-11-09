@@ -80,7 +80,7 @@ public class QueryParameterDatetimeDapa implements OgcApiQueryParameter {
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position", "area", "resample-to-grid");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position", "area", "grid");
     }
 
     @Override

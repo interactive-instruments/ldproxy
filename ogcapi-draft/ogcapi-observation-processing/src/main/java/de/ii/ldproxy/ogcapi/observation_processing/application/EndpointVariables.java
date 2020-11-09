@@ -52,7 +52,6 @@ import java.util.Set;
 public class EndpointVariables extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointVariables.class);
-    private static final String DAPA_PATH_ELEMENT = "dapa";
     private static final List<String> TAGS = ImmutableList.of("DAPA");
 
     private final ObservationProcessingQueriesHandler queryHandler;
@@ -84,7 +83,7 @@ public class EndpointVariables extends EndpointSubCollection {
             ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                     .apiEntrypoint("collections")
                     .sortPriority(10010);
-            final String subSubPath = "/"+ DAPA_PATH_ELEMENT +"/variables";
+            final String subSubPath = "/variables";
             final String path = "/collections/{collectionId}" + subSubPath;
             final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -119,14 +118,14 @@ public class EndpointVariables extends EndpointSubCollection {
     }
 
     @GET
-    @Path("/{collectionId}/"+ DAPA_PATH_ELEMENT +"/variables")
+    @Path("/{collectionId}/variables")
     public Response getVariables(@Auth Optional<User> optionalUser,
                              @Context OgcApi api,
                              @Context ApiRequestContext requestContext,
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
         checkAuthorization(api.getData(), optionalUser);
-        checkPathParameter(extensionRegistry, api.getData(), "/collections/{collectionId}/"+ DAPA_PATH_ELEMENT +"/variables", "collectionId", collectionId);
+        checkPathParameter(extensionRegistry, api.getData(), "/collections/{collectionId}/variables", "collectionId", collectionId);
 
         final boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
                 .map(FoundationConfiguration::getIncludeLinkHeader)

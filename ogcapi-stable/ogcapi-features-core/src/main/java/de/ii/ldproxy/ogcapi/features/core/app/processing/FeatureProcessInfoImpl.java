@@ -33,7 +33,8 @@ public class FeatureProcessInfoImpl implements FeatureProcessInfo {
                 .filter(process -> process.isEnabledForApi(apiData))
                 .forEach(process -> {
                     ImmutableList<FeatureProcess> processList = ImmutableList.of(process);
-                    chainBuilder.add(new FeatureProcessChain(processList));
+                    if (!process.isNeverTerminal())
+                        chainBuilder.add(new FeatureProcessChain(processList));
                     nextChainElement(apiData, processType, chainBuilder, process, processList);
 
                 });
@@ -48,7 +49,8 @@ public class FeatureProcessInfoImpl implements FeatureProcessInfo {
                 .filter(process -> process.isEnabledForApi(apiData))
                 .forEach(process -> {
                     ImmutableList<FeatureProcess> processList = ImmutableList.of(process);
-                    chainBuilder.add(new FeatureProcessChain(processList));
+                    if (!process.isNeverTerminal())
+                        chainBuilder.add(new FeatureProcessChain(processList));
                     nextChainElement(apiData, processType, chainBuilder, process, processList);
 
                 });
@@ -66,7 +68,8 @@ public class FeatureProcessInfoImpl implements FeatureProcessInfo {
                     builder.addAll(processList)
                             .add(nextProcess);
                     ImmutableList<FeatureProcess> newProcessList = builder.build();
-                    chainBuilder.add(new FeatureProcessChain(newProcessList));
+                    if (!nextProcess.isNeverTerminal())
+                        chainBuilder.add(new FeatureProcessChain(newProcessList));
                     nextChainElement(apiData, processType, chainBuilder, nextProcess, newProcessList);
                 });
     }
