@@ -26,7 +26,7 @@ public class PathParameterStyleId implements OgcApiPathParameter {
 
     @Override
     public String getPattern() {
-        return "[\\w]+";
+        return "[^/]+";
     }
 
     @Override
