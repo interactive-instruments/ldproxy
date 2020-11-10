@@ -216,7 +216,29 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             return;
 
         LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} polygons", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, multiPolygon.getNumGeometries());
-        Geometry geom = TileGeometryUtil.processPolygons(multiPolygon, reducer, 1.0/tilePrecisionModel.getScale());
+        Geometry geom = TileGeometryUtil.processPolygons(multiPolygon, reducer);
+        // now follow the same steps as for feature geometries
+        if (Objects.nonNull(geom)) {
+            // reduce the geometry to the tile grid
+            geom = reducer.reduce(geom);
+            if (Objects.nonNull(geom)) {
+                // finally again remove any small rings or line strings created in the processing
+                geom = TileGeometryUtil.removeSmallPieces(geom);
+                if (!geom.isValid()) {
+                    LOGGER.trace("Second attempt.");
+                    geom = TileGeometryUtil.processPolygons(geom, reducer);
+                    // now follow the same steps as for feature geometries
+                    if (Objects.nonNull(geom)) {
+                        // reduce the geometry to the tile grid
+                        geom = reducer.reduce(geom);
+                        if (Objects.nonNull(geom)) {
+                            // finally again remove any small rings or line strings created in the processing
+                            geom = TileGeometryUtil.removeSmallPieces(geom);
+                        }
+                    }
+                }
+            }
+        }
 
         ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
         int i = 0;
@@ -224,7 +246,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             propertiesBuilder.put(att,values.get(i++));
         }
 
-        if (Objects.isNull(geom) || geom.getNumGeometries()==0) {
+        if (Objects.isNull(geom) || geom.isEmpty() || geom.getNumGeometries()==0) {
             LOGGER.trace("Merged polygon feature grouped by {} in collection {} has no geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
             return;
         }
@@ -345,6 +367,82 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         currentProperties = new TreeMap<>();
     }
 
+    private Geometry prepareTileGeometry(Geometry geom) {
+
+        // The following changes are applied:
+        // 1. The coordinates are converted to the tile coordinate system (0/0 is top left, 256/256 is bottom right)
+        // 2. Small rings or line strings are dropped (small in the context of the tile, one pixel or less). The idea
+        //    is to simply drop them as early as possible and before the next processing steps which may depend on
+        //    having valid geometries and removing everything that will eventually be removed anyway helps.
+        // 3. Remove unnecessary vertices and snap coordinates to the grid.
+        // 4. If the resulting geometry is invalid polygonal geometry, try to make it valid.
+        // 5. Hopefully we have a valid geometry now, so try to clip it to the tile.
+        //
+        // After each step, check, if we still have a geometry or the resulting tile geometry was too small for
+        // the tile. In that case the feature is ignored.
+
+        // convert to the tile coordinate system
+        geom.apply(affineTransformation);
+
+        // remove small rings or line strings (small in the context of the tile)
+        geom = TileGeometryUtil.removeSmallPieces(geom);
+        if (Objects.isNull(geom) || geom.isEmpty())
+            return null;
+
+        // simplify the geometry
+        geom = TopologyPreservingSimplifier.simplify(geom, 1.0/tilePrecisionModel.getScale());
+        if (Objects.isNull(geom) || geom.isEmpty())
+            return null;
+
+        // reduce the geometry to the tile grid
+        geom = reducer.reduce(geom);
+        if (Objects.isNull(geom) || geom.isEmpty())
+            return null;
+
+        // if the resulting geometry is invalid, try to make it valid
+        if (!geom.isValid()) {
+            geom = TileGeometryUtil.processPolygons(geom, reducer);
+            if (Objects.isNull(geom) || geom.isEmpty())
+                return null;
+        }
+
+        // limit the coordinates to the tile with a buffer
+        geom = TileGeometryUtil.clipGeometry(geom, clipGeometry);
+        if (Objects.isNull(geom) || geom.isEmpty())
+            return null;
+
+        // finally again remove any small rings or line strings created in the processing
+        geom = TileGeometryUtil.removeSmallPieces(geom);
+        if (Objects.isNull(geom) || geom.isEmpty())
+            return null;
+
+        if (!geom.isValid()) {
+            // try once more
+            LOGGER.trace("Second attempt.");
+
+            geom = TileGeometryUtil.processPolygons(geom, reducer);
+            if (Objects.isNull(geom) || geom.isEmpty())
+                return null;
+
+            // limit the coordinates to the tile with a buffer
+            geom = TileGeometryUtil.clipGeometry(geom, clipGeometry);
+            if (Objects.isNull(geom) || geom.isEmpty())
+                return null;
+
+            // reduce the geometry to the tile grid
+            geom = reducer.reduce(geom);
+            if (Objects.isNull(geom) || geom.isEmpty())
+                return null;
+
+            // finally again remove any small rings or line strings created in the processing
+            geom = TileGeometryUtil.removeSmallPieces(geom);
+            if (Objects.isNull(geom) || geom.isEmpty())
+                return null;
+        }
+
+        return geom;
+    }
+
     @Override
     public void onFeatureEnd() {
 
@@ -353,52 +451,22 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             return;
         }
 
-        // convert to the tile coordinate system
-        currentGeometry.apply(affineTransformation);
-
-        // remove small rings or line strings (small in the context of the tile)
-        currentGeometry = TileGeometryUtil.removeSmallPieces(currentGeometry);
-        if (currentGeometry==null || currentGeometry.isEmpty()) {
+        Geometry tileGeometry = prepareTileGeometry(currentGeometry);
+        if (Objects.isNull(tileGeometry)) {
             resetFeatureInfo();
             return;
-        }
-
-        // simplify the geometry
-        currentGeometry = TopologyPreservingSimplifier.simplify(currentGeometry, 1.0/tilePrecisionModel.getScale());
-
-        // limit the coordinates to the tile with a buffer
-        currentGeometry = TileGeometryUtil.clipGeometry(currentGeometry, clipGeometry);
-        if (currentGeometry==null || currentGeometry.isEmpty()) {
-            resetFeatureInfo();
-            return;
-        }
-
-        // reduce the geometry to the tile grid
-        currentGeometry = reducer.reduce(currentGeometry);
-        if (currentGeometry==null || currentGeometry.isEmpty()) {
-            resetFeatureInfo();
-            return;
-        }
-
-        // if the resulting geometry is invalid, try to make it valid
-        if (!currentGeometry.isValid()) {
-            currentGeometry = TileGeometryUtil.processPolygons(currentGeometry, reducer, Double.NaN);
-            if (currentGeometry==null || currentGeometry.isEmpty()) {
-                resetFeatureInfo();
-                return;
-            }
         }
 
         // if polygons have to be merged, store them for now and process at the end
-        if (Objects.nonNull(groupByAttributes) && currentGeometry.getGeometryType().contains("Polygon")) {
-            mergeGeometries.put(++mergeId, currentGeometry);
+        if (Objects.nonNull(groupByAttributes) && tileGeometry.getGeometryType().contains("Polygon")) {
+            mergeGeometries.put(++mergeId, tileGeometry);
             mergeProperties.put(mergeId, currentProperties);
             resetFeatureInfo();
             return;
         }
 
         // Geometry is still invalid -> log this information and skip it, if that option is used
-        if (!currentGeometry.isValid()) {
+        if (!tileGeometry.isValid()) {
             LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Pixel size: {}.", currentId, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), currentGeometry.getArea());
             if (tilesConfiguration.getIgnoreInvalidGeometries()) {
                 resetFeatureInfo();
@@ -418,9 +486,9 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
         // Add the feature with the layer name, a Map with attributes and the JTS Geometry.
         if (id != null)
-            encoder.addFeature(layerName, currentProperties, currentGeometry, id);
+            encoder.addFeature(layerName, currentProperties, tileGeometry, id);
         else
-            encoder.addFeature(layerName, currentProperties, currentGeometry);
+            encoder.addFeature(layerName, currentProperties, tileGeometry);
 
         resetFeatureInfo();
     }

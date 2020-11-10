@@ -39,7 +39,7 @@ public class TileGeometryUtil {
             Geometry original = geometry;
             geometry = clipGeometry.intersection(original);
 
-            // some times a intersection is returned as an empty geometry.
+            // sometimes an intersection is returned as an empty geometry.
             // going via wkt fixes the problem.
             if (geometry.isEmpty() && original.intersects(clipGeometry)) {
                 Geometry originalViaWkt = new WKTReader().read(original.toText());
@@ -215,7 +215,7 @@ public class TileGeometryUtil {
 
     // TODO optimize performance, minimize memory
     static MultiPolygon rebuildPolygon(Geometry geom, GeometryPrecisionReducer reducer) {
-        LOGGER.debug("Rebuilding an invalid polygon geometry with {} vertices.", geom.getNumPoints());
+        LOGGER.trace("Rebuilding an invalid polygon geometry with {} vertices.", geom.getNumPoints());
         LineMerger lineMerger = new LineMerger();
         lineMerger.add(geom);
         Set<LineString> edges = (Set<LineString>) lineMerger.getMergedLineStrings().stream().collect(Collectors.toSet());
@@ -250,6 +250,68 @@ public class TileGeometryUtil {
             return null;
         return geom.getFactory().createMultiPolygon((Polygon[]) polygons.toArray(Polygon[]::new));
     }
+
+    static Geometry processPolygons(Geometry geom, GeometryPrecisionReducer reducer) {
+        if (geom instanceof Polygon || geom instanceof MultiPolygon) {
+            // the standard fix for invalid, self-intersecting polygons is to use a zero-distance buffer;
+            // however, this does not work in all cases and sometimes creates invalid or unwanted results
+            Geometry bufferGeom = geom.buffer(0.0);
+            double areaChange = Math.abs(bufferGeom.getArea() - geom.getArea()) / geom.getArea();
+            if (areaChange > 0.2 || !bufferGeom.isValid()) {
+                // if the change in area is too big or the geometry is invalid, try a union
+                Geometry unionGeom = geom.union();
+                areaChange = Math.abs(unionGeom.getArea() - geom.getArea()) / geom.getArea();
+                if (areaChange > 0.2 || !unionGeom.isValid()) {
+                    // if the change in area is still too big or the geometry is invalid, try a convex hull
+                    Geometry hullGeom = geom.convexHull();
+                    areaChange = Math.abs(hullGeom.getArea() - geom.getArea()) / geom.getArea();
+                    if (areaChange <= 0.2 && hullGeom.isValid()) {
+                        geom = hullGeom;
+                    } else {
+                        // try to rebuild the polygon geometry from scratch, already based on the tile grid
+                        LOGGER.trace("Rebuilding polygon, valid={}, area {}.", geom.isValid(), geom.getArea());
+                        Geometry newGeom = rebuildPolygon(geom, reducer);
+                        if (Objects.nonNull(newGeom) && !newGeom.isEmpty()) {
+                            LOGGER.trace("Polygon rebuilt, valid={}, new area {}.", newGeom.isValid(), newGeom.getArea());
+                            if (newGeom.isValid()) {
+                                geom = newGeom;
+                            } else {
+                                LOGGER.trace("Polygon rebuild failed. The original geometry is used instead.");
+                            }
+                        } else {
+                            LOGGER.trace("Polygon rebuilt with empty result. The original geometry is used instead.");
+                        }
+                    }
+                } else {
+                    geom = unionGeom;
+                }
+            } else {
+                geom = bufferGeom;
+            }
+        }
+
+        return geom;
+    }
+
+    /* TODO delete
+
+                                // simplify the geometry, if the geometry hasn't been simplified before
+                                // if (distanceTolerance != Double.NaN)
+                                //    newGeom = TopologyPreservingSimplifier.simplify(newGeom, distanceTolerance);
+
+                                // remove small rings or line strings (small in the context of the tile) that may
+                                // have been created in some cases by changing to the tile grid
+                                newGeom = TileGeometryUtil.removeSmallPieces(newGeom);
+                                if (newGeom == null || newGeom.isEmpty()) {
+                                    LOGGER.debug("Empty result after removing small pieces.");
+                                    return null;
+                                }
+                                LOGGER.debug("Small pieces removed, valid={}, new area {}.", newGeom.isValid(), newGeom.getArea());
+
+                                // make sure the geometry is using the tile grid, if we processed a polygon geometry
+                                newGeom = reducer.reduce(newGeom);
+                                LOGGER.debug("Reduced to grid, valid={}, new area {}.", newGeom.isValid(), newGeom.getArea());
+
 
     static Geometry processPolygons(Geometry geom, GeometryPrecisionReducer reducer, double distanceTolerance) {
         boolean geomUpdated = false;
@@ -316,12 +378,6 @@ public class TileGeometryUtil {
                 geom = TopologyPreservingSimplifier.simplify(geom, distanceTolerance);
         }
 
-        // remove small rings or line strings (small in the context of the tile) that may
-        // have been created in some cases by changing to the tile grid
-        geom = TileGeometryUtil.removeSmallPieces(geom);
-        if (geom==null || geom.isEmpty()) {
-            return null;
-        }
 
         // make sure the geometry is using the tile grid, if we processed a polygon geometry
         if (geomUpdated)
@@ -329,6 +385,7 @@ public class TileGeometryUtil {
 
         return geom;
     }
+     */
 
     static Geometry processLineStrings(List<LineString> geoms, GeometryPrecisionReducer reducer, double distanceTolerance) {
         LineMerger merger = new LineMerger();
