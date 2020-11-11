@@ -36,6 +36,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
+import org.locationtech.jts.operation.linemerge.LineMerger;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.slf4j.Logger;
@@ -78,6 +79,9 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private final int polygonLimit;
     private final int lineStringLimit;
     private final int pointLimit;
+    private final double maxRelativeAreaChangeInPolygonRepair;
+    private final double maxAbsoluteAreaChangeInPolygonRepair;
+    private final double minimumSizeInPixel;
     private final String layerName;
     private final List<String> properties;
     private final PrecisionModel tilePrecisionModel;
@@ -143,11 +147,14 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         this.encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         this.affineTransformation = tile.createTransformNativeToTile();
 
-        this.polygonLimit = tilesConfiguration!=null ? tilesConfiguration.getMaxPolygonPerTileDefault() : 10000;
-        this.lineStringLimit = tilesConfiguration!=null ? tilesConfiguration.getMaxLineStringPerTileDefault() : 10000;
-        this.pointLimit = tilesConfiguration!=null ? tilesConfiguration.getMaxPointPerTileDefault() : 10000;
+        this.polygonLimit = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getMaxPolygonPerTileDefault() : 10000;
+        this.lineStringLimit = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getMaxLineStringPerTileDefault() : 10000;
+        this.pointLimit = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getMaxPointPerTileDefault() : 10000;
+        this.maxRelativeAreaChangeInPolygonRepair = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getMaxRelativeAreaChangeInPolygonRepair() : 0.1;
+        this.maxAbsoluteAreaChangeInPolygonRepair = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getMaxAbsoluteAreaChangeInPolygonRepair() : 1.0;
+        this.minimumSizeInPixel = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getMinimumSizeInPixel() : 1.0;
 
-        final Map<String, List<Postprocessing>> postprocessing = tilesConfiguration.getPostprocessing();
+        final Map<String, List<Postprocessing>> postprocessing = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getPostprocessing() : ImmutableMap.of();
         this.groupByAttributes = (Objects.nonNull(postprocessing) && postprocessing.containsKey(tileMatrixSet.getId())) ?
                 postprocessing.get(tileMatrixSet.getId()).stream()
                              .filter(proc -> proc.getMax()>=tile.getTileLevel() && proc.getMin()<=tile.getTileLevel() && proc.getMergeFeatures().orElse(false))
@@ -216,24 +223,29 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             return;
 
         LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} polygons", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, multiPolygon.getNumGeometries());
-        Geometry geom = TileGeometryUtil.processPolygons(multiPolygon, reducer);
-        // now follow the same steps as for feature geometries
-        if (Objects.nonNull(geom)) {
-            // reduce the geometry to the tile grid
-            geom = reducer.reduce(geom);
+        Geometry geom;
+        if (multiPolygon.isValid()) {
+            geom = multiPolygon;
+        } else {
+            geom = TileGeometryUtil.repairPolygon(multiPolygon, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+            // now follow the same steps as for feature geometries
             if (Objects.nonNull(geom)) {
-                // finally again remove any small rings or line strings created in the processing
-                geom = TileGeometryUtil.removeSmallPieces(geom);
-                if (!geom.isValid()) {
-                    LOGGER.trace("Second attempt.");
-                    geom = TileGeometryUtil.processPolygons(geom, reducer);
-                    // now follow the same steps as for feature geometries
-                    if (Objects.nonNull(geom)) {
-                        // reduce the geometry to the tile grid
-                        geom = reducer.reduce(geom);
+                // reduce the geometry to the tile grid
+                geom = TileGeometryUtil.reduce(geom, reducer, tilePrecisionModel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+                if (Objects.nonNull(geom)) {
+                    // finally again remove any small rings or line strings created in the processing
+                    geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
+                    if (!geom.isValid()) {
+                        LOGGER.debug("Second attempt to repair merged polygonal geometry.");
+                        geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+                        // now follow the same steps as for feature geometries
                         if (Objects.nonNull(geom)) {
-                            // finally again remove any small rings or line strings created in the processing
-                            geom = TileGeometryUtil.removeSmallPieces(geom);
+                            // reduce the geometry to the tile grid
+                            geom = TileGeometryUtil.reduce(geom, reducer, tilePrecisionModel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+                            if (Objects.nonNull(geom)) {
+                                // finally again remove any small rings or line strings created in the processing
+                                geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
+                            }
                         }
                     }
                 }
@@ -254,7 +266,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         // Geometry is invalid -> log this information and skip it, if that option is used
         if (!geom.isValid()) {
             LOGGER.info("Merged polygon feature grouped by {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-            if (!tilesConfiguration.getIgnoreInvalidGeometries()) {
+            if (Objects.isNull(tilesConfiguration) || !tilesConfiguration.getIgnoreInvalidGeometries()) {
                 encoder.addFeature(layerName, propertiesBuilder.build(), geom);
             }
         } else
@@ -263,33 +275,46 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
     private void mergeLineStrings(List<Object> values) {
         // merge all line strings with the values
-        List<LineString> lineStrings = mergeGeometries.entrySet()
-                                                      .stream()
-                                                      .filter(entry -> entry.getValue() instanceof LineString || entry.getValue() instanceof MultiLineString)
-                                                      .filter(entry -> {
-                                                          int i = 0;
-                                                          boolean match = true;
-                                                          for (String att : groupByAttributes) {
-                                                              if (values.get(i).equals(NULL) && !mergeProperties.get(entry.getKey()).containsKey(att)) {
-                                                                  match = false;
-                                                                  break;
-                                                              } else if (!values.get(i).equals(mergeProperties.get(entry.getKey()).get(att))) {
-                                                                  match = false;
-                                                                  break;
-                                                              }
-                                                          }
-                                                          return match;
-                                                      })
-                                                      .map(entry -> entry.getValue())
-                                                      .map(g -> g instanceof MultiLineString ? TileGeometryUtil.splitMultiLineString((MultiLineString) g) : ImmutableList.of(g))
-                                                      .flatMap(Collection::stream)
-                                                      .map(g -> (LineString) g)
-                                                      .collect(Collectors.toList());
-        if (lineStrings.isEmpty())
+        LineMerger merger = new LineMerger();
+        merger.add(mergeGeometries.entrySet()
+                                  .stream()
+                                  .filter(entry -> entry.getValue() instanceof LineString || entry.getValue() instanceof MultiLineString)
+                                  .filter(entry -> {
+                                      int i = 0;
+                                      boolean match = true;
+                                      for (String att : groupByAttributes) {
+                                          if (values.get(i).equals(NULL) && !mergeProperties.get(entry.getKey()).containsKey(att)) {
+                                              match = false;
+                                              break;
+                                          } else if (!values.get(i).equals(mergeProperties.get(entry.getKey()).get(att))) {
+                                              match = false;
+                                              break;
+                                          }
+                                      }
+                                      return match;
+                                  })
+                                  .map(entry -> entry.getValue())
+                                  .map(g -> g instanceof MultiLineString ? TileGeometryUtil.splitMultiLineString((MultiLineString) g) : ImmutableList.of(g))
+                                  .flatMap(Collection::stream)
+                                  .map(g -> (LineString) g)
+                                  .collect(Collectors.toSet()));
+        Geometry multiLineString = geometryFactoryTile.createMultiLineString((LineString[]) merger.getMergedLineStrings().toArray());
+        if (multiLineString.isEmpty())
             return;
 
-        LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} line strings", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, lineStrings.size());
-        Geometry geom = TileGeometryUtil.processLineStrings(lineStrings, reducer, 1.0/tilePrecisionModel.getScale());
+        LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} line strings", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, multiLineString.getNumGeometries());
+        Geometry geom = multiLineString;
+        if (!geom.isValid()) {
+            // see, if we can fix the issues
+            if (Objects.nonNull(geom)) {
+                // reduce the geometry to the tile grid
+                geom = TileGeometryUtil.reduce(geom, reducer, tilePrecisionModel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+                if (Objects.nonNull(geom)) {
+                    // finally again remove any small line strings created in the processing
+                    geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
+                }
+            }
+        }
 
         ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
         int i = 0;
@@ -305,7 +330,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         // Geometry is invalid -> log this information and skip it, if that option is used
         if (!geom.isValid()) {
             LOGGER.info("Merged line string feature grouped by {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-            if (!tilesConfiguration.getIgnoreInvalidGeometries()) {
+            if (Objects.isNull(tilesConfiguration) || !tilesConfiguration.getIgnoreInvalidGeometries()) {
                 encoder.addFeature(layerName, propertiesBuilder.build(), geom);
             }
         } else
@@ -385,7 +410,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         geom.apply(affineTransformation);
 
         // remove small rings or line strings (small in the context of the tile)
-        geom = TileGeometryUtil.removeSmallPieces(geom);
+        geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
         if (Objects.isNull(geom) || geom.isEmpty())
             return null;
 
@@ -395,13 +420,13 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             return null;
 
         // reduce the geometry to the tile grid
-        geom = reducer.reduce(geom);
+        geom = TileGeometryUtil.reduce(geom, reducer, tilePrecisionModel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
         if (Objects.isNull(geom) || geom.isEmpty())
             return null;
 
         // if the resulting geometry is invalid, try to make it valid
         if (!geom.isValid()) {
-            geom = TileGeometryUtil.processPolygons(geom, reducer);
+            geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
             if (Objects.isNull(geom) || geom.isEmpty())
                 return null;
         }
@@ -412,15 +437,15 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             return null;
 
         // finally again remove any small rings or line strings created in the processing
-        geom = TileGeometryUtil.removeSmallPieces(geom);
+        geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
         if (Objects.isNull(geom) || geom.isEmpty())
             return null;
 
         if (!geom.isValid()) {
             // try once more
-            LOGGER.trace("Second attempt.");
+            LOGGER.debug("Second attempt to repair polygonal geometry.");
 
-            geom = TileGeometryUtil.processPolygons(geom, reducer);
+            geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
             if (Objects.isNull(geom) || geom.isEmpty())
                 return null;
 
@@ -430,12 +455,12 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                 return null;
 
             // reduce the geometry to the tile grid
-            geom = reducer.reduce(geom);
+            geom = TileGeometryUtil.reduce(geom, reducer, tilePrecisionModel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
             if (Objects.isNull(geom) || geom.isEmpty())
                 return null;
 
             // finally again remove any small rings or line strings created in the processing
-            geom = TileGeometryUtil.removeSmallPieces(geom);
+            geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
             if (Objects.isNull(geom) || geom.isEmpty())
                 return null;
         }
@@ -468,7 +493,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         // Geometry is still invalid -> log this information and skip it, if that option is used
         if (!tileGeometry.isValid()) {
             LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Pixel size: {}.", currentId, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), currentGeometry.getArea());
-            if (tilesConfiguration.getIgnoreInvalidGeometries()) {
+            if (Objects.nonNull(tilesConfiguration) && tilesConfiguration.getIgnoreInvalidGeometries()) {
                 resetFeatureInfo();
                 return;
             }
@@ -683,12 +708,14 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     public void onGeometryNestedEnd() {
         switch (currentGeometryType) {
             case MULTI_POLYGON:
-                int rings = currentLinearRings.size();
-                if (rings==1)
-                    currentPolygons.add(geometryFactoryWorld.createPolygon(currentLinearRings.get(0)));
-                else if (rings>1)
-                    currentPolygons.add(geometryFactoryWorld.createPolygon(currentLinearRings.get(0), currentLinearRings.subList(1, rings).toArray(new LinearRing[0])));
-                currentLinearRings = new Vector<>();
+                if (currentGeometryNesting==1) {
+                    int rings = currentLinearRings.size();
+                    if (rings == 1)
+                        currentPolygons.add(geometryFactoryWorld.createPolygon(currentLinearRings.get(0)));
+                    else if (rings > 1)
+                        currentPolygons.add(geometryFactoryWorld.createPolygon(currentLinearRings.get(0), currentLinearRings.subList(1, rings).toArray(new LinearRing[0])));
+                    currentLinearRings = new Vector<>();
+                }
                 break;
         }
         currentGeometryNesting--;

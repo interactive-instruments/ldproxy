@@ -72,6 +72,15 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Nullable
     double[] getCenter();
 
+    @Nullable
+    Double getMaxRelativeAreaChangeInPolygonRepair();
+
+    @Nullable
+    Double getMaxAbsoluteAreaChangeInPolygonRepair();
+
+    @Nullable
+    Double getMinimumSizeInPixel();
+
     @Override
     default Builder getBuilder() {
         return new ImmutableTilesConfiguration.Builder();
