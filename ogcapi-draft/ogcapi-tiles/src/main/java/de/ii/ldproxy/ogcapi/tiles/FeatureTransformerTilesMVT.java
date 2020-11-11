@@ -257,7 +257,8 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
         int i = 0;
         for (String att : groupByAttributes) {
-            propertiesBuilder.put(att,values.get(i++));
+            if (!values.get(i++).equals(NULL))
+                propertiesBuilder.put(att,values.get(i-1));
         }
 
         if (Objects.isNull(geom) || geom.isEmpty() || geom.getNumGeometries()==0) {
