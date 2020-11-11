@@ -203,9 +203,11 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                                                                                               int i = 0;
                                                                                               boolean match = true;
                                                                                               for (String att : groupByAttributes) {
-                                                                                                  if (values.get(i).equals(NULL) && mergeProperties.get(entry.getKey()).containsKey(att)) {
-                                                                                                      match = false;
-                                                                                                      break;
+                                                                                                  if (values.get(i).equals(NULL)) {
+                                                                                                      if (mergeProperties.get(entry.getKey()).containsKey(att)) {
+                                                                                                          match = false;
+                                                                                                          break;
+                                                                                                      }
                                                                                                   } else if (!values.get(i).equals(mergeProperties.get(entry.getKey()).get(att))) {
                                                                                                       match = false;
                                                                                                       break;
