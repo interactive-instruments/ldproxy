@@ -355,13 +355,30 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             if (mergeGeometries.values().stream().anyMatch(geom -> geom instanceof Polygon || geom instanceof MultiPolygon))
                 Lists.cartesianProduct(groups)
                      .stream()
-                     .forEach(values -> mergePolygons(values));
+                     .forEach(values -> {
+                         try {
+                             mergePolygons(values);
+                         } catch (Exception e) {
+                             LOGGER.error("Error while merging polygon geometries grouped by {} in tile {}/{}/{}/{} in collection {}. The features are skipped.", values, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), collectionId);
+                             if(LOGGER.isDebugEnabled()) {
+                                 LOGGER.debug("Stacktrace:", e);
+                             }
+                         }
+                     });
 
             if (mergeGeometries.values().stream().anyMatch(geom -> geom instanceof LineString || geom instanceof MultiLineString))
                 Lists.cartesianProduct(groups)
                      .stream()
-                     .forEach(values -> mergeLineStrings(values));
-
+                     .forEach(values -> {
+                         try {
+                             mergeLineStrings(values);
+                         } catch (Exception e) {
+                             LOGGER.error("Error while merging line string geometries grouped by {} in tile {}/{}/{}/{} in collection {}. The features are skipped.", values, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), collectionId);
+                             if(LOGGER.isDebugEnabled()) {
+                                 LOGGER.debug("Stacktrace:", e);
+                             }
+                         }
+                     });
         }
 
         try {
@@ -479,44 +496,52 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             return;
         }
 
-        Geometry tileGeometry = prepareTileGeometry(currentGeometry);
-        if (Objects.isNull(tileGeometry)) {
-            resetFeatureInfo();
-            return;
-        }
-
-        // if polygons have to be merged, store them for now and process at the end
-        if (Objects.nonNull(groupByAttributes) && tileGeometry.getGeometryType().contains("Polygon")) {
-            mergeGeometries.put(++mergeId, tileGeometry);
-            mergeProperties.put(mergeId, currentProperties);
-            resetFeatureInfo();
-            return;
-        }
-
-        // Geometry is still invalid -> log this information and skip it, if that option is used
-        if (!tileGeometry.isValid()) {
-            LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Pixel size: {}.", currentId, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), currentGeometry.getArea());
-            if (Objects.nonNull(tilesConfiguration) && tilesConfiguration.getIgnoreInvalidGeometries()) {
+        try {
+            Geometry tileGeometry = prepareTileGeometry(currentGeometry);
+            if (Objects.isNull(tileGeometry)) {
                 resetFeatureInfo();
                 return;
             }
-        }
 
-        // If we have an id that happens to be a long value, use it
-        Long id = null;
-        if (currentId != null) {
-            try {
-                id = Long.parseLong(currentId);
-            } catch (Exception e) {
-                // nothing to do
+            // if polygons have to be merged, store them for now and process at the end
+            if (Objects.nonNull(groupByAttributes) && tileGeometry.getGeometryType().contains("Polygon")) {
+                mergeGeometries.put(++mergeId, tileGeometry);
+                mergeProperties.put(mergeId, currentProperties);
+                resetFeatureInfo();
+                return;
+            }
+
+            // Geometry is still invalid -> log this information and skip it, if that option is used
+            if (!tileGeometry.isValid()) {
+                LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Pixel size: {}.", currentId, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), currentGeometry.getArea());
+                if (Objects.nonNull(tilesConfiguration) && tilesConfiguration.getIgnoreInvalidGeometries()) {
+                    resetFeatureInfo();
+                    return;
+                }
+            }
+
+            // If we have an id that happens to be a long value, use it
+            Long id = null;
+            if (currentId != null) {
+                try {
+                    id = Long.parseLong(currentId);
+                } catch (Exception e) {
+                    // nothing to do
+                }
+            }
+
+            // Add the feature with the layer name, a Map with attributes and the JTS Geometry.
+            if (id != null)
+                encoder.addFeature(layerName, currentProperties, tileGeometry, id);
+            else
+                encoder.addFeature(layerName, currentProperties, tileGeometry);
+
+        } catch (Exception e) {
+            LOGGER.error("Error while processing feature {} in tile {}/{}/{}/{} in collection {}. The feature is skipped.", currentId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), collectionId);
+            if(LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stacktrace:", e);
             }
         }
-
-        // Add the feature with the layer name, a Map with attributes and the JTS Geometry.
-        if (id != null)
-            encoder.addFeature(layerName, currentProperties, tileGeometry, id);
-        else
-            encoder.addFeature(layerName, currentProperties, tileGeometry);
 
         resetFeatureInfo();
     }
