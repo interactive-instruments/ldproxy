@@ -12,6 +12,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.operation.polygonize.Polygonizer;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
+import org.locationtech.jts.simplify.VWSimplifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,7 +166,7 @@ public class TileGeometryUtil {
         }
     }
 
-    static Geometry repairPolygon(Geometry geom, double maxRelativeAreaChangeInPolygonRepair, double maxAbsoluteAreaChangeInPolygonRepair) {
+    static Geometry repairPolygon(Geometry geom, double maxRelativeAreaChangeInPolygonRepair, double maxAbsoluteAreaChangeInPolygonRepair, double distance) {
         if (geom instanceof Polygon || geom instanceof MultiPolygon) {
             // the standard fix for invalid, self-intersecting polygons is to use a zero-distance buffer;
             // however, this does not work in all cases and sometimes creates invalid or unwanted results,
@@ -184,6 +185,16 @@ public class TileGeometryUtil {
                 LOGGER.debug("Polygonal geometry rebuild failed, valid={}, initial area {}, new area {}.", newGeom.isValid(), geom.getArea(), newGeom.getArea());
             } catch (Exception e) {
                 LOGGER.debug("Polygonal geometry rebuild failed due to a JTS exception.");
+            }
+
+            // try the Visvalingam-Whyatt simplifier
+            try {
+                Geometry vwGeom = VWSimplifier.simplify(geom, distance);
+                if (vwGeom.isValid())
+                    return vwGeom;
+                LOGGER.debug("Visvalingam-Whyatt simplification failed, valid={}, initial area {}, new area {}.", vwGeom.isValid(), geom.getArea(), vwGeom.getArea());
+            } catch (Exception e) {
+                LOGGER.debug("Visvalingam-Whyatt simplification failed due to a JTS exception.");
             }
 
             // try a union

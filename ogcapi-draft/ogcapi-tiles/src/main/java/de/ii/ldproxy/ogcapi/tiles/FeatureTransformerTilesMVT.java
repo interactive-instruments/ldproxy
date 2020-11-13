@@ -34,7 +34,6 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.operation.linemerge.LineMerger;
@@ -245,7 +244,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
         LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} polygons", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, geom.getNumGeometries());
         if (!geom.isValid()) {
-            geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+            geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0/tilePrecisionModel.getScale());
             // now follow the same steps as for feature geometries
             if (Objects.nonNull(geom)) {
                 // reduce the geometry to the tile grid
@@ -255,7 +254,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                     geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
                     if (!geom.isValid()) {
                         LOGGER.debug("Second attempt to repair merged polygonal geometry.");
-                        geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+                        geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0 / tilePrecisionModel.getScale());
                         // now follow the same steps as for feature geometries
                         if (Objects.nonNull(geom)) {
                             // reduce the geometry to the tile grid
@@ -462,7 +461,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
         // if the resulting geometry is invalid, try to make it valid
         if (!geom.isValid()) {
-            geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+            geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0 / tilePrecisionModel.getScale());
             if (Objects.isNull(geom) || geom.isEmpty())
                 return null;
         }
@@ -486,7 +485,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             // try once more
             LOGGER.debug("Second attempt to repair polygonal geometry.");
 
-            geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+            geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0 / tilePrecisionModel.getScale());
             if (Objects.isNull(geom) || geom.isEmpty())
                 return null;
 
