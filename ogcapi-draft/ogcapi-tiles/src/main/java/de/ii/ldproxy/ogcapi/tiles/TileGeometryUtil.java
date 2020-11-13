@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -135,7 +136,7 @@ public class TileGeometryUtil {
         }
     }
 
-    static MultiPolygon rebuildPolygon(Geometry geom) {
+    static Geometry rebuildPolygon(Geometry geom) {
         Polygonizer polygonizer = new Polygonizer(true);
         if (geom instanceof Polygon) {
             addPolygon((Polygon)geom, polygonizer);
@@ -144,8 +145,24 @@ public class TileGeometryUtil {
                 addPolygon((Polygon) geom.getGeometryN(i), polygonizer);
             }
         }
-        Collection polygons = polygonizer.getPolygons();
-        return geom.getFactory().createMultiPolygon((Polygon[]) polygons.toArray(Polygon[]::new));
+        Collection<Polygon> polygons = polygonizer.getPolygons();
+        switch(polygons.size()){
+            case 0:
+                return geom.getFactory().createMultiPolygon();
+            case 1:
+                return polygons.iterator().next();
+            default:
+                try {
+                    Iterator<Polygon> iter = polygons.iterator();
+                    Geometry ret = iter.next();
+                    while(iter.hasNext()){
+                        ret = ret.symDifference(iter.next());
+                    }
+                    return ret;
+                } catch (Exception e) {
+                    return geom.getFactory().createMultiPolygon(polygons.toArray(Polygon[]::new));
+                }
+        }
     }
 
     static Geometry repairPolygon(Geometry geom, double maxRelativeAreaChangeInPolygonRepair, double maxAbsoluteAreaChangeInPolygonRepair) {

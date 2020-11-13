@@ -34,6 +34,7 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.operation.linemerge.LineMerger;
@@ -48,10 +49,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -196,40 +199,53 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
     private void mergePolygons(List<Object> values) {
         // merge all polygons with the values
-        MultiPolygon multiPolygon = geometryFactoryTile.createMultiPolygon(mergeGeometries.entrySet()
-                                                                                          .stream()
-                                                                                          .filter(entry -> entry.getValue() instanceof Polygon || entry.getValue() instanceof MultiPolygon)
-                                                                                          .filter(entry -> {
-                                                                                              int i = 0;
-                                                                                              boolean match = true;
-                                                                                              for (String att : groupByAttributes) {
-                                                                                                  if (values.get(i).equals(NULL)) {
-                                                                                                      if (mergeProperties.get(entry.getKey()).containsKey(att)) {
-                                                                                                          match = false;
-                                                                                                          break;
-                                                                                                      }
-                                                                                                  } else if (!values.get(i).equals(mergeProperties.get(entry.getKey()).get(att))) {
-                                                                                                      match = false;
-                                                                                                      break;
-                                                                                                  }
-                                                                                                  i++;
-                                                                                              }
-                                                                                              return match;
-                                                                                          })
-                                                                                          .map(entry -> entry.getValue())
-                                                                                          .map(g -> g instanceof MultiPolygon ? TileGeometryUtil.splitMultiPolygon((MultiPolygon) g) : ImmutableList.of(g))
-                                                                                          .flatMap(Collection::stream)
-                                                                                          .map(g -> (Polygon) g)
-                                                                                          .toArray(Polygon[]::new));
-        if (multiPolygon.getNumGeometries()==0)
-            return;
-
-        LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} polygons", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, multiPolygon.getNumGeometries());
+        Set<Polygon> polygons = mergeGeometries.entrySet()
+                                               .stream()
+                                               .filter(entry -> entry.getValue() instanceof Polygon || entry.getValue() instanceof MultiPolygon)
+                                               .filter(entry -> {
+                                                   int i = 0;
+                                                   boolean match = true;
+                                                   for (String att : groupByAttributes) {
+                                                       if (values.get(i).equals(NULL)) {
+                                                           if (mergeProperties.get(entry.getKey()).containsKey(att)) {
+                                                               match = false;
+                                                               break;
+                                                           }
+                                                       } else if (!values.get(i).equals(mergeProperties.get(entry.getKey()).get(att))) {
+                                                           match = false;
+                                                           break;
+                                                       }
+                                                       i++;
+                                                   }
+                                                   return match;
+                                               })
+                                               .map(entry -> entry.getValue())
+                                               .map(g -> g instanceof MultiPolygon ? TileGeometryUtil.splitMultiPolygon((MultiPolygon) g) : ImmutableList.of(g))
+                                               .flatMap(Collection::stream)
+                                               .map(g -> (Polygon) g)
+                                               .collect(Collectors.toSet());
         Geometry geom;
-        if (multiPolygon.isValid()) {
-            geom = multiPolygon;
-        } else {
-            geom = TileGeometryUtil.repairPolygon(multiPolygon, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+        switch(polygons.size()){
+            case 0:
+                return;
+            case 1:
+                geom = polygons.iterator().next();
+                break;
+            default:
+                try {
+                    Iterator<Polygon> iter = polygons.iterator();
+                    geom = iter.next();
+                    while(iter.hasNext()){
+                        geom = geom.symDifference(iter.next());
+                    }
+                } catch (Exception e) {
+                    geom = geometryFactoryTile.createMultiPolygon(polygons.toArray(Polygon[]::new));
+                }
+        }
+
+        LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} polygons", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, geom.getNumGeometries());
+        if (!geom.isValid()) {
+            geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
             // now follow the same steps as for feature geometries
             if (Objects.nonNull(geom)) {
                 // reduce the geometry to the tile grid
@@ -453,6 +469,11 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
         // limit the coordinates to the tile with a buffer
         geom = TileGeometryUtil.clipGeometry(geom, clipGeometry);
+        if (Objects.isNull(geom) || geom.isEmpty())
+            return null;
+
+        // reduce the geometry to the tile grid
+        geom = TileGeometryUtil.reduce(geom, reducer, tilePrecisionModel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
         if (Objects.isNull(geom) || geom.isEmpty())
             return null;
 
