@@ -15,10 +15,12 @@ import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-@JsonDeserialize(builder = ImmutablePostprocessing.Builder.class)
-interface Postprocessing {
+@JsonDeserialize(builder = ImmutableRule.Builder.class)
+interface Rule {
     int getMin();
     int getMax();
-    Optional<Boolean> getMergeFeatures();
-    List<String> getGroupByWhenMerging();
+    Optional<Boolean> getMerge();
+    Optional<Boolean> getReduceInClusters();
+    List<String> getGroupBy();
+    List<String> getProperties();
 }

@@ -8,9 +8,13 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.SortedSetMultimap;
+import com.google.common.collect.TreeMultimap;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -29,14 +33,12 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
-import org.locationtech.jts.operation.linemerge.LineMerger;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.slf4j.Logger;
@@ -46,12 +48,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.SortedMap;
@@ -86,12 +92,14 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private final double minimumSizeInPixel;
     private final String layerName;
     private final List<String> properties;
+    private final boolean allProperties;
     private final PrecisionModel tilePrecisionModel;
     private final GeometryPrecisionReducer reducer;
     private final GeometryFactory geometryFactoryWorld;
     private final GeometryFactory geometryFactoryTile;
     private final Pattern separatorPattern;
-    private final List<String> groupByAttributes;
+    private final List<String> groupBy;
+    private final boolean reduceInCluster;
 
     private SimpleFeatureGeometry currentGeometryType;
     private int currentGeometryNesting;
@@ -112,9 +120,8 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private int lineStringCount = 0;
     private int pointCount = 0;
     private final Polygon clipGeometry;
-    private long mergeId = 0;
-    private Map<Long, SortedMap<String, Object>> mergeProperties;
-    private Map<Long, Geometry> mergeGeometries;
+    private long mergeCount = 0;
+    private Set<MvtFeature> mergeFeatures;
 
     public FeatureTransformerTilesMVT(FeatureTransformationContextTiles transformationContext, HttpClient httpClient) {
         super(TilesConfiguration.class,
@@ -132,6 +139,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         this.tile = transformationContext.getTile();
         this.tileMatrixSet = tile.getTileMatrixSet();
         this.properties = transformationContext.getFields();
+        this.allProperties = properties.contains("*");
         this.separatorPattern = Pattern.compile("\\s+|\\,");
         this.geometryFactoryWorld = new GeometryFactory();
         this.tilePrecisionModel = new PrecisionModel((double)tileMatrixSet.getTileExtent() / (double)tileMatrixSet.getTileSize());
@@ -156,16 +164,19 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         this.maxAbsoluteAreaChangeInPolygonRepair = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getMaxAbsoluteAreaChangeInPolygonRepair() : 1.0;
         this.minimumSizeInPixel = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getMinimumSizeInPixel() : 1.0;
 
-        final Map<String, List<Postprocessing>> postprocessing = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getPostprocessing() : ImmutableMap.of();
-        this.groupByAttributes = (Objects.nonNull(postprocessing) && postprocessing.containsKey(tileMatrixSet.getId())) ?
-                postprocessing.get(tileMatrixSet.getId()).stream()
-                             .filter(proc -> proc.getMax()>=tile.getTileLevel() && proc.getMin()<=tile.getTileLevel() && proc.getMergeFeatures().orElse(false))
-                             .map(proc -> proc.getGroupByWhenMerging())
-                             .findAny()
-                             .orElse(null) :
+        final Map<String, List<Rule>> rules = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getRules() : ImmutableMap.of();
+        this.groupBy = (Objects.nonNull(rules) && rules.containsKey(tileMatrixSet.getId())) ?
+                rules.get(tileMatrixSet.getId()).stream()
+                     .filter(rule -> rule.getMax()>=tile.getTileLevel() && rule.getMin()<=tile.getTileLevel() && rule.getMerge().orElse(false))
+                     .map(rule -> rule.getGroupBy())
+                     .findAny()
+                     .orElse(null) :
                 null;
-        this.mergeProperties = new HashMap<>();
-        this.mergeGeometries = new HashMap<>();
+        this.reduceInCluster = (Objects.nonNull(rules) && rules.containsKey(tileMatrixSet.getId())) ?
+                rules.get(tileMatrixSet.getId()).stream()
+                     .anyMatch(rule -> rule.getMax()>=tile.getTileLevel() && rule.getMin()<=tile.getTileLevel() && rule.getReduceInClusters().orElse(false)) :
+                false;
+        this.mergeFeatures = new HashSet<>();
 
         final int size = tileMatrixSet.getTileSize();
         final int buffer = 8;
@@ -186,75 +197,159 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     @Override
     public void onStart(OptionalLong numberReturned, OptionalLong numberMatched) {
 
-        LOGGER.trace("START");
+        LOGGER.trace("Start generating tile for collection {}, tile {}/{}/{}/{}.", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
 
         if (numberReturned.isPresent()) {
             long returned = numberReturned.getAsLong();
             long matched = numberMatched.orElse(-1);
-            LOGGER.trace("numberMatched {}", matched);
+            if (numberMatched.isPresent())
+                LOGGER.trace("numberMatched {}", matched);
             LOGGER.trace("numberReturned {}", returned);
         }
     }
 
-    private void mergePolygons(List<Object> values) {
-        // merge all polygons with the values
-        Set<Polygon> polygons = mergeGeometries.entrySet()
-                                               .stream()
-                                               .filter(entry -> entry.getValue() instanceof Polygon || entry.getValue() instanceof MultiPolygon)
-                                               .filter(entry -> {
-                                                   int i = 0;
-                                                   boolean match = true;
-                                                   for (String att : groupByAttributes) {
-                                                       if (values.get(i).equals(NULL)) {
-                                                           if (mergeProperties.get(entry.getKey()).containsKey(att)) {
-                                                               match = false;
-                                                               break;
-                                                           }
-                                                       } else if (!values.get(i).equals(mergeProperties.get(entry.getKey()).get(att))) {
-                                                           match = false;
-                                                           break;
-                                                       }
-                                                       i++;
-                                                   }
-                                                   return match;
-                                               })
-                                               .map(entry -> entry.getValue())
-                                               .map(g -> g instanceof MultiPolygon ? TileGeometryUtil.splitMultiPolygon((MultiPolygon) g) : ImmutableList.of(g))
-                                               .flatMap(Collection::stream)
-                                               .map(g -> (Polygon) g)
-                                               .collect(Collectors.toSet());
-        Geometry geom;
-        switch(polygons.size()){
-            case 0:
+    private void addFeature(MvtFeature feature) {
+        Geometry geom = feature.getGeometry();
+        // Geometry is invalid? -> log this information and skip it, if that option is used
+        if (!geom.isValid()) {
+            LOGGER.info("A polygon feature in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+            if (Objects.nonNull(tilesConfiguration) && tilesConfiguration.getIgnoreInvalidGeometries())
                 return;
-            case 1:
-                geom = polygons.iterator().next();
-                break;
-            default:
-                try {
-                    Iterator<Polygon> iter = polygons.iterator();
-                    geom = iter.next();
-                    while(iter.hasNext()){
-                        geom = geom.symDifference(iter.next());
+        }
+        encoder.addFeature(layerName, feature.getProperties(), geom);
+    }
+
+    private class ClusterAnalysis {
+        Multimap<MvtFeature, MvtFeature> clusters = ArrayListMultimap.create();
+        Map<MvtFeature, MvtFeature> inCluster = new HashMap<>();
+        Set<MvtFeature> standalone = new HashSet<>();
+    }
+
+    private ClusterAnalysis clusterAnalysis(List<MvtFeature> features, Double maxDistance) {
+        // determine clusters of connected features
+        ClusterAnalysis clusterResult = new ClusterAnalysis();
+        for (int i = 0; i < features.size(); i++) {
+            MvtFeature fi = features.get(i);
+            Optional<MvtFeature> cluster = Optional.ofNullable(clusterResult.inCluster.get(fi));
+            for (int j = i+1; j < features.size(); j++) {
+                MvtFeature fj = features.get(j);
+                boolean clustered = maxDistance.isNaN() ?
+                        fi.getGeometry().intersects(fj.getGeometry()) :
+                        fi.getGeometry().distance(fj.getGeometry()) <= maxDistance;
+                if (clustered) {
+                    if (cluster.isPresent()) {
+                        // already in a cluster, add to the new feature to the cluster
+                        clusterResult.clusters.put(cluster.get(),fj);
+                        clusterResult.inCluster.put(fj,cluster.get());
+                    } else {
+                        // new cluster
+                        clusterResult.clusters.put(fi,fj);
+                        clusterResult.inCluster.put(fj,fi);
                     }
-                } catch (Exception e) {
-                    geom = geometryFactoryTile.createMultiPolygon(polygons.toArray(Polygon[]::new));
                 }
+            }
+            // if the feature wasn't already in a cluster and hasn't started a new cluster, it is standalone
+            if (!cluster.isPresent() && !clusterResult.clusters.containsKey(fi)) {
+                clusterResult.standalone.add(fi);
+            }
+        }
+        return clusterResult;
+    }
+
+    // merge all polygons with the values for the groupBy attributes
+    private List<MvtFeature> mergePolygons(List<Object> values) {
+        ImmutableList.Builder<MvtFeature> result = ImmutableList.builder();
+
+        // identify features that match the values
+        List<MvtFeature> features = mergeFeatures
+                                            .stream()
+                                            .filter(feature -> feature.getGeometry() instanceof Polygon || feature.getGeometry() instanceof MultiPolygon)
+                                            .filter(feature -> {
+                                                int i = 0;
+                                                boolean match = true;
+                                                for (String att : groupBy) {
+                                                    if (values.get(i).equals(NULL)) {
+                                                        if (feature.getProperties().containsKey(att)) {
+                                                            match = false;
+                                                            break;
+                                                        }
+                                                    } else if (!values.get(i).equals(feature.getProperties().get(att))) {
+                                                        match = false;
+                                                        break;
+                                                    }
+                                                    i++;
+                                                }
+                                                return match;
+                                            })
+                                            .collect(Collectors.toUnmodifiableList());
+
+        // nothing to merge?
+        if (features.isEmpty()) {
+            return result.build();
+        } else if (features.size()==1) {
+            return result.add(features.iterator().next()).build();
         }
 
-        LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} polygons", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, geom.getNumGeometries());
-        if (!geom.isValid()) {
-            geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0/tilePrecisionModel.getScale());
-            // now follow the same steps as for feature geometries
-            if (Objects.nonNull(geom)) {
-                // reduce the geometry to the tile grid
-                geom = TileGeometryUtil.reduce(geom, reducer, tilePrecisionModel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
-                if (Objects.nonNull(geom)) {
-                    // finally again remove any small rings or line strings created in the processing
-                    geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
+        // determine clusters of connected features
+        ClusterAnalysis clusterResult = clusterAnalysis(features, Double.NaN);
+
+        // process the standalone features
+        clusterResult.standalone
+                .stream()
+                .forEach(feature -> result.add(feature));
+
+        // process each cluster
+        clusterResult.clusters
+                .asMap()
+                .entrySet()
+                .stream()
+                .forEach(entry -> {
+                    Set<Polygon> polygons = features
+                            .stream()
+                            .filter(f -> f.equals(entry.getKey()) || entry.getValue().contains(f))
+                            .filter(f -> {
+                                int i = 0;
+                                boolean match = true;
+                                for (String att : groupBy) {
+                                    if (values.get(i).equals(NULL)) {
+                                        if (f.getProperties().containsKey(att)) {
+                                            match = false;
+                                            break;
+                                        }
+                                    } else if (!values.get(i).equals(f.getProperties().get(att))) {
+                                        match = false;
+                                        break;
+                                    }
+                                    i++;
+                                }
+                                return match;
+                            })
+                            .map(f -> f.getGeometry())
+                            .map(g -> g instanceof MultiPolygon ? TileGeometryUtil.splitMultiPolygon((MultiPolygon) g) : ImmutableList.of(g))
+                            .flatMap(Collection::stream)
+                            .map(g -> (Polygon) g)
+                            .collect(Collectors.toSet());
+                    Geometry geom;
+                    switch(polygons.size()){
+                        case 0:
+                            return;
+                        case 1:
+                            geom = polygons.iterator().next();
+                            break;
+                        default:
+                            try {
+                                Iterator<Polygon> iter = polygons.iterator();
+                                geom = iter.next();
+                                while(iter.hasNext()){
+                                    geom = geom.symDifference(iter.next());
+                                }
+                            } catch (Exception e) {
+                                geom = geometryFactoryTile.createMultiPolygon(polygons.toArray(Polygon[]::new));
+                            }
+                    }
+                    LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} polygons", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, geom.getNumGeometries());
                     if (!geom.isValid()) {
-                        LOGGER.debug("Second attempt to repair merged polygonal geometry.");
-                        geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0 / tilePrecisionModel.getScale());
+                        geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0/tilePrecisionModel.getScale());
                         // now follow the same steps as for feature geometries
                         if (Objects.nonNull(geom)) {
                             // reduce the geometry to the tile grid
@@ -262,35 +357,55 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                             if (Objects.nonNull(geom)) {
                                 // finally again remove any small rings or line strings created in the processing
                                 geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
+                                if (!geom.isValid()) {
+                                    LOGGER.trace("Merged polygonal geometry invalid after initial processing. Final attempt to repair.");
+                                    geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0 / tilePrecisionModel.getScale());
+                                    // now follow the same steps as for feature geometries
+                                    if (Objects.nonNull(geom)) {
+                                        // reduce the geometry to the tile grid
+                                        geom = TileGeometryUtil.reduce(geom, reducer, tilePrecisionModel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+                                        if (Objects.nonNull(geom)) {
+                                            // finally again remove any small rings or line strings created in the processing
+                                            geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
-        }
 
-        ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
-        int i = 0;
-        for (String att : groupByAttributes) {
-            if (!values.get(i++).equals(NULL))
-                propertiesBuilder.put(att,values.get(i-1));
-        }
+                    if (Objects.isNull(geom) || geom.isEmpty() || geom.getNumGeometries()==0) {
+                        LOGGER.trace("Merged polygon feature grouped by {} in collection {} has no geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+                        return;
+                    }
 
-        if (Objects.isNull(geom) || geom.isEmpty() || geom.getNumGeometries()==0) {
-            LOGGER.trace("Merged polygon feature grouped by {} in collection {} has no geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-            return;
-        }
+                    // Geometry is invalid -> log this information and skip it, if that option is used
+                    if (!geom.isValid()) {
+                        LOGGER.info("Merged polygon feature grouped by {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+                        if (Objects.nonNull(tilesConfiguration) && tilesConfiguration.getIgnoreInvalidGeometries())
+                            return;
+                    }
 
-        // Geometry is invalid -> log this information and skip it, if that option is used
-        if (!geom.isValid()) {
-            LOGGER.info("Merged polygon feature grouped by {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-            if (Objects.isNull(tilesConfiguration) || !tilesConfiguration.getIgnoreInvalidGeometries()) {
-                encoder.addFeature(layerName, propertiesBuilder.build(), geom);
-            }
-        } else
-            encoder.addFeature(layerName, propertiesBuilder.build(), geom);
+                    Map<String, Object> mainClusterFeatureProperties = entry.getKey().getProperties();
+                    ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
+                    mainClusterFeatureProperties.entrySet()
+                                                .stream()
+                                                .filter(prop -> allProperties || properties.contains(prop.getKey()))
+                                                .filter(prop -> entry.getValue()
+                                                                     .stream()
+                                                                     .allMatch(f -> f.getProperties().containsKey(prop.getKey()) && f.getProperties().get(prop.getKey()).equals(prop.getValue())))
+                                                .forEach(prop -> propertiesBuilder.put(prop.getKey(), prop.getValue()));
+
+                    result.add(new ImmutableMvtFeature.Builder()
+                                       .id(entry.getKey().getId())
+                                       .properties(propertiesBuilder.build())
+                                       .geometry(geom).build());
+        });
+
+        return result.build();
     }
 
+    /* TODO
     private void mergeLineStrings(List<Object> values) {
         // merge all line strings with the values
         LineMerger merger = new LineMerger();
@@ -300,7 +415,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                                   .filter(entry -> {
                                       int i = 0;
                                       boolean match = true;
-                                      for (String att : groupByAttributes) {
+                                      for (String att : groupBy) {
                                           if (values.get(i).equals(NULL) && !mergeProperties.get(entry.getKey()).containsKey(att)) {
                                               match = false;
                                               break;
@@ -336,7 +451,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
         ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
         int i = 0;
-        for (String att : groupByAttributes) {
+        for (String att : groupBy) {
             propertiesBuilder.put(att,values.get(i++));
         }
 
@@ -354,33 +469,42 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         } else
             encoder.addFeature(layerName, propertiesBuilder.build(), geom);
     }
+     */
 
     @Override
     public void onEnd() {
 
-        if (Objects.nonNull(groupByAttributes) && mergeId>0) {
-            ImmutableList<ImmutableList<Object>> groups = groupByAttributes.stream()
-                                                                           .map(att -> mergeProperties.values()
-                                                                                                      .stream()
-                                                                                                      .map(props -> props.containsKey(att) ? props.get(att) : NULL)
-                                                                                                      .distinct()
-                                                                                                      .collect(ImmutableList.toImmutableList()))
-                                                                           .collect(ImmutableList.toImmutableList());
+        if (Objects.nonNull(groupBy) && mergeCount >0) {
+            ImmutableList<ImmutableList<Object>> valueGroups = groupBy.stream()
+                                                                 .map(att -> mergeFeatures.stream()
+                                                                                          .map(props -> props.getProperties().containsKey(att) ? props.getProperties().get(att) : NULL)
+                                                                                          .distinct()
+                                                                                          .collect(ImmutableList.toImmutableList()))
+                                                                 .collect(ImmutableList.toImmutableList());
 
-            if (mergeGeometries.values().stream().anyMatch(geom -> geom instanceof Polygon || geom instanceof MultiPolygon))
-                Lists.cartesianProduct(groups)
+            if (mergeFeatures.stream().anyMatch(feature -> feature.getGeometry() instanceof Polygon || feature.getGeometry() instanceof MultiPolygon)) {
+                List<MvtFeature> features = new ArrayList<>();
+                Lists.cartesianProduct(valueGroups)
                      .stream()
                      .forEach(values -> {
                          try {
-                             mergePolygons(values);
+                             features.addAll(mergePolygons(values));
                          } catch (Exception e) {
                              LOGGER.error("Error while merging polygon geometries grouped by {} in tile {}/{}/{}/{} in collection {}. The features are skipped.", values, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), collectionId);
-                             if(LOGGER.isDebugEnabled()) {
+                             if (LOGGER.isDebugEnabled()) {
                                  LOGGER.debug("Stacktrace:", e);
                              }
                          }
                      });
+                LOGGER.info("{} merged polygon features in tile {}/{}/{}/{} in collection {}, total pixel area: {}.",
+                            features.size(), tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), collectionId, features.stream()
+                                                                                                                                                     .mapToDouble(f -> f.getGeometry().getArea())
+                                                                                                                                                     .sum());
+                features.stream()
+                        .forEach(feature -> addFeature(feature));
+            }
 
+            /* TODO
             if (mergeGeometries.values().stream().anyMatch(geom -> geom instanceof LineString || geom instanceof MultiLineString))
                 Lists.cartesianProduct(groups)
                      .stream()
@@ -394,6 +518,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                              }
                          }
                      });
+             */
         }
 
         try {
@@ -410,7 +535,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             throw new RuntimeException("Error writing output stream.", e);
         }
 
-        LOGGER.trace("Response written.");
+        LOGGER.trace("Tile response written.");
     }
 
     @Override
@@ -483,7 +608,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
         if (!geom.isValid()) {
             // try once more
-            LOGGER.debug("Second attempt to repair polygonal geometry.");
+            LOGGER.trace("Polygonal geometry invalid after initial processing. Final attempt to repair.");
 
             geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0 / tilePrecisionModel.getScale());
             if (Objects.isNull(geom) || geom.isEmpty())
@@ -524,9 +649,12 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             }
 
             // if polygons have to be merged, store them for now and process at the end
-            if (Objects.nonNull(groupByAttributes) && tileGeometry.getGeometryType().contains("Polygon")) {
-                mergeGeometries.put(++mergeId, tileGeometry);
-                mergeProperties.put(mergeId, currentProperties);
+            if (Objects.nonNull(groupBy) && tileGeometry.getGeometryType().contains("Polygon")) {
+                mergeFeatures.add(new ImmutableMvtFeature.Builder()
+                                          .id(++mergeCount)
+                                          .properties(currentProperties)
+                                          .geometry(tileGeometry)
+                                          .build());
                 resetFeatureInfo();
                 return;
             }
@@ -589,11 +717,12 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         multiplicities.stream()
                 .forEachOrdered(index -> currentPropertyName = currentPropertyName.replaceFirst("\\[[^\\]]*\\]", "."+index));
 
-        if (!properties.contains("*")) {
+        if (!allProperties) {
             int idx = currentPropertyName.indexOf(".");
             if (idx!=-1 && !properties.contains(currentPropertyName.substring(0,idx)))
                 currentProperty = null;
-            return;
+            else if (idx==-1 && !properties.contains(currentPropertyName))
+                currentProperty = null;
         }
     }
 

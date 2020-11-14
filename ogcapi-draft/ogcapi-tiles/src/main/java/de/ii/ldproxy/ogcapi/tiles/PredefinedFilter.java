@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
-import java.util.List;
 import java.util.Optional;
 
 @Value.Immutable
@@ -20,5 +19,4 @@ interface PredefinedFilter {
     int getMin();
     int getMax();
     Optional<String> getFilter();
-    List<String> getProperties();
 }

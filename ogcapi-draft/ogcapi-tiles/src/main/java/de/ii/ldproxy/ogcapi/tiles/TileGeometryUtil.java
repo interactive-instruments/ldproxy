@@ -168,6 +168,8 @@ public class TileGeometryUtil {
 
     static Geometry repairPolygon(Geometry geom, double maxRelativeAreaChangeInPolygonRepair, double maxAbsoluteAreaChangeInPolygonRepair, double distance) {
         if (geom instanceof Polygon || geom instanceof MultiPolygon) {
+            // TODO update once JTS has a proper makeValid() capability (planned for some time)
+
             // the standard fix for invalid, self-intersecting polygons is to use a zero-distance buffer;
             // however, this does not work in all cases and sometimes creates invalid or unwanted results,
             // for example, with "bow tie" geometries
@@ -175,16 +177,16 @@ public class TileGeometryUtil {
             double areaChange = Math.abs(bufferGeom.getArea() - geom.getArea()) / geom.getArea();
             if ((areaChange <= maxRelativeAreaChangeInPolygonRepair || Math.abs(bufferGeom.getArea() - geom.getArea()) <= maxAbsoluteAreaChangeInPolygonRepair) && bufferGeom.isValid())
                 return bufferGeom;
-            LOGGER.debug("Buffer repair of polygonal geometry failed, valid={}, initial area {}, new area {}.", bufferGeom.isValid(), geom.getArea(), bufferGeom.getArea());
+            LOGGER.trace("Buffer repair of polygonal geometry failed, valid={}, initial area {}, new area {}.", bufferGeom.isValid(), geom.getArea(), bufferGeom.getArea());
 
             // try to rebuild the polygon geometry
             try {
                 Geometry newGeom = rebuildPolygon(geom);
                 if (newGeom.isValid())
                     return newGeom;
-                LOGGER.debug("Polygonal geometry rebuild failed, valid={}, initial area {}, new area {}.", newGeom.isValid(), geom.getArea(), newGeom.getArea());
+                LOGGER.trace("Polygonal geometry rebuild failed, valid={}, initial area {}, new area {}.", newGeom.isValid(), geom.getArea(), newGeom.getArea());
             } catch (Exception e) {
-                LOGGER.debug("Polygonal geometry rebuild failed due to a JTS exception.");
+                LOGGER.trace("Polygonal geometry rebuild failed due to a JTS exception.");
             }
 
             // try the Visvalingam-Whyatt simplifier
@@ -192,9 +194,9 @@ public class TileGeometryUtil {
                 Geometry vwGeom = VWSimplifier.simplify(geom, distance);
                 if (vwGeom.isValid())
                     return vwGeom;
-                LOGGER.debug("Visvalingam-Whyatt simplification failed, valid={}, initial area {}, new area {}.", vwGeom.isValid(), geom.getArea(), vwGeom.getArea());
+                LOGGER.trace("Visvalingam-Whyatt simplification failed, valid={}, initial area {}, new area {}.", vwGeom.isValid(), geom.getArea(), vwGeom.getArea());
             } catch (Exception e) {
-                LOGGER.debug("Visvalingam-Whyatt simplification failed due to a JTS exception.");
+                LOGGER.trace("Visvalingam-Whyatt simplification failed due to a JTS exception.");
             }
 
             // try a union
@@ -202,14 +204,14 @@ public class TileGeometryUtil {
             areaChange = Math.abs(unionGeom.getArea() - geom.getArea()) / geom.getArea();
             if ((areaChange <= maxRelativeAreaChangeInPolygonRepair || Math.abs(unionGeom.getArea() - geom.getArea()) <= maxAbsoluteAreaChangeInPolygonRepair) && unionGeom.isValid())
                 return unionGeom;
-            LOGGER.debug("Union repair of polygonal geometry failed, valid={}, initial area {}, new area {}.", unionGeom.isValid(), geom.getArea(), unionGeom.getArea());
+            LOGGER.trace("Union repair of polygonal geometry failed, valid={}, initial area {}, new area {}.", unionGeom.isValid(), geom.getArea(), unionGeom.getArea());
 
             // as a last resort, try a convex hull
             Geometry hullGeom = geom.convexHull();
             areaChange = Math.abs(hullGeom.getArea() - geom.getArea()) / geom.getArea();
             if ((areaChange <= maxRelativeAreaChangeInPolygonRepair || Math.abs(hullGeom.getArea() - geom.getArea()) <= maxAbsoluteAreaChangeInPolygonRepair) && hullGeom.isValid())
                 return hullGeom;
-            LOGGER.debug("Convex hull repair of polygonal geometry failed, valid={}, initial area {}, new area {}.", hullGeom.isValid(), geom.getArea(), hullGeom.getArea());
+            LOGGER.trace("Convex hull repair of polygonal geometry failed, valid={}, initial area {}, new area {}.", hullGeom.isValid(), geom.getArea(), hullGeom.getArea());
         }
 
         return geom;

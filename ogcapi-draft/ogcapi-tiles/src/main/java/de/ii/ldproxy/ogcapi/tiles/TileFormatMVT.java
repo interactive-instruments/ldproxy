@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
@@ -51,6 +50,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -134,7 +134,7 @@ public class TileFormatMVT implements TileFormatExtension {
         String tileMatrixSetId = tile.getTileMatrixSet().getId();
         int level = tile.getTileLevel();
 
-        final  Map<String, List<PredefinedFilter>> predefFilters = tilesConfiguration.getFilters();
+        final Map<String, List<PredefinedFilter>> predefFilters = tilesConfiguration.getFilters();
         final String predefFilter = (Objects.nonNull(predefFilters) && predefFilters.containsKey(tileMatrixSetId)) ?
                 predefFilters.get(tileMatrixSetId).stream()
                              .filter(filter -> filter.getMax()>=level && filter.getMin()<=level && filter.getFilter().isPresent())
@@ -157,12 +157,13 @@ public class TileFormatMVT implements TileFormatExtension {
                 .crs(tile.getTileMatrixSet().getCrs())
                 .maxAllowableOffset(getMaxAllowableOffsetNative(tile));
 
-        if (!queryParameters.containsKey("properties") && (Objects.nonNull(predefFilters) && predefFilters.containsKey(tileMatrixSetId))) {
-            List<String> properties = predefFilters.get(tileMatrixSetId).stream()
-                                                   .filter(filter -> filter.getMax() >= level && filter.getMin() <= level)
-                                                   .map(filter -> filter.getProperties())
-                                                   .findAny()
-                                                   .orElse(ImmutableList.of());
+        final Map<String, List<Rule>> rules = tilesConfiguration.getRules();
+        if (!queryParameters.containsKey("properties") && (Objects.nonNull(rules) && rules.containsKey(tileMatrixSetId))) {
+            List<String> properties = rules.get(tileMatrixSetId).stream()
+                                           .filter(rule -> rule.getMax() >= level && rule.getMin() <= level)
+                                           .map(rule -> rule.getProperties())
+                                           .flatMap(Collection::stream)
+                                           .collect(Collectors.toList());
             if (!properties.isEmpty()) {
                 queryParameters = ImmutableMap.<String, String>builder()
                                               .putAll(queryParameters)
