@@ -11,6 +11,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SortedSetMultimap;
@@ -212,7 +213,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         Geometry geom = feature.getGeometry();
         // Geometry is invalid? -> log this information and skip it, if that option is used
         if (!geom.isValid()) {
-            LOGGER.info("A polygon feature in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+            LOGGER.info("A merged feature in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Properties: {}", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), feature.getProperties());
             if (Objects.nonNull(tilesConfiguration) && tilesConfiguration.getIgnoreInvalidGeometries())
                 return;
         }
@@ -304,31 +305,18 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                 .entrySet()
                 .stream()
                 .forEach(entry -> {
-                    Set<Polygon> polygons = features
-                            .stream()
-                            .filter(f -> f.equals(entry.getKey()) || entry.getValue().contains(f))
-                            .filter(f -> {
-                                int i = 0;
-                                boolean match = true;
-                                for (String att : groupBy) {
-                                    if (values.get(i).equals(NULL)) {
-                                        if (f.getProperties().containsKey(att)) {
-                                            match = false;
-                                            break;
-                                        }
-                                    } else if (!values.get(i).equals(f.getProperties().get(att))) {
-                                        match = false;
-                                        break;
-                                    }
-                                    i++;
-                                }
-                                return match;
-                            })
-                            .map(f -> f.getGeometry())
-                            .map(g -> g instanceof MultiPolygon ? TileGeometryUtil.splitMultiPolygon((MultiPolygon) g) : ImmutableList.of(g))
-                            .flatMap(Collection::stream)
-                            .map(g -> (Polygon) g)
-                            .collect(Collectors.toSet());
+                    ImmutableSet.Builder<Polygon> polygonBuilder = new ImmutableSet.Builder<>();
+                    polygonBuilder.addAll(entry.getValue().stream()
+                                               .map(f -> f.getGeometry())
+                                               .map(g -> g instanceof MultiPolygon ? TileGeometryUtil.splitMultiPolygon((MultiPolygon) g) : ImmutableList.of(g))
+                                               .flatMap(Collection::stream)
+                                               .map(Polygon.class::cast)
+                                               .collect(Collectors.toSet()));
+                    if (entry.getKey().getGeometry() instanceof MultiPolygon)
+                        polygonBuilder.addAll(TileGeometryUtil.splitMultiPolygon((MultiPolygon) entry.getKey().getGeometry()));
+                    else
+                        polygonBuilder.add((Polygon) entry.getKey().getGeometry());
+                    ImmutableSet<Polygon> polygons = polygonBuilder.build();
                     Geometry geom;
                     switch(polygons.size()){
                         case 0:
@@ -357,7 +345,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                             if (Objects.nonNull(geom)) {
                                 // finally again remove any small rings or line strings created in the processing
                                 geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
-                                if (!geom.isValid()) {
+                                if (Objects.nonNull(geom) && !geom.isValid()) {
                                     LOGGER.trace("Merged polygonal geometry invalid after initial processing. Final attempt to repair.");
                                     geom = TileGeometryUtil.repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0 / tilePrecisionModel.getScale());
                                     // now follow the same steps as for feature geometries
@@ -496,7 +484,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                              }
                          }
                      });
-                LOGGER.info("{} merged polygon features in tile {}/{}/{}/{} in collection {}, total pixel area: {}.",
+                LOGGER.trace("{} merged polygon features in tile {}/{}/{}/{} in collection {}, total pixel area: {}.",
                             features.size(), tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), collectionId, features.stream()
                                                                                                                                                      .mapToDouble(f -> f.getGeometry().getArea())
                                                                                                                                                      .sum());

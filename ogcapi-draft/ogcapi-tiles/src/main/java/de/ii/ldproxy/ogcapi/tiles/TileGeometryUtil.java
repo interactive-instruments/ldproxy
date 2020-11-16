@@ -189,6 +189,20 @@ public class TileGeometryUtil {
                 LOGGER.trace("Polygonal geometry rebuild failed due to a JTS exception.");
             }
 
+            // try a union
+            Geometry unionGeom = geom.union();
+            areaChange = Math.abs(unionGeom.getArea() - geom.getArea()) / geom.getArea();
+            if ((areaChange <= maxRelativeAreaChangeInPolygonRepair || Math.abs(unionGeom.getArea() - geom.getArea()) <= maxAbsoluteAreaChangeInPolygonRepair) && unionGeom.isValid())
+                return unionGeom;
+            LOGGER.trace("Union repair of polygonal geometry failed, valid={}, initial area {}, new area {}.", unionGeom.isValid(), geom.getArea(), unionGeom.getArea());
+
+            // try a convex hull
+            Geometry hullGeom = geom.convexHull();
+            areaChange = Math.abs(hullGeom.getArea() - geom.getArea()) / geom.getArea();
+            if ((areaChange <= maxRelativeAreaChangeInPolygonRepair || Math.abs(hullGeom.getArea() - geom.getArea()) <= maxAbsoluteAreaChangeInPolygonRepair) && hullGeom.isValid())
+                return hullGeom;
+            LOGGER.trace("Convex hull repair of polygonal geometry failed, valid={}, initial area {}, new area {}.", hullGeom.isValid(), geom.getArea(), hullGeom.getArea());
+
             // try the Visvalingam-Whyatt simplifier
             try {
                 Geometry vwGeom = VWSimplifier.simplify(geom, distance);
@@ -198,20 +212,6 @@ public class TileGeometryUtil {
             } catch (Exception e) {
                 LOGGER.trace("Visvalingam-Whyatt simplification failed due to a JTS exception.");
             }
-
-            // try a union
-            Geometry unionGeom = geom.union();
-            areaChange = Math.abs(unionGeom.getArea() - geom.getArea()) / geom.getArea();
-            if ((areaChange <= maxRelativeAreaChangeInPolygonRepair || Math.abs(unionGeom.getArea() - geom.getArea()) <= maxAbsoluteAreaChangeInPolygonRepair) && unionGeom.isValid())
-                return unionGeom;
-            LOGGER.trace("Union repair of polygonal geometry failed, valid={}, initial area {}, new area {}.", unionGeom.isValid(), geom.getArea(), unionGeom.getArea());
-
-            // as a last resort, try a convex hull
-            Geometry hullGeom = geom.convexHull();
-            areaChange = Math.abs(hullGeom.getArea() - geom.getArea()) / geom.getArea();
-            if ((areaChange <= maxRelativeAreaChangeInPolygonRepair || Math.abs(hullGeom.getArea() - geom.getArea()) <= maxAbsoluteAreaChangeInPolygonRepair) && hullGeom.isValid())
-                return hullGeom;
-            LOGGER.trace("Convex hull repair of polygonal geometry failed, valid={}, initial area {}, new area {}.", hullGeom.isValid(), geom.getArea(), hullGeom.getArea());
         }
 
         return geom;
