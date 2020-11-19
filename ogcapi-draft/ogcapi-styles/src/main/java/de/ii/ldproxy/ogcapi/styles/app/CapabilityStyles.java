@@ -47,6 +47,7 @@ public class CapabilityStyles implements ApiBuildingBlock {
                                                                                      .collect(ImmutableList.toImmutableList()))
                                                          .webmapWithPopup(true)
                                                          .webmapWithLayerControl(false)
+                                                         .layerControlAllLayers(false)
                                                          .build();
     }
 

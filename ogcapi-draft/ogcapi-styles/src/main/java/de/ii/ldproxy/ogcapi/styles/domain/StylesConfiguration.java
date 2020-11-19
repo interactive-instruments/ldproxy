@@ -48,6 +48,9 @@ public interface StylesConfiguration extends ExtensionConfiguration {
     @Nullable
     Boolean getWebmapWithLayerControl();
 
+    @Nullable
+    Boolean getLayerControlAllLayers();
+
     @Deprecated
     @Nullable
     Boolean getMapsEnabled();
