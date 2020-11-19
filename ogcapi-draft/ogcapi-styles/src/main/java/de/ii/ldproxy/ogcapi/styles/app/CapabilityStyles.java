@@ -45,6 +45,8 @@ public class CapabilityStyles implements ApiBuildingBlock {
                                                                                      .filter(FormatExtension::isEnabledByDefault)
                                                                                      .map(format -> format.getMediaType().label())
                                                                                      .collect(ImmutableList.toImmutableList()))
+                                                         .webmapWithPopup(true)
+                                                         .webmapWithLayerControl(false)
                                                          .build();
     }
 

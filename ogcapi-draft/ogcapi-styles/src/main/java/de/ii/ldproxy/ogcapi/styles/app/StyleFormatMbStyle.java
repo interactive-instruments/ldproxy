@@ -116,7 +116,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         return "8";
     }
 
-    private MbStyleStylesheet parseFile(File stylesheet, URICustomizer uriCustomizer) throws IOException {
+    static MbStyleStylesheet parseFile(File stylesheet, URICustomizer uriCustomizer) throws IOException {
         final byte[] content = java.nio.file.Files.readAllBytes(stylesheet.toPath());
 
         // prepare Jackson mapper for deserialization
@@ -163,7 +163,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
                 .build();
     }
 
-    private MbStyleStylesheet replaceParameters(MbStyleStylesheet stylesheet, URICustomizer uriCustomizer) {
+    private static MbStyleStylesheet replaceParameters(MbStyleStylesheet stylesheet, URICustomizer uriCustomizer) {
 
         // any template parameters in links?
         boolean templated = stylesheet.getSprite()

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.domain;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
 
 import javax.ws.rs.core.Response;
