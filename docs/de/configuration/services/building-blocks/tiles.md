@@ -29,7 +29,7 @@ Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann soll
 |`zoomLevelsCache` |object |`{}` |Steuert die Zoomstufen, in denen erzeugte Kacheln gecacht werden.
 |`center` |array |`null` |Legt Länge und Breite fest, auf die standardmäßig eine Karte mit den Kacheln zentriert werden sollte.
 |`filters` |object |`{}` |Über Filter kann gesteuert werden, welche Features auf welchen Zoomstufen selektiert werden sollen. Dazu dient ein CQL-Filterausdruck, der in `filter` angegeben wird. Siehe das Beispiel unten.
-|`rules` |object |`{}` |Über Regeln können die selektierten Features in Abhängigkeit der Zoomstufe nachbearbeitet werden. Unterstützt wird eine Reduzierung der Attribute (`properties`), das geometrische Verschmelzen aller Features (`merge`), ggf. eingeschränkt auf Features mit bestimmten identischen Attributen (`groupBy`) bzw. auf Features, die sich geometrisch schneiden (`reduceInClusters`). Siehe das Beispiel unten. Beim Verschmelzen werden alle Attribute in das neue Objekt übernommen, die in den verschmolzenen Features identisch sind.
+|`rules` |object |`{}` |Über Regeln können die selektierten Features in Abhängigkeit der Zoomstufe nachbearbeitet werden. Unterstützt wird eine Reduzierung der Attribute (`properties`), das geometrische Verschmelzen von Features, die sich geometrisch schneiden (`merge`), ggf. eingeschränkt auf Features mit bestimmten identischen Attributen (`groupBy`). Siehe das Beispiel unten. Beim Verschmelzen werden alle Attribute in das neue Objekt übernommen, die in den verschmolzenen Features identisch sind.
 |`seeding` |object |`{}` |Steuert die Zoomstufen, die für jedes aktive Kachelschema beim Start vorberechnet werden.
 |`limit` |integer |100000 |Steuert die maximale Anzahl der Features, die pro Query für eine Kachel berücksichtigt werden.
 |`minimumSizeInPixel`| number |0.5 |Objekte mit Liniengeometrien, die kürzer als der Wert sind, werden nicht in die Kachel aufgenommen. Objekte mit Flächengeometrien, die kleiner als das Quadrat des Werts sind, werden nicht in die Kachel aufgenommen. Der Wert 0.5 entspricht einem halben "Pixel" im Kachelkoordinatensystem.
@@ -57,7 +57,6 @@ Beispiel für die Angaben in der Konfigurationsdatei für Gebäude:
     - min: 12
       max: 13
       merge: true
-      reduceInClusters: true
       groupBy:
       - anzahl_geschosse
       - funktion

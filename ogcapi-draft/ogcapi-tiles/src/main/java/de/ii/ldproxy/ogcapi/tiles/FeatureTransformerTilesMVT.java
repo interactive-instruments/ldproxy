@@ -32,12 +32,14 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
+import org.locationtech.jts.operation.linemerge.LineMerger;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.slf4j.Logger;
@@ -97,7 +99,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private final GeometryFactory geometryFactoryTile;
     private final Pattern separatorPattern;
     private final List<String> groupBy;
-    private final boolean reduceInCluster;
 
     private SimpleFeatureGeometry currentGeometryType;
     private int currentGeometryNesting;
@@ -170,10 +171,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                      .findAny()
                      .orElse(null) :
                 null;
-        this.reduceInCluster = (Objects.nonNull(rules) && rules.containsKey(tileMatrixSet.getId())) ?
-                rules.get(tileMatrixSet.getId()).stream()
-                     .anyMatch(rule -> rule.getMax()>=tile.getTileLevel() && rule.getMin()<=tile.getTileLevel() && rule.getReduceInClusters().orElse(false)) :
-                false;
         this.mergeFeatures = new HashSet<>();
 
         final int size = tileMatrixSet.getTileSize();
@@ -223,17 +220,17 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         Set<MvtFeature> standalone = new HashSet<>();
     }
 
-    private ClusterAnalysis clusterAnalysis(List<MvtFeature> features, Double maxDistance) {
+    private ClusterAnalysis clusterAnalysis(List<MvtFeature> features, boolean boundary) {
         // determine clusters of connected features
         ClusterAnalysis clusterResult = new ClusterAnalysis();
         for (int i = 0; i < features.size(); i++) {
             MvtFeature fi = features.get(i);
+            Geometry gi = fi.getGeometry();
             Optional<MvtFeature> cluster = Optional.ofNullable(clusterResult.inCluster.get(fi));
             for (int j = i+1; j < features.size(); j++) {
                 MvtFeature fj = features.get(j);
-                boolean clustered = maxDistance.isNaN() ?
-                        fi.getGeometry().intersects(fj.getGeometry()) :
-                        fi.getGeometry().distance(fj.getGeometry()) <= maxDistance;
+                Geometry gj = fj.getGeometry();
+                boolean clustered = boundary ? gi.getBoundary().intersects(gj.getBoundary()) : gi.intersects(gj);
                 if (clustered) {
                     if (cluster.isPresent()) {
                         // already in a cluster, add to the new feature to the cluster
@@ -316,7 +313,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         }
 
         // determine clusters of connected features
-        ClusterAnalysis clusterResult = clusterAnalysis(features, Double.NaN);
+        ClusterAnalysis clusterResult = clusterAnalysis(features, false);
 
         // process the standalone features
         clusterResult.standalone
@@ -392,71 +389,110 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         return result.build();
     }
 
-    /* TODO
-    private void mergeLineStrings(List<Object> values) {
-        // merge all line strings with the values
-        LineMerger merger = new LineMerger();
-        merger.add(mergeGeometries.entrySet()
-                                  .stream()
-                                  .filter(entry -> entry.getValue() instanceof LineString || entry.getValue() instanceof MultiLineString)
-                                  .filter(entry -> {
-                                      int i = 0;
-                                      boolean match = true;
-                                      for (String att : groupBy) {
-                                          if (values.get(i).equals(NULL) && !mergeProperties.get(entry.getKey()).containsKey(att)) {
-                                              match = false;
-                                              break;
-                                          } else if (!values.get(i).equals(mergeProperties.get(entry.getKey()).get(att))) {
-                                              match = false;
-                                              break;
-                                          }
-                                      }
-                                      return match;
-                                  })
-                                  .map(entry -> entry.getValue())
-                                  .map(g -> g instanceof MultiLineString ? TileGeometryUtil.splitMultiLineString((MultiLineString) g) : ImmutableList.of(g))
-                                  .flatMap(Collection::stream)
-                                  .map(g -> (LineString) g)
-                                  .collect(Collectors.toSet()));
-        Geometry multiLineString = geometryFactoryTile.createMultiLineString((LineString[]) merger.getMergedLineStrings().toArray());
-        if (multiLineString.isEmpty())
-            return;
+    // merge all polygons with the values for the groupBy attributes
+    private List<MvtFeature> mergeLineStrings(List<Object> values) {
+        ImmutableList.Builder<MvtFeature> result = ImmutableList.builder();
 
-        LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} line strings", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, multiLineString.getNumGeometries());
-        Geometry geom = multiLineString;
-        if (!geom.isValid()) {
-            // see, if we can fix the issues
-            if (Objects.nonNull(geom)) {
-                // reduce the geometry to the tile grid
-                geom = TileGeometryUtil.reduce(geom, reducer, tilePrecisionModel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
-                if (Objects.nonNull(geom)) {
-                    // finally again remove any small line strings created in the processing
-                    geom = TileGeometryUtil.removeSmallPieces(geom, minimumSizeInPixel);
-                }
-            }
+        // identify features that match the values
+        List<MvtFeature> features = mergeFeatures
+                .stream()
+                .filter(feature -> feature.getGeometry() instanceof LineString || feature.getGeometry() instanceof MultiLineString)
+                .filter(feature -> {
+                    int i = 0;
+                    boolean match = true;
+                    for (String att : groupBy) {
+                        if (values.get(i).equals(NULL)) {
+                            if (feature.getProperties().containsKey(att)) {
+                                match = false;
+                                break;
+                            }
+                        } else if (!values.get(i).equals(feature.getProperties().get(att))) {
+                            match = false;
+                            break;
+                        }
+                        i++;
+                    }
+                    return match;
+                })
+                .collect(Collectors.toUnmodifiableList());
+
+        // nothing to merge?
+        if (features.isEmpty()) {
+            return result.build();
+        } else if (features.size()==1) {
+            return result.add(features.iterator().next()).build();
         }
 
-        ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
-        int i = 0;
-        for (String att : groupBy) {
-            propertiesBuilder.put(att,values.get(i++));
-        }
+        // determine clusters of connected features
+        ClusterAnalysis clusterResult = clusterAnalysis(features, true);
 
-        if (Objects.isNull(geom) || geom.getNumGeometries()==0) {
-            LOGGER.trace("Merged line string feature grouped by {} in collection {} has no geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-            return;
-        }
+        // process the standalone features
+        clusterResult.standalone
+                .stream()
+                .forEach(feature -> result.add(feature));
 
-        // Geometry is invalid -> log this information and skip it, if that option is used
-        if (!geom.isValid()) {
-            LOGGER.info("Merged line string feature grouped by {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-            if (Objects.isNull(tilesConfiguration) || !tilesConfiguration.getIgnoreInvalidGeometries()) {
-                encoder.addFeature(layerName, propertiesBuilder.build(), geom);
-            }
-        } else
-            encoder.addFeature(layerName, propertiesBuilder.build(), geom);
+        // process each cluster
+        clusterResult.clusters
+                .asMap()
+                .entrySet()
+                .stream()
+                .forEach(entry -> {
+                    ImmutableSet.Builder<LineString> lineStringBuilder = new ImmutableSet.Builder<>();
+                    lineStringBuilder.addAll(entry.getValue().stream()
+                                               .map(f -> f.getGeometry())
+                                               .map(g -> g instanceof MultiLineString ? TileGeometryUtil.splitMultiLineString((MultiLineString) g) : ImmutableList.of(g))
+                                               .flatMap(Collection::stream)
+                                               .map(LineString.class::cast)
+                                               .collect(Collectors.toSet()));
+                    if (entry.getKey().getGeometry() instanceof MultiLineString)
+                        lineStringBuilder.addAll(TileGeometryUtil.splitMultiLineString((MultiLineString) entry.getKey().getGeometry()));
+                    else
+                        lineStringBuilder.add((LineString) entry.getKey().getGeometry());
+                    ImmutableSet<LineString> lineStrings = lineStringBuilder.build();
+                    Geometry geom;
+                    switch(lineStrings.size()){
+                        case 0:
+                            return;
+                        case 1:
+                            geom = lineStrings.iterator().next();
+                            break;
+                        default:
+                            try {
+                                LineMerger lineMerger = new LineMerger();
+                                lineMerger.add(lineStrings);
+                                geom = geometryFactoryTile.createMultiLineString(((Collection<LineString>) lineMerger.getMergedLineStrings()).toArray(LineString[]::new));
+                            } catch (Exception e) {
+                                geom = geometryFactoryTile.createMultiLineString(lineStrings.toArray(LineString[]::new));
+                            }
+                    }
+                    LOGGER.trace("collection {}, tile {}/{}/{}/{} grouped by {}: {} line strings", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), values, geom.getNumGeometries());
+                    if (geom.isEmpty() || geom.getNumGeometries()==0 || !geom.isValid()) {
+                        LOGGER.trace("Merged line string feature grouped by {} in collection {} has no or an invalid geometry in tile {}/{}/{}/{}. Use unmerged features.", values, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+                        result.add(entry.getKey());
+                        entry.getValue().stream().forEach(feature -> result.add(feature));
+
+                    } else {
+                        // add merged feature
+                        Map<String, Object> mainClusterFeatureProperties = entry.getKey().getProperties();
+                        ImmutableMap.Builder<String, Object> propertiesBuilder = ImmutableMap.builder();
+                        mainClusterFeatureProperties.entrySet()
+                                                    .stream()
+                                                    .filter(prop -> allProperties || properties.contains(prop.getKey()))
+                                                    .filter(prop -> entry.getValue()
+                                                                         .stream()
+                                                                         .allMatch(f -> f.getProperties().containsKey(prop.getKey()) && f.getProperties().get(prop.getKey()).equals(prop.getValue())))
+                                                    .forEach(prop -> propertiesBuilder.put(prop.getKey(), prop.getValue()));
+
+                        result.add(new ImmutableMvtFeature.Builder()
+                                           .id(entry.getKey().getId())
+                                           .properties(propertiesBuilder.build())
+                                           .geometry(geom).build());
+                    }
+
+                });
+
+        return result.build();
     }
-     */
 
     @Override
     public void onEnd() {
@@ -491,21 +527,27 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                         .forEach(feature -> addFeature(feature));
             }
 
-            /* TODO
-            if (mergeGeometries.values().stream().anyMatch(geom -> geom instanceof LineString || geom instanceof MultiLineString))
-                Lists.cartesianProduct(groups)
+            if (mergeFeatures.stream().anyMatch(feature -> feature.getGeometry() instanceof LineString || feature.getGeometry() instanceof MultiLineString)) {
+                List<MvtFeature> features = new ArrayList<>();
+                Lists.cartesianProduct(valueGroups)
                      .stream()
                      .forEach(values -> {
                          try {
-                             mergeLineStrings(values);
+                             features.addAll(mergeLineStrings(values));
                          } catch (Exception e) {
                              LOGGER.error("Error while merging line string geometries grouped by {} in tile {}/{}/{}/{} in collection {}. The features are skipped.", values, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), collectionId);
-                             if(LOGGER.isDebugEnabled()) {
+                             if (LOGGER.isDebugEnabled()) {
                                  LOGGER.debug("Stacktrace:", e);
                              }
                          }
                      });
-             */
+                LOGGER.trace("{} merged line string features in tile {}/{}/{}/{} in collection {}, total pixel length: {}.",
+                             features.size(), tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), collectionId, features.stream()
+                                                                                                                                                      .mapToDouble(f -> f.getGeometry().getLength())
+                                                                                                                                                      .sum());
+                features.stream()
+                        .forEach(feature -> addFeature(feature));
+            }
         }
 
         try {
