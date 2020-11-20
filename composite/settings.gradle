@@ -9,7 +9,7 @@ if (xtraplatform) {
     includeBuild "../../${xtraplatform.name}/xtraplatform-core"
     includeBuild "../../${xtraplatform.name}/xtraplatform-dev"
 }
-if (xtraplatformSdiTools) {
+if (xtraplatformSpatial) {
     includeBuild "../../${xtraplatformSpatial.name}"
 }
 
