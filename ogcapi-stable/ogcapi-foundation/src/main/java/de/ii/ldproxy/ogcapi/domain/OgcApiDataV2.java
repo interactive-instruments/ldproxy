@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Value.Immutable
@@ -51,7 +52,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         public EntityDataBuilder<OgcApiDataV2> fillRequiredFieldsWithPlaceholders() {
             String placeholder = "__DEFAULT__";
             return this.id(placeholder)
-                .serviceType(placeholder);
+                       .serviceType(placeholder);
         }
 
     }
@@ -83,19 +84,15 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     public abstract List<String> getTags();
 
     // TODO: move to ServiceData?
+    @JsonIgnore
     @Value.Derived
+    @Value.Auxiliary
     public List<String> getSubPath() {
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>();
         builder.add(getId());
         if (getApiVersion().isPresent())
-            builder.add("v"+getApiVersion().get());
+            builder.add("v" + getApiVersion().get());
         return builder.build();
-    }
-
-    // TODO: move to ServiceData?
-    @Value.Derived
-    public int getSubPathLength() {
-        return 1 + (getApiVersion().isPresent() ? 1 : 0);
     }
 
     @JsonProperty(value = "api")
@@ -123,22 +120,33 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     @Value.Check
     public OgcApiDataV2 mergeBuildingBlocks() {
+        List<ExtensionConfiguration> distinctExtensions = getExtensions().stream()
+                                                                         .distinct()
+                                                                         .collect(Collectors.toList());
+
+        // remove duplicates
+        if (getExtensions().size() > distinctExtensions.size()) {
+            return new ImmutableOgcApiDataV2.Builder().from(this)
+                                                      .extensions(distinctExtensions)
+                                                      .build();
+        }
+
         boolean collectionsHaveMissingParentExtensions = getCollections().values()
                                                                          .stream()
                                                                          .anyMatch(collection -> collection.getParentExtensions()
-                                                                                                           .size() < getExtensions().size());
+                                                                                                           .size() < getMergedExtensions().size());
 
         if (collectionsHaveMissingParentExtensions) {
             Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>();
 
             getCollections().values()
                             .forEach(featureTypeConfigurationOgcApi -> mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.getBuilder()
-                                                                                                                                                                   .parentExtensions(getExtensions())
+                                                                                                                                                                   .parentExtensions(getMergedExtensions())
                                                                                                                                                                    .build()));
 
             return new ImmutableOgcApiDataV2.Builder().from(this)
-                                                      .collections(mergedCollections)
-                                                      .build();
+                                               .collections(mergedCollections)
+                                               .build();
         }
 
         return this;

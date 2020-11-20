@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
@@ -51,13 +52,13 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     Boolean getIgnoreInvalidGeometries();
 
     @Nullable
-    Map<String, MinMax> getSeeding();
-
-    @Nullable
     Map<String, MinMax> getZoomLevels();
 
     @Nullable
     Map<String, MinMax> getZoomLevelsCache();
+
+    @Nullable
+    Map<String, MinMax> getSeeding();
 
     @Nullable
     Map<String, List<PredefinedFilter>> getFilters();
@@ -102,7 +103,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
      *
      * @return seeding map also considering the zoom level configuration (drops zoom levels outside of the range from seeding)
      */
+    @JsonIgnore
     @Value.Derived
+    @Value.Auxiliary
     default Map<String, MinMax> getEffectiveSeeding() {
         Map<String, MinMax> baseSeeding = getSeeding();
         if (Objects.isNull(baseSeeding))

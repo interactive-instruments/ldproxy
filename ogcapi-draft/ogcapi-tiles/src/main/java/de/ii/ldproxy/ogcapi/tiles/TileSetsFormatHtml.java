@@ -73,7 +73,9 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
         final List<NavigationDTO> breadCrumbs = collectionId.isPresent() ?
                 new ImmutableList.Builder<NavigationDTO>()
                         .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(api.getData().getSubPathLength() + 3)
+                                .removeLastPathSegments(api.getData()
+                                                           .getSubPath()
+                                                           .size() + 3)
                                 .toString()))
                         .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
                                 .removeLastPathSegments(3)
@@ -89,7 +91,9 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                 new ImmutableList.Builder<NavigationDTO>()
                         .add(new NavigationDTO(rootTitle,
                                 requestContext.getUriCustomizer().copy()
-                                        .removeLastPathSegments(api.getData().getSubPathLength() + 1)
+                                        .removeLastPathSegments(api.getData()
+                                                                   .getSubPath()
+                                                                   .size() + 1)
                                         .toString()))
                         .add(new NavigationDTO(api.getData().getLabel(),
                                 requestContext.getUriCustomizer()

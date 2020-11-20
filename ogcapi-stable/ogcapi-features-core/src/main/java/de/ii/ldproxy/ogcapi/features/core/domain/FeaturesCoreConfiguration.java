@@ -13,19 +13,20 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
+import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Value.Immutable
-@Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesCoreConfiguration.Builder.class)
 public interface FeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations {
 
@@ -74,8 +75,8 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    default EpsgCrs getDefaultEpsgCrs() {
-        return getDefaultCrs() == DefaultCrs.CRS84h ? OgcCrs.CRS84h : OgcCrs.CRS84;
+    default ImmutableEpsgCrs getDefaultEpsgCrs() {
+        return ImmutableEpsgCrs.copyOf(getDefaultCrs() == DefaultCrs.CRS84h ? OgcCrs.CRS84h : OgcCrs.CRS84);
     }
 
     @JsonIgnore
@@ -142,7 +143,25 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
 
     @Override
     default Builder getBuilder() {
-        return new ImmutableFeaturesCoreConfiguration.Builder();
+        return new ImmutableFeaturesCoreConfiguration.Builder().from(this);
     }
 
+    @Override
+    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+        ImmutableFeaturesCoreConfiguration.Builder builder = new ImmutableFeaturesCoreConfiguration.Builder().from(source)
+                                                                                                                      .from(this)
+                                                                                                                      .transformations(((FeaturesCoreConfiguration) source).getTransformations());
+
+        /*Map<String, ImmutableFeatureTypeMapping2.Builder> builderMap = builder.getTransformations();
+
+        getTransformations().forEach((key, transformation) -> {
+            if (builderMap.containsKey(key)) {
+                builderMap.get(key).from(transformation);
+            } else {
+                builder.putTransformations(key, transformation);
+            }
+        });*/
+
+        return builder.build();
+    }
 }

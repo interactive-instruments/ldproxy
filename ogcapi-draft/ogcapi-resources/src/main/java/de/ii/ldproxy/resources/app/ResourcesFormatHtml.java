@@ -71,7 +71,9 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(api.getData().getSubPathLength() + 1)
+                                .removeLastPathSegments(api.getData()
+                                                           .getSubPath()
+                                                           .size() + 1)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()

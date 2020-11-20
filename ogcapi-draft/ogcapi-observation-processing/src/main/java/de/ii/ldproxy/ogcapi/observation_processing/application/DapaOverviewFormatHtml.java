@@ -72,7 +72,9 @@ public class DapaOverviewFormatHtml implements DapaOverviewFormatExtension {
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(api.getData().getSubPathLength() + 3)
+                                .removeLastPathSegments(api.getData()
+                                                           .getSubPath()
+                                                           .size() + 3)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
                         requestContext.getUriCustomizer()
