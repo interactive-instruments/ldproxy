@@ -3,16 +3,15 @@ plugins {
 }
 
 node {
-    version = '10.16.0'
-    yarnVersion = '1.17.3'
+    version = '10.22.1'
+    yarnVersion = '1.22.5'
     download = project.findProperty('downloadNode') != 'false' ?: false
 }
 
 sourceSets {
   main {
       resources {
-        srcDir 'src/main/javascript'
-        exclude 'node_modules/**'
+        srcDir "${buildDir}/javascript"
       }
   }
 }
@@ -50,4 +49,5 @@ yarn_start {
 }
 
 assemble.dependsOn yarn_build
-check.dependsOn yarn_build
+//check.dependsOn yarn_build
+yarn_build.finalizedBy jar
