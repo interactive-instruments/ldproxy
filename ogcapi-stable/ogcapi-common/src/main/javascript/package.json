@@ -1,10 +1,9 @@
 {
-  "name": "@xtraplatform/ogcapi-common",
+  "name": "@ogcapi/common",
   "version": "1.0.0",
   "author": "interactive instruments GmbH",
   "license": "MPL-2.0",
-  "module": "src/index.jsx",
-  "main": "build/index.js",
+  "module": "src/components/index.jsx",
   "sideEffects": false,
   "scripts": {
     "start": "webpack-dev-server --mode development --open",
@@ -16,6 +15,8 @@
   },
   "peerDependencies": {
     "@xtraplatform/core": "^2",
+    "@xtraplatform/manager": "^2",
+    "@xtraplatform/services": "^2",
     "feature-u": "^3",
     "grommet": "^2",
     "grommet-icons": "^4",
@@ -37,11 +38,12 @@
     "@storybook/addon-essentials": "^6.0.10",
     "@storybook/addon-links": "^6.0.10",
     "@storybook/react": "^6.0.10",
-    "@xtraplatform/core": "^2.0.0-beta.2",
-    "@xtraplatform/neutrino": "^2.0.0-beta.3",
+    "@xtraplatform/core": "^2.0.0-beta.4",
+    "@xtraplatform/manager": "^2.0.0-beta.4",
+    "@xtraplatform/neutrino": "^2.0.0-beta.4",
     "apollo-link-rest": "^0.8.0-beta.0",
     "babel-loader": "*",
-    "core-js": "*",
+    "core-js": "^3",
     "eslint": "^7",
     "eslint-import-resolver-node": "*",
     "eslint-plugin-babel": "*",
@@ -69,5 +71,9 @@
     "webpack": "^4",
     "webpack-cli": "^3",
     "webpack-dev-server": "^3"
+  },
+  "dependencies": {
+    "deepmerge": "^4.2.2",
+    "moment": "^2.29.1"
   }
 }
