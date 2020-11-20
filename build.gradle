@@ -77,7 +77,7 @@ task allDependencies {
 }
 tasks.run {
     debug = project.findProperty('debug') ?: false
-//    args= ["/home/zahnen/development/configs-ldproxy/inspire-nrw"]
+    args = project.findProperty('data') ? [project.findProperty('data')] : args 
 }
 
 tasks.check { dependsOn subprojects*.tasks*.findByPath('test') }

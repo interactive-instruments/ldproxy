@@ -2,9 +2,9 @@
 subprojects {
 
     dependencies {
-        compileOnly         "org.immutables:value:2.8.3:annotations"
-        compileOnly         "org.immutables:encode:2.8.3"
-        annotationProcessor "org.immutables:value:2.8.3"
+        compileOnly         "org.immutables:value:2.8.8:annotations"
+        compileOnly         "org.immutables:encode:2.8.8"
+        annotationProcessor "org.immutables:value:2.8.8"
     }
 
     compileJava {
