@@ -111,6 +111,7 @@ dist
 
 .yarn/*
 .pnp.*
+!.yarn/plugins/
 !.yarn/releases/
 !.yarn/sdks/
 
