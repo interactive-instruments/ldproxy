@@ -12,6 +12,7 @@ const ServiceEditApi = ({
   api,
   defaults,
   isDefaults,
+  inheritedLabel,
   debounce,
   onPending,
   onChange,
@@ -82,6 +83,7 @@ const ServiceEditApi = ({
               isDefaults={isDefaults}
               data={mergedBuildingBlocks[bb.id]}
               defaults={mergedBuildingBlocksDefault[bb.id]}
+              inheritedLabel={inheritedLabel}
               debounce={debounce}
               onPending={onPending}
               onChange={onBuildingBlockChange(bb.id)}

@@ -1,17 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 
 import { Box, Avatar } from "grommet";
-import { Filter } from "grommet-icons";
-import {
-  Async,
-  TreeList,
-  InfoLabel,
-  useDebounceFields,
-} from "@xtraplatform/core";
+import { Filter, FingerPrint } from "grommet-icons";
+import { Async, TreeList, TextIcon } from "@xtraplatform/core";
 import { useProvider, useCodelists } from "@xtraplatform/services";
 
 import TypeIcon from "./TypeIcon";
+import Badge from "./Badge";
 import Edit from "./Edit";
 
 const schemaToTree = (schema, id, label, queryables, parent = null) => {
@@ -29,12 +25,37 @@ const schemaToTree = (schema, id, label, queryables, parent = null) => {
       id: id,
       label: label,
       parent: parent,
-      icon: <TypeIcon type={schema.type} role={schema.role} />,
-      badge: isQueryable ? (
-        <Avatar size="small" background="accent-3" title="queryable">
-          <Filter size="small" />
-        </Avatar>
-      ) : null,
+      icon: (
+        <TypeIcon
+          type={schema.type}
+          valueType={schema.valueType}
+          role={schema.role}
+        />
+      ),
+      badge: (
+        <Box
+          direction="row"
+          align="center"
+          gap="xsmall"
+          pad={{ left: "xsmall" }}
+        >
+          {schema.role === "ID" ? (
+            <Badge title="id">
+              <FingerPrint size="small" />
+            </Badge>
+          ) : null}
+          {schema.type === "OBJECT_ARRAY" || schema.type === "VALUE_ARRAY" ? (
+            <Badge title="array">
+              <TextIcon text="[]" size="list" />
+            </Badge>
+          ) : null}
+          {isQueryable ? (
+            <Badge title="queryable">
+              <Filter size="small" />
+            </Badge>
+          ) : null}
+        </Box>
+      ),
     });
 
     Object.keys(schema.properties).forEach((childId) =>
@@ -96,9 +117,9 @@ const CollectionTabSchema = ({
     (featuresCore && featuresCore.featureProvider) || serviceId;
   const featureType = (featuresCore && featuresCore.featureType) || id;
 
-  const [selected, setSelected] = useState(featureType);
   const { loading, error, data } = useProvider(providerId);
   const { loading: loading2, error: error2, data: data2 } = useCodelists();
+  const [selected, setSelected] = useState(featureType);
 
   const schema =
     data &&
@@ -114,6 +135,10 @@ const CollectionTabSchema = ({
     featuresCore.queryables
   );
 
+  const selectedInitial = tree.length > 1 ? tree[1].id : featureType;
+
+  useEffect(() => setSelected(selectedInitial), [setSelected, selectedInitial]);
+
   //TODO: selected has to be full path to property
   return (
     <Async loading={loading || loading2} error={error || error2}>
@@ -125,10 +150,9 @@ const CollectionTabSchema = ({
           overflow={{ vertical: "auto" }}
         >
           <TreeList
+            noExpanders
             tree={tree}
-            expanded={[featureType]}
-            selected={featureType}
-            hideRootExpander
+            selected={selectedInitial}
             onSelect={setSelected}
           />
         </Box>

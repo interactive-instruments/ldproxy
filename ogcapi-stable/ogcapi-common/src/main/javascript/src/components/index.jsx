@@ -151,7 +151,7 @@ export default createFeature({
       },
       [collectionEditTabs("schema")]: {
         id: "schema",
-        label: "Schema",
+        label: "Data",
         sortPriority: 30,
         component: CollectionTabSchema,
       },

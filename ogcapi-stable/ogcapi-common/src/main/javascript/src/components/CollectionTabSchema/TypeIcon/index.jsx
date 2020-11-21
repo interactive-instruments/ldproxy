@@ -2,30 +2,13 @@ import React from "react";
 import PropTypes from "prop-types";
 
 import { Box } from "grommet";
-import {
-  Location,
-  Clock,
-  Table,
-  FingerPrint,
-  Down,
-  CheckboxSelected,
-  BlockQuote,
-  BarChart,
-} from "grommet-icons";
+import { Location, Clock, CheckboxSelected } from "grommet-icons";
+import { TextIcon } from "@xtraplatform/core";
 
-const TypeIcon = ({ type, role }) => {
-  switch (role) {
-    case "ID":
-      return (
-        <Box title="id">
-          <FingerPrint size="list" />
-        </Box>
-      );
-    default:
-      break;
-  }
+const TypeIcon = ({ type, valueType }) => {
+  const actualType = valueType || type;
 
-  switch (type) {
+  switch (actualType) {
     case "GEOMETRY":
       return (
         <Box title="geometry">
@@ -41,19 +24,19 @@ const TypeIcon = ({ type, role }) => {
     case "INTEGER":
       return (
         <Box title="integer">
-          <BarChart size="list" />
+          <TextIcon text="12" size="list" />
         </Box>
       );
     case "FLOAT":
       return (
         <Box title="float">
-          <BarChart size="list" />
+          <TextIcon text=".1" size="list" />
         </Box>
       );
     case "STRING":
       return (
         <Box title="string">
-          <BlockQuote size="list" />
+          <TextIcon text="ab" size="list" />
         </Box>
       );
     case "BOOLEAN":
@@ -63,26 +46,29 @@ const TypeIcon = ({ type, role }) => {
         </Box>
       );
     case "OBJECT":
+    case "OBJECT_ARRAY":
       return (
-        <Box title="type">
-          <Down size="list" />
+        <Box title="object">
+          <TextIcon text="{}" size="list" />
         </Box>
       );
     default:
-      break;
+      return (
+        <Box title="unknown">
+          <TextIcon text="?" size="list" />
+        </Box>
+      );
   }
-
-  return null;
 };
 
 TypeIcon.propTypes = {
   type: PropTypes.string,
-  role: PropTypes.string,
+  valueType: PropTypes.string,
 };
 
 TypeIcon.defaultProps = {
   type: null,
-  role: null,
+  valueType: null,
 };
 
 TypeIcon.displayName = "TypeIcon";

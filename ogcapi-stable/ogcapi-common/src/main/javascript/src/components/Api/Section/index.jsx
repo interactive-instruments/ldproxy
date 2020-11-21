@@ -30,6 +30,7 @@ const ApiSection = ({
   defaults,
   isActive,
   isDefaults,
+  inheritedLabel,
   debounce,
   onPending,
   onChange,
@@ -73,7 +74,7 @@ const ApiSection = ({
               <AutoForm
                 fields={fields}
                 fieldsDefault={fieldsDefault}
-                inheritedLabel={"bla"}
+                inheritedLabel={inheritedLabel}
                 values={state}
                 setValues={setState}
                 debounce={debounce}
@@ -115,6 +116,7 @@ const ApiSection = ({
             {...data}
             defaults={defaults}
             isDefaults={isDefaults}
+            inheritedLabel={inheritedLabel}
             debounce={debounce}
             onPending={onPending}
             onChange={onChange}
