@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.domain;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
 
 import javax.ws.rs.core.Response;
@@ -58,11 +59,12 @@ public interface StyleFormatExtension extends FormatExtension {
     /**
      * returns the title of a style
      *
-     * @param datasetData information about the service {serviceId}
      * @param styleId the id of the style
-     * @return the title of the style, if applicable, or null
+     * @param stylesheet the stylesheet content
+     * @param requestContext
+     * @return the title of the style, if applicable, or the style identifier
      */
-    default String getTitle(OgcApiDataV2 datasetData, String styleId) { return styleId; }
+    default String getTitle(String styleId, File stylesheet, ApiRequestContext requestContext) throws IOException { return styleId; }
 
     /**
      *

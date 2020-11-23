@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -167,12 +168,12 @@ public class EndpointStyle extends Endpoint {
         File stylesheet = new File( stylesStore + File.separator + datasetId + File.separator + styleId + "." + styleFormat.getFileExtension());
         if (!stylesheet.exists()) {
             File folder = new File( stylesStore + File.separator + datasetId );
-            boolean styleExists = stylesheet.getParentFile().listFiles(new FilenameFilter() {
+            boolean styleExists = Objects.requireNonNull(stylesheet.getParentFile().listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.matches("^"+styleId+"\\..*");
+                    return name.matches("^" + styleId + "\\..*");
                 }
-            }).length > 0;
+            })).length > 0;
             if (styleExists) {
                 throw new NotAcceptableException(MessageFormat.format("The style ''{0}'' is not available in the requested format.", styleId));
             } else {

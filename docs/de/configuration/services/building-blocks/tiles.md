@@ -29,43 +29,46 @@ Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann soll
 |`zoomLevelsCache` |object |`{}` |Steuert die Zoomstufen, in denen erzeugte Kacheln gecacht werden.
 |`center` |array |`null` |Legt Länge und Breite fest, auf die standardmäßig eine Karte mit den Kacheln zentriert werden sollte.
 |`filters` |object |`{}` |Über Filter kann gesteuert werden, welche Features auf welchen Zoomstufen selektiert werden sollen. Dazu dient ein CQL-Filterausdruck, der in `filter` angegeben wird. Siehe das Beispiel unten.
+|`rules` |object |`{}` |Über Regeln können die selektierten Features in Abhängigkeit der Zoomstufe nachbearbeitet werden. Unterstützt wird eine Reduzierung der Attribute (`properties`), das geometrische Verschmelzen von Features, die sich geometrisch schneiden (`merge`), ggf. eingeschränkt auf Features mit bestimmten identischen Attributen (`groupBy`). Siehe das Beispiel unten. Beim Verschmelzen werden alle Attribute in das neue Objekt übernommen, die in den verschmolzenen Features identisch sind.
 |`seeding` |object |`{}` |Steuert die Zoomstufen, die für jedes aktive Kachelschema beim Start vorberechnet werden.
 |`limit` |integer |100000 |Steuert die maximale Anzahl der Features, die pro Query für eine Kachel berücksichtigt werden.
-|`maxPointPerTileDefault` |integer |10000 |Steuert die maximale Anzahl von Features mit (Multi-)Point-Geometrie, die für eine Kachel berücksichtigt werden.
-|`maxLineStringPerTileDefault` |integer |10000 |Steuert die maximale Anzahl von Features mit (Multi-)LineString-Geometrie, die für eine Kachel berücksichtigt werden.
-|`maxPolygonPerTileDefault`  |integer |10000 |Steuert die maximale Anzahl von Features mit (Multi-)Polygon-Geometrie, die für eine Kachel berücksichtigt werden.
+|`minimumSizeInPixel`| number |0.5 |Objekte mit Liniengeometrien, die kürzer als der Wert sind, werden nicht in die Kachel aufgenommen. Objekte mit Flächengeometrien, die kleiner als das Quadrat des Werts sind, werden nicht in die Kachel aufgenommen. Der Wert 0.5 entspricht einem halben "Pixel" im Kachelkoordinatensystem.
+|`maxRelativeAreaChangeInPolygonRepair` | number |0.1 |Steuert die maximal erlaubte relative Änderung der Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im Koordinatensystem der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte Polygongeometrie verwendet. Der Wert 0.1 entspricht 10%.
+|`maxAbsoluteAreaChangeInPolygonRepair` | number |1.0 |Steuert die maximal erlaubte absolute Änderung der Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im Koordinatensystem der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte Polygongeometrie verwendet. Der Wert 1.0 entspricht einem "Pixel" im Kachelkoordinatensystem.
 
-Beispiel für die Angaben in der Konfigurationsdatei:
+Beispiel für die Angaben in der Konfigurationsdatei für Gebäude:
 
 ```yaml
 - buildingBlock: TILES
   enabled: true
+  singleCollectionEnabled: true
   multiCollectionEnabled: true
   center:
-  - 10.0
+  - 7.5
   - 51.5
+  minimumSizeInPixel: 0.75
   zoomLevels:
     WebMercatorQuad:
-      min: 4
-      max: 18
-      default: 8
-  zoomLevelsCache:
+      min: 12
+      max: 20
+      default: 16
+  rules:
     WebMercatorQuad:
-      min: 4
-      max: 15
-  filters:
-    WebMercatorQuad:
-    - min: 5
-      max: 7
-      filter: 'strasse.strassenklasse IN (''A'')'
-    - min: 8
-      max: 9
-      filter: 'strasse.strassenklasse IN (''A'',''B'')'
-    - min: 10
-      max: 10
-      filter: 'strasse.strassenklasse IN (''A'',''B'',''L'',''K'')'
-  seeding:
-    WebMercatorQuad:
-      min: 4
-      max: 10
+    - min: 12
+      max: 13
+      merge: true
+      groupBy:
+      - anzahl_geschosse
+      - funktion
+      properties:
+      - anzahl_geschosse
+      - funktion
+      - name
+    - min: 14
+      max: 20
+      properties:
+      - anzahl_geschosse
+      - funktion
+      - name
+      - anschrift
 ```

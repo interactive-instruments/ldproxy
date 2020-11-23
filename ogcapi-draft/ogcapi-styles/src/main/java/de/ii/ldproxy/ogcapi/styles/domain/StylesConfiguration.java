@@ -42,6 +42,15 @@ public interface StylesConfiguration extends ExtensionConfiguration {
     @Nullable
     String getDefaultStyle();
 
+    @Nullable
+    Boolean getWebmapWithPopup();
+
+    @Nullable
+    Boolean getWebmapWithLayerControl();
+
+    @Nullable
+    Boolean getLayerControlAllLayers();
+
     @Deprecated
     @Nullable
     Boolean getMapsEnabled();

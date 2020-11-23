@@ -14,10 +14,13 @@ import de.ii.ldproxy.ogcapi.domain.ContentExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableRequestContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiBackgroundTask;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.ParameterExtension;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -46,6 +49,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -327,11 +331,16 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                                                                                                 .map(cfg -> cfg.getFeatureType()
                                                                                                                .orElse(collectionId))
                                                                                                 .orElse(collectionId);
+                                                                  List<OgcApiQueryParameter> allowedParameters = extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class)
+                                                                                                                                  .stream()
+                                                                                                                                  .filter(param -> param.isApplicable(apiData, "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", collectionId, HttpMethods.GET))
+                                                                                                                                  .sorted(Comparator.comparing(ParameterExtension::getName))
+                                                                                                                                  .collect(ImmutableList.toImmutableList());
                                                                   TilesConfiguration layerConfiguration = apiData.getCollections()
                                                                                                                  .get(collectionId)
                                                                                                                  .getExtension(TilesConfiguration.class)
                                                                                                                  .orElse(tilesConfiguration.get());
-                                                                  FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collectionId), ImmutableList.of(), ImmutableMap.of(), layerConfiguration, requestContext.getUriCustomizer());
+                                                                  FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collectionId), allowedParameters, ImmutableMap.of(), layerConfiguration, requestContext.getUriCustomizer());
                                                                   return ImmutableFeatureQuery.builder()
                                                                                               .from(query)
                                                                                               .type(featureTypeId)

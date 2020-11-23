@@ -12,8 +12,8 @@
 </style>
 </head>
 <body>
-{{#popup}}
 <style>
+{{#popup}}
 .mapboxgl-popup {
 min-width: 600px;
 font: 12px/20px Arial, Helvetica, sans-serif;
@@ -24,15 +24,62 @@ overflow: hidden;
 text-overflow: ellipsis;
 white-space: nowrap;
 }
-</style>
 {{/popup}}
+{{#layerSwitcher}}
+#menu {
+background: #fff;
+position: absolute;
+z-index: 1;
+top: 10px;
+right: 50px;
+border-radius: 3px;
+border: 1px solid rgba(0, 0, 0, 0.4);
+font-family: 'Open Sans', sans-serif;
+}
+
+#menu a {
+font-size: 12px;
+color: #404040;
+display: block;
+margin: 0;
+padding: 0;
+padding: 5px;
+text-decoration: none;
+border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+text-align: center;
+}
+
+#menu a:last-child {
+border: none;
+}
+
+#menu a:hover {
+background-color: #f8f8f8;
+color: #404040;
+}
+
+#menu a.active {
+background-color: #3887be;
+color: #ffffff;
+}
+
+#menu a.active:hover {
+background: #3074a4;
+}
+{{/layerSwitcher}}
+</style>
+{{#layerSwitcher}}
+<nav id="menu"></nav>
+{{/layerSwitcher}}
 <div id='map'></div>
 <script>
  var map = new mapboxgl.Map({
  container: 'map',
+ hash: true,
  style: '{{{styleUrl}}}'
  });
  map.addControl(new mapboxgl.NavigationControl());
+ map.addControl(new mapboxgl.ScaleControl());
 {{#popup}}
  map.on('load', function() {
    var popup = new mapboxgl.Popup({
@@ -65,6 +112,42 @@ white-space: nowrap;
    });
  });
 {{/popup}}
+{{#layerSwitcher}}
+    var toggleableLayerIdMap = {{{layerIds}}};
+
+    // set up the corresponding toggle button for each layer
+    for (var tileLayerId of Object.keys(toggleableLayerIdMap)) {
+        var link = document.createElement('a');
+        link.href = '#';
+        link.className = 'active';
+        link.textContent = tileLayerId;
+
+        link.onclick = function (e) {
+            var clickedLayer = this.textContent;
+            e.preventDefault();
+            e.stopPropagation();
+
+            var styleLayerIds = toggleableLayerIdMap[clickedLayer];
+            var obj = this;
+
+            styleLayerIds.forEach(function(styleLayerId) {
+                var visibility = map.getLayoutProperty(styleLayerId, 'visibility');
+
+                // toggle layer visibility by changing the layout object's visibility property
+                if (visibility === 'visible') {
+                    obj.className = '';
+                    map.setLayoutProperty(styleLayerId, 'visibility', 'none');
+                } else {
+                    obj.className = 'active';
+                    map.setLayoutProperty(styleLayerId, 'visibility', 'visible');
+                }
+            })
+        };
+
+        var layers = document.getElementById('menu');
+        layers.appendChild(link);
+    }
+{{/layerSwitcher}}
 </script>
 </body>
 </html>

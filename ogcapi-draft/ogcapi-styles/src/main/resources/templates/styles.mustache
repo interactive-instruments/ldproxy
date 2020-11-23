@@ -14,9 +14,9 @@
                     <li>
                         {{#title}}{{.}} ({{id}}){{/title}}{{^title}}{{id}}{{/title}}
                         <ul>
-                            {{#links}}
+                            {{#linksSorted}}
                                 <li class="list-unstyled"><a href="{{href}}" target="_blank">{{title}}</a></li>
-                            {{/links}}
+                            {{/linksSorted}}
                             {{#sections}}
                                 {{#mapboxStyleUrl}}
                                 <li class="list-unstyled"><div id="map-container-{{styleId}}" class="map"></div></li>
