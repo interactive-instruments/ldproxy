@@ -106,6 +106,8 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
             builder.zoomLevelsCache(getZoomLevelsCache());
         if (getFilters()!=null)
             builder.filters(getFilters());
+        if (getRules()!=null)
+            builder.rules(getRules());
 
         return builder.build();
     }

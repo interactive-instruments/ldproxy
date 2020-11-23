@@ -122,6 +122,8 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private long mergeCount = 0;
     private Set<MvtFeature> mergeFeatures;
 
+    // TODO The class is getting too complex, factor out separate concerns.
+    //      See https://github.com/interactive-instruments/ldproxy/issues/313.
     public FeatureTransformerTilesMVT(FeatureTransformationContextTiles transformationContext, HttpClient httpClient) {
         super(TilesConfiguration.class,
               transformationContext.getApiData(), transformationContext.getCollectionId(),
