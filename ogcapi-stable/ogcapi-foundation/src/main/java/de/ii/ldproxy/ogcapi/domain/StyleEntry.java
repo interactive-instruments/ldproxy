@@ -10,9 +10,19 @@ package de.ii.ldproxy.ogcapi.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableStyleEntry.Builder.class)
 public abstract class StyleEntry extends PageRepresentationWithId {
 
+    @Value.Derived
+    public List<Link> getLinksSorted() {
+        return getLinks().stream()
+                         .sorted(Comparator.comparing(Link::getTitle))
+                         .collect(Collectors.toList());
+    }
 }

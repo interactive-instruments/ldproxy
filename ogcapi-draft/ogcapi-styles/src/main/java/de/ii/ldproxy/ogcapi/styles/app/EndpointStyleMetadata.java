@@ -60,6 +60,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -192,9 +193,23 @@ public class EndpointStyleMetadata extends Endpoint {
                                                                                   .version(format.getVersion())
                                                                                   .build())
                                                 .collect(Collectors.toList()));
+            Optional<String> title = extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
+                                            .stream()
+                                            .sorted(Comparator.comparing(StyleFormatExtension::getFileExtension))
+                                            .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(api.getData()))
+                                            .map(styleFormat -> {
+                                                try {
+                                                    return styleFormat.getTitle(styleId, new File(stylesStore + File.separator + apiId + File.separator + styleId + "." + styleFormat.getFileExtension()), requestContext);
+                                                } catch (IOException ioException) {
+                                                }
+                                                return styleId;
+                                            })
+                                            .filter(stylesheetTitle -> !stylesheetTitle.equals(styleId))
+                                            .findAny();
+
             ImmutableStyleMetadata.Builder metadata = ImmutableStyleMetadata.builder()
                                                                             .id(styleId)
-                                                                            .title(styleId)
+                                                                            .title(title.orElse(styleId))
                                                                             .stylesheets(stylesheets);
 
             return metadata.build();

@@ -63,12 +63,24 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Nullable
     Map<String, List<PredefinedFilter>> getFilters();
 
+    @Nullable
+    Map<String, List<Rule>> getRules();
+
     List<String> getTileEncodings();
 
     List<String> getTileSetEncodings();
 
     @Nullable
     double[] getCenter();
+
+    @Nullable
+    Double getMaxRelativeAreaChangeInPolygonRepair();
+
+    @Nullable
+    Double getMaxAbsoluteAreaChangeInPolygonRepair();
+
+    @Nullable
+    Double getMinimumSizeInPixel();
 
     @Override
     default Builder getBuilder() {
@@ -95,6 +107,8 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
             builder.zoomLevelsCache(getZoomLevelsCache());
         if (getFilters()!=null)
             builder.filters(getFilters());
+        if (getRules()!=null)
+            builder.rules(getRules());
 
         return builder.build();
     }
